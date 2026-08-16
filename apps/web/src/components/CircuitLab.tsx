@@ -27,10 +27,10 @@ export function CircuitLab({ activity, voltage, resistance, onVoltage, onResista
     <div className="visual-heading">
       <div><p className="eyebrow">Interactive diagram</p><h2 id="visual-title">{activity.title}</h2><p className="visual-instructions">{activity.instructions}</p></div>
       <div className="visual-tools">
-        <div className="visual-tabs" role="group" aria-label="Visual view">
+        <fieldset className="visual-tabs"><legend className="sr-only">Visual view</legend>
           <button type="button" className={view === "circuit" ? "active" : ""} onClick={() => setView("circuit")}>Circuit</button>
           <button type="button" className={view === "graph" ? "active" : ""} onClick={() => setView("graph")}>Relationship</button>
-        </div>
+        </fieldset>
         <output className={predictionEvaluated ? "current-readout" : "current-readout concealed"} aria-live="polite">
           <span>Current</span>
           <strong>{predictionEvaluated ? (current < 1 ? `${Math.round(current * 1000)} mA` : `${current.toFixed(2)} A`) : "Predict first"}</strong>
