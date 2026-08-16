@@ -17,7 +17,7 @@ const activity: OhmsLawActivity = {
 describe("CircuitLab", () => {
   it("conceals the calculated current until a prediction is evaluated", () => {
     const { rerender } = render(<CircuitLab activity={activity} voltage={5} resistance={100} onVoltage={vi.fn()} onResistance={vi.fn()} />);
-    expect(screen.getByText("Predict first")).toBeInTheDocument();
+    expect(screen.queryByText("50 mA")).not.toBeInTheDocument();
 
     rerender(<CircuitLab activity={activity} voltage={10} resistance={100} onVoltage={vi.fn()} onResistance={vi.fn()} />);
     fireEvent.click(screen.getByRole("button", { name: "Increase" }));
