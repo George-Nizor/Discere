@@ -1,5 +1,4 @@
 import { useState } from "react";
-import "./PredictionLab.css";
 
 export type PredictionChoice = "increase" | "decrease" | "same";
 
