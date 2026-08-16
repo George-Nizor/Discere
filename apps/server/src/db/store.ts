@@ -53,7 +53,7 @@ export class DiscereStore {
 
   private ensureUser(): void {
     const timestamp = now();
-    const learnerName = process.env["DISCERE_LEARNER_NAME"]?.trim() || "Learner";
+    const learnerName = process.env.DISCERE_LEARNER_NAME?.trim() || "Learner";
     this.database
       .prepare(
         "INSERT OR IGNORE INTO user_profiles (id, learner_name, xp, streak_days, created_at, updated_at) VALUES (?, ?, 0, 0, ?, ?)",
@@ -64,7 +64,9 @@ export class DiscereStore {
   initialiseConcepts(concepts: Concept[]): void {
     const statement = this.database.prepare("INSERT OR IGNORE INTO concept_progress (user_id, concept_id, state, mastery, independent_attempts, assisted_attempts, updated_at) VALUES (?, ?, ?, 0, 0, 0, ?)");
     const transaction = this.database.transaction(() => {
-      concepts.forEach((concept, index) => statement.run(LOCAL_USER_ID, concept.id, index === 0 ? "available" : "locked", now()));
+      concepts.forEach((concept, index) => {
+        statement.run(LOCAL_USER_ID, concept.id, index === 0 ? "available" : "locked", now());
+      });
     });
     transaction();
   }
