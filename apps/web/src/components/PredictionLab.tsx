@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export type PredictionChoice = "increase" | "decrease" | "same";
 
@@ -8,7 +8,7 @@ const labels: Record<PredictionChoice, string> = {
   same: "Stay the same",
 };
 
-export function PredictionLab({ voltage, resistance }: { voltage: number; resistance: number }) {
+export function PredictionLab({ voltage, resistance, onEvaluated }: { voltage: number; resistance: number; onEvaluated?: (evaluated: boolean) => void }) {
   const [baseline, setBaseline] = useState({ voltage, resistance });
   const [prediction, setPrediction] = useState<PredictionChoice>();
   const [checked, setChecked] = useState(false);
@@ -20,15 +20,24 @@ export function PredictionLab({ voltage, resistance }: { voltage: number; resist
   const changed = voltage !== baseline.voltage || resistance !== baseline.resistance;
   const correct = checked && prediction === actual;
 
+  useEffect(() => {
+    if (checked) {
+      setChecked(false);
+      onEvaluated?.(false);
+    }
+  }, [voltage, resistance]);
+
   function checkPrediction(): void {
     if (!prediction || !changed) return;
     setChecked(true);
+    onEvaluated?.(true);
   }
 
   function useCurrentAsBaseline(): void {
     setBaseline({ voltage, resistance });
     setPrediction(undefined);
     setChecked(false);
+    onEvaluated?.(false);
   }
 
   return <section className="prediction-lab" aria-labelledby="prediction-title">
@@ -38,7 +47,7 @@ export function PredictionLab({ voltage, resistance }: { voltage: number; resist
       <p>Move either circuit control, commit to a prediction, then check it against the calculation.</p>
     </div>
     <div className="prediction-choices" role="group" aria-label="Current prediction">
-      {(Object.keys(labels) as PredictionChoice[]).map((choice) => <button key={choice} type="button" className={prediction === choice ? "selected" : ""} onClick={() => { setPrediction(choice); setChecked(false); }}>{labels[choice]}</button>)}
+      {(Object.keys(labels) as PredictionChoice[]).map((choice) => <button key={choice} type="button" className={prediction === choice ? "selected" : ""} onClick={() => { setPrediction(choice); setChecked(false); onEvaluated?.(false); }}>{labels[choice]}</button>)}
     </div>
     <div className="prediction-actions">
       <button type="button" className="primary-button" disabled={!prediction || !changed} onClick={checkPrediction}>Check prediction</button>
