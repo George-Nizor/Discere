@@ -39,9 +39,9 @@ export function PredictionLab({ voltage, resistance, onEvaluated }: { voltage: n
       <h3 id="prediction-title">Compared with {baseline.voltage} V and {baseline.resistance} Ω, what happens to current?</h3>
       <p>Move either circuit control, commit to a prediction, then check it against the calculation.</p>
     </div>
-    <div className="prediction-choices" role="group" aria-label="Current prediction">
+    <fieldset className="prediction-choices"><legend className="sr-only">Current prediction</legend>
       {(Object.keys(labels) as PredictionChoice[]).map((choice) => <button key={choice} type="button" className={prediction === choice ? "selected" : ""} aria-pressed={prediction === choice} onClick={() => { setPrediction(choice); setChecked(false); onEvaluated?.(false); }}>{labels[choice]}</button>)}
-    </div>
+    </fieldset>
     <div className="prediction-actions">
       <button type="button" className="primary-button" disabled={!prediction || !changed} onClick={checkPrediction}>Check prediction</button>
       <button type="button" className="text-button" onClick={useCurrentAsBaseline}>Use current values as baseline</button>
