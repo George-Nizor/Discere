@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export type PredictionChoice = "increase" | "decrease" | "same";
 
@@ -19,13 +19,6 @@ export function PredictionLab({ voltage, resistance, onEvaluated }: { voltage: n
   const actual: PredictionChoice = current > baselineCurrent + epsilon ? "increase" : current < baselineCurrent - epsilon ? "decrease" : "same";
   const changed = voltage !== baseline.voltage || resistance !== baseline.resistance;
   const correct = checked && prediction === actual;
-
-  useEffect(() => {
-    if (checked) {
-      setChecked(false);
-      onEvaluated?.(false);
-    }
-  }, [voltage, resistance]);
 
   function checkPrediction(): void {
     if (!prediction || !changed) return;
