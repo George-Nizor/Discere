@@ -53,7 +53,7 @@ export class DiscereStore {
 
   private ensureUser(): void {
     const timestamp = now();
-    const learnerName = process.env.DISCERE_LEARNER_NAME?.trim() || "Learner";
+    const learnerName = process.env["DISCERE_LEARNER_NAME"]?.trim() || "Learner";
     this.database
       .prepare(
         "INSERT OR IGNORE INTO user_profiles (id, learner_name, xp, streak_days, created_at, updated_at) VALUES (?, ?, 0, 0, ?, ?)",
