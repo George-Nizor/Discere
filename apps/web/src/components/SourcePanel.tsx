@@ -1,4 +1,5 @@
 import type { Source } from "@discere/contracts";
+import "./SourcePanel.css";
 
 export function SourcePanel({ sources }: { sources: Source[] }) {
   if (sources.length === 0) return null;
