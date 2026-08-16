@@ -58,8 +58,10 @@ describe("Discere API", () => {
     const progress = Object.fromEntries(
       store.getProgress().map((item) => [item.conceptId, item.mastery]),
     );
-    expect(progress["current"]).toBeGreaterThan(progress["resistance"] ?? 0);
-    expect(response.json().mastery).toBeCloseTo(progress["resistance"], 8);
+    const currentMastery = progress["current"] ?? 0;
+    const resistanceMastery = progress["resistance"] ?? 0;
+    expect(currentMastery).toBeGreaterThan(resistanceMastery);
+    expect(response.json().mastery).toBeCloseTo(resistanceMastery, 8);
   });
 
   it("keeps the tutoring mode fixed for the life of an attempt", async () => {
