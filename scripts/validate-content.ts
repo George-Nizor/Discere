@@ -1,8 +1,7 @@
-import { readdir } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { loadCourseBundle, validateCourseBundle } from "@discere/curriculum";
-import { readFile } from "node:fs/promises";
+import { loadCourseBundle, validateCourseBundle } from "../packages/curriculum/src/index.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const contentRoot = path.join(root, "content");
