@@ -5,7 +5,7 @@ const MODE_WEIGHT: Record<TutoringMode, number> = { coach: 1, assisted: 0.82, di
 
 export function scoreAttempt(input: AttemptEvidenceInput): AttemptEvidenceResult {
   const difficulty = Math.max(0.5, Math.min(2, input.difficulty ?? 1));
-  const independent = input.hintsUsed === 0 && !input.answerRevealed;
+  const independent = input.mode !== "direct" && input.hintsUsed === 0 && !input.answerRevealed;
   const baseXp = input.correct ? 20 : 6;
   const persistenceXp = Math.min(6, input.hintsUsed * 2);
   const revealPenalty = input.answerRevealed ? 0.25 : 1;
