@@ -67,6 +67,9 @@ export async function registerRoutes(app: FastifyInstance, dependencies: RouteDe
     if (previous && previous.mode !== body.mode) {
       throw new HttpError(409, "Start a new attempt to change tutoring mode.", "ATTEMPT_MODE_LOCKED");
     }
+    if (previous?.correct) {
+      throw new HttpError(409, "This attempt is complete. Start a new attempt to answer again.", "ATTEMPT_COMPLETE");
+    }
     const assessment = assessResponse(question, body.response);
     const evidence = scoreAttempt({ correct: assessment.correct, mode: body.mode, hintsUsed: previous?.hintCount ?? 0, answerRevealed: previous?.answerRevealed ?? false, difficulty: question.difficulty });
     const conceptMastery = Object.fromEntries(
@@ -85,6 +88,7 @@ export async function registerRoutes(app: FastifyInstance, dependencies: RouteDe
     const { attemptId } = z.object({ attemptId: z.string().uuid() }).parse(request.params);
     const attempt = store.getAttempt(attemptId);
     if (!attempt) throw new HttpError(404, "Attempt not found.", "ATTEMPT_NOT_FOUND");
+    if (attempt.correct) throw new HttpError(409, "This attempt is already complete.", "ATTEMPT_COMPLETE");
     if (attempt.mode === "exam") throw new HttpError(403, "Hints are unavailable in exam mode.", "EXAM_GUARDRAIL");
     const question = content.getQuestion(attempt.questionId);
     if (!question) throw new HttpError(404, "Question not found.", "QUESTION_NOT_FOUND");
@@ -117,6 +121,7 @@ export async function registerRoutes(app: FastifyInstance, dependencies: RouteDe
     if (Date.now() < Date.parse(reveal.availableAt)) throw new HttpError(425, "The reflection period has not finished.", "REVEAL_WAIT");
     const attempt = store.getAttempt(attemptId);
     if (!attempt) throw new HttpError(404, "Attempt not found.", "ATTEMPT_NOT_FOUND");
+    if (attempt.correct) throw new HttpError(409, "This attempt is already complete.", "ATTEMPT_COMPLETE");
     const question = content.getQuestion(attempt.questionId);
     if (!question) throw new HttpError(404, "Question not found.", "QUESTION_NOT_FOUND");
     if (!store.consumeReveal(body.token)) throw new HttpError(409, "Reveal token has already been used.", "REVEAL_USED");
