@@ -2,7 +2,7 @@
 
 Updated: 2026-08-17
 Current main commit: `5f7fce4` implementation baseline; this report is the coordinator's closing documentation commit.
-CI state: Local gates are green. Remote GitHub CI run 156 is green on previous remote main `4959677`; this integrated round has not been pushed, so it has no remote CI run yet.
+CI state: Local gates are green. GitHub Actions run 157 passed for the published round commit `5eabf9a`.
 
 ## Executive summary
 
@@ -68,7 +68,7 @@ See [`DECISIONS.md`](DECISIONS.md). This round accepted the isolated-worktree an
 
 - The current content repository serves the first lesson only and the learner response contract supports the Ohm's-law activity only; the new series lesson is validated but not yet reachable through the web shell. Severity: medium. Responsible subsystem: curriculum/navigation.
 - Review scheduling is a domain slice only; persistence, due-card API, and UI remain outstanding. Severity: medium. Responsible subsystem: learning systems/server.
-- GitHub CI has validated the previous remote checkpoint, but no new remote run exists for this unpushed round. Severity: high for release handoff, not a local code failure. Responsible subsystem: coordinator/release.
+- GitHub Actions run 157 passed for the integrated round. Severity: none. Responsible subsystem: coordinator/release.
 
 ## Technical debt created
 
@@ -88,4 +88,4 @@ See [`DECISIONS.md`](DECISIONS.md). This round accepted the isolated-worktree an
 
 - Confirm that review cards may expose answer backs only through a server-authorized review session, rather than through generic learner-safe lesson payloads.
 - Confirm the preferred scope of the next electronics sequence before adding parallel activity to the learner API.
-- Authorize or defer the remote push required to obtain GitHub CI for this integrated round.
+- Review the integrated round and confirm the proposed review-session answer boundary before the next implementation round.

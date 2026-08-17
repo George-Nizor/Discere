@@ -22,7 +22,7 @@ Preserve the green prototype while establishing isolated ownership and implement
 
 - Integrated the deterministic review domain slice, series-circuit curriculum/visual foundation, tutor request matching, learner-experience audit, and adversarial payload test.
 - `pnpm check`, `pnpm build`, and `pnpm smoke` passed locally.
-- Stopped with review persistence, learner-facing review UI, lesson navigation, and remote CI publication explicitly deferred.
+- Stopped with review persistence, learner-facing review UI, and lesson navigation explicitly deferred; GitHub Actions run 157 passed for the published round.
 
 ## Dependency map
 
