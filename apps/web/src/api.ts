@@ -170,7 +170,7 @@ export async function importTutorReply(
 ): Promise<TutorReplyImportResult> {
   const result = await requestJson<TutorReplyImportResult>("/api/tutor/companion/import", {
     method: "POST",
-    body: JSON.stringify({ text, mode }),
+    body: JSON.stringify({ text, mode, expectedRequestId }),
   });
   if (result.requestId !== expectedRequestId) {
     throw new Error(

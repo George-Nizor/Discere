@@ -18,7 +18,7 @@ export interface RouteDependencies { content: ContentRepository; store: DiscereS
 const AttemptBodySchema = AttemptRequestSchema.extend({ attemptId: z.string().uuid().optional() });
 const CompanionBodySchema = z.object({ operation: TutorOperationSchema.default("draft_lesson"), payload: z.unknown().optional() }).strict();
 const ImagePromptBodySchema = z.object({ visualBriefId: z.string().min(1) }).strict();
-const CompanionImportBodySchema = z.object({ text: z.string().min(2).max(500_000), mode: TutoringModeSchema.optional() }).strict();
+const CompanionImportBodySchema = z.object({ text: z.string().min(2).max(500_000), mode: TutoringModeSchema.optional(), expectedRequestId: z.string().uuid() }).strict();
 const LessonParamsSchema = z.object({ lessonId: z.string().min(1).max(200) }).strict();
 const CircuitQuerySchema = z.object({
   voltage: z.coerce.number().positive().max(100).default(5),
@@ -188,6 +188,13 @@ export async function registerRoutes(app: FastifyInstance, dependencies: RouteDe
     const envelope = TutorEnvelopeBaseSchema.parse(raw);
 
     if (envelope.operation === "tutor_reply") {
+      if (envelope.requestId !== body.expectedRequestId) {
+        throw new HttpError(
+          409,
+          "This response belongs to a different tutor request. Copy the latest prompt and try again.",
+          "COMPANION_REQUEST_MISMATCH",
+        );
+      }
       if (!body.mode) throw new HttpError(400, "The tutoring mode is required for a tutor reply.", "TUTOR_MODE_REQUIRED");
       if (body.mode === "exam") throw new HttpError(403, "ChatGPT assistance is unavailable in Exam mode.", "EXAM_GUARDRAIL");
       const reply = TutorReplyDraftSchema.parse(envelope.payload);

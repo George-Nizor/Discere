@@ -56,6 +56,7 @@ describe("ChatGPT tutor companion", () => {
       url: "/api/tutor/companion/import",
       payload: {
         mode: "coach",
+        expectedRequestId: "b3428b5b-07b2-4ab4-840f-c1d723c714b2",
         text: JSON.stringify(tutorEnvelope({
           answer: "Use I = V / R. Put the supplied voltage above the resistance and carry the current unit through the calculation.",
           followUpQuestion: "Which two supplied values belong in the division?",
@@ -75,6 +76,7 @@ describe("ChatGPT tutor companion", () => {
       url: "/api/tutor/companion/import",
       payload: {
         mode: "coach",
+        expectedRequestId: "b3428b5b-07b2-4ab4-840f-c1d723c714b2",
         text: JSON.stringify(tutorEnvelope({
           answer: "The current is 0.05 A.",
           followUpQuestion: "Can you substitute the values yourself?",
@@ -94,6 +96,7 @@ describe("ChatGPT tutor companion", () => {
       url: "/api/tutor/companion/import",
       payload: {
         mode: "direct",
+        expectedRequestId: "b3428b5b-07b2-4ab4-840f-c1d723c714b2",
         text: JSON.stringify(tutorEnvelope({
           answer: "The current is 0.05 A because 5 V divided by 100 Ω equals 0.05 A.",
           followUpQuestion: "What current would a 200 Ω resistor draw at the same voltage?",
@@ -112,6 +115,7 @@ describe("ChatGPT tutor companion", () => {
       url: "/api/tutor/companion/import",
       payload: {
         mode: "direct",
+        expectedRequestId: "b3428b5b-07b2-4ab4-840f-c1d723c714b2",
         text: JSON.stringify(tutorEnvelope({
           answer: "Resistance opposes current in this circuit model.",
           followUpQuestion: "What should happen when resistance doubles?",
@@ -123,5 +127,27 @@ describe("ChatGPT tutor companion", () => {
     expect(response.statusCode).toBe(200);
     expect(response.json().accepted).toBe(false);
     expect(response.json().issues).toContainEqual(expect.objectContaining({ code: "SOURCE_NOT_ALLOWED" }));
+  });
+
+  it("rejects a valid tutor reply from an older prepared request", async () => {
+    const response = await app.inject({
+      method: "POST",
+      url: "/api/tutor/companion/import",
+      payload: {
+        mode: "direct",
+        expectedRequestId: "b3428b5b-07b2-4ab4-840f-c1d723c714b2",
+        text: JSON.stringify({
+          ...tutorEnvelope({
+            answer: "Resistance opposes current in this circuit model.",
+            followUpQuestion: "What should happen when resistance doubles?",
+            sourceIds: [],
+            uncertainty: [],
+          }),
+          requestId: "2eaf080b-794b-4af1-a2bf-3380f791c952",
+        }),
+      },
+    });
+    expect(response.statusCode).toBe(409);
+    expect(response.json().code).toBe("COMPANION_REQUEST_MISMATCH");
   });
 });

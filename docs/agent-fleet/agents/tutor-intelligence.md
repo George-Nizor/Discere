@@ -4,15 +4,15 @@ Audit and narrowly improve ChatGPT companion and workings-review reliability whi
 
 ## Completed
 
-- None yet.
+- Pending commit — tutor imports now require and server-validate the prepared request ID, matching the existing workings-review boundary.
 
 ## Validation
 
-- Not started.
+- Added a server regression test for a valid response from an older tutor request; local execution pending dependency installation.
 
 ## In progress
 
-- Inspecting request-ID, schema, source, and mode validation paths.
+- Coordinator review of request-ID compatibility and recovery wording.
 
 ## Blocked
 
@@ -24,7 +24,8 @@ Audit and narrowly improve ChatGPT companion and workings-review reliability whi
 
 ## Proposed next work
 
-- Identify one high-value malformed/stale response recovery improvement and cover it with a regression test.
+- Review workings-review feedback display for stale/unclear image states.
+- Keep any future provider integration behind the existing host-neutral boundary.
 
 ## Questions for architect
 
