@@ -1,4 +1,4 @@
-import type { CircuitDiagramSpec, SeriesCircuitDiagramSpec } from "@discere/contracts";
+import type { CircuitDiagramSpec, SeriesCircuitDiagramSpec, SingleResistorCircuitDiagramSpec } from "@discere/contracts";
 import { escapeXml, formatNumber } from "./svg.js";
 
 export function calculateCurrent(voltage: number, resistance: number): number {
@@ -9,16 +9,17 @@ export function calculateCurrent(voltage: number, resistance: number): number {
 
 export function renderCircuitSvg(spec: CircuitDiagramSpec): string {
   if ("kind" in spec && spec.kind === "series") return renderSeriesCircuitSvg(spec);
-  const current = calculateCurrent(spec.voltage, spec.resistance);
-  const safeId = escapeXml(spec.id);
-  const title = `${formatNumber(spec.voltage)} volt series circuit with a ${formatNumber(spec.resistance)} ohm resistor`;
+  const singleSpec = spec as SingleResistorCircuitDiagramSpec;
+  const current = calculateCurrent(singleSpec.voltage, singleSpec.resistance);
+  const safeId = escapeXml(singleSpec.id);
+  const title = `${formatNumber(singleSpec.voltage)} volt series circuit with a ${formatNumber(singleSpec.resistance)} ohm resistor`;
   const description = `A battery is connected in one closed loop to a resistor. The calculated current is ${formatNumber(current)} amperes.`;
   const values = spec.showValues
-    ? `<text x="124" y="248" text-anchor="middle" class="value">${formatNumber(spec.voltage)} V</text>
-       <text x="360" y="103" text-anchor="middle" class="value">${formatNumber(spec.resistance)} Ω</text>
+    ? `<text x="124" y="248" text-anchor="middle" class="value">${formatNumber(singleSpec.voltage)} V</text>
+       <text x="360" y="103" text-anchor="middle" class="value">${formatNumber(singleSpec.resistance)} Ω</text>
        <text x="360" y="292" text-anchor="middle" class="current">I = ${formatNumber(current)} A</text>`
     : "";
-  const arrow = spec.showCurrentArrow
+  const arrow = singleSpec.showCurrentArrow
     ? `<defs><marker id="arrow-${safeId}" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="currentColor" /></marker></defs>
        <path d="M205 60 H270" class="flow" marker-end="url(#arrow-${safeId})" />`
     : "";
@@ -40,8 +41,8 @@ export function renderCircuitSvg(spec: CircuitDiagramSpec): string {
   <line x1="112" y1="192" x2="136" y2="192" class="plate" />
   <rect x="305" y="35" width="110" height="50" rx="4" class="component" />
   <path d="M320 60 l12 -14 14 28 14 -28 14 28 14 -28 12 14" class="wire" style="stroke-width:3" />
-  <text x="124" y="122" text-anchor="middle" class="label">${escapeXml(spec.batteryLabel)}</text>
-  <text x="360" y="27" text-anchor="middle" class="label">${escapeXml(spec.resistorLabel)}</text>
+  <text x="124" y="122" text-anchor="middle" class="label">${escapeXml(singleSpec.batteryLabel)}</text>
+  <text x="360" y="27" text-anchor="middle" class="label">${escapeXml(singleSpec.resistorLabel)}</text>
   ${values}
 </svg>`;
 }
