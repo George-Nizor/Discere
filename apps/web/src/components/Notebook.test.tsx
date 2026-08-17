@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import type { NotebookPage } from "@discere/contracts";
+import type { NotebookPage, NotebookSaveRequest } from "@discere/contracts";
 import { describe, expect, it, vi } from "vitest";
 import { Notebook } from "./Notebook";
 
@@ -20,7 +20,7 @@ function prepareCanvas(canvas: HTMLElement): void {
 
 describe("Notebook", () => {
   it("draws, undoes, redoes, and saves a stroke", async () => {
-    const onSave = vi.fn(async (input) => ({ lessonId: emptyPage.lessonId, ...input, updatedAt: "2026-08-17T00:00:00.000Z" }));
+    const onSave = vi.fn(async (input: NotebookSaveRequest): Promise<NotebookPage> => ({ lessonId: emptyPage.lessonId, ...input, updatedAt: "2026-08-17T00:00:00.000Z" }));
     render(<Notebook page={emptyPage} saving={false} onSave={onSave} />);
     const canvas = screen.getByRole("application", { name: "Working canvas" });
     prepareCanvas(canvas);
