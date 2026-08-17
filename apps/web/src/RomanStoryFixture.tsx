@@ -19,8 +19,13 @@ const choices: Array<[string, string]> = [
 
 const defaultStage = { id: "explainer" as FixtureStage, label: "Explainer" };
 
+function initialFixtureStage(): number {
+  const value = Number(new URLSearchParams(window.location.search).get("stage"));
+  return Number.isInteger(value) && value >= 0 && value < stages.length ? value : 0;
+}
+
 export function RomanStoryFixture() {
-  const [index, setIndex] = useState(0);
+  const [index, setIndex] = useState(initialFixtureStage);
   const [timeline, setTimeline] = useState(1);
   const [choice, setChoice] = useState("");
   const [shortResponse, setShortResponse] = useState("");
