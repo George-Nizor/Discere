@@ -40,8 +40,8 @@ export function readEnvironmentFile(file = resolve(".env")) {
   return values;
 }
 
-export function childEnvironment() {
-  return { ...process.env, ...readEnvironmentFile() };
+export function childEnvironment(overrides = {}) {
+  return { ...process.env, ...readEnvironmentFile(), ...overrides };
 }
 
 export function resolvePackageManager() {
@@ -65,12 +65,15 @@ export function runPackageManager(manager, args, options = {}) {
     cwd: options.cwd ?? process.cwd(),
     env: options.env ?? process.env,
     stdio: options.stdio ?? "inherit",
+    encoding: options.encoding,
     shell: process.platform === "win32",
   });
   if (result.error) throw result.error;
   if (result.status !== 0) {
-    throw new Error(`${manager.label} ${args.join(" ")} exited with status ${result.status ?? "unknown"}.`);
+    const detail = typeof result.stderr === "string" && result.stderr.trim() ? `\n${result.stderr.trim()}` : "";
+    throw new Error(`${manager.label} ${args.join(" ")} exited with status ${result.status ?? "unknown"}.${detail}`);
   }
+  return result;
 }
 
 export function spawnPackageManager(manager, args, options = {}) {
@@ -114,9 +117,17 @@ export function isLoopbackHost(host) {
   return host === "127.0.0.1" || host === "localhost" || host === "::1";
 }
 
+export function formatHostForUrl(host) {
+  return host.includes(":") && !host.startsWith("[") ? `[${host}]` : host;
+}
+
 export function parsePort(value, fallback) {
   const parsed = Number.parseInt(String(value ?? ""), 10);
   return Number.isInteger(parsed) && parsed > 0 && parsed <= 65_535 ? parsed : fallback;
+}
+
+export function delay(milliseconds) {
+  return new Promise((resolveDelay) => setTimeout(resolveDelay, milliseconds));
 }
 
 export function portAvailable(host, port) {
@@ -128,4 +139,36 @@ export function portAvailable(host, port) {
       server.close(() => resolveResult(true));
     });
   });
+}
+
+export async function findAvailablePort(host, preferredPort, attempts = 30) {
+  for (let offset = 0; offset < attempts; offset += 1) {
+    const candidate = preferredPort + offset;
+    if (candidate > 65_535) break;
+    if (await portAvailable(host, candidate)) return candidate;
+  }
+  throw new Error(`No free port was found from ${preferredPort} to ${Math.min(65_535, preferredPort + attempts - 1)}.`);
+}
+
+export async function waitForHttp(url, options = {}) {
+  const timeoutMs = options.timeoutMs ?? 20_000;
+  const intervalMs = options.intervalMs ?? 250;
+  const requestTimeoutMs = options.requestTimeoutMs ?? 2_000;
+  const predicate = options.predicate ?? ((response) => response.ok);
+  const deadline = Date.now() + timeoutMs;
+  let lastError;
+
+  while (Date.now() < deadline) {
+    try {
+      const response = await fetch(url, { signal: AbortSignal.timeout(requestTimeoutMs) });
+      if (await predicate(response)) return;
+      lastError = new Error(`Received HTTP ${response.status}.`);
+    } catch (error) {
+      lastError = error;
+    }
+    await delay(intervalMs);
+  }
+
+  const detail = lastError instanceof Error ? ` Last result: ${lastError.message}` : "";
+  throw new Error(`Timed out waiting for ${url}.${detail}`);
 }
