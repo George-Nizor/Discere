@@ -4,15 +4,15 @@ Design and implement the minimum viable deterministic spaced-review and flashcar
 
 ## Completed
 
-- None yet.
+- Pending commit — added a deterministic spaced-review scheduler and reviewed-question flashcard factory in `packages/progression-engine`.
 
 ## Validation
 
-- Not started.
+- `packages/progression-engine` review tests pending local dependency installation.
 
 ## In progress
 
-- Dependency audit pending.
+- Coordinator review of the answer-bearing flashcard boundary and interval assumptions.
 
 ## Blocked
 
@@ -24,9 +24,9 @@ Design and implement the minimum viable deterministic spaced-review and flashcar
 
 ## Proposed next work
 
-- Add pure scheduler and flashcard-generation functions with injected time and focused tests.
-- Propose the server persistence contract separately from the first domain slice.
+- Add the server persistence contract separately from the first domain slice.
+- Add queue API tests once a server review-session contract is accepted.
 
 ## Questions for architect
 
-- None yet.
+- Confirm whether the 15-minute relearning/assisted interval should be user-visible or remain an implementation detail.
