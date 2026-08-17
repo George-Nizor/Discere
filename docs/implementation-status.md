@@ -36,6 +36,12 @@
 - timed, single-use answer-reveal flow
 - original-attempt closure after a worked answer is revealed
 - duplicate reveal, hint, and resubmission rejection after answer reveal
+- deterministic transfer challenge unlocked after reveal
+- retryable transfer assessment with SI-unit support
+- no recovery reward for incorrect transfer attempts
+- one-time recovery XP and reduced mastery evidence for a correct transfer
+- assisted-attempt recording for recovered concepts
+- permanent transfer closure after completion
 - Exam-mode hint, reveal, source, tutor, and workings-review guardrails
 - XP and mastery separation with per-concept mastery updates
 - Direct-mode evidence classified as assisted
@@ -74,6 +80,8 @@
 - explicit query parsing that preserves `values=false` for technical visuals
 - prerequisite-cycle and orphan-reference detection for curriculum bundles
 - learner-safe lesson lookup by ID
+- transfer result persistence in SQLite
+- transfer tables included in explicit database migration
 - agent operating contract in `AGENTS.md`
 - detailed README, setup guide, ChatGPT workflow, troubleshooting, backup, and reset instructions
 
@@ -84,7 +92,7 @@
 - generated-image return from ChatGPT into the local workspace
 - automatic in-app handwriting recognition without the ChatGPT handoff
 - persistence of image-review history and formal mastery evidence from reviewed workings
-- assessable transfer-question completion after answer reveal
+- multiple generated transfer variants and delayed transfer scheduling
 - FSRS scheduling and generated flashcard review queues
 - NotebookLM handoff automation
 - broad curriculum importers
