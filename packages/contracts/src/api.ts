@@ -5,6 +5,7 @@ import {
   OhmsLawActivitySchema,
   SourceSchema,
 } from "./curriculum.js";
+import { CourseSummarySchema, JourneyProgressSchema, LessonJourneySchema, StageProgressRequestSchema } from "./journey.js";
 import { ConceptStateSchema, TutoringModeSchema } from "./modes.js";
 
 export const ConceptProgressSchema = z
@@ -47,6 +48,40 @@ export const LessonResponseSchema = z
   })
   .strict();
 export type LessonResponse = z.infer<typeof LessonResponseSchema>;
+
+export const CourseListResponseSchema = z
+  .object({ courses: z.array(CourseSummarySchema).min(1) })
+  .strict();
+export type CourseListResponse = z.infer<typeof CourseListResponseSchema>;
+
+export const CourseLessonSummarySchema = z
+  .object({
+    id: z.string().min(1),
+    title: z.string().min(1),
+    orientation: z.string().min(1),
+    conceptIds: z.array(z.string()).min(1),
+    available: z.boolean(),
+    stageCount: z.number().int().nonnegative(),
+  })
+  .strict();
+export type CourseLessonSummary = z.infer<typeof CourseLessonSummarySchema>;
+
+export const CourseDetailResponseSchema = z
+  .object({
+    course: CourseSummarySchema,
+    lessons: z.array(CourseLessonSummarySchema).min(1),
+  })
+  .strict();
+export type CourseDetailResponse = z.infer<typeof CourseDetailResponseSchema>;
+
+export const JourneyResponseSchema = LessonJourneySchema;
+export type JourneyResponse = z.infer<typeof JourneyResponseSchema>;
+
+export const JourneyProgressResponseSchema = JourneyProgressSchema;
+export type JourneyProgressResponse = z.infer<typeof JourneyProgressResponseSchema>;
+
+export const StageProgressUpdateSchema = StageProgressRequestSchema;
+export type StageProgressUpdate = z.infer<typeof StageProgressUpdateSchema>;
 
 export const AttemptRequestSchema = z
   .object({

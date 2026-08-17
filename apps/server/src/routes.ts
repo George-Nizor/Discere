@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { FastifyInstance } from "fastify";
-import { AttemptRequestSchema, LessonDraftSchema, NotebookSaveRequestSchema, RevealConfirmRequestSchema, RevealStartRequestSchema, TutorEnvelopeBaseSchema, TutorOperationSchema, TutorReplyDraftSchema, TutorReplyRequestSchema, TutoringModeSchema, WritingLintRequestSchema } from "@discere/contracts";
+import { AttemptRequestSchema, LessonDraftSchema, NotebookSaveRequestSchema, RevealConfirmRequestSchema, RevealStartRequestSchema, StageProgressRequestSchema, TutorEnvelopeBaseSchema, TutorOperationSchema, TutorReplyDraftSchema, TutorReplyRequestSchema, TutoringModeSchema, WritingLintRequestSchema } from "@discere/contracts";
 import { scoreAttempt, updateMastery } from "@discere/progression-engine";
 import { buildCompanionPacket } from "@discere/tutor-providers";
 import { createImageGenerationPrompt, inspectVisualBrief, renderCircuitSvg, renderOhmsLawGraphSvg } from "@discere/visual-engine";
@@ -20,6 +20,9 @@ const CompanionBodySchema = z.object({ operation: TutorOperationSchema.default("
 const ImagePromptBodySchema = z.object({ visualBriefId: z.string().min(1) }).strict();
 const CompanionImportBodySchema = z.object({ text: z.string().min(2).max(500_000), mode: TutoringModeSchema.optional(), expectedRequestId: z.string().uuid() }).strict();
 const LessonParamsSchema = z.object({ lessonId: z.string().min(1).max(200) }).strict();
+const CourseParamsSchema = z.object({ courseId: z.string().min(1).max(200) }).strict();
+const JourneyParamsSchema = z.object({ courseId: z.string().min(1).max(200), lessonId: z.string().min(1).max(200) }).strict();
+const StageParamsSchema = JourneyParamsSchema.extend({ stageId: z.string().min(1).max(240) }).strict();
 const CircuitQuerySchema = z.object({
   voltage: z.coerce.number().positive().max(100).default(5),
   resistance: z.coerce.number().positive().max(1_000_000).default(100),
@@ -39,6 +42,47 @@ export async function registerRoutes(app: FastifyInstance, dependencies: RouteDe
 
   app.get("/api/health", async () => ({ status: "ok", service: "discere", version: "0.1.0" }));
   app.get("/api/home", async () => ({ ...store.getProfile(), currentMission: { id: "mission-current", title: "Follow the current", description: "Explore one circuit and calculate its current.", estimatedMinutes: 8, lessonBeatId: content.currentLesson.lesson.id }, progress: store.getProgress() }));
+  app.get("/api/courses", async () => ({ courses: [content.courseSummary] }));
+  app.get("/api/courses/:courseId", async (request) => {
+    const { courseId } = CourseParamsSchema.parse(request.params);
+    if (courseId !== content.courseSummary.id) throw new HttpError(404, "Course not found.", "COURSE_NOT_FOUND");
+    return content.courseDetail;
+  });
+  app.get("/api/courses/:courseId/lessons/:lessonId/journey", async (request) => {
+    const { courseId, lessonId } = JourneyParamsSchema.parse(request.params);
+    if (courseId !== content.courseSummary.id) throw new HttpError(404, "Course not found.", "COURSE_NOT_FOUND");
+    const journey = content.getJourney(lessonId);
+    if (!journey) throw new HttpError(404, "Lesson journey not found.", "JOURNEY_NOT_FOUND");
+    return journey;
+  });
+  app.get("/api/courses/:courseId/lessons/:lessonId/stages/:stageId", async (request) => {
+    const { courseId, lessonId, stageId } = StageParamsSchema.parse(request.params);
+    if (courseId !== content.courseSummary.id) throw new HttpError(404, "Course not found.", "COURSE_NOT_FOUND");
+    const journey = content.getJourney(lessonId);
+    const stage = journey?.stages.find((item) => item.id === stageId);
+    if (!journey || !stage) throw new HttpError(404, "Stage not found.", "STAGE_NOT_FOUND");
+    return stage;
+  });
+  app.get("/api/courses/:courseId/lessons/:lessonId/progress", async (request) => {
+    const { courseId, lessonId } = JourneyParamsSchema.parse(request.params);
+    if (courseId !== content.courseSummary.id) throw new HttpError(404, "Course not found.", "COURSE_NOT_FOUND");
+    const journey = content.getJourney(lessonId);
+    if (!journey) throw new HttpError(404, "Lesson journey not found.", "JOURNEY_NOT_FOUND");
+    return store.getJourneyProgress(journey.id, journey.stageOrder);
+  });
+  app.put("/api/courses/:courseId/lessons/:lessonId/progress", async (request) => {
+    const { courseId, lessonId } = JourneyParamsSchema.parse(request.params);
+    if (courseId !== content.courseSummary.id) throw new HttpError(404, "Course not found.", "COURSE_NOT_FOUND");
+    const journey = content.getJourney(lessonId);
+    if (!journey) throw new HttpError(404, "Lesson journey not found.", "JOURNEY_NOT_FOUND");
+    const body = StageProgressRequestSchema.parse(request.body);
+    try {
+      return store.saveStageProgress(journey.id, journey.stageOrder, body);
+    } catch (error) {
+      if (error instanceof Error && error.message.startsWith("Stage '")) throw new HttpError(409, error.message, "STAGE_NOT_IN_JOURNEY");
+      throw error;
+    }
+  });
   app.get("/api/lessons/current", async () => content.currentLesson);
   app.get("/api/notebook/:lessonId", async (request) => {
     const { lessonId } = LessonParamsSchema.parse(request.params);

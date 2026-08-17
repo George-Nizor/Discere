@@ -2,7 +2,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { mkdirSync } from "node:fs";
 import path from "node:path";
 import Database from "better-sqlite3";
-import type { Concept, ConceptProgress, ConceptState, TutoringMode, WritingLintResponse } from "@discere/contracts";
+import type { Concept, ConceptProgress, ConceptState, JourneyProgress, StageProgressRequest, StageState, TutoringMode, WritingLintResponse } from "@discere/contracts";
 
 const LOCAL_USER_ID = "local-user";
 
@@ -46,8 +46,10 @@ export class DiscereStore {
       CREATE TABLE IF NOT EXISTS assistance_events (id TEXT PRIMARY KEY, attempt_id TEXT NOT NULL, type TEXT NOT NULL, detail TEXT, created_at TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS reveal_sessions (token TEXT PRIMARY KEY, attempt_id TEXT NOT NULL, reason TEXT NOT NULL, available_at TEXT NOT NULL, used_at TEXT, created_at TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS writing_gate_runs (id TEXT PRIMARY KEY, context TEXT NOT NULL, passed INTEGER NOT NULL, text_hash TEXT NOT NULL, violation_count INTEGER NOT NULL, created_at TEXT NOT NULL);
+      CREATE TABLE IF NOT EXISTS journey_progress (user_id TEXT NOT NULL, journey_id TEXT NOT NULL, stage_id TEXT NOT NULL, state TEXT NOT NULL, interaction_state TEXT NOT NULL DEFAULT '{}', updated_at TEXT NOT NULL, PRIMARY KEY (user_id, journey_id, stage_id));
       CREATE INDEX IF NOT EXISTS idx_attempts_question ON attempts(question_id);
       CREATE INDEX IF NOT EXISTS idx_assistance_attempt ON assistance_events(attempt_id);
+      CREATE INDEX IF NOT EXISTS idx_journey_progress ON journey_progress(user_id, journey_id);
     `);
   }
 
@@ -84,6 +86,44 @@ export class DiscereStore {
   getMastery(conceptId: string): number {
     const row = this.database.prepare("SELECT mastery FROM concept_progress WHERE user_id = ? AND concept_id = ?").get(LOCAL_USER_ID, conceptId) as { mastery: number } | undefined;
     return row?.mastery ?? 0;
+  }
+
+  getJourneyProgress(journeyId: string, stageOrder: string[]): JourneyProgress {
+    const rows = this.database.prepare("SELECT stage_id AS stageId, state, interaction_state AS interactionState, updated_at AS updatedAt FROM journey_progress WHERE user_id = ? AND journey_id = ?").all(LOCAL_USER_ID, journeyId) as Array<{ stageId: string; state: StageState; interactionState: string; updatedAt: string }>;
+    const byId = new Map(rows.map((row) => {
+      let interactionState: Record<string, unknown> = {};
+      try { interactionState = JSON.parse(row.interactionState) as Record<string, unknown>; } catch { interactionState = {}; }
+      return [row.stageId, { stageId: row.stageId, state: row.state, interactionState, updatedAt: row.updatedAt }];
+    }));
+    let previousComplete = true;
+    const stages = stageOrder.map((stageId) => {
+      const saved = byId.get(stageId);
+      if (saved) {
+        previousComplete = saved.state === "completed" || saved.state === "skipped_optional";
+        return saved;
+      }
+      const state: StageState = previousComplete ? "available" : "locked";
+      previousComplete = false;
+      return { stageId, state, interactionState: {}, updatedAt: now() };
+    });
+    const active = stages.find((stage) => stage.state === "active") ?? stages.find((stage) => stage.state === "available") ?? stages[stages.length - 1];
+    return { journeyId, activeStageId: active?.stageId ?? stageOrder[0] ?? "", stages };
+  }
+
+  saveStageProgress(journeyId: string, stageOrder: string[], input: StageProgressRequest): JourneyProgress {
+    if (!stageOrder.includes(input.stageId)) throw new Error(`Stage '${input.stageId}' is not part of journey '${journeyId}'.`);
+    const timestamp = now();
+    const transaction = this.database.transaction(() => {
+      this.database.prepare("INSERT INTO journey_progress (user_id, journey_id, stage_id, state, interaction_state, updated_at) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT(user_id, journey_id, stage_id) DO UPDATE SET state = excluded.state, interaction_state = excluded.interaction_state, updated_at = excluded.updated_at").run(LOCAL_USER_ID, journeyId, input.stageId, input.state, JSON.stringify(input.interactionState), timestamp);
+      if (input.state === "completed" || input.state === "skipped_optional") {
+        const next = stageOrder[stageOrder.indexOf(input.stageId) + 1];
+        if (next) {
+          this.database.prepare("INSERT INTO journey_progress (user_id, journey_id, stage_id, state, interaction_state, updated_at) VALUES (?, ?, ?, 'active', '{}', ?) ON CONFLICT(user_id, journey_id, stage_id) DO UPDATE SET state = CASE WHEN journey_progress.state IN ('completed', 'skipped_optional') THEN journey_progress.state ELSE 'active' END, updated_at = excluded.updated_at").run(LOCAL_USER_ID, journeyId, next, timestamp);
+        }
+      }
+    });
+    transaction();
+    return this.getJourneyProgress(journeyId, stageOrder);
   }
 
   getAttempt(id: string): AttemptRow | null {

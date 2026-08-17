@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CircuitDiagramSpecSchema, TutoringModeSchema } from "../src/index.js";
+import { CircuitDiagramSpecSchema, ExplainerStageSchema, JourneyProgressSchema, TutoringModeSchema } from "../src/index.js";
 
 describe("shared contracts", () => {
   it("accepts known tutoring modes", () => {
@@ -18,5 +18,32 @@ describe("shared contracts", () => {
         resistorLabel: "Resistor",
       }),
     ).toThrow();
+  });
+
+  it("accepts a learner-safe explainer stage without answer authority", () => {
+    const stage = ExplainerStageSchema.parse({
+      id: "lesson:explainer",
+      type: "explainer",
+      title: "Build the idea",
+      conceptIds: ["current"],
+      sourceIds: ["source-1"],
+      optional: false,
+      completionPolicy: "view",
+      body: "Current is the rate of charge flow.",
+      takeaway: "Voltage provides the push.",
+      visual: { kind: "circuit", alt: "A closed circuit." },
+    });
+    expect(stage.type).toBe("explainer");
+    expect("answerAuthority" in stage).toBe(false);
+  });
+
+  it("requires an active stage in persisted journey progress", () => {
+    expect(
+      JourneyProgressSchema.parse({
+        journeyId: "course:lesson",
+        activeStageId: "lesson:explainer",
+        stages: [{ stageId: "lesson:explainer", state: "active", interactionState: {}, updatedAt: "2026-08-17T00:00:00.000Z" }],
+      }).activeStageId,
+    ).toBe("lesson:explainer");
   });
 });

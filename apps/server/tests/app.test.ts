@@ -9,6 +9,35 @@ beforeEach(async () => { ({ app, store } = await createApp({ dbPath: ":memory:",
 afterEach(async () => { await app.close(); });
 
 describe("Discere API", () => {
+  it("serves a learner-safe routed journey with separate stages", async () => {
+    const response = await app.inject({ method: "GET", url: "/api/courses/electronics-foundations/lessons/current-in-one-loop/journey" });
+    expect(response.statusCode).toBe(200);
+    const body = response.json();
+    expect(body.stageOrder).toHaveLength(6);
+    expect(body.stages.map((stage: { type: string }) => stage.type)).toEqual([
+      "explainer",
+      "interactive_visual",
+      "quiz",
+      "essay",
+      "review",
+      "completion",
+    ]);
+    expect(body.stages.find((stage: { type: string }) => stage.type === "quiz").question.answerAuthority).toBeUndefined();
+  });
+
+  it("persists journey stage progress and restores the next active stage", async () => {
+    const update = await app.inject({
+      method: "PUT",
+      url: "/api/courses/electronics-foundations/lessons/current-in-one-loop/progress",
+      payload: { stageId: "current-in-one-loop:explainer", state: "completed", interactionState: { readAloud: false } },
+    });
+    expect(update.statusCode).toBe(200);
+    expect(update.json().activeStageId).toBe("current-in-one-loop:visual");
+    const restored = await app.inject({ method: "GET", url: "/api/courses/electronics-foundations/lessons/current-in-one-loop/progress" });
+    expect(restored.statusCode).toBe(200);
+    expect(restored.json().activeStageId).toBe("current-in-one-loop:visual");
+  });
+
   it("returns a visual-first current lesson without the answer authority", async () => {
     const response = await app.inject({ method: "GET", url: "/api/lessons/current" });
     expect(response.statusCode).toBe(200);
