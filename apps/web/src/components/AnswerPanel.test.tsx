@@ -20,25 +20,29 @@ const incorrectResult: AttemptResponse = {
 };
 
 function renderPanel(overrides: Partial<Parameters<typeof AnswerPanel>[0]> = {}): void {
-  render(<AnswerPanel
-    prompt="Calculate the current."
-    mode="coach"
-    response="50 mA"
-    onResponse={vi.fn()}
-    onSubmit={vi.fn()}
-    submitting={false}
-    onHint={vi.fn()}
-    hinting={false}
-    onStartReveal={vi.fn()}
-    onConfirmReveal={vi.fn()}
-    {...overrides}
-  />);
+  render(
+    <AnswerPanel
+      prompt="Calculate the current."
+      mode="coach"
+      response="50 mA"
+      onResponse={vi.fn()}
+      onSubmit={vi.fn()}
+      submitting={false}
+      onHint={vi.fn()}
+      hinting={false}
+      onStartReveal={vi.fn()}
+      onConfirmReveal={vi.fn()}
+      {...overrides}
+    />,
+  );
 }
 
 describe("AnswerPanel", () => {
   it("closes the response controls after a correct answer", () => {
     renderPanel({ result: correctResult });
-    expect(screen.getByRole("textbox", { name: "Explain or calculate your answer" })).toBeDisabled();
+    expect(
+      screen.getByRole("textbox", { name: "Explain or calculate your answer" }),
+    ).toBeDisabled();
     expect(screen.getByRole("button", { name: "Attempt complete" })).toBeDisabled();
     expect(screen.queryByRole("button", { name: "Give me one hint" })).not.toBeInTheDocument();
     expect(screen.getByText(/28% current mastery/)).toBeInTheDocument();
@@ -48,12 +52,13 @@ describe("AnswerPanel", () => {
     renderPanel({
       result: incorrectResult,
       revealedAnswer: "I = 5 / 100 = 0.05 A.",
-      transferPrompt: "Calculate the current for 6 V and 200 Ω.",
     });
-    expect(screen.getByRole("textbox", { name: "Explain or calculate your answer" })).toBeDisabled();
+    expect(
+      screen.getByRole("textbox", { name: "Explain or calculate your answer" }),
+    ).toBeDisabled();
     expect(screen.getByRole("button", { name: "Answer revealed" })).toBeDisabled();
     expect(screen.queryByRole("button", { name: "Give me one hint" })).not.toBeInTheDocument();
     expect(screen.queryByText("Reveal the worked answer")).not.toBeInTheDocument();
-    expect(screen.getByText("Calculate the current for 6 V and 200 Ω.")).toBeInTheDocument();
+    expect(screen.getByText("I = 5 / 100 = 0.05 A.")).toBeInTheDocument();
   });
 });
