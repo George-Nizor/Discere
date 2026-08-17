@@ -2,50 +2,114 @@
 
 ## Authoritative run
 
-GitHub Actions CI run 79 completed successfully against commit `7211d2cb137065dc6462dd87e5881130ec2a6daf` on `agent/course-learning-loop`.
+GitHub Actions CI run 133 completed successfully against commit `1e0fa0628d47e809ef5f12dd5a5d27a5e2d00831` on `main`.
 
 The workflow completed:
 
 - pnpm workspace dependency installation, including approved native builds
 - Biome lint
 - strict TypeScript checks across the workspace
-- the complete Vitest suite
+- the complete Vitest server, package, and component suite
 - bundled curriculum validation
 - the production web build
+- the isolated full-stack smoke test
 
-## Behaviour covered in this slice
+Later commits in this checkpoint update Node version files and documentation. They do not change the validated runtime behaviour described below.
 
-### Learning loop integrity
+## Runtime and setup coverage
+
+- Node.js and pnpm version checks
+- `.env` creation without overwriting existing configuration
+- database migration and electronics seed workflow
+- coordinated API and web startup
+- loopback-only host validation
+- explicit port availability checks
+- recorded-process shutdown and stale-record cleanup
+- built-prototype readiness checks
+- native `better-sqlite3` load test
+- production preview and API proxy startup on isolated ports
+- temporary smoke-test database removal
+
+## Full-stack smoke coverage
+
+The built application was started through the same package commands used by the prototype. The smoke test verified:
+
+- web preview availability
+- API health through the Vite proxy
+- learner-safe lesson delivery without answer authority
+- deterministic circuit SVG output with concealed values
+- rejection of prohibited generated-writing patterns
+- ChatGPT tutor packet generation
+- Direct-mode tutor reply acceptance
+- Coach-mode final-answer leakage rejection
+- notebook creation, save, and reload
+- numeric assessment and independent evidence
+
+## Learning-loop integrity
 
 - circuit results remain concealed until a changed setup is predicted and checked
-- feedback is invalidated when voltage or resistance changes again
+- prediction feedback is invalidated when voltage or resistance changes again
 - mode changes start a clean attempt state
-- Exam mode blocks hints, answer reveal, and source access
+- Exam mode blocks hints, answer reveal, source access, ChatGPT tutoring, and workings review
 - Direct-mode evidence is recorded as assisted
 - correct attempts cannot be overwritten or receive later hints
 - revealing the worked answer closes the original attempt
 - duplicate reveal tokens, later hints, and resubmission are rejected after reveal
-- completed and revealed answer panels disable controls rather than presenting invalid actions
+- completed and revealed answer panels disable invalid controls
 
-### Working notebook
+## ChatGPT tutor companion
 
-- a lesson receives an empty notebook page when no saved page exists
+Server and component tests cover:
+
+- learner-safe packet generation
+- exact response payload instructions
+- copied request identifiers
+- Coach and Assisted answer boundaries
+- Direct-mode answers
+- anti-AI-writing validation
+- approved-source restrictions
+- request-ID matching
+- rejected replies hidden from the learner-facing result panel
+- companion removal during Exam mode
+
+## Working notebook
+
+- an unsaved lesson receives an empty notebook page
 - pen strokes and typed notes persist through the notebook API and SQLite
-- saved pages reload with their paper type, normalized points, note, and update timestamp
+- saved pages reload with paper type, normalized points, note, and update timestamp
 - unknown lesson identifiers are rejected
-- the drawing interface supports undo, redo, erasing, and paper selection
+- undo, redo, erasing, clearing, and paper selection are component tested
 - notebook payloads are schema validated before storage
-- stroke and point limits keep notebook requests below the local server body limit
+- stroke and point limits keep requests below the local server body limit
 - unsaved workings activate a browser navigation warning
-- `pnpm db:migrate` prepares notebook storage as well as the existing learning tables
+- `pnpm db:migrate` prepares notebook storage
+
+## Handwritten workings review
+
+Server and component tests cover:
+
+- requiring saved notebook content before packet generation
+- explicit PNG filename and attachment instructions
+- learner-safe lesson context without answer authority
+- structured transcription and confidence results
+- `correct`, `partly_correct`, `incorrect`, and `unclear` assessment states
+- required first-error identification for incorrect and partly correct work
+- image-review confirmation
+- low-confidence overclaim rejection
+- guided-mode final-answer leakage rejection
+- unknown-source rejection
+- stale request-ID rejection
+- accepted review display and rejected-review suppression
 
 ## Remaining manual checks
 
-The following browser-level checks remain useful before a release build:
+The following checks require a physical browser or input device:
 
-- draw with a mouse, trackpad, and touch or stylus device
-- inspect PNG output in Chromium and Firefox
-- verify drawing comfort at narrow viewport sizes
-- confirm the navigation warning wording and behaviour across supported browsers
+- drawing feel with mouse, trackpad, touch, and stylus input
+- PNG export in Chromium and Firefox
+- image attachment and response quality in a live ChatGPT conversation
+- narrow-screen drawing and review ergonomics
+- browser wording for unsaved-navigation warnings
+- read-aloud voice availability and pronunciation
 
-These checks do not replace CI. They cover device ergonomics that jsdom component tests cannot represent faithfully.
+These checks cover device and external-product behaviour that jsdom and isolated server tests cannot represent faithfully.
