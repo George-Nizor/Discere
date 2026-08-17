@@ -224,6 +224,7 @@ export function LegacyExperience() {
 import { JourneyApp } from "./JourneyApp";
 import { CourseHome } from "./CourseHome";
 import { ReviewHome } from "./ReviewHome";
+import { RomanStoryFixture } from "./RomanStoryFixture";
 
 export default function App() {
   if (window.location.pathname === "/legacy" || window.location.pathname.startsWith("/legacy/")) {
@@ -233,5 +234,6 @@ export default function App() {
     return <CourseHome />;
   }
   if (window.location.pathname === "/review") return <ReviewHome />;
+  if (window.location.pathname === "/qa/roman") return <RomanStoryFixture />;
   return <JourneyApp />;
 }

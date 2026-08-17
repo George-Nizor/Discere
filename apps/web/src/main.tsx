@@ -10,6 +10,7 @@ import "./story-quiz.css";
 import "./story-essay.css";
 import "./story-review.css";
 import "./story-home.css";
+import "./roman-fixture.css";
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { staleTime: 15_000, retry: 1 }, mutations: { retry: 0 } } });
 const root = document.getElementById("root");
