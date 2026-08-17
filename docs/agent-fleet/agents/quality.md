@@ -4,20 +4,20 @@ Independently test accountability, persistence, curriculum integrity, stale requ
 
 ## Completed
 
-- Pending commit — added an adversarial regression test confirming learner attempt payloads reject injected answer authority.
+- `d2bf700` — added an adversarial regression test confirming learner attempt payloads reject injected answer authority.
 
 ## Validation
 
 - Baseline validation is recorded in `docs/validation-results-2026-08-17.md`.
-- Current-round tests are pending local dependency installation.
+- Integrated main validation: `pnpm check` passed; server tests passed 36 tests and web tests passed 23 tests; smoke passed.
 
 ## In progress
 
-- Reviewing specialist branches for answer leakage, contract drift, and reachability risks.
+- Completed review of the integrated specialist changes for answer leakage, contract drift, and reachability risks.
 
 ## Blocked
 
-- Specialist diffs are not yet available for adversarial review.
+- No critical regression found in the integrated round.
 
 ## Concerns
 
@@ -25,8 +25,8 @@ Independently test accountability, persistence, curriculum integrity, stale requ
 
 ## Proposed next work
 
-- Add focused tests for the new review contract and any new activity/content references after those commits are available.
-- Run the complete quality suite after integration.
+- Add integration tests when review persistence and lesson navigation become reachable.
+- Keep the learner-safe payload and mode-boundary tests as release gates.
 
 ## Questions for architect
 
