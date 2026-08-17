@@ -5,6 +5,7 @@
 ### Local runtime and verification
 
 - pnpm TypeScript monorepo
+- Node.js 24 pinning for common version managers
 - one-command `pnpm run setup` workflow
 - cross-platform environment diagnostics through `pnpm doctor`
 - coordinated development and built-prototype startup
@@ -35,7 +36,7 @@
 - timed, single-use answer-reveal flow
 - original-attempt closure after a worked answer is revealed
 - duplicate reveal, hint, and resubmission rejection after answer reveal
-- Exam-mode hint, reveal, source, and ChatGPT-companion guardrails
+- Exam-mode hint, reveal, source, tutor, and workings-review guardrails
 - XP and mastery separation with per-concept mastery updates
 - Direct-mode evidence classified as assisted
 
@@ -59,27 +60,37 @@
 - blank, lined, and graph-paper notebook backgrounds
 - typed notebook notes and PNG export
 - bounded notebook payloads and unsaved-navigation protection
+- ChatGPT review packets tied to a saved notebook page
+- explicit PNG attachment instructions and expected filenames
+- structured transcription, confidence, assessment, feedback, first-error, and next-step results
+- rejection when the model did not review a usable image
+- low-confidence overclaim detection
+- first-error requirements for incorrect and partly correct reviews
+- guided-mode answer-leak checks across review feedback and next steps
+- source restrictions and request-ID matching for image reviews
 
 ### Engineering controls
 
 - explicit query parsing that preserves `values=false` for technical visuals
 - prerequisite-cycle and orphan-reference detection for curriculum bundles
+- learner-safe lesson lookup by ID
 - agent operating contract in `AGENTS.md`
-- detailed README, setup guide, troubleshooting, backup, and reset instructions
+- detailed README, setup guide, ChatGPT workflow, troubleshooting, backup, and reset instructions
 
 ## Deliberately deferred
 
 - direct ChatGPT MCP transport, pending host compatibility testing
 - automated image retrieval and licence verification
 - generated-image return from ChatGPT into the local workspace
-- handwriting recognition and assessed notebook-image submissions
+- automatic in-app handwriting recognition without the ChatGPT handoff
+- persistence of image-review history and formal mastery evidence from reviewed workings
 - assessable transfer-question completion after answer reveal
 - FSRS scheduling and generated flashcard review queues
 - NotebookLM handoff automation
 - broad curriculum importers
 - full Playwright coverage
 
-These are later phases rather than hidden placeholders. The current vertical slice can operate offline after dependencies are installed. ChatGPT tutoring remains an explicit user-controlled handoff and does not require an OpenAI API key.
+These are later phases rather than hidden placeholders. The current vertical slice can operate offline after dependencies are installed. ChatGPT tutoring and image review remain explicit user-controlled handoffs and do not require an OpenAI API key.
 
 ## Build boundary
 
