@@ -107,6 +107,80 @@ try {
     throw new Error("The learner-safe lesson contract was invalid or leaked answer authority.");
   }
 
+  for (const path of ["/", "/courses", "/courses/electronics-foundations", "/legacy", "/qa/roman"]) {
+    const page = await fetch(`${webUrl}${path}`, { signal: AbortSignal.timeout(5_000) });
+    const html = await page.text();
+    if (!page.ok || !html.includes("/assets/")) {
+      throw new Error(`The learner route ${path} did not resolve to the built application.`);
+    }
+  }
+
+  const courseList = await requestJson(`${apiUrl}/api/courses`);
+  const course = courseList.courses?.[0];
+  if (
+    !course?.id ||
+    !course.availableLessonIds?.includes(lesson.lesson.id) ||
+    course.lessonCount < 2
+  ) {
+    throw new Error("The course catalogue did not expose the redesigned learning journey.");
+  }
+  const courseDetail = await requestJson(`${apiUrl}/api/courses/${encodeURIComponent(course.id)}`);
+  const journey = await requestJson(
+    `${apiUrl}/api/courses/${encodeURIComponent(course.id)}/lessons/${encodeURIComponent(lesson.lesson.id)}/journey`,
+  );
+  const stageTypes = journey.stages?.map((stage) => stage.type).join(",");
+  if (
+    courseDetail.lessons?.find((item) => item.id === lesson.lesson.id)?.stageCount !== 6 ||
+    stageTypes !== "explainer,interactive_visual,quiz,essay,review,completion" ||
+    journey.stages.some((stage) => stage.answerAuthority !== undefined)
+  ) {
+    throw new Error("The interactive story journey contract was incomplete or leaked answer authority.");
+  }
+  const journeyBase = `${apiUrl}/api/courses/${encodeURIComponent(course.id)}/lessons/${encodeURIComponent(lesson.lesson.id)}`;
+  const initialJourneyProgress = await requestJson(`${journeyBase}/progress`);
+  if (initialJourneyProgress.activeStageId !== journey.stageOrder[0]) {
+    throw new Error("The new learner journey did not restore its first active stage.");
+  }
+  const savedJourneyProgress = await requestJson(`${journeyBase}/progress`, {
+    method: "PUT",
+    body: JSON.stringify({ stageId: journey.stageOrder[0], state: "completed", interactionState: { smoke: true } }),
+  });
+  if (savedJourneyProgress.activeStageId !== journey.stageOrder[1] || savedJourneyProgress.stages[0].state !== "completed") {
+    throw new Error("Journey stage completion did not activate the next stage.");
+  }
+
+  const essayStage = journey.stages.find((stage) => stage.type === "essay");
+  if (!essayStage?.essayId) throw new Error("The journey did not expose an essay stage.");
+  const essayContent = "Roman government changed as Augustus concentrated authority, expansion increased administrative demands, and western deposition did not end government in the east.";
+  const savedEssay = await requestJson(`${apiUrl}/api/essays/${encodeURIComponent(essayStage.essayId)}`, {
+    method: "PUT",
+    body: JSON.stringify({ content: essayContent }),
+  });
+  const submittedEssay = await requestJson(`${apiUrl}/api/essays/${encodeURIComponent(essayStage.essayId)}/submit`, {
+    method: "POST",
+    body: JSON.stringify({ content: essayContent }),
+  });
+  if (savedEssay.wordCount < 20 || submittedEssay.submitted !== true) {
+    throw new Error("Essay autosave or accountable submission failed its runtime check.");
+  }
+
+  const reviewHome = await requestJson(`${apiUrl}/api/review`);
+  const reviewSession = await requestJson(`${apiUrl}/api/review/sessions`, { method: "POST", body: "{}" });
+  if (typeof reviewHome.dueCount !== "number" || reviewSession.card.back !== undefined) {
+    throw new Error("The review queue was not learner-safe before answer reveal.");
+  }
+  const reviewReveal = await requestJson(`${apiUrl}/api/review/sessions/${reviewSession.sessionId}/reveal`, {
+    method: "POST",
+    body: "{}",
+  });
+  const reviewRating = await requestJson(`${apiUrl}/api/review/sessions/${reviewSession.sessionId}/rate`, {
+    method: "POST",
+    body: JSON.stringify({ rating: "good", recalled: true }),
+  });
+  if (!reviewReveal.back || reviewRating.evidence !== "independent" || !reviewRating.dueAt) {
+    throw new Error("Review reveal, evidence classification, or scheduling failed its runtime check.");
+  }
+
   const circuit = await fetch(
     `${apiUrl}/api/visuals/circuit.svg?voltage=5&resistance=100&values=false`,
     { signal: AbortSignal.timeout(5_000) },
@@ -248,7 +322,7 @@ try {
 
   console.log(`Discere smoke test passed at ${webUrl}.`);
   console.log(
-    "Verified web preview, API proxying, safe lesson delivery, visuals, writing gate, ChatGPT tutor validation, notebook persistence, and assessment.",
+    "Verified redesigned routes, safe journey delivery and persistence, essay submission, review scheduling, visuals, writing gate, ChatGPT tutor validation, notebook persistence, and assessment.",
   );
 } catch (error) {
   console.error(error instanceof Error ? error.message : error);

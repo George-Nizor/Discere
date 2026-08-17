@@ -157,7 +157,22 @@ export class DiscereStore {
   }
 
   getReviewCard(cardId: string): ReviewCardRow | null {
-    const row = this.database.prepare("SELECT card_id AS cardId, question_id AS questionId, concept_ids AS conceptIds, front, back, source_ids AS sourceIds, due_at AS dueAt, interval_days AS intervalDays, repetition, last_outcome AS lastOutcome, last_evidence AS lastEvidence, independent_reviews AS independentReviews, assisted_reviews AS assistedReviews, last_reviewed_at AS lastReviewedAt FROM review_cards WHERE user_id = ? AND card_id = ?").get(LOCAL_USER_ID, cardId) as Record<string, unknown> | undefined;
+    const row = this.database.prepare("SELECT card_id AS cardId, question_id AS questionId, concept_ids AS conceptIds, front, back, source_ids AS sourceIds, due_at AS dueAt, interval_days AS intervalDays, repetition, last_outcome AS lastOutcome, last_evidence AS lastEvidence, independent_reviews AS independentReviews, assisted_reviews AS assistedReviews, last_reviewed_at AS lastReviewedAt FROM review_cards WHERE user_id = ? AND card_id = ?").get(LOCAL_USER_ID, cardId) as {
+      cardId: string;
+      questionId: string;
+      conceptIds: string;
+      front: string;
+      back: string;
+      sourceIds: string;
+      dueAt: string;
+      intervalDays: number;
+      repetition: number;
+      lastOutcome: ReviewOutcome | null;
+      lastEvidence: ReviewEvidence | null;
+      independentReviews: number;
+      assistedReviews: number;
+      lastReviewedAt: string | null;
+    } | undefined;
     if (!row) return null;
     const parseArray = (value: unknown): string[] => { try { return JSON.parse(String(value)) as string[]; } catch { return []; } };
     const state: ReviewState = { cardId: String(row.cardId), dueAt: String(row.dueAt), intervalDays: Number(row.intervalDays), repetition: Number(row.repetition), lastOutcome: (row.lastOutcome as ReviewOutcome | null) ?? null, lastEvidence: (row.lastEvidence as ReviewEvidence | null) ?? null, independentReviews: Number(row.independentReviews), assistedReviews: Number(row.assistedReviews), lastReviewedAt: row.lastReviewedAt ? String(row.lastReviewedAt) : null };
