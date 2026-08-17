@@ -1,8 +1,10 @@
 import { z } from "zod";
 import { ActivitySchema, AnswerAuthoritySchema } from "./curriculum.js";
+import { TutoringModeSchema } from "./modes.js";
 import { VisualBriefSchema } from "./visuals.js";
 
 export const TutorOperationSchema = z.enum([
+  "tutor_reply",
   "draft_lesson",
   "edit_style",
   "assess_response",
@@ -22,6 +24,24 @@ export const TutorEnvelopeBaseSchema = z
   })
   .strict();
 export type TutorEnvelopeBase = z.infer<typeof TutorEnvelopeBaseSchema>;
+
+export const TutorReplyRequestSchema = z
+  .object({
+    question: z.string().trim().min(2).max(2_000),
+    mode: TutoringModeSchema,
+  })
+  .strict();
+export type TutorReplyRequest = z.infer<typeof TutorReplyRequestSchema>;
+
+export const TutorReplyDraftSchema = z
+  .object({
+    answer: z.string().trim().min(1).max(8_000),
+    followUpQuestion: z.string().trim().min(1).max(1_000),
+    sourceIds: z.array(z.string().min(1)).max(20),
+    uncertainty: z.array(z.string().trim().min(1).max(1_000)).max(20),
+  })
+  .strict();
+export type TutorReplyDraft = z.infer<typeof TutorReplyDraftSchema>;
 
 export const LessonDraftSchema = z
   .object({
