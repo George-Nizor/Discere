@@ -12,7 +12,7 @@ export interface DiscereApp { app: FastifyInstance; store: DiscereStore; content
 
 export async function createApp(options: AppOptions = {}): Promise<DiscereApp> {
   const app = Fastify({ logger: options.logger ?? false });
-  await app.register(cors, { origin: ["http://localhost:4318", "http://127.0.0.1:4318"], methods: ["GET", "POST"] });
+  await app.register(cors, { origin: ["http://localhost:4318", "http://127.0.0.1:4318"], methods: ["GET", "POST", "PUT"] });
   const content = await ContentRepository.load(options.contentPath ?? ContentRepository.defaultPath());
   const dbPath = options.dbPath ?? process.env["DISCERE_DATABASE_PATH"] ?? path.resolve(import.meta.dirname, "../../../data/discere.sqlite");
   const store = new DiscereStore(dbPath);
