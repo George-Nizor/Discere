@@ -91,6 +91,9 @@ export async function registerRoutes(app: FastifyInstance, dependencies: RouteDe
     if (previous?.correct) {
       throw new HttpError(409, "This attempt is complete. Start a new attempt to answer again.", "ATTEMPT_COMPLETE");
     }
+    if (previous?.answerRevealed) {
+      throw new HttpError(409, "The worked answer has already closed this attempt.", "ANSWER_ALREADY_REVEALED");
+    }
     const assessment = assessResponse(question, body.response);
     const evidence = scoreAttempt({ correct: assessment.correct, mode: body.mode, hintsUsed: previous?.hintCount ?? 0, answerRevealed: previous?.answerRevealed ?? false, difficulty: question.difficulty });
     const conceptMastery = Object.fromEntries(
@@ -110,6 +113,7 @@ export async function registerRoutes(app: FastifyInstance, dependencies: RouteDe
     const attempt = store.getAttempt(attemptId);
     if (!attempt) throw new HttpError(404, "Attempt not found.", "ATTEMPT_NOT_FOUND");
     if (attempt.correct) throw new HttpError(409, "This attempt is already complete.", "ATTEMPT_COMPLETE");
+    if (attempt.answerRevealed) throw new HttpError(409, "The worked answer has already closed this attempt.", "ANSWER_ALREADY_REVEALED");
     if (attempt.mode === "exam") throw new HttpError(403, "Hints are unavailable in exam mode.", "EXAM_GUARDRAIL");
     const question = content.getQuestion(attempt.questionId);
     if (!question) throw new HttpError(404, "Question not found.", "QUESTION_NOT_FOUND");
@@ -127,6 +131,7 @@ export async function registerRoutes(app: FastifyInstance, dependencies: RouteDe
     if (!attempt) throw new HttpError(404, "Attempt not found.", "ATTEMPT_NOT_FOUND");
     if (attempt.mode === "exam") throw new HttpError(403, "Answers are unavailable in exam mode.", "EXAM_GUARDRAIL");
     if (attempt.correct) throw new HttpError(409, "This attempt is already correct.", "ANSWER_NOT_REQUIRED");
+    if (attempt.answerRevealed) throw new HttpError(409, "The worked answer has already been shown.", "ANSWER_ALREADY_REVEALED");
     const availableAt = new Date(Date.now() + revealDelayMs).toISOString();
     const reveal = store.createReveal(attemptId, body.reason, availableAt);
     return { token: reveal.token, availableAt: reveal.availableAt, confirmationPhrase: "show answer" as const };
@@ -143,6 +148,7 @@ export async function registerRoutes(app: FastifyInstance, dependencies: RouteDe
     const attempt = store.getAttempt(attemptId);
     if (!attempt) throw new HttpError(404, "Attempt not found.", "ATTEMPT_NOT_FOUND");
     if (attempt.correct) throw new HttpError(409, "This attempt is already complete.", "ATTEMPT_COMPLETE");
+    if (attempt.answerRevealed) throw new HttpError(409, "The worked answer has already been shown.", "ANSWER_ALREADY_REVEALED");
     const question = content.getQuestion(attempt.questionId);
     if (!question) throw new HttpError(404, "Question not found.", "QUESTION_NOT_FOUND");
     if (!store.consumeReveal(body.token)) throw new HttpError(409, "Reveal token has already been used.", "REVEAL_USED");
