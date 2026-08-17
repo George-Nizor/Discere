@@ -21,6 +21,17 @@ describe("PredictionLab", () => {
     expect(onEvaluated).toHaveBeenLastCalledWith(true);
   });
 
+  it("invalidates feedback when the circuit changes after evaluation", () => {
+    const { rerender } = render(<PredictionLab voltage={5} resistance={100} />);
+    rerender(<PredictionLab voltage={5} resistance={200} />);
+    fireEvent.click(screen.getByRole("button", { name: "Decrease" }));
+    fireEvent.click(screen.getByRole("button", { name: "Check prediction" }));
+    expect(screen.getByRole("status")).toBeInTheDocument();
+
+    rerender(<PredictionLab voltage={10} resistance={200} />);
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+  });
+
   it("lets the learner choose a new baseline", () => {
     const { rerender } = render(<PredictionLab voltage={5} resistance={100} />);
     rerender(<PredictionLab voltage={10} resistance={100} />);
