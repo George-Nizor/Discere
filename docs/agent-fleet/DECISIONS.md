@@ -62,3 +62,45 @@ The course has a truthful next lesson ready for the next round, and validation c
 ### Alternatives considered
 
 Keeping the lesson out of the bundle was rejected because it would delay curriculum validation. Reusing the Ohm's-law UI for a series circuit was rejected because it would misrepresent the technical model.
+
+## ADR-004 — Migrate to a routed journey while preserving the legacy experience
+
+Date: 2026-08-17
+Status: accepted
+
+### Context
+
+The approved Interactive Story reference describes five separate learner screens and a completion flow. The existing prototype is a single long-form page with valuable accountability, notebook, and tutor behaviour that should remain available while the new journey is proven.
+
+### Decision
+
+Make the routed course home and six-stage first lesson the default experience. Keep the prior experience behind `/legacy` until the redesigned journey has broader browser coverage and all required learning surfaces are migrated. Use shared learner-safe contracts and server-owned progress rather than duplicating domain rules in the UI.
+
+### Consequences
+
+The learner now sees context before the circuit and has one dominant task per screen. The repository carries a temporary legacy route and two UI shells during migration. The first lesson is fully reachable; later curriculum remains explicitly planned until its activity contract is integrated.
+
+### Alternatives considered
+
+Replacing the existing page immediately was rejected because it would remove a known working notebook/tutor path. Building the five reference screens as one dashboard was rejected because it conflicts with the approved comparison-board intent.
+
+## ADR-005 — Expose review answer backs only through an authorised session reveal
+
+Date: 2026-08-17
+Status: accepted
+
+### Context
+
+Flashcards need answer-bearing domain data for scheduling, but generic learner-safe lesson and review payloads must not reveal answers before recall. Review ratings also need to preserve independent versus assisted evidence.
+
+### Decision
+
+The review home and session creation endpoints return only card fronts. A dedicated session reveal endpoint returns the back exactly once before a dedicated rating request schedules the next due date and classifies evidence. The stored card back remains server-side.
+
+### Consequences
+
+The review UI must follow the front → recall → reveal → rate sequence. The boundary is explicit and integration-tested. A later scheduler can replace fixed intervals behind the same session contract.
+
+### Alternatives considered
+
+Returning both front and back to simplify the UI was rejected because it makes accidental answer leakage trivial. Letting the client schedule cards was rejected because it would weaken persistence and evidence integrity.

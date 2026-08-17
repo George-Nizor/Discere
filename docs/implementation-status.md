@@ -95,6 +95,26 @@
 - adversarial regression coverage rejecting injected answer authority in learner attempt payloads
 - fleet coordination reports in `docs/agent-fleet/`
 
+## Interactive Story v1 migration — 17 August 2026
+
+The approved redesign is now the default learner entry point. It is implemented as separate routed screens rather than one comparison-board dashboard or long page.
+
+- course home at `/`, `/courses`, and `/courses/electronics-foundations`
+- learner-safe journey and stage contracts in `packages/contracts`
+- SQLite-backed journey progress with next-stage activation
+- lesson route at `/courses/electronics-foundations/lessons/current-in-one-loop/stages/:stageId`
+- explainer screen with visual orientation and key takeaway
+- deterministic interactive circuit screen with prediction-first feedback
+- focused quiz with mode-aware hints, reveal boundary, and transfer recovery
+- essay studio with autosave, minimum-word gate, prose-quality validation, and submission persistence
+- authorised review session with concealed card backs, explicit reveal, rating, evidence classification, and fixed scheduling
+- completion screen and return-to-course path
+- separate `/review` home and `/legacy` preservation route
+- Roman Empire five-screen visual QA fixture at `/qa/roman?stage=0..4`
+- expanded full-stack smoke test covering the new routes, contracts, persistence, essay, and review flow
+
+The functional migration currently covers the first electronics lesson. The sourced series-circuit lesson remains validated course content but is intentionally marked planned until the learner-safe activity union and navigation are integrated. Full browser screenshots are documented in [`docs/ui-ux/screenshots/README.md`](ui-ux/screenshots/README.md); this environment lacks the host libraries required to execute Chromium.
+
 ## Deliberately deferred
 
 - direct ChatGPT MCP transport, pending host compatibility testing
@@ -103,11 +123,10 @@
 - automatic in-app handwriting recognition without the ChatGPT handoff
 - persistence of image-review history and formal mastery evidence from reviewed workings
 - multiple generated transfer variants and delayed transfer scheduling
-- review-state persistence, authorized due-card API, and learner-facing flashcard queues
 - FSRS scheduling, which remains deferred behind the deterministic scheduler interface
 - NotebookLM handoff automation
 - broad curriculum importers
-- full Playwright coverage
+- full Playwright coverage and automated screenshot capture in CI
 
 These are later phases rather than hidden placeholders. The current vertical slice can operate offline after dependencies are installed. ChatGPT tutoring and image review remain explicit user-controlled handoffs and do not require an OpenAI API key.
 

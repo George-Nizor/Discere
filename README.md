@@ -4,11 +4,14 @@
 
 Discere is a local-first learning workspace built around one useful visual, a direct explanation, a meaningful interaction, and a response from the learner.
 
-The current prototype teaches an introductory electronics lesson through an interactive circuit, prediction, calculation, governed help, ChatGPT-subscription tutoring, and a persistent digital notebook. The validated course bundle now also contains a sourced series-circuit lesson foundation, while the current learner shell still enters through the original Ohm's-law lesson. Saved workings can be exported as a PNG and reviewed through the same validated ChatGPT handoff. Revealing an answer opens a fresh assessed problem so the learner can recover some evidence by applying the idea independently. No paid model API is required.
+The current prototype opens on the Interactive Story v1 learner journey: a course home followed by separate explainer, interactive visual, quiz, essay, review, and completion screens for an introductory electronics lesson. The earlier long-form experience remains available temporarily at `/legacy`. Saved workings can be exported as a PNG and reviewed through the same validated ChatGPT handoff. Revealing an answer opens a fresh assessed problem so the learner can recover some evidence by applying the idea independently. No paid model API is required.
 
 ## What currently works
 
 - React learning workspace with a light, visual-first interface
+- routed course home with one dominant learning task per screen
+- staged explainer → visual → quiz → essay → review → completion journey
+- persisted stage progress with learner-safe stage contracts
 - interactive Ohm's law circuit with concealed results
 - prediction-first voltage and resistance experiments
 - deterministic circuit SVGs and current/voltage graphs
@@ -28,6 +31,9 @@ The current prototype teaches an introductory electronics lesson through an inte
 - learner-facing ChatGPT companion using an existing ChatGPT subscription
 - tutor-reply validation for prose, answer leakage, source IDs, and request matching
 - deterministic spaced-review and reviewed-question flashcard domain foundations
+- authorised review sessions with concealed backs, reveal, evidence classification, and deterministic scheduling
+- essay studio with autosave, word-count requirements, writing-quality gate, and accountable submission
+- Roman Empire five-screen visual QA fixture at `/qa/roman?stage=0` through `?stage=4`
 - full-stack smoke tests and GitHub Actions validation
 
 ## Quick start
@@ -97,6 +103,18 @@ For development with automatic reload:
 pnpm dev
 ```
 
+### Test the redesigned learning journey
+
+Open the root URL. Discere now starts at the course home so the learner sees the course purpose before entering a lesson. Select **Continue learning** and move through the six separate screens:
+
+```text
+Explainer → Interactive visual → Quiz / check → Essay studio → Flashcards / review → Completion
+```
+
+The first lesson is currently the functional migration slice. The second series-circuit lesson is shown as planned course content until its learner-safe activity route is integrated. The previous prototype is preserved at [http://127.0.0.1:4318/legacy](http://127.0.0.1:4318/legacy).
+
+For visual QA, open `/qa/roman?stage=0` through `/qa/roman?stage=4`. These are five independent screens on one route for checking the approved visual language; they are not a dashboard or a production course.
+
 When the original terminal was closed unexpectedly:
 
 ```bash
@@ -155,6 +173,10 @@ The verification sequence runs environment diagnostics, linting, strict TypeScri
 
 The smoke test verifies:
 
+- redesigned course, legacy, and visual-QA routes
+- learner-safe course and six-stage journey contracts
+- stage progress persistence and next-stage activation
+- essay autosave/submission and review reveal/rating/scheduling
 - web preview and API proxying
 - learner-safe lesson delivery
 - deterministic visual rendering
@@ -185,30 +207,30 @@ The server and component suites additionally cover workings-review validation an
 ## Current lesson flow
 
 ```text
-Inspect the circuit
+Course home and lesson purpose
         ↓
-Change voltage or resistance
+Read the explainer
+        ↓
+Interact with the circuit visual
         ↓
 Predict what happens to current
         ↓
-Reveal the deterministic result
+Check the deterministic result and explanation
         ↓
-Read the explanation and equation
+Answer the focused quiz
         ↓
-Ask ChatGPT for validated lesson help when needed
+Write and submit an accountable teach-back
         ↓
-Answer an open calculation
+Review a concealed flashcard, reveal, and rate it
         ↓
-Use a hint or deliberate answer reveal when needed
+Complete the lesson and return to the course home
         ↓
-Solve a fresh transfer problem after revealing the answer
-        ↓
-Save handwritten or typed workings
-        ↓
-Export and validate a ChatGPT review of the page
+Open the notebook or ChatGPT companion when needed
         ↓
 Record XP, assistance, and mastery separately
 ```
+
+The original circuit/notebook experience is still available at `/legacy` during this migration round. A correct attempt is immutable. A revealed worked answer closes the original attempt. Direct mode records assisted evidence. Transfer recovery awards reduced evidence once. Exam mode removes hints, answer reveal, source access, external tutoring, and workings review.
 
 A correct attempt is immutable. A revealed worked answer closes the original attempt. Direct mode records assisted evidence. Transfer recovery awards reduced evidence once. Exam mode removes hints, answer reveal, source access, external tutoring, and workings review.
 

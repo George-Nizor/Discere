@@ -1,33 +1,38 @@
 ## Current objective
 
-Audit and narrowly improve ChatGPT companion and workings-review reliability while preserving user-controlled handoff and answer boundaries.
+Preserve the ChatGPT subscription companion, structured handoff, workings-review boundaries, and provider-neutral model interface while the redesigned stages migrate.
 
 ## Completed
 
-- `5484b86` — tutor imports now require and server-validate the prepared request ID, matching the existing workings-review boundary.
-- `cae9a23` — updated the smoke fixture to send the prepared request ID explicitly.
+- Existing tutor request-ID matching and pasted-response validation remain active.
+- Existing Coach, Assisted, Direct, and Exam answer boundaries are reused by the new quiz/transfer stage.
+- Existing notebook and workings-review protocols remain reachable through `/legacy` while the new notebook entry is planned.
 
 ## Validation
 
-- Integrated main validation: server companion tests passed, and the final full-stack smoke test passed tutor packet, direct acceptance, and guided leakage rejection.
+- server companion tests pass
+- smoke test still verifies packet creation, Direct acceptance, and Coach leakage rejection
+- redesigned quiz tests verify mode selection, reveal confirmation, and transfer recovery without adding an API dependency
 
 ## In progress
 
-- Coordinator review complete. Stale tutor responses now fail at the server boundary with `COMPANION_REQUEST_MISMATCH`.
+Audit complete for this round; no provider changes were required.
 
 ## Blocked
 
-- None.
+No implementation blocker.
 
 ## Concerns
 
-- No OpenAI API dependency or website automation may be introduced.
+- no OpenAI API dependency or ChatGPT website automation may be introduced
+- the redesigned shell needs a deliberate notebook/workings entry before the legacy route can be removed
 
 ## Proposed next work
 
-- Review workings-review feedback display for stale/unclear image states.
-- Keep any future provider integration behind the existing host-neutral boundary.
+- expose the existing notebook/workings handoff from the new journey through shared contracts
+- test stale tutor and image-review responses from the redesigned entry points
+- keep all future providers behind the existing neutral boundary
 
 ## Questions for architect
 
-- No new provider dependency or ChatGPT website automation was introduced.
+- None for this round.

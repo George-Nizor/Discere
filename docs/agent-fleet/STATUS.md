@@ -1,91 +1,101 @@
 # Discere Agent Fleet Status
 
 Updated: 2026-08-17
-Current main commit: `5f7fce4` implementation baseline; this report is the coordinator's closing documentation commit.
-CI state: Local gates are green. GitHub Actions run 157 passed for the published round commit `5eabf9a`.
+Current main commit: `1b76f77` implementation baseline; documentation closeout is being committed in the same round.
+CI state: Local build, tests, content validation, and isolated smoke test passed. GitHub Actions has not yet run for this redesign because the integrated commits are local and have not been pushed.
 
 ## Executive summary
 
-Discere remains a local-first TypeScript monorepo with a working visual Ohm's-law vertical slice. This round established isolated fleet ownership and integrated a deterministic review domain slice, a sourced series-circuit lesson/visual foundation, server-side tutor request matching, a learner-experience contract audit, and an adversarial answer-boundary test. The current app entry point and accountability restrictions remain intact.
+The approved Interactive Story v1 migration is integrated into `main`. Discere now opens at a course home and moves through separate routed learner screens: explainer, interactive circuit visual, quiz/accountability, essay studio, authorised review, and completion. The former experience remains available at `/legacy`. The first electronics lesson is functional end to end; the validated series-circuit content remains visibly planned until its activity response contract is integrated.
 
 ## Completed this round
 
-### Fleet operations
+### Journey contracts and persistence
 
-- Created isolated role worktrees and branch ownership for the coordinator and five specialists.
-- Created and compiled the repository-based fleet reporting structure.
-- Audited the current implementation against `AGENTS.md`, the v0.2 specification, architecture, implementation status, validation record, and ChatGPT companion contract.
+- Added learner-safe stage unions and course/journey response contracts.
+- Added routed lesson and stage endpoints.
+- Added SQLite journey-progress persistence with next-stage activation.
+- Added course home and completion flow.
 
-### Learning systems
+### Shared shell and responsive learner experience
 
-- Added pure deterministic review scheduling with independent/assisted evidence separation.
-- Added reviewed-question flashcard generation behind a clear answer-bearing domain boundary.
+- Added the white/black/green routed shell with desktop rail, mobile top rail, stage progress, bottom navigation, focus states, and reduced-motion support.
+- Kept the existing long-form prototype reachable at `/legacy`.
 
-### Curriculum and visual learning
+### Explainer and interactive visual
 
-- Added a sourced series-circuit lesson, activity contract, state transitions, deterministic SVG, and tests.
-- Documented the planned five-lesson introductory sequence; only the first two lessons are implemented.
+- Added a dedicated explainer screen with visual orientation, takeaway, and deterministic circuit visual.
+- Added an interactive voltage/resistance experiment with prediction-first checking, concealed results, alternative visual description, and explicit continuation.
 
-### Learner experience
+### Quiz, transfer, and accountability
 
-- Audited the current UI and intentionally deferred a disconnected review surface until server contracts exist.
+- Added a focused quiz stage using the existing server-owned answer boundary.
+- Preserved Coach, Assisted, Direct, and Exam restrictions, timed reveal, confirmation, and transfer recovery.
 
-### Tutor and workings intelligence
+### Essay studio
 
-- Added server-side tutor request-ID matching and updated smoke coverage for stale-response protection.
+- Added persisted drafts, debounced autosave, word count, evidence criteria, minimum-word validation, prose-quality gate, and accountable submission.
 
-### Quality
+### Review and flashcards
 
-- Added an adversarial regression test rejecting injected answer authority in learner attempt payloads.
+- Added authorised review sessions with safe fronts, explicit answer reveal, rating, independent/assisted evidence classification, deterministic due scheduling, and a review home.
+
+### Quality and runtime evidence
+
+- Added the Roman Empire five-screen visual QA fixture at `/qa/roman?stage=0..4`.
+- Expanded smoke coverage to course routes, journey contracts, progress persistence, essay submission, review scheduling, and legacy/QA routes.
+- Added strict review-row typing found by the production build.
 
 ## Validation state
 
-- lint: passed; 9 warnings and 26 informational diagnostics remain in existing code/configuration
-- typecheck: passed across all workspace packages/apps
-- unit tests: passed; 37 package tests
-- component tests: passed; 23 web tests
-- server/integration tests: passed; 36 server tests
-- curriculum validation: passed; 2 lessons and 2 questions; 2 content-style warnings
+- lint: targeted new-file lint passed; repository-wide Biome lint still reports pre-existing baseline diagnostics and requires a separate cleanup round
+- typecheck: passed across the workspace
+- unit tests: passed across all package suites
+- component tests: 24 web tests passed, including the five-screen fixture
+- server/integration tests: passed, including journey, essay, review, and safety contracts
+- curriculum validation: passed; 2 lessons and 2 questions, with 2 existing content-style warnings
 - production build: passed
-- full-stack smoke test: passed, including proxying, safe lesson delivery, visuals, tutor validation, notebook persistence, and assessment
+- full-stack smoke test: passed; redesigned routes, journey persistence, essay submission, authorised review, legacy route, tutor safeguards, notebook persistence, and assessment verified
+- browser screenshots: not captured; Playwright Chromium was downloaded but the host lacks `libnspr4`, `libnss3`, and `libasound`, and machine-level package installation was not authorised
 
 ## Current workstreams
 
 | Agent | Task | Branch/worktree | State | Dependency | Latest meaningful commit |
 |---|---|---|---|---|---|
-| Luna Coordinator | Integrate and report the first round | `fleet/coordinator` / `/tmp/discere-fleet/coordinator` | complete | all specialists | `c5e0d7c` plus coordinator integration |
-| Luna Learning Systems | Deterministic spaced-review model, scheduler, and flashcard contract | `fleet/learning-systems` / `/tmp/discere-fleet/learning-systems` | complete | stable curriculum/question contracts | `1d33da5` |
-| Luna Curriculum & Visual Learning | Next coherent electronics lesson and deterministic visual/activity | `fleet/curriculum-visuals` / `/tmp/discere-fleet/curriculum-visuals` | complete | current bundle validation | `943ea96` |
-| Luna Learner Experience | Review entry-point audit and safe UI shell | `fleet/learner-experience` / `/tmp/discere-fleet/learner-experience` | complete/audit-only | learning-system contract | `c18570c` |
-| Luna Tutor & Workings Intelligence | Reliability audit and narrow validation hardening | `fleet/tutor-intelligence` / `/tmp/discere-fleet/tutor-intelligence` | complete | existing companion schemas | `0ba82f3` |
-| Luna Quality Engineer | Independent regression and boundary audit | `fleet/quality` / `/tmp/discere-fleet/quality` | complete | specialist diffs as available | `64e5310` |
+| Luna Coordinator | Integrate the Interactive Story v1 round and compile reports | `main` / repository worktree | closing | all staged contracts and specialist slices | `1b76f77`, `233a975` |
+| Luna Learning Systems | Review persistence, safe session boundary, and deterministic scheduling | `fleet/v1-review` / `/tmp/discere-fleet-v1/review` | complete | review domain contract | `1c6e709` |
+| Luna Curriculum & Visual Learning | Deterministic lesson visuals and curriculum integrity | `fleet/v1-visual` / `/tmp/discere-fleet-v1/visual` | complete for current slice | first lesson activity contract; series route remains next | `bc80470` |
+| Luna Learner Experience | Routed shell, responsive journey, course home, and stage navigation | `fleet/v1-shell` / `/tmp/discere-fleet-v1/shell` | complete | journey contracts | `0bcc13d`, `edec352` |
+| Luna Tutor & Workings Intelligence | Preserve tutor/workings safety while stages migrate | `fleet/v1-essay` / `/tmp/discere-fleet-v1/essay` | audit complete | existing companion protocol | existing tutor boundary retained |
+| Luna Quality Engineer | Adversarial checks and visual QA fixture | `fleet/v1-quality` / `/tmp/discere-fleet-v1/quality` | complete | integrated stage surfaces | `af7ade7`, `061fea3` |
 
 ## Architectural decisions made
 
-See [`DECISIONS.md`](DECISIONS.md). This round accepted the isolated-worktree and series-activity boundary decisions; the scheduler remains intentionally simple and proposed for later persistence.
+See [`DECISIONS.md`](DECISIONS.md), especially ADR-004 (routed journey with a temporary legacy route) and ADR-005 (authorised review answer boundary).
 
 ## Problems discovered
 
-- The current content repository serves the first lesson only and the learner response contract supports the Ohm's-law activity only; the new series lesson is validated but not yet reachable through the web shell. Severity: medium. Responsible subsystem: curriculum/navigation.
-- Review scheduling is a domain slice only; persistence, due-card API, and UI remain outstanding. Severity: medium. Responsible subsystem: learning systems/server.
-- GitHub Actions run 157 passed for the integrated round. Severity: none. Responsible subsystem: coordinator/release.
+- Severity: medium — only the first electronics lesson is functional in the new journey; the series-circuit lesson is validated and listed as planned but not yet reachable.
+- Severity: medium — automated browser screenshots are blocked by missing host libraries; the fixture and component coverage are available for a review machine or CI runner.
+- Severity: low — repository-wide Biome lint has accumulated baseline diagnostics unrelated to the new contracts; targeted changed-file lint is clean.
 
 ## Technical debt created
 
-- The scheduler uses explainable fixed intervals rather than FSRS.
-- The series lesson adds a validated activity/content union without exposing a new learner route yet.
-- The generated pnpm lockfile is intentionally not part of the implementation commits unless the architect wants dependency reproducibility added now.
+- The review scheduler uses deterministic fixed intervals rather than FSRS.
+- Essay submission stores accountable text and lint feedback but does not yet create formal mastery evidence.
+- The Roman fixture is a visual-QA harness, not production Roman curriculum.
+- Browser-level coverage and screenshot capture remain outside this round.
 
 ## Recommended next round
 
-1. Add migration-safe review persistence and a due-card API with authorized answer reveal.
-2. Make the validated series lesson reachable through learner-safe navigation/activity contracts.
-3. Add the review queue UI and keyboard/narrow-layout coverage.
-4. Add parallel-circuit lesson/activity only after the series contract is exercised end to end.
-5. Expand browser-level coverage for lesson navigation, review recovery, and notebook handoff.
+1. Integrate the series-circuit learner-safe activity union and make lesson two reachable.
+2. Add browser-based route, narrow-layout, and screenshot verification in a CI image with Chromium dependencies.
+3. Connect essay/review completion to formal journey and mastery evidence.
+4. Add notebook entry and workings-review affordances to the redesigned journey without duplicating domain logic.
+5. Review repository-wide lint baseline separately from product work.
 
 ## Architect review requested
 
-- Confirm that review cards may expose answer backs only through a server-authorized review session, rather than through generic learner-safe lesson payloads.
-- Confirm the preferred scope of the next electronics sequence before adding parallel activity to the learner API.
-- Review the integrated round and confirm the proposed review-session answer boundary before the next implementation round.
+- Confirm the six-stage first lesson flow and the temporary `/legacy` migration boundary.
+- Confirm whether the series-circuit lesson should enter the journey before adding parallel circuits, power, and component reasoning.
+- Confirm the intended mastery/evidence relationship for essay submission and flashcard ratings.

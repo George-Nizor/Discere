@@ -32,11 +32,15 @@ This document describes the scaffold currently present in the repository. The pr
 
 ### `apps/web`
 
-The React interface renders the first complete lesson loop. It deliberately avoids a dashboard made from nested cards. The main visual remains the dominant object, with controls and explanation placed around it.
+The React interface renders the routed Interactive Story v1 journey. The course home and each stage are separate screens; the app deliberately avoids turning the approved comparison reference into one dashboard or long page. The first functional journey is explainer → interactive visual → quiz → essay → review → completion. The previous long-form circuit/notebook/tutor experience remains temporarily available at `/legacy`.
 
 ### `apps/server`
 
-Fastify exposes the standalone REST API, owns SQLite state, reruns the writing gate on commit operations, and enforces reveal timing.
+Fastify exposes the standalone REST API, owns SQLite state, reruns the writing gate on commit operations, enforces reveal timing, and serves learner-safe course/journey contracts. Journey progress and essay drafts are persisted server-side. Review cards store answer backs server-side and issue them only through an authorised review-session reveal before rating and scheduling.
+
+### Journey boundary
+
+`packages/contracts/src/journey.ts` defines the stage union and completion policy. `apps/server/src/content.ts` assembles learner-safe lesson journeys from curriculum and question data. `apps/web/src/JourneyApp.tsx` owns route selection, progress restoration, and stage navigation; `JourneyStage.tsx` delegates presentation to stage-specific components. Domain answers remain outside learner-safe stage payloads.
 
 ### `apps/mcp`
 

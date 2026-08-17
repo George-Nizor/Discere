@@ -1,32 +1,40 @@
 ## Current objective
 
-Design and implement the minimum viable deterministic spaced-review and flashcard domain slice, preserving independent versus assisted evidence.
+Own deterministic review scheduling, flashcard generation, review persistence, and independent versus assisted evidence classification.
 
 ## Completed
 
-- `793a7fc` — added a deterministic spaced-review scheduler and reviewed-question flashcard factory in `packages/progression-engine`.
+- `793a7fc` — added deterministic spaced-review functions and reviewed-question flashcard generation.
+- `1c6e709` — added SQLite review cards/sessions, safe front responses, explicit reveal, rating, evidence classification, and due scheduling.
+- `edec352` — added the review home entry point and completion integration.
 
 ## Validation
 
-- Integrated main validation: `pnpm check` passed; the progression-engine suite includes 2 files and 9 passing tests.
+- progression-engine tests passed
+- server tests cover card creation, concealed backs, reveal authorization, rating, evidence type, and scheduling
+- web component tests cover the one-card-at-a-time recall → reveal → rate flow
+- smoke test passed review home, safe session, reveal, independent rating, and due-date response
 
 ## In progress
 
-- Coordinator review complete. The answer-bearing card back remains a domain value for a future authorized review session and is not exposed by learner-safe lesson responses.
+Coordinator closeout complete for this round.
 
 ## Blocked
 
-- Server persistence and queue delivery are intentionally deferred until the review-session contract is approved.
+No implementation blocker.
 
 ## Concerns
 
-- Review answer authority must not leak through generic learner-safe lesson payloads.
+- fixed intervals are intentionally simpler than FSRS
+- review ratings are not yet formal mastery evidence
+- the default review card is seeded from the current question until broader course content is reachable
 
 ## Proposed next work
 
-- Add the server persistence contract separately from the first domain slice.
-- Add queue API tests once a server review-session contract is accepted.
+- connect review outcomes to explicit mastery/evidence records
+- add browser coverage for keyboard and narrow-layout review ergonomics
+- evaluate FSRS only after personal-use review data exists
 
 ## Questions for architect
 
-- Confirm whether the six-hour relearning/assisted interval should be user-visible or remain an implementation detail.
+- What evidence weight should a recalled card receive after a prior assisted answer reveal?

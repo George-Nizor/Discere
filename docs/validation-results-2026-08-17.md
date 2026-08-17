@@ -132,3 +132,24 @@ The following checks require a physical browser or input device:
 - read-aloud voice availability and pronunciation
 
 These checks cover device and external-product behaviour that jsdom and isolated server tests cannot represent faithfully.
+
+## Interactive Story v1 round
+
+The redesigned journey was validated locally on the integrated implementation baseline `1b76f77`.
+
+Passed:
+
+- workspace production build, including strict server and web TypeScript checks
+- all package, server, and web test suites; the web suite now contains 24 tests
+- curriculum validation: 2 lessons and 2 questions, with the existing two content-style warnings
+- expanded smoke test on an isolated temporary SQLite database
+- built route checks for `/`, `/courses`, the course route, `/legacy`, and `/qa/roman`
+- learner-safe six-stage journey contract with no answer authority
+- journey progress persistence and next-stage activation
+- essay autosave response, minimum-word gate, writing-quality validation, and submission
+- review home, concealed card front, explicit reveal, independent evidence classification, and due scheduling
+- Roman five-screen fixture navigation and targeted accessibility lint
+
+The smoke run verified the redesigned flow in addition to the existing circuit, tutor, notebook, visual, and assessment checks. The current functional migration covers the first electronics lesson; the series-circuit lesson remains planned until its activity union is reachable.
+
+Browser screenshot capture was attempted with Playwright Chromium. The downloaded browser could not start because the host is missing `libnspr4`, `libnss3`, and `libasound`; system-level dependency installation was not authorised. The fixture route and exact capture commands are recorded in [`docs/ui-ux/screenshots/README.md`](ui-ux/screenshots/README.md). No manual browser screenshot result is claimed.

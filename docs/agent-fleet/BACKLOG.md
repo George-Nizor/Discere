@@ -2,86 +2,58 @@
 
 ## Now
 
-- [x] **Learning Systems — deterministic spaced-review domain slice**
-  - Owner: Luna Learning Systems
-  - Desired outcome: schedule concept review from independent and assisted evidence with deterministic due dates and no model dependency.
-  - Acceptance criteria: pure functions, injected clock, explicit evidence classification, review-queue ordering, and unit tests for correct/incorrect/assisted outcomes.
-  - Relevant subsystem: `packages/progression-engine`, `packages/contracts`
-  - Dependencies: current attempt and concept contracts remain unchanged.
+- [ ] **Reach the validated series-circuit lesson**
+  - Owner: Luna Coordinator with Luna Curriculum & Visual Learning and Luna Learner Experience
+  - Desired outcome: make lesson two selectable from the course home with a truthful deterministic activity.
+  - Acceptance criteria: learner-safe activity union, server journey, stage progress, responsive screen, provenance, and integration tests.
+  - Relevant subsystem: `apps/server`, `packages/contracts`, `packages/activity-engine`, `apps/web`, `content/`
+  - Dependencies: current first-lesson journey contracts and activity response review.
 
-- [x] **Curriculum — next electronics lesson**
-  - Owner: Luna Curriculum & Visual Learning
-  - Desired outcome: add a coherent series-circuit lesson with reviewed provenance and a deterministic technical visual/activity.
-  - Acceptance criteria: schema-valid bundle, referential integrity, provenance for factual claims, deterministic visual truth, and curriculum tests.
-  - Relevant subsystem: `content`, `packages/curriculum`, `packages/visual-engine`, `packages/activity-engine`
-  - Dependencies: activity/visual contract review before learner API exposure.
-
-- [x] **Tutor reliability audit**
-  - Owner: Luna Tutor & Workings Intelligence
-  - Desired outcome: make stale or malformed companion responses easier to recover from without changing the provider boundary.
-  - Acceptance criteria: narrow validation improvement, request-ID preservation, no answer leakage, and regression tests.
-  - Relevant subsystem: `packages/tutor-providers`, `apps/server`, `apps/web`
-  - Dependencies: existing companion protocol and mode rules.
-
-- [x] **Independent regression audit**
+- [ ] **Browser visual QA capture**
   - Owner: Luna Quality Engineer
-  - Desired outcome: identify and test high-risk gaps in accountability, persistence, curriculum integrity, and accessibility-sensitive behaviour.
-  - Acceptance criteria: reproducible findings, focused tests/fixes where safe, and a report of unresolved concerns.
-  - Relevant subsystem: repository-wide
-  - Dependencies: specialist diffs when available.
+  - Desired outcome: verify the five separate screens at 1440×900, 1024×768, and 390×844.
+  - Acceptance criteria: repeatable Playwright run, committed screenshot evidence or CI artifact, keyboard/reduced-motion checks, and no horizontal overflow.
+  - Relevant subsystem: `apps/web`, `docs/ui-ux/screenshots/`, CI
+  - Dependencies: browser-enabled CI image with Chromium system libraries.
 
 ## Next
 
-- [ ] **Review persistence and authorized queue endpoint**
-  - Owner: Luna Coordinator with Luna Learning Systems
-  - Desired outcome: persist review state and serve only authorized due cards, including a safe answer-reveal boundary.
-  - Acceptance criteria: migration-safe SQLite tables, independent/assisted evidence fields, deterministic due ordering, stale request protection, and integration tests.
-  - Relevant subsystem: `apps/server/src/db`, `apps/server/src/routes.ts`, `packages/contracts`
-  - Dependencies: architect approval of the review-session boundary.
+- [ ] **Formal learning evidence for essay and review**
+  - Owner: Luna Learning Systems with Luna Tutor & Workings Intelligence
+  - Desired outcome: connect submitted teach-backs and review ratings to explicit mastery/evidence records without exposing rubric authority.
+  - Acceptance criteria: independent versus assisted classification, persistence, safe learner responses, and server tests.
+  - Relevant subsystem: `apps/server/src/db`, `packages/assessment-engine`, `packages/progression-engine`, `packages/contracts`
+  - Dependencies: architect decision on evidence weights.
 
-- [ ] **Reachable lesson navigation and series activity response**
-  - Owner: Luna Coordinator with Luna Curriculum & Visual Learning and Luna Learner Experience
-  - Desired outcome: expose the validated series lesson without leaking answer authority or creating a second frontend domain model.
-  - Acceptance criteria: learner-safe lesson lookup, activity union response, progress context, and server/web coverage.
-  - Relevant subsystem: `apps/server`, `packages/contracts`, `apps/web`
-  - Dependencies: activity response contract.
+- [ ] **Redesigned notebook and workings entry**
+  - Owner: Luna Learner Experience with Luna Tutor & Workings Intelligence
+  - Desired outcome: make the existing notebook and ChatGPT workings handoff discoverable from the new journey while preserving explicit user handoff.
+  - Acceptance criteria: no duplicate domain behaviour, mobile-safe entry, Exam restrictions, and component/smoke coverage.
+  - Relevant subsystem: `apps/web`, `apps/server`, `packages/tutor-providers`
+  - Dependencies: journey completion and notebook navigation decision.
 
-- [ ] **Review queue UI**
-  - Owner: Luna Learner Experience
-  - Desired outcome: introduce review as one coherent learner workflow with low clutter and narrow-layout support.
-  - Acceptance criteria: keyboard-accessible queue, clear evidence state, reduced-motion support, and component tests.
-  - Relevant subsystem: `apps/web`
-  - Dependencies: server review endpoint and stable response schema.
-
-- [ ] **Lesson navigation**
-  - Owner: Luna Learner Experience with Luna Curriculum & Visual Learning
-  - Desired outcome: make validated lessons reachable without changing current answer boundaries.
-  - Acceptance criteria: learner-safe lesson lookup, no hidden answer authority, progress context, and component/server coverage.
-  - Relevant subsystem: `apps/web`, `apps/server`, `packages/contracts`
-  - Dependencies: activity union contract and content repository routing.
+- [ ] **Repository lint baseline cleanup**
+  - Owner: Luna Quality Engineer
+  - Desired outcome: reduce existing Biome diagnostics without weakening rules or changing product behaviour.
+  - Acceptance criteria: clean `pnpm lint`, focused commits, no unrelated architectural changes.
+  - Relevant subsystem: repository-wide
+  - Dependencies: separate maintenance round after product integration.
 
 ## Later
 
-- [ ] FSRS or another richer scheduler behind the deterministic review interface.
-  - Owner: Luna Learning Systems
-  - Desired outcome: improve retention scheduling after real personal-use data exists.
-  - Acceptance criteria: comparison against the simple scheduler, explainable assumptions, and migration-safe state.
-  - Relevant subsystem: `packages/progression-engine`
-  - Dependencies: review persistence and architect approval.
-
-- [ ] Broader series, parallel, power, and component-reasoning sequence.
+- [ ] **Coherent electronics sequence: parallel circuits, power, and component reasoning**
   - Owner: Luna Curriculum & Visual Learning
-  - Desired outcome: coherent introductory electronics course.
-  - Acceptance criteria: each lesson follows visual → interact → predict → explain → answer → review and has reviewed provenance.
-  - Relevant subsystem: `content`, `packages/*-engine`, `apps/web`
-  - Dependencies: lesson navigation and activity contracts.
+  - Desired outcome: extend the course only when each lesson follows visual → interact → predict → explain → answer → review.
+  - Acceptance criteria: reviewed provenance, deterministic visuals, activity contracts, and end-to-end learner reachability.
+  - Relevant subsystem: `content/`, `packages/*-engine`, `apps/server`, `apps/web`
+  - Dependencies: series-circuit lesson reachability.
 
-- [ ] Browser-level coverage for the complete learner loop.
-  - Owner: Luna Quality Engineer
-  - Desired outcome: cover interactions that jsdom cannot faithfully represent.
-  - Acceptance criteria: repeatable browser suite for narrow layouts, transfer recovery, notebook export, and review handoff.
-  - Relevant subsystem: `apps/web`, `scripts`
-  - Dependencies: browser test strategy decision.
+- [ ] **FSRS or richer scheduler behind the deterministic interface**
+  - Owner: Luna Learning Systems
+  - Desired outcome: improve retention scheduling after personal-use data exists.
+  - Acceptance criteria: explainable comparison with current fixed intervals, migration-safe state, and tests.
+  - Relevant subsystem: `packages/progression-engine`
+  - Dependencies: evidence persistence and architect approval.
 
 ## Parked
 
