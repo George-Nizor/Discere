@@ -5,6 +5,7 @@ import { VisualBriefSchema } from "./visuals.js";
 
 export const TutorOperationSchema = z.enum([
   "tutor_reply",
+  "workings_review",
   "draft_lesson",
   "edit_style",
   "assess_response",
@@ -42,6 +43,38 @@ export const TutorReplyDraftSchema = z
   })
   .strict();
 export type TutorReplyDraft = z.infer<typeof TutorReplyDraftSchema>;
+
+export const WorkingsReviewRequestSchema = z
+  .object({
+    lessonId: z.string().min(1).max(200),
+    reviewQuestion: z.string().trim().min(2).max(2_000),
+    mode: TutoringModeSchema,
+  })
+  .strict();
+export type WorkingsReviewRequest = z.infer<typeof WorkingsReviewRequestSchema>;
+
+export const WorkingsAssessmentSchema = z.enum([
+  "correct",
+  "partly_correct",
+  "incorrect",
+  "unclear",
+]);
+export type WorkingsAssessment = z.infer<typeof WorkingsAssessmentSchema>;
+
+export const WorkingsReviewDraftSchema = z
+  .object({
+    imageReviewed: z.boolean(),
+    transcription: z.string().trim().max(8_000),
+    transcriptionConfidence: z.number().min(0).max(1),
+    assessment: WorkingsAssessmentSchema,
+    feedback: z.string().trim().min(1).max(8_000),
+    firstMeaningfulError: z.string().trim().min(1).max(2_000).nullable(),
+    nextStep: z.string().trim().min(1).max(2_000),
+    sourceIds: z.array(z.string().min(1)).max(20),
+    uncertainty: z.array(z.string().trim().min(1).max(1_000)).max(20),
+  })
+  .strict();
+export type WorkingsReviewDraft = z.infer<typeof WorkingsReviewDraftSchema>;
 
 export const LessonDraftSchema = z
   .object({
