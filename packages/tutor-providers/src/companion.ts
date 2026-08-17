@@ -10,6 +10,17 @@ const PAYLOAD_CONTRACTS: Partial<Record<TutorOperation, string>> = {
   "sourceIds": ["Only identifiers supplied in allowedSourceIds; use an empty array when none are needed."],
   "uncertainty": ["Any material uncertainty; otherwise return an empty array."]
 }`,
+  workings_review: `{
+  "imageReviewed": true,
+  "transcription": "A faithful reading of the learner's visible steps. Do not silently repair them.",
+  "transcriptionConfidence": 0.0,
+  "assessment": "correct | partly_correct | incorrect | unclear",
+  "feedback": "A direct evaluation of the learner's approach under the supplied tutoring mode.",
+  "firstMeaningfulError": "The earliest important error, or null when none is visible.",
+  "nextStep": "The smallest useful action the learner should take next.",
+  "sourceIds": ["Only identifiers supplied in allowedSourceIds; use an empty array when none are needed."],
+  "uncertainty": ["Unreadable marks or material uncertainty; otherwise return an empty array."]
+}`,
 };
 
 export function buildCompanionPacket<T>(request: TutorRequest<T>): CompanionPacket {
@@ -31,6 +42,14 @@ export function buildCompanionPacket<T>(request: TutorRequest<T>): CompanionPack
     "Preserve supplied values, units, equations, source identifiers, and answer boundaries.",
     "Follow the tutoring mode and responsePolicy. In Coach or Assisted mode, do not reveal a hidden final answer.",
   ];
+  if (request.operation === "workings_review") {
+    instructions.push(
+      "Review the image attached by the learner. Set imageReviewed to false when no usable image is attached.",
+      "Transcribe only what is visible. Mark unreadable symbols in uncertainty instead of guessing.",
+      "When transcription confidence is below 0.55, use assessment 'unclear'.",
+      "Identify the earliest meaningful error rather than listing every downstream consequence.",
+    );
+  }
   if (payloadContract) {
     instructions.push("Return payload with this exact shape:", payloadContract);
   }
