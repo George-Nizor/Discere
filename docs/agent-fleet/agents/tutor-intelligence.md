@@ -4,15 +4,16 @@ Audit and narrowly improve ChatGPT companion and workings-review reliability whi
 
 ## Completed
 
-- Pending commit — tutor imports now require and server-validate the prepared request ID, matching the existing workings-review boundary, and the smoke fixture sends it explicitly.
+- `5484b86` — tutor imports now require and server-validate the prepared request ID, matching the existing workings-review boundary.
+- `cae9a23` — updated the smoke fixture to send the prepared request ID explicitly.
 
 ## Validation
 
-- Added a server regression test for a valid response from an older tutor request; local execution pending dependency installation.
+- Integrated main validation: server companion tests passed, and the final full-stack smoke test passed tutor packet, direct acceptance, and guided leakage rejection.
 
 ## In progress
 
-- Coordinator review of request-ID compatibility and recovery wording.
+- Coordinator review complete. Stale tutor responses now fail at the server boundary with `COMPANION_REQUEST_MISMATCH`.
 
 ## Blocked
 
@@ -29,4 +30,4 @@ Audit and narrowly improve ChatGPT companion and workings-review reliability whi
 
 ## Questions for architect
 
-- None yet.
+- No new provider dependency or ChatGPT website automation was introduced.
