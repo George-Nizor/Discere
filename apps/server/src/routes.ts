@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { FastifyInstance } from "fastify";
-import { AttemptRequestSchema, LessonDraftSchema, RevealConfirmRequestSchema, RevealStartRequestSchema, TutorEnvelopeBaseSchema, WritingLintRequestSchema } from "@discere/contracts";
+import { AttemptRequestSchema, LessonDraftSchema, NotebookSaveRequestSchema, RevealConfirmRequestSchema, RevealStartRequestSchema, TutorEnvelopeBaseSchema, WritingLintRequestSchema } from "@discere/contracts";
 import { scoreAttempt, updateMastery } from "@discere/progression-engine";
 import { buildCompanionPacket } from "@discere/tutor-providers";
 import { createImageGenerationPrompt, inspectVisualBrief, renderCircuitSvg, renderOhmsLawGraphSvg } from "@discere/visual-engine";
@@ -10,6 +10,7 @@ import { assessResponse } from "./assessment.js";
 import type { ContentRepository } from "./content.js";
 import type { DiscereStore } from "./db/store.js";
 import { HttpError } from "./errors.js";
+import { ensureNotebookSchema, getNotebookPage, saveNotebookPage } from "./notebook.js";
 import { coerceQueryBoolean } from "./query-coercion.js";
 
 export interface RouteDependencies { content: ContentRepository; store: DiscereStore; revealDelayMs: number; }
@@ -17,6 +18,7 @@ const AttemptBodySchema = AttemptRequestSchema.extend({ attemptId: z.string().uu
 const CompanionBodySchema = z.object({ operation: z.enum(["draft_lesson", "edit_style", "assess_response", "direct_visual", "review_visual"]).default("draft_lesson"), payload: z.unknown().optional() }).strict();
 const ImagePromptBodySchema = z.object({ visualBriefId: z.string().min(1) }).strict();
 const CompanionImportBodySchema = z.object({ text: z.string().min(2).max(500_000) }).strict();
+const LessonParamsSchema = z.object({ lessonId: z.string().min(1).max(200) }).strict();
 const CircuitQuerySchema = z.object({
   voltage: z.coerce.number().positive().max(100).default(5),
   resistance: z.coerce.number().positive().max(1_000_000).default(100),
@@ -26,9 +28,28 @@ const GraphQuerySchema = z.object({ resistance: z.coerce.number().positive().max
 
 export async function registerRoutes(app: FastifyInstance, dependencies: RouteDependencies): Promise<void> {
   const { content, store, revealDelayMs } = dependencies;
+  ensureNotebookSchema(store.database);
+
+  function assertLessonExists(lessonId: string): void {
+    if (!content.bundle.lessons.some((lesson) => lesson.id === lessonId)) {
+      throw new HttpError(404, "Lesson not found.", "LESSON_NOT_FOUND");
+    }
+  }
+
   app.get("/api/health", async () => ({ status: "ok", service: "discere", version: "0.1.0" }));
   app.get("/api/home", async () => ({ ...store.getProfile(), currentMission: { id: "mission-current", title: "Follow the current", description: "Explore one circuit and calculate its current.", estimatedMinutes: 8, lessonBeatId: content.currentLesson.lesson.id }, progress: store.getProgress() }));
   app.get("/api/lessons/current", async () => content.currentLesson);
+  app.get("/api/notebook/:lessonId", async (request) => {
+    const { lessonId } = LessonParamsSchema.parse(request.params);
+    assertLessonExists(lessonId);
+    return getNotebookPage(store.database, lessonId);
+  });
+  app.put("/api/notebook/:lessonId", async (request) => {
+    const { lessonId } = LessonParamsSchema.parse(request.params);
+    assertLessonExists(lessonId);
+    const body = NotebookSaveRequestSchema.parse(request.body);
+    return saveNotebookPage(store.database, lessonId, body);
+  });
 
   app.get("/api/visuals/circuit.svg", async (request, reply) => {
     const query = CircuitQuerySchema.parse(request.query);
