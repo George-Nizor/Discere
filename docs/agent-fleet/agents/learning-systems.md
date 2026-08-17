@@ -4,19 +4,19 @@ Design and implement the minimum viable deterministic spaced-review and flashcar
 
 ## Completed
 
-- Pending commit — added a deterministic spaced-review scheduler and reviewed-question flashcard factory in `packages/progression-engine`.
+- `793a7fc` — added a deterministic spaced-review scheduler and reviewed-question flashcard factory in `packages/progression-engine`.
 
 ## Validation
 
-- `packages/progression-engine` review tests pending local dependency installation.
+- Integrated main validation: `pnpm check` passed; the progression-engine suite includes 2 files and 9 passing tests.
 
 ## In progress
 
-- Coordinator review of the answer-bearing flashcard boundary and interval assumptions.
+- Coordinator review complete. The answer-bearing card back remains a domain value for a future authorized review session and is not exposed by learner-safe lesson responses.
 
 ## Blocked
 
-- None.
+- Server persistence and queue delivery are intentionally deferred until the review-session contract is approved.
 
 ## Concerns
 
@@ -29,4 +29,4 @@ Design and implement the minimum viable deterministic spaced-review and flashcar
 
 ## Questions for architect
 
-- Confirm whether the 15-minute relearning/assisted interval should be user-visible or remain an implementation detail.
+- Confirm whether the six-hour relearning/assisted interval should be user-visible or remain an implementation detail.
