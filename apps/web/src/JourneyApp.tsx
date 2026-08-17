@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import type { JourneyProgress, LearnerStage, LessonJourney, StageState } from "@discere/contracts";
 import { getJourney, getJourneyProgress, saveJourneyProgress } from "./api";
+import { JourneyStage } from "./JourneyStage";
 
 const COURSE_ID = "electronics-foundations";
 const LESSON_ID = "current-in-one-loop";
@@ -22,19 +23,6 @@ function navigate(path: string): void {
 
 function stageState(progress: JourneyProgress | undefined, stageId: string): StageState {
   return progress?.stages.find((stage) => stage.stageId === stageId)?.state ?? "locked";
-}
-
-function StagePlaceholder({ stage, onComplete }: { stage: LearnerStage; onComplete: () => void }) {
-  return (
-    <section className="story-stage-placeholder" aria-labelledby="story-placeholder-title">
-      <p className="story-kicker">{stage.type.replace("_", " ")}</p>
-      <h2 id="story-placeholder-title">{stage.title}</h2>
-      <p>This stage is ready for its focused learning interaction.</p>
-      <button className="story-primary" type="button" onClick={onComplete}>
-        Mark stage complete
-      </button>
-    </section>
-  );
 }
 
 export function JourneyApp() {
@@ -116,7 +104,7 @@ export function JourneyApp() {
             <p className="story-kicker">{journeyData.title}</p>
             <h1>{selectedStage.title}</h1>
           </div>
-          <StagePlaceholder stage={selectedStage} onComplete={() => void completeStage()} />
+          <JourneyStage stage={selectedStage} onComplete={() => void completeStage()} />
         </section>
 
         <footer className="story-navigator">
