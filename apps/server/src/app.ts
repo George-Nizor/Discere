@@ -10,11 +10,24 @@ import { registerRoutes } from "./routes.js";
 export interface AppOptions { dbPath?: string; contentPath?: string; revealDelayMs?: number; logger?: boolean; }
 export interface DiscereApp { app: FastifyInstance; store: DiscereStore; content: ContentRepository; }
 
+function parsePort(value: string | undefined, fallback: number): number {
+  const parsed = Number.parseInt(value ?? "", 10);
+  return Number.isInteger(parsed) && parsed > 0 && parsed <= 65_535 ? parsed : fallback;
+}
+
 export async function createApp(options: AppOptions = {}): Promise<DiscereApp> {
   const app = Fastify({ logger: options.logger ?? false });
-  await app.register(cors, { origin: ["http://localhost:4318", "http://127.0.0.1:4318"], methods: ["GET", "POST", "PUT"] });
+  const webPort = parsePort(process.env.DISCERE_WEB_PORT, 4318);
+  await app.register(cors, {
+    origin: [
+      `http://localhost:${webPort}`,
+      `http://127.0.0.1:${webPort}`,
+      `http://[::1]:${webPort}`,
+    ],
+    methods: ["GET", "POST", "PUT"],
+  });
   const content = await ContentRepository.load(options.contentPath ?? ContentRepository.defaultPath());
-  const dbPath = options.dbPath ?? process.env["DISCERE_DATABASE_PATH"] ?? path.resolve(import.meta.dirname, "../../../data/discere.sqlite");
+  const dbPath = options.dbPath ?? process.env.DISCERE_DATABASE_PATH ?? path.resolve(import.meta.dirname, "../../../data/discere.sqlite");
   const store = new DiscereStore(dbPath);
   store.initialiseConcepts(content.bundle.concepts);
   app.setErrorHandler((error, _request, reply) => {
