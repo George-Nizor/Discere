@@ -11,16 +11,15 @@ vi.mock("../api", () => api);
 
 import { TutorCompanion } from "./TutorCompanion";
 
-const sources: Source[] = [
-  {
-    id: "openstax-circuits",
-    title: "College Physics: Electric Current",
-    publisher: "OpenStax",
-    url: "https://openstax.org/books/college-physics/pages/20-1-current",
-    licence: "CC BY 4.0",
-    accessedAt: "2026-08-16",
-  },
-];
+const source: Source = {
+  id: "openstax-circuits",
+  title: "College Physics: Electric Current",
+  publisher: "OpenStax",
+  url: "https://openstax.org/books/college-physics/pages/20-1-current",
+  licence: "CC BY 4.0",
+  accessedAt: "2026-08-16",
+};
+const sources: Source[] = [source];
 
 const packet = {
   filename: "discere-tutor-reply.md",
@@ -55,7 +54,7 @@ describe("TutorCompanion", () => {
       reply: {
         answer: "Current falls because the same voltage is pushing through a larger resistance.",
         followUpQuestion: "What would you expect if the resistance doubled?",
-        sourceIds: [sources[0]?.id],
+        sourceIds: [source.id],
         uncertainty: [],
       },
     });
@@ -67,21 +66,35 @@ describe("TutorCompanion", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "Prepare tutor prompt" }));
 
-    await waitFor(() => expect(api.createTutorReplyPacket).toHaveBeenCalledWith({
-      question: "Why does current fall?",
-      mode: "coach",
-    }));
+    await waitFor(() =>
+      expect(api.createTutorReplyPacket).toHaveBeenCalledWith({
+        question: "Why does current fall?",
+        mode: "coach",
+      }),
+    );
     expect(navigator.clipboard.writeText).toHaveBeenCalledWith(packet.text);
-    expect(screen.getByRole("link", { name: "Open ChatGPT" })).toHaveAttribute("href", "https://chatgpt.com/");
+    expect(screen.getByRole("link", { name: "Open ChatGPT" })).toHaveAttribute(
+      "href",
+      "https://chatgpt.com/",
+    );
 
     fireEvent.change(screen.getByLabelText("ChatGPT JSON response"), {
       target: { value: "{valid response}" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Validate tutor reply" }));
 
-    expect(await screen.findByText("Current falls because the same voltage is pushing through a larger resistance.")).toBeInTheDocument();
+    expect(
+      await screen.findByText(
+        "Current falls because the same voltage is pushing through a larger resistance.",
+      ),
+    ).toBeInTheDocument();
     expect(screen.getByText("What would you expect if the resistance doubled?")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: sources[0]?.title })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: source.title })).toBeInTheDocument();
+    expect(api.importTutorReply).toHaveBeenCalledWith(
+      "{valid response}",
+      "coach",
+      packet.requestId,
+    );
   });
 
   it("shows validation issues instead of rendering a rejected reply", async () => {
@@ -90,7 +103,14 @@ describe("TutorCompanion", () => {
       accepted: false,
       operation: "tutor_reply",
       requestId: packet.requestId,
-      issues: [{ field: "answer", code: "ANS001", severity: "hard", message: "The guided reply exposed the final answer." }],
+      issues: [
+        {
+          field: "answer",
+          code: "ANS001",
+          severity: "hard",
+          message: "The guided reply exposed the final answer.",
+        },
+      ],
       reply: {
         answer: "The current is 0.05 A.",
         followUpQuestion: "Can you repeat it?",
@@ -118,18 +138,9 @@ describe("TutorCompanion", () => {
 
   it("rejects a response from an older prepared request", async () => {
     api.createTutorReplyPacket.mockResolvedValue(packet);
-    api.importTutorReply.mockResolvedValue({
-      accepted: true,
-      operation: "tutor_reply",
-      requestId: "8aa30879-b240-465d-ae16-adb4d5906834",
-      issues: [],
-      reply: {
-        answer: "A reply from another request.",
-        followUpQuestion: "Continue?",
-        sourceIds: [],
-        uncertainty: [],
-      },
-    });
+    api.importTutorReply.mockRejectedValue(
+      new Error("This response belongs to a different tutor request. Copy the latest prompt and try again."),
+    );
 
     render(<TutorCompanion mode="direct" sources={sources} />);
     fireEvent.click(screen.getByText("Ask a question using your ChatGPT subscription"));
