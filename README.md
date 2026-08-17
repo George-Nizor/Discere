@@ -4,7 +4,7 @@
 
 Discere is a local-first learning workspace built around one useful visual, a direct explanation, a meaningful interaction, and a response from the learner.
 
-The current prototype teaches an introductory electronics lesson through an interactive circuit, prediction, calculation, governed help, a ChatGPT-subscription tutor handoff, and a persistent digital notebook. It runs without paid model APIs.
+The current prototype teaches an introductory electronics lesson through an interactive circuit, prediction, calculation, governed help, ChatGPT-subscription tutoring, and a persistent digital notebook. Saved workings can be exported as a PNG and reviewed through the same validated ChatGPT handoff. No paid model API is required.
 
 ## What currently works
 
@@ -20,6 +20,8 @@ The current prototype teaches an introductory electronics lesson through an inte
 - persistent SQLite learning state
 - digital notebook with pen, eraser, undo, redo, and paper grids
 - typed notebook notes and PNG export
+- ChatGPT review of saved handwritten or sketched workings
+- transcription confidence, first-error, next-step, and source validation for workings reviews
 - prose-quality checks for recognisable generated-writing habits
 - learner-facing ChatGPT companion using an existing ChatGPT subscription
 - tutor-reply validation for prose, answer leakage, source IDs, and request matching
@@ -30,7 +32,7 @@ The current prototype teaches an introductory electronics lesson through an inte
 ### Requirements
 
 - Git
-- Node.js **22.16.0 or newer**; Node.js 24 is used in CI
+- Node.js **22.16.0 or newer**; Node.js 24 is recommended and pinned in `.nvmrc` and `.node-version`
 - pnpm **11.17.0**
 
 ### 1. Clone the repository
@@ -102,18 +104,29 @@ The detailed platform notes, configuration table, backups, reset commands, and t
 
 ## Use ChatGPT as the lesson tutor
 
-Discere uses an explicit handoff so your normal ChatGPT subscription can provide lesson-specific help without an API key.
+Discere uses an explicit handoff so an ordinary ChatGPT subscription can provide lesson-specific help without an API key.
 
 1. Choose Coach, Assisted, or Direct mode.
 2. Open **Ask a question using your ChatGPT subscription**.
-3. Enter your question and select **Prepare tutor prompt**.
+3. Enter a question and select **Prepare tutor prompt**.
 4. Paste the copied prompt into ChatGPT.
 5. Copy ChatGPT's JSON reply back into Discere.
 6. Select **Validate tutor reply**.
 
-Discere shows the reply after it passes the active tutoring-mode rules, prose checks, source restrictions, and request-ID check. Coach and Assisted replies are rejected when they expose the active assessment answer. Direct mode permits the answer while retaining the writing and source checks. The companion is unavailable in Exam mode.
+Discere displays the reply after it passes the active tutoring-mode rules, prose checks, source restrictions, and request-ID check. Coach and Assisted replies are rejected when they expose the active assessment answer. Direct mode permits the answer while retaining the writing and source checks. The companion is unavailable in Exam mode.
 
-See [docs/chatgpt-companion.md](docs/chatgpt-companion.md) for the protocol, expected JSON, privacy model, and rejection-handling workflow.
+## Review handwritten or sketched workings
+
+1. Draw the calculation in the notebook and select **Save workings**.
+2. Select **Download PNG**.
+3. Open **Have ChatGPT inspect the saved page**.
+4. Prepare the review prompt and open ChatGPT.
+5. Paste the prompt and attach the exported PNG.
+6. Paste ChatGPT's JSON review into Discere and select **Validate review**.
+
+An accepted review includes a visible-work transcription, reading confidence, overall assessment, first meaningful error, next step, uncertainty notes, and approved source references. Discere rejects reviews that omit the image, overstate a low-confidence reading, use unknown sources, return a stale request ID, or expose the active answer in Coach or Assisted mode.
+
+See [docs/chatgpt-companion.md](docs/chatgpt-companion.md) for the protocols, expected JSON, privacy model, and rejection-handling workflow.
 
 ## Verify the installation
 
@@ -134,7 +147,7 @@ The smoke test verifies:
 - notebook persistence
 - numeric assessment
 
-It uses an isolated temporary database and removes it when finished.
+The server and component suites additionally cover workings-review packet generation, image-review confirmation, transcription confidence, first-error requirements, answer boundaries, source restrictions, and request matching. Temporary smoke-test data is removed when verification finishes.
 
 ## Main commands
 
@@ -173,10 +186,12 @@ Use a hint or deliberate answer reveal when needed
         ↓
 Save handwritten or typed workings
         ↓
+Export and validate a ChatGPT review of the page
+        ↓
 Record XP, assistance, and mastery separately
 ```
 
-A correct attempt is immutable. A revealed worked answer closes the original attempt and requires a new attempt for clean mastery evidence. Direct mode always records assisted evidence. Exam mode removes hints, answer reveal, source access, and external tutoring.
+A correct attempt is immutable. A revealed worked answer closes the original attempt and requires a new attempt for clean mastery evidence. Direct mode records assisted evidence. Exam mode removes hints, answer reveal, source access, external tutoring, and workings review.
 
 ## Local data and privacy
 
@@ -195,13 +210,13 @@ data/discere.sqlite
 
 The database holds the learner profile, attempts, XP, concept mastery, assistance events, reveal records, prose-gate runs, and notebook pages. `.env`, database files, builds, uploaded data, and process records are ignored by Git.
 
-Discere sends nothing to ChatGPT automatically. You control which prepared prompt enters ChatGPT and which response is pasted back. The local database stays on your machine.
+Discere sends nothing to ChatGPT automatically. The learner controls which prepared prompt and PNG enter ChatGPT and which response returns to Discere. The local database stays on the learner's machine.
 
 ## ChatGPT integration
 
-Discere does not call the OpenAI API. The companion interface creates a structured Tutor Packet for a normal ChatGPT conversation. It contains learner-safe lesson context, the selected tutoring mode, allowed source IDs, the learner's question, and an exact JSON response contract.
+Discere does not call the OpenAI API. The companion interfaces create structured packets for a normal ChatGPT conversation. They contain learner-safe lesson context, the selected tutoring mode, allowed source IDs, an exact JSON response contract, and either the learner's question or a request to inspect an attached notebook PNG.
 
-A returned reply is validated before display. The checks cover schema integrity, request matching, source restrictions, anti-AI-writing rules, and guided-mode answer boundaries.
+Returned material is validated before display. Checks cover schema integrity, request matching, source restrictions, anti-AI-writing rules, image-review confidence, and guided-mode answer boundaries.
 
 A ChatGPT-native MCP host remains scaffolded behind a provider boundary. The core learning application does not depend on that host being available.
 
@@ -219,7 +234,7 @@ Fastify local server
     ├── notebook persistence
     └── provider adapters
              ├── offline seed content
-             ├── ChatGPT companion workflow
+             ├── ChatGPT tutor and workings handoffs
              └── future MCP host
           │
        SQLite
@@ -245,12 +260,11 @@ prompts/                 tutor, assessor, writer, and visual prompts
 
 ## Prototype boundary
 
-The current vertical slice is deliberately narrow. It proves the visual, writing, accountability, assessment, ChatGPT handoff, notebook, persistence, and local-runtime systems with one electronics lesson.
+The current vertical slice proves the visual, writing, accountability, assessment, ChatGPT handoff, notebook, image-review, persistence, and local-runtime systems with one electronics lesson.
 
 Planned work includes:
 
-- notebook-image assessment through the provider-neutral tutor boundary
-- assessable transfer questions
+- assessable transfer questions after answer reveal
 - spaced review and flashcards
 - additional electronics lessons and interactive activity types
 - retrieved reference images with licence records
@@ -263,7 +277,7 @@ See [docs/implementation-status.md](docs/implementation-status.md) for the exact
 ## Documentation
 
 - [Local setup and troubleshooting](docs/setup.md)
-- [ChatGPT companion workflow](docs/chatgpt-companion.md)
+- [ChatGPT companion and workings review](docs/chatgpt-companion.md)
 - [Prototype specification v0.2](docs/spec-v0.2.md)
 - [Architecture](docs/architecture.md)
 - [Writing system](docs/writing-system.md)
