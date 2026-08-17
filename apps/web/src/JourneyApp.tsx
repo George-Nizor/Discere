@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-import type { JourneyProgress, LearnerStage, LessonJourney, StageState } from "@discere/contracts";
+import type { JourneyProgress, LearnerStage, StageState } from "@discere/contracts";
 import { getJourney, getJourneyProgress, saveJourneyProgress } from "./api";
 import { JourneyStage } from "./JourneyStage";
 
@@ -92,7 +92,7 @@ export function JourneyApp() {
             <a className="story-breadcrumb" href={`/courses/${COURSE_ID}`}>Electronics Foundations</a>
             <p className="story-stage-label">{selectedStage.type.replace("_", " ")}</p>
           </div>
-          <div className="story-progress" aria-label={`Stage ${currentIndex + 1} of ${journeyData.stageOrder.length}`}>
+          <div className="story-progress" role="status" aria-label={`Stage ${currentIndex + 1} of ${journeyData.stageOrder.length}`}>
             <span>{currentIndex + 1} / {journeyData.stageOrder.length}</span>
             <span className="story-progress-line"><i style={{ width: `${((currentIndex + 1) / journeyData.stageOrder.length) * 100}%` }} /></span>
           </div>
@@ -111,7 +111,7 @@ export function JourneyApp() {
           <button type="button" disabled={!previous} onClick={() => previous && navigate(stagePath(previous.id))}>
             <span>←</span><small>Previous</small><strong>{previous?.title ?? "Lesson start"}</strong>
           </button>
-          <div className="story-dots" aria-label="Lesson stages">
+          <div className="story-dots" role="group" aria-label="Lesson stages">
             {journeyData.stages.map((stage, index) => <button key={stage.id} type="button" aria-label={`Go to ${stage.title}`} className={index === currentIndex ? "active" : stageState(progressData, stage.id) === "completed" ? "completed" : ""} disabled={stageState(progressData, stage.id) === "locked"} onClick={() => navigate(stagePath(stage.id))} />)}
           </div>
           <button type="button" disabled={!next && !completed} onClick={() => next && navigate(stagePath(next.id))}>

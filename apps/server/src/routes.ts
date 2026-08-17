@@ -88,7 +88,7 @@ export async function registerRoutes(app: FastifyInstance, dependencies: RouteDe
     const { essayId } = EssayParamsSchema.parse(request.params);
     const journey = content.getJourney(content.currentLesson.lesson.id);
     const stage = journey?.stages.find((item) => item.type === "essay" && item.essayId === essayId);
-    if (!stage || stage.type !== "essay") throw new HttpError(404, "Essay not found.", "ESSAY_NOT_FOUND");
+    if (stage?.type !== "essay") throw new HttpError(404, "Essay not found.", "ESSAY_NOT_FOUND");
     const draft = store.getEssayDraft(essayId);
     return { ...draft, wordCount: draft.content.trim() ? draft.content.trim().split(/\s+/).length : 0 };
   });
@@ -97,7 +97,7 @@ export async function registerRoutes(app: FastifyInstance, dependencies: RouteDe
     const body = EssaySaveRequestSchema.parse(request.body);
     const journey = content.getJourney(content.currentLesson.lesson.id);
     const stage = journey?.stages.find((item) => item.type === "essay" && item.essayId === essayId);
-    if (!stage || stage.type !== "essay") throw new HttpError(404, "Essay not found.", "ESSAY_NOT_FOUND");
+    if (stage?.type !== "essay") throw new HttpError(404, "Essay not found.", "ESSAY_NOT_FOUND");
     const draft = store.saveEssayDraft(essayId, body.content);
     return { ...draft, wordCount: draft.content.trim() ? draft.content.trim().split(/\s+/).length : 0 };
   });
@@ -106,7 +106,7 @@ export async function registerRoutes(app: FastifyInstance, dependencies: RouteDe
     const body = EssaySaveRequestSchema.parse(request.body);
     const journey = content.getJourney(content.currentLesson.lesson.id);
     const stage = journey?.stages.find((item) => item.type === "essay" && item.essayId === essayId);
-    if (!stage || stage.type !== "essay") throw new HttpError(404, "Essay not found.", "ESSAY_NOT_FOUND");
+    if (stage?.type !== "essay") throw new HttpError(404, "Essay not found.", "ESSAY_NOT_FOUND");
     const wordCount = body.content.trim() ? body.content.trim().split(/\s+/).length : 0;
     if (wordCount < stage.minWords) throw new HttpError(400, `Write at least ${stage.minWords} words before submitting.`, "ESSAY_TOO_SHORT");
     const lint = lintText(body.content, { context: "assessment" });

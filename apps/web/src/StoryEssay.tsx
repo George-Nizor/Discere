@@ -38,7 +38,7 @@ export function StoryEssay({ stage, onComplete }: { stage: EssayStage; onComplet
         <details className="story-evidence"><summary>Lesson evidence</summary><p>Use the relationship, equation, and example from the previous visual stage. Sources: {stage.sourceIds.join(", ")}.</p></details>
       </div>
       <div className="story-essay-editor">
-        <div className="story-editor-toolbar" aria-label="Writing tools"><button type="button" disabled aria-label="Bold">B</button><button type="button" disabled aria-label="Italic"><em>I</em></button><span>{wordCount} words</span></div>
+        <div className="story-editor-toolbar" role="toolbar" aria-label="Writing tools"><button type="button" disabled aria-label="Bold">B</button><button type="button" disabled aria-label="Italic"><em>I</em></button><span>{wordCount} words</span></div>
         <textarea aria-label="Teach-back response" value={content} disabled={submitted} onChange={(event) => setContent(event.currentTarget.value)} placeholder="Write in your own words…" rows={14} />
         <div className="story-essay-footer"><span role="status">{savedLabel}</span><button className="story-primary" type="button" disabled={busy || submitted || wordCount < stage.minWords} onClick={() => void submit()}>{submitted ? "Submitted" : busy ? "Submitting…" : "Submit teach-back"}</button></div>
         {error ? <p className="story-error" role="alert">{error}</p> : null}
