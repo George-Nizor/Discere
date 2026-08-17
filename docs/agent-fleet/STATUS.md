@@ -1,8 +1,8 @@
 # Discere Agent Fleet Status
 
 Updated: 2026-08-17
-Current main commit: `09acefb`
-CI state: GitHub Actions run `32010641134` passed the complete `quality` job for this integrated main commit. Local build, tests, content validation, and isolated smoke test also passed.
+Current main implementation/report baseline: `c531116`
+CI state: GitHub Actions run `32010757747` passed the complete `quality` job for the published `c531116` round. Local build, tests, content validation, and isolated smoke test also passed.
 
 ## Executive summary
 
