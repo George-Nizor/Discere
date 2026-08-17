@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { TutoringMode } from "@discere/contracts";
 import { useEffect, useState } from "react";
-import { confirmReveal, createCompanionPacket, createImagePrompt, getCurrentLesson, getHome, requestHint, startReveal, submitAttempt } from "./api";
+import { confirmReveal, createImagePrompt, getCurrentLesson, getHome, requestHint, startReveal, submitAttempt } from "./api";
 import { AnswerPanel } from "./components/AnswerPanel";
 import { CircuitLab } from "./components/CircuitLab";
 import { KnowledgeMap } from "./components/KnowledgeMap";
@@ -9,6 +9,7 @@ import { ModeSelector } from "./components/ModeSelector";
 import { NotebookWorkspace } from "./components/NotebookWorkspace";
 import { ProgressStrip } from "./components/ProgressStrip";
 import { SourcePanel } from "./components/SourcePanel";
+import { TutorCompanion } from "./components/TutorCompanion";
 
 export default function App() {
   const queryClient = useQueryClient();
@@ -34,7 +35,12 @@ export default function App() {
   const attempt = useMutation({
     mutationFn: async () => {
       if (!lesson.data) throw new Error("Lesson is still loading.");
-      return submitAttempt({ questionId: lesson.data.question.id, response, mode, ...(attemptId === undefined ? {} : { attemptId }) });
+      return submitAttempt({
+        questionId: lesson.data.question.id,
+        response,
+        mode,
+        ...(attemptId === undefined ? {} : { attemptId }),
+      });
     },
     onSuccess: (result) => {
       setAttemptId(result.attemptId);
@@ -72,19 +78,11 @@ export default function App() {
       return;
     }
     window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(`${lesson.data.lesson.title}. ${lesson.data.lesson.orientation} ${lesson.data.lesson.explanation}`);
+    const utterance = new SpeechSynthesisUtterance(
+      `${lesson.data.lesson.title}. ${lesson.data.lesson.orientation} ${lesson.data.lesson.explanation}`,
+    );
     utterance.rate = 0.95;
     window.speechSynthesis.speak(utterance);
-  }
-
-  async function copyCompanion(): Promise<void> {
-    try {
-      const packet = await createCompanionPacket();
-      await navigator.clipboard.writeText(packet.text);
-      setNotice("ChatGPT companion packet copied.");
-    } catch (error) {
-      setNotice(error instanceof Error ? error.message : "Could not copy the ChatGPT companion packet.");
-    }
   }
 
   async function copyImageBrief(): Promise<void> {
@@ -98,8 +96,76 @@ export default function App() {
     }
   }
 
-  if (home.isLoading || lesson.isLoading) return <main className="loading-screen"><span className="loading-mark">D</span><p>Preparing the workshop…</p></main>;
-  if (home.error || lesson.error || !home.data || !lesson.data) return <main className="loading-screen"><h1>Discere could not start</h1><p>{home.error?.message ?? lesson.error?.message ?? "The local server did not return the lesson."}</p></main>;
+  if (home.isLoading || lesson.isLoading) {
+    return <main className="loading-screen"><span className="loading-mark">D</span><p>Preparing the workshop…</p></main>;
+  }
+  if (home.error || lesson.error || !home.data || !lesson.data) {
+    return <main className="loading-screen"><h1>Discere could not start</h1><p>{home.error?.message ?? lesson.error?.message ?? "The local server did not return the lesson."}</p></main>;
+  }
 
-  return <div className="app-shell"><ProgressStrip home={home.data} /><div className="workspace"><KnowledgeMap progress={home.data.progress} /><main className="lesson-workspace"><section className="lesson-intro"><div><p className="eyebrow">{lesson.data.lesson.assuranceLevel.replaceAll("_", " ")}</p><h1>{lesson.data.lesson.title}</h1><p className="orientation">{lesson.data.lesson.orientation}</p></div><div className="utility-actions"><button type="button" onClick={speakLesson}>Read aloud</button><button type="button" onClick={() => void copyCompanion()}>Ask ChatGPT</button><button type="button" onClick={() => void copyImageBrief()}>Image brief</button></div></section><CircuitLab activity={lesson.data.activity} voltage={voltage} resistance={resistance} onVoltage={setVoltage} onResistance={setResistance} /><section className="explanation"><p>{lesson.data.lesson.explanation}</p><div className="equation" role="img" aria-label="Ohm's law: current equals voltage divided by resistance"><span>I</span><span>=</span><span>V</span><span>/</span><span>R</span></div></section><ModeSelector value={mode} onChange={changeMode} /><AnswerPanel key={`${lesson.data.lesson.id}:${mode}`} prompt={lesson.data.question.prompt} mode={mode} response={response} onResponse={setResponse} onSubmit={() => attempt.mutate()} submitting={attempt.isPending} {...(attempt.data === undefined ? {} : { result: attempt.data })} {...(hint === undefined ? {} : { hint })} onHint={() => hintMutation.mutate()} hinting={hintMutation.isPending} onStartReveal={async (reason) => { if (!attemptId) throw new Error("Submit an attempt first."); return startReveal(attemptId, reason); }} onConfirmReveal={async (token, confirmation) => { if (!attemptId) throw new Error("Submit an attempt first."); const result = await confirmReveal(attemptId, token, confirmation); setRevealedAnswer(result.answer); setTransferPrompt(result.transferPrompt); }} {...(revealedAnswer === undefined ? {} : { revealedAnswer })} {...(transferPrompt === undefined ? {} : { transferPrompt })} /><NotebookWorkspace lessonId={lesson.data.lesson.id} />{mode === "exam" ? null : <SourcePanel sources={lesson.data.sources} />}{notice ? <button className="toast" type="button" onClick={() => setNotice(undefined)}>{notice}<span>Dismiss</span></button> : null}</main></div></div>;
+  return <div className="app-shell">
+    <ProgressStrip home={home.data} />
+    <div className="workspace">
+      <KnowledgeMap progress={home.data.progress} />
+      <main className="lesson-workspace">
+        <section className="lesson-intro">
+          <div>
+            <p className="eyebrow">{lesson.data.lesson.assuranceLevel.replaceAll("_", " ")}</p>
+            <h1>{lesson.data.lesson.title}</h1>
+            <p className="orientation">{lesson.data.lesson.orientation}</p>
+          </div>
+          <div className="utility-actions">
+            <button type="button" onClick={speakLesson}>Read aloud</button>
+            <button type="button" onClick={() => void copyImageBrief()}>Image brief</button>
+          </div>
+        </section>
+
+        <CircuitLab
+          activity={lesson.data.activity}
+          voltage={voltage}
+          resistance={resistance}
+          onVoltage={setVoltage}
+          onResistance={setResistance}
+        />
+
+        <section className="explanation">
+          <p>{lesson.data.lesson.explanation}</p>
+          <div className="equation" role="img" aria-label="Ohm's law: current equals voltage divided by resistance">
+            <span>I</span><span>=</span><span>V</span><span>/</span><span>R</span>
+          </div>
+        </section>
+
+        <ModeSelector value={mode} onChange={changeMode} />
+        <TutorCompanion key={`${lesson.data.lesson.id}:${mode}`} mode={mode} sources={lesson.data.sources} />
+        <AnswerPanel
+          key={`${lesson.data.lesson.id}:${mode}:answer`}
+          prompt={lesson.data.question.prompt}
+          mode={mode}
+          response={response}
+          onResponse={setResponse}
+          onSubmit={() => attempt.mutate()}
+          submitting={attempt.isPending}
+          {...(attempt.data === undefined ? {} : { result: attempt.data })}
+          {...(hint === undefined ? {} : { hint })}
+          onHint={() => hintMutation.mutate()}
+          hinting={hintMutation.isPending}
+          onStartReveal={async (reason) => {
+            if (!attemptId) throw new Error("Submit an attempt first.");
+            return startReveal(attemptId, reason);
+          }}
+          onConfirmReveal={async (token, confirmation) => {
+            if (!attemptId) throw new Error("Submit an attempt first.");
+            const result = await confirmReveal(attemptId, token, confirmation);
+            setRevealedAnswer(result.answer);
+            setTransferPrompt(result.transferPrompt);
+          }}
+          {...(revealedAnswer === undefined ? {} : { revealedAnswer })}
+          {...(transferPrompt === undefined ? {} : { transferPrompt })}
+        />
+        <NotebookWorkspace lessonId={lesson.data.lesson.id} />
+        {mode === "exam" ? null : <SourcePanel sources={lesson.data.sources} />}
+        {notice ? <button className="toast" type="button" onClick={() => setNotice(undefined)}>{notice}<span>Dismiss</span></button> : null}
+      </main>
+    </div>
+  </div>;
 }
