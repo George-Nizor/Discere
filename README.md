@@ -4,7 +4,7 @@
 
 Discere is a local-first learning workspace built around one useful visual, a direct explanation, a meaningful interaction, and a response from the learner.
 
-The current prototype teaches an introductory electronics lesson through an interactive circuit, prediction, calculation, governed help, ChatGPT-subscription tutoring, and a persistent digital notebook. Saved workings can be exported as a PNG and reviewed through the same validated ChatGPT handoff. No paid model API is required.
+The current prototype teaches an introductory electronics lesson through an interactive circuit, prediction, calculation, governed help, ChatGPT-subscription tutoring, and a persistent digital notebook. Saved workings can be exported as a PNG and reviewed through the same validated ChatGPT handoff. Revealing an answer opens a fresh assessed problem so the learner can recover some evidence by applying the idea independently. No paid model API is required.
 
 ## What currently works
 
@@ -15,6 +15,8 @@ The current prototype teaches an introductory electronics lesson through an inte
 - open numeric responses with unit conversion
 - Coach, Assisted, Direct, and Exam modes
 - incremental hints and a timed answer-reveal flow
+- deterministic transfer challenge after answer reveal
+- one-time recovery XP and mastery for solving the new problem
 - separate XP, assistance, and concept-mastery records
 - source provenance hidden during Exam mode
 - persistent SQLite learning state
@@ -128,6 +130,20 @@ An accepted review includes a visible-work transcription, reading confidence, ov
 
 See [docs/chatgpt-companion.md](docs/chatgpt-companion.md) for the protocols, expected JSON, privacy model, and rejection-handling workflow.
 
+## Answer reveal and transfer recovery
+
+Revealing the worked answer closes the original attempt. Discere then presents a different deterministic problem using the same relationship.
+
+The learner may retry the transfer problem until it is correct. Incorrect retries award no XP or mastery. The first correct response:
+
+- records the transfer as assisted recovery
+- awards a smaller amount of recovery XP
+- moves mastery using reduced evidence
+- updates every concept attached to the original question
+- permanently closes that transfer challenge
+
+This lets the learner recover from needing the answer while keeping the original result distinct from an independent solution.
+
 ## Verify the installation
 
 ```bash
@@ -147,7 +163,7 @@ The smoke test verifies:
 - notebook persistence
 - numeric assessment
 
-The server and component suites additionally cover workings-review packet generation, image-review confirmation, transcription confidence, first-error requirements, answer boundaries, source restrictions, and request matching. Temporary smoke-test data is removed when verification finishes.
+The server and component suites additionally cover workings-review validation and transfer recovery, including image confirmation, transcription confidence, first-error requirements, transfer locking, retries, one-time recovery rewards, source restrictions, and request matching. Temporary smoke-test data is removed when verification finishes.
 
 ## Main commands
 
@@ -184,6 +200,8 @@ Answer an open calculation
         ↓
 Use a hint or deliberate answer reveal when needed
         ↓
+Solve a fresh transfer problem after revealing the answer
+        ↓
 Save handwritten or typed workings
         ↓
 Export and validate a ChatGPT review of the page
@@ -191,7 +209,7 @@ Export and validate a ChatGPT review of the page
 Record XP, assistance, and mastery separately
 ```
 
-A correct attempt is immutable. A revealed worked answer closes the original attempt and requires a new attempt for clean mastery evidence. Direct mode records assisted evidence. Exam mode removes hints, answer reveal, source access, external tutoring, and workings review.
+A correct attempt is immutable. A revealed worked answer closes the original attempt. Direct mode records assisted evidence. Transfer recovery awards reduced evidence once. Exam mode removes hints, answer reveal, source access, external tutoring, and workings review.
 
 ## Local data and privacy
 
@@ -208,7 +226,7 @@ Durable state is stored at:
 data/discere.sqlite
 ```
 
-The database holds the learner profile, attempts, XP, concept mastery, assistance events, reveal records, prose-gate runs, and notebook pages. `.env`, database files, builds, uploaded data, and process records are ignored by Git.
+The database holds the learner profile, attempts, XP, concept mastery, assistance events, reveal records, transfer results, prose-gate runs, and notebook pages. `.env`, database files, builds, uploaded data, and process records are ignored by Git.
 
 Discere sends nothing to ChatGPT automatically. The learner controls which prepared prompt and PNG enter ChatGPT and which response returns to Discere. The local database stays on the learner's machine.
 
@@ -230,7 +248,7 @@ Fastify local server
     ├── deterministic visual engine
     ├── prose quality gate
     ├── assessment and accountability controls
-    ├── progression engine
+    ├── progression and transfer recovery
     ├── notebook persistence
     └── provider adapters
              ├── offline seed content
@@ -260,11 +278,10 @@ prompts/                 tutor, assessor, writer, and visual prompts
 
 ## Prototype boundary
 
-The current vertical slice proves the visual, writing, accountability, assessment, ChatGPT handoff, notebook, image-review, persistence, and local-runtime systems with one electronics lesson.
+The current vertical slice proves the visual, writing, accountability, assessment, answer-recovery, ChatGPT handoff, notebook, image-review, persistence, and local-runtime systems with one electronics lesson.
 
 Planned work includes:
 
-- assessable transfer questions after answer reveal
 - spaced review and flashcards
 - additional electronics lessons and interactive activity types
 - retrieved reference images with licence records
