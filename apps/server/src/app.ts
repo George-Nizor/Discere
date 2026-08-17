@@ -6,6 +6,7 @@ import { ContentRepository } from "./content.js";
 import { DiscereStore } from "./db/store.js";
 import { HttpError } from "./errors.js";
 import { registerRoutes } from "./routes.js";
+import { registerTransferRoutes } from "./transfer-routes.js";
 import { registerWorkingsReviewRoutes } from "./workings-routes.js";
 
 export interface AppOptions {
@@ -67,6 +68,7 @@ export async function createApp(options: AppOptions = {}): Promise<DiscereApp> {
     store,
     revealDelayMs: options.revealDelayMs ?? 5000,
   });
+  await registerTransferRoutes(app, { content, store });
   await registerWorkingsReviewRoutes(app, { content, store });
   app.addHook("onClose", async () => store.close());
   return { app, store, content };
