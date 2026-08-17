@@ -21,3 +21,6 @@ export const writingGateRuns = sqliteTable("writing_gate_runs", {
 export const notebookPages = sqliteTable("notebook_pages", {
   userId: text("user_id").notNull(), lessonId: text("lesson_id").notNull(), pageType: text("page_type").notNull(), strokesJson: text("strokes_json").notNull(), note: text("note").notNull().default(""), updatedAt: text("updated_at").notNull(),
 }, (table) => [primaryKey({ columns: [table.userId, table.lessonId] })]);
+export const transferAttempts = sqliteTable("transfer_attempts", {
+  attemptId: text("attempt_id").primaryKey(), transferId: text("transfer_id").notNull(), response: text("response").notNull(), correct: integer("correct", { mode: "boolean" }).notNull(), feedback: text("feedback").notNull(), xpAwarded: integer("xp_awarded").notNull().default(0), mastery: real("mastery").notNull().default(0), createdAt: text("created_at").notNull(), updatedAt: text("updated_at").notNull(),
+});
