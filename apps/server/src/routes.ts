@@ -1,12 +1,13 @@
 import { randomUUID } from "node:crypto";
 import type { FastifyInstance } from "fastify";
-import { AttemptRequestSchema, LessonDraftSchema, NotebookSaveRequestSchema, RevealConfirmRequestSchema, RevealStartRequestSchema, TutorEnvelopeBaseSchema, WritingLintRequestSchema } from "@discere/contracts";
+import { AttemptRequestSchema, LessonDraftSchema, NotebookSaveRequestSchema, RevealConfirmRequestSchema, RevealStartRequestSchema, TutorEnvelopeBaseSchema, TutorOperationSchema, TutorReplyDraftSchema, TutorReplyRequestSchema, TutoringModeSchema, WritingLintRequestSchema } from "@discere/contracts";
 import { scoreAttempt, updateMastery } from "@discere/progression-engine";
 import { buildCompanionPacket } from "@discere/tutor-providers";
 import { createImageGenerationPrompt, inspectVisualBrief, renderCircuitSvg, renderOhmsLawGraphSvg } from "@discere/visual-engine";
 import { lintText, type WritingContext } from "@discere/writing-engine";
 import { z } from "zod";
 import { assessResponse } from "./assessment.js";
+import { buildTutorReplyPayload, validateTutorReply } from "./companion.js";
 import type { ContentRepository } from "./content.js";
 import type { DiscereStore } from "./db/store.js";
 import { HttpError } from "./errors.js";
@@ -15,9 +16,9 @@ import { coerceQueryBoolean } from "./query-coercion.js";
 
 export interface RouteDependencies { content: ContentRepository; store: DiscereStore; revealDelayMs: number; }
 const AttemptBodySchema = AttemptRequestSchema.extend({ attemptId: z.string().uuid().optional() });
-const CompanionBodySchema = z.object({ operation: z.enum(["draft_lesson", "edit_style", "assess_response", "direct_visual", "review_visual"]).default("draft_lesson"), payload: z.unknown().optional() }).strict();
+const CompanionBodySchema = z.object({ operation: TutorOperationSchema.default("draft_lesson"), payload: z.unknown().optional() }).strict();
 const ImagePromptBodySchema = z.object({ visualBriefId: z.string().min(1) }).strict();
-const CompanionImportBodySchema = z.object({ text: z.string().min(2).max(500_000) }).strict();
+const CompanionImportBodySchema = z.object({ text: z.string().min(2).max(500_000), mode: TutoringModeSchema.optional() }).strict();
 const LessonParamsSchema = z.object({ lessonId: z.string().min(1).max(200) }).strict();
 const CircuitQuerySchema = z.object({
   voltage: z.coerce.number().positive().max(100).default(5),
@@ -158,8 +159,25 @@ export async function registerRoutes(app: FastifyInstance, dependencies: RouteDe
 
   app.post("/api/tutor/companion/packets", async (request) => {
     const body = CompanionBodySchema.parse(request.body);
-    const packet = buildCompanionPacket({ operation: body.operation, requestId: randomUUID(), payload: body.payload ?? { lesson: content.currentLesson, sourceIds: content.currentLesson.lesson.sourceIds } });
-    return packet;
+    const requestId = randomUUID();
+    if (body.operation === "tutor_reply") {
+      const replyRequest = TutorReplyRequestSchema.parse(body.payload);
+      if (replyRequest.mode === "exam") {
+        throw new HttpError(403, "ChatGPT assistance is unavailable in Exam mode.", "EXAM_GUARDRAIL");
+      }
+      const packet = buildCompanionPacket({
+        operation: body.operation,
+        requestId,
+        payload: buildTutorReplyPayload(content.currentLesson, replyRequest),
+      });
+      return { ...packet, requestId, operation: body.operation };
+    }
+    const packet = buildCompanionPacket({
+      operation: body.operation,
+      requestId,
+      payload: body.payload ?? { lesson: content.currentLesson, sourceIds: content.currentLesson.lesson.sourceIds },
+    });
+    return { ...packet, requestId, operation: body.operation };
   });
 
   app.post("/api/tutor/companion/import", async (request) => {
@@ -168,6 +186,24 @@ export async function registerRoutes(app: FastifyInstance, dependencies: RouteDe
     try { raw = JSON.parse(body.text) as unknown; }
     catch { throw new HttpError(400, "The companion response is not valid JSON.", "COMPANION_JSON_INVALID"); }
     const envelope = TutorEnvelopeBaseSchema.parse(raw);
+
+    if (envelope.operation === "tutor_reply") {
+      if (!body.mode) throw new HttpError(400, "The tutoring mode is required for a tutor reply.", "TUTOR_MODE_REQUIRED");
+      if (body.mode === "exam") throw new HttpError(403, "ChatGPT assistance is unavailable in Exam mode.", "EXAM_GUARDRAIL");
+      const reply = TutorReplyDraftSchema.parse(envelope.payload);
+      const currentLesson = content.currentLesson;
+      const question = content.getQuestion(currentLesson.question.id);
+      if (!question) throw new HttpError(404, "Question not found.", "QUESTION_NOT_FOUND");
+      const issues = validateTutorReply({ reply, mode: body.mode, lesson: currentLesson, question });
+      return {
+        accepted: issues.every((issue) => issue.severity !== "hard"),
+        operation: envelope.operation,
+        requestId: envelope.requestId,
+        issues,
+        reply,
+      };
+    }
+
     if (envelope.operation !== "draft_lesson") return { accepted: true, operation: envelope.operation, requestId: envelope.requestId, issues: [] };
     const draft = LessonDraftSchema.parse(envelope.payload);
     const textFields: Array<[string, string, WritingContext]> = [
