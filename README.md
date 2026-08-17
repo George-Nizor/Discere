@@ -4,7 +4,7 @@
 
 Discere is a local-first learning workspace built around one useful visual, a direct explanation, a meaningful interaction, and a response from the learner.
 
-The current prototype teaches an introductory electronics lesson through an interactive circuit, prediction, calculation, governed help, and a persistent digital notebook. It runs without paid model APIs.
+The current prototype teaches an introductory electronics lesson through an interactive circuit, prediction, calculation, governed help, a ChatGPT-subscription tutor handoff, and a persistent digital notebook. It runs without paid model APIs.
 
 ## What currently works
 
@@ -21,7 +21,8 @@ The current prototype teaches an introductory electronics lesson through an inte
 - digital notebook with pen, eraser, undo, redo, and paper grids
 - typed notebook notes and PNG export
 - prose-quality checks for recognisable generated-writing habits
-- ChatGPT companion packets with validated structured return data
+- learner-facing ChatGPT companion using an existing ChatGPT subscription
+- tutor-reply validation for prose, answer leakage, source IDs, and request matching
 - full-stack smoke tests and GitHub Actions validation
 
 ## Quick start
@@ -99,6 +100,21 @@ pnpm stop
 
 The detailed platform notes, configuration table, backups, reset commands, and troubleshooting steps are in [docs/setup.md](docs/setup.md).
 
+## Use ChatGPT as the lesson tutor
+
+Discere uses an explicit handoff so your normal ChatGPT subscription can provide lesson-specific help without an API key.
+
+1. Choose Coach, Assisted, or Direct mode.
+2. Open **Ask a question using your ChatGPT subscription**.
+3. Enter your question and select **Prepare tutor prompt**.
+4. Paste the copied prompt into ChatGPT.
+5. Copy ChatGPT's JSON reply back into Discere.
+6. Select **Validate tutor reply**.
+
+Discere shows the reply after it passes the active tutoring-mode rules, prose checks, source restrictions, and request-ID check. Coach and Assisted replies are rejected when they expose the active assessment answer. Direct mode permits the answer while retaining the writing and source checks. The companion is unavailable in Exam mode.
+
+See [docs/chatgpt-companion.md](docs/chatgpt-companion.md) for the protocol, expected JSON, privacy model, and rejection-handling workflow.
+
 ## Verify the installation
 
 ```bash
@@ -113,6 +129,8 @@ The smoke test verifies:
 - learner-safe lesson delivery
 - deterministic visual rendering
 - generated-prose rejection rules
+- ChatGPT tutor packet creation and reply validation
+- guided-mode answer-leak rejection
 - notebook persistence
 - numeric assessment
 
@@ -147,6 +165,8 @@ Reveal the deterministic result
         ↓
 Read the explanation and equation
         ↓
+Ask ChatGPT for validated lesson help when needed
+        ↓
 Answer an open calculation
         ↓
 Use a hint or deliberate answer reveal when needed
@@ -156,7 +176,7 @@ Save handwritten or typed workings
 Record XP, assistance, and mastery separately
 ```
 
-A correct attempt is immutable. A revealed worked answer closes the original attempt and requires a new attempt for clean mastery evidence. Direct mode always records assisted evidence. Exam mode removes hints, answer reveal, and source access.
+A correct attempt is immutable. A revealed worked answer closes the original attempt and requires a new attempt for clean mastery evidence. Direct mode always records assisted evidence. Exam mode removes hints, answer reveal, source access, and external tutoring.
 
 ## Local data and privacy
 
@@ -175,11 +195,13 @@ data/discere.sqlite
 
 The database holds the learner profile, attempts, XP, concept mastery, assistance events, reveal records, prose-gate runs, and notebook pages. `.env`, database files, builds, uploaded data, and process records are ignored by Git.
 
-The prototype does not send this state to an external model service by itself.
+Discere sends nothing to ChatGPT automatically. You control which prepared prompt enters ChatGPT and which response is pasted back. The local database stays on your machine.
 
 ## ChatGPT integration
 
-Discere does not call the OpenAI API. The current companion adapter creates a structured Tutor Packet for use in a normal ChatGPT conversation. A returned JSON envelope can be pasted back into Discere, where schemas, prose rules, answer boundaries, and visual requirements are checked before content is accepted.
+Discere does not call the OpenAI API. The companion interface creates a structured Tutor Packet for a normal ChatGPT conversation. It contains learner-safe lesson context, the selected tutoring mode, allowed source IDs, the learner's question, and an exact JSON response contract.
+
+A returned reply is validated before display. The checks cover schema integrity, request matching, source restrictions, anti-AI-writing rules, and guided-mode answer boundaries.
 
 A ChatGPT-native MCP host remains scaffolded behind a provider boundary. The core learning application does not depend on that host being available.
 
@@ -197,7 +219,7 @@ Fastify local server
     ├── notebook persistence
     └── provider adapters
              ├── offline seed content
-             ├── ChatGPT companion packets
+             ├── ChatGPT companion workflow
              └── future MCP host
           │
        SQLite
@@ -223,7 +245,7 @@ prompts/                 tutor, assessor, writer, and visual prompts
 
 ## Prototype boundary
 
-The current vertical slice is deliberately narrow. It proves the visual, writing, accountability, assessment, notebook, persistence, and local-runtime systems with one electronics lesson.
+The current vertical slice is deliberately narrow. It proves the visual, writing, accountability, assessment, ChatGPT handoff, notebook, persistence, and local-runtime systems with one electronics lesson.
 
 Planned work includes:
 
@@ -241,6 +263,7 @@ See [docs/implementation-status.md](docs/implementation-status.md) for the exact
 ## Documentation
 
 - [Local setup and troubleshooting](docs/setup.md)
+- [ChatGPT companion workflow](docs/chatgpt-companion.md)
 - [Prototype specification v0.2](docs/spec-v0.2.md)
 - [Architecture](docs/architecture.md)
 - [Writing system](docs/writing-system.md)
