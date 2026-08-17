@@ -1,4 +1,4 @@
-import { HomeResponseSchema, LessonResponseSchema, NotebookPageSchema, type AttemptRequest, type AttemptResponse, type HintResponse, type HomeResponse, type LessonResponse, type NotebookPage, type NotebookSaveRequest, type RevealConfirmResponse, type RevealStartResponse } from "@discere/contracts";
+import { HomeResponseSchema, LessonResponseSchema, NotebookPageSchema, TutorReplyDraftSchema, type AttemptRequest, type AttemptResponse, type HintResponse, type HomeResponse, type LessonResponse, type NotebookPage, type NotebookSaveRequest, type RevealConfirmResponse, type RevealStartResponse, type TutorReplyDraft, type TutorReplyRequest, type TutoringMode } from "@discere/contracts";
 
 async function requestJson<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, { headers: { "content-type": "application/json", ...init?.headers }, ...init });
@@ -10,6 +10,28 @@ async function requestJson<T>(url: string, init?: RequestInit): Promise<T> {
   return body as T;
 }
 
+export interface CompanionPacket {
+  filename: string;
+  text: string;
+  requestId: string;
+  operation: "tutor_reply";
+}
+
+export interface CompanionIssue {
+  field: string;
+  code: string;
+  severity: "hard" | "warning";
+  message: string;
+}
+
+export interface TutorReplyImportResult {
+  accepted: boolean;
+  operation: "tutor_reply";
+  requestId: string;
+  issues: CompanionIssue[];
+  reply: TutorReplyDraft;
+}
+
 export async function getHome(): Promise<HomeResponse> { return HomeResponseSchema.parse(await requestJson<unknown>("/api/home")); }
 export async function getCurrentLesson(): Promise<LessonResponse> { return LessonResponseSchema.parse(await requestJson<unknown>("/api/lessons/current")); }
 export async function getNotebookPage(lessonId: string): Promise<NotebookPage> { return NotebookPageSchema.parse(await requestJson<unknown>(`/api/notebook/${encodeURIComponent(lessonId)}`)); }
@@ -18,5 +40,9 @@ export async function submitAttempt(input: AttemptRequest & { attemptId?: string
 export async function requestHint(attemptId: string): Promise<HintResponse> { return requestJson(`/api/attempts/${attemptId}/hints`, { method: "POST", body: "{}" }); }
 export async function startReveal(attemptId: string, reason: string): Promise<RevealStartResponse> { return requestJson(`/api/attempts/${attemptId}/reveal/start`, { method: "POST", body: JSON.stringify({ reason }) }); }
 export async function confirmReveal(attemptId: string, token: string, confirmation: string): Promise<RevealConfirmResponse> { return requestJson(`/api/attempts/${attemptId}/reveal/confirm`, { method: "POST", body: JSON.stringify({ token, confirmation }) }); }
-export async function createCompanionPacket(): Promise<{ filename: string; text: string }> { return requestJson("/api/tutor/companion/packets", { method: "POST", body: JSON.stringify({ operation: "draft_lesson" }) }); }
+export async function createTutorReplyPacket(input: TutorReplyRequest): Promise<CompanionPacket> { return requestJson("/api/tutor/companion/packets", { method: "POST", body: JSON.stringify({ operation: "tutor_reply", payload: input }) }); }
+export async function importTutorReply(text: string, mode: TutoringMode): Promise<TutorReplyImportResult> {
+  const result = await requestJson<TutorReplyImportResult>("/api/tutor/companion/import", { method: "POST", body: JSON.stringify({ text, mode }) });
+  return { ...result, reply: TutorReplyDraftSchema.parse(result.reply) };
+}
 export async function createImagePrompt(visualBriefId: string): Promise<{ prompt: string }> { return requestJson("/api/visuals/image-prompt", { method: "POST", body: JSON.stringify({ visualBriefId }) }); }
