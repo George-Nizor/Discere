@@ -5,11 +5,11 @@ Audit where review and additional lessons can enter the existing React workflow 
 ## Completed
 
 - `c5e0d7c` — audited the React shell, current lesson coupling, responsive styles, keyboard focus rules, and component-test layout.
-- Pending commit — documented the safe UI boundary for the first review slice.
+- `9f80986` — documented the safe UI boundary for the first review slice.
 
 ## Validation
 
-- Existing component tests cover answer, transfer, notebook, mode, tutor, and workings-review flows.
+- Integrated main validation: the existing web component suite passed 9 files and 23 tests.
 - No new UI code was added because the review endpoint and shared response contract are not yet integrated.
 
 ## In progress
@@ -34,4 +34,4 @@ Audit where review and additional lessons can enter the existing React workflow 
 
 ## Questions for architect
 
-- None yet.
+- No implementation blocker; this is a deliberate dependency boundary.
