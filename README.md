@@ -4,7 +4,7 @@
 
 Discere is a local-first learning workspace built around one useful visual, a direct explanation, a meaningful interaction, and a response from the learner.
 
-The current prototype teaches an introductory electronics lesson through an interactive circuit, prediction, calculation, governed help, ChatGPT-subscription tutoring, and a persistent digital notebook. Saved workings can be exported as a PNG and reviewed through the same validated ChatGPT handoff. Revealing an answer opens a fresh assessed problem so the learner can recover some evidence by applying the idea independently. No paid model API is required.
+The current prototype teaches an introductory electronics lesson through an interactive circuit, prediction, calculation, governed help, ChatGPT-subscription tutoring, and a persistent digital notebook. The validated course bundle now also contains a sourced series-circuit lesson foundation, while the current learner shell still enters through the original Ohm's-law lesson. Saved workings can be exported as a PNG and reviewed through the same validated ChatGPT handoff. Revealing an answer opens a fresh assessed problem so the learner can recover some evidence by applying the idea independently. No paid model API is required.
 
 ## What currently works
 
@@ -27,6 +27,7 @@ The current prototype teaches an introductory electronics lesson through an inte
 - prose-quality checks for recognisable generated-writing habits
 - learner-facing ChatGPT companion using an existing ChatGPT subscription
 - tutor-reply validation for prose, answer leakage, source IDs, and request matching
+- deterministic spaced-review and reviewed-question flashcard domain foundations
 - full-stack smoke tests and GitHub Actions validation
 
 ## Quick start
@@ -282,8 +283,8 @@ The current vertical slice proves the visual, writing, accountability, assessmen
 
 Planned work includes:
 
-- spaced review and flashcards
-- additional electronics lessons and interactive activity types
+- persisted spaced-review queues and authorized flashcard review UI
+- learner navigation for the validated additional electronics lessons and interactive activity types
 - retrieved reference images with licence records
 - generated illustration review and import
 - broader course creation and curriculum adapters

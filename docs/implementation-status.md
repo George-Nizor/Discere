@@ -85,6 +85,16 @@
 - agent operating contract in `AGENTS.md`
 - detailed README, setup guide, ChatGPT workflow, troubleshooting, backup, and reset instructions
 
+## First fleet round additions
+
+- deterministic spaced-review domain functions with fixed, explainable intervals
+- independent and assisted review evidence kept separate
+- reviewed-question flashcard generation behind an answer-bearing domain boundary
+- sourced series-circuit lesson, activity contract, state transitions, and deterministic SVG renderer
+- server-side tutor request-ID matching for pasted tutor replies
+- adversarial regression coverage rejecting injected answer authority in learner attempt payloads
+- fleet coordination reports in `docs/agent-fleet/`
+
 ## Deliberately deferred
 
 - direct ChatGPT MCP transport, pending host compatibility testing
@@ -93,7 +103,8 @@
 - automatic in-app handwriting recognition without the ChatGPT handoff
 - persistence of image-review history and formal mastery evidence from reviewed workings
 - multiple generated transfer variants and delayed transfer scheduling
-- FSRS scheduling and generated flashcard review queues
+- review-state persistence, authorized due-card API, and learner-facing flashcard queues
+- FSRS scheduling, which remains deferred behind the deterministic scheduler interface
 - NotebookLM handoff automation
 - broad curriculum importers
 - full Playwright coverage

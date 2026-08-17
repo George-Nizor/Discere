@@ -2,6 +2,7 @@
 
 Date: 2026-08-17
 Coordinator baseline: `4959677`
+Integrated local main baseline: `5f7fce4`
 
 ## Scope
 
@@ -16,6 +17,12 @@ Preserve the green prototype while establishing isolated ownership and implement
 5. Learner Experience changes against stable contracts.
 6. Quality review of all diffs.
 7. Full verification, consolidated reporting, and stop.
+
+## Outcome
+
+- Integrated the deterministic review domain slice, series-circuit curriculum/visual foundation, tutor request matching, learner-experience audit, and adversarial payload test.
+- `pnpm check`, `pnpm build`, and `pnpm smoke` passed locally.
+- Stopped with review persistence, learner-facing review UI, lesson navigation, and remote CI publication explicitly deferred.
 
 ## Dependency map
 

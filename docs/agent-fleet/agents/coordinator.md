@@ -5,22 +5,23 @@ Audit `main`, coordinate isolated first-round work, review dependencies, integra
 ## Completed
 
 - `4959677` — audited the current prototype baseline and existing validation record.
-- Pending — fleet reporting bootstrap commit.
+- `c5e0d7c` — established the fleet reporting structure and first-round dependency map.
+- Integrated commits — reviewed and merged specialist work into local `main`.
 
 ## Validation
 
 - Repository was clean on `main` before the round.
 - Required architecture, specification, status, validation, and ChatGPT companion documents were read.
-- Full local verification is pending because `pnpm` is not currently installed.
+- `pnpm check` passed with existing lint warnings/infos; build and smoke passed.
+- Remote run 156 is green for previous remote main `4959677`; the integrated local round is not pushed.
 
 ## In progress
 
-- Establishing specialist branches and worktrees.
-- Mapping the contract dependency between review scheduling, curriculum expansion, and learner navigation.
+- Closing Round 001 reports and stopping before major new work.
 
 ## Blocked
 
-- Local quality gates require the pinned pnpm toolchain to be made available.
+- Remote CI for the integrated commit requires an authorized push.
 
 ## Concerns
 
@@ -29,10 +30,9 @@ Audit `main`, coordinate isolated first-round work, review dependencies, integra
 
 ## Proposed next work
 
-1. Review the Learning Systems contract.
-2. Integrate the smallest curriculum/visual slice that remains technically truthful.
-3. Integrate tutor and quality fixes incrementally.
-4. Run full verification and prepare a push/CI handoff.
+1. Obtain architect direction on review-session answer boundaries.
+2. Add review persistence/API and reachable lesson navigation in isolated worktrees.
+3. Run full verification and obtain a remote CI run after authorized publication.
 
 ## Questions for architect
 

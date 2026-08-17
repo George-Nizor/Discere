@@ -1,87 +1,91 @@
 # Discere Agent Fleet Status
 
 Updated: 2026-08-17
-Current main commit: `4959677`
-CI state: Green on the latest recorded validation; the current main commit has not yet been revalidated by this round.
+Current main commit: `5f7fce4` implementation baseline; this report is the coordinator's closing documentation commit.
+CI state: Local gates are green. Remote GitHub CI run 156 is green on previous remote main `4959677`; this integrated round has not been pushed, so it has no remote CI run yet.
 
 ## Executive summary
 
-Discere is a local-first TypeScript monorepo with a working visual Ohm's-law vertical slice. The server owns authoritative answers, tutoring-mode guardrails, transfer recovery, persistence, and learner-safe payloads. The first fleet round is establishing isolated ownership and extending the learning domain, curriculum, tutor reliability, and quality evidence without weakening the current accountability boundaries.
+Discere remains a local-first TypeScript monorepo with a working visual Ohm's-law vertical slice. This round established isolated fleet ownership and integrated a deterministic review domain slice, a sourced series-circuit lesson/visual foundation, server-side tutor request matching, a learner-experience contract audit, and an adversarial answer-boundary test. The current app entry point and accountability restrictions remain intact.
 
 ## Completed this round
 
 ### Fleet operations
 
 - Created isolated role worktrees and branch ownership for the coordinator and five specialists.
-- Created the repository-based fleet reporting structure.
+- Created and compiled the repository-based fleet reporting structure.
 - Audited the current implementation against `AGENTS.md`, the v0.2 specification, architecture, implementation status, validation record, and ChatGPT companion contract.
 
 ### Learning systems
 
-- Pending specialist implementation and review.
+- Added pure deterministic review scheduling with independent/assisted evidence separation.
+- Added reviewed-question flashcard generation behind a clear answer-bearing domain boundary.
 
 ### Curriculum and visual learning
 
-- Pending specialist implementation and review.
+- Added a sourced series-circuit lesson, activity contract, state transitions, deterministic SVG, and tests.
+- Documented the planned five-lesson introductory sequence; only the first two lessons are implemented.
 
 ### Learner experience
 
-- Pending specialist implementation and review.
+- Audited the current UI and intentionally deferred a disconnected review surface until server contracts exist.
 
 ### Tutor and workings intelligence
 
-- Pending specialist implementation and review.
+- Added server-side tutor request-ID matching and updated smoke coverage for stale-response protection.
 
 ### Quality
 
-- Pending independent regression audit.
+- Added an adversarial regression test rejecting injected answer authority in learner attempt payloads.
 
 ## Validation state
 
-- lint: not run for this round
-- typecheck: not run for this round
-- unit tests: not run for this round
-- component tests: not run for this round
-- server/integration tests: not run for this round
-- curriculum validation: not run for this round
-- production build: not run for this round
-- full-stack smoke test: not run for this round
+- lint: passed; 9 warnings and 26 informational diagnostics remain in existing code/configuration
+- typecheck: passed across all workspace packages/apps
+- unit tests: passed; 37 package tests
+- component tests: passed; 23 web tests
+- server/integration tests: passed; 36 server tests
+- curriculum validation: passed; 2 lessons and 2 questions; 2 content-style warnings
+- production build: passed
+- full-stack smoke test: passed, including proxying, safe lesson delivery, visuals, tutor validation, notebook persistence, and assessment
 
 ## Current workstreams
 
 | Agent | Task | Branch/worktree | State | Dependency | Latest meaningful commit |
 |---|---|---|---|---|---|
-| Luna Coordinator | Integrate and report the first round | `fleet/coordinator` / `/tmp/discere-fleet/coordinator` | auditing | all specialists | `4959677` |
-| Luna Learning Systems | Deterministic spaced-review model, scheduler, and flashcard contract | `fleet/learning-systems` / `/tmp/discere-fleet/learning-systems` | queued | stable curriculum/question contracts | not started |
-| Luna Curriculum & Visual Learning | Next coherent electronics lesson and deterministic visual/activity | `fleet/curriculum-visuals` / `/tmp/discere-fleet/curriculum-visuals` | queued | current bundle validation | not started |
-| Luna Learner Experience | Review entry-point audit and safe UI shell | `fleet/learner-experience` / `/tmp/discere-fleet/learner-experience` | queued | learning-system contract | not started |
-| Luna Tutor & Workings Intelligence | Reliability audit and narrow validation hardening | `fleet/tutor-intelligence` / `/tmp/discere-fleet/tutor-intelligence` | queued | existing companion schemas | not started |
-| Luna Quality Engineer | Independent regression and boundary audit | `fleet/quality` / `/tmp/discere-fleet/quality` | queued | specialist diffs as available | not started |
+| Luna Coordinator | Integrate and report the first round | `fleet/coordinator` / `/tmp/discere-fleet/coordinator` | complete | all specialists | `c5e0d7c` plus coordinator integration |
+| Luna Learning Systems | Deterministic spaced-review model, scheduler, and flashcard contract | `fleet/learning-systems` / `/tmp/discere-fleet/learning-systems` | complete | stable curriculum/question contracts | `1d33da5` |
+| Luna Curriculum & Visual Learning | Next coherent electronics lesson and deterministic visual/activity | `fleet/curriculum-visuals` / `/tmp/discere-fleet/curriculum-visuals` | complete | current bundle validation | `943ea96` |
+| Luna Learner Experience | Review entry-point audit and safe UI shell | `fleet/learner-experience` / `/tmp/discere-fleet/learner-experience` | complete/audit-only | learning-system contract | `c18570c` |
+| Luna Tutor & Workings Intelligence | Reliability audit and narrow validation hardening | `fleet/tutor-intelligence` / `/tmp/discere-fleet/tutor-intelligence` | complete | existing companion schemas | `0ba82f3` |
+| Luna Quality Engineer | Independent regression and boundary audit | `fleet/quality` / `/tmp/discere-fleet/quality` | complete | specialist diffs as available | `64e5310` |
 
 ## Architectural decisions made
 
-See [`DECISIONS.md`](DECISIONS.md). No new product ADR has been accepted yet; the current repository contracts remain authoritative.
+See [`DECISIONS.md`](DECISIONS.md). This round accepted the isolated-worktree and series-activity boundary decisions; the scheduler remains intentionally simple and proposed for later persistence.
 
 ## Problems discovered
 
-- `pnpm` is not currently available in the execution environment, so dependency installation and verification are still pending.
-- The current content repository serves the first lesson only and the learner response contract supports the Ohm's-law activity only; curriculum expansion must not silently create unreachable or unsupported lesson payloads.
-- GitHub CI has validated the recorded checkpoint, but no new remote run exists for this round until changes are published.
+- The current content repository serves the first lesson only and the learner response contract supports the Ohm's-law activity only; the new series lesson is validated but not yet reachable through the web shell. Severity: medium. Responsible subsystem: curriculum/navigation.
+- Review scheduling is a domain slice only; persistence, due-card API, and UI remain outstanding. Severity: medium. Responsible subsystem: learning systems/server.
+- GitHub CI has validated the previous remote checkpoint, but no new remote run exists for this unpushed round. Severity: high for release handoff, not a local code failure. Responsible subsystem: coordinator/release.
 
 ## Technical debt created
 
-- None intentionally created by the bootstrap files.
+- The scheduler uses explainable fixed intervals rather than FSRS.
+- The series lesson adds a validated activity/content union without exposing a new learner route yet.
+- The generated pnpm lockfile is intentionally not part of the implementation commits unless the architect wants dependency reproducibility added now.
 
 ## Recommended next round
 
-1. Integrate the deterministic review domain contract after quality review.
-2. Integrate the next curriculum lesson only if its activity and visual are reachable through validated contracts.
-3. Add the smallest server persistence/API slice for scheduled review after the domain contract is accepted.
-4. Add a review queue UI against the stable API contract.
-5. Expand browser-level coverage for lesson navigation and review recovery.
+1. Add migration-safe review persistence and a due-card API with authorized answer reveal.
+2. Make the validated series lesson reachable through learner-safe navigation/activity contracts.
+3. Add the review queue UI and keyboard/narrow-layout coverage.
+4. Add parallel-circuit lesson/activity only after the series contract is exercised end to end.
+5. Expand browser-level coverage for lesson navigation, review recovery, and notebook handoff.
 
 ## Architect review requested
 
-- Confirm whether review cards may expose answer backs only through a server-authorized review session, rather than through generic learner-safe lesson payloads.
-- Confirm the preferred scope of the next electronics sequence before adding parallel/series activity types to the learner API.
-- Confirm when a remote push/CI run is authorized for the integrated first-round commit.
+- Confirm that review cards may expose answer backs only through a server-authorized review session, rather than through generic learner-safe lesson payloads.
+- Confirm the preferred scope of the next electronics sequence before adding parallel activity to the learner API.
+- Authorize or defer the remote push required to obtain GitHub CI for this integrated round.

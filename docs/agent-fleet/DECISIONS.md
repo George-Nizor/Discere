@@ -41,3 +41,24 @@ The first scheduler will be intentionally simple and can later be compared with 
 ### Alternatives considered
 
 Immediate FSRS integration was deferred because it would add complexity before persistent review data and personal-use feedback exist.
+
+## ADR-003 — Validate the series activity before exposing it to the learner shell
+
+Date: 2026-08-17
+Status: accepted
+
+### Context
+
+The curriculum bundle can now describe a series-circuit activity and render its deterministic visual, but the current learner response and web shell are specialized to the first Ohm's-law activity.
+
+### Decision
+
+Integrate the series lesson, activity union, visual renderer, and content validation now, while deferring learner-facing lesson navigation and activity rendering until a shared response contract is implemented.
+
+### Consequences
+
+The course has a truthful next lesson ready for the next round, and validation can catch content drift immediately. The lesson is not yet reachable from the current web flow, which must be reported rather than hidden.
+
+### Alternatives considered
+
+Keeping the lesson out of the bundle was rejected because it would delay curriculum validation. Reusing the Ohm's-law UI for a series circuit was rejected because it would misrepresent the technical model.

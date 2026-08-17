@@ -97,7 +97,7 @@ Imported tutor replies pass through:
 
 - valid protocol and JSON structure
 - operation and response shape checks
-- response request-ID matching
+- response request-ID matching against the prepared request, enforced at the server boundary
 - anti-AI-writing lint rules
 - guided-mode answer-leak detection
 - source IDs restricted to those supplied with the lesson
