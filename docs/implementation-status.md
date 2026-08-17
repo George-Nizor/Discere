@@ -15,6 +15,8 @@
 - immutable completed attempts
 - hint event recording and closed assistance after completion
 - timed, single-use answer-reveal flow
+- original-attempt closure after a worked answer is revealed
+- duplicate reveal, hint, and resubmission rejection after answer reveal
 - immutable tutoring mode within an attempt
 - Exam-mode hint, reveal, and source guardrails
 - XP and mastery separation with per-concept mastery updates
@@ -31,6 +33,7 @@
 - pen and eraser pointer input with undo, redo, and clear
 - blank, lined, and graph-paper notebook backgrounds
 - typed notebook notes and PNG export
+- bounded notebook payloads and unsaved-navigation protection
 - agent operating contract in `AGENTS.md`
 - read-aloud through browser speech synthesis
 
