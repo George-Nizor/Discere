@@ -1,5 +1,14 @@
-import type { LessonResponse, Question, TutorReplyDraft, TutorReplyRequest, TutoringMode } from "@discere/contracts";
-import { lintText } from "@discere/writing-engine";
+import type {
+  LessonResponse,
+  NotebookPage,
+  Question,
+  TutorReplyDraft,
+  TutorReplyRequest,
+  TutoringMode,
+  WorkingsReviewDraft,
+  WorkingsReviewRequest,
+} from "@discere/contracts";
+import { lintText, type WritingContext } from "@discere/writing-engine";
 
 export interface CompanionIssue {
   field: string;
@@ -9,20 +18,57 @@ export interface CompanionIssue {
 }
 
 const MODE_POLICY: Record<Exclude<TutoringMode, "exam">, string> = {
-  coach: "Help the learner make the next useful step. Ask or answer directly enough to unblock them, but do not state the final answer to the active assessment.",
-  assisted: "Give a stronger explanation or partial worked step. Do not state the final answer to the active assessment.",
-  direct: "Answer the learner's question directly. Show concise working when a calculation or causal explanation benefits from it.",
+  coach:
+    "Help the learner make the next useful step. Ask or answer directly enough to unblock them, but do not state the final answer to the active assessment.",
+  assisted:
+    "Give a stronger explanation or partial worked step. Do not state the final answer to the active assessment.",
+  direct:
+    "Answer the learner's question directly. Show concise working when a calculation or causal explanation benefits from it.",
 };
 
 export function buildTutorReplyPayload(lesson: LessonResponse, request: TutorReplyRequest) {
-  if (request.mode === "exam") throw new Error("ChatGPT assistance is unavailable in Exam mode.");
+  if (request.mode === "exam") {
+    throw new Error("ChatGPT assistance is unavailable in Exam mode.");
+  }
   return {
     learnerQuestion: request.question,
     tutoringMode: request.mode,
     responsePolicy: MODE_POLICY[request.mode],
     lessonContext: lesson,
     allowedSourceIds: lesson.sources.map((source) => source.id),
-    sourceRule: "Use only allowedSourceIds in payload.sourceIds. Leave sourceIds empty when the response does not rely on a listed source.",
+    sourceRule:
+      "Use only allowedSourceIds in payload.sourceIds. Leave sourceIds empty when the response does not rely on a listed source.",
+  };
+}
+
+export function buildWorkingsReviewPayload(
+  lesson: LessonResponse,
+  request: WorkingsReviewRequest,
+  notebook: NotebookPage,
+) {
+  if (request.mode === "exam") {
+    throw new Error("ChatGPT assistance is unavailable in Exam mode.");
+  }
+  return {
+    reviewQuestion: request.reviewQuestion,
+    tutoringMode: request.mode,
+    responsePolicy: MODE_POLICY[request.mode],
+    attachment: {
+      required: true,
+      expectedFilename: `discere-${lesson.lesson.id}-workings.png`,
+      instruction:
+        "Attach the PNG exported from the Discere notebook before sending this request. Review that image rather than inferring the work from the typed note alone.",
+    },
+    savedWorkings: {
+      pageType: notebook.pageType,
+      typedNote: notebook.note,
+      strokeCount: notebook.strokes.length,
+      savedAt: notebook.updatedAt,
+    },
+    lessonContext: lesson,
+    allowedSourceIds: lesson.sources.map((source) => source.id),
+    sourceRule:
+      "Use only allowedSourceIds in payload.sourceIds. Leave sourceIds empty when the review does not rely on a listed source.",
   };
 }
 
@@ -33,6 +79,46 @@ function hiddenAnswer(question: Question): string {
   return question.answerAuthority.exampleAnswer;
 }
 
+function addTextIssues(
+  issues: CompanionIssue[],
+  field: string,
+  text: string,
+  context: WritingContext,
+  answerBoundary: string | undefined,
+): void {
+  const result = lintText(text, {
+    context,
+    ...(answerBoundary === undefined ? {} : { hiddenAnswer: answerBoundary }),
+  });
+  issues.push(
+    ...result.violations.map((violation) => ({
+      field,
+      code: violation.ruleId,
+      severity: violation.severity,
+      message: violation.message,
+    })),
+  );
+}
+
+function addSourceIssues(
+  issues: CompanionIssue[],
+  sourceIds: string[],
+  lesson: LessonResponse,
+  label: string,
+): void {
+  const allowedSources = new Set(lesson.sources.map((source) => source.id));
+  for (const sourceId of sourceIds) {
+    if (!allowedSources.has(sourceId)) {
+      issues.push({
+        field: "sourceIds",
+        code: "SOURCE_NOT_ALLOWED",
+        severity: "hard",
+        message: `${label} referenced source '${sourceId}', which was not supplied with the lesson.`,
+      });
+    }
+  }
+}
+
 export function validateTutorReply(input: {
   reply: TutorReplyDraft;
   mode: Exclude<TutoringMode, "exam">;
@@ -41,38 +127,86 @@ export function validateTutorReply(input: {
 }): CompanionIssue[] {
   const issues: CompanionIssue[] = [];
   const answerBoundary = input.mode === "direct" ? undefined : hiddenAnswer(input.question);
-  const answerResult = lintText(input.reply.answer, {
-    context: "feedback",
-    ...(answerBoundary === undefined ? {} : { hiddenAnswer: answerBoundary }),
-  });
-  issues.push(...answerResult.violations.map((violation) => ({
-    field: "answer",
-    code: violation.ruleId,
-    severity: violation.severity,
-    message: violation.message,
-  })));
+  addTextIssues(issues, "answer", input.reply.answer, "feedback", answerBoundary);
+  addTextIssues(
+    issues,
+    "followUpQuestion",
+    input.reply.followUpQuestion,
+    "question",
+    answerBoundary,
+  );
+  addSourceIssues(issues, input.reply.sourceIds, input.lesson, "The tutor reply");
+  return issues;
+}
 
-  const questionResult = lintText(input.reply.followUpQuestion, {
-    context: "question",
-    ...(answerBoundary === undefined ? {} : { hiddenAnswer: answerBoundary }),
-  });
-  issues.push(...questionResult.violations.map((violation) => ({
-    field: "followUpQuestion",
-    code: violation.ruleId,
-    severity: violation.severity,
-    message: violation.message,
-  })));
+export function validateWorkingsReview(input: {
+  review: WorkingsReviewDraft;
+  mode: Exclude<TutoringMode, "exam">;
+  lesson: LessonResponse;
+  question: Question;
+}): CompanionIssue[] {
+  const issues: CompanionIssue[] = [];
+  const answerBoundary = input.mode === "direct" ? undefined : hiddenAnswer(input.question);
 
-  const allowedSources = new Set(input.lesson.sources.map((source) => source.id));
-  for (const sourceId of input.reply.sourceIds) {
-    if (!allowedSources.has(sourceId)) {
-      issues.push({
-        field: "sourceIds",
-        code: "SOURCE_NOT_ALLOWED",
-        severity: "hard",
-        message: `The tutor reply referenced source '${sourceId}', which was not supplied with the lesson.`,
-      });
-    }
+  addTextIssues(issues, "feedback", input.review.feedback, "feedback", answerBoundary);
+  addTextIssues(issues, "nextStep", input.review.nextStep, "hint", answerBoundary);
+  if (input.review.firstMeaningfulError) {
+    addTextIssues(
+      issues,
+      "firstMeaningfulError",
+      input.review.firstMeaningfulError,
+      "feedback",
+      answerBoundary,
+    );
+  }
+  addSourceIssues(issues, input.review.sourceIds, input.lesson, "The workings review");
+
+  if (!input.review.imageReviewed) {
+    issues.push({
+      field: "imageReviewed",
+      code: "IMAGE_NOT_REVIEWED",
+      severity: "hard",
+      message: "The response did not confirm that a usable workings image was reviewed.",
+    });
+  }
+  if (input.review.transcriptionConfidence < 0.55 && input.review.assessment !== "unclear") {
+    issues.push({
+      field: "assessment",
+      code: "LOW_CONFIDENCE_OVERCLAIM",
+      severity: "hard",
+      message: "Low-confidence transcription must use the 'unclear' assessment state.",
+    });
+  }
+  if (
+    (input.review.assessment === "partly_correct" || input.review.assessment === "incorrect") &&
+    input.review.firstMeaningfulError === null
+  ) {
+    issues.push({
+      field: "firstMeaningfulError",
+      code: "FIRST_ERROR_REQUIRED",
+      severity: "hard",
+      message: "An incorrect or partly correct review must identify the first meaningful error.",
+    });
+  }
+  if (input.review.assessment === "correct" && input.review.firstMeaningfulError !== null) {
+    issues.push({
+      field: "firstMeaningfulError",
+      code: "CORRECT_REVIEW_HAS_ERROR",
+      severity: "warning",
+      message: "A review marked correct also identifies an error. Check that the assessment is consistent.",
+    });
+  }
+  if (
+    input.review.imageReviewed &&
+    input.review.transcriptionConfidence >= 0.55 &&
+    input.review.transcription.length === 0
+  ) {
+    issues.push({
+      field: "transcription",
+      code: "TRANSCRIPTION_REQUIRED",
+      severity: "hard",
+      message: "A confident image review must include a transcription of the visible working.",
+    });
   }
 
   return issues;
