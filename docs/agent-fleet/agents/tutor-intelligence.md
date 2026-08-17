@@ -4,7 +4,7 @@ Audit and narrowly improve ChatGPT companion and workings-review reliability whi
 
 ## Completed
 
-- Pending commit — tutor imports now require and server-validate the prepared request ID, matching the existing workings-review boundary.
+- Pending commit — tutor imports now require and server-validate the prepared request ID, matching the existing workings-review boundary, and the smoke fixture sends it explicitly.
 
 ## Validation
 

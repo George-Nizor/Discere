@@ -165,7 +165,11 @@ try {
   };
   const acceptedTutorReply = await requestJson(`${apiUrl}/api/tutor/companion/import`, {
     method: "POST",
-    body: JSON.stringify({ text: JSON.stringify(directTutorEnvelope), mode: "direct" }),
+    body: JSON.stringify({
+      text: JSON.stringify(directTutorEnvelope),
+      mode: "direct",
+      expectedRequestId: tutorPacket.requestId,
+    }),
   });
   if (
     acceptedTutorReply.accepted !== true ||
@@ -185,7 +189,11 @@ try {
   };
   const rejectedTutorReply = await requestJson(`${apiUrl}/api/tutor/companion/import`, {
     method: "POST",
-    body: JSON.stringify({ text: JSON.stringify(guidedTutorEnvelope), mode: "coach" }),
+    body: JSON.stringify({
+      text: JSON.stringify(guidedTutorEnvelope),
+      mode: "coach",
+      expectedRequestId: tutorPacket.requestId,
+    }),
   });
   if (
     rejectedTutorReply.accepted !== false ||
