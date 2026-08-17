@@ -2,6 +2,8 @@ import {
   HomeResponseSchema,
   LessonResponseSchema,
   NotebookPageSchema,
+  TransferStateResponseSchema,
+  TransferSubmitResponseSchema,
   TutorReplyDraftSchema,
   WorkingsReviewDraftSchema,
   type AttemptRequest,
@@ -13,6 +15,9 @@ import {
   type NotebookSaveRequest,
   type RevealConfirmResponse,
   type RevealStartResponse,
+  type TransferStateResponse,
+  type TransferSubmitRequest,
+  type TransferSubmitResponse,
   type TutorReplyDraft,
   type TutorReplyRequest,
   type TutoringMode,
@@ -129,6 +134,24 @@ export async function confirmReveal(
     method: "POST",
     body: JSON.stringify({ token, confirmation }),
   });
+}
+
+export async function getTransferState(attemptId: string): Promise<TransferStateResponse> {
+  return TransferStateResponseSchema.parse(
+    await requestJson<unknown>(`/api/attempts/${attemptId}/transfer`),
+  );
+}
+
+export async function submitTransferResponse(
+  attemptId: string,
+  input: TransferSubmitRequest,
+): Promise<TransferSubmitResponse> {
+  return TransferSubmitResponseSchema.parse(
+    await requestJson<unknown>(`/api/attempts/${attemptId}/transfer`, {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+  );
 }
 
 export async function createTutorReplyPacket(
