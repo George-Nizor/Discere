@@ -14,6 +14,9 @@ const VIEWBOX_WIDTH = 1000;
 const VIEWBOX_HEIGHT = 600;
 const MAX_STROKES = 300;
 const MAX_POINTS_PER_STROKE = 750;
+const LINED_Y = Array.from({ length: 14 }, (_, position) => (position + 1) * 40);
+const GRAPH_X = Array.from({ length: 49 }, (_, position) => (position + 1) * 20);
+const GRAPH_Y = Array.from({ length: 29 }, (_, position) => (position + 1) * 20);
 
 function snapshot(pageType: NotebookPageType, strokes: NotebookStroke[], note: string): string {
   return JSON.stringify({ pageType, strokes, note });
@@ -40,8 +43,8 @@ export function Notebook({ page, saving, onSave }: NotebookProps) {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const svgRef = useRef<SVGSVGElement>(null);
-  const activePointerRef = useRef<number>();
-  const activeStrokeRef = useRef<string>();
+  const activePointerRef = useRef<number | undefined>(undefined);
+  const activeStrokeRef = useRef<string | undefined>(undefined);
   const erasingRef = useRef(false);
 
   useEffect(() => {
@@ -54,7 +57,7 @@ export function Notebook({ page, saving, onSave }: NotebookProps) {
     setSavedAt(page.updatedAt);
     setMessage("");
     setError("");
-  }, [page.lessonId, page.updatedAt]);
+  }, [page.pageType, page.strokes, page.note, page.updatedAt]);
 
   const dirty = snapshot(pageType, strokes, note) !== savedSnapshot;
 
@@ -243,10 +246,10 @@ export function Notebook({ page, saving, onSave }: NotebookProps) {
 
     <svg ref={svgRef} className={`notebook-canvas tool-${tool}`} role="application" aria-label="Working canvas" viewBox={`0 0 ${VIEWBOX_WIDTH} ${VIEWBOX_HEIGHT}`} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={endPointer} onPointerCancel={endPointer}>
       <rect width={VIEWBOX_WIDTH} height={VIEWBOX_HEIGHT} fill="#ffffff" />
-      {pageType === "lined" ? Array.from({ length: 14 }, (_, index) => <line key={index} x1="0" y1={(index + 1) * 40} x2={VIEWBOX_WIDTH} y2={(index + 1) * 40} stroke="#d4d4d4" strokeWidth="1" />) : null}
-      {pageType === "graph" ? <g aria-hidden="true">
-        {Array.from({ length: 49 }, (_, index) => <line key={`v-${index}`} x1={(index + 1) * 20} y1="0" x2={(index + 1) * 20} y2={VIEWBOX_HEIGHT} stroke={(index + 1) % 5 === 0 ? "#b8b8b8" : "#e2e2e2"} strokeWidth={(index + 1) % 5 === 0 ? "1.4" : "0.7"} />)}
-        {Array.from({ length: 29 }, (_, index) => <line key={`h-${index}`} x1="0" y1={(index + 1) * 20} x2={VIEWBOX_WIDTH} y2={(index + 1) * 20} stroke={(index + 1) % 5 === 0 ? "#b8b8b8" : "#e2e2e2"} strokeWidth={(index + 1) % 5 === 0 ? "1.4" : "0.7"} />)}
+      {pageType === "lined" ? LINED_Y.map((y) => <line key={`line-${y}`} x1="0" y1={y} x2={VIEWBOX_WIDTH} y2={y} stroke="#d4d4d4" strokeWidth="1" />) : null}
+      {pageType === "graph" ? <g>
+        {GRAPH_X.map((x) => <line key={`vertical-${x}`} x1={x} y1="0" x2={x} y2={VIEWBOX_HEIGHT} stroke={x % 100 === 0 ? "#b8b8b8" : "#e2e2e2"} strokeWidth={x % 100 === 0 ? "1.4" : "0.7"} />)}
+        {GRAPH_Y.map((y) => <line key={`horizontal-${y}`} x1="0" y1={y} x2={VIEWBOX_WIDTH} y2={y} stroke={y % 100 === 0 ? "#b8b8b8" : "#e2e2e2"} strokeWidth={y % 100 === 0 ? "1.4" : "0.7"} />)}
       </g> : null}
       {strokes.map((stroke) => <polyline key={stroke.id} data-stroke-id={stroke.id} points={stroke.points.map((point) => `${point.x * VIEWBOX_WIDTH},${point.y * VIEWBOX_HEIGHT}`).join(" ")} fill="none" stroke="#111111" strokeWidth={stroke.width} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />)}
     </svg>
