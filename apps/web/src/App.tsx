@@ -20,7 +20,7 @@ import { SourcePanel } from "./components/SourcePanel";
 import { TransferChallenge } from "./components/TransferChallenge";
 import { TutorCompanion } from "./components/TutorCompanion";
 
-export default function App() {
+export function LegacyExperience() {
   const queryClient = useQueryClient();
   const home = useQuery({ queryKey: ["home"], queryFn: getHome });
   const lesson = useQuery({ queryKey: ["lesson"], queryFn: getCurrentLesson });
@@ -219,4 +219,13 @@ export default function App() {
       </div>
     </div>
   );
+}
+
+import { JourneyApp } from "./JourneyApp";
+
+export default function App() {
+  if (window.location.pathname === "/legacy" || window.location.pathname.startsWith("/legacy/")) {
+    return <LegacyExperience />;
+  }
+  return <JourneyApp />;
 }

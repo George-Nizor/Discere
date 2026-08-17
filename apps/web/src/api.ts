@@ -1,4 +1,6 @@
 import {
+  JourneyProgressResponseSchema,
+  JourneyResponseSchema,
   HomeResponseSchema,
   LessonResponseSchema,
   NotebookPageSchema,
@@ -10,6 +12,9 @@ import {
   type AttemptResponse,
   type HintResponse,
   type HomeResponse,
+  type JourneyProgress,
+  type JourneyResponse,
+  type StageProgressUpdate,
   type LessonResponse,
   type NotebookPage,
   type NotebookSaveRequest,
@@ -81,6 +86,27 @@ export interface WorkingsReviewImportResult {
 
 export async function getHome(): Promise<HomeResponse> {
   return HomeResponseSchema.parse(await requestJson<unknown>("/api/home"));
+}
+
+export async function getJourney(courseId: string, lessonId: string): Promise<JourneyResponse> {
+  return JourneyResponseSchema.parse(
+    await requestJson<unknown>(`/api/courses/${encodeURIComponent(courseId)}/lessons/${encodeURIComponent(lessonId)}/journey`),
+  );
+}
+
+export async function getJourneyProgress(courseId: string, lessonId: string): Promise<JourneyProgress> {
+  return JourneyProgressResponseSchema.parse(
+    await requestJson<unknown>(`/api/courses/${encodeURIComponent(courseId)}/lessons/${encodeURIComponent(lessonId)}/progress`),
+  );
+}
+
+export async function saveJourneyProgress(courseId: string, lessonId: string, input: StageProgressUpdate): Promise<JourneyProgress> {
+  return JourneyProgressResponseSchema.parse(
+    await requestJson<unknown>(`/api/courses/${encodeURIComponent(courseId)}/lessons/${encodeURIComponent(lessonId)}/progress`, {
+      method: "PUT",
+      body: JSON.stringify(input),
+    }),
+  );
 }
 
 export async function getCurrentLesson(): Promise<LessonResponse> {
