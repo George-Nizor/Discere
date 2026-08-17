@@ -152,4 +152,6 @@ Passed:
 
 The smoke run verified the redesigned flow in addition to the existing circuit, tutor, notebook, visual, and assessment checks. The current functional migration covers the first electronics lesson; the series-circuit lesson remains planned until its activity union is reachable.
 
+GitHub Actions run `32010641134` passed on `main` commit `09acefb`, including `pnpm check`, `pnpm build`, and `pnpm smoke`.
+
 Browser screenshot capture was attempted with Playwright Chromium. The downloaded browser could not start because the host is missing `libnspr4`, `libnss3`, and `libasound`; system-level dependency installation was not authorised. The fixture route and exact capture commands are recorded in [`docs/ui-ux/screenshots/README.md`](ui-ux/screenshots/README.md). No manual browser screenshot result is claimed.
