@@ -20,7 +20,7 @@ function capture(child, label) {
       output = `${output}${chunk.toString()}`.slice(-20_000);
     });
   }
-  return () => output ? `\n--- ${label} output ---\n${output.trim()}\n` : "";
+  return () => (output ? `\n--- ${label} output ---\n${output.trim()}\n` : "");
 }
 
 async function requestJson(url, init) {
@@ -30,15 +30,21 @@ async function requestJson(url, init) {
     signal: AbortSignal.timeout(5_000),
   });
   const body = await response.json();
-  if (!response.ok) throw new Error(`${url} returned HTTP ${response.status}: ${JSON.stringify(body)}`);
+  if (!response.ok) {
+    throw new Error(`${url} returned HTTP ${response.status}: ${JSON.stringify(body)}`);
+  }
   return body;
 }
 
 if (!isSupportedNode()) {
-  throw new Error(`Discere requires Node.js ${minimumNodeLabel()} or newer. Current version: ${process.versions.node}.`);
+  throw new Error(
+    `Discere requires Node.js ${minimumNodeLabel()} or newer. Current version: ${process.versions.node}.`,
+  );
 }
 const manager = resolvePackageManager();
-if (!manager) throw new Error("pnpm is unavailable; the smoke test cannot start the workspace services.");
+if (!manager) {
+  throw new Error("pnpm is unavailable; the smoke test cannot start the workspace services.");
+}
 if (!existsSync(resolve("apps/web/dist/index.html"))) {
   throw new Error("The production web bundle is missing. Run 'pnpm build' before 'pnpm smoke'.");
 }
@@ -88,18 +94,29 @@ try {
   ]);
 
   const health = await requestJson(`${webUrl}/api/health`);
-  if (health.status !== "ok" || health.service !== "discere") throw new Error("The proxied health response was invalid.");
+  if (health.status !== "ok" || health.service !== "discere") {
+    throw new Error("The proxied health response was invalid.");
+  }
 
   const lesson = await requestJson(`${apiUrl}/api/lessons/current`);
-  if (!lesson.lesson?.id || lesson.question?.answerAuthority !== undefined || !Array.isArray(lesson.sources)) {
+  if (
+    !lesson.lesson?.id ||
+    lesson.question?.answerAuthority !== undefined ||
+    !Array.isArray(lesson.sources)
+  ) {
     throw new Error("The learner-safe lesson contract was invalid or leaked answer authority.");
   }
 
-  const circuit = await fetch(`${apiUrl}/api/visuals/circuit.svg?voltage=5&resistance=100&values=false`, {
-    signal: AbortSignal.timeout(5_000),
-  });
+  const circuit = await fetch(
+    `${apiUrl}/api/visuals/circuit.svg?voltage=5&resistance=100&values=false`,
+    { signal: AbortSignal.timeout(5_000) },
+  );
   const circuitSvg = await circuit.text();
-  if (!circuit.ok || !circuit.headers.get("content-type")?.includes("image/svg+xml") || circuitSvg.includes('class="current"')) {
+  if (
+    !circuit.ok ||
+    !circuit.headers.get("content-type")?.includes("image/svg+xml") ||
+    circuitSvg.includes('class="current"')
+  ) {
     throw new Error("The concealed deterministic circuit visual failed its runtime check.");
   }
 
@@ -110,22 +127,102 @@ try {
       context: "lesson",
     }),
   });
-  if (writing.passed !== false || writing.violations.length === 0) throw new Error("The prose quality gate accepted a prohibited pattern.");
+  if (writing.passed !== false || writing.violations.length === 0) {
+    throw new Error("The prose quality gate accepted a prohibited pattern.");
+  }
+
+  const tutorPacket = await requestJson(`${apiUrl}/api/tutor/companion/packets`, {
+    method: "POST",
+    body: JSON.stringify({
+      operation: "tutor_reply",
+      payload: {
+        question: "Explain how resistance affects current.",
+        mode: "direct",
+      },
+    }),
+  });
+  if (
+    tutorPacket.operation !== "tutor_reply" ||
+    typeof tutorPacket.requestId !== "string" ||
+    !tutorPacket.text.includes("Return payload with this exact shape") ||
+    tutorPacket.text.includes('"answerAuthority"')
+  ) {
+    throw new Error("The ChatGPT tutor packet failed its learner-safety or protocol check.");
+  }
+
+  const directTutorEnvelope = {
+    protocolVersion: "0.2",
+    operation: "tutor_reply",
+    requestId: tutorPacket.requestId,
+    generatedAt: new Date().toISOString(),
+    payload: {
+      answer:
+        "At 5 V across 100 Ω, current is 0.05 A because current equals voltage divided by resistance.",
+      followUpQuestion: "What current would the same voltage produce through 200 Ω?",
+      sourceIds: [],
+      uncertainty: [],
+    },
+  };
+  const acceptedTutorReply = await requestJson(`${apiUrl}/api/tutor/companion/import`, {
+    method: "POST",
+    body: JSON.stringify({ text: JSON.stringify(directTutorEnvelope), mode: "direct" }),
+  });
+  if (
+    acceptedTutorReply.accepted !== true ||
+    acceptedTutorReply.requestId !== tutorPacket.requestId
+  ) {
+    throw new Error("The validated Direct-mode ChatGPT tutor reply was not accepted.");
+  }
+
+  const guidedTutorEnvelope = {
+    ...directTutorEnvelope,
+    payload: {
+      answer: "The current is 0.05 A.",
+      followUpQuestion: "Can you substitute the values yourself?",
+      sourceIds: [],
+      uncertainty: [],
+    },
+  };
+  const rejectedTutorReply = await requestJson(`${apiUrl}/api/tutor/companion/import`, {
+    method: "POST",
+    body: JSON.stringify({ text: JSON.stringify(guidedTutorEnvelope), mode: "coach" }),
+  });
+  if (
+    rejectedTutorReply.accepted !== false ||
+    !rejectedTutorReply.issues.some((issue) => String(issue.code).startsWith("ANS"))
+  ) {
+    throw new Error("The guided tutor bridge did not reject final-answer leakage.");
+  }
 
   const lessonId = encodeURIComponent(lesson.lesson.id);
   const emptyPage = await requestJson(`${apiUrl}/api/notebook/${lessonId}`);
-  if (emptyPage.strokes.length !== 0 || emptyPage.updatedAt !== null) throw new Error("A new notebook page was not empty.");
+  if (emptyPage.strokes.length !== 0 || emptyPage.updatedAt !== null) {
+    throw new Error("A new notebook page was not empty.");
+  }
   const notebookInput = {
     pageType: "graph",
     note: "Smoke-test working: I = V / R.",
-    strokes: [{ id: "smoke-stroke", width: 3, points: [{ x: 0.1, y: 0.2 }, { x: 0.25, y: 0.35 }] }],
+    strokes: [
+      {
+        id: "smoke-stroke",
+        width: 3,
+        points: [
+          { x: 0.1, y: 0.2 },
+          { x: 0.25, y: 0.35 },
+        ],
+      },
+    ],
   };
   await requestJson(`${apiUrl}/api/notebook/${lessonId}`, {
     method: "PUT",
     body: JSON.stringify(notebookInput),
   });
   const savedPage = await requestJson(`${apiUrl}/api/notebook/${lessonId}`);
-  if (savedPage.pageType !== "graph" || savedPage.note !== notebookInput.note || savedPage.strokes.length !== 1) {
+  if (
+    savedPage.pageType !== "graph" ||
+    savedPage.note !== notebookInput.note ||
+    savedPage.strokes.length !== 1
+  ) {
     throw new Error("Notebook persistence failed its round-trip check.");
   }
 
@@ -137,10 +234,14 @@ try {
       mode: "coach",
     }),
   });
-  if (attempt.correct !== true || attempt.independent !== true) throw new Error("The numeric assessment runtime check failed.");
+  if (attempt.correct !== true || attempt.independent !== true) {
+    throw new Error("The numeric assessment runtime check failed.");
+  }
 
   console.log(`Discere smoke test passed at ${webUrl}.`);
-  console.log("Verified web preview, API proxying, safe lesson delivery, visuals, writing gate, notebook persistence, and assessment.");
+  console.log(
+    "Verified web preview, API proxying, safe lesson delivery, visuals, writing gate, ChatGPT tutor validation, notebook persistence, and assessment.",
+  );
 } catch (error) {
   console.error(error instanceof Error ? error.message : error);
   console.error(serverOutput());
