@@ -12,11 +12,15 @@ function formatHost(host: string): string {
 }
 
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, "../..", "");
-  const apiHost = env["DISCERE_HOST"] || "127.0.0.1";
-  const apiPort = parsePort(env["DISCERE_PORT"], 4317);
-  const webHost = env["DISCERE_WEB_HOST"] || "127.0.0.1";
-  const webPort = parsePort(env["DISCERE_WEB_PORT"], 4318);
+  const fileEnvironment = loadEnv(mode, "../..", "");
+  const environment: Record<string, string | undefined> = {
+    ...fileEnvironment,
+    ...process.env,
+  };
+  const apiHost = environment["DISCERE_HOST"] || "127.0.0.1";
+  const apiPort = parsePort(environment["DISCERE_PORT"], 4317);
+  const webHost = environment["DISCERE_WEB_HOST"] || "127.0.0.1";
+  const webPort = parsePort(environment["DISCERE_WEB_PORT"], 4318);
   const proxy = {
     "/api": {
       target: `http://${formatHost(apiHost)}:${apiPort}`,
