@@ -3,6 +3,7 @@ import {
   LessonResponseSchema,
   NotebookPageSchema,
   TutorReplyDraftSchema,
+  WorkingsReviewDraftSchema,
   type AttemptRequest,
   type AttemptResponse,
   type HintResponse,
@@ -15,6 +16,8 @@ import {
   type TutorReplyDraft,
   type TutorReplyRequest,
   type TutoringMode,
+  type WorkingsReviewDraft,
+  type WorkingsReviewRequest,
 } from "@discere/contracts";
 
 async function requestJson<T>(url: string, init?: RequestInit): Promise<T> {
@@ -40,6 +43,14 @@ export interface CompanionPacket {
   operation: "tutor_reply";
 }
 
+export interface WorkingsReviewPacket {
+  filename: string;
+  text: string;
+  requestId: string;
+  operation: "workings_review";
+  expectedFilename: string;
+}
+
 export interface CompanionIssue {
   field: string;
   code: string;
@@ -53,6 +64,14 @@ export interface TutorReplyImportResult {
   requestId: string;
   issues: CompanionIssue[];
   reply: TutorReplyDraft;
+}
+
+export interface WorkingsReviewImportResult {
+  accepted: boolean;
+  operation: "workings_review";
+  requestId: string;
+  issues: CompanionIssue[];
+  review: WorkingsReviewDraft;
 }
 
 export async function getHome(): Promise<HomeResponse> {
@@ -136,6 +155,31 @@ export async function importTutorReply(
     );
   }
   return { ...result, reply: TutorReplyDraftSchema.parse(result.reply) };
+}
+
+export async function createWorkingsReviewPacket(
+  input: WorkingsReviewRequest,
+): Promise<WorkingsReviewPacket> {
+  return requestJson("/api/tutor/workings/packets", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export async function importWorkingsReview(input: {
+  text: string;
+  mode: TutoringMode;
+  lessonId: string;
+  expectedRequestId: string;
+}): Promise<WorkingsReviewImportResult> {
+  const result = await requestJson<WorkingsReviewImportResult>(
+    "/api/tutor/workings/import",
+    {
+      method: "POST",
+      body: JSON.stringify(input),
+    },
+  );
+  return { ...result, review: WorkingsReviewDraftSchema.parse(result.review) };
 }
 
 export async function createImagePrompt(visualBriefId: string): Promise<{ prompt: string }> {
