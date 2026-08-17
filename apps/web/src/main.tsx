@@ -7,6 +7,7 @@ import "./accessibility.css";
 import "./story.css";
 import "./story-stages.css";
 import "./story-quiz.css";
+import "./story-essay.css";
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { staleTime: 15_000, retry: 1 }, mutations: { retry: 0 } } });
 const root = document.getElementById("root");

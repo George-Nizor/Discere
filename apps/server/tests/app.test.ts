@@ -38,6 +38,21 @@ describe("Discere API", () => {
     expect(restored.json().activeStageId).toBe("current-in-one-loop:visual");
   });
 
+  it("autosaves and submits a teach-back without exposing rubric authority", async () => {
+    const essayId = "current-in-one-loop:teach-back";
+    const content = "Voltage provides the push, resistance limits current, and Ohm's law relates them. With five volts and one hundred ohms, the current is fifty milliamps.";
+    const save = await app.inject({ method: "PUT", url: `/api/essays/${encodeURIComponent(essayId)}`, payload: { content } });
+    expect(save.statusCode).toBe(200);
+    expect(save.json().content).toBe(content);
+    expect(save.json().submitted).toBe(false);
+    const submit = await app.inject({ method: "POST", url: `/api/essays/${encodeURIComponent(essayId)}/submit`, payload: { content } });
+    expect(submit.statusCode).toBe(200);
+    expect(submit.json().submitted).toBe(true);
+    expect(submit.json().rubric).toBeUndefined();
+    const restored = await app.inject({ method: "GET", url: `/api/essays/${encodeURIComponent(essayId)}` });
+    expect(restored.json().submitted).toBe(true);
+  });
+
   it("returns a visual-first current lesson without the answer authority", async () => {
     const response = await app.inject({ method: "GET", url: "/api/lessons/current" });
     expect(response.statusCode).toBe(200);

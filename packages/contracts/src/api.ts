@@ -83,6 +83,32 @@ export type JourneyProgressResponse = z.infer<typeof JourneyProgressResponseSche
 export const StageProgressUpdateSchema = StageProgressRequestSchema;
 export type StageProgressUpdate = z.infer<typeof StageProgressUpdateSchema>;
 
+export const EssayDraftResponseSchema = z
+  .object({
+    essayId: z.string().min(1),
+    content: z.string().max(100_000),
+    wordCount: z.number().int().nonnegative(),
+    submitted: z.boolean(),
+    updatedAt: z.string().datetime().nullable(),
+  })
+  .strict();
+export type EssayDraftResponse = z.infer<typeof EssayDraftResponseSchema>;
+
+export const EssaySaveRequestSchema = z
+  .object({ content: z.string().max(100_000) })
+  .strict();
+export type EssaySaveRequest = z.infer<typeof EssaySaveRequestSchema>;
+
+export const EssaySubmitResponseSchema = z
+  .object({
+    essayId: z.string().min(1),
+    submitted: z.literal(true),
+    wordCount: z.number().int().nonnegative(),
+    feedback: z.string().min(1),
+  })
+  .strict();
+export type EssaySubmitResponse = z.infer<typeof EssaySubmitResponseSchema>;
+
 export const AttemptRequestSchema = z
   .object({
     questionId: z.string().min(1),

@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { FastifyInstance } from "fastify";
-import { AttemptRequestSchema, LessonDraftSchema, NotebookSaveRequestSchema, RevealConfirmRequestSchema, RevealStartRequestSchema, StageProgressRequestSchema, TutorEnvelopeBaseSchema, TutorOperationSchema, TutorReplyDraftSchema, TutorReplyRequestSchema, TutoringModeSchema, WritingLintRequestSchema } from "@discere/contracts";
+import { AttemptRequestSchema, EssaySaveRequestSchema, LessonDraftSchema, NotebookSaveRequestSchema, RevealConfirmRequestSchema, RevealStartRequestSchema, StageProgressRequestSchema, TutorEnvelopeBaseSchema, TutorOperationSchema, TutorReplyDraftSchema, TutorReplyRequestSchema, TutoringModeSchema, WritingLintRequestSchema } from "@discere/contracts";
 import { scoreAttempt, updateMastery } from "@discere/progression-engine";
 import { buildCompanionPacket } from "@discere/tutor-providers";
 import { createImageGenerationPrompt, inspectVisualBrief, renderCircuitSvg, renderOhmsLawGraphSvg } from "@discere/visual-engine";
@@ -23,6 +23,7 @@ const LessonParamsSchema = z.object({ lessonId: z.string().min(1).max(200) }).st
 const CourseParamsSchema = z.object({ courseId: z.string().min(1).max(200) }).strict();
 const JourneyParamsSchema = z.object({ courseId: z.string().min(1).max(200), lessonId: z.string().min(1).max(200) }).strict();
 const StageParamsSchema = JourneyParamsSchema.extend({ stageId: z.string().min(1).max(240) }).strict();
+const EssayParamsSchema = z.object({ essayId: z.string().min(1).max(240) }).strict();
 const CircuitQuerySchema = z.object({
   voltage: z.coerce.number().positive().max(100).default(5),
   resistance: z.coerce.number().positive().max(1_000_000).default(100),
@@ -82,6 +83,37 @@ export async function registerRoutes(app: FastifyInstance, dependencies: RouteDe
       if (error instanceof Error && error.message.startsWith("Stage '")) throw new HttpError(409, error.message, "STAGE_NOT_IN_JOURNEY");
       throw error;
     }
+  });
+  app.get("/api/essays/:essayId", async (request) => {
+    const { essayId } = EssayParamsSchema.parse(request.params);
+    const journey = content.getJourney(content.currentLesson.lesson.id);
+    const stage = journey?.stages.find((item) => item.type === "essay" && item.essayId === essayId);
+    if (!stage || stage.type !== "essay") throw new HttpError(404, "Essay not found.", "ESSAY_NOT_FOUND");
+    const draft = store.getEssayDraft(essayId);
+    return { ...draft, wordCount: draft.content.trim() ? draft.content.trim().split(/\s+/).length : 0 };
+  });
+  app.put("/api/essays/:essayId", async (request) => {
+    const { essayId } = EssayParamsSchema.parse(request.params);
+    const body = EssaySaveRequestSchema.parse(request.body);
+    const journey = content.getJourney(content.currentLesson.lesson.id);
+    const stage = journey?.stages.find((item) => item.type === "essay" && item.essayId === essayId);
+    if (!stage || stage.type !== "essay") throw new HttpError(404, "Essay not found.", "ESSAY_NOT_FOUND");
+    const draft = store.saveEssayDraft(essayId, body.content);
+    return { ...draft, wordCount: draft.content.trim() ? draft.content.trim().split(/\s+/).length : 0 };
+  });
+  app.post("/api/essays/:essayId/submit", async (request) => {
+    const { essayId } = EssayParamsSchema.parse(request.params);
+    const body = EssaySaveRequestSchema.parse(request.body);
+    const journey = content.getJourney(content.currentLesson.lesson.id);
+    const stage = journey?.stages.find((item) => item.type === "essay" && item.essayId === essayId);
+    if (!stage || stage.type !== "essay") throw new HttpError(404, "Essay not found.", "ESSAY_NOT_FOUND");
+    const wordCount = body.content.trim() ? body.content.trim().split(/\s+/).length : 0;
+    if (wordCount < stage.minWords) throw new HttpError(400, `Write at least ${stage.minWords} words before submitting.`, "ESSAY_TOO_SHORT");
+    const lint = lintText(body.content, { context: "assessment" });
+    store.recordWritingGate("assessment", body.content, lint);
+    if (!lint.passed) throw new HttpError(400, "Revise the highlighted writing issues before submitting.", "ESSAY_WRITING_GATE");
+    const saved = store.submitEssay(essayId, body.content);
+    return { essayId: saved.essayId, submitted: true as const, wordCount, feedback: "Your teach-back has been saved as submitted evidence." };
   });
   app.get("/api/lessons/current", async () => content.currentLesson);
   app.get("/api/notebook/:lessonId", async (request) => {

@@ -23,6 +23,7 @@ export interface AttemptWrite {
   independent: boolean;
 }
 export interface RevealRow { token: string; attemptId: string; reason: string; availableAt: string; usedAt: string | null; createdAt: string; }
+export interface EssayDraftRow { essayId: string; content: string; submitted: boolean; updatedAt: string | null; }
 
 function now(): string { return new Date().toISOString(); }
 function bool(value: unknown): boolean { return value === 1 || value === true; }
@@ -47,6 +48,7 @@ export class DiscereStore {
       CREATE TABLE IF NOT EXISTS reveal_sessions (token TEXT PRIMARY KEY, attempt_id TEXT NOT NULL, reason TEXT NOT NULL, available_at TEXT NOT NULL, used_at TEXT, created_at TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS writing_gate_runs (id TEXT PRIMARY KEY, context TEXT NOT NULL, passed INTEGER NOT NULL, text_hash TEXT NOT NULL, violation_count INTEGER NOT NULL, created_at TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS journey_progress (user_id TEXT NOT NULL, journey_id TEXT NOT NULL, stage_id TEXT NOT NULL, state TEXT NOT NULL, interaction_state TEXT NOT NULL DEFAULT '{}', updated_at TEXT NOT NULL, PRIMARY KEY (user_id, journey_id, stage_id));
+      CREATE TABLE IF NOT EXISTS essay_drafts (user_id TEXT NOT NULL, essay_id TEXT NOT NULL, content TEXT NOT NULL DEFAULT '', submitted INTEGER NOT NULL DEFAULT 0, updated_at TEXT, PRIMARY KEY (user_id, essay_id));
       CREATE INDEX IF NOT EXISTS idx_attempts_question ON attempts(question_id);
       CREATE INDEX IF NOT EXISTS idx_assistance_attempt ON assistance_events(attempt_id);
       CREATE INDEX IF NOT EXISTS idx_journey_progress ON journey_progress(user_id, journey_id);
@@ -124,6 +126,24 @@ export class DiscereStore {
     });
     transaction();
     return this.getJourneyProgress(journeyId, stageOrder);
+  }
+
+  getEssayDraft(essayId: string): EssayDraftRow {
+    const row = this.database.prepare("SELECT essay_id AS essayId, content, submitted, updated_at AS updatedAt FROM essay_drafts WHERE user_id = ? AND essay_id = ?").get(LOCAL_USER_ID, essayId) as { essayId: string; content: string; submitted: number; updatedAt: string | null } | undefined;
+    if (!row) return { essayId, content: "", submitted: false, updatedAt: null };
+    return { essayId: row.essayId, content: row.content, submitted: bool(row.submitted), updatedAt: row.updatedAt };
+  }
+
+  saveEssayDraft(essayId: string, content: string): EssayDraftRow {
+    const timestamp = now();
+    this.database.prepare("INSERT INTO essay_drafts (user_id, essay_id, content, submitted, updated_at) VALUES (?, ?, ?, 0, ?) ON CONFLICT(user_id, essay_id) DO UPDATE SET content = CASE WHEN essay_drafts.submitted = 1 THEN essay_drafts.content ELSE excluded.content END, updated_at = CASE WHEN essay_drafts.submitted = 1 THEN essay_drafts.updated_at ELSE excluded.updated_at END").run(LOCAL_USER_ID, essayId, content, timestamp);
+    return this.getEssayDraft(essayId);
+  }
+
+  submitEssay(essayId: string, content: string): EssayDraftRow {
+    const timestamp = now();
+    this.database.prepare("INSERT INTO essay_drafts (user_id, essay_id, content, submitted, updated_at) VALUES (?, ?, ?, 1, ?) ON CONFLICT(user_id, essay_id) DO UPDATE SET content = CASE WHEN essay_drafts.submitted = 1 THEN essay_drafts.content ELSE excluded.content END, submitted = 1, updated_at = CASE WHEN essay_drafts.submitted = 1 THEN essay_drafts.updated_at ELSE excluded.updated_at END").run(LOCAL_USER_ID, essayId, content, timestamp);
+    return this.getEssayDraft(essayId);
   }
 
   getAttempt(id: string): AttemptRow | null {

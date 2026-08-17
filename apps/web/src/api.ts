@@ -1,4 +1,6 @@
 import {
+  EssayDraftResponseSchema,
+  EssaySubmitResponseSchema,
   JourneyProgressResponseSchema,
   JourneyResponseSchema,
   HomeResponseSchema,
@@ -12,6 +14,9 @@ import {
   type AttemptResponse,
   type HintResponse,
   type HomeResponse,
+  type EssayDraftResponse,
+  type EssaySaveRequest,
+  type EssaySubmitResponse,
   type JourneyProgress,
   type JourneyResponse,
   type StageProgressUpdate,
@@ -107,6 +112,18 @@ export async function saveJourneyProgress(courseId: string, lessonId: string, in
       body: JSON.stringify(input),
     }),
   );
+}
+
+export async function getEssayDraft(essayId: string): Promise<EssayDraftResponse> {
+  return EssayDraftResponseSchema.parse(await requestJson<unknown>(`/api/essays/${encodeURIComponent(essayId)}`));
+}
+
+export async function saveEssayDraft(essayId: string, input: EssaySaveRequest): Promise<EssayDraftResponse> {
+  return EssayDraftResponseSchema.parse(await requestJson<unknown>(`/api/essays/${encodeURIComponent(essayId)}`, { method: "PUT", body: JSON.stringify(input) }));
+}
+
+export async function submitEssay(essayId: string, input: EssaySaveRequest): Promise<EssaySubmitResponse> {
+  return EssaySubmitResponseSchema.parse(await requestJson<unknown>(`/api/essays/${encodeURIComponent(essayId)}/submit`, { method: "POST", body: JSON.stringify(input) }));
 }
 
 export async function getCurrentLesson(): Promise<LessonResponse> {
