@@ -53,6 +53,21 @@ describe("Discere API", () => {
     expect(restored.json().submitted).toBe(true);
   });
 
+  it("keeps review backs behind a reveal and records independent evidence", async () => {
+    const session = await app.inject({ method: "POST", url: "/api/review/sessions", payload: {} });
+    expect(session.statusCode).toBe(200);
+    const sessionBody = session.json();
+    expect(sessionBody.card.back).toBeUndefined();
+    const revealed = await app.inject({ method: "POST", url: `/api/review/sessions/${sessionBody.sessionId}/reveal`, payload: {} });
+    expect(revealed.statusCode).toBe(200);
+    expect(revealed.json().back).toContain("0.05 A");
+    const rated = await app.inject({ method: "POST", url: `/api/review/sessions/${sessionBody.sessionId}/rate`, payload: { rating: "good", recalled: true } });
+    expect(rated.statusCode).toBe(200);
+    expect(rated.json().evidence).toBe("independent");
+    const repeated = await app.inject({ method: "POST", url: `/api/review/sessions/${sessionBody.sessionId}/rate`, payload: { rating: "easy", recalled: true } });
+    expect(repeated.statusCode).toBe(409);
+  });
+
   it("returns a visual-first current lesson without the answer authority", async () => {
     const response = await app.inject({ method: "GET", url: "/api/lessons/current" });
     expect(response.statusCode).toBe(200);

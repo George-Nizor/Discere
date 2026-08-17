@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import type { FastifyInstance } from "fastify";
-import { AttemptRequestSchema, EssaySaveRequestSchema, LessonDraftSchema, NotebookSaveRequestSchema, RevealConfirmRequestSchema, RevealStartRequestSchema, StageProgressRequestSchema, TutorEnvelopeBaseSchema, TutorOperationSchema, TutorReplyDraftSchema, TutorReplyRequestSchema, TutoringModeSchema, WritingLintRequestSchema } from "@discere/contracts";
-import { scoreAttempt, updateMastery } from "@discere/progression-engine";
+import { AttemptRequestSchema, EssaySaveRequestSchema, LessonDraftSchema, NotebookSaveRequestSchema, ReviewRateRequestSchema, RevealConfirmRequestSchema, RevealStartRequestSchema, StageProgressRequestSchema, TutorEnvelopeBaseSchema, TutorOperationSchema, TutorReplyDraftSchema, TutorReplyRequestSchema, TutoringModeSchema, WritingLintRequestSchema } from "@discere/contracts";
+import { createFlashcardFromReviewedQuestion, createReviewState, scoreAttempt, updateMastery } from "@discere/progression-engine";
 import { buildCompanionPacket } from "@discere/tutor-providers";
 import { createImageGenerationPrompt, inspectVisualBrief, renderCircuitSvg, renderOhmsLawGraphSvg } from "@discere/visual-engine";
 import { lintText, type WritingContext } from "@discere/writing-engine";
@@ -114,6 +114,47 @@ export async function registerRoutes(app: FastifyInstance, dependencies: RouteDe
     if (!lint.passed) throw new HttpError(400, "Revise the highlighted writing issues before submitting.", "ESSAY_WRITING_GATE");
     const saved = store.submitEssay(essayId, body.content);
     return { essayId: saved.essayId, submitted: true as const, wordCount, feedback: "Your teach-back has been saved as submitted evidence." };
+  });
+  function ensureDefaultReviewCard() {
+    const question = content.getQuestion(content.currentLesson.question.id);
+    if (!question) throw new HttpError(404, "Review question not found.", "REVIEW_QUESTION_NOT_FOUND");
+    const reviewedAt = new Date().toISOString();
+    const card = createFlashcardFromReviewedQuestion({ question, reviewedAt });
+    return store.ensureReviewCard(card, createReviewState(card.id, reviewedAt));
+  }
+  function safeReviewSession(sessionId: string) {
+    const session = store.getReviewSession(sessionId);
+    if (!session) throw new HttpError(404, "Review session not found.", "REVIEW_SESSION_NOT_FOUND");
+    const card = store.getReviewCard(session.cardId);
+    if (!card) throw new HttpError(404, "Review card not found.", "REVIEW_CARD_NOT_FOUND");
+    return { sessionId: session.id, card: { cardId: card.card.id, questionId: card.card.questionId, front: card.card.front, conceptIds: card.card.conceptIds, revealed: false as const }, rated: session.rated };
+  }
+  app.get("/api/review", async () => {
+    ensureDefaultReviewCard();
+    const dueCount = store.countDueReviewCards(new Date().toISOString());
+    return { dueCount, estimatedMinutes: dueCount === 0 ? 0 : Math.max(2, dueCount * 2) };
+  });
+  app.post("/api/review/sessions", async () => {
+    const card = ensureDefaultReviewCard();
+    const due = store.getDueReviewCard(new Date().toISOString()) ?? card;
+    return safeReviewSession(store.createReviewSession(due.card.id).id);
+  });
+  app.get("/api/review/sessions/:sessionId", async (request) => {
+    const { sessionId } = z.object({ sessionId: z.string().uuid() }).parse(request.params);
+    return safeReviewSession(sessionId);
+  });
+  app.post("/api/review/sessions/:sessionId/reveal", async (request) => {
+    const { sessionId } = z.object({ sessionId: z.string().uuid() }).parse(request.params);
+    const card = store.revealReviewSession(sessionId);
+    if (!card) throw new HttpError(409, "This review session cannot reveal another answer.", "REVIEW_REVEAL_UNAVAILABLE");
+    return { sessionId, cardId: card.card.id, back: card.card.back, sourceIds: card.card.sourceIds };
+  });
+  app.post("/api/review/sessions/:sessionId/rate", async (request) => {
+    const { sessionId } = z.object({ sessionId: z.string().uuid() }).parse(request.params);
+    const body = ReviewRateRequestSchema.parse(request.body);
+    const result = store.rateReviewSession(sessionId, body.rating, body.recalled);
+    if (!result) throw new HttpError(409, "Reveal the card before rating this review.", "REVIEW_RATE_UNAVAILABLE");
+    return { sessionId, rating: body.rating, evidence: result.evidence, dueAt: result.state.dueAt, intervalDays: result.state.intervalDays, repetition: result.state.repetition };
   });
   app.get("/api/lessons/current", async () => content.currentLesson);
   app.get("/api/notebook/:lessonId", async (request) => {

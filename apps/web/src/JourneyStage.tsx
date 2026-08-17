@@ -3,6 +3,7 @@ import type { ExplainerStage, InteractiveVisualStage, LearnerStage } from "@disc
 import { calculateCurrent } from "@discere/visual-engine";
 import { StoryQuiz } from "./StoryQuiz";
 import { StoryEssay } from "./StoryEssay";
+import { StoryReview } from "./StoryReview";
 
 function Explainer({ stage, onComplete }: { stage: ExplainerStage; onComplete: () => void }) {
   const paragraphs = stage.body.split("\n\n");
@@ -78,5 +79,6 @@ export function JourneyStage({ stage, onComplete }: { stage: LearnerStage; onCom
   if (stage.type === "interactive_visual") return <InteractiveVisual stage={stage} onComplete={onComplete} />;
   if (stage.type === "quiz") return <StoryQuiz stage={stage} onComplete={onComplete} />;
   if (stage.type === "essay") return <StoryEssay stage={stage} onComplete={onComplete} />;
+  if (stage.type === "review") return <StoryReview stage={stage} onComplete={onComplete} />;
   return <section className="story-stage-placeholder"><p className="story-kicker">{stage.type.replace("_", " ")}</p><h2>{stage.title}</h2><p>The next focused stage is being connected to this journey.</p><button className="story-primary" type="button" onClick={onComplete}>Continue</button></section>;
 }

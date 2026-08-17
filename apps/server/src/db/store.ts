@@ -3,6 +3,7 @@ import { mkdirSync } from "node:fs";
 import path from "node:path";
 import Database from "better-sqlite3";
 import type { Concept, ConceptProgress, ConceptState, JourneyProgress, StageProgressRequest, StageState, TutoringMode, WritingLintResponse } from "@discere/contracts";
+import { scheduleReview, type Flashcard, type ReviewEvidence, type ReviewOutcome, type ReviewState } from "@discere/progression-engine";
 
 const LOCAL_USER_ID = "local-user";
 
@@ -24,6 +25,8 @@ export interface AttemptWrite {
 }
 export interface RevealRow { token: string; attemptId: string; reason: string; availableAt: string; usedAt: string | null; createdAt: string; }
 export interface EssayDraftRow { essayId: string; content: string; submitted: boolean; updatedAt: string | null; }
+export interface ReviewCardRow { card: Flashcard; state: ReviewState; }
+export interface ReviewSessionRow { id: string; cardId: string; revealed: boolean; rated: boolean; createdAt: string; }
 
 function now(): string { return new Date().toISOString(); }
 function bool(value: unknown): boolean { return value === 1 || value === true; }
@@ -49,6 +52,8 @@ export class DiscereStore {
       CREATE TABLE IF NOT EXISTS writing_gate_runs (id TEXT PRIMARY KEY, context TEXT NOT NULL, passed INTEGER NOT NULL, text_hash TEXT NOT NULL, violation_count INTEGER NOT NULL, created_at TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS journey_progress (user_id TEXT NOT NULL, journey_id TEXT NOT NULL, stage_id TEXT NOT NULL, state TEXT NOT NULL, interaction_state TEXT NOT NULL DEFAULT '{}', updated_at TEXT NOT NULL, PRIMARY KEY (user_id, journey_id, stage_id));
       CREATE TABLE IF NOT EXISTS essay_drafts (user_id TEXT NOT NULL, essay_id TEXT NOT NULL, content TEXT NOT NULL DEFAULT '', submitted INTEGER NOT NULL DEFAULT 0, updated_at TEXT, PRIMARY KEY (user_id, essay_id));
+      CREATE TABLE IF NOT EXISTS review_cards (user_id TEXT NOT NULL, card_id TEXT NOT NULL, question_id TEXT NOT NULL, concept_ids TEXT NOT NULL, front TEXT NOT NULL, back TEXT NOT NULL, source_ids TEXT NOT NULL, due_at TEXT NOT NULL, interval_days REAL NOT NULL, repetition INTEGER NOT NULL, last_outcome TEXT, last_evidence TEXT, independent_reviews INTEGER NOT NULL DEFAULT 0, assisted_reviews INTEGER NOT NULL DEFAULT 0, last_reviewed_at TEXT, PRIMARY KEY (user_id, card_id));
+      CREATE TABLE IF NOT EXISTS review_sessions (id TEXT PRIMARY KEY, user_id TEXT NOT NULL, card_id TEXT NOT NULL, revealed INTEGER NOT NULL DEFAULT 0, rated INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL);
       CREATE INDEX IF NOT EXISTS idx_attempts_question ON attempts(question_id);
       CREATE INDEX IF NOT EXISTS idx_assistance_attempt ON assistance_events(attempt_id);
       CREATE INDEX IF NOT EXISTS idx_journey_progress ON journey_progress(user_id, journey_id);
@@ -144,6 +149,64 @@ export class DiscereStore {
     const timestamp = now();
     this.database.prepare("INSERT INTO essay_drafts (user_id, essay_id, content, submitted, updated_at) VALUES (?, ?, ?, 1, ?) ON CONFLICT(user_id, essay_id) DO UPDATE SET content = CASE WHEN essay_drafts.submitted = 1 THEN essay_drafts.content ELSE excluded.content END, submitted = 1, updated_at = CASE WHEN essay_drafts.submitted = 1 THEN essay_drafts.updated_at ELSE excluded.updated_at END").run(LOCAL_USER_ID, essayId, content, timestamp);
     return this.getEssayDraft(essayId);
+  }
+
+  ensureReviewCard(card: Flashcard, state: ReviewState): ReviewCardRow {
+    this.database.prepare("INSERT OR IGNORE INTO review_cards (user_id, card_id, question_id, concept_ids, front, back, source_ids, due_at, interval_days, repetition, last_outcome, last_evidence, independent_reviews, assisted_reviews, last_reviewed_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)").run(LOCAL_USER_ID, card.id, card.questionId, JSON.stringify(card.conceptIds), card.front, card.back, JSON.stringify(card.sourceIds), state.dueAt, state.intervalDays, state.repetition, state.lastOutcome, state.lastEvidence, state.independentReviews, state.assistedReviews, state.lastReviewedAt);
+    return this.getReviewCard(card.id) ?? { card, state };
+  }
+
+  getReviewCard(cardId: string): ReviewCardRow | null {
+    const row = this.database.prepare("SELECT card_id AS cardId, question_id AS questionId, concept_ids AS conceptIds, front, back, source_ids AS sourceIds, due_at AS dueAt, interval_days AS intervalDays, repetition, last_outcome AS lastOutcome, last_evidence AS lastEvidence, independent_reviews AS independentReviews, assisted_reviews AS assistedReviews, last_reviewed_at AS lastReviewedAt FROM review_cards WHERE user_id = ? AND card_id = ?").get(LOCAL_USER_ID, cardId) as Record<string, unknown> | undefined;
+    if (!row) return null;
+    const parseArray = (value: unknown): string[] => { try { return JSON.parse(String(value)) as string[]; } catch { return []; } };
+    const state: ReviewState = { cardId: String(row.cardId), dueAt: String(row.dueAt), intervalDays: Number(row.intervalDays), repetition: Number(row.repetition), lastOutcome: (row.lastOutcome as ReviewOutcome | null) ?? null, lastEvidence: (row.lastEvidence as ReviewEvidence | null) ?? null, independentReviews: Number(row.independentReviews), assistedReviews: Number(row.assistedReviews), lastReviewedAt: row.lastReviewedAt ? String(row.lastReviewedAt) : null };
+    return { card: { id: String(row.cardId), questionId: String(row.questionId), conceptIds: parseArray(row.conceptIds), front: String(row.front), back: String(row.back), sourceIds: parseArray(row.sourceIds), reviewedAt: state.lastReviewedAt ?? state.dueAt }, state };
+  }
+
+  getDueReviewCard(nowTimestamp: string): ReviewCardRow | null {
+    const row = this.database.prepare("SELECT card_id AS cardId FROM review_cards WHERE user_id = ? AND due_at <= ? ORDER BY due_at, repetition, card_id LIMIT 1").get(LOCAL_USER_ID, nowTimestamp) as { cardId: string } | undefined;
+    return row ? this.getReviewCard(row.cardId) : null;
+  }
+
+  countDueReviewCards(nowTimestamp: string): number {
+    const row = this.database.prepare("SELECT COUNT(*) AS count FROM review_cards WHERE user_id = ? AND due_at <= ?").get(LOCAL_USER_ID, nowTimestamp) as { count: number };
+    return row.count;
+  }
+
+  createReviewSession(cardId: string): ReviewSessionRow {
+    if (!this.getReviewCard(cardId)) throw new Error(`Review card '${cardId}' was not found.`);
+    const session: ReviewSessionRow = { id: randomUUID(), cardId, revealed: false, rated: false, createdAt: now() };
+    this.database.prepare("INSERT INTO review_sessions (id, user_id, card_id, revealed, rated, created_at) VALUES (?, ?, ?, 0, 0, ?)").run(session.id, LOCAL_USER_ID, session.cardId, session.createdAt);
+    return session;
+  }
+
+  getReviewSession(sessionId: string): ReviewSessionRow | null {
+    const row = this.database.prepare("SELECT id, card_id AS cardId, revealed, rated, created_at AS createdAt FROM review_sessions WHERE user_id = ? AND id = ?").get(LOCAL_USER_ID, sessionId) as { id: string; cardId: string; revealed: number; rated: number; createdAt: string } | undefined;
+    return row ? { id: row.id, cardId: row.cardId, revealed: bool(row.revealed), rated: bool(row.rated), createdAt: row.createdAt } : null;
+  }
+
+  revealReviewSession(sessionId: string): ReviewCardRow | null {
+    const session = this.getReviewSession(sessionId);
+    if (!session || session.rated) return null;
+    this.database.prepare("UPDATE review_sessions SET revealed = 1 WHERE id = ? AND user_id = ?").run(sessionId, LOCAL_USER_ID);
+    return this.getReviewCard(session.cardId);
+  }
+
+  rateReviewSession(sessionId: string, rating: "again" | "hard" | "good" | "easy", recalled: boolean): { state: ReviewState; evidence: ReviewEvidence } | null {
+    const session = this.getReviewSession(sessionId);
+    if (!session || session.rated || !session.revealed) return null;
+    const card = this.getReviewCard(session.cardId);
+    if (!card) return null;
+    const outcome: ReviewOutcome = rating === "again" ? "incorrect" : "correct";
+    const evidence: ReviewEvidence = recalled ? "independent" : "assisted";
+    const next = scheduleReview(card.state, { outcome, evidence, reviewedAt: now() });
+    const updated = this.database.transaction(() => {
+      this.database.prepare("UPDATE review_cards SET due_at = ?, interval_days = ?, repetition = ?, last_outcome = ?, last_evidence = ?, independent_reviews = ?, assisted_reviews = ?, last_reviewed_at = ? WHERE user_id = ? AND card_id = ?").run(next.dueAt, next.intervalDays, next.repetition, next.lastOutcome, next.lastEvidence, next.independentReviews, next.assistedReviews, next.lastReviewedAt, LOCAL_USER_ID, session.cardId);
+      this.database.prepare("UPDATE review_sessions SET rated = 1 WHERE id = ? AND user_id = ?").run(sessionId, LOCAL_USER_ID);
+      return { state: next, evidence };
+    });
+    return updated();
   }
 
   getAttempt(id: string): AttemptRow | null {

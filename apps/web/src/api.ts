@@ -1,6 +1,9 @@
 import {
   EssayDraftResponseSchema,
   EssaySubmitResponseSchema,
+  ReviewRateResponseSchema,
+  ReviewSessionResponseSchema,
+  ReviewRevealResponseSchema,
   JourneyProgressResponseSchema,
   JourneyResponseSchema,
   HomeResponseSchema,
@@ -17,6 +20,10 @@ import {
   type EssayDraftResponse,
   type EssaySaveRequest,
   type EssaySubmitResponse,
+  type ReviewRateRequest,
+  type ReviewRateResponse,
+  type ReviewSessionResponse,
+  type ReviewRevealResponse,
   type JourneyProgress,
   type JourneyResponse,
   type StageProgressUpdate,
@@ -124,6 +131,18 @@ export async function saveEssayDraft(essayId: string, input: EssaySaveRequest): 
 
 export async function submitEssay(essayId: string, input: EssaySaveRequest): Promise<EssaySubmitResponse> {
   return EssaySubmitResponseSchema.parse(await requestJson<unknown>(`/api/essays/${encodeURIComponent(essayId)}/submit`, { method: "POST", body: JSON.stringify(input) }));
+}
+
+export async function createReviewSession(): Promise<ReviewSessionResponse> {
+  return ReviewSessionResponseSchema.parse(await requestJson<unknown>("/api/review/sessions", { method: "POST", body: "{}" }));
+}
+
+export async function revealReviewSession(sessionId: string): Promise<ReviewRevealResponse> {
+  return ReviewRevealResponseSchema.parse(await requestJson<unknown>(`/api/review/sessions/${sessionId}/reveal`, { method: "POST", body: "{}" }));
+}
+
+export async function rateReviewSession(sessionId: string, input: ReviewRateRequest): Promise<ReviewRateResponse> {
+  return ReviewRateResponseSchema.parse(await requestJson<unknown>(`/api/review/sessions/${sessionId}/rate`, { method: "POST", body: JSON.stringify(input) }));
 }
 
 export async function getCurrentLesson(): Promise<LessonResponse> {

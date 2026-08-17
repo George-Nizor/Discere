@@ -109,6 +109,61 @@ export const EssaySubmitResponseSchema = z
   .strict();
 export type EssaySubmitResponse = z.infer<typeof EssaySubmitResponseSchema>;
 
+export const ReviewRatingSchema = z.enum(["again", "hard", "good", "easy"]);
+export type ReviewRating = z.infer<typeof ReviewRatingSchema>;
+
+export const ReviewCardFrontSchema = z
+  .object({
+    cardId: z.string().min(1),
+    questionId: z.string().min(1),
+    front: z.string().min(1),
+    conceptIds: z.array(z.string()).min(1),
+    revealed: z.literal(false),
+  })
+  .strict();
+export type ReviewCardFront = z.infer<typeof ReviewCardFrontSchema>;
+
+export const ReviewSessionResponseSchema = z
+  .object({
+    sessionId: z.string().uuid(),
+    card: ReviewCardFrontSchema,
+    rated: z.boolean(),
+  })
+  .strict();
+export type ReviewSessionResponse = z.infer<typeof ReviewSessionResponseSchema>;
+
+export const ReviewRevealResponseSchema = z
+  .object({
+    sessionId: z.string().uuid(),
+    cardId: z.string().min(1),
+    back: z.string().min(1),
+    sourceIds: z.array(z.string()),
+  })
+  .strict();
+export type ReviewRevealResponse = z.infer<typeof ReviewRevealResponseSchema>;
+
+export const ReviewRateRequestSchema = z
+  .object({ rating: ReviewRatingSchema, recalled: z.boolean() })
+  .strict();
+export type ReviewRateRequest = z.infer<typeof ReviewRateRequestSchema>;
+
+export const ReviewRateResponseSchema = z
+  .object({
+    sessionId: z.string().uuid(),
+    rating: ReviewRatingSchema,
+    evidence: z.enum(["independent", "assisted"]),
+    dueAt: z.string().datetime(),
+    intervalDays: z.number().positive(),
+    repetition: z.number().int().nonnegative(),
+  })
+  .strict();
+export type ReviewRateResponse = z.infer<typeof ReviewRateResponseSchema>;
+
+export const ReviewHomeResponseSchema = z
+  .object({ dueCount: z.number().int().nonnegative(), estimatedMinutes: z.number().int().nonnegative() })
+  .strict();
+export type ReviewHomeResponse = z.infer<typeof ReviewHomeResponseSchema>;
+
 export const AttemptRequestSchema = z
   .object({
     questionId: z.string().min(1),
