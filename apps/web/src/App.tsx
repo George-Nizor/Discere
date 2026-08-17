@@ -17,6 +17,7 @@ import { ModeSelector } from "./components/ModeSelector";
 import { NotebookWorkspace } from "./components/NotebookWorkspace";
 import { ProgressStrip } from "./components/ProgressStrip";
 import { SourcePanel } from "./components/SourcePanel";
+import { TransferChallenge } from "./components/TransferChallenge";
 import { TutorCompanion } from "./components/TutorCompanion";
 
 export default function App() {
@@ -30,7 +31,6 @@ export default function App() {
   const [attemptId, setAttemptId] = useState<string>();
   const [hint, setHint] = useState<string>();
   const [revealedAnswer, setRevealedAnswer] = useState<string>();
-  const [transferPrompt, setTransferPrompt] = useState<string>();
   const [notice, setNotice] = useState<string>();
 
   useEffect(() => {
@@ -78,7 +78,6 @@ export default function App() {
     setAttemptId(undefined);
     setHint(undefined);
     setRevealedAnswer(undefined);
-    setTransferPrompt(undefined);
     setNotice(undefined);
   }
 
@@ -200,11 +199,10 @@ export default function App() {
               if (!attemptId) throw new Error("Submit an attempt first.");
               const result = await confirmReveal(attemptId, token, confirmation);
               setRevealedAnswer(result.answer);
-              setTransferPrompt(result.transferPrompt);
             }}
             {...(revealedAnswer === undefined ? {} : { revealedAnswer })}
-            {...(transferPrompt === undefined ? {} : { transferPrompt })}
           />
+          {revealedAnswer && attemptId ? <TransferChallenge attemptId={attemptId} /> : null}
           <NotebookWorkspace
             lessonId={lesson.data.lesson.id}
             mode={mode}
