@@ -2,40 +2,70 @@
 
 ## Implemented in the current vertical slice
 
-- pnpm TypeScript monorepo and CI
+### Local runtime and verification
+
+- pnpm TypeScript monorepo
+- one-command `pnpm run setup` workflow
+- cross-platform environment diagnostics through `pnpm doctor`
+- coordinated development and built-prototype startup
+- targeted process cleanup through `pnpm stop`
+- configurable local API and web ports
+- loopback-only prototype binding
+- temporary full-stack smoke testing on isolated ports and SQLite data
+- GitHub Actions coverage for lint, TypeScript, tests, curriculum validation, build, and smoke checks
+
+### Learning experience
+
 - React/Vite visual lesson shell
-- Fastify REST server bound to loopback
-- SQLite migration and seed path
+- Fastify REST server and SQLite persistence
 - electronics seed course and concept map
 - deterministic circuit SVG and Ohm's law explorer
 - prediction-first circuit changes with stale-result invalidation
 - deterministic current-against-voltage relationship graph
 - numeric assessment with SI unit aliases
-- server-side attempt persistence
+- visible lesson provenance and licensing outside Exam mode
+- read-aloud through browser speech synthesis
+
+### Accountability and progression
+
+- Coach, Assisted, Direct, and Exam tutoring modes
+- immutable tutoring mode within an attempt
 - immutable completed attempts
 - hint event recording and closed assistance after completion
 - timed, single-use answer-reveal flow
 - original-attempt closure after a worked answer is revealed
 - duplicate reveal, hint, and resubmission rejection after answer reveal
-- immutable tutoring mode within an attempt
-- Exam-mode hint, reveal, and source guardrails
+- Exam-mode hint, reveal, source, and ChatGPT-companion guardrails
 - XP and mastery separation with per-concept mastery updates
 - Direct-mode evidence classified as assisted
+
+### Generated content and ChatGPT companion
+
 - generated-prose lint rules, including equivalent-unit answer-leak detection
-- source-number preservation checks
-- visible lesson provenance and licensing outside Exam mode
+- source-number and factual-token preservation checks
 - visual-brief validation and curriculum referential-integrity checks
-- ChatGPT companion packet generation and response validation boundary
-- host-neutral MCP tool catalogue
-- explicit query parsing that preserves `values=false` for technical visuals
-- prerequisite-cycle and orphan-reference detection for curriculum bundles
+- learner-facing ChatGPT companion handoff using the normal ChatGPT subscription
+- structured tutor packets containing the current lesson, mode, source IDs, and response contract
+- pasted JSON validation before a tutor reply is shown
+- final-answer leakage rejection in Coach and Assisted modes
+- unknown-source rejection and response-request matching
+- Direct-mode answer support with the same prose and source validation
+- host-neutral MCP tool catalogue for a future native host
+
+### Learner workings
+
 - persisted digital working page per lesson
 - pen and eraser pointer input with undo, redo, and clear
 - blank, lined, and graph-paper notebook backgrounds
 - typed notebook notes and PNG export
 - bounded notebook payloads and unsaved-navigation protection
+
+### Engineering controls
+
+- explicit query parsing that preserves `values=false` for technical visuals
+- prerequisite-cycle and orphan-reference detection for curriculum bundles
 - agent operating contract in `AGENTS.md`
-- read-aloud through browser speech synthesis
+- detailed README, setup guide, troubleshooting, backup, and reset instructions
 
 ## Deliberately deferred
 
@@ -43,12 +73,13 @@
 - automated image retrieval and licence verification
 - generated-image return from ChatGPT into the local workspace
 - handwriting recognition and assessed notebook-image submissions
-- FSRS scheduling
+- assessable transfer-question completion after answer reveal
+- FSRS scheduling and generated flashcard review queues
 - NotebookLM handoff automation
 - broad curriculum importers
 - full Playwright coverage
 
-These are later phases rather than hidden placeholders. The current vertical slice can operate offline after dependencies are installed.
+These are later phases rather than hidden placeholders. The current vertical slice can operate offline after dependencies are installed. ChatGPT tutoring remains an explicit user-controlled handoff and does not require an OpenAI API key.
 
 ## Build boundary
 
