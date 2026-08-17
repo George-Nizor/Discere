@@ -1,4 +1,4 @@
-import type { NotebookPage, NotebookPageType, NotebookPoint, NotebookSaveRequest, NotebookStroke } from "@discere/contracts";
+import { MAX_NOTEBOOK_NOTE_LENGTH, MAX_NOTEBOOK_POINTS_PER_STROKE, MAX_NOTEBOOK_STROKES, type NotebookPage, type NotebookPageType, type NotebookPoint, type NotebookSaveRequest, type NotebookStroke } from "@discere/contracts";
 import { useEffect, useRef, useState, type ChangeEvent, type PointerEvent as ReactPointerEvent } from "react";
 import "./Notebook.css";
 
@@ -12,8 +12,6 @@ export interface NotebookProps {
 
 const VIEWBOX_WIDTH = 1000;
 const VIEWBOX_HEIGHT = 600;
-const MAX_STROKES = 300;
-const MAX_POINTS_PER_STROKE = 750;
 const LINED_Y = Array.from({ length: 14 }, (_, position) => (position + 1) * 40);
 const GRAPH_X = Array.from({ length: 49 }, (_, position) => (position + 1) * 20);
 const GRAPH_Y = Array.from({ length: 29 }, (_, position) => (position + 1) * 20);
@@ -61,6 +59,16 @@ export function Notebook({ page, saving, onSave }: NotebookProps) {
 
   const dirty = snapshot(pageType, strokes, note) !== savedSnapshot;
 
+  useEffect(() => {
+    if (!dirty) return;
+    const warnBeforeUnload = (event: BeforeUnloadEvent): void => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", warnBeforeUnload);
+    return () => window.removeEventListener("beforeunload", warnBeforeUnload);
+  }, [dirty]);
+
   function pointFromEvent(event: ReactPointerEvent<SVGSVGElement>): NotebookPoint | null {
     const rect = event.currentTarget.getBoundingClientRect();
     if (rect.width <= 0 || rect.height <= 0) return null;
@@ -101,7 +109,7 @@ export function Notebook({ page, saving, onSave }: NotebookProps) {
       return;
     }
 
-    if (strokes.length >= MAX_STROKES) {
+    if (strokes.length >= MAX_NOTEBOOK_STROKES) {
       activePointerRef.current = undefined;
       setUndoStack((history) => history.slice(0, -1));
       setError("This page has reached its stroke limit. Clear or erase some workings before drawing more.");
@@ -126,7 +134,7 @@ export function Notebook({ page, saving, onSave }: NotebookProps) {
     const strokeId = activeStrokeRef.current;
     if (!strokeId) return;
     setStrokes((current) => current.map((stroke) => {
-      if (stroke.id !== strokeId || stroke.points.length >= MAX_POINTS_PER_STROKE) return stroke;
+      if (stroke.id !== strokeId || stroke.points.length >= MAX_NOTEBOOK_POINTS_PER_STROKE) return stroke;
       const previous = stroke.points.at(-1);
       if (previous && Math.abs(previous.x - point.x) < 0.0005 && Math.abs(previous.y - point.y) < 0.0005) return stroke;
       return { ...stroke, points: [...stroke.points, point] };
@@ -244,7 +252,7 @@ export function Notebook({ page, saving, onSave }: NotebookProps) {
       <div className="notebook-history"><button type="button" disabled={undoStack.length === 0} onClick={undo}>Undo</button><button type="button" disabled={redoStack.length === 0} onClick={redo}>Redo</button><button type="button" disabled={strokes.length === 0} onClick={clearPage}>Clear</button></div>
     </div>
 
-    <svg ref={svgRef} className={`notebook-canvas tool-${tool}`} role="application" aria-label="Working canvas" viewBox={`0 0 ${VIEWBOX_WIDTH} ${VIEWBOX_HEIGHT}`} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={endPointer} onPointerCancel={endPointer}>
+    <svg ref={svgRef} className={`notebook-canvas tool-${tool}`} role="application" aria-label="Working canvas" viewBox={`0 0 ${VIEWBOX_WIDTH} ${VIEWBOX_HEIGHT}`} width={VIEWBOX_WIDTH} height={VIEWBOX_HEIGHT} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={endPointer} onPointerCancel={endPointer}>
       <rect width={VIEWBOX_WIDTH} height={VIEWBOX_HEIGHT} fill="#ffffff" />
       {pageType === "lined" ? LINED_Y.map((y) => <line key={`line-${y}`} x1="0" y1={y} x2={VIEWBOX_WIDTH} y2={y} stroke="#d4d4d4" strokeWidth="1" />) : null}
       {pageType === "graph" ? <g>
@@ -254,7 +262,7 @@ export function Notebook({ page, saving, onSave }: NotebookProps) {
       {strokes.map((stroke) => <polyline key={stroke.id} data-stroke-id={stroke.id} points={stroke.points.map((point) => `${point.x * VIEWBOX_WIDTH},${point.y * VIEWBOX_HEIGHT}`).join(" ")} fill="none" stroke="#111111" strokeWidth={stroke.width} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />)}
     </svg>
 
-    <label className="notebook-note"><span>Typed note about these workings</span><textarea rows={3} maxLength={4_000} value={note} onChange={(event: ChangeEvent<HTMLTextAreaElement>) => { setNote(event.currentTarget.value); setMessage(""); }} placeholder="Describe a step that may be hard to read from the drawing." /></label>
+    <label className="notebook-note"><span>Typed note about these workings</span><textarea rows={3} maxLength={MAX_NOTEBOOK_NOTE_LENGTH} value={note} onChange={(event: ChangeEvent<HTMLTextAreaElement>) => { setNote(event.currentTarget.value); setMessage(""); }} placeholder="Describe a step that may be hard to read from the drawing." /></label>
     <div className="notebook-actions"><button type="button" className="primary-button" disabled={!dirty || saving} onClick={() => void save()}>{saving ? "Saving…" : "Save workings"}</button><button type="button" onClick={() => void downloadPng()}>Download PNG</button></div>
     {message ? <p className="notebook-message" role="status">{message}</p> : null}
     {error ? <p className="form-error" role="alert">{error}</p> : null}
