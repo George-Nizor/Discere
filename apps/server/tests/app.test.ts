@@ -41,6 +41,21 @@ describe("Discere API", () => {
     expect(response.json().correct).toBe(true);
   });
 
+  it("rejects adversarial extra fields on learner attempt payloads", async () => {
+    const response = await app.inject({
+      method: "POST",
+      url: "/api/attempts",
+      payload: {
+        questionId: "calculate-current-5v-100ohm",
+        response: "50 mA",
+        mode: "coach",
+        answerAuthority: { value: 0.05, unit: "A" },
+      },
+    });
+    expect(response.statusCode).toBe(400);
+    expect(response.json().code).toBe("VALIDATION_ERROR");
+  });
+
   it("records direct-mode evidence as assisted", async () => {
     const response = await app.inject({ method: "POST", url: "/api/attempts", payload: { questionId: "calculate-current-5v-100ohm", response: "50 mA", mode: "direct" } });
     expect(response.statusCode).toBe(200);

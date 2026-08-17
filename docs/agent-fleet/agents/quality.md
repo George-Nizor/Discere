@@ -4,16 +4,16 @@ Independently test accountability, persistence, curriculum integrity, stale requ
 
 ## Completed
 
-- None yet.
+- Pending commit — added an adversarial regression test confirming learner attempt payloads reject injected answer authority.
 
 ## Validation
 
 - Baseline validation is recorded in `docs/validation-results-2026-08-17.md`.
-- Current-round verification is pending.
+- Current-round tests are pending local dependency installation.
 
 ## In progress
 
-- Baseline architecture and test-gap audit.
+- Reviewing specialist branches for answer leakage, contract drift, and reachability risks.
 
 ## Blocked
 
@@ -25,7 +25,7 @@ Independently test accountability, persistence, curriculum integrity, stale requ
 
 ## Proposed next work
 
-- Add focused tests for the new review contract and any new activity/content references.
+- Add focused tests for the new review contract and any new activity/content references after those commits are available.
 - Run the complete quality suite after integration.
 
 ## Questions for architect
