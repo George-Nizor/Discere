@@ -41,6 +41,27 @@ describe("Discere API", () => {
     expect(response.json().correct).toBe(true);
   });
 
+  it("records direct-mode evidence as assisted", async () => {
+    const response = await app.inject({ method: "POST", url: "/api/attempts", payload: { questionId: "calculate-current-5v-100ohm", response: "50 mA", mode: "direct" } });
+    expect(response.statusCode).toBe(200);
+    expect(response.json().correct).toBe(true);
+    expect(response.json().independent).toBe(false);
+  });
+
+  it("keeps completed attempts immutable and closes assistance", async () => {
+    const first = await app.inject({ method: "POST", url: "/api/attempts", payload: { questionId: "calculate-current-5v-100ohm", response: "50 mA", mode: "coach" } });
+    const attemptId = first.json().attemptId as string;
+
+    const overwrite = await app.inject({ method: "POST", url: "/api/attempts", payload: { attemptId, questionId: "calculate-current-5v-100ohm", response: "1 A", mode: "coach" } });
+    expect(overwrite.statusCode).toBe(409);
+    expect(overwrite.json().code).toBe("ATTEMPT_COMPLETE");
+
+    const hint = await app.inject({ method: "POST", url: `/api/attempts/${attemptId}/hints` });
+    expect(hint.statusCode).toBe(409);
+    expect(hint.json().code).toBe("ATTEMPT_COMPLETE");
+    expect(store.getAttempt(attemptId)?.correct).toBe(true);
+  });
+
   it("updates each concept from its own mastery baseline", async () => {
     store.database
       .prepare("UPDATE concept_progress SET mastery = 0.8 WHERE user_id = 'local-user' AND concept_id = 'current'")
