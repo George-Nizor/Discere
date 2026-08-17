@@ -78,7 +78,36 @@ export const OhmsLawActivitySchema = z
   .strict();
 export type OhmsLawActivity = z.infer<typeof OhmsLawActivitySchema>;
 
-export const ActivitySchema = z.discriminatedUnion("type", [OhmsLawActivitySchema]);
+export const SeriesCircuitResistorSchema = z
+  .object({
+    id: z.string().min(1),
+    label: z.string().min(1),
+    value: z.number().positive(),
+    min: z.number().positive(),
+    max: z.number().positive(),
+    step: z.number().positive().default(10),
+  })
+  .strict()
+  .refine((value) => value.min <= value.value && value.value <= value.max, {
+    message: "Resistor value must be inside its range.",
+  });
+export type SeriesCircuitResistor = z.infer<typeof SeriesCircuitResistorSchema>;
+
+export const SeriesCircuitActivitySchema = z
+  .object({
+    id: z.string().min(1),
+    type: z.literal("series_circuit_explorer"),
+    title: z.string().min(1),
+    conceptIds: z.array(z.string()).min(1),
+    instructions: z.string().min(1),
+    voltage: RangeControlSchema,
+    resistors: z.array(SeriesCircuitResistorSchema).min(2).max(4),
+    predictionPrompt: z.string().min(1),
+  })
+  .strict();
+export type SeriesCircuitActivity = z.infer<typeof SeriesCircuitActivitySchema>;
+
+export const ActivitySchema = z.discriminatedUnion("type", [OhmsLawActivitySchema, SeriesCircuitActivitySchema]);
 export type Activity = z.infer<typeof ActivitySchema>;
 
 export const NumericAnswerAuthoritySchema = z

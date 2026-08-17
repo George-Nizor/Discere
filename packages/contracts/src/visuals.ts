@@ -53,7 +53,7 @@ export const VisualBriefSchema = z
   .strict();
 export type VisualBrief = z.infer<typeof VisualBriefSchema>;
 
-export const CircuitDiagramSpecSchema = z
+export const SingleResistorCircuitDiagramSpecSchema = z
   .object({
     id: z.string().min(1),
     voltage: z.number().positive(),
@@ -64,6 +64,29 @@ export const CircuitDiagramSpecSchema = z
     resistorLabel: z.string().default("Resistor"),
   })
   .strict();
+export type SingleResistorCircuitDiagramSpec = z.infer<typeof SingleResistorCircuitDiagramSpecSchema>;
+
+export const SeriesCircuitDiagramSpecSchema = z
+  .object({
+    id: z.string().min(1),
+    kind: z.literal("series"),
+    voltage: z.number().positive(),
+    resistances: z.array(z.number().positive()).min(2).max(4),
+    showCurrentArrow: z.boolean().default(true),
+    showValues: z.boolean().default(true),
+    batteryLabel: z.string().default("Battery"),
+    resistorLabels: z.array(z.string().min(1)).min(2).max(4),
+  })
+  .strict()
+  .refine((value) => value.resistorLabels.length === value.resistances.length, {
+    message: "Every series resistor needs a label.",
+  });
+export type SeriesCircuitDiagramSpec = z.infer<typeof SeriesCircuitDiagramSpecSchema>;
+
+export const CircuitDiagramSpecSchema = z.union([
+  SingleResistorCircuitDiagramSpecSchema,
+  SeriesCircuitDiagramSpecSchema,
+]);
 export type CircuitDiagramSpec = z.infer<typeof CircuitDiagramSpecSchema>;
 
 export const VisualReviewSchema = z

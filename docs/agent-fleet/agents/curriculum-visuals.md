@@ -4,15 +4,16 @@ Expand the electronics course with a coherent next lesson and deterministic visu
 
 ## Completed
 
-- None yet.
+- Pending commit — added the validated series-circuit activity contract, deterministic SVG renderer, activity-engine state transitions, and the next sourced lesson.
 
 ## Validation
 
-- Not started.
+- Visual and activity tests added; local execution pending dependency installation.
+- The bundle remains subject to `pnpm validate:content` after integration.
 
 ## In progress
 
-- Auditing existing curriculum schemas and visual renderers.
+- Coordinator review of lesson reachability and learner API exposure.
 
 ## Blocked
 
@@ -24,9 +25,9 @@ Expand the electronics course with a coherent next lesson and deterministic visu
 
 ## Proposed next work
 
-- Add the next lesson with reviewed provenance and tests.
-- Coordinate any activity union change with the Coordinator before web exposure.
+- Add server lesson lookup and learner-safe response support for the activity union.
+- Implement the parallel-circuit lesson only after the series activity contract is exercised end to end.
 
 ## Questions for architect
 
-- None yet.
+- Confirm whether the next lesson should become selectable in the web shell in the same round or wait for review queue/navigation contracts.
