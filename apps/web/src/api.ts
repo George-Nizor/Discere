@@ -1,7 +1,9 @@
 import {
+  CourseDetailResponseSchema,
   EssayDraftResponseSchema,
   EssaySubmitResponseSchema,
   ReviewRateResponseSchema,
+  ReviewHomeResponseSchema,
   ReviewSessionResponseSchema,
   ReviewRevealResponseSchema,
   JourneyProgressResponseSchema,
@@ -20,8 +22,10 @@ import {
   type EssayDraftResponse,
   type EssaySaveRequest,
   type EssaySubmitResponse,
+  type CourseDetailResponse,
   type ReviewRateRequest,
   type ReviewRateResponse,
+  type ReviewHomeResponse,
   type ReviewSessionResponse,
   type ReviewRevealResponse,
   type JourneyProgress,
@@ -98,6 +102,14 @@ export interface WorkingsReviewImportResult {
 
 export async function getHome(): Promise<HomeResponse> {
   return HomeResponseSchema.parse(await requestJson<unknown>("/api/home"));
+}
+
+export async function getCourseDetail(courseId: string): Promise<CourseDetailResponse> {
+  return CourseDetailResponseSchema.parse(await requestJson<unknown>(`/api/courses/${encodeURIComponent(courseId)}`));
+}
+
+export async function getReviewHome(): Promise<ReviewHomeResponse> {
+  return ReviewHomeResponseSchema.parse(await requestJson<unknown>("/api/review"));
 }
 
 export async function getJourney(courseId: string, lessonId: string): Promise<JourneyResponse> {

@@ -222,10 +222,16 @@ export function LegacyExperience() {
 }
 
 import { JourneyApp } from "./JourneyApp";
+import { CourseHome } from "./CourseHome";
+import { ReviewHome } from "./ReviewHome";
 
 export default function App() {
   if (window.location.pathname === "/legacy" || window.location.pathname.startsWith("/legacy/")) {
     return <LegacyExperience />;
   }
+  if (window.location.pathname === "/" || window.location.pathname === "/courses" || /^\/courses\/[^/]+$/.test(window.location.pathname)) {
+    return <CourseHome />;
+  }
+  if (window.location.pathname === "/review") return <ReviewHome />;
   return <JourneyApp />;
 }

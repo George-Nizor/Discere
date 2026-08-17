@@ -80,5 +80,6 @@ export function JourneyStage({ stage, onComplete }: { stage: LearnerStage; onCom
   if (stage.type === "quiz") return <StoryQuiz stage={stage} onComplete={onComplete} />;
   if (stage.type === "essay") return <StoryEssay stage={stage} onComplete={onComplete} />;
   if (stage.type === "review") return <StoryReview stage={stage} onComplete={onComplete} />;
-  return <section className="story-stage-placeholder"><p className="story-kicker">{stage.type.replace("_", " ")}</p><h2>{stage.title}</h2><p>The next focused stage is being connected to this journey.</p><button className="story-primary" type="button" onClick={onComplete}>Continue</button></section>;
+  if (stage.type === "completion") return <section className="story-completion"><p className="story-kicker">Lesson complete</p><h2>You have worked through this idea.</h2><p>{stage.nextAction}</p><div className="story-completion-concepts">{stage.concepts.map((concept) => <span key={concept}>{concept.replaceAll("-", " ")}</span>)}</div><a className="story-primary" href="/">Return to course home <span aria-hidden="true">→</span></a></section>;
+  return null;
 }

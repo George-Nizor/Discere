@@ -9,6 +9,7 @@ import "./story-stages.css";
 import "./story-quiz.css";
 import "./story-essay.css";
 import "./story-review.css";
+import "./story-home.css";
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { staleTime: 15_000, retry: 1 }, mutations: { retry: 0 } } });
 const root = document.getElementById("root");
