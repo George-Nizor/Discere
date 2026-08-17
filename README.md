@@ -2,15 +2,18 @@
 
 Discere is a local-first learning workspace built around one useful visual, one direct explanation, one meaningful interaction, and one response from the learner.
 
-This repository contains the first functional scaffold. It already implements the boundaries that matter most to the product:
+This repository contains the first functional vertical slice. It implements the boundaries that matter most to the product:
 
 - a React learning workspace with an interactive Ohm's law lesson
-- deterministic circuit SVGs and visual-brief validation
+- prediction-first circuit manipulation with concealed results
+- deterministic circuit SVGs and relationship graphs
+- a persisted working notebook with pen and eraser input, undo and redo, paper grids, typed notes, and PNG export
 - a server-enforced prose quality gate for common generated-writing habits
 - Coach, Assisted, Direct, and Exam tutoring modes
 - numeric assessment with unit conversion
 - answer-reveal friction and assistance records
 - separate XP and mastery evidence
+- visible source provenance outside Exam mode
 - a provider-neutral tutor contract with a ChatGPT companion packet
 - SQLite persistence and committed migrations
 - an offline electronics seed course
@@ -26,6 +29,7 @@ Fastify application server
     ├── visual renderer
     ├── assessment and reveal controls
     ├── progression engine
+    ├── notebook persistence
     └── provider adapters
              ├── offline seed content
              ├── ChatGPT companion packets
@@ -64,7 +68,7 @@ This runs Biome, TypeScript, Vitest, and bundled-content validation.
 
 ## Current scope
 
-The first vertical slice teaches current and Ohm's law. It is intentionally small enough to verify the writing, visual, accountability, and progress systems before adding broad subject coverage. See [`docs/implementation-status.md`](docs/implementation-status.md) for the exact boundary.
+The current vertical slice teaches current and Ohm's law through an interactive circuit, prediction loop, numeric assessment, governed assistance, and a saved working page. It is intentionally small enough to verify the writing, visual, accountability, progress, and learner-work systems before adding broad subject coverage. See [`docs/implementation-status.md`](docs/implementation-status.md) for the exact boundary.
 
 ## Documentation
 

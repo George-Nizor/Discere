@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { FastifyInstance } from "fastify";
-import { AttemptRequestSchema, LessonDraftSchema, RevealConfirmRequestSchema, RevealStartRequestSchema, TutorEnvelopeBaseSchema, WritingLintRequestSchema } from "@discere/contracts";
+import { AttemptRequestSchema, LessonDraftSchema, NotebookSaveRequestSchema, RevealConfirmRequestSchema, RevealStartRequestSchema, TutorEnvelopeBaseSchema, WritingLintRequestSchema } from "@discere/contracts";
 import { scoreAttempt, updateMastery } from "@discere/progression-engine";
 import { buildCompanionPacket } from "@discere/tutor-providers";
 import { createImageGenerationPrompt, inspectVisualBrief, renderCircuitSvg, renderOhmsLawGraphSvg } from "@discere/visual-engine";
@@ -10,6 +10,7 @@ import { assessResponse } from "./assessment.js";
 import type { ContentRepository } from "./content.js";
 import type { DiscereStore } from "./db/store.js";
 import { HttpError } from "./errors.js";
+import { ensureNotebookSchema, getNotebookPage, saveNotebookPage } from "./notebook.js";
 import { coerceQueryBoolean } from "./query-coercion.js";
 
 export interface RouteDependencies { content: ContentRepository; store: DiscereStore; revealDelayMs: number; }
@@ -17,6 +18,7 @@ const AttemptBodySchema = AttemptRequestSchema.extend({ attemptId: z.string().uu
 const CompanionBodySchema = z.object({ operation: z.enum(["draft_lesson", "edit_style", "assess_response", "direct_visual", "review_visual"]).default("draft_lesson"), payload: z.unknown().optional() }).strict();
 const ImagePromptBodySchema = z.object({ visualBriefId: z.string().min(1) }).strict();
 const CompanionImportBodySchema = z.object({ text: z.string().min(2).max(500_000) }).strict();
+const LessonParamsSchema = z.object({ lessonId: z.string().min(1).max(200) }).strict();
 const CircuitQuerySchema = z.object({
   voltage: z.coerce.number().positive().max(100).default(5),
   resistance: z.coerce.number().positive().max(1_000_000).default(100),
@@ -26,9 +28,28 @@ const GraphQuerySchema = z.object({ resistance: z.coerce.number().positive().max
 
 export async function registerRoutes(app: FastifyInstance, dependencies: RouteDependencies): Promise<void> {
   const { content, store, revealDelayMs } = dependencies;
+  ensureNotebookSchema(store.database);
+
+  function assertLessonExists(lessonId: string): void {
+    if (!content.bundle.lessons.some((lesson) => lesson.id === lessonId)) {
+      throw new HttpError(404, "Lesson not found.", "LESSON_NOT_FOUND");
+    }
+  }
+
   app.get("/api/health", async () => ({ status: "ok", service: "discere", version: "0.1.0" }));
   app.get("/api/home", async () => ({ ...store.getProfile(), currentMission: { id: "mission-current", title: "Follow the current", description: "Explore one circuit and calculate its current.", estimatedMinutes: 8, lessonBeatId: content.currentLesson.lesson.id }, progress: store.getProgress() }));
   app.get("/api/lessons/current", async () => content.currentLesson);
+  app.get("/api/notebook/:lessonId", async (request) => {
+    const { lessonId } = LessonParamsSchema.parse(request.params);
+    assertLessonExists(lessonId);
+    return getNotebookPage(store.database, lessonId);
+  });
+  app.put("/api/notebook/:lessonId", async (request) => {
+    const { lessonId } = LessonParamsSchema.parse(request.params);
+    assertLessonExists(lessonId);
+    const body = NotebookSaveRequestSchema.parse(request.body);
+    return saveNotebookPage(store.database, lessonId, body);
+  });
 
   app.get("/api/visuals/circuit.svg", async (request, reply) => {
     const query = CircuitQuerySchema.parse(request.query);
@@ -67,6 +88,12 @@ export async function registerRoutes(app: FastifyInstance, dependencies: RouteDe
     if (previous && previous.mode !== body.mode) {
       throw new HttpError(409, "Start a new attempt to change tutoring mode.", "ATTEMPT_MODE_LOCKED");
     }
+    if (previous?.correct) {
+      throw new HttpError(409, "This attempt is complete. Start a new attempt to answer again.", "ATTEMPT_COMPLETE");
+    }
+    if (previous?.answerRevealed) {
+      throw new HttpError(409, "The worked answer has already closed this attempt.", "ANSWER_ALREADY_REVEALED");
+    }
     const assessment = assessResponse(question, body.response);
     const evidence = scoreAttempt({ correct: assessment.correct, mode: body.mode, hintsUsed: previous?.hintCount ?? 0, answerRevealed: previous?.answerRevealed ?? false, difficulty: question.difficulty });
     const conceptMastery = Object.fromEntries(
@@ -85,6 +112,8 @@ export async function registerRoutes(app: FastifyInstance, dependencies: RouteDe
     const { attemptId } = z.object({ attemptId: z.string().uuid() }).parse(request.params);
     const attempt = store.getAttempt(attemptId);
     if (!attempt) throw new HttpError(404, "Attempt not found.", "ATTEMPT_NOT_FOUND");
+    if (attempt.correct) throw new HttpError(409, "This attempt is already complete.", "ATTEMPT_COMPLETE");
+    if (attempt.answerRevealed) throw new HttpError(409, "The worked answer has already closed this attempt.", "ANSWER_ALREADY_REVEALED");
     if (attempt.mode === "exam") throw new HttpError(403, "Hints are unavailable in exam mode.", "EXAM_GUARDRAIL");
     const question = content.getQuestion(attempt.questionId);
     if (!question) throw new HttpError(404, "Question not found.", "QUESTION_NOT_FOUND");
@@ -102,6 +131,7 @@ export async function registerRoutes(app: FastifyInstance, dependencies: RouteDe
     if (!attempt) throw new HttpError(404, "Attempt not found.", "ATTEMPT_NOT_FOUND");
     if (attempt.mode === "exam") throw new HttpError(403, "Answers are unavailable in exam mode.", "EXAM_GUARDRAIL");
     if (attempt.correct) throw new HttpError(409, "This attempt is already correct.", "ANSWER_NOT_REQUIRED");
+    if (attempt.answerRevealed) throw new HttpError(409, "The worked answer has already been shown.", "ANSWER_ALREADY_REVEALED");
     const availableAt = new Date(Date.now() + revealDelayMs).toISOString();
     const reveal = store.createReveal(attemptId, body.reason, availableAt);
     return { token: reveal.token, availableAt: reveal.availableAt, confirmationPhrase: "show answer" as const };
@@ -117,6 +147,8 @@ export async function registerRoutes(app: FastifyInstance, dependencies: RouteDe
     if (Date.now() < Date.parse(reveal.availableAt)) throw new HttpError(425, "The reflection period has not finished.", "REVEAL_WAIT");
     const attempt = store.getAttempt(attemptId);
     if (!attempt) throw new HttpError(404, "Attempt not found.", "ATTEMPT_NOT_FOUND");
+    if (attempt.correct) throw new HttpError(409, "This attempt is already complete.", "ATTEMPT_COMPLETE");
+    if (attempt.answerRevealed) throw new HttpError(409, "The worked answer has already been shown.", "ANSWER_ALREADY_REVEALED");
     const question = content.getQuestion(attempt.questionId);
     if (!question) throw new HttpError(404, "Question not found.", "QUESTION_NOT_FOUND");
     if (!store.consumeReveal(body.token)) throw new HttpError(409, "Reveal token has already been used.", "REVEAL_USED");

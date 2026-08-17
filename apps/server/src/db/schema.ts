@@ -18,3 +18,6 @@ export const revealSessions = sqliteTable("reveal_sessions", {
 export const writingGateRuns = sqliteTable("writing_gate_runs", {
   id: text("id").primaryKey(), context: text("context").notNull(), passed: integer("passed", { mode: "boolean" }).notNull(), textHash: text("text_hash").notNull(), violationCount: integer("violation_count").notNull(), createdAt: text("created_at").notNull(),
 });
+export const notebookPages = sqliteTable("notebook_pages", {
+  userId: text("user_id").notNull(), lessonId: text("lesson_id").notNull(), pageType: text("page_type").notNull(), strokesJson: text("strokes_json").notNull(), note: text("note").notNull().default(""), updatedAt: text("updated_at").notNull(),
+}, (table) => [primaryKey({ columns: [table.userId, table.lessonId] })]);

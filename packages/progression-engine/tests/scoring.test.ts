@@ -6,6 +6,11 @@ describe("progression scoring", () => {
     expect(direct.xp).toBeGreaterThan(0);
     expect(direct.masteryEvidence).toBeLessThan(0.2);
   });
+  it("records direct mode as assisted even without a hint", () => {
+    const direct = scoreAttempt({ correct: true, mode: "direct", hintsUsed: 0, answerRevealed: false });
+    expect(direct.independent).toBe(false);
+    expect(direct.masteryEvidence).toBeLessThan(0.5);
+  });
   it("rewards an independent exam answer", () => {
     const exam = scoreAttempt({ correct: true, mode: "exam", hintsUsed: 0, answerRevealed: false });
     expect(exam.independent).toBe(true);
