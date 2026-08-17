@@ -1,81 +1,252 @@
 # Discere
 
-Discere is a local-first learning workspace built around one useful visual, one direct explanation, one meaningful interaction, and one response from the learner.
+[![CI](https://github.com/George-Nizor/discere/actions/workflows/ci.yml/badge.svg)](https://github.com/George-Nizor/discere/actions/workflows/ci.yml)
 
-This repository contains the first functional vertical slice. It implements the boundaries that matter most to the product:
+Discere is a local-first learning workspace built around one useful visual, a direct explanation, a meaningful interaction, and a response from the learner.
 
-- a React learning workspace with an interactive Ohm's law lesson
-- prediction-first circuit manipulation with concealed results
-- deterministic circuit SVGs and relationship graphs
-- a persisted working notebook with pen and eraser input, undo and redo, paper grids, typed notes, and PNG export
-- a server-enforced prose quality gate for common generated-writing habits
-- Coach, Assisted, Direct, and Exam tutoring modes
-- numeric assessment with unit conversion
-- answer-reveal friction and assistance records
-- separate XP and mastery evidence
-- visible source provenance outside Exam mode
-- a provider-neutral tutor contract with a ChatGPT companion packet
-- SQLite persistence and committed migrations
-- an offline electronics seed course
+The current prototype teaches an introductory electronics lesson through an interactive circuit, prediction, calculation, governed help, and a persistent digital notebook. It runs without paid model APIs.
+
+## What currently works
+
+- React learning workspace with a light, visual-first interface
+- interactive Ohm's law circuit with concealed results
+- prediction-first voltage and resistance experiments
+- deterministic circuit SVGs and current/voltage graphs
+- open numeric responses with unit conversion
+- Coach, Assisted, Direct, and Exam modes
+- incremental hints and a timed answer-reveal flow
+- separate XP, assistance, and concept-mastery records
+- source provenance hidden during Exam mode
+- persistent SQLite learning state
+- digital notebook with pen, eraser, undo, redo, and paper grids
+- typed notebook notes and PNG export
+- prose-quality checks for recognisable generated-writing habits
+- ChatGPT companion packets with validated structured return data
+- full-stack smoke tests and GitHub Actions validation
+
+## Quick start
+
+### Requirements
+
+- Git
+- Node.js **22.16.0 or newer**; Node.js 24 is used in CI
+- pnpm **11.17.0**
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/George-Nizor/discere.git
+cd discere
+```
+
+### 2. Enable pnpm
+
+```bash
+corepack enable
+corepack prepare pnpm@11.17.0 --activate
+```
+
+When `corepack enable` requires Administrator access on Windows, use:
+
+```bash
+npm install --global pnpm@11.17.0
+```
+
+### 3. Prepare the complete prototype
+
+```bash
+pnpm run setup
+```
+
+This command:
+
+- validates Node.js and pnpm
+- creates `.env` when it is missing
+- installs the monorepo dependencies
+- creates and seeds the SQLite database
+- builds the web interface
+- runs local environment diagnostics
+
+Existing configuration and learning data are preserved.
+
+### 4. Start Discere
+
+Run the built prototype:
+
+```bash
+pnpm start
+```
+
+Open the URL printed in the terminal. The default is:
+
+```text
+http://127.0.0.1:4318
+```
+
+Press `Ctrl+C` to stop the web and API services together.
+
+For development with automatic reload:
+
+```bash
+pnpm dev
+```
+
+When the original terminal was closed unexpectedly:
+
+```bash
+pnpm stop
+```
+
+The detailed platform notes, configuration table, backups, reset commands, and troubleshooting steps are in [docs/setup.md](docs/setup.md).
+
+## Verify the installation
+
+```bash
+pnpm verify
+```
+
+The verification sequence runs environment diagnostics, linting, strict TypeScript checks, tests, curriculum validation, a production build, and a temporary full-stack smoke test.
+
+The smoke test verifies:
+
+- web preview and API proxying
+- learner-safe lesson delivery
+- deterministic visual rendering
+- generated-prose rejection rules
+- notebook persistence
+- numeric assessment
+
+It uses an isolated temporary database and removes it when finished.
+
+## Main commands
+
+| Command | Purpose |
+| --- | --- |
+| `pnpm run setup` | Install, configure, migrate, seed, build, and diagnose the project. |
+| `pnpm dev` | Start API and web development servers with automatic reload. |
+| `pnpm start` | Start the built prototype. Run `pnpm build` first after source changes. |
+| `pnpm stop` | Stop processes recorded by Discere after a terminal was lost. |
+| `pnpm doctor` | Check Node, pnpm, ports, SQLite, configuration, and build readiness. |
+| `pnpm verify` | Run every local quality and runtime verification step. |
+| `pnpm check` | Run lint, TypeScript, tests, and curriculum validation. |
+| `pnpm build` | Typecheck packages and create the production web bundle. |
+| `pnpm smoke` | Start an isolated built stack and exercise its core routes. |
+| `pnpm db:migrate` | Create the local database schema. |
+| `pnpm db:seed` | Seed the initial concept graph. |
+
+## Current lesson flow
+
+```text
+Inspect the circuit
+        ↓
+Change voltage or resistance
+        ↓
+Predict what happens to current
+        ↓
+Reveal the deterministic result
+        ↓
+Read the explanation and equation
+        ↓
+Answer an open calculation
+        ↓
+Use a hint or deliberate answer reveal when needed
+        ↓
+Save handwritten or typed workings
+        ↓
+Record XP, assistance, and mastery separately
+```
+
+A correct attempt is immutable. A revealed worked answer closes the original attempt and requires a new attempt for clean mastery evidence. Direct mode always records assisted evidence. Exam mode removes hints, answer reveal, and source access.
+
+## Local data and privacy
+
+Discere binds to loopback addresses during the prototype phase. Its default services are:
+
+```text
+Web: http://127.0.0.1:4318
+API: http://127.0.0.1:4317
+```
+
+Durable state is stored at:
+
+```text
+data/discere.sqlite
+```
+
+The database holds the learner profile, attempts, XP, concept mastery, assistance events, reveal records, prose-gate runs, and notebook pages. `.env`, database files, builds, uploaded data, and process records are ignored by Git.
+
+The prototype does not send this state to an external model service by itself.
+
+## ChatGPT integration
+
+Discere does not call the OpenAI API. The current companion adapter creates a structured Tutor Packet for use in a normal ChatGPT conversation. A returned JSON envelope can be pasted back into Discere, where schemas, prose rules, answer boundaries, and visual requirements are checked before content is accepted.
+
+A ChatGPT-native MCP host remains scaffolded behind a provider boundary. The core learning application does not depend on that host being available.
 
 ## Architecture
 
 ```text
-React workspace
-    │ REST
-Fastify application server
+React / Vite workspace
+          │ REST
+Fastify local server
     ├── curriculum and lesson services
-    ├── writing gate
-    ├── visual renderer
-    ├── assessment and reveal controls
+    ├── deterministic visual engine
+    ├── prose quality gate
+    ├── assessment and accountability controls
     ├── progression engine
     ├── notebook persistence
     └── provider adapters
              ├── offline seed content
              ├── ChatGPT companion packets
-             └── future ChatGPT MCP host
+             └── future MCP host
+          │
+       SQLite
 ```
 
-The application does not call the OpenAI API. The companion adapter prepares a structured packet for a ChatGPT conversation and can validate the returned JSON before content is accepted. A thin MCP host adapter is scaffolded separately so host-specific code cannot leak into the learning domain.
+The repository is a pnpm TypeScript monorepo:
 
-## Requirements
-
-- Node.js 22.16 or newer
-- Corepack or pnpm 11
-
-## Run locally
-
-```bash
-corepack enable
-pnpm install
-cp .env.example .env
-pnpm db:migrate
-pnpm db:seed
-pnpm dev
+```text
+apps/web                 learner interface
+apps/server              local API and SQLite ownership
+apps/mcp                 host-neutral MCP catalogue
+packages/contracts       shared validated data contracts
+packages/curriculum      course loading and integrity checks
+packages/visual-engine   SVGs, graphs, and image briefs
+packages/writing-engine  generated-prose rules
+packages/assessment-engine
+packages/progression-engine
+packages/tutor-providers
+content/                 reviewed seed curriculum
+docs/                    product and implementation specifications
+prompts/                 tutor, assessor, writer, and visual prompts
 ```
 
-Open `http://127.0.0.1:4318`. The API listens on `http://127.0.0.1:4317` and is proxied by Vite during development.
+## Prototype boundary
 
-Stop the foreground processes with Ctrl+C. `pnpm stop` is available if the terminal was closed unexpectedly and only targets PIDs recorded by Discere.
+The current vertical slice is deliberately narrow. It proves the visual, writing, accountability, assessment, notebook, persistence, and local-runtime systems with one electronics lesson.
 
-## Quality checks
+Planned work includes:
 
-```bash
-pnpm check
-```
+- notebook-image assessment through the provider-neutral tutor boundary
+- assessable transfer questions
+- spaced review and flashcards
+- additional electronics lessons and interactive activity types
+- retrieved reference images with licence records
+- generated illustration review and import
+- broader course creation and curriculum adapters
+- ChatGPT-native host integration when supported
 
-This runs Biome, TypeScript, Vitest, and bundled-content validation.
-
-## Current scope
-
-The current vertical slice teaches current and Ohm's law through an interactive circuit, prediction loop, numeric assessment, governed assistance, and a saved working page. It is intentionally small enough to verify the writing, visual, accountability, progress, and learner-work systems before adding broad subject coverage. See [`docs/implementation-status.md`](docs/implementation-status.md) for the exact boundary.
+See [docs/implementation-status.md](docs/implementation-status.md) for the exact implemented/deferred boundary.
 
 ## Documentation
 
-- [`docs/spec-v0.2.md`](docs/spec-v0.2.md): authoritative prototype specification
-- [`docs/architecture.md`](docs/architecture.md): implemented architecture and extension rules
-- [`docs/writing-system.md`](docs/writing-system.md): human-sounding prose requirements
-- [`docs/visual-system.md`](docs/visual-system.md): visual selection and review system
-- [`docs/compatibility-report.md`](docs/compatibility-report.md): ChatGPT host compatibility checklist
-- [`docs/validation.md`](docs/validation.md): complete validation and runtime checks
-- [`docs/luna-handoff.md`](docs/luna-handoff.md): continuation instructions for Luna
+- [Local setup and troubleshooting](docs/setup.md)
+- [Prototype specification v0.2](docs/spec-v0.2.md)
+- [Architecture](docs/architecture.md)
+- [Writing system](docs/writing-system.md)
+- [Visual system](docs/visual-system.md)
+- [Implementation status](docs/implementation-status.md)
+- [ChatGPT compatibility report](docs/compatibility-report.md)
+- [Validation approach](docs/validation.md)
+- [Latest recorded validation](docs/validation-results-2026-08-17.md)
+- [Luna handoff](docs/luna-handoff.md)
