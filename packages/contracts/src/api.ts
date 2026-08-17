@@ -1,5 +1,10 @@
 import { z } from "zod";
-import { LearnerQuestionSchema, LessonBeatSchema, OhmsLawActivitySchema, SourceSchema } from "./curriculum.js";
+import {
+  LearnerQuestionSchema,
+  LessonBeatSchema,
+  OhmsLawActivitySchema,
+  SourceSchema,
+} from "./curriculum.js";
 import { ConceptStateSchema, TutoringModeSchema } from "./modes.js";
 
 export const ConceptProgressSchema = z
@@ -95,6 +100,45 @@ export const RevealConfirmResponseSchema = z
   .strict();
 export type RevealConfirmResponse = z.infer<typeof RevealConfirmResponseSchema>;
 
+export const TransferChallengeSchema = z
+  .object({
+    id: z.string().min(1),
+    prompt: z.string().min(1),
+    responseType: z.literal("numeric"),
+    expectedUnit: z.string().min(1),
+  })
+  .strict();
+export type TransferChallenge = z.infer<typeof TransferChallengeSchema>;
+
+export const TransferStateResponseSchema = z
+  .object({
+    challenge: TransferChallengeSchema,
+    completed: z.boolean(),
+    lastCorrect: z.boolean().nullable(),
+    feedback: z.string().nullable(),
+  })
+  .strict();
+export type TransferStateResponse = z.infer<typeof TransferStateResponseSchema>;
+
+export const TransferSubmitRequestSchema = z
+  .object({
+    transferId: z.string().min(1),
+    response: z.string().trim().min(1).max(20_000),
+  })
+  .strict();
+export type TransferSubmitRequest = z.infer<typeof TransferSubmitRequestSchema>;
+
+export const TransferSubmitResponseSchema = z
+  .object({
+    correct: z.boolean(),
+    feedback: z.string().min(1),
+    xpAwarded: z.number().int().nonnegative(),
+    mastery: z.number().min(0).max(1),
+    completed: z.boolean(),
+  })
+  .strict();
+export type TransferSubmitResponse = z.infer<typeof TransferSubmitResponseSchema>;
+
 export const WritingLintRequestSchema = z
   .object({
     text: z.string().max(100_000),
@@ -121,12 +165,14 @@ export const WritingLintResponseSchema = z
   .object({
     passed: z.boolean(),
     violations: z.array(StyleViolationSchema),
-    metrics: z.object({
-      words: z.number().int().nonnegative(),
-      sentences: z.number().int().nonnegative(),
-      headings: z.number().int().nonnegative(),
-      emDashes: z.number().int().nonnegative(),
-    }).strict(),
+    metrics: z
+      .object({
+        words: z.number().int().nonnegative(),
+        sentences: z.number().int().nonnegative(),
+        headings: z.number().int().nonnegative(),
+        emDashes: z.number().int().nonnegative(),
+      })
+      .strict(),
   })
   .strict();
 export type WritingLintResponse = z.infer<typeof WritingLintResponseSchema>;
