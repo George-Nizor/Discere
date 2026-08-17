@@ -1,4 +1,4 @@
-import { HomeResponseSchema, LessonResponseSchema, type AttemptRequest, type AttemptResponse, type HintResponse, type HomeResponse, type LessonResponse, type RevealConfirmResponse, type RevealStartResponse } from "@discere/contracts";
+import { HomeResponseSchema, LessonResponseSchema, NotebookPageSchema, type AttemptRequest, type AttemptResponse, type HintResponse, type HomeResponse, type LessonResponse, type NotebookPage, type NotebookSaveRequest, type RevealConfirmResponse, type RevealStartResponse } from "@discere/contracts";
 
 async function requestJson<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, { headers: { "content-type": "application/json", ...init?.headers }, ...init });
@@ -12,6 +12,8 @@ async function requestJson<T>(url: string, init?: RequestInit): Promise<T> {
 
 export async function getHome(): Promise<HomeResponse> { return HomeResponseSchema.parse(await requestJson<unknown>("/api/home")); }
 export async function getCurrentLesson(): Promise<LessonResponse> { return LessonResponseSchema.parse(await requestJson<unknown>("/api/lessons/current")); }
+export async function getNotebookPage(lessonId: string): Promise<NotebookPage> { return NotebookPageSchema.parse(await requestJson<unknown>(`/api/notebook/${encodeURIComponent(lessonId)}`)); }
+export async function saveNotebookPage(lessonId: string, input: NotebookSaveRequest): Promise<NotebookPage> { return NotebookPageSchema.parse(await requestJson<unknown>(`/api/notebook/${encodeURIComponent(lessonId)}`, { method: "PUT", body: JSON.stringify(input) })); }
 export async function submitAttempt(input: AttemptRequest & { attemptId?: string }): Promise<AttemptResponse> { return requestJson("/api/attempts", { method: "POST", body: JSON.stringify(input) }); }
 export async function requestHint(attemptId: string): Promise<HintResponse> { return requestJson(`/api/attempts/${attemptId}/hints`, { method: "POST", body: "{}" }); }
 export async function startReveal(attemptId: string, reason: string): Promise<RevealStartResponse> { return requestJson(`/api/attempts/${attemptId}/reveal/start`, { method: "POST", body: JSON.stringify({ reason }) }); }
