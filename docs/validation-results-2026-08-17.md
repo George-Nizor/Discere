@@ -2,7 +2,7 @@
 
 ## Authoritative run
 
-GitHub Actions CI run 133 completed successfully against commit `1e0fa0628d47e809ef5f12dd5a5d27a5e2d00831` on `main`.
+GitHub Actions CI run 153 completed successfully against commit `7b9efd9a54cbfb35efa18fda0e4714087cb69d3f` on `main`.
 
 The workflow completed:
 
@@ -14,13 +14,14 @@ The workflow completed:
 - the production web build
 - the isolated full-stack smoke test
 
-Later commits in this checkpoint update Node version files and documentation. They do not change the validated runtime behaviour described below.
+Later commits in this checkpoint update documentation for the same validated behaviour.
 
 ## Runtime and setup coverage
 
 - Node.js and pnpm version checks
 - `.env` creation without overwriting existing configuration
 - database migration and electronics seed workflow
+- notebook and transfer tables included in explicit migration
 - coordinated API and web startup
 - loopback-only host validation
 - explicit port availability checks
@@ -56,6 +57,23 @@ The built application was started through the same package commands used by the 
 - revealing the worked answer closes the original attempt
 - duplicate reveal tokens, later hints, and resubmission are rejected after reveal
 - completed and revealed answer panels disable invalid controls
+
+## Transfer recovery
+
+Server and component tests cover:
+
+- transfer challenge locking before answer reveal
+- deterministic challenge delivery after reveal
+- equivalent current units such as amperes and milliamperes
+- retry after an incorrect transfer answer
+- zero recovery XP and unchanged mastery after an incorrect retry
+- one-time recovery XP after the first correct transfer response
+- reduced mastery evidence after answer reveal
+- assisted-attempt recording on every concept attached to the original question
+- transfer-result persistence and completed-state restoration
+- rejection of repeated completion attempts
+- rejection of mismatched transfer identifiers
+- closed UI controls after transfer completion
 
 ## ChatGPT tutor companion
 
@@ -108,6 +126,7 @@ The following checks require a physical browser or input device:
 - drawing feel with mouse, trackpad, touch, and stylus input
 - PNG export in Chromium and Firefox
 - image attachment and response quality in a live ChatGPT conversation
+- transfer challenge flow in a live browser after the reveal timer
 - narrow-screen drawing and review ergonomics
 - browser wording for unsaved-navigation warnings
 - read-aloud voice availability and pronunciation
