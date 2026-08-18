@@ -112,7 +112,13 @@ try {
     throw new Error("The learner-safe lesson contract was invalid or leaked answer authority.");
   }
 
-  for (const path of ["/", "/courses", "/courses/electronics-foundations", "/review", "/progress"]) {
+  for (const path of [
+    "/",
+    "/courses",
+    `/courses/${lesson.lesson.courseId}`,
+    "/review",
+    "/progress",
+  ]) {
     const page = await fetch(`${webUrl}${path}`, { signal: AbortSignal.timeout(5_000) });
     const html = await page.text();
     if (!page.ok || !html.includes("/assets/")) {
@@ -121,25 +127,72 @@ try {
   }
 
   const courseList = await requestJson(`${apiUrl}/api/courses`);
-  const course = courseList.courses?.[0];
+  const course = courseList.courses?.find((item) => item.id === lesson.lesson.courseId);
   if (
     !course?.id ||
     !course.availableLessonIds?.includes(lesson.lesson.id) ||
-    course.lessonCount < 2
+    course.lessonCount < 2 ||
+    courseList.courses.length < 2
   ) {
-    throw new Error("The course catalogue did not expose the redesigned learning journey.");
+    throw new Error("The course catalogue did not expose every bundled course.");
   }
   const courseDetail = await requestJson(`${apiUrl}/api/courses/${encodeURIComponent(course.id)}`);
   const journey = await requestJson(
     `${apiUrl}/api/courses/${encodeURIComponent(course.id)}/lessons/${encodeURIComponent(lesson.lesson.id)}/journey`,
   );
-  const stageTypes = journey.stages?.map((stage) => stage.type).join(",");
+  // A lesson asks as many questions as its content declares, so the stage list is checked by
+  // its shape rather than by a fixed length.
+  const stageTypes = [...new Set(journey.stages?.map((stage) => stage.type) ?? [])].join(",");
   if (
-    courseDetail.lessons?.find((item) => item.id === lesson.lesson.id)?.stageCount !== 6 ||
+    courseDetail.lessons?.find((item) => item.id === lesson.lesson.id)?.stageCount !==
+      journey.stages.length ||
     stageTypes !== "explainer,interactive_visual,quiz,essay,review,completion" ||
-    journey.stages.some((stage) => stage.answerAuthority !== undefined)
+    journey.stages.filter((stage) => stage.type === "quiz").length < 2 ||
+    journey.stages.some((stage) => stage.answerAuthority !== undefined) ||
+    journey.stages.some((stage) => stage.question?.transfer !== undefined)
   ) {
-    throw new Error("The interactive story journey contract was incomplete or leaked answer authority.");
+    throw new Error(
+      "The interactive story journey contract was incomplete or leaked answer authority.",
+    );
+  }
+  if (!courseDetail.concepts?.every((concept) => concept.title && concept.summary)) {
+    throw new Error("The course detail did not name its concepts.");
+  }
+
+  // The second course proves the delivery path is not shaped around one subject.
+  const secondCourse = courseList.courses.find((item) => item.id !== course.id);
+  const secondDetail = await requestJson(
+    `${apiUrl}/api/courses/${encodeURIComponent(secondCourse.id)}`,
+  );
+  const secondLessonId = secondCourse.availableLessonIds[0];
+  const secondJourney = await requestJson(
+    `${apiUrl}/api/courses/${encodeURIComponent(secondCourse.id)}/lessons/${encodeURIComponent(secondLessonId)}/journey`,
+  );
+  const secondExplainer = secondJourney.stages.find((stage) => stage.type === "explainer");
+  const secondActivity = secondJourney.stages.find((stage) => stage.type === "interactive_visual");
+  if (
+    secondDetail.lessons.length < 2 ||
+    secondExplainer?.visual?.kind !== "image" ||
+    !secondExplainer.visual.image?.attribution ||
+    secondActivity?.activity?.type !== "timeline_explorer" ||
+    !Array.isArray(secondActivity.activity.events)
+  ) {
+    throw new Error("The second course did not deliver a retrieved image and a timeline activity.");
+  }
+
+  const assetPath = `/api/content/${encodeURIComponent(secondCourse.id)}/assets/${secondExplainer.visual.image.src.split("/").pop()}`;
+  const asset = await fetch(`${apiUrl}${assetPath}`, { signal: AbortSignal.timeout(5_000) });
+  if (!asset.ok || !asset.headers.get("content-type")?.startsWith("image/")) {
+    throw new Error("The course asset route did not serve the retrieved image.");
+  }
+  // Percent-encoded, so the traversal reaches the route rather than being folded away by the
+  // URL parser before the request is sent.
+  const traversal = await fetch(
+    `${apiUrl}/api/content/${encodeURIComponent(secondCourse.id)}/assets/%2e%2e%2fbundle.json`,
+    { signal: AbortSignal.timeout(5_000), redirect: "manual" },
+  );
+  if (traversal.status === 200) {
+    throw new Error("The course asset route served a file outside its own directory.");
   }
   for (const stageId of journey.stageOrder) {
     const deepLink = `/courses/${encodeURIComponent(course.id)}/lessons/${encodeURIComponent(lesson.lesson.id)}/stages/${encodeURIComponent(stageId)}`;
@@ -157,42 +210,67 @@ try {
   }
   const savedJourneyProgress = await requestJson(`${journeyBase}/progress`, {
     method: "PUT",
-    body: JSON.stringify({ stageId: journey.stageOrder[0], state: "completed", interactionState: { smoke: true } }),
+    body: JSON.stringify({
+      stageId: journey.stageOrder[0],
+      state: "completed",
+      interactionState: { smoke: true },
+    }),
   });
-  if (savedJourneyProgress.activeStageId !== journey.stageOrder[1] || savedJourneyProgress.stages[0].state !== "completed") {
+  if (
+    savedJourneyProgress.activeStageId !== journey.stageOrder[1] ||
+    savedJourneyProgress.stages[0].state !== "completed"
+  ) {
     throw new Error("Journey stage completion did not activate the next stage.");
   }
 
   const essayStage = journey.stages.find((stage) => stage.type === "essay");
   if (!essayStage?.essayId) throw new Error("The journey did not expose an essay stage.");
-  const essayContent = "Roman government changed as Augustus concentrated authority, expansion increased administrative demands, and western deposition did not end government in the east.";
-  const savedEssay = await requestJson(`${apiUrl}/api/essays/${encodeURIComponent(essayStage.essayId)}`, {
-    method: "PUT",
-    body: JSON.stringify({ content: essayContent }),
-  });
-  const submittedEssay = await requestJson(`${apiUrl}/api/essays/${encodeURIComponent(essayStage.essayId)}/submit`, {
-    method: "POST",
-    body: JSON.stringify({ content: essayContent }),
-  });
+  const essayContent =
+    "Roman government changed as Augustus concentrated authority, expansion increased administrative demands, and western deposition did not end government in the east.";
+  const savedEssay = await requestJson(
+    `${apiUrl}/api/essays/${encodeURIComponent(essayStage.essayId)}`,
+    {
+      method: "PUT",
+      body: JSON.stringify({ content: essayContent }),
+    },
+  );
+  const submittedEssay = await requestJson(
+    `${apiUrl}/api/essays/${encodeURIComponent(essayStage.essayId)}/submit`,
+    {
+      method: "POST",
+      body: JSON.stringify({ content: essayContent }),
+    },
+  );
   if (savedEssay.wordCount < 20 || submittedEssay.submitted !== true) {
     throw new Error("Essay autosave or accountable submission failed its runtime check.");
   }
 
   const reviewHome = await requestJson(`${apiUrl}/api/review`);
-  const reviewSession = await requestJson(`${apiUrl}/api/review/sessions`, { method: "POST", body: "{}" });
-  if (typeof reviewHome.dueCount !== "number" || reviewSession.card.back !== undefined) {
-    throw new Error("The review queue was not learner-safe before answer reveal.");
-  }
-  const reviewReveal = await requestJson(`${apiUrl}/api/review/sessions/${reviewSession.sessionId}/reveal`, {
+  const reviewSession = await requestJson(`${apiUrl}/api/review/sessions`, {
     method: "POST",
     body: "{}",
   });
-  const reviewRating = await requestJson(`${apiUrl}/api/review/sessions/${reviewSession.sessionId}/rate`, {
-    method: "POST",
-    body: JSON.stringify({ rating: "good", recalled: true }),
-  });
+  if (typeof reviewHome.dueCount !== "number" || reviewSession.card.back !== undefined) {
+    throw new Error("The review queue was not learner-safe before answer reveal.");
+  }
+  const reviewReveal = await requestJson(
+    `${apiUrl}/api/review/sessions/${reviewSession.sessionId}/reveal`,
+    {
+      method: "POST",
+      body: "{}",
+    },
+  );
+  const reviewRating = await requestJson(
+    `${apiUrl}/api/review/sessions/${reviewSession.sessionId}/rate`,
+    {
+      method: "POST",
+      body: JSON.stringify({ rating: "good", recalled: true }),
+    },
+  );
   if (!reviewReveal.back || reviewRating.evidence !== "independent" || !reviewRating.dueAt) {
-    throw new Error("Review reveal, evidence classification, or scheduling failed its runtime check.");
+    throw new Error(
+      "Review reveal, evidence classification, or scheduling failed its runtime check.",
+    );
   }
 
   const circuit = await fetch(
@@ -336,7 +414,7 @@ try {
 
   console.log(`Discere smoke test passed at ${webUrl}.`);
   console.log(
-    "Verified redesigned routes, safe journey delivery and persistence, essay submission, review scheduling, visuals, writing gate, ChatGPT tutor validation, notebook persistence, and assessment.",
+    "Verified every bundled course, safe journey delivery and persistence, retrieved image serving with path containment, the timeline activity, essay submission, review scheduling, visuals, writing gate, ChatGPT tutor validation, notebook persistence, and assessment.",
   );
 } catch (error) {
   console.error(error instanceof Error ? error.message : error);

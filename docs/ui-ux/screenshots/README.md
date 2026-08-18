@@ -77,12 +77,21 @@ Each screen is captured at 1440×900 and 390×844. The file name is `<screen>-<w
 | Flashcard            | `flashcard`          | `/review/session/:sessionId`                           |
 | Progress             | `progress`           | `/progress`                                            |
 | Tutor drawer         | `tutor-panel`        | explainer stage with the tutor drawer open             |
+| Roman course         | `roman-course`       | `/courses/roman-empire`                                |
+| Roman explainer      | `roman-explainer`    | Roman lesson 1 explainer, with the retrieved map        |
+| Roman timeline       | `roman-timeline`     | Roman lesson 1 activity, after a checked prediction     |
+| Roman quiz           | `roman-quiz`         | Roman lesson 1 first question, a selection              |
 
 Stage identifiers are read from the journey API at run time, so the suite keeps working when
 content changes the stage list.
 
 The interactive-visual capture moves the resistance slider before predicting, so the feedback it
-shows is a real comparison rather than a circuit that never changed.
+shows is a real comparison rather than a circuit that never changed. The Roman timeline capture
+drags the scrubber to 27 BCE and checks an ordering prediction, for the same reason.
+
+The map and the timeline belong to two consecutive stages of the same lesson, so they appear in
+`roman-explainer` and `roman-timeline` rather than in one image. There is no screen in the
+approved design that shows both at once.
 
 ## What to look for in review
 

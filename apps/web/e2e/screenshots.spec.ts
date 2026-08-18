@@ -83,6 +83,24 @@ test.describe("approved reference screens", () => {
       await gotoStage(page, journey, "explainer");
       await page.getByRole("button", { name: "Ask the tutor" }).click();
       await capture("tutor-panel");
+
+      // The second course, which is what proves the interface is not shaped around one subject.
+      const roman = await readJourney(request, "roman-empire");
+      await page.goto(`/courses/${encodeURIComponent(roman.courseId)}`);
+      await capture("roman-course");
+
+      await gotoStage(page, roman, "explainer");
+      await expect(page.getByRole("img", { name: /Roman Empire/i })).toBeVisible();
+      await capture("roman-explainer");
+
+      await gotoStage(page, roman, "interactive_visual");
+      await page.getByRole("slider", { name: "Year" }).fill("-27");
+      await page.getByRole("button", { name: "Caesar crosses the Rubicon" }).click();
+      await page.getByRole("button", { name: "Check prediction" }).click();
+      await capture("roman-timeline");
+
+      await gotoStage(page, roman, "quiz");
+      await capture("roman-quiz");
     });
   }
 });

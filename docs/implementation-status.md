@@ -204,10 +204,99 @@ Deferred from this round: the notebook and the workings-review handoff have no p
 shell yet. Their server endpoints and contracts are untouched, so the tools return when the
 notebook route is designed.
 
+## Content pipeline and a second subject — 19 August 2026
+
+Phase 3. Discere went from one subject with two lessons to two courses with eight, and gained the
+authoring pipeline that produced part of them.
+
+### Authoring pipeline
+
+- `pnpm author` (`scripts/author.ts`): `generate`, `lint`, `validate`, `review`, `merge`, and a
+  `pipeline` command that runs the chain end to end
+- generation spawns the local Codex CLI with `prompts/lesson-writer.md` and a JSON Schema derived
+  from `AuthoredLessonDraftSchema`, at `DISCERE_CODEX_EFFORT=medium`
+- raw model output is cached in `content/<course>/generated/`, ignored by Git, so nothing is
+  regenerated needlessly
+- one targeted style-editor repair pass per failing field, followed by a semantic preservation
+  check that discards a repair which moved a number, unit, equation, or citation
+- a human-readable review file per generated item in `content/<course>/review/`, committed as the
+  decision record
+- `merge` refuses to write unless the whole bundle revalidates
+- documented in [`authoring-pipeline.md`](authoring-pipeline.md)
+
+### Curriculum validation
+
+- flashcards and essay topics are first-class bundle collections with their own referential and
+  prose checks
+- a selectable question must be marked by exactly one of its options, checked by running the real
+  text assessor over every option
+- an accepted idea for a written answer must be a matchable phrase rather than a sentence
+- numeric questions must carry a three-step hint ladder
+- at most 35% of a course's questions may be multiple choice
+- a bundled image must carry a redistributable licence, an attribution naming its creator, and a
+  file that is actually on disk
+- material no lesson reaches is reported as a warning
+
+### Content
+
+- Electronics Foundations: 5 lessons, 20 questions (10 numeric, 6 written, 4 multiple choice),
+  10 authored flashcards, 5 activities. Every numeric answer was recomputed from the physics.
+- The Rise of the Roman Empire: 3 lessons, 13 questions, 8 flashcards, 2 essay topics, 3 timeline
+  activities, 3 retrieved images. Every date checked against its cited source.
+- lesson 2 of the electronics course is reachable at last: the series explorer had been in the
+  activity engine and unreachable since it was written
+
+### Activities and visuals
+
+- `parallel_circuit_explorer` in `@discere/activity-engine`, with conductances added and branch
+  currents reported
+- `timeline_explorer`: a scrubbed horizontal track whose markers light as the year advances, with
+  an ordering prediction whose answer is recomputed from the event dates rather than stored
+- `scripts/retrieve-images.ts` retrieves from the Wikimedia Commons API, accepts only public
+  domain, CC0, CC BY, or CC BY-SA, and records landing page, creator, licence, attribution,
+  retrieval date, and a content hash
+- `GET /api/content/:courseId/assets/*` serves course images read-only, resolving inside the
+  course directory and refusing anything that escapes it
+- the web renders a retrieved image with its caption and a visible attribution line
+
+### Server
+
+- `ContentRepository` scans `content/` and loads every bundle; no course identifier is written
+  into the server
+- start-up refuses two bundles that define the same identifier, because identifiers reach the API
+  without a course prefix
+- the journey is built from the lesson's own data: one quiz stage per question it asks, an essay
+  stage only when it names one, and the takeaway, review label, next action, and stage titles all
+  authored rather than hardcoded
+- `/api/courses` lists every course; course detail carries concept titles, which `/progress` and
+  the completion screen now show instead of humanised identifiers
+- home continues the most recently worked course, defaulting to the first
+- the transfer challenge belongs to the question that offers it, instead of one electronics case
+  applied to every subject
+- assessment feedback is subject-neutral
+- the review queue is fed by the authored flashcards of every course
+
+### Fixed
+
+- moving between two quiz stages carried the first stage's answer, hints, and result into the
+  second. Stage views are now keyed by stage id, so each stage starts clean. The bug could not
+  appear while a lesson had a single question.
+- `/api/visuals/circuit.svg` drew the current lesson's circuit whatever lesson asked for it. It
+  now takes an explicit `lessonId`, or renders the single-resistor loop the query describes.
+- concept progress opened only the very first concept in the library. A concept with no
+  prerequisites is now available, which stays correct with more than one course.
+
+### Verification
+
+`pnpm check`, `pnpm build`, and `pnpm smoke` are green. The Playwright suite runs 12 tests,
+including a Roman Empire walk from the retrieved map through the timeline to a marked
+multiple-choice answer, and it asserts the image actually loads and its attribution is shown.
+Thirty-four screenshots at 1440×900 and 390×844 were recaptured, four of them from the new
+course.
+
 ## Deliberately deferred
 
 - direct ChatGPT MCP transport, pending host compatibility testing
-- automated image retrieval and licence verification
 - generated-image return from ChatGPT into the local workspace
 - automatic in-app handwriting recognition without the ChatGPT handoff
 - persistence of image-review history and formal mastery evidence from reviewed workings

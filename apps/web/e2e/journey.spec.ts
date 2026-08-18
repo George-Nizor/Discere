@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { gotoStage, readJourney } from "./fixtures.js";
+import { gotoStage, readJourney, stageIdPath } from "./fixtures.js";
 
 const TEACH_BACK =
   "Voltage pushes charge around the loop and resistance limits how quickly that charge moves. " +
@@ -26,8 +26,9 @@ test.describe("the lesson journey", () => {
     await expect(page.getByText("Matched")).toBeVisible();
     await page.getByRole("button", { name: /^Continue/ }).click();
 
-    // Quiz: a wrong answer, a hint, then the right answer
+    // First question: a wrong answer, a hint, then the right answer
     await expect(page.getByText("Check understanding")).toBeVisible();
+    await expect(page.getByText("Question 1 of 4")).toBeVisible();
     await page.getByLabel("Value").fill("0.5");
     await page.getByLabel("Unit").fill("A");
     await page.getByRole("button", { name: "Check answer" }).click();
@@ -38,6 +39,32 @@ test.describe("the lesson journey", () => {
 
     await page.getByLabel("Value").fill("0.05");
     await page.getByRole("button", { name: "Check again" }).click();
+    await expect(page.getByText("Correct", { exact: true })).toBeVisible();
+    await page.getByRole("button", { name: /^Continue/ }).click();
+
+    // Second question: the same numeric surface with different values
+    await expect(page.getByText("Question 2 of 4")).toBeVisible();
+    await page.getByLabel("Value").fill("0.04");
+    await page.getByLabel("Unit").fill("A");
+    await page.getByRole("button", { name: "Check answer" }).click();
+    await expect(page.getByText("Correct", { exact: true })).toBeVisible();
+    await page.getByRole("button", { name: /^Continue/ }).click();
+
+    // Third question: a written response marked against the accepted ideas
+    await expect(page.getByText("Question 3 of 4")).toBeVisible();
+    await page
+      .getByLabel("Your answer")
+      .fill(
+        "There is only one path, so the same current passes every point. The charge is not used up by the resistor.",
+      );
+    await page.getByRole("button", { name: "Check answer" }).click();
+    await expect(page.getByText("Correct", { exact: true })).toBeVisible();
+    await page.getByRole("button", { name: /^Continue/ }).click();
+
+    // Fourth question: a selection
+    await expect(page.getByText("Question 4 of 4")).toBeVisible();
+    await page.getByRole("button", { name: "Raising the supply voltage" }).click();
+    await page.getByRole("button", { name: "Check answer" }).click();
     await expect(page.getByText("Correct", { exact: true })).toBeVisible();
     await page.getByRole("button", { name: /^Continue/ }).click();
 
@@ -60,7 +87,7 @@ test.describe("the lesson journey", () => {
     await page.getByRole("button", { name: /^Continue/ }).click();
 
     // Completion
-    await expect(page.getByRole("heading", { level: 1, name: /Lesson complete/ })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: /done/ })).toBeVisible();
     await expect(page.getByRole("table")).toBeVisible();
   });
 
@@ -178,5 +205,60 @@ test.describe("the lesson journey", () => {
     );
     expect(overflow).toBeLessThanOrEqual(1);
     await expect(page.getByRole("navigation", { name: "Lesson stages" })).toBeVisible();
+  });
+  test("walks a Roman Empire lesson from its retrieved map to completion", async ({
+    page,
+    request,
+  }) => {
+    const journey = await readJourney(request, "roman-empire");
+
+    // Explainer: a retrieved image, with the attribution its licence requires beside it.
+    await gotoStage(page, journey, "explainer");
+    await expect(
+      page.getByRole("heading", { level: 1, name: "The rise of the Roman Empire" }),
+    ).toBeVisible();
+    const map = page.getByRole("img", { name: /Roman Empire at its greatest extent/i });
+    await expect(map).toBeVisible();
+    await expect(map).toHaveAttribute("src", /\/api\/content\/roman-empire\/assets\//);
+    await expect(page.getByText(/Tataryn/)).toBeVisible();
+    await expect(page.getByRole("link", { name: "CC BY-SA 3.0" })).toBeVisible();
+    // The picture must actually load, not merely be referenced.
+    expect(await map.evaluate((element: HTMLImageElement) => element.naturalWidth)).toBeGreaterThan(
+      0,
+    );
+    await page.getByRole("button", { name: "Continue", exact: true }).click();
+
+    // Timeline: the scrubber reveals events in date order and checks an ordering prediction.
+    await expect(page.getByText("Diagram / visual")).toBeVisible();
+    await expect(page.getByRole("slider", { name: "Year" })).toBeVisible();
+    await expect(page.getByText("509 BCE").first()).toBeVisible();
+    await expect(page.getByText("117 CE").first()).toBeVisible();
+    await page.getByRole("slider", { name: "Year" }).fill("-27");
+    await expect(page.getByText("Octavian becomes Augustus").first()).toBeVisible();
+    // The earlier of the two offered events, recomputed by the engine from their dates.
+    await page.getByRole("button", { name: "Caesar crosses the Rubicon" }).click();
+    await page.getByRole("button", { name: "Check prediction" }).click();
+    await expect(page.getByText("Matched")).toBeVisible();
+    await page.getByRole("button", { name: /^Continue/ }).click();
+
+    // The mockup's multiple-choice question, marked by the server.
+    await expect(page.getByText("Check understanding")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /Which event marked the transition/ }),
+    ).toBeVisible();
+    await page
+      .getByRole("button", { name: "The Senate granted Octavian the name Augustus in 27 BCE" })
+      .click();
+    await page.getByRole("button", { name: "Check answer" }).click();
+    await expect(page.getByText("Correct", { exact: true })).toBeVisible();
+
+    // Completion names the concepts by their titles rather than by their identifiers.
+    const completionStageId = journey.stageIds.at(-1);
+    expect(completionStageId).toBeTruthy();
+    await page.goto(stageIdPath(journey, completionStageId ?? ""));
+    await expect(page.getByRole("heading", { level: 1, name: /done/ })).toBeVisible();
+    await expect(
+      page.getByRole("rowheader", { name: "Augustus and the principate" }),
+    ).toBeVisible();
   });
 });
