@@ -99,12 +99,31 @@ export const EssaySaveRequestSchema = z
   .strict();
 export type EssaySaveRequest = z.infer<typeof EssaySaveRequestSchema>;
 
+export const StyleViolationSchema = z
+  .object({
+    ruleId: z.string().min(1),
+    severity: z.enum(["hard", "warning"]),
+    category: z.string().min(1),
+    message: z.string().min(1),
+    start: z.number().int().nonnegative(),
+    end: z.number().int().nonnegative(),
+    excerpt: z.string(),
+  })
+  .strict();
+
+export type StyleViolation = z.infer<typeof StyleViolationSchema>;
+
 export const EssaySubmitResponseSchema = z
   .object({
     essayId: z.string().min(1),
     submitted: z.literal(true),
     wordCount: z.number().int().nonnegative(),
     feedback: z.string().min(1),
+    /**
+     * Advisory style observations about the learner's own prose. The writing gate stays
+     * mandatory for generated text; a learner's submission is never rejected for style.
+     */
+    styleNotes: z.array(StyleViolationSchema).default([]),
   })
   .strict();
 export type EssaySubmitResponse = z.infer<typeof EssaySubmitResponseSchema>;
@@ -262,20 +281,6 @@ export const WritingLintRequestSchema = z
     hiddenAnswer: z.string().optional(),
   })
   .strict();
-
-export const StyleViolationSchema = z
-  .object({
-    ruleId: z.string().min(1),
-    severity: z.enum(["hard", "warning"]),
-    category: z.string().min(1),
-    message: z.string().min(1),
-    start: z.number().int().nonnegative(),
-    end: z.number().int().nonnegative(),
-    excerpt: z.string(),
-  })
-  .strict();
-
-export type StyleViolation = z.infer<typeof StyleViolationSchema>;
 
 export const WritingLintResponseSchema = z
   .object({

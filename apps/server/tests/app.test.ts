@@ -53,6 +53,21 @@ describe("Discere API", () => {
     expect(restored.json().submitted).toBe(true);
   });
 
+  it("accepts a teach-back whose prose trips the writing gate and returns advisory notes", async () => {
+    const essayId = "current-in-one-loop:teach-back";
+    // The learner's wording uses a construction the gate rejects in generated prose.
+    const content =
+      "This is not a rule; it is a relationship. Current is voltage divided by resistance, so five volts across one hundred ohms gives fifty milliamps in the loop.";
+    const submit = await app.inject({
+      method: "POST",
+      url: `/api/essays/${encodeURIComponent(essayId)}/submit`,
+      payload: { content },
+    });
+    expect(submit.statusCode).toBe(200);
+    expect(submit.json().submitted).toBe(true);
+    expect(submit.json().styleNotes.length).toBeGreaterThan(0);
+  });
+
   it("keeps review backs behind a reveal and records independent evidence", async () => {
     const session = await app.inject({ method: "POST", url: "/api/review/sessions", payload: {} });
     expect(session.statusCode).toBe(200);

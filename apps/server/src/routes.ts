@@ -108,11 +108,12 @@ export async function registerRoutes(app: FastifyInstance, dependencies: RouteDe
     if (stage?.type !== "essay") throw new HttpError(404, "Essay not found.", "ESSAY_NOT_FOUND");
     const wordCount = body.content.trim() ? body.content.trim().split(/\s+/).length : 0;
     if (wordCount < stage.minWords) throw new HttpError(400, `Write at least ${stage.minWords} words before submitting.`, "ESSAY_TOO_SHORT");
+    // The writing gate stays mandatory for generated prose. A learner's own words are only
+    // ever given advisory style notes, so submission always succeeds.
     const lint = lintText(body.content, { context: "assessment" });
     store.recordWritingGate("assessment", body.content, lint);
-    if (!lint.passed) throw new HttpError(400, "Revise the highlighted writing issues before submitting.", "ESSAY_WRITING_GATE");
     const saved = store.submitEssay(essayId, body.content);
-    return { essayId: saved.essayId, submitted: true as const, wordCount, feedback: "Your teach-back has been saved as submitted evidence." };
+    return { essayId: saved.essayId, submitted: true as const, wordCount, feedback: "Your teach-back has been saved as submitted evidence.", styleNotes: lint.violations };
   });
   function ensureDefaultReviewCard() {
     const question = content.getQuestion(content.currentLesson.question.id);
