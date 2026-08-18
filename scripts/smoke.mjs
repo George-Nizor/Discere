@@ -112,7 +112,7 @@ try {
     throw new Error("The learner-safe lesson contract was invalid or leaked answer authority.");
   }
 
-  for (const path of ["/", "/courses", "/courses/electronics-foundations", "/legacy", "/qa/roman"]) {
+  for (const path of ["/", "/courses", "/courses/electronics-foundations", "/review", "/progress"]) {
     const page = await fetch(`${webUrl}${path}`, { signal: AbortSignal.timeout(5_000) });
     const html = await page.text();
     if (!page.ok || !html.includes("/assets/")) {

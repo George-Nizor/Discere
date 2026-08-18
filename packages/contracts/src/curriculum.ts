@@ -136,6 +136,15 @@ export const AnswerAuthoritySchema = z.discriminatedUnion("kind", [
 ]);
 export type AnswerAuthority = z.infer<typeof AnswerAuthoritySchema>;
 
+/**
+ * A selectable answer choice. Choices carry no correctness marking, so the learner payload
+ * stays safe; the server still holds the authority that decides the submitted text.
+ */
+export const QuestionChoiceSchema = z
+  .object({ id: z.string().min(1), label: z.string().min(1) })
+  .strict();
+export type QuestionChoice = z.infer<typeof QuestionChoiceSchema>;
+
 export const QuestionSchema = z
   .object({
     id: z.string().min(1),
@@ -146,6 +155,8 @@ export const QuestionSchema = z
     hints: z.array(z.string().min(1)),
     answerAuthority: AnswerAuthoritySchema,
     sourceIds: z.array(z.string()),
+    /** Present when the question is answered by selection rather than free response. */
+    choices: z.array(QuestionChoiceSchema).min(2).max(8).optional(),
   })
   .strict();
 export type Question = z.infer<typeof QuestionSchema>;
