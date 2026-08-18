@@ -8,6 +8,7 @@ import {
   isSupportedNode,
   minimumNodeLabel,
   resolvePackageManager,
+  runPackageManager,
   spawnPackageManager,
   terminateProcessTree,
   waitForHttp,
@@ -70,6 +71,10 @@ let serverOutput = () => "";
 let webOutput = () => "";
 
 try {
+  runPackageManager(manager, ["--filter", "@discere/server", "db:migrate"], {
+    env: environment,
+    stdio: "ignore",
+  });
   server = spawnPackageManager(manager, ["--filter", "@discere/server", "start"], {
     env: environment,
     stdio: ["ignore", "pipe", "pipe"],

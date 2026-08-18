@@ -45,22 +45,6 @@ export interface TransferRecord {
   updatedAt: string;
 }
 
-export function ensureTransferSchema(database: Database.Database): void {
-  database.exec(`
-    CREATE TABLE IF NOT EXISTS transfer_attempts (
-      attempt_id TEXT PRIMARY KEY,
-      transfer_id TEXT NOT NULL,
-      response TEXT NOT NULL,
-      correct INTEGER NOT NULL,
-      feedback TEXT NOT NULL,
-      xp_awarded INTEGER NOT NULL DEFAULT 0,
-      mastery REAL NOT NULL DEFAULT 0,
-      created_at TEXT NOT NULL,
-      updated_at TEXT NOT NULL
-    );
-  `);
-}
-
 export function getTransferRecord(
   database: Database.Database,
   attemptId: string,

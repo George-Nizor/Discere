@@ -24,3 +24,19 @@ export const notebookPages = sqliteTable("notebook_pages", {
 export const transferAttempts = sqliteTable("transfer_attempts", {
   attemptId: text("attempt_id").primaryKey(), transferId: text("transfer_id").notNull(), response: text("response").notNull(), correct: integer("correct", { mode: "boolean" }).notNull(), feedback: text("feedback").notNull(), xpAwarded: integer("xp_awarded").notNull().default(0), mastery: real("mastery").notNull().default(0), createdAt: text("created_at").notNull(), updatedAt: text("updated_at").notNull(),
 });
+export const journeyProgress = sqliteTable("journey_progress", {
+  userId: text("user_id").notNull(), journeyId: text("journey_id").notNull(), stageId: text("stage_id").notNull(), state: text("state").notNull(), interactionState: text("interaction_state").notNull().default("{}"), updatedAt: text("updated_at").notNull(),
+}, (table) => [primaryKey({ columns: [table.userId, table.journeyId, table.stageId] })]);
+export const essayDrafts = sqliteTable("essay_drafts", {
+  userId: text("user_id").notNull(), essayId: text("essay_id").notNull(), content: text("content").notNull().default(""), submitted: integer("submitted", { mode: "boolean" }).notNull().default(false), updatedAt: text("updated_at"),
+}, (table) => [primaryKey({ columns: [table.userId, table.essayId] })]);
+export const reviewCards = sqliteTable("review_cards", {
+  userId: text("user_id").notNull(), cardId: text("card_id").notNull(), questionId: text("question_id").notNull(), conceptIds: text("concept_ids").notNull(), front: text("front").notNull(), back: text("back").notNull(), sourceIds: text("source_ids").notNull(), dueAt: text("due_at").notNull(), intervalDays: real("interval_days").notNull(), repetition: integer("repetition").notNull(), lastOutcome: text("last_outcome"), lastEvidence: text("last_evidence"), independentReviews: integer("independent_reviews").notNull().default(0), assistedReviews: integer("assisted_reviews").notNull().default(0), lastReviewedAt: text("last_reviewed_at"),
+}, (table) => [primaryKey({ columns: [table.userId, table.cardId] })]);
+export const reviewSessions = sqliteTable("review_sessions", {
+  id: text("id").primaryKey(), userId: text("user_id").notNull(), cardId: text("card_id").notNull(), revealed: integer("revealed", { mode: "boolean" }).notNull().default(false), rated: integer("rated", { mode: "boolean" }).notNull().default(false), createdAt: text("created_at").notNull(),
+});
+/** Applied-migration ledger owned by `src/db/migrations.ts`. */
+export const schemaMigrations = sqliteTable("schema_migrations", {
+  name: text("name").primaryKey(), appliedAt: text("applied_at").notNull(),
+});

@@ -5,6 +5,9 @@ import { resolve } from "node:path";
 
 export const MINIMUM_NODE_VERSION = [22, 16, 0];
 
+/** Repository root, so scripts resolve paths independently of the working directory. */
+export const REPO_ROOT = resolve(import.meta.dirname, "..", "..");
+
 export function versionParts(version = process.versions.node) {
   return version.split(".").map((part) => Number.parseInt(part, 10) || 0);
 }

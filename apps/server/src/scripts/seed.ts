@@ -1,7 +1,7 @@
-import path from "node:path";
+import { resolveDatabasePath } from "@discere/paths";
 import { ContentRepository } from "../content.js";
 import { DiscereStore } from "../db/store.js";
-const databasePath = process.env["DISCERE_DATABASE_PATH"] ?? path.resolve(import.meta.dirname, "../../../../data/discere.sqlite");
+const databasePath = resolveDatabasePath(process.env["DISCERE_DATABASE_PATH"]);
 const content = await ContentRepository.load(ContentRepository.defaultPath());
 const store = new DiscereStore(databasePath);
 store.initialiseConcepts(content.bundle.concepts);

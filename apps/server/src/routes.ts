@@ -11,7 +11,7 @@ import { buildTutorReplyPayload, validateTutorReply } from "./companion.js";
 import type { ContentRepository } from "./content.js";
 import type { DiscereStore } from "./db/store.js";
 import { HttpError } from "./errors.js";
-import { ensureNotebookSchema, getNotebookPage, saveNotebookPage } from "./notebook.js";
+import { getNotebookPage, saveNotebookPage } from "./notebook.js";
 import { coerceQueryBoolean } from "./query-coercion.js";
 
 export interface RouteDependencies { content: ContentRepository; store: DiscereStore; revealDelayMs: number; }
@@ -33,7 +33,6 @@ const GraphQuerySchema = z.object({ resistance: z.coerce.number().positive().max
 
 export async function registerRoutes(app: FastifyInstance, dependencies: RouteDependencies): Promise<void> {
   const { content, store, revealDelayMs } = dependencies;
-  ensureNotebookSchema(store.database);
 
   function assertLessonExists(lessonId: string): void {
     if (!content.bundle.lessons.some((lesson) => lesson.id === lessonId)) {

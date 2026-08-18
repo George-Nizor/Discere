@@ -1,4 +1,5 @@
 import type { TutorOperation } from "@discere/contracts";
+import { loadPrompt } from "@discere/prompts";
 import type { TutorRequest } from "./types.js";
 
 export interface CompanionPacket { filename: string; text: string; }
@@ -38,7 +39,7 @@ export function buildCompanionPacket<T>(request: TutorRequest<T>): CompanionPack
     "Copy protocolVersion, operation, and requestId exactly from the request envelope.",
     "Set generatedAt to a current ISO 8601 timestamp.",
     "Give concise visible reasoning or criteria when useful. Do not include private chain-of-thought.",
-    "Write plain, direct prose. Avoid negative parallelism, forced groups of three, canned praise, stock openings, and ceremonial conclusions.",
+    "Write to the Discere tutor system prompt reproduced below.",
     "Preserve supplied values, units, equations, source identifiers, and answer boundaries.",
     "Follow the tutoring mode and responsePolicy. In Coach or Assisted mode, do not reveal a hidden final answer.",
   ];
@@ -53,7 +54,8 @@ export function buildCompanionPacket<T>(request: TutorRequest<T>): CompanionPack
   if (payloadContract) {
     instructions.push("Return payload with this exact shape:", payloadContract);
   }
-  instructions.push("", JSON.stringify(envelope, null, 2));
+  instructions.push("", "---", "", loadPrompt("tutor-system").text);
+  instructions.push("", "---", "", JSON.stringify(envelope, null, 2));
   return {
     filename: `discere-${request.operation}-${request.requestId}.md`,
     text: instructions.join("\n"),

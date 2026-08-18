@@ -5,7 +5,7 @@ import type { DiscereStore } from "../src/db/store.js";
 
 let app: FastifyInstance;
 let store: DiscereStore;
-beforeEach(async () => { ({ app, store } = await createApp({ dbPath: ":memory:", revealDelayMs: 0 })); });
+beforeEach(async () => { ({ app, store } = await createApp({ dbPath: ":memory:", migrate: true, revealDelayMs: 0 })); });
 afterEach(async () => { await app.close(); });
 
 describe("Discere API", () => {

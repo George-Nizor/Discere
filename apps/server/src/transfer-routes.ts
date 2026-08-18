@@ -6,7 +6,6 @@ import type { DiscereStore } from "./db/store.js";
 import { HttpError } from "./errors.js";
 import {
   CURRENT_TRANSFER_CHALLENGE,
-  ensureTransferSchema,
   getTransferRecord,
   saveTransferResponse,
 } from "./transfer.js";
@@ -36,7 +35,6 @@ export async function registerTransferRoutes(
   dependencies: TransferRouteDependencies,
 ): Promise<void> {
   const { content, store } = dependencies;
-  ensureTransferSchema(store.database);
 
   app.get("/api/attempts/:attemptId/transfer", async (request) => {
     const { attemptId } = AttemptParamsSchema.parse(request.params);

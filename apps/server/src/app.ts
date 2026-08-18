@@ -1,6 +1,6 @@
-import path from "node:path";
 import Fastify, { type FastifyInstance } from "fastify";
 import cors from "@fastify/cors";
+import { resolveDatabasePath } from "@discere/paths";
 import { ZodError } from "zod";
 import { ContentRepository } from "./content.js";
 import { DiscereStore } from "./db/store.js";
@@ -14,6 +14,9 @@ export interface AppOptions {
   contentPath?: string;
   revealDelayMs?: number;
   logger?: boolean;
+  /** Applies pending migrations before serving. Tests and disposable databases use this;
+   * the deployed server refuses to start against an unmigrated database instead. */
+  migrate?: boolean;
 }
 
 export interface DiscereApp {
@@ -41,11 +44,8 @@ export async function createApp(options: AppOptions = {}): Promise<DiscereApp> {
   const content = await ContentRepository.load(
     options.contentPath ?? ContentRepository.defaultPath(),
   );
-  const dbPath =
-    options.dbPath ??
-    process.env["DISCERE_DATABASE_PATH"] ??
-    path.resolve(import.meta.dirname, "../../../data/discere.sqlite");
-  const store = new DiscereStore(dbPath);
+  const dbPath = options.dbPath ?? resolveDatabasePath(process.env["DISCERE_DATABASE_PATH"]);
+  const store = new DiscereStore(dbPath, { migrate: options.migrate ?? false });
   store.initialiseConcepts(content.bundle.concepts);
   app.setErrorHandler((error, _request, reply) => {
     if (error instanceof ZodError) {

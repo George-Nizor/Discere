@@ -1,13 +1,14 @@
-import path from "node:path";
+import { resolveDatabasePath } from "@discere/paths";
+import { listMigrations, pendingMigrations } from "../db/migrations.js";
 import { DiscereStore } from "../db/store.js";
-import { ensureNotebookSchema } from "../notebook.js";
-import { ensureTransferSchema } from "../transfer.js";
 
-const databasePath =
-  process.env["DISCERE_DATABASE_PATH"] ??
-  path.resolve(import.meta.dirname, "../../../../data/discere.sqlite");
-const store = new DiscereStore(databasePath);
-ensureNotebookSchema(store.database);
-ensureTransferSchema(store.database);
+const databasePath = resolveDatabasePath(process.env["DISCERE_DATABASE_PATH"]);
+const store = new DiscereStore(databasePath, { migrate: true });
+const outstanding = pendingMigrations(store.database);
 store.close();
-console.log(`Database schema is ready at ${databasePath}`);
+if (outstanding.length > 0) {
+  throw new Error(`Migrations did not complete: ${outstanding.join(", ")}`);
+}
+console.log(
+  `Database schema is ready at ${databasePath} (${listMigrations().length} migrations applied).`,
+);

@@ -129,10 +129,20 @@ The first setup creates `.env`. Supported fields are:
 | `DISCERE_PORT` | `4317` | API port. |
 | `DISCERE_WEB_HOST` | `127.0.0.1` | Web bind address. The prototype accepts loopback hosts only. |
 | `DISCERE_WEB_PORT` | `4318` | Web interface port. |
-| `DISCERE_DATABASE_PATH` | `./data/discere.sqlite` | SQLite database location. |
+| `DISCERE_DATABASE_PATH` | `./data/discere.sqlite` | SQLite database location. A relative value resolves from the repository root, not from the working directory, so every command reads the same file. An absolute path is used as given. |
 | `DISCERE_LEARNER_NAME` | `Learner` | Name displayed in the local profile. |
 
 After changing a port, stop and restart Discere. The Vite proxy and API CORS configuration use the same environment values.
+
+## Database schema
+
+Every table is declared in `apps/server/src/db/schema.ts` and created by an ordered SQL file in `apps/server/drizzle/`. Applied files are recorded in the `schema_migrations` table.
+
+```bash
+pnpm db:migrate
+```
+
+The command is idempotent, so it can be run against an existing database after pulling new work. The server does not create tables while serving requests: starting it against a database with outstanding migrations fails with the list of missing files instead of quietly building an empty schema.
 
 ## Local files
 
@@ -148,7 +158,7 @@ node_modules/
 .discere-pids.json
 ```
 
-The SQLite file contains the local profile, XP, concept mastery, attempts, assistance events, answer-reveal records, writing-gate runs, and notebook pages.
+The SQLite file contains the local profile, XP, concept mastery, attempts, assistance events, answer-reveal records, writing-gate runs, notebook pages, journey progress, essay drafts, review cards, review sessions, transfer attempts, and the applied-migration record.
 
 ### Back up learning state
 

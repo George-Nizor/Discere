@@ -8,6 +8,7 @@ import type {
   WorkingsReviewDraft,
   WorkingsReviewRequest,
 } from "@discere/contracts";
+import { promptSection } from "@discere/prompts";
 import { lintText, type WritingContext } from "@discere/writing-engine";
 
 export interface CompanionIssue {
@@ -17,14 +18,19 @@ export interface CompanionIssue {
   message: string;
 }
 
-const MODE_POLICY: Record<Exclude<TutoringMode, "exam">, string> = {
-  coach:
-    "Help the learner make the next useful step. Ask or answer directly enough to unblock them, but do not state the final answer to the active assessment.",
-  assisted:
-    "Give a stronger explanation or partial worked step. Do not state the final answer to the active assessment.",
-  direct:
-    "Answer the learner's question directly. Show concise working when a calculation or causal explanation benefits from it.",
+/**
+ * The accountability rules live in `prompts/tutor-system.md`. The packet quotes that file
+ * rather than repeating the policy here, so an edited prompt reaches the tutor handoff.
+ */
+const MODE_SECTIONS: Record<Exclude<TutoringMode, "exam">, string> = {
+  coach: "Coach",
+  assisted: "Assisted",
+  direct: "Direct",
 };
+
+export function modePolicy(mode: Exclude<TutoringMode, "exam">): string {
+  return promptSection("tutor-system", MODE_SECTIONS[mode]).body;
+}
 
 export function buildTutorReplyPayload(lesson: LessonResponse, request: TutorReplyRequest) {
   if (request.mode === "exam") {
@@ -33,7 +39,7 @@ export function buildTutorReplyPayload(lesson: LessonResponse, request: TutorRep
   return {
     learnerQuestion: request.question,
     tutoringMode: request.mode,
-    responsePolicy: MODE_POLICY[request.mode],
+    responsePolicy: modePolicy(request.mode),
     lessonContext: lesson,
     allowedSourceIds: lesson.sources.map((source) => source.id),
     sourceRule:
@@ -52,7 +58,7 @@ export function buildWorkingsReviewPayload(
   return {
     reviewQuestion: request.reviewQuestion,
     tutoringMode: request.mode,
-    responsePolicy: MODE_POLICY[request.mode],
+    responsePolicy: modePolicy(request.mode),
     attachment: {
       required: true,
       expectedFilename: `discere-${lesson.lesson.id}-workings.png`,

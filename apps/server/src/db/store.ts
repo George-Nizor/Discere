@@ -4,6 +4,7 @@ import path from "node:path";
 import Database from "better-sqlite3";
 import type { Concept, ConceptProgress, ConceptState, JourneyProgress, StageProgressRequest, StageState, TutoringMode, WritingLintResponse } from "@discere/contracts";
 import { scheduleReview, type Flashcard, type ReviewEvidence, type ReviewOutcome, type ReviewState } from "@discere/progression-engine";
+import { assertSchemaReady, runMigrations } from "./migrations.js";
 
 const LOCAL_USER_ID = "local-user";
 
@@ -31,33 +32,24 @@ export interface ReviewSessionRow { id: string; cardId: string; revealed: boolea
 function now(): string { return new Date().toISOString(); }
 function bool(value: unknown): boolean { return value === 1 || value === true; }
 
+export interface StoreOptions {
+  /**
+   * Applies pending migrations instead of demanding an already-migrated database. The
+   * migration script, tests, and the smoke harness own their databases; the server does not.
+   */
+  migrate?: boolean;
+}
+
 export class DiscereStore {
   readonly database: Database.Database;
-  constructor(databasePath: string) {
+  constructor(databasePath: string, options: StoreOptions = {}) {
     if (databasePath !== ":memory:") mkdirSync(path.dirname(databasePath), { recursive: true });
     this.database = new Database(databasePath);
     this.database.pragma("journal_mode = WAL");
     this.database.pragma("foreign_keys = ON");
-    this.migrate();
+    if (options.migrate === true) runMigrations(this.database);
+    else assertSchemaReady(this.database, databasePath);
     this.ensureUser();
-  }
-
-  private migrate(): void {
-    this.database.exec(`
-      CREATE TABLE IF NOT EXISTS user_profiles (id TEXT PRIMARY KEY, learner_name TEXT NOT NULL, xp INTEGER NOT NULL DEFAULT 0, streak_days INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
-      CREATE TABLE IF NOT EXISTS concept_progress (user_id TEXT NOT NULL, concept_id TEXT NOT NULL, state TEXT NOT NULL, mastery REAL NOT NULL DEFAULT 0, independent_attempts INTEGER NOT NULL DEFAULT 0, assisted_attempts INTEGER NOT NULL DEFAULT 0, updated_at TEXT NOT NULL, PRIMARY KEY (user_id, concept_id));
-      CREATE TABLE IF NOT EXISTS attempts (id TEXT PRIMARY KEY, user_id TEXT NOT NULL, question_id TEXT NOT NULL, response TEXT NOT NULL, mode TEXT NOT NULL, correct INTEGER NOT NULL, feedback TEXT NOT NULL, hint_count INTEGER NOT NULL DEFAULT 0, answer_revealed INTEGER NOT NULL DEFAULT 0, xp_awarded INTEGER NOT NULL DEFAULT 0, mastery REAL NOT NULL DEFAULT 0, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
-      CREATE TABLE IF NOT EXISTS assistance_events (id TEXT PRIMARY KEY, attempt_id TEXT NOT NULL, type TEXT NOT NULL, detail TEXT, created_at TEXT NOT NULL);
-      CREATE TABLE IF NOT EXISTS reveal_sessions (token TEXT PRIMARY KEY, attempt_id TEXT NOT NULL, reason TEXT NOT NULL, available_at TEXT NOT NULL, used_at TEXT, created_at TEXT NOT NULL);
-      CREATE TABLE IF NOT EXISTS writing_gate_runs (id TEXT PRIMARY KEY, context TEXT NOT NULL, passed INTEGER NOT NULL, text_hash TEXT NOT NULL, violation_count INTEGER NOT NULL, created_at TEXT NOT NULL);
-      CREATE TABLE IF NOT EXISTS journey_progress (user_id TEXT NOT NULL, journey_id TEXT NOT NULL, stage_id TEXT NOT NULL, state TEXT NOT NULL, interaction_state TEXT NOT NULL DEFAULT '{}', updated_at TEXT NOT NULL, PRIMARY KEY (user_id, journey_id, stage_id));
-      CREATE TABLE IF NOT EXISTS essay_drafts (user_id TEXT NOT NULL, essay_id TEXT NOT NULL, content TEXT NOT NULL DEFAULT '', submitted INTEGER NOT NULL DEFAULT 0, updated_at TEXT, PRIMARY KEY (user_id, essay_id));
-      CREATE TABLE IF NOT EXISTS review_cards (user_id TEXT NOT NULL, card_id TEXT NOT NULL, question_id TEXT NOT NULL, concept_ids TEXT NOT NULL, front TEXT NOT NULL, back TEXT NOT NULL, source_ids TEXT NOT NULL, due_at TEXT NOT NULL, interval_days REAL NOT NULL, repetition INTEGER NOT NULL, last_outcome TEXT, last_evidence TEXT, independent_reviews INTEGER NOT NULL DEFAULT 0, assisted_reviews INTEGER NOT NULL DEFAULT 0, last_reviewed_at TEXT, PRIMARY KEY (user_id, card_id));
-      CREATE TABLE IF NOT EXISTS review_sessions (id TEXT PRIMARY KEY, user_id TEXT NOT NULL, card_id TEXT NOT NULL, revealed INTEGER NOT NULL DEFAULT 0, rated INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL);
-      CREATE INDEX IF NOT EXISTS idx_attempts_question ON attempts(question_id);
-      CREATE INDEX IF NOT EXISTS idx_assistance_attempt ON assistance_events(attempt_id);
-      CREATE INDEX IF NOT EXISTS idx_journey_progress ON journey_progress(user_id, journey_id);
-    `);
   }
 
   private ensureUser(): void {

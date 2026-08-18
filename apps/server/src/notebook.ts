@@ -13,20 +13,6 @@ interface NotebookRow {
   updatedAt: string;
 }
 
-export function ensureNotebookSchema(database: Database.Database): void {
-  database.exec(`
-    CREATE TABLE IF NOT EXISTS notebook_pages (
-      user_id TEXT NOT NULL,
-      lesson_id TEXT NOT NULL,
-      page_type TEXT NOT NULL,
-      strokes_json TEXT NOT NULL,
-      note TEXT NOT NULL DEFAULT '',
-      updated_at TEXT NOT NULL,
-      PRIMARY KEY (user_id, lesson_id)
-    );
-  `);
-}
-
 export function getNotebookPage(database: Database.Database, lessonId: string): NotebookPage {
   const row = database
     .prepare("SELECT lesson_id AS lessonId, page_type AS pageType, strokes_json AS strokesJson, note, updated_at AS updatedAt FROM notebook_pages WHERE user_id = ? AND lesson_id = ?")

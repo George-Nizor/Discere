@@ -4,7 +4,7 @@ import { createApp } from "../src/app.js";
 
 let app: FastifyInstance;
 beforeEach(async () => {
-  ({ app } = await createApp({ dbPath: ":memory:" }));
+  ({ app } = await createApp({ dbPath: ":memory:", migrate: true }));
 });
 afterEach(async () => {
   await app.close();

@@ -52,7 +52,7 @@
 - source-number and factual-token preservation checks
 - visual-brief validation and curriculum referential-integrity checks
 - learner-facing ChatGPT companion handoff using the normal ChatGPT subscription
-- structured tutor packets containing the current lesson, mode, source IDs, and response contract
+- structured tutor packets containing the current lesson, mode, source IDs, response contract, and the tutor system prompt read from `prompts/tutor-system.md`
 - pasted JSON validation before a tutor reply is shown
 - final-answer leakage rejection in Coach and Assisted modes
 - unknown-source rejection and response-request matching
@@ -81,7 +81,10 @@
 - prerequisite-cycle and orphan-reference detection for curriculum bundles
 - learner-safe lesson lookup by ID
 - transfer result persistence in SQLite
-- transfer tables included in explicit database migration
+- one declared database schema: every table lives in `apps/server/src/db/schema.ts` and an ordered SQL file under `apps/server/drizzle/`, recorded in `schema_migrations`
+- server startup that fails with the list of outstanding migrations instead of creating tables during request handling
+- repository-root path resolution for the database and the prompt package, so a relative `DISCERE_DATABASE_PATH` means the same file for every workspace command
+- versioned prompt files loaded from `prompts/` at runtime, with clause tests guarding against prompt drift
 - agent operating contract in `AGENTS.md`
 - detailed README, setup guide, ChatGPT workflow, troubleshooting, backup, and reset instructions
 
@@ -114,6 +117,16 @@ The approved redesign is now the default learner entry point. It is implemented 
 - expanded full-stack smoke test covering the new routes, contracts, persistence, essay, and review flow
 
 The functional migration currently covers the first electronics lesson. The sourced series-circuit lesson remains validated course content but is intentionally marked planned until the learner-safe activity union and navigation are integrated. Full browser screenshots are documented in [`docs/ui-ux/screenshots/README.md`](ui-ux/screenshots/README.md); this environment lacks the host libraries required to execute Chromium.
+
+## Repository hygiene — 18 August 2026
+
+Groundwork for the v1 rebuild. No learner-facing behaviour changed.
+
+- Biome ignores build output again. The previous `!!dist` patterns re-included the directories they named, so a present `apps/web/dist` produced thousands of lint errors. Biome 2 uses a single `!` prefix and no trailing `/**` for a directory.
+- Runtime artefacts are untracked: the duplicate `apps/server/data/` SQLite files, `apps/web/tsconfig.tsbuildinfo`, and the `.discere-pids.json` process record.
+- One canonical database. `@discere/paths` finds the repository root by walking up to `pnpm-workspace.yaml`, so `DISCERE_DATABASE_PATH=./data/discere.sqlite` no longer resolved against each package directory. The stray `apps/server/data/discere.sqlite` came from that mismatch.
+- One schema. The `CREATE TABLE IF NOT EXISTS` statements that lived in the store constructor and in the notebook, transfer, and route modules now exist only as migrations.
+- `@discere/prompts` reads the seven prompt files from `prompts/` and supplies the tutor system prompt and the accountability-mode policy to the companion packet builder. Clause tests cover every file, as spec v0.2 section 24 requires.
 
 ## Deliberately deferred
 
