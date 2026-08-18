@@ -61,6 +61,13 @@ const environment = childEnvironment({
   DISCERE_WEB_PORT: String(webPort),
   DISCERE_DATABASE_PATH: join(tempRoot, "smoke.sqlite"),
   DISCERE_LEARNER_NAME: "Smoke Tester",
+  // The launcher opens one hardened window on one port, so the API must be able to serve the
+  // built interface from its own origin. The proxied Vite preview below is still checked, and
+  // the two together cover both the development and the packaged shapes.
+  DISCERE_WEB_ROOT: "apps/web/dist",
+  // The offline fixture provider answers in process, so the workings review below runs without
+  // a subscription and without a network call.
+  DISCERE_TUTOR_PROVIDER: "mock",
 });
 const apiUrl = `http://${formatHostForUrl(host)}:${apiPort}`;
 const webUrl = `http://${formatHostForUrl(host)}:${webPort}`;
@@ -101,6 +108,29 @@ try {
   const health = await requestJson(`${webUrl}/api/health`);
   if (health.status !== "ok" || health.service !== "discere") {
     throw new Error("The proxied health response was invalid.");
+  }
+
+  // Single origin: the interface, a deep link, and the API all answer on the API's own port.
+  const singleOriginHealth = await requestJson(`${apiUrl}/api/health`);
+  const singleOriginPage = await fetch(`${apiUrl}/`, { signal: AbortSignal.timeout(5_000) });
+  const singleOriginHtml = await singleOriginPage.text();
+  const singleOriginDeepLink = await fetch(`${apiUrl}/review`, {
+    signal: AbortSignal.timeout(5_000),
+  });
+  const singleOriginDeepLinkHtml = await singleOriginDeepLink.text();
+  const singleOriginMissingApi = await fetch(`${apiUrl}/api/not-a-route`, {
+    signal: AbortSignal.timeout(5_000),
+  });
+  if (
+    singleOriginHealth.status !== "ok" ||
+    !singleOriginPage.ok ||
+    !singleOriginHtml.includes('<div id="root">') ||
+    !singleOriginHtml.includes("/assets/") ||
+    !singleOriginDeepLink.ok ||
+    !singleOriginDeepLinkHtml.includes('<div id="root">') ||
+    singleOriginMissingApi.status !== 404
+  ) {
+    throw new Error("The server did not serve the built interface and the API from one origin.");
   }
 
   const lesson = await requestJson(`${apiUrl}/api/lessons/current`);
@@ -246,6 +276,16 @@ try {
   }
 
   const reviewHome = await requestJson(`${apiUrl}/api/review`);
+  // Two courses are bundled, so the queue must report both rather than one global number.
+  const perCourseDue = (reviewHome.courses ?? []).reduce((total, row) => total + row.dueCount, 0);
+  if (
+    !Array.isArray(reviewHome.courses) ||
+    reviewHome.courses.length < 2 ||
+    perCourseDue !== reviewHome.dueCount ||
+    !reviewHome.courses.every((row) => row.title && row.cardCount > 0)
+  ) {
+    throw new Error("The review queue did not report a named, per-course breakdown.");
+  }
   const reviewSession = await requestJson(`${apiUrl}/api/review/sessions`, {
     method: "POST",
     body: "{}",
@@ -400,6 +440,43 @@ try {
     throw new Error("Notebook persistence failed its round-trip check.");
   }
 
+  // A one-pixel PNG, so the image path is exercised with real bytes.
+  const workingsPng = Buffer.from(
+    "89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000a49444154789c6300010000050001",
+    "hex",
+  ).toString("base64");
+  const workingsReview = await requestJson(`${apiUrl}/api/tutor/workings/review`, {
+    method: "POST",
+    body: JSON.stringify({
+      lessonId: lesson.lesson.id,
+      reviewQuestion: "Check my working and name the first real mistake.",
+      mode: "coach",
+      image: { filename: `discere-${lesson.lesson.id}-workings.png`, base64: workingsPng },
+    }),
+  });
+  if (
+    workingsReview.status !== "answered" ||
+    workingsReview.accepted !== true ||
+    workingsReview.review?.imageReviewed !== true ||
+    !workingsReview.review.nextStep
+  ) {
+    throw new Error("The workings review did not return an accepted, image-backed assessment.");
+  }
+  const emptyPageReview = await fetch(`${apiUrl}/api/tutor/workings/review`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    signal: AbortSignal.timeout(5_000),
+    body: JSON.stringify({
+      lessonId: lesson.lesson.id,
+      reviewQuestion: "Check my working.",
+      mode: "coach",
+      image: { filename: "not-a-png.png", base64: Buffer.from("nope").toString("base64") },
+    }),
+  });
+  if (emptyPageReview.status !== 400) {
+    throw new Error("The workings review accepted an attachment that was not a PNG.");
+  }
+
   const attempt = await requestJson(`${apiUrl}/api/attempts`, {
     method: "POST",
     body: JSON.stringify({
@@ -412,9 +489,9 @@ try {
     throw new Error("The numeric assessment runtime check failed.");
   }
 
-  console.log(`Discere smoke test passed at ${webUrl}.`);
+  console.log(`Discere smoke test passed at ${webUrl}, and single-origin at ${apiUrl}.`);
   console.log(
-    "Verified every bundled course, safe journey delivery and persistence, retrieved image serving with path containment, the timeline activity, essay submission, review scheduling, visuals, writing gate, ChatGPT tutor validation, notebook persistence, and assessment.",
+    "Verified every bundled course, safe journey delivery and persistence, retrieved image serving with path containment, the timeline activity, essay submission, FSRS review scheduling with a per-course queue, visuals, writing gate, ChatGPT tutor validation, notebook persistence, workings review through the provider, single-origin serving of the built interface, and assessment.",
   );
 } catch (error) {
   console.error(error instanceof Error ? error.message : error);

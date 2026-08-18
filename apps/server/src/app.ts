@@ -9,6 +9,7 @@ import { registerRoutes } from "./routes.js";
 import { registerTransferRoutes } from "./transfer-routes.js";
 import { createTutorRuntime, type TutorRuntimeOptions } from "./tutor-provider.js";
 import { registerTutorRoutes } from "./tutor-routes.js";
+import { registerWebRoot, resolveWebRoot } from "./web-root.js";
 import { registerWorkingsReviewRoutes } from "./workings-routes.js";
 
 export interface AppOptions {
@@ -24,6 +25,11 @@ export interface AppOptions {
   tutor?: TutorRuntimeOptions;
   /** Supplies the current instant to the store, so a test can move through several days. */
   clock?: () => Date;
+  /**
+   * Directory holding the built browser bundle. When set, the interface is served from the
+   * API's own origin. Defaults to `DISCERE_WEB_ROOT`, relative to the repository root.
+   */
+  webRoot?: string;
 }
 
 export interface DiscereApp {
@@ -84,6 +90,10 @@ export async function createApp(options: AppOptions = {}): Promise<DiscereApp> {
   await registerTransferRoutes(app, { content, store });
   await registerWorkingsReviewRoutes(app, { content, store, runtime });
   await registerTutorRoutes(app, { content, store, runtime });
+  // The bundle is registered last so `/api/*` always wins and the fallback only sees a path
+  // no route claimed.
+  const webRoot = resolveWebRoot(options.webRoot ?? process.env["DISCERE_WEB_ROOT"]);
+  if (webRoot) await registerWebRoot(app, webRoot);
   app.addHook("onClose", async () => store.close());
   return { app, store, content };
 }
