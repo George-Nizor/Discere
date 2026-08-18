@@ -5,6 +5,7 @@ import { errorMessage } from "../api/client.js";
 import { rateReviewSession, revealReviewSession } from "../api/endpoints.js";
 import { formatDueDate, formatInterval, humaniseId } from "../lib/format.js";
 import { Notice } from "../ui/Feedback.js";
+import { ReadAloudButton } from "../ui/ReadAloud.js";
 
 const RATINGS: Array<{ id: ReviewRating; label: string; meaning: string }> = [
   { id: "again", label: "Again", meaning: "I could not recall it." },
@@ -90,15 +91,19 @@ export function Flashcard({
       </p>
 
       {!back ? (
-        <button
-          aria-busy={busy}
-          className="button button-primary flashcard-reveal"
-          onClick={() => void reveal()}
-          type="button"
-        >
-          {busy ? <Loader2 aria-hidden="true" className="spin" size={16} /> : null}
-          Reveal answer
-        </button>
+        <div className="button-row flashcard-actions">
+          <button
+            aria-busy={busy}
+            className="button button-primary flashcard-reveal"
+            onClick={() => void reveal()}
+            type="button"
+          >
+            {busy ? <Loader2 aria-hidden="true" className="spin" size={16} /> : null}
+            Reveal answer
+          </button>
+          {/* Only the front is ever spoken; the back is not in the browser until it is revealed. */}
+          <ReadAloudButton label="Read the card" text={front} />
+        </div>
       ) : null}
 
       {back && !result ? (

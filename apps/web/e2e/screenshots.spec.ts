@@ -1,7 +1,7 @@
 import { mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { expect, test } from "@playwright/test";
-import { gotoStage, readJourney } from "./fixtures.js";
+import { gotoStage, notebookPath, readJourney } from "./fixtures.js";
 
 const OUTPUT = join(import.meta.dirname, "../../../docs/ui-ux/screenshots");
 
@@ -69,6 +69,23 @@ test.describe("approved reference screens", () => {
 
       await gotoStage(page, journey, "completion");
       await capture("completion");
+
+      // The working notebook, with a drawn page so the capture shows real handwriting rather
+      // than an empty sheet.
+      await page.goto(notebookPath(journey));
+      await page.waitForLoadState("networkidle");
+      const canvas = page.getByRole("application", { name: "Working canvas" });
+      const box = await canvas.boundingBox();
+      if (box) {
+        await page.mouse.move(box.x + box.width * 0.12, box.y + box.height * 0.22);
+        await page.mouse.down();
+        for (const step of [0.2, 0.3, 0.42, 0.5]) {
+          await page.mouse.move(box.x + box.width * step, box.y + box.height * (0.22 + step / 5));
+        }
+        await page.mouse.up();
+      }
+      await page.getByLabel("A note about this working").fill("I = V / R, so 5 / 100.");
+      await capture("notebook");
 
       await page.goto("/review");
       await capture("review-home");

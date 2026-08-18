@@ -11,6 +11,7 @@ import { errorMessage } from "../../api/client.js";
 import { requestHint, submitAttempt } from "../../api/endpoints.js";
 import { queryKeys } from "../../api/queries.js";
 import { Notice } from "../../ui/Feedback.js";
+import { ReadAloudButton } from "../../ui/ReadAloud.js";
 import { InlineRichText } from "../../ui/RichText.js";
 import { ModeSelector } from "../ModeSelector.js";
 import { useTutoringMode } from "../mode-context.js";
@@ -84,11 +85,15 @@ export function QuizStageView({
         <p className="quiz-count">
           Question {stage.questionIndex} of {stage.questionCount}
         </p>
-        {returnLink ? (
-          <button className="button button-quiet" onClick={returnLink.onSelect} type="button">
-            {returnLink.label}
-          </button>
-        ) : null}
+        <div className="quiz-heading-actions">
+          {/* The question is read on its own. A hint or the answer is never spoken here. */}
+          <ReadAloudButton label="Read the question" text={question.prompt} />
+          {returnLink ? (
+            <button className="button button-quiet" onClick={returnLink.onSelect} type="button">
+              {returnLink.label}
+            </button>
+          ) : null}
+        </div>
       </div>
 
       <h1 className="quiz-question">

@@ -18,6 +18,9 @@ import {
   JourneyProgressResponseSchema,
   type JourneyResponse,
   JourneyResponseSchema,
+  type NotebookPage,
+  NotebookPageSchema,
+  type NotebookSaveRequest,
   type RevealConfirmResponse,
   type RevealStartResponse,
   type ReviewHomeResponse,
@@ -42,6 +45,8 @@ import {
   type TutoringMode,
   type TutorReplyDraft,
   TutorReplyDraftSchema,
+  type WorkingsReviewResponse,
+  WorkingsReviewResponseSchema,
 } from "@discere/contracts";
 import { requestJson } from "./client.js";
 
@@ -256,4 +261,38 @@ export async function importTutorReply(input: {
     throw new Error("That reply belongs to a different question. Copy the latest packet again.");
   }
   return { ...result, reply: TutorReplyDraftSchema.parse(result.reply) };
+}
+
+export async function getNotebookPage(lessonId: string): Promise<NotebookPage> {
+  return NotebookPageSchema.parse(await requestJson<unknown>(`/api/notebook/${encode(lessonId)}`));
+}
+
+export async function saveNotebookPage(
+  lessonId: string,
+  input: NotebookSaveRequest,
+): Promise<NotebookPage> {
+  return NotebookPageSchema.parse(
+    await requestJson<unknown>(`/api/notebook/${encode(lessonId)}`, {
+      method: "PUT",
+      body: JSON.stringify(input),
+    }),
+  );
+}
+
+/**
+ * Sends the exported page for review. The image travels with the request because the local
+ * server hands it straight to the provider; nothing is uploaded anywhere else.
+ */
+export async function reviewWorkings(input: {
+  lessonId: string;
+  reviewQuestion: string;
+  mode: TutoringMode;
+  image: { filename: string; base64: string };
+}): Promise<WorkingsReviewResponse> {
+  return WorkingsReviewResponseSchema.parse(
+    await requestJson<unknown>("/api/tutor/workings/review", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+  );
 }

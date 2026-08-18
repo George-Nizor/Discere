@@ -1,12 +1,8 @@
 import type { ExplainerStage } from "@discere/contracts";
-import { ArrowRight, Sparkle, Volume2 } from "lucide-react";
-import { useState } from "react";
+import { ArrowRight, Sparkle } from "lucide-react";
+import { ReadAloudButton } from "../../ui/ReadAloud.js";
 import { InlineRichText, splitParagraphs } from "../../ui/RichText.js";
 import { resolveStageVisual } from "../visual-source.js";
-
-function canSpeak(): boolean {
-  return typeof window !== "undefined" && "speechSynthesis" in window;
-}
 
 export function ExplainerStageView({
   stage,
@@ -17,25 +13,9 @@ export function ExplainerStageView({
   onContinue: () => void;
   onTryQuestion: (() => void) | null;
 }) {
-  const [speaking, setSpeaking] = useState(false);
   const paragraphs = splitParagraphs(stage.body);
   const [deck, ...rest] = paragraphs;
   const visual = resolveStageVisual(stage.visual);
-
-  function toggleReadAloud(): void {
-    if (!canSpeak()) return;
-    if (speaking) {
-      window.speechSynthesis.cancel();
-      setSpeaking(false);
-      return;
-    }
-    const utterance = new SpeechSynthesisUtterance(`${stage.title}. ${paragraphs.join(" ")}`);
-    utterance.rate = 0.95;
-    utterance.addEventListener("end", () => setSpeaking(false));
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(utterance);
-    setSpeaking(true);
-  }
 
   return (
     <div className={visual ? "explainer explainer-split" : "explainer"}>
@@ -74,12 +54,7 @@ export function ExplainerStageView({
               <ArrowRight aria-hidden="true" size={16} strokeWidth={1.8} />
             </button>
           ) : null}
-          {canSpeak() ? (
-            <button className="button button-quiet" onClick={toggleReadAloud} type="button">
-              <Volume2 aria-hidden="true" size={16} strokeWidth={1.8} />
-              {speaking ? "Stop reading" : "Read aloud"}
-            </button>
-          ) : null}
+          <ReadAloudButton text={`${stage.title}. ${paragraphs.join(" ")}`} />
         </div>
       </div>
 

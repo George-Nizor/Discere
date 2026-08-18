@@ -8,6 +8,7 @@ import "./styles/tokens.css";
 import "./styles/base.css";
 import "./styles/shell.css";
 import "./styles/stages.css";
+import "./styles/notebook.css";
 
 const queryClient = new QueryClient({
   defaultOptions: {

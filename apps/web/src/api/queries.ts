@@ -27,6 +27,7 @@ export const queryKeys = {
     ["journey-progress", courseId, lessonId] as const,
   essay: (essayId: string) => ["essay", essayId] as const,
   essayAssessment: (essayId: string) => ["essay-assessment", essayId] as const,
+  notebook: (lessonId: string) => ["notebook", lessonId] as const,
   reviewHome: ["review-home"] as const,
   reviewSession: (sessionId: string) => ["review-session", sessionId] as const,
 };

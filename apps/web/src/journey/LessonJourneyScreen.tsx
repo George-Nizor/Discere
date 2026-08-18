@@ -1,8 +1,8 @@
 import type { LearnerStage } from "@discere/contracts";
 import { useQueryClient } from "@tanstack/react-query";
-import { MessageCircleQuestion } from "lucide-react";
+import { MessageCircleQuestion, NotebookPen } from "lucide-react";
 import { useCallback, useState } from "react";
-import { Navigate, useLocation, useNavigate, useParams } from "react-router";
+import { Link, Navigate, useLocation, useNavigate, useParams } from "react-router";
 import { errorMessage } from "../api/client.js";
 import { saveJourneyProgress } from "../api/endpoints.js";
 import { queryKeys, useCourse, useJourney, useJourneyProgress } from "../api/queries.js";
@@ -135,18 +135,30 @@ function LessonJourney({
         stageLabel={stageTypeLabel(current.stage.type)}
         total={views.length}
         utility={
-          mode === "exam" ? (
-            <span className="stage-exam-note">Tutor closed in Exam mode</span>
-          ) : (
-            <button
-              className="button button-quiet"
-              onClick={() => setTutorOpen(true)}
-              type="button"
+          <>
+            {/* The working page stays open in every mode. Only the tutor closes in an exam. */}
+            <Link
+              aria-label="Notebook"
+              className="button button-quiet stage-utility"
+              to={paths.notebook(courseId, lessonId)}
             >
-              <MessageCircleQuestion aria-hidden="true" size={16} strokeWidth={1.8} />
-              Ask the tutor
-            </button>
-          )
+              <NotebookPen aria-hidden="true" size={16} strokeWidth={1.8} />
+              <span className="stage-utility-label">Notebook</span>
+            </Link>
+            {mode === "exam" ? (
+              <span className="stage-exam-note">Tutor closed in Exam mode</span>
+            ) : (
+              <button
+                aria-label="Ask the tutor"
+                className="button button-quiet stage-utility"
+                onClick={() => setTutorOpen(true)}
+                type="button"
+              >
+                <MessageCircleQuestion aria-hidden="true" size={16} strokeWidth={1.8} />
+                <span className="stage-utility-label">Ask the tutor</span>
+              </button>
+            )}
+          </>
         }
       />
 

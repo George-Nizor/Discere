@@ -73,6 +73,7 @@ Each screen is captured at 1440×900 and 390×844. The file name is `<screen>-<w
 | Essay studio         | `essay`              | `…/stages/:essayStageId`                               |
 | In-lesson review     | `lesson-review`      | `…/stages/:reviewStageId`                              |
 | Completion           | `completion`         | `…/stages/:completionStageId`                          |
+| Working notebook     | `notebook`           | `…/lessons/:lessonId/notebook`, with a drawn page       |
 | Review home          | `review-home`        | `/review`                                              |
 | Flashcard            | `flashcard`          | `/review/session/:sessionId`                           |
 | Progress             | `progress`           | `/progress`                                            |
@@ -87,7 +88,9 @@ content changes the stage list.
 
 The interactive-visual capture moves the resistance slider before predicting, so the feedback it
 shows is a real comparison rather than a circuit that never changed. The Roman timeline capture
-drags the scrubber to 27 BCE and checks an ordering prediction, for the same reason.
+drags the scrubber to 27 BCE and checks an ordering prediction, for the same reason. The notebook
+capture draws a line and types a note first, because an empty sheet says nothing about how the
+page behaves.
 
 The map and the timeline belong to two consecutive stages of the same lesson, so they appear in
 `roman-explainer` and `roman-timeline` rather than in one image. There is no screen in the

@@ -48,6 +48,11 @@ export function stageIdPath(journey: JourneyMap, stageId: string): string {
   return `/courses/${encodeURIComponent(journey.courseId)}/lessons/${encodeURIComponent(journey.lessonId)}/stages/${encodeURIComponent(stageId)}`;
 }
 
+/** The working page for the lesson under test. */
+export function notebookPath(journey: JourneyMap): string {
+  return `/courses/${encodeURIComponent(journey.courseId)}/lessons/${encodeURIComponent(journey.lessonId)}/notebook`;
+}
+
 export function stagePath(journey: JourneyMap, type: string): string {
   const stageId = journey.stageIdByType[type];
   if (!stageId) throw new Error(`The journey has no ${type} stage.`);
