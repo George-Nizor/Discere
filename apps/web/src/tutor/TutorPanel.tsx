@@ -169,100 +169,106 @@ export function TutorPanel({
   }
 
   return (
-    <aside aria-label="Ask the tutor" aria-modal="true" className="tutor-panel" role="dialog">
-      <header className="tutor-header">
-        <h2>Ask the tutor</h2>
-        <button
-          aria-label="Close the tutor"
-          className="icon-button"
-          onClick={onClose}
-          type="button"
-        >
-          <X aria-hidden="true" size={18} strokeWidth={1.6} />
-        </button>
-      </header>
-
-      <div className="tutor-body">
-        {thread.length === 0 && !packet ? (
-          <p className="muted">
-            The tutor sees this lesson and the concepts it teaches. It answers within the rules of
-            your current learning mode.
-          </p>
-        ) : null}
-
-        <ul className="tutor-thread">
-          {thread.map((exchange) => (
-            <ReplyView exchange={exchange} key={`${exchange.question}-${exchange.reply.answer}`} />
-          ))}
-        </ul>
-
-        {busy ? (
-          <p aria-live="polite" className="tutor-thinking">
-            <Loader2 aria-hidden="true" className="spin" size={16} />
-            The tutor is thinking. Replies usually take 10 to 45 seconds.
-          </p>
-        ) : null}
-
-        {packet ? (
-          <div className="packet">
-            <Notice tone="info" title="This provider answers outside Discere">
-              <p>{packet.message}</p>
-            </Notice>
-            <CopyButton label={`Copy ${packet.filename}`} text={packet.text} />
-            <pre className="packet-text">{packet.text}</pre>
-            <label className="field-label" htmlFor="tutor-import">
-              Paste the reply here
-            </label>
-            <textarea
-              className="textarea textarea-short"
-              id="tutor-import"
-              onChange={(event) => setPasted(event.currentTarget.value)}
-              value={pasted}
-            />
-            {pasted.trim().length > 1 ? (
-              <button
-                aria-busy={busy}
-                className="button button-secondary"
-                onClick={() => void importReply()}
-                type="button"
-              >
-                Import the reply
-              </button>
-            ) : null}
-          </div>
-        ) : null}
-
-        {failure ? (
-          <Notice live tone="error" title="No reply was produced">
-            <p>{failure}</p>
-          </Notice>
-        ) : null}
-      </div>
-
-      <footer className="tutor-footer">
-        <label className="sr-only" htmlFor="tutor-question">
-          Your question
-        </label>
-        <textarea
-          className="textarea textarea-short"
-          id="tutor-question"
-          onChange={(event) => setQuestion(event.currentTarget.value)}
-          placeholder="Ask about this stage."
-          ref={input}
-          value={question}
-        />
-        {question.trim().length > 1 ? (
+    <>
+      <div className="tutor-scrim" />
+      <aside aria-label="Ask the tutor" aria-modal="true" className="tutor-panel" role="dialog">
+        <header className="tutor-header">
+          <h2>Ask the tutor</h2>
           <button
-            aria-busy={busy}
-            className="button button-primary"
-            onClick={() => void ask()}
+            aria-label="Close the tutor"
+            className="icon-button"
+            onClick={onClose}
             type="button"
           >
-            {busy ? <Loader2 aria-hidden="true" className="spin" size={16} /> : null}
-            {thread.length > 0 ? "Ask a follow-up" : "Ask the tutor"}
+            <X aria-hidden="true" size={18} strokeWidth={1.6} />
           </button>
-        ) : null}
-      </footer>
-    </aside>
+        </header>
+
+        <div className="tutor-body">
+          {thread.length === 0 && !packet ? (
+            <p className="muted">
+              The tutor sees this lesson and the concepts it teaches. It answers within the rules of
+              your current learning mode.
+            </p>
+          ) : null}
+
+          <ul className="tutor-thread">
+            {thread.map((exchange) => (
+              <ReplyView
+                exchange={exchange}
+                key={`${exchange.question}-${exchange.reply.answer}`}
+              />
+            ))}
+          </ul>
+
+          {busy ? (
+            <p aria-live="polite" className="tutor-thinking">
+              <Loader2 aria-hidden="true" className="spin" size={16} />
+              The tutor is thinking. Replies usually take 10 to 45 seconds.
+            </p>
+          ) : null}
+
+          {packet ? (
+            <div className="packet">
+              <Notice tone="info" title="This provider answers outside Discere">
+                <p>{packet.message}</p>
+              </Notice>
+              <CopyButton label={`Copy ${packet.filename}`} text={packet.text} />
+              <pre className="packet-text">{packet.text}</pre>
+              <label className="field-label" htmlFor="tutor-import">
+                Paste the reply here
+              </label>
+              <textarea
+                className="textarea textarea-short"
+                id="tutor-import"
+                onChange={(event) => setPasted(event.currentTarget.value)}
+                value={pasted}
+              />
+              {pasted.trim().length > 1 ? (
+                <button
+                  aria-busy={busy}
+                  className="button button-secondary"
+                  onClick={() => void importReply()}
+                  type="button"
+                >
+                  Import the reply
+                </button>
+              ) : null}
+            </div>
+          ) : null}
+
+          {failure ? (
+            <Notice live tone="error" title="No reply was produced">
+              <p>{failure}</p>
+            </Notice>
+          ) : null}
+        </div>
+
+        <footer className="tutor-footer">
+          <label className="sr-only" htmlFor="tutor-question">
+            Your question
+          </label>
+          <textarea
+            className="textarea textarea-short"
+            id="tutor-question"
+            onChange={(event) => setQuestion(event.currentTarget.value)}
+            placeholder="Ask about this stage."
+            ref={input}
+            value={question}
+          />
+          {question.trim().length > 1 ? (
+            <button
+              aria-busy={busy}
+              className="button button-primary"
+              onClick={() => void ask()}
+              type="button"
+            >
+              {busy ? <Loader2 aria-hidden="true" className="spin" size={16} /> : null}
+              {thread.length > 0 ? "Ask a follow-up" : "Ask the tutor"}
+            </button>
+          ) : null}
+        </footer>
+      </aside>
+    </>
   );
 }

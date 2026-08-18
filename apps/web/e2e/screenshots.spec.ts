@@ -26,9 +26,14 @@ test.describe("approved reference screens", () => {
 
       async function capture(name: string): Promise<void> {
         await page.waitForLoadState("networkidle");
+        // Interacting with a control scrolls it into view; a reference screen starts at the top.
+        await page.evaluate(() => window.scrollTo(0, 0));
+        // A viewport capture, not a full-page stitch: the sticky header and the fixed drawer
+        // paint where the learner actually sees them, and animations are settled first.
         await page.screenshot({
           path: join(OUTPUT, `${name}-${viewport.label}.png`),
-          fullPage: true,
+          fullPage: false,
+          animations: "disabled",
         });
       }
 
@@ -46,6 +51,9 @@ test.describe("approved reference screens", () => {
       await capture("explainer");
 
       await gotoStage(page, journey, "interactive_visual");
+      // Change the circuit before predicting, so the captured feedback shows a real comparison
+      // rather than a circuit that never moved.
+      await page.getByRole("slider", { name: "Resistance" }).fill("400");
       await page.getByRole("button", { name: "Decreases" }).click();
       await page.getByRole("button", { name: "Check prediction" }).click();
       await capture("interactive-visual");

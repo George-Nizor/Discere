@@ -71,7 +71,9 @@ test.describe("the lesson journey", () => {
     const journey = await readJourney(request);
     await gotoStage(page, journey, "explainer");
     await page.getByRole("button", { name: "Continue", exact: true }).click();
-    await expect(page).toHaveURL(/stages\//);
+    // Wait for the next stage itself, not merely for a stage-shaped address: the explainer
+    // address already matches that pattern.
+    await expect(page.getByText("Diagram / visual")).toBeVisible();
     const stageUrl = page.url();
 
     await page.reload();
@@ -87,7 +89,7 @@ test.describe("the lesson journey", () => {
     await gotoStage(page, journey, "explainer");
     await page.getByRole("button", { name: /Try a question first/ }).click();
     await expect(page.getByText("Check understanding")).toBeVisible();
-    await page.getByRole("button", { name: "Back to the explanation" }).click();
+    await page.getByRole("button", { name: /^Back to / }).click();
     await expect(page.getByText("Explainer")).toBeVisible();
   });
 
@@ -100,6 +102,49 @@ test.describe("the lesson journey", () => {
     await expect(page.getByText("Back to you.")).toBeVisible({ timeout: 60_000 });
     await page.getByRole("button", { name: "Close the tutor" }).click();
     await expect(page.getByRole("dialog")).toHaveCount(0);
+  });
+
+  test("draws the tutor drawer opaquely and above the lesson navigator", async ({
+    page,
+    request,
+  }) => {
+    const journey = await readJourney(request);
+    await gotoStage(page, journey, "explainer");
+    await page.getByRole("button", { name: "Ask the tutor" }).click();
+    const drawer = page.getByRole("dialog");
+    await expect(drawer).toBeVisible();
+
+    const surface = await drawer.evaluate((element) => {
+      const style = window.getComputedStyle(element);
+      const box = element.getBoundingClientRect();
+      const footer = document.elementFromPoint(box.left + box.width / 2, window.innerHeight - 24);
+      return {
+        background: style.backgroundColor,
+        opacity: Number(style.opacity),
+        // Whatever sits at the drawer's own footer line must belong to the drawer, not to the
+        // navigator underneath it.
+        footerInsideDrawer: element.contains(footer),
+      };
+    });
+    expect(surface.opacity).toBe(1);
+    expect(surface.background).toBe("rgb(255, 255, 255)");
+    expect(surface.footerInsideDrawer).toBe(true);
+  });
+
+  test("keeps a stage's last action clear of the bottom navigator", async ({ page, request }) => {
+    const journey = await readJourney(request);
+    await gotoStage(page, journey, "essay");
+    const clearance = await page.evaluate(() => {
+      const canvas = document.querySelector(".stage-canvas");
+      const navigator_ = document.querySelector(".lesson-navigator");
+      if (!canvas || !navigator_) return null;
+      return {
+        padding: Number.parseFloat(window.getComputedStyle(canvas).paddingBottom),
+        navigatorHeight: navigator_.getBoundingClientRect().height,
+      };
+    });
+    expect(clearance).not.toBeNull();
+    expect(clearance?.padding ?? 0).toBeGreaterThanOrEqual(clearance?.navigatorHeight ?? 0);
   });
 
   test("closes the tutor and the hints in Exam mode", async ({ page, request }) => {

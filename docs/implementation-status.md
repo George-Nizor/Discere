@@ -180,13 +180,25 @@ Server change: submitting a teach-back no longer fails the writing gate. The gat
 is still recorded, and its findings return as optional `styleNotes`. The mandatory gate remains
 in force for generated prose.
 
-Test position: 72 web unit and component tests (from 24), 58 server tests, and the full-stack
-smoke suite, which now also checks every stage deep link against the built bundle. A Playwright
-suite covering home → explainer → visual → quiz (wrong, hint, right) → essay → review →
-completion, plus refresh restoration, browser history, the tutor, Exam restrictions, and mobile
-overflow, lives in `apps/web/e2e`. Chromium downloads but cannot launch here: `libnss3`,
-`libnssutil3`, `libnspr4`, and `libasound2` are missing and installing them needs root. No
-screenshot is claimed. See [`ui-ux/screenshots/README.md`](ui-ux/screenshots/README.md).
+Test position: 76 web unit and component tests (from 24), 58 server tests, and the full-stack
+smoke suite, which now also checks every stage deep link against the built bundle. The Playwright
+suite in `apps/web/e2e` runs 11 tests green: home → explainer → visual → quiz (wrong, hint,
+right) → essay → review → completion, refresh restoration, browser history, the explainer's jump
+to the question and back, the tutor, Exam restrictions, mobile overflow, an opaque tutor drawer
+above the navigator, and navigator clearance beneath a stage's last action. Twenty-six
+screenshots at 1440×900 and 390×844 are in this repository, captured from the running
+application. Chromium needs `libnss3`, `libnssutil3`, `libnspr4`, and `libasound2`; the supported
+fix is `playwright install-deps` as root, and the run here used the same libraries extracted to a
+scratch directory on `LD_LIBRARY_PATH`. See
+[`ui-ux/screenshots/README.md`](ui-ux/screenshots/README.md).
+
+Fixed after the first browser run: completing a stage now moves to the next stage in order rather
+than to the server's global active stage, which only differed when revisiting a finished journey;
+the explainer's jump to the question records where it came from in history state, so the return
+link no longer depends on the quiz being locked; the tutor drawer is opaque at every animation
+frame, carries a scrim, and sits above the bottom navigator; the stage canvas reserves a
+navigator height of bottom clearance; and the essay editor takes the wide column with the success
+criteria beside it, as the approved mockup shows.
 
 Deferred from this round: the notebook and the workings-review handoff have no place in the new
 shell yet. Their server endpoints and contracts are untouched, so the tools return when the
@@ -203,8 +215,7 @@ notebook route is designed.
 - FSRS scheduling, which remains deferred behind the deterministic scheduler interface
 - NotebookLM handoff automation
 - broad curriculum importers
-- running the Playwright suite and capturing screenshots, which needs browser system libraries
-  this machine does not have
+- Playwright in CI, which still needs the browser system libraries installed as root
 - the notebook and the workings-review handoff, which have no route in the rebuilt shell yet
 
 These are later phases rather than hidden placeholders. The current vertical slice can operate offline after dependencies are installed. ChatGPT tutoring and image review remain explicit user-controlled handoffs and do not require an OpenAI API key.

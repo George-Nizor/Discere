@@ -234,7 +234,14 @@
   width: 100%;
   max-width: var(--stage-max);
   margin: 0 auto;
-  padding: var(--space-7) var(--space-6) var(--space-9);
+  /* The bottom navigator sticks over the canvas while the learner scrolls, so the last action
+     in a stage keeps a full navigator height of clearance beneath it. */
+  padding: var(--space-7) var(--space-6) calc(var(--navigator-height) + var(--space-6));
+  scroll-padding-bottom: var(--navigator-height);
+}
+
+.stage-canvas :target {
+  scroll-margin-bottom: calc(var(--navigator-height) + var(--space-4));
 }
 
 .stage-column {
@@ -358,24 +365,32 @@
 
 /* ---------- Tutor drawer ---------- */
 
+/* The drawer sits above every part of the lesson shell, including the bottom navigator, and
+   its surface stays fully opaque at every frame of the entrance. */
+.tutor-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgb(16 19 17 / 32%);
+}
+
 .tutor-panel {
   position: fixed;
   top: 0;
   right: 0;
-  z-index: 40;
+  bottom: 0;
+  z-index: 60;
   display: flex;
   flex-direction: column;
   width: min(460px, 100vw);
-  height: 100vh;
-  background: var(--canvas);
+  background-color: var(--canvas);
   box-shadow: var(--shadow-drawer);
   animation: slide-in var(--motion-slow) var(--ease);
 }
 
 @keyframes slide-in {
   from {
-    transform: translateX(16px);
-    opacity: 0.4;
+    transform: translateX(24px);
   }
 }
 

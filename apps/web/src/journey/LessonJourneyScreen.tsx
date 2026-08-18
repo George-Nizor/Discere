@@ -2,7 +2,7 @@ import type { LearnerStage } from "@discere/contracts";
 import { useQueryClient } from "@tanstack/react-query";
 import { MessageCircleQuestion } from "lucide-react";
 import { useCallback, useState } from "react";
-import { Navigate, useNavigate, useParams } from "react-router";
+import { Navigate, useLocation, useNavigate, useParams } from "react-router";
 import { errorMessage } from "../api/client.js";
 import { saveJourneyProgress } from "../api/endpoints.js";
 import { queryKeys, useCourse, useJourney, useJourneyProgress } from "../api/queries.js";
@@ -40,6 +40,13 @@ export function LessonJourneyScreen() {
   );
 }
 
+/** History state is whatever the browser kept. Only a string stage id is trusted. */
+function readReturnTo(state: unknown): string | null {
+  if (typeof state !== "object" || state === null) return null;
+  const value = (state as { returnTo?: unknown }).returnTo;
+  return typeof value === "string" && value.length > 0 ? value : null;
+}
+
 function LessonJourney({
   courseId,
   lessonId,
@@ -50,6 +57,7 @@ function LessonJourney({
   requestedStageId: string | undefined;
 }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
   const { mode } = useTutoringMode();
   const journey = useJourney(courseId, lessonId);
@@ -57,15 +65,22 @@ function LessonJourney({
   const course = useCourse(courseId);
   const [tutorOpen, setTutorOpen] = useState(false);
 
+  // A jump made from inside a stage records where it came from, so returning is a property of
+  // the navigation rather than a guess from stage state.
+  const returnToStageId = readReturnTo(location.state);
+
   const goToStage = useCallback(
-    (nextStageId: string) => {
-      void navigate(paths.stage(courseId, lessonId, nextStageId));
+    (nextStageId: string, returnTo?: string) => {
+      void navigate(
+        paths.stage(courseId, lessonId, nextStageId),
+        returnTo === undefined ? undefined : { state: { returnTo } },
+      );
     },
     [courseId, lessonId, navigate],
   );
 
   const complete = useCallback(
-    async (view: StageView) => {
+    async (view: StageView, followingStageId: string | null) => {
       const saved = await saveJourneyProgress(courseId, lessonId, {
         stageId: view.stage.id,
         state: "completed",
@@ -74,7 +89,9 @@ function LessonJourney({
       await queryClient.invalidateQueries({
         queryKey: queryKeys.journeyProgress(courseId, lessonId),
       });
-      goToStage(saved.activeStageId);
+      // Finishing a stage moves to the one after it. Falling back to the server's active stage
+      // only matters at the end of a journey the learner has already worked through.
+      goToStage(followingStageId ?? saved.activeStageId);
     },
     [courseId, lessonId, queryClient, goToStage],
   );
@@ -102,6 +119,8 @@ function LessonJourney({
   }
 
   const quiz = firstStageOfType(views, "quiz");
+  const following = views[current.index + 1] ?? null;
+  const returnTo = findStageView(views, returnToStageId ?? undefined);
   const lessons = course.data?.lessons ?? [];
   const lessonIndex = lessons.findIndex((lesson) => lesson.id === lessonId);
   const upcoming = lessons.slice(lessonIndex + 1).find((lesson) => lesson.available) ?? null;
@@ -135,15 +154,17 @@ function LessonJourney({
         <StageCanvas
           courseId={courseId}
           nextLesson={upcoming ? { id: upcoming.id, title: upcoming.title } : null}
-          onComplete={() => void complete(current)}
+          onComplete={() => void complete(current, following?.stage.id ?? null)}
           onTryQuestion={
-            quiz && quiz.index !== current.index ? () => goToStage(quiz.stage.id) : null
+            quiz && quiz.index !== current.index
+              ? () => goToStage(quiz.stage.id, current.stage.id)
+              : null
           }
           returnLink={
-            quiz && quiz.index === current.index && current.state === "locked"
+            returnTo && returnTo.index !== current.index
               ? {
-                  label: "Back to the explanation",
-                  onSelect: () => goToStage(views[0]?.stage.id ?? ""),
+                  label: `Back to ${returnTo.stage.title}`,
+                  onSelect: () => goToStage(returnTo.stage.id),
                 }
               : null
           }

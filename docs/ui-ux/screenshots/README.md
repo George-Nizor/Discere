@@ -4,12 +4,14 @@ This directory holds the reference captures for the rebuilt learner interface.
 
 ## Status
 
-**No screenshots are stored here yet.** The capture suite exists and runs, but Chromium cannot
-launch on this machine.
+Captured from the running application on 19 August 2026. Every PNG here came out of
+`apps/web/e2e/screenshots.spec.ts` driving a real Chromium against a real API server. Nothing is
+mocked up, drawn by hand, or stood in for.
 
-`apps/web/e2e/screenshots.spec.ts` visits every screen and writes a PNG per screen per viewport.
-`pnpm exec playwright install chromium` downloaded the browser successfully, and
-`ldd` on the downloaded binary reports four missing system libraries:
+## Running the browser here
+
+Chromium downloads cleanly with `pnpm --filter @discere/web exec playwright install chromium`,
+but the machine is missing four shared libraries:
 
 ```text
 libnss3.so
@@ -18,15 +20,27 @@ libnspr4.so
 libasound.so.2
 ```
 
-Installing them needs root, and `sudo` on this machine asks for a password, so the capture was
-left undone rather than faked. No placeholder or hand-drawn image stands in for a real capture.
+The recommended fix is the system-wide install, which needs root once:
+
+```bash
+sudo pnpm --filter @discere/web exec playwright install-deps chromium
+```
+
+Without root, the libraries can be extracted from their `.deb` packages into a scratch directory
+and put on the loader path for the run. That is how these screenshots were produced:
+
+```bash
+LD_LIBRARY_PATH=/path/to/extracted/usr/lib/x86_64-linux-gnu pnpm e2e
+```
+
+The extraction is per-machine scratch, not part of the repository, so the sudo install remains
+the supported route for CI and for a fresh checkout.
 
 ## Capturing the screens
 
-Once the libraries are present, from the repository root:
+From the repository root:
 
 ```bash
-sudo pnpm --filter @discere/web exec playwright install-deps chromium   # once, needs root
 pnpm e2e
 ```
 
@@ -38,6 +52,11 @@ To capture only the screenshots:
 ```bash
 pnpm --filter @discere/web exec playwright test screenshots
 ```
+
+Captures are viewport-sized rather than full-page stitches, with animations disabled and the
+page scrolled to the top. A full-page capture paints the sticky stage header and the sticky
+bottom navigator at their scroll positions in the middle of the image, which misrepresents what
+a learner sees.
 
 ## Expected files
 
@@ -61,6 +80,9 @@ Each screen is captured at 1440×900 and 390×844. The file name is `<screen>-<w
 
 Stage identifiers are read from the journey API at run time, so the suite keeps working when
 content changes the stage list.
+
+The interactive-visual capture moves the resistance slider before predicting, so the feedback it
+shows is a real comparison rather than a circuit that never changed.
 
 ## What to look for in review
 

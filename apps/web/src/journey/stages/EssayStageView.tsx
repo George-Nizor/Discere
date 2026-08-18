@@ -107,18 +107,6 @@ function EssayEditor({
         <p className="muted">{stage.expectedScope}</p>
       </div>
 
-      <div className="essay-criteria">
-        <h2>What a strong answer does</h2>
-        <ul className="criteria-list">
-          {stage.successCriteria.map((criterion) => (
-            <li key={criterion}>
-              <Check aria-hidden="true" size={16} strokeWidth={2} />
-              <span>{criterion}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-
       <div className="essay-editor">
         <label className="sr-only" htmlFor="essay-content">
           Your teach-back
@@ -142,6 +130,18 @@ function EssayEditor({
             {stage.minWords > 0 ? ` · ${stage.minWords} needed` : ""}
           </p>
         </div>
+      </div>
+
+      <div className="essay-criteria">
+        <h2>What a strong answer does</h2>
+        <ul className="criteria-list">
+          {stage.successCriteria.map((criterion) => (
+            <li key={criterion}>
+              <Check aria-hidden="true" size={16} strokeWidth={2} />
+              <span>{criterion}</span>
+            </li>
+          ))}
+        </ul>
       </div>
 
       {!submitted ? (
