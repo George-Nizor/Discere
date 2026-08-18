@@ -81,7 +81,9 @@ export function QuizStageView({
   return (
     <div className="quiz">
       <div className="quiz-heading">
-        <p className="quiz-count">Question 1 of {stage.questionCount}</p>
+        <p className="quiz-count">
+          Question {stage.questionIndex} of {stage.questionCount}
+        </p>
         {returnLink ? (
           <button className="button button-quiet" onClick={returnLink.onSelect} type="button">
             {returnLink.label}
@@ -175,7 +177,7 @@ export function QuizStageView({
         </section>
       ) : null}
 
-      {revealed && attemptId ? <TransferChallenge attemptId={attemptId} /> : null}
+      {revealed?.transferPrompt && attemptId ? <TransferChallenge attemptId={attemptId} /> : null}
 
       {failure ? (
         <Notice live tone="error" title="Something went wrong">

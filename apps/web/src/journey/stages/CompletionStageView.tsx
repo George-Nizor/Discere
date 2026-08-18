@@ -22,6 +22,7 @@ export function CompletionStageView({
     const record = progress.find((entry) => entry.conceptId === conceptId);
     return {
       conceptId,
+      title: record?.title ?? humaniseId(conceptId),
       state: record?.state ?? "available",
       independentAttempts: record?.independentAttempts ?? 0,
       assistedAttempts: record?.assistedAttempts ?? 0,
@@ -47,7 +48,7 @@ export function CompletionStageView({
           <tbody>
             {rows.map((row) => (
               <tr key={row.conceptId}>
-                <th scope="row">{humaniseId(row.conceptId)}</th>
+                <th scope="row">{row.title}</th>
                 <td>{humaniseId(row.state)}</td>
                 <td>{row.independentAttempts}</td>
                 <td>{row.assistedAttempts}</td>

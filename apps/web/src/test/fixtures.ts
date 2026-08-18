@@ -6,9 +6,11 @@ import type {
   LearnerQuestion,
   LessonJourney,
   OhmsLawActivity,
+  ParallelCircuitActivity,
   QuizStage,
   SeriesCircuitActivity,
   StageState,
+  TimelineActivity,
 } from "@discere/contracts";
 
 export const ohmsLawActivity: OhmsLawActivity = {
@@ -36,6 +38,49 @@ export const seriesActivity: SeriesCircuitActivity = {
   predictionPrompt: "What happens to total resistance when R2 increases?",
 };
 
+export const parallelActivity: ParallelCircuitActivity = {
+  id: "parallel-circuit-explorer",
+  type: "parallel_circuit_explorer",
+  title: "Explore two parallel branches",
+  conceptIds: ["parallel-circuits"],
+  instructions: "Change one branch.",
+  voltage: { value: 12, min: 1, max: 12, step: 1 },
+  branches: [
+    { id: "r1", label: "R1", value: 100, min: 10, max: 500, step: 10 },
+    { id: "r2", label: "R2", value: 100, min: 10, max: 500, step: 10 },
+  ],
+  predictionPrompt: "What happens to total resistance when R2 increases?",
+};
+
+export const timelineActivity: TimelineActivity = {
+  id: "roman-timeline",
+  type: "timeline_explorer",
+  title: "From kings to emperors",
+  conceptIds: ["roman-republic"],
+  instructions: "Drag the year to reveal what had happened by then.",
+  startYear: -753,
+  endYear: 117,
+  step: 1,
+  initialYear: -753,
+  events: [
+    { id: "founding", year: -753, label: "Rome founded", detail: "The traditional date." },
+    {
+      id: "republic",
+      year: -509,
+      label: "Republic established",
+      detail: "The last king is expelled.",
+    },
+    {
+      id: "augustus",
+      year: -27,
+      label: "Augustus takes power",
+      detail: "The Senate grants the name Augustus.",
+    },
+  ],
+  predictionPrompt: "Which of these happened first?",
+  orderingChoiceIds: ["augustus", "republic"],
+};
+
 export const numericQuestion: LearnerQuestion = {
   id: "calculate-current-5v-100ohm",
   conceptIds: ["ohms-law"],
@@ -56,7 +101,12 @@ export const explainerStage: ExplainerStage = {
   completionPolicy: "view",
   body: "Trace the wire around the loop.\n\nCurrent measures how quickly charge passes a point.",
   takeaway: "Voltage pushes, resistance limits.",
-  visual: { kind: "circuit", briefId: "brief-1", alt: "A battery and a resistor in one loop." },
+  visual: {
+    kind: "circuit",
+    briefId: "brief-1",
+    alt: "A battery and a resistor in one loop.",
+    src: "/api/visuals/circuit.svg?lessonId=lesson",
+  },
 };
 
 export const visualStage: InteractiveVisualStage = {
@@ -82,6 +132,7 @@ export const quizStage: QuizStage = {
   completionPolicy: "assessment",
   questionId: numericQuestion.id,
   question: numericQuestion,
+  questionIndex: 1,
   questionCount: 1,
 };
 

@@ -1,23 +1,24 @@
-import type { ExplainerStage } from "@discere/contracts";
+import type { ExplainerStage, StageImage } from "@discere/contracts";
 
 export type ResolvedVisual =
-  | { kind: "image"; src: string; alt: string }
+  | { kind: "image"; src: string; alt: string; image: StageImage | null }
   | { kind: "described"; alt: string; reason: string }
   | null;
 
 /**
  * Turns the stage's own visual reference into a source. Nothing here is hard-coded to one
- * lesson: a kind the deterministic renderers do not cover falls back to the written
- * description the stage already carries, rather than to a broken image.
+ * lesson: the server names the path it can serve, and a stage with no drawable source falls
+ * back to the written description it already carries rather than to a broken image.
  */
 export function resolveStageVisual(visual: ExplainerStage["visual"]): ResolvedVisual {
   if (visual.kind === "none") return null;
-  if (visual.kind === "circuit")
-    return { kind: "image", src: "/api/visuals/circuit.svg", alt: visual.alt };
+  if (visual.src) {
+    return { kind: "image", src: visual.src, alt: visual.alt, image: visual.image ?? null };
+  }
   return {
     kind: "described",
     alt: visual.alt,
-    reason: `Discere has no deterministic renderer for a ${visual.kind} visual yet.`,
+    reason: `Discere has no drawable source for a ${visual.kind} visual in this lesson yet.`,
   };
 }
 

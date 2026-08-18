@@ -44,7 +44,7 @@ export function ProgressScreen() {
         <tbody>
           {rows.map((row) => (
             <tr key={row.conceptId}>
-              <th scope="row">{humaniseId(row.conceptId)}</th>
+              <th scope="row">{row.title}</th>
               <td>{humaniseId(row.state)}</td>
               <td>
                 <span className="mastery-meter">

@@ -22,7 +22,7 @@ describe("explainer stage", () => {
       <ExplainerStageView onContinue={() => {}} onTryQuestion={null} stage={explainerStage} />,
     );
     const image = screen.getByRole("img", { name: explainerStage.visual.alt });
-    expect(image).toHaveAttribute("src", "/api/visuals/circuit.svg");
+    expect(image).toHaveAttribute("src", explainerStage.visual.src);
   });
 
   it("describes a visual kind with no deterministic renderer instead of breaking", () => {

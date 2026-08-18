@@ -94,7 +94,25 @@ export function ExplainerStageView({
               <p className="muted">{visual.reason}</p>
             </div>
           )}
-          <figcaption>{stage.visual.alt}</figcaption>
+          <figcaption>
+            {visual.kind === "image" && visual.image ? visual.image.caption : stage.visual.alt}
+            {visual.kind === "image" && visual.image ? (
+              <span className="visual-credit">
+                {visual.image.attribution},{" "}
+                {visual.image.licenceUrl ? (
+                  <a href={visual.image.licenceUrl} rel="noreferrer" target="_blank">
+                    {visual.image.licence}
+                  </a>
+                ) : (
+                  visual.image.licence
+                )}
+                {" · "}
+                <a href={visual.image.landingPageUrl} rel="noreferrer" target="_blank">
+                  Source
+                </a>
+              </span>
+            ) : null}
+          </figcaption>
         </figure>
       ) : null}
     </div>

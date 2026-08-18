@@ -14,6 +14,7 @@ const home = {
   streakDays: 3,
   currentMission: {
     id: "mission-current",
+    courseId: "electronics-foundations",
     title: "Follow the current",
     description: "Explore one circuit and calculate its current.",
     estimatedMinutes: 8,
@@ -22,6 +23,7 @@ const home = {
   progress: [
     {
       conceptId: "ohms-law",
+      title: "Ohm's law",
       state: "practised",
       mastery: 0.62,
       independentAttempts: 2,
@@ -36,10 +38,15 @@ const course = {
   description: "Build circuits you can reason about.",
   lessonCount: 2,
   availableLessonIds: ["current-in-one-loop"],
+  lastActiveAt: null,
 };
 
 const courseDetail = {
   course,
+  concepts: [
+    { id: "current", title: "Current", summary: "The rate at which charge passes a point." },
+    { id: "series-circuits", title: "Series circuits", summary: "One path, so resistances add." },
+  ],
   lessons: [
     {
       id: "current-in-one-loop",
@@ -120,7 +127,7 @@ describe("routed application", () => {
     ).toBeInTheDocument();
     expect(screen.getByRole("columnheader", { name: "Independent" })).toBeInTheDocument();
     expect(screen.getByRole("columnheader", { name: "Assisted" })).toBeInTheDocument();
-    expect(screen.getByRole("rowheader", { name: "Ohms law" })).toBeInTheDocument();
+    expect(screen.getByRole("rowheader", { name: "Ohm's law" })).toBeInTheDocument();
     expect(screen.getByText("62%")).toBeInTheDocument();
   });
 

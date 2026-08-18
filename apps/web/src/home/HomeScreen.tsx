@@ -11,7 +11,11 @@ export function HomeScreen() {
   const home = useHome();
   const courses = useCourses();
   if (home.isPending || courses.isPending) return <LoadingScreen message="Opening Discere…" />;
-  const course = courses.data?.courses[0];
+  // The mission names its own course, so a library with several courses continues the one the
+  // learner last worked on rather than whichever sorts first.
+  const course =
+    courses.data?.courses.find((item) => item.id === home.data?.currentMission.courseId) ??
+    courses.data?.courses[0];
   if (home.error || courses.error || !home.data || !course) {
     return (
       <ErrorScreen

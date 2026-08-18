@@ -152,6 +152,10 @@ function LessonJourney({
 
       <main className="stage-canvas" id="stage">
         <StageCanvas
+          // Each stage owns its own working state. Keying by stage id means moving between two
+          // stages of the same type starts the second one clean, rather than showing the first
+          // stage's answer, hints, and result.
+          key={current.stage.id}
           courseId={courseId}
           nextLesson={upcoming ? { id: upcoming.id, title: upcoming.title } : null}
           onComplete={() => void complete(current, following?.stage.id ?? null)}

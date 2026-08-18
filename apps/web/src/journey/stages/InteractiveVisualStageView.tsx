@@ -1,21 +1,18 @@
 import type { InteractiveVisualStage } from "@discere/contracts";
 import { ArrowRight, Maximize2, Minimize2 } from "lucide-react";
 import { useMemo, useState } from "react";
-import { formatCurrent } from "../../lib/format.js";
 import { Notice } from "../../ui/Feedback.js";
 import { ExplorerControls } from "../activities/ExplorerControls.js";
 import {
-  compareValues,
-  directionSentence,
+  type ExplorerReading,
   type ExplorerState,
+  evaluatePrediction,
   initialExplorerState,
   isSupportedActivity,
-  PREDICTION_CHOICES,
-  type PredictionDirection,
-  predictionTargetLabel,
+  predictionChoices,
   readExplorer,
-  readPredictionTarget,
 } from "../activities/explorer-state.js";
+import { TimelineTrack } from "../activities/TimelineTrack.js";
 
 function UnsupportedActivity({ type, prompt }: { type: string; prompt: string }) {
   return (
@@ -31,6 +28,21 @@ function UnsupportedActivity({ type, prompt }: { type: string; prompt: string })
   );
 }
 
+/** The drawing surface each activity asks for: a rendered circuit, or a dated track. */
+function ExplorerCanvas({
+  activity,
+  reading,
+}: {
+  activity: InteractiveVisualStage["activity"];
+  reading: ExplorerReading;
+}) {
+  if (activity.type === "timeline_explorer" && reading.kind === "timeline") {
+    return <TimelineTrack activity={activity} year={reading.year} />;
+  }
+  if (reading.kind === "circuit") return <img alt={reading.visualAlt} src={reading.visualSrc} />;
+  return null;
+}
+
 export function InteractiveVisualStageView({
   stage,
   onContinue,
@@ -43,7 +55,7 @@ export function InteractiveVisualStageView({
   const [state, setState] = useState<ExplorerState | null>(() =>
     supported ? initialExplorerState(activity) : null,
   );
-  const [prediction, setPrediction] = useState<PredictionDirection | null>(null);
+  const [prediction, setPrediction] = useState<string | null>(null);
   const [checked, setChecked] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
 
@@ -58,16 +70,16 @@ export function InteractiveVisualStageView({
 
   const reading = readExplorer(activity, state, checked);
   const baselineReading = readExplorer(activity, baseline, true);
-  const targetLabel = predictionTargetLabel(activity);
-  const observed = compareValues(
-    readPredictionTarget(activity, baselineReading),
-    readPredictionTarget(activity, reading),
-  );
-  const correct = checked && prediction === observed;
+  const choices = predictionChoices(activity);
+  const outcome =
+    checked && prediction
+      ? evaluatePrediction(activity, baselineReading, reading, prediction)
+      : null;
 
   function changeState(next: ExplorerState): void {
     setState(next);
-    setChecked(false);
+    // A timeline is read by moving through it, so moving the scrubber is not a new experiment.
+    if (activity.type !== "timeline_explorer") setChecked(false);
   }
 
   return (
@@ -79,8 +91,8 @@ export function InteractiveVisualStageView({
         </div>
         <div className="explorer-heading-tools">
           <output aria-live="polite" className="explorer-readout">
-            <span>Current</span>
-            <strong>{checked ? formatCurrent(reading.current) : "Predict first"}</strong>
+            <span>{reading.readout.label}</span>
+            <strong>{reading.readout.value}</strong>
           </output>
           <button
             aria-pressed={fullscreen}
@@ -99,7 +111,7 @@ export function InteractiveVisualStageView({
       </div>
 
       <figure className="explorer-canvas">
-        <img alt={reading.visualAlt} src={reading.visualSrc} />
+        <ExplorerCanvas activity={activity} reading={reading} />
       </figure>
 
       <ExplorerControls activity={activity} onChange={changeState} state={state} />
@@ -107,7 +119,7 @@ export function InteractiveVisualStageView({
       <fieldset className="prediction">
         <legend className="prediction-prompt">{stage.prompt}</legend>
         <div className="prediction-choices">
-          {PREDICTION_CHOICES.map((choice) => (
+          {choices.map((choice) => (
             <button
               aria-pressed={prediction === choice.id}
               className={
@@ -134,7 +146,7 @@ export function InteractiveVisualStageView({
               Check prediction
             </button>
           ) : (
-            <p className="muted">Choose a prediction to compare against the circuit.</p>
+            <p className="muted">Choose a prediction to compare against the evidence.</p>
           )}
           {checked ? (
             <button className="button button-secondary" onClick={onContinue} type="button">
@@ -143,23 +155,21 @@ export function InteractiveVisualStageView({
             </button>
           ) : null}
         </div>
-        {checked ? (
-          <Notice live tone={correct ? "correct" : "info"} title={correct ? "Matched" : "Compare"}>
-            <p>
-              Moving from the starting circuit to this one,{" "}
-              {directionSentence(observed, targetLabel)}.{" "}
-              {correct
-                ? "Your prediction matches the measured change."
-                : `You predicted that it ${prediction === "same" ? "stays the same" : prediction}.`}
-            </p>
+        {outcome ? (
+          <Notice
+            live
+            tone={outcome.correct ? "correct" : "info"}
+            title={outcome.correct ? "Matched" : "Compare"}
+          >
+            <p>{outcome.explanation}</p>
           </Notice>
         ) : null}
       </fieldset>
 
       <details className="visual-alternative">
-        <summary>Read the circuit as a table</summary>
+        <summary>Read this as a table</summary>
         <table>
-          <caption className="sr-only">Current values of every circuit control</caption>
+          <caption className="sr-only">Current values of every control in this activity</caption>
           <tbody>
             {reading.rows.map((row) => (
               <tr key={row.label}>
