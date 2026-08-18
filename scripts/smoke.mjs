@@ -141,6 +141,15 @@ try {
   ) {
     throw new Error("The interactive story journey contract was incomplete or leaked answer authority.");
   }
+  for (const stageId of journey.stageOrder) {
+    const deepLink = `/courses/${encodeURIComponent(course.id)}/lessons/${encodeURIComponent(lesson.lesson.id)}/stages/${encodeURIComponent(stageId)}`;
+    const stagePage = await fetch(`${webUrl}${deepLink}`, { signal: AbortSignal.timeout(5_000) });
+    const stageHtml = await stagePage.text();
+    if (!stagePage.ok || !stageHtml.includes("/assets/")) {
+      throw new Error(`The stage deep link ${deepLink} did not resolve to the built application.`);
+    }
+  }
+
   const journeyBase = `${apiUrl}/api/courses/${encodeURIComponent(course.id)}/lessons/${encodeURIComponent(lesson.lesson.id)}`;
   const initialJourneyProgress = await requestJson(`${journeyBase}/progress`);
   if (initialJourneyProgress.activeStageId !== journey.stageOrder[0]) {

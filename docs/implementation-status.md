@@ -115,6 +115,9 @@
 
 ## Interactive Story v1 migration — 17 August 2026
 
+Superseded by the interface rebuild below. The `/legacy` route and the `/qa/roman` fixture named
+here no longer exist.
+
 The approved redesign is now the default learner entry point. It is implemented as separate routed screens rather than one comparison-board dashboard or long page.
 
 - course home at `/`, `/courses`, and `/courses/electronics-foundations`
@@ -143,6 +146,52 @@ Groundwork for the v1 rebuild. No learner-facing behaviour changed.
 - One schema. The `CREATE TABLE IF NOT EXISTS` statements that lived in the store constructor and in the notebook, transfer, and route modules now exist only as migrations.
 - `@discere/prompts` reads the seven prompt files from `prompts/` and supplies the tutor system prompt and the accountability-mode policy to the companion packet builder. Clause tests cover every file, as spec v0.2 section 24 requires.
 
+## Interface rebuild — 18 August 2026
+
+`apps/web` was rewritten from scratch. The beige and orange theme, the thin white and green
+overlay, the twelve-line pathname router, the hardcoded course and lesson identifiers, the
+disabled placeholder controls, and the Unicode glyph icons are all gone. Nothing from the old
+`src/` tree survives.
+
+- one design system: tokens in `src/styles/tokens.css`, hand-written CSS, no framework
+- `react-router` v7 routes for `/`, `/courses`, `/courses/:courseId`,
+  `/courses/:courseId/lessons/:lessonId`, `.../stages/:stageId`, `/review`,
+  `/review/session/:sessionId`, and `/progress`
+- `lucide-react` thin-line icons throughout; `katex` renders `$…$` inline equations wherever
+  learner prose is displayed
+- a pure stage machine (`src/journey/stage-machine.ts`) turns the journey and progress payloads
+  into stage state; no stage, course, or lesson identifier is written into a component
+- the explainer visual comes from `stage.visual`; a visual kind with no deterministic renderer
+  falls back to the written description rather than a broken image
+- both activity types render from the activity payload; an unrecognised type states that it is
+  unavailable instead of drawing a control that does nothing
+- the quiz carries mode selection, the three-level hint ladder with its evidence cost, the
+  reason-then-wait-then-confirm reveal, the transfer question, and MCQ option cards that appear
+  whenever a question carries `choices`
+- the essay studio autosaves against the draft endpoint, shows a word count against the minimum,
+  and polls the assessment endpoint through pending, ready, failed, and packet-required states
+- the tutor drawer calls `POST /api/tutor/ask`, keeps the session identifier for follow-ups,
+  renders the companion packet when the provider cannot answer in place, and gives each provider
+  fault its own sentence
+- no disabled control appears anywhere: an action the learner has not unlocked is rendered as
+  text explaining what would open it
+
+Server change: submitting a teach-back no longer fails the writing gate. The gate still runs and
+is still recorded, and its findings return as optional `styleNotes`. The mandatory gate remains
+in force for generated prose.
+
+Test position: 72 web unit and component tests (from 24), 58 server tests, and the full-stack
+smoke suite, which now also checks every stage deep link against the built bundle. A Playwright
+suite covering home → explainer → visual → quiz (wrong, hint, right) → essay → review →
+completion, plus refresh restoration, browser history, the tutor, Exam restrictions, and mobile
+overflow, lives in `apps/web/e2e`. Chromium downloads but cannot launch here: `libnss3`,
+`libnssutil3`, `libnspr4`, and `libasound2` are missing and installing them needs root. No
+screenshot is claimed. See [`ui-ux/screenshots/README.md`](ui-ux/screenshots/README.md).
+
+Deferred from this round: the notebook and the workings-review handoff have no place in the new
+shell yet. Their server endpoints and contracts are untouched, so the tools return when the
+notebook route is designed.
+
 ## Deliberately deferred
 
 - direct ChatGPT MCP transport, pending host compatibility testing
@@ -154,7 +203,9 @@ Groundwork for the v1 rebuild. No learner-facing behaviour changed.
 - FSRS scheduling, which remains deferred behind the deterministic scheduler interface
 - NotebookLM handoff automation
 - broad curriculum importers
-- full Playwright coverage and automated screenshot capture in CI
+- running the Playwright suite and capturing screenshots, which needs browser system libraries
+  this machine does not have
+- the notebook and the workings-review handoff, which have no route in the rebuilt shell yet
 
 These are later phases rather than hidden placeholders. The current vertical slice can operate offline after dependencies are installed. ChatGPT tutoring and image review remain explicit user-controlled handoffs and do not require an OpenAI API key.
 

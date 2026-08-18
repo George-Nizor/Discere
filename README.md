@@ -4,7 +4,7 @@
 
 Discere is a local-first learning workspace built around one useful visual, a direct explanation, a meaningful interaction, and a response from the learner.
 
-The current prototype opens on the Interactive Story v1 learner journey: a course home followed by separate explainer, interactive visual, quiz, essay, review, and completion screens for an introductory electronics lesson. The earlier long-form experience remains available temporarily at `/legacy`. Saved workings can be exported as a PNG and reviewed through the same validated ChatGPT handoff. Revealing an answer opens a fresh assessed problem so the learner can recover some evidence by applying the idea independently. No paid model API is required.
+The prototype opens on the Interactive Story v1 learner journey: a course home followed by separate explainer, interactive visual, quiz, essay, review, and completion screens for an introductory electronics lesson. Revealing an answer opens a fresh assessed problem so the learner can recover some evidence by applying the idea independently. No paid model API is required.
 
 ## What currently works
 
@@ -33,7 +33,8 @@ The current prototype opens on the Interactive Story v1 learner journey: a cours
 - deterministic spaced-review and reviewed-question flashcard domain foundations
 - authorised review sessions with concealed backs, reveal, evidence classification, and deterministic scheduling
 - essay studio with autosave, word-count requirements, writing-quality gate, and accountable submission
-- Roman Empire five-screen visual QA fixture at `/qa/roman?stage=0` through `?stage=4`
+- concept-mastery screen separating independent from assisted evidence
+- in-lesson tutor drawer that states every provider fault rather than hiding it
 - full-stack smoke tests and GitHub Actions validation
 
 ## Quick start
@@ -111,9 +112,23 @@ Open the root URL. Discere now starts at the course home so the learner sees the
 Explainer → Interactive visual → Quiz / check → Essay studio → Flashcards / review → Completion
 ```
 
-The first lesson is currently the functional migration slice. The second series-circuit lesson is shown as planned course content until its learner-safe activity route is integrated. The previous prototype is preserved at [http://127.0.0.1:4318/legacy](http://127.0.0.1:4318/legacy).
+The first lesson is currently the functional slice. The second series-circuit lesson is shown as planned course content until its learner-safe activity route is integrated.
 
-For visual QA, open `/qa/roman?stage=0` through `/qa/roman?stage=4`. These are five independent screens on one route for checking the approved visual language; they are not a dashboard or a production course.
+Every screen has its own address, so refresh, browser back and forward, and deep links all work:
+
+```text
+/                                                     home, with the lesson to resume
+/courses                                              the course library
+/courses/:courseId                                    one course and its lessons
+/courses/:courseId/lessons/:lessonId                  redirects to the active stage
+/courses/:courseId/lessons/:lessonId/stages/:stageId  one lesson stage
+/review                                               what is due for spaced review
+/review/session/:sessionId                            one flashcard
+/progress                                             concept mastery
+```
+
+The black rail on the left holds home, courses, review, and progress. The black bar at the
+bottom of a lesson moves between stages and shows how far through the lesson you are.
 
 When the original terminal was closed unexpectedly:
 
@@ -173,7 +188,7 @@ The verification sequence runs environment diagnostics, linting, strict TypeScri
 
 The smoke test verifies:
 
-- redesigned course, legacy, and visual-QA routes
+- every learner route and every lesson stage deep link against the built bundle
 - learner-safe course and six-stage journey contracts
 - stage progress persistence and next-stage activation
 - essay autosave/submission and review reveal/rating/scheduling
@@ -201,6 +216,7 @@ The server and component suites additionally cover workings-review validation an
 | `pnpm check` | Run lint, TypeScript, tests, and curriculum validation. |
 | `pnpm build` | Typecheck packages and create the production web bundle. |
 | `pnpm smoke` | Start an isolated built stack and exercise its core routes. |
+| `pnpm e2e` | Run the Playwright browser journey and screenshot suite. |
 | `pnpm db:migrate` | Create the local database schema. |
 | `pnpm db:seed` | Seed the initial concept graph. |
 
@@ -230,7 +246,7 @@ Open the notebook or ChatGPT companion when needed
 Record XP, assistance, and mastery separately
 ```
 
-The original circuit/notebook experience is still available at `/legacy` during this migration round. A correct attempt is immutable. A revealed worked answer closes the original attempt. Direct mode records assisted evidence. Transfer recovery awards reduced evidence once. Exam mode removes hints, answer reveal, source access, external tutoring, and workings review.
+A correct attempt is immutable. A revealed worked answer closes the original attempt. Direct mode records assisted evidence. Transfer recovery awards reduced evidence once. Exam mode removes hints, answer reveal, source access, external tutoring, and workings review.
 
 A correct attempt is immutable. A revealed worked answer closes the original attempt. Direct mode records assisted evidence. Transfer recovery awards reduced evidence once. Exam mode removes hints, answer reveal, source access, external tutoring, and workings review.
 

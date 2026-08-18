@@ -1,25 +1,70 @@
-# Interactive Story v1 visual QA screenshots
+# Interactive Story v1 screens
 
-The deterministic QA fixture is available at:
+This directory holds the reference captures for the rebuilt learner interface.
+
+## Status
+
+**No screenshots are stored here yet.** The capture suite exists and runs, but Chromium cannot
+launch on this machine.
+
+`apps/web/e2e/screenshots.spec.ts` visits every screen and writes a PNG per screen per viewport.
+`pnpm exec playwright install chromium` downloaded the browser successfully, and
+`ldd` on the downloaded binary reports four missing system libraries:
 
 ```text
-/qa/roman?stage=0  Explainer
-/qa/roman?stage=1  Diagram / visual
-/qa/roman?stage=2  Quiz / check
-/qa/roman?stage=3  Essay studio
-/qa/roman?stage=4  Flashcards / review
+libnss3.so
+libnssutil3.so
+libnspr4.so
+libasound.so.2
 ```
 
-The intended capture sizes are 1440×900, 1024×768, and 390×844. The fixture test verifies that the five screens are separate, keyboard-operable React states, and the route is included in the built application.
+Installing them needs root, and `sudo` on this machine asks for a password, so the capture was
+left undone rather than faked. No placeholder or hand-drawn image stands in for a real capture.
 
-Screenshot capture was attempted during this round with Playwright Chromium. The host image contains Chromium but is missing `libnspr4`, `libnss3`, and `libasound`, and installing machine-level system packages is outside the repository change. No binary screenshot is claimed until those libraries are available in CI or on the review machine.
+## Capturing the screens
 
-When the browser libraries are available, capture each stage with:
+Once the libraries are present, from the repository root:
 
 ```bash
-pnpm dlx playwright@1.55.0 screenshot --viewport-size="1440,900" \
-  "http://127.0.0.1:4318/qa/roman?stage=0" \
-  docs/ui-ux/screenshots/interactive-story-v1-explainer-1440.png
+sudo pnpm --filter @discere/web exec playwright install-deps chromium   # once, needs root
+pnpm e2e
 ```
 
-Repeat for stages `0`–`4` and the other two viewport sizes. The approved reference image remains the comparison board supplied for this redesign; the implementation itself keeps each learner screen separate.
+The suite starts its own API server against a disposable SQLite database, builds and previews
+the web bundle, and writes into this directory. Nothing else needs to be running.
+
+To capture only the screenshots:
+
+```bash
+pnpm --filter @discere/web exec playwright test screenshots
+```
+
+## Expected files
+
+Each screen is captured at 1440×900 and 390×844. The file name is `<screen>-<width>.png`:
+
+| Screen               | File stem            | Route                                                  |
+| -------------------- | -------------------- | ------------------------------------------------------ |
+| Home                 | `home`               | `/`                                                    |
+| Course library       | `courses`            | `/courses`                                             |
+| Course               | `course`             | `/courses/:courseId`                                   |
+| Explainer            | `explainer`          | `…/lessons/:lessonId/stages/:explainerStageId`         |
+| Interactive visual   | `interactive-visual` | `…/stages/:visualStageId`, after a checked prediction  |
+| Quiz                 | `quiz`               | `…/stages/:quizStageId`                                |
+| Essay studio         | `essay`              | `…/stages/:essayStageId`                               |
+| In-lesson review     | `lesson-review`      | `…/stages/:reviewStageId`                              |
+| Completion           | `completion`         | `…/stages/:completionStageId`                          |
+| Review home          | `review-home`        | `/review`                                              |
+| Flashcard            | `flashcard`          | `/review/session/:sessionId`                           |
+| Progress             | `progress`           | `/progress`                                            |
+| Tutor drawer         | `tutor-panel`        | explainer stage with the tutor drawer open             |
+
+Stage identifiers are read from the journey API at run time, so the suite keeps working when
+content changes the stage list.
+
+## What to look for in review
+
+The spec's visual-regression checklist applies: nested borders, duplicated headings, excessive
+containers, weak primary-action hierarchy, low contrast, accidental horizontal scrolling, and
+large empty title regions. The 390-wide captures should show no horizontal scrolling; the
+browser suite asserts that independently.
