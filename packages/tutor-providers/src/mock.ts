@@ -25,6 +25,38 @@ const FIXTURES: Partial<Record<TutorOperation, unknown>> = {
   },
 };
 
+/**
+ * The offline workings review. `imageReviewed` follows whether an image was actually attached,
+ * so the accountability gate that rejects a review of nothing is exercised rather than bypassed.
+ */
+function workingsReviewFixture(imageAttached: boolean): unknown {
+  if (!imageAttached) {
+    return {
+      imageReviewed: false,
+      transcription: "",
+      transcriptionConfidence: 0,
+      assessment: "unclear",
+      feedback: "No workings image reached this provider, so there is nothing to read.",
+      firstMeaningfulError: null,
+      nextStep: "Export the notebook page and send the review again.",
+      sourceIds: [],
+      uncertainty: ["No image was attached to the request."],
+    };
+  }
+  return {
+    imageReviewed: true,
+    transcription: "I = V / R, then 5 / 100.",
+    transcriptionConfidence: 0.8,
+    assessment: "partly_correct",
+    feedback:
+      "The relationship at the top of the page is the right one, and the substitution below it stops before the division is carried out.",
+    firstMeaningfulError: "The division is set up but never completed, so no current is stated.",
+    nextStep: "Carry out the division and write the result with its unit.",
+    sourceIds: [],
+    uncertainty: [],
+  };
+}
+
 const DEFAULT_FIXTURE = {
   title: "Current in a simple circuit",
   orientation:
@@ -43,7 +75,10 @@ export class MockTutorProvider implements TutorProvider {
     request: TutorRequest<TRequest>,
     options: TutorGenerateOptions = {},
   ): Promise<TutorResponse<TResponse>> {
-    const fixture = FIXTURES[request.operation] ?? DEFAULT_FIXTURE;
+    const fixture =
+      request.operation === "workings_review"
+        ? workingsReviewFixture((options.images?.length ?? 0) > 0)
+        : (FIXTURES[request.operation] ?? DEFAULT_FIXTURE);
     const payload = (options.parsePayload ? options.parsePayload(fixture) : fixture) as TResponse;
     return {
       protocolVersion: "0.2",

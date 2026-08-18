@@ -3,6 +3,7 @@ export {
   type CodexProviderOptions,
   extractSessionId,
   parseModelJson,
+  safeAttachmentName,
 } from "./codex.js";
 export { buildCompanionPacket, type CompanionPacket } from "./companion.js";
 export { CompanionTutorProvider } from "./companion-provider.js";
@@ -21,6 +22,7 @@ export { MockTutorProvider } from "./mock.js";
 export { buildTutorPrompt, type TutorPromptOptions } from "./prompt.js";
 export type {
   TutorGenerateOptions,
+  TutorImageAttachment,
   TutorLintTarget,
   TutorProvider,
   TutorRequest,

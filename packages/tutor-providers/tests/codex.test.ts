@@ -1,11 +1,11 @@
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { TutorReplyDraftSchema } from "@discere/contracts";
+import { TutorReplyDraftSchema, WorkingsReviewDraftSchema } from "@discere/contracts";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { z } from "zod";
-import { CodexTutorProvider, TutorProviderError } from "../src/index.js";
+import { CodexTutorProvider, safeAttachmentName, TutorProviderError } from "../src/index.js";
 
 const FAKE_CODEX = fileURLToPath(new URL("./fixtures/fake-codex.mjs", import.meta.url));
 
@@ -20,6 +20,33 @@ const CLEAN_REPLY = {
 const FLAWED_REPLY = {
   ...CLEAN_REPLY,
   answer: "A resistor not only limits current, but also releases heat.",
+};
+
+const WORKINGS_REVIEW = {
+  imageReviewed: true,
+  transcription: "I = V / R, then 5 / 100.",
+  transcriptionConfidence: 0.8,
+  assessment: "partly_correct" as const,
+  feedback: "The relationship is right and the division is never carried out.",
+  firstMeaningfulError: "The substitution stops before the division is completed.",
+  nextStep: "Carry out the division and write the result with its unit.",
+  sourceIds: [],
+  uncertainty: [],
+};
+
+const WORKINGS_REQUEST = {
+  operation: "workings_review" as const,
+  requestId: "3b6b2a2e-9f34-4a6c-9a3e-0c9f1c0b8a55",
+  payload: { reviewQuestion: "Have I set this up correctly?" },
+};
+
+const WORKINGS_OPTIONS = {
+  outputSchema: z.toJSONSchema(WorkingsReviewDraftSchema),
+  parsePayload: (value: unknown) => WorkingsReviewDraftSchema.parse(value),
+  lintTargets: [
+    { path: "feedback", context: "feedback" as const },
+    { path: "nextStep", context: "hint" as const },
+  ],
 };
 
 let workspace: string;
@@ -242,5 +269,73 @@ describe("Codex tutor provider", () => {
     ]);
     const response = await provider().generate(REQUEST, REPLY_OPTIONS);
     expect(response.payload).toEqual(CLEAN_REPLY);
+  });
+
+  it("attaches an image with the `=` form and keeps the prompt on stdin", async () => {
+    environment([{ output: WORKINGS_REVIEW }]);
+    const png = Buffer.from(
+      "89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000a49444154789c6300010000050001",
+      "hex",
+    );
+    const response = await provider().generate(WORKINGS_REQUEST, {
+      ...WORKINGS_OPTIONS,
+      images: [{ filename: "discere-current-in-one-loop-workings.png", data: png }],
+    });
+    expect(response.payload).toEqual(WORKINGS_REVIEW);
+
+    const call = invocations()[0];
+    const args = call?.["args"] as string[];
+    const imageArguments = args.filter((argument) => argument.startsWith("--image="));
+    expect(imageArguments).toHaveLength(1);
+    // The prompt still arrives on stdin, which the variadic flag would otherwise swallow.
+    expect(args.at(-1)).toBe("-");
+    expect(String(call?.["prompt"])).toContain("Review the image attached by the learner.");
+
+    const images = call?.["images"] as Array<{ file: string; bytes: number; head: string }>;
+    expect(images).toHaveLength(1);
+    expect(images[0]?.bytes).toBe(png.byteLength);
+    // The real PNG bytes reached the CLI, not a placeholder or a path it could not read.
+    expect(images[0]?.head).toBe("89504e470d0a1a0a");
+    expect(path.basename(String(images[0]?.file))).toBe(
+      "0-discere-current-in-one-loop-workings.png",
+    );
+  });
+
+  it("keeps an attachment out of the style repair pass", async () => {
+    environment([
+      { output: { ...WORKINGS_REVIEW, feedback: "The working is not only started, but also wrong." } },
+      {
+        output: {
+          revisedText: "The working is started and then goes wrong.",
+          edits: ["NEG001_NOT_ONLY_BUT_ALSO: replaced the paired construction."],
+          unrepaired: [],
+          protectedItemsChecked: [],
+        },
+      },
+    ]);
+    const png = Buffer.from("89504e470d0a1a0a", "hex");
+    await provider().generate(WORKINGS_REQUEST, {
+      ...WORKINGS_OPTIONS,
+      images: [{ filename: "workings.png", data: png }],
+    });
+    const calls = invocations();
+    expect(calls[0]?.["images"]).toHaveLength(1);
+    expect(calls[1]?.["images"]).toHaveLength(0);
+  });
+
+  it("names an attachment safely however the caller named the file", () => {
+    expect(safeAttachmentName("../../etc/passwd", 0)).toBe("0-passwd");
+    expect(safeAttachmentName("a b/c d.png", 1)).toBe("1-c-d.png");
+    expect(safeAttachmentName("...", 2)).toBe("2-attachment.png");
+  });
+
+  it("removes an attachment from disk once the generation is over", async () => {
+    environment([{ output: WORKINGS_REVIEW }]);
+    await provider().generate(WORKINGS_REQUEST, {
+      ...WORKINGS_OPTIONS,
+      images: [{ filename: "workings.png", data: Buffer.from("89504e470d0a1a0a", "hex") }],
+    });
+    const images = invocations()[0]?.["images"] as Array<{ file: string }>;
+    expect(existsSync(String(images[0]?.file))).toBe(false);
   });
 });

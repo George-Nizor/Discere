@@ -73,14 +73,17 @@ export async function createApp(options: AppOptions = {}): Promise<DiscereApp> {
       .status(500)
       .send({ code: "INTERNAL_ERROR", message: "Discere could not complete the request." });
   });
+  // One runtime for every tutor path, so the tutor drawer, the essay assessment, and the
+  // workings review all speak to the same provider under the same limits.
+  const runtime = createTutorRuntime(options.tutor);
   await registerRoutes(app, {
     content,
     store,
     revealDelayMs: options.revealDelayMs ?? 5000,
   });
   await registerTransferRoutes(app, { content, store });
-  await registerWorkingsReviewRoutes(app, { content, store });
-  await registerTutorRoutes(app, { content, store, runtime: createTutorRuntime(options.tutor) });
+  await registerWorkingsReviewRoutes(app, { content, store, runtime });
+  await registerTutorRoutes(app, { content, store, runtime });
   app.addHook("onClose", async () => store.close());
   return { app, store, content };
 }

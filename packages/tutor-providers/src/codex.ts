@@ -11,6 +11,7 @@ import { TutorProviderError } from "./errors.js";
 import { buildTutorPrompt } from "./prompt.js";
 import type {
   TutorGenerateOptions,
+  TutorImageAttachment,
   TutorLintTarget,
   TutorProvider,
   TutorRequest,
@@ -152,6 +153,14 @@ interface CodexRunInput {
   timeoutMs: number;
   sessionId: string | undefined;
   signal: AbortSignal | undefined;
+  images: readonly TutorImageAttachment[];
+}
+
+/** Keeps a supplied name to a plain file inside the run directory. */
+export function safeAttachmentName(filename: string, index: number): string {
+  const base = path.basename(filename).replaceAll(/[^A-Za-z0-9._-]/g, "-");
+  const cleaned = base.replace(/^[.-]+/, "");
+  return cleaned.length > 0 ? `${index}-${cleaned}` : `${index}-attachment.png`;
 }
 
 export class CodexTutorProvider implements TutorProvider {
@@ -213,6 +222,7 @@ export class CodexTutorProvider implements TutorProvider {
           timeoutMs,
           sessionId,
           signal: options.signal,
+          images: options.images ?? [],
         });
         sessionId = outcome.sessionId ?? sessionId;
         const payload = this.acceptPayload(outcome.text, options);
@@ -337,12 +347,15 @@ export class CodexTutorProvider implements TutorProvider {
         ],
       },
     );
+    // A style repair reads the flagged prose alone; re-attaching the learner's image would
+    // invite the editor to add material the original generation never saw.
     const outcome = await this.execute({
       prompt,
       outputSchema: z.toJSONSchema(StyleEditDraftSchema),
       timeoutMs,
       sessionId: undefined,
       signal,
+      images: [],
     });
     const parsed = StyleEditDraftSchema.safeParse(parseModelJson(outcome.text));
     if (!parsed.success) {
@@ -359,11 +372,15 @@ export class CodexTutorProvider implements TutorProvider {
     schemaFile: string | undefined;
     outputFile: string;
     sessionId: string | undefined;
+    imageFiles: readonly string[];
   }): string[] {
     const shared = ["--skip-git-repo-check", "-C", this.scratchDirectory];
     if (this.model) shared.push("-m", this.model);
     shared.push("-c", `model_reasoning_effort=${JSON.stringify(this.reasoningEffort)}`);
     if (input.schemaFile) shared.push("--output-schema", input.schemaFile);
+    // `--image` is variadic, so the `=` form keeps the trailing `-` reading the prompt from
+    // stdin rather than being swallowed as another image path.
+    for (const file of input.imageFiles) shared.push(`--image=${file}`);
     shared.push("-o", input.outputFile, "--json", "--color", "never");
     // `codex exec resume` has no `-s` flag, so the sandbox is set through configuration.
     if (input.sessionId) {
@@ -387,9 +404,16 @@ export class CodexTutorProvider implements TutorProvider {
       schemaFile = path.join(runDirectory, "schema.json");
       writeFileSync(schemaFile, JSON.stringify(input.outputSchema, null, 2), "utf8");
     }
+    // The CLI reads an attachment from disk, so the bytes are written beside the run and
+    // removed with it. Nothing is left in the scratch directory after the generation.
+    const imageFiles = input.images.map((image, index) => {
+      const file = path.join(runDirectory, safeAttachmentName(image.filename, index));
+      writeFileSync(file, image.data);
+      return file;
+    });
 
     try {
-      const outcome = await this.spawnCodex(input, { schemaFile, outputFile });
+      const outcome = await this.spawnCodex(input, { schemaFile, outputFile, imageFiles });
       let text: string;
       try {
         text = readFileSync(outputFile, "utf8");
@@ -415,12 +439,13 @@ export class CodexTutorProvider implements TutorProvider {
 
   private spawnCodex(
     input: CodexRunInput,
-    files: { schemaFile: string | undefined; outputFile: string },
+    files: { schemaFile: string | undefined; outputFile: string; imageFiles: readonly string[] },
   ): Promise<{ sessionId: string | undefined; diagnostics: string }> {
     const args = this.buildArguments({
       schemaFile: files.schemaFile,
       outputFile: files.outputFile,
       sessionId: input.sessionId,
+      imageFiles: files.imageFiles,
     });
     // A new process group lets a timeout reach the CLI and every tool it started.
     const detached = process.platform !== "win32";

@@ -31,12 +31,28 @@ export interface TutorLintTarget {
   hiddenAnswer?: string;
 }
 
+/**
+ * An image the model must look at, such as the PNG a learner exported from the notebook.
+ * The bytes travel with the request because a provider may need to place them on disk for a
+ * command-line tool, and nothing outside the workspace should have to serve them.
+ */
+export interface TutorImageAttachment {
+  /** Name the file is given. Only the base name is used, and it is sanitised. */
+  filename: string;
+  data: Uint8Array;
+}
+
 export interface TutorGenerateOptions {
   /**
    * JSON Schema describing the payload the model must return. Providers that constrain
    * generation use it directly; the others ignore it.
    */
   outputSchema?: unknown;
+  /**
+   * Images attached to this generation. A provider that cannot attach images must not
+   * pretend it did; the caller checks the result instead of assuming one was read.
+   */
+  images?: readonly TutorImageAttachment[];
   /** Prompt asset reproduced as the system prompt. Defaults to `tutor-system`. */
   systemPrompt?: PromptName;
   /** Extra instruction lines placed above the reproduced prompt asset. */

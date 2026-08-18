@@ -11,7 +11,7 @@
  *   FAKE_CODEX_LOG        File receiving one JSON line per invocation.
  *   FAKE_CODEX_SESSION_ID Session id reported in the event stream.
  */
-import { appendFileSync, readFileSync, writeFileSync } from "node:fs";
+import { appendFileSync, readFileSync, statSync, writeFileSync } from "node:fs";
 
 function argValue(flag) {
   const index = process.argv.indexOf(flag);
@@ -46,6 +46,18 @@ const step = steps[Math.min(call, steps.length - 1)] ?? {};
 const outputFile = argValue("-o");
 const schemaFile = argValue("--output-schema");
 const resumedSessionId = args[1] === "resume" ? args.at(-2) : null;
+// `--image` is variadic in the real CLI, so the provider passes it in the `=` form. Recording
+// what actually arrived on disk is how a test proves the attachment reached the model.
+const images = args
+  .filter((arg) => arg.startsWith("--image="))
+  .map((arg) => arg.slice("--image=".length))
+  .map((file) => {
+    try {
+      return { file, bytes: statSync(file).size, head: readFileSync(file).subarray(0, 8).toString("hex") };
+    } catch (error) {
+      return { file, bytes: 0, head: "", error: String(error) };
+    }
+  });
 const prompt = await readStdin();
 
 if (logPath) {
@@ -56,6 +68,7 @@ if (logPath) {
       pid: process.pid,
       args,
       resumedSessionId,
+      images,
       schema: schemaFile ? JSON.parse(readFileSync(schemaFile, "utf8")) : null,
       prompt,
       startedAt: Date.now(),

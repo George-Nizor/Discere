@@ -77,6 +77,27 @@ export const WorkingsReviewDraftSchema = z
   .strict();
 export type WorkingsReviewDraft = z.infer<typeof WorkingsReviewDraftSchema>;
 
+/**
+ * A workings review asked of a provider that can look at the image itself. The PNG travels
+ * with the request because the exported page never leaves the learner's machine, and the
+ * provider needs the bytes to attach them.
+ */
+export const WorkingsReviewGenerateRequestSchema = z
+  .object({
+    lessonId: z.string().min(1).max(200),
+    reviewQuestion: z.string().trim().min(2).max(2_000),
+    mode: TutoringModeSchema,
+    image: z
+      .object({
+        filename: z.string().min(1).max(200),
+        /** The exported page, base64 encoded. Roughly six megabytes of PNG at the limit. */
+        base64: z.string().min(1).max(8_000_000),
+      })
+      .strict(),
+  })
+  .strict();
+export type WorkingsReviewGenerateRequest = z.infer<typeof WorkingsReviewGenerateRequestSchema>;
+
 export const LessonDraftSchema = z
   .object({
     conceptIds: z.array(z.string()).min(1),
@@ -189,6 +210,38 @@ export const TutorAskResponseSchema = z.discriminatedUnion("status", [
   TutorAskPacketRequiredSchema,
 ]);
 export type TutorAskResponse = z.infer<typeof TutorAskResponseSchema>;
+
+export const WorkingsReviewAnsweredSchema = z
+  .object({
+    status: z.literal("answered"),
+    provider: TutorProviderIdSchema,
+    operation: z.literal("workings_review"),
+    requestId: z.string().uuid(),
+    accepted: z.boolean(),
+    issues: z.array(TutorIssueSchema),
+    review: WorkingsReviewDraftSchema,
+  })
+  .strict();
+
+/** The copy/paste provider cannot see an image, so it hands back the packet and the filename
+ * the learner must attach in ChatGPT themselves. */
+export const WorkingsReviewPacketRequiredSchema = z
+  .object({
+    status: z.literal("packet_required"),
+    provider: TutorProviderIdSchema,
+    operation: z.literal("workings_review"),
+    requestId: z.string().uuid(),
+    packet: z.object({ filename: z.string().min(1), text: z.string().min(1) }).strict(),
+    expectedFilename: z.string().min(1),
+    message: z.string().min(1),
+  })
+  .strict();
+
+export const WorkingsReviewResponseSchema = z.discriminatedUnion("status", [
+  WorkingsReviewAnsweredSchema,
+  WorkingsReviewPacketRequiredSchema,
+]);
+export type WorkingsReviewResponse = z.infer<typeof WorkingsReviewResponseSchema>;
 
 export const EssayAssessmentStatusSchema = z.enum([
   "pending",
