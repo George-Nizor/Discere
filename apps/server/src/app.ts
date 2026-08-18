@@ -7,6 +7,8 @@ import { DiscereStore } from "./db/store.js";
 import { HttpError } from "./errors.js";
 import { registerRoutes } from "./routes.js";
 import { registerTransferRoutes } from "./transfer-routes.js";
+import { createTutorRuntime, type TutorRuntimeOptions } from "./tutor-provider.js";
+import { registerTutorRoutes } from "./tutor-routes.js";
 import { registerWorkingsReviewRoutes } from "./workings-routes.js";
 
 export interface AppOptions {
@@ -17,6 +19,8 @@ export interface AppOptions {
   /** Applies pending migrations before serving. Tests and disposable databases use this;
    * the deployed server refuses to start against an unmigrated database instead. */
   migrate?: boolean;
+  /** Overrides the provider chosen by `DISCERE_TUTOR_PROVIDER`. */
+  tutor?: TutorRuntimeOptions;
 }
 
 export interface DiscereApp {
@@ -70,6 +74,7 @@ export async function createApp(options: AppOptions = {}): Promise<DiscereApp> {
   });
   await registerTransferRoutes(app, { content, store });
   await registerWorkingsReviewRoutes(app, { content, store });
+  await registerTutorRoutes(app, { content, store, runtime: createTutorRuntime(options.tutor) });
   app.addHook("onClose", async () => store.close());
   return { app, store, content };
 }

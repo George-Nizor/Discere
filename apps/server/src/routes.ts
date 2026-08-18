@@ -1,13 +1,13 @@
 import { randomUUID } from "node:crypto";
 import type { FastifyInstance } from "fastify";
-import { AttemptRequestSchema, EssaySaveRequestSchema, LessonDraftSchema, NotebookSaveRequestSchema, ReviewRateRequestSchema, RevealConfirmRequestSchema, RevealStartRequestSchema, StageProgressRequestSchema, TutorEnvelopeBaseSchema, TutorOperationSchema, TutorReplyDraftSchema, TutorReplyRequestSchema, TutoringModeSchema, WritingLintRequestSchema } from "@discere/contracts";
+import { AttemptRequestSchema, EssaySaveRequestSchema, LessonDraftSchema, NotebookSaveRequestSchema, ReviewRateRequestSchema, RevealConfirmRequestSchema, RevealStartRequestSchema, StageProgressRequestSchema, TutorEnvelopeBaseSchema, TutorOperationSchema, TutorReplyRequestSchema, TutoringModeSchema, WritingLintRequestSchema } from "@discere/contracts";
 import { createFlashcardFromReviewedQuestion, createReviewState, scoreAttempt, updateMastery } from "@discere/progression-engine";
 import { buildCompanionPacket } from "@discere/tutor-providers";
 import { createImageGenerationPrompt, inspectVisualBrief, renderCircuitSvg, renderOhmsLawGraphSvg } from "@discere/visual-engine";
 import { lintText, type WritingContext } from "@discere/writing-engine";
 import { z } from "zod";
 import { assessResponse } from "./assessment.js";
-import { buildTutorReplyPayload, validateTutorReply } from "./companion.js";
+import { acceptTutorReply, buildTutorReplyPayload } from "./companion.js";
 import type { ContentRepository } from "./content.js";
 import type { DiscereStore } from "./db/store.js";
 import { HttpError } from "./errors.js";
@@ -18,7 +18,7 @@ export interface RouteDependencies { content: ContentRepository; store: DiscereS
 const AttemptBodySchema = AttemptRequestSchema.extend({ attemptId: z.string().uuid().optional() });
 const CompanionBodySchema = z.object({ operation: TutorOperationSchema.default("draft_lesson"), payload: z.unknown().optional() }).strict();
 const ImagePromptBodySchema = z.object({ visualBriefId: z.string().min(1) }).strict();
-const CompanionImportBodySchema = z.object({ text: z.string().min(2).max(500_000), mode: TutoringModeSchema.optional(), expectedRequestId: z.string().uuid() }).strict();
+const CompanionImportBodySchema = z.object({ text: z.string().min(2).max(500_000), mode: TutoringModeSchema.optional(), expectedRequestId: z.string().uuid(), attemptId: z.string().uuid().optional() }).strict();
 const LessonParamsSchema = z.object({ lessonId: z.string().min(1).max(200) }).strict();
 const CourseParamsSchema = z.object({ courseId: z.string().min(1).max(200) }).strict();
 const JourneyParamsSchema = z.object({ courseId: z.string().min(1).max(200), lessonId: z.string().min(1).max(200) }).strict();
@@ -304,27 +304,20 @@ export async function registerRoutes(app: FastifyInstance, dependencies: RouteDe
     const envelope = TutorEnvelopeBaseSchema.parse(raw);
 
     if (envelope.operation === "tutor_reply") {
-      if (envelope.requestId !== body.expectedRequestId) {
-        throw new HttpError(
-          409,
-          "This response belongs to a different tutor request. Copy the latest prompt and try again.",
-          "COMPANION_REQUEST_MISMATCH",
-        );
-      }
       if (!body.mode) throw new HttpError(400, "The tutoring mode is required for a tutor reply.", "TUTOR_MODE_REQUIRED");
-      if (body.mode === "exam") throw new HttpError(403, "ChatGPT assistance is unavailable in Exam mode.", "EXAM_GUARDRAIL");
-      const reply = TutorReplyDraftSchema.parse(envelope.payload);
       const currentLesson = content.currentLesson;
       const question = content.getQuestion(currentLesson.question.id);
       if (!question) throw new HttpError(404, "Question not found.", "QUESTION_NOT_FOUND");
-      const issues = validateTutorReply({ reply, mode: body.mode, lesson: currentLesson, question });
-      return {
-        accepted: issues.every((issue) => issue.severity !== "hard"),
-        operation: envelope.operation,
-        requestId: envelope.requestId,
-        issues,
-        reply,
-      };
+      // The pasted reply and the directly generated reply share this gate.
+      return acceptTutorReply({
+        envelope,
+        expectedRequestId: body.expectedRequestId,
+        mode: body.mode,
+        lesson: currentLesson,
+        question,
+        store,
+        attemptId: body.attemptId,
+      });
     }
 
     if (envelope.operation !== "draft_lesson") return { accepted: true, operation: envelope.operation, requestId: envelope.requestId, issues: [] };

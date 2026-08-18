@@ -44,6 +44,7 @@ describe("database migrations", () => {
       "writing_gate_runs",
       "journey_progress",
       "essay_drafts",
+      "essay_assessments",
       "review_cards",
       "review_sessions",
       "notebook_pages",

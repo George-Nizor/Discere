@@ -59,6 +59,21 @@
 - Direct-mode answer support with the same prose and source validation
 - host-neutral MCP tool catalogue for a future native host
 
+### Local automatic generation
+
+- selectable tutor provider through `DISCERE_TUTOR_PROVIDER`: `companion`, `codex`, or `mock`
+- `CodexTutorProvider` spawning the local Codex CLI as a read-only child process against the owner's own subscription
+- JSON Schema constrained replies, derived from the same Zod contracts the API uses
+- one targeted style-editor repair pass when the writing gate rejects generated prose, and a typed failure when the repair does not hold
+- typed provider failures for spawn, timeout, exit, malformed output, and writing-gate outcomes, surfaced instead of a degraded reply
+- wall-clock limits enforced in the parent, with process-group termination and no orphaned CLI processes
+- one generation at a time, so a single subscription is never used twice at once
+- session capture and resume for multi-turn tutoring
+- `POST /api/tutor/ask` for in-journey questions, sharing one validation core with the pasted-companion import path
+- `POST /api/essays/:essayId/assess` and `GET /api/essays/:essayId/assessment` for background teach-back assessment with a polled status
+- provider-neutral endpoints: the companion provider returns the packet to paste, and the mock provider returns fixed text, so one client flow serves every provider
+- assistance events recorded for a tutor exchange linked to an open attempt
+
 ### Learner workings
 
 - persisted digital working page per lesson

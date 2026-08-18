@@ -131,8 +131,27 @@ The first setup creates `.env`. Supported fields are:
 | `DISCERE_WEB_PORT` | `4318` | Web interface port. |
 | `DISCERE_DATABASE_PATH` | `./data/discere.sqlite` | SQLite database location. A relative value resolves from the repository root, not from the working directory, so every command reads the same file. An absolute path is used as given. |
 | `DISCERE_LEARNER_NAME` | `Learner` | Name displayed in the local profile. |
+| `DISCERE_TUTOR_PROVIDER` | `companion` | How a tutor reply is produced. `companion` writes a packet you paste into ChatGPT, `codex` spawns the local Codex CLI and generates in place, and `mock` returns fixed offline text. |
+| `DISCERE_CODEX_BIN` | `codex` | Executable used by the `codex` provider. |
+| `DISCERE_CODEX_MODEL` | account default | Model passed to the CLI. Leave unset to use the account default. |
+| `DISCERE_CODEX_EFFORT` | `low` | Reasoning effort passed to the CLI. |
+| `DISCERE_CODEX_SCRATCH` | `./data/codex-scratch` | Working root handed to the CLI. It is created on demand and ignored by Git. |
+| `DISCERE_TUTOR_ASK_TIMEOUT_MS` | `45000` | Wall-clock budget for one tutor question. |
+| `DISCERE_TUTOR_ASSESS_TIMEOUT_MS` | `120000` | Wall-clock budget for one essay assessment. |
 
 After changing a port, stop and restart Discere. The Vite proxy and API CORS configuration use the same environment values.
+
+## Local generation through the Codex CLI
+
+Setting `DISCERE_TUTOR_PROVIDER=codex` lets Discere answer tutor questions and assess submitted teach-backs without a copy-and-paste step. It spawns the [Codex CLI](https://github.com/openai/codex), which signs in with your own ChatGPT subscription, so no API key is stored in `.env`.
+
+The CLI runs read-only inside `data/codex-scratch`, with a JSON Schema constraining its reply and a wall-clock limit in the parent process. One generation runs at a time. A generated reply passes the same validation as a pasted one: the writing gate, the answer-leak check for Coach and Assisted modes, and the source allowlist. A reply that still breaks the writing contract after one targeted repair is reported as a failure rather than shown.
+
+```bash
+codex --version   # confirm the CLI is installed and signed in
+```
+
+Leaving `DISCERE_TUTOR_PROVIDER` unset keeps the copy-and-paste workflow described in [`chatgpt-companion.md`](chatgpt-companion.md).
 
 ## Database schema
 

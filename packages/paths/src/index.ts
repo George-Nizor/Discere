@@ -12,6 +12,7 @@ const WORKSPACE_MARKER = "pnpm-workspace.yaml";
 
 export const DEFAULT_DATABASE_PATH = "data/discere.sqlite";
 export const PROMPTS_DIRECTORY = "prompts";
+export const CODEX_SCRATCH_DIRECTORY = "data/codex-scratch";
 
 export function findRepoRoot(startDirectory: string): string {
   let current = path.resolve(startDirectory);
@@ -52,5 +53,15 @@ export function resolveDatabasePath(configured?: string | undefined): string {
 export function resolvePromptsDirectory(configured?: string | undefined): string {
   const raw = configured?.trim();
   if (!raw) return resolveFromRepoRoot(PROMPTS_DIRECTORY);
+  return path.isAbsolute(raw) ? raw : resolveFromRepoRoot(raw);
+}
+
+/**
+ * Working root handed to a spawned local model. It sits under the ignored `data/` directory so
+ * a generation never writes inside the source tree.
+ */
+export function resolveCodexScratchDirectory(configured?: string | undefined): string {
+  const raw = configured?.trim();
+  if (!raw) return resolveFromRepoRoot(CODEX_SCRATCH_DIRECTORY);
   return path.isAbsolute(raw) ? raw : resolveFromRepoRoot(raw);
 }

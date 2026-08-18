@@ -1,22 +1,26 @@
 import type {
+  EssayAssessmentDraft,
+  EssayStage,
   LessonResponse,
   NotebookPage,
   Question,
+  TutorEnvelopeBase,
+  TutorIssue,
   TutorReplyDraft,
   TutorReplyRequest,
   TutoringMode,
   WorkingsReviewDraft,
   WorkingsReviewRequest,
 } from "@discere/contracts";
+import { TutorReplyDraftSchema } from "@discere/contracts";
 import { promptSection } from "@discere/prompts";
 import { lintText, type WritingContext } from "@discere/writing-engine";
+import type { DiscereStore } from "./db/store.js";
+import { HttpError } from "./errors.js";
 
-export interface CompanionIssue {
-  field: string;
-  code: string;
-  severity: "hard" | "warning";
-  message: string;
-}
+/** Named `CompanionIssue` since the copy/paste import raised the first ones; every tutor path
+ * now reports the same shape because they share one validation core. */
+export type CompanionIssue = TutorIssue;
 
 /**
  * The accountability rules live in `prompts/tutor-system.md`. The packet quotes that file
@@ -32,7 +36,11 @@ export function modePolicy(mode: Exclude<TutoringMode, "exam">): string {
   return promptSection("tutor-system", MODE_SECTIONS[mode]).body;
 }
 
-export function buildTutorReplyPayload(lesson: LessonResponse, request: TutorReplyRequest) {
+export function buildTutorReplyPayload(
+  lesson: LessonResponse,
+  request: TutorReplyRequest,
+  focusConceptIds?: readonly string[],
+) {
   if (request.mode === "exam") {
     throw new Error("ChatGPT assistance is unavailable in Exam mode.");
   }
@@ -40,10 +48,35 @@ export function buildTutorReplyPayload(lesson: LessonResponse, request: TutorRep
     learnerQuestion: request.question,
     tutoringMode: request.mode,
     responsePolicy: modePolicy(request.mode),
+    ...(focusConceptIds && focusConceptIds.length > 0
+      ? { focusConceptIds: [...focusConceptIds] }
+      : {}),
     lessonContext: lesson,
     allowedSourceIds: lesson.sources.map((source) => source.id),
     sourceRule:
       "Use only allowedSourceIds in payload.sourceIds. Leave sourceIds empty when the response does not rely on a listed source.",
+  };
+}
+
+export function buildEssayAssessmentPayload(
+  lesson: LessonResponse,
+  stage: EssayStage,
+  essay: { content: string; wordCount: number },
+  mode: Exclude<TutoringMode, "exam">,
+) {
+  return {
+    task: "Assess the learner's submitted teach-back.",
+    tutoringMode: mode,
+    responsePolicy: modePolicy(mode),
+    essayPrompt: stage.prompt,
+    expectedScope: stage.expectedScope,
+    successCriteria: stage.successCriteria,
+    learnerSubmission: essay.content,
+    wordCount: essay.wordCount,
+    lessonContext: lesson,
+    allowedSourceIds: lesson.sources.map((source) => source.id),
+    sourceRule:
+      "Use only allowedSourceIds in payload.sourceIds. Leave sourceIds empty when the assessment does not rely on a listed source.",
   };
 }
 
@@ -83,6 +116,18 @@ function hiddenAnswer(question: Question): string {
     return `${question.answerAuthority.value} ${question.answerAuthority.unit}`;
   }
   return question.answerAuthority.exampleAnswer;
+}
+
+/**
+ * The answer a tutoring mode keeps hidden, or nothing in Direct mode where the learner may see
+ * it. Callers pass this to a provider so a generated draft is checked before it is returned,
+ * and the server checks it again when the reply arrives.
+ */
+export function answerBoundaryFor(
+  question: Question,
+  mode: Exclude<TutoringMode, "exam">,
+): string | undefined {
+  return mode === "direct" ? undefined : hiddenAnswer(question);
 }
 
 function addTextIssues(
@@ -132,7 +177,7 @@ export function validateTutorReply(input: {
   question: Question;
 }): CompanionIssue[] {
   const issues: CompanionIssue[] = [];
-  const answerBoundary = input.mode === "direct" ? undefined : hiddenAnswer(input.question);
+  const answerBoundary = answerBoundaryFor(input.question, input.mode);
   addTextIssues(issues, "answer", input.reply.answer, "feedback", answerBoundary);
   addTextIssues(
     issues,
@@ -145,6 +190,95 @@ export function validateTutorReply(input: {
   return issues;
 }
 
+export interface TutorReplyAcceptance {
+  accepted: boolean;
+  operation: "tutor_reply";
+  requestId: string;
+  issues: CompanionIssue[];
+  reply: TutorReplyDraft;
+}
+
+/**
+ * The single gate every tutor reply passes, whether the learner pasted it back from ChatGPT or
+ * a local provider generated it in process. Both routes call this so the mode guardrail,
+ * request correlation, payload shape, prose lint, answer-leak check, and source allowlist can
+ * never drift apart between the two paths.
+ */
+export function acceptTutorReply(input: {
+  envelope: TutorEnvelopeBase;
+  expectedRequestId: string;
+  mode: TutoringMode;
+  lesson: LessonResponse;
+  question: Question;
+  store?: DiscereStore;
+  attemptId?: string | undefined;
+}): TutorReplyAcceptance {
+  if (input.mode === "exam") {
+    throw new HttpError(403, "ChatGPT assistance is unavailable in Exam mode.", "EXAM_GUARDRAIL");
+  }
+  if (input.envelope.operation !== "tutor_reply") {
+    throw new HttpError(400, "The response is not a tutor reply.", "COMPANION_OPERATION_MISMATCH");
+  }
+  if (input.envelope.requestId !== input.expectedRequestId) {
+    throw new HttpError(
+      409,
+      "This response belongs to a different tutor request. Copy the latest prompt and try again.",
+      "COMPANION_REQUEST_MISMATCH",
+    );
+  }
+  const reply = TutorReplyDraftSchema.parse(input.envelope.payload);
+  const issues = validateTutorReply({
+    reply,
+    mode: input.mode,
+    lesson: input.lesson,
+    question: input.question,
+  });
+  const accepted = issues.every((issue) => issue.severity !== "hard");
+  if (input.store && input.attemptId) {
+    input.store.recordTutorAssistance(
+      input.attemptId,
+      `${input.mode}:${accepted ? "accepted" : "rejected"}`,
+    );
+  }
+  return { accepted, operation: "tutor_reply", requestId: input.envelope.requestId, issues, reply };
+}
+
+export function validateEssayAssessment(input: {
+  assessment: EssayAssessmentDraft;
+  mode: Exclude<TutoringMode, "exam">;
+  lesson: LessonResponse;
+  question: Question;
+}): CompanionIssue[] {
+  const issues: CompanionIssue[] = [];
+  const answerBoundary = answerBoundaryFor(input.question, input.mode);
+  addTextIssues(issues, "summary", input.assessment.summary, "assessment", answerBoundary);
+  addTextIssues(issues, "nextStep", input.assessment.nextStep, "hint", answerBoundary);
+  if (input.assessment.firstMeaningfulError) {
+    addTextIssues(
+      issues,
+      "firstMeaningfulError",
+      input.assessment.firstMeaningfulError,
+      "feedback",
+      answerBoundary,
+    );
+  }
+  addSourceIssues(issues, input.assessment.sourceIds, input.lesson, "The essay assessment");
+  if (
+    (input.assessment.assessment === "partly_correct" ||
+      input.assessment.assessment === "incorrect") &&
+    input.assessment.firstMeaningfulError === null
+  ) {
+    issues.push({
+      field: "firstMeaningfulError",
+      code: "FIRST_ERROR_REQUIRED",
+      severity: "hard",
+      message:
+        "An incorrect or partly correct assessment must identify the first meaningful error.",
+    });
+  }
+  return issues;
+}
+
 export function validateWorkingsReview(input: {
   review: WorkingsReviewDraft;
   mode: Exclude<TutoringMode, "exam">;
@@ -152,7 +286,7 @@ export function validateWorkingsReview(input: {
   question: Question;
 }): CompanionIssue[] {
   const issues: CompanionIssue[] = [];
-  const answerBoundary = input.mode === "direct" ? undefined : hiddenAnswer(input.question);
+  const answerBoundary = answerBoundaryFor(input.question, input.mode);
 
   addTextIssues(issues, "feedback", input.review.feedback, "feedback", answerBoundary);
   addTextIssues(issues, "nextStep", input.review.nextStep, "hint", answerBoundary);

@@ -30,6 +30,11 @@ export const journeyProgress = sqliteTable("journey_progress", {
 export const essayDrafts = sqliteTable("essay_drafts", {
   userId: text("user_id").notNull(), essayId: text("essay_id").notNull(), content: text("content").notNull().default(""), submitted: integer("submitted", { mode: "boolean" }).notNull().default(false), updatedAt: text("updated_at"),
 }, (table) => [primaryKey({ columns: [table.userId, table.essayId] })]);
+/** One generated assessment per submitted essay. A generation can take minutes, so the row
+ * carries its own status and the client polls it instead of holding a request open. */
+export const essayAssessments = sqliteTable("essay_assessments", {
+  userId: text("user_id").notNull(), essayId: text("essay_id").notNull(), requestId: text("request_id").notNull(), status: text("status").notNull(), provider: text("provider").notNull(), accepted: integer("accepted", { mode: "boolean" }).notNull().default(false), assessmentJson: text("assessment_json"), issuesJson: text("issues_json").notNull().default("[]"), errorCode: text("error_code"), errorMessage: text("error_message"), updatedAt: text("updated_at").notNull(),
+}, (table) => [primaryKey({ columns: [table.userId, table.essayId] })]);
 export const reviewCards = sqliteTable("review_cards", {
   userId: text("user_id").notNull(), cardId: text("card_id").notNull(), questionId: text("question_id").notNull(), conceptIds: text("concept_ids").notNull(), front: text("front").notNull(), back: text("back").notNull(), sourceIds: text("source_ids").notNull(), dueAt: text("due_at").notNull(), intervalDays: real("interval_days").notNull(), repetition: integer("repetition").notNull(), lastOutcome: text("last_outcome"), lastEvidence: text("last_evidence"), independentReviews: integer("independent_reviews").notNull().default(0), assistedReviews: integer("assisted_reviews").notNull().default(0), lastReviewedAt: text("last_reviewed_at"),
 }, (table) => [primaryKey({ columns: [table.userId, table.cardId] })]);

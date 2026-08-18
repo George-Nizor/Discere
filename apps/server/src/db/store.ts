@@ -26,6 +26,10 @@ export interface AttemptWrite {
 }
 export interface RevealRow { token: string; attemptId: string; reason: string; availableAt: string; usedAt: string | null; createdAt: string; }
 export interface EssayDraftRow { essayId: string; content: string; submitted: boolean; updatedAt: string | null; }
+export interface EssayAssessmentRow {
+  essayId: string; requestId: string; status: string; provider: string; accepted: boolean; assessmentJson: string | null; issuesJson: string; errorCode: string | null; errorMessage: string | null; updatedAt: string;
+}
+export type EssayAssessmentWrite = Omit<EssayAssessmentRow, "updatedAt">;
 export interface ReviewCardRow { card: Flashcard; state: ReviewState; }
 export interface ReviewSessionRow { id: string; cardId: string; revealed: boolean; rated: boolean; createdAt: string; }
 
@@ -141,6 +145,49 @@ export class DiscereStore {
     const timestamp = now();
     this.database.prepare("INSERT INTO essay_drafts (user_id, essay_id, content, submitted, updated_at) VALUES (?, ?, ?, 1, ?) ON CONFLICT(user_id, essay_id) DO UPDATE SET content = CASE WHEN essay_drafts.submitted = 1 THEN essay_drafts.content ELSE excluded.content END, submitted = 1, updated_at = CASE WHEN essay_drafts.submitted = 1 THEN essay_drafts.updated_at ELSE excluded.updated_at END").run(LOCAL_USER_ID, essayId, content, timestamp);
     return this.getEssayDraft(essayId);
+  }
+
+  getEssayAssessment(essayId: string): EssayAssessmentRow | null {
+    const row = this.database
+      .prepare(
+        "SELECT essay_id AS essayId, request_id AS requestId, status, provider, accepted, assessment_json AS assessmentJson, issues_json AS issuesJson, error_code AS errorCode, error_message AS errorMessage, updated_at AS updatedAt FROM essay_assessments WHERE user_id = ? AND essay_id = ?",
+      )
+      .get(LOCAL_USER_ID, essayId) as
+      | (Omit<EssayAssessmentRow, "accepted"> & { accepted: number })
+      | undefined;
+    if (!row) return null;
+    return { ...row, accepted: bool(row.accepted) };
+  }
+
+  saveEssayAssessment(row: EssayAssessmentWrite): EssayAssessmentRow {
+    const timestamp = now();
+    this.database
+      .prepare(
+        "INSERT INTO essay_assessments (user_id, essay_id, request_id, status, provider, accepted, assessment_json, issues_json, error_code, error_message, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(user_id, essay_id) DO UPDATE SET request_id = excluded.request_id, status = excluded.status, provider = excluded.provider, accepted = excluded.accepted, assessment_json = excluded.assessment_json, issues_json = excluded.issues_json, error_code = excluded.error_code, error_message = excluded.error_message, updated_at = excluded.updated_at",
+      )
+      .run(
+        LOCAL_USER_ID,
+        row.essayId,
+        row.requestId,
+        row.status,
+        row.provider,
+        row.accepted ? 1 : 0,
+        row.assessmentJson,
+        row.issuesJson,
+        row.errorCode,
+        row.errorMessage,
+        timestamp,
+      );
+    return this.getEssayAssessment(row.essayId) ?? { ...row, updatedAt: timestamp };
+  }
+
+  /** Records that a tutor answered inside an open attempt, alongside hints and reveals. */
+  recordTutorAssistance(attemptId: string, detail: string): void {
+    this.database
+      .prepare(
+        "INSERT INTO assistance_events (id, attempt_id, type, detail, created_at) VALUES (?, ?, 'tutor_reply', ?, ?)",
+      )
+      .run(randomUUID(), attemptId, detail, now());
   }
 
   ensureReviewCard(card: Flashcard, state: ReviewState): ReviewCardRow {
