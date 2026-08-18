@@ -25,7 +25,7 @@
 - deterministic current-against-voltage relationship graph
 - numeric assessment with SI unit aliases
 - visible lesson provenance and licensing outside Exam mode
-- read-aloud through browser speech synthesis
+- read-aloud through browser speech synthesis, on the explainer, the quiz question, and the flashcard front
 
 ### Accountability and progression
 
@@ -57,7 +57,7 @@
 - final-answer leakage rejection in Coach and Assisted modes
 - unknown-source rejection and response-request matching
 - Direct-mode answer support with the same prose and source validation
-- host-neutral MCP tool catalogue for a future native host
+- a stdio Model Context Protocol server in `mcp/`, exposing the learning API to an agent host
 
 ### Local automatic generation
 
@@ -77,7 +77,7 @@
 ### Learner workings
 
 - persisted digital working page per lesson
-- pen and eraser pointer input with undo, redo, and clear
+- pen and eraser pointer input with undo and clear
 - blank, lined, and graph-paper notebook backgrounds
 - typed notebook notes and PNG export
 - bounded notebook payloads and unsaved-navigation protection
@@ -294,18 +294,134 @@ multiple-choice answer, and it asserts the image actually loads and its attribut
 Thirty-four screenshots at 1440×900 and 390×844 were recaptured, four of them from the new
 course.
 
+## Learning features and the Instrumenta hub — 19 August 2026
+
+Phases 4 and 5. The scheduler became real, the notebook returned to the shell with a working
+image review, and Discere became a product the Instrumenta launcher can start.
+
+### Real spaced repetition
+
+- `ts-fsrs` replaces the fixed interval ladders in `packages/progression-engine/src/review.ts`.
+  A card carries its own memory state: stability, difficulty, lapses, phase, learning step,
+  elapsed and scheduled days. Migration `0003_fsrs_review_state.sql` adds the columns; an
+  existing card keeps its due date and starts from the empty-card defaults rather than being
+  given a stability it never earned.
+- Fuzz is off, so a card, a grade, and an instant always produce the same next due date. Every
+  scheduling test supplies its own timestamps and the store takes an injectable clock, so a
+  multi-day schedule is asserted rather than waited for.
+- The accountability rule survived the change. Assisted recall is capped at a `hard` grade
+  inside `gradeForResult`, so help never buys the interval an unaided recall would earn, and the
+  independent and assisted counters stay separate from the scheduler's own state.
+- `formatInterval` names a learning step in minutes instead of rounding it up to an hour.
+
+### A fair review queue
+
+- `review_cards` now records the course that authored each card.
+- `interleaveByCourse` takes turns between courses: within a turn the course studied longest ago
+  goes first, and inside a course the usual due order applies. Because the recency comes from
+  the stored review times rather than from session state, the rotation continues across separate
+  requests instead of restarting and serving the same course again.
+- `GET /api/review` reports a per-course breakdown beside the global count, and `/review` shows
+  it as a table naming each course, its due count, its card count, and when the next card
+  returns.
+
+### A real streak
+
+The `streak_days` column was written once at profile creation and never again, so the number on
+the home screen was permanently zero. It is now computed from the activity itself: any attempt,
+transfer, or rated review counts as a day of study, and consecutive days are counted back from
+today. Today with no work yet does not break a streak that was alive yesterday, so the figure is
+stable through the day. The column is kept in step for anyone inspecting the database, but the
+answer always comes from the activity.
+
+### The notebook, and workings review through Codex
+
+- `/courses/:courseId/lessons/:lessonId/notebook` is a real route, reachable from the lesson
+  header in every mode. Pointer drawing with pen and eraser, undo, clear, blank, lined and graph
+  pages, a typed note, save through the existing endpoints, and PNG export.
+- `CodexTutorProvider` accepts image attachments. The bytes are written beside the run and
+  passed as `--image=<file>`; the flag is variadic, so the `=` form is what keeps the trailing
+  `-` reading the prompt from stdin. The attachment is removed with the run directory, and it is
+  deliberately not re-attached to the style repair pass.
+- `POST /api/tutor/workings/review` exports the page, sends it through the provider with
+  `prompts/assessor.md`, and pipes the reply through the existing `validateWorkingsReview`
+  boundary. Nothing new was invented for the generated path: the pasted companion reply and the
+  generated one pass the same gate.
+- The panel shows the result honestly. It prints the transcription the tutor read from the page
+  with its confidence and tells the learner to check it, lists anything the tutor was unsure
+  about, lists every accountability finding, and shows a refused review as refused rather than
+  as advice. The companion provider, which cannot see an image, returns the packet and the
+  filename to attach.
+- Verified live against the real Codex CLI on a page reading `I = V / R`, `I = 5 V / 100 Ω`,
+  `I = 0.5 A`. It transcribed the page exactly, marked it incorrect, named the decimal-place
+  error as the first meaningful one, and gave a next step in Coach mode without stating the
+  answer. The gate raised no issues.
+
+### Read-aloud
+
+The 30-line block inside the explainer became `ui/ReadAloud.tsx`, shared by the explainer, the
+quiz question, and the flashcard front. Speech now stops when the surface goes away, so moving
+between stages no longer leaves a voice reading a screen nobody is looking at. Only the question
+is spoken on a quiz stage, and only the front of a card, because neither a hint nor a card back
+should arrive through a control the learner did not open.
+
+### Single-origin serving
+
+`@fastify/static` serves the built bundle when `DISCERE_WEB_ROOT` names one. `/api/*` keeps
+priority, an unknown `/api` path stays a real 404, and any other GET falls back to `index.html`
+so a deep link opens the application. Paths are resolved inside the bundle root. Development is
+untouched: without the variable the server serves the API alone and Vite proxies it.
+
+`DISCERE_AUTO_MIGRATE=1` applies pending migrations at boot, so a launcher starting Discere for
+the first time does not need a separate migration step. Without it the server still refuses to
+start against an unmigrated database. Nothing listens until the content has loaded, the schema
+has passed, and every route is registered, so a `/api/health` that answers at all is answering
+from a ready server.
+
+### Packaged Content Security Policy
+
+`scripts/check-csp.mjs` runs as part of `pnpm build`. It reads the built bundle and fails on an
+inline script, an external script, stylesheet, image or font, a CSS `@import` or `url()` naming
+another origin, or a `fetch`, `WebSocket`, worker or `XMLHttpRequest` pointed anywhere but
+`'self'`. It looks for the constructs that actually issue a request, so a URL inside an error
+message or a JSON Schema identifier is not mistaken for one. The bundle passes: KaTeX and its
+fonts already come from npm and are emitted into `dist/assets`, the type stack is a system font
+stack, and the icons are compiled in.
+
+### Hub product
+
+- `instrumenta/product.json` declares the `web-service` adapter, port 49323 with 45023 as the
+  fallback, `/api/health`, and the launch environment above. It validates against Instrumenta's
+  own `scripts/product-registry.cjs`.
+- `apps/web/public/discere-mark.svg` reproduces the launcher's brand mark.
+- `mcp/` replaces the transport-less `apps/mcp` stub with a real stdio MCP server built to
+  `mcp/dist/index.js`, which is what the launcher resolves. Seven tools: `list_courses`,
+  `get_course`, `get_lesson_journey`, `get_progress`, `list_due_reviews`, `ask_tutor`, and
+  `get_attempt_feedback`. None of them can return an answer authority or a flashcard back, and
+  `ask_tutor` does not accept Exam mode. When Discere is not running each tool says so and names
+  the URL it tried.
+- `ai/skills/learn-with-discere/` documents the tools and the rules an agent must respect.
+
+### Verification
+
+`pnpm check` is green: 85 server tests, 108 web tests, and every package suite. `pnpm build`
+passes with the CSP check. `pnpm smoke` passes and now proves the interface, a deep link, and
+the API all answer on one port. The Playwright suite runs 18 tests, including the notebook drawn,
+saved and reviewed through the offline provider, and a review queue that alternates between the
+two courses. Thirty-six screenshots at 1440x900 and 390x844 were recaptured, two of them of the
+notebook.
+
 ## Deliberately deferred
 
 - direct ChatGPT MCP transport, pending host compatibility testing
 - generated-image return from ChatGPT into the local workspace
 - automatic in-app handwriting recognition without the ChatGPT handoff
-- persistence of image-review history and formal mastery evidence from reviewed workings
+- persistence of image-review history and formal mastery evidence from reviewed workings, which
+  is why a review is shown once and not kept
 - multiple generated transfer variants and delayed transfer scheduling
-- FSRS scheduling, which remains deferred behind the deterministic scheduler interface
 - NotebookLM handoff automation
 - broad curriculum importers
 - Playwright in CI, which still needs the browser system libraries installed as root
-- the notebook and the workings-review handoff, which have no route in the rebuilt shell yet
 
 These are later phases rather than hidden placeholders. The current vertical slice can operate offline after dependencies are installed. ChatGPT tutoring and image review remain explicit user-controlled handoffs and do not require an OpenAI API key.
 

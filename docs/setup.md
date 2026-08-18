@@ -111,7 +111,9 @@ This performs:
 - a production web build
 - a temporary full-stack smoke test
 
-The smoke test starts isolated services on free ports with a temporary database. It verifies the web preview, API proxy, learner-safe lesson response, deterministic SVG, prose gate, notebook round trip, and numeric assessment. The temporary data is deleted when the check finishes.
+The smoke test starts isolated services on free ports with a temporary database. It verifies the web preview, API proxy, single-origin serving of the built bundle, learner-safe lesson response, deterministic SVG, prose gate, notebook round trip, the workings review through the offline provider, the per-course review queue, and numeric assessment. The temporary data is deleted when the check finishes.
+
+`pnpm build` also runs `scripts/check-csp.mjs` over `apps/web/dist`. It refuses a bundle that would fail the Content Security Policy the Instrumenta launcher applies: no inline script, no external script, stylesheet, or font, and no request to another origin. Run it alone with `pnpm check:csp`.
 
 For a faster environment-only check:
 
@@ -137,7 +139,10 @@ The first setup creates `.env`. Supported fields are:
 | `DISCERE_CODEX_EFFORT` | `low` | Reasoning effort passed to the CLI. |
 | `DISCERE_CODEX_SCRATCH` | `./data/codex-scratch` | Working root handed to the CLI. It is created on demand and ignored by Git. |
 | `DISCERE_TUTOR_ASK_TIMEOUT_MS` | `45000` | Wall-clock budget for one tutor question. |
-| `DISCERE_TUTOR_ASSESS_TIMEOUT_MS` | `120000` | Wall-clock budget for one essay assessment. |
+| `DISCERE_TUTOR_ASSESS_TIMEOUT_MS` | `120000` | Wall-clock budget for one essay assessment or workings review. |
+| `DISCERE_WEB_ROOT` | unset | Directory holding the built browser bundle. When set, the API serves the interface from its own origin instead of leaving it to Vite. A relative value resolves from the repository root. |
+| `DISCERE_AUTO_MIGRATE` | unset | `1` applies pending migrations at boot. A launcher that has never run `pnpm db:migrate` needs it; a normal local install does not. |
+| `DISCERE_URL` | `http://127.0.0.1:49323` | Where the MCP server in `mcp/` looks for a running Discere. Set it when the API is on another port. |
 
 After changing a port, stop and restart Discere. The Vite proxy and API CORS configuration use the same environment values.
 
@@ -291,6 +296,56 @@ pnpm stop
 ```
 
 The next start also removes a stale PID record when none of its recorded processes are running.
+
+## Running Discere from Instrumenta
+
+Discere ships an Instrumenta product manifest at `instrumenta/product.json`. The launcher owns
+the whole lifecycle, so nothing below has to be done by hand once Discere is registered in
+Instrumenta's catalogue.
+
+The launcher prepares the checkout with `pnpm install --frozen-lockfile` followed by
+`pnpm run build`, which builds every workspace package, the browser bundle, and the MCP server
+in `mcp/`. It then spawns `pnpm --filter @discere/server start` with `PORT` set to the port it
+picked, `HOST=127.0.0.1`, and the manifest's own environment:
+
+```json
+{
+  "DISCERE_WEB_ROOT": "apps/web/dist",
+  "DISCERE_AUTO_MIGRATE": "1",
+  "DISCERE_TUTOR_PROVIDER": "codex"
+}
+```
+
+`DISCERE_WEB_ROOT` is what makes the single window work: the API serves the built interface from
+its own origin, so the launcher's `connect-src 'self'` policy allows the interface to reach the
+API. `DISCERE_AUTO_MIGRATE=1` lets a first launch create the schema without a separate
+`pnpm db:migrate`. The launcher then polls `GET /api/health` for up to thirty seconds; the
+server registers no routes until the content has loaded and the database has passed its
+migration check, so an answer there means Discere can actually serve a lesson.
+
+Registered port `49323`, falling back to `45023`. Closing the window stops the whole process
+tree.
+
+The launcher applies its own Content Security Policy and replaces any header Discere sent. The
+policy allows `'self'` only, plus inline style and `data:`/`blob:` images. `pnpm build` checks
+the bundle against it, so a dependency that starts reaching for a CDN fails the build rather
+than the window.
+
+### The MCP server
+
+`mcp/` is a small workspace package that speaks the Model Context Protocol over stdio. It is a
+thin client of the HTTP API, so Discere must be running for its tools to answer; when it is not,
+each tool says so and names the URL it tried rather than inventing content. The base URL comes
+from `DISCERE_URL` and defaults to `http://127.0.0.1:49323`, which is the port the launcher
+gives Discere. Running Discere on its development port instead means setting `DISCERE_URL` to
+match.
+
+```bash
+pnpm --filter @discere/mcp build
+node mcp/dist/index.js   # speaks JSON-RPC on stdin and stdout
+```
+
+The agent skill that documents these tools lives in `ai/skills/learn-with-discere/`.
 
 ## ChatGPT companion workflow
 

@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "discere",
+  "displayName": "Discere",
+  "kind": "web",
+  "adapter": "web-service",
+  "versionSource": { "type": "package-json", "path": "package.json" },
+  "build": { "output": "apps/web/dist", "command": "pnpm run build" },
+  "launch": {
+    "type": "service",
+    "port": 49323,
+    "fallbackPort": 45023,
+    "health": "/api/health",
+    "command": ["pnpm", "--filter", "@discere/server", "start"],
+    "cwd": ".",
+    "env": {
+      "DISCERE_WEB_ROOT": "apps/web/dist",
+      "DISCERE_AUTO_MIGRATE": "1",
+      "DISCERE_TUTOR_PROVIDER": "codex"
+    }
+  },
+  "mcp": {
+    "timeoutSeconds": 30,
+    "entry": "mcp/dist/index.js",
+    "cwd": ".",
+    "skill": "ai/skills/learn-with-discere"
+  },
+  "assets": {
+    "mark": "apps/web/public/discere-mark.svg"
+  }
+}
