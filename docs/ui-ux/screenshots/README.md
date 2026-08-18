@@ -96,6 +96,14 @@ The map and the timeline belong to two consecutive stages of the same lesson, so
 `roman-explainer` and `roman-timeline` rather than in one image. There is no screen in the
 approved design that shows both at once.
 
+## These captures are not byte-reproducible
+
+Re-running the suite rewrites a PNG or two with no interface change behind it. The images are
+visually identical; the difference is a handful of bytes from glyph antialiasing and the PNG
+encoder. Do not go looking for a rendering bug when `git status` shows a screenshot after a
+run, and do not commit such a file on its own. Recapture and commit the set when a change
+actually moves the interface.
+
 ## What to look for in review
 
 The spec's visual-regression checklist applies: nested borders, duplicated headings, excessive
