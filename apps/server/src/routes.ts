@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { readFile } from "node:fs/promises";
+import { readFile, realpath } from "node:fs/promises";
 import path from "node:path";
 import {
   AttemptRequestSchema,
@@ -169,8 +169,17 @@ export async function registerRoutes(
     if (!absolute.startsWith(root)) throw new HttpError(404, "Asset not found.", "ASSET_NOT_FOUND");
     let file: Buffer;
     try {
-      file = await readFile(absolute);
-    } catch {
+      // The lexical check above cannot see through a symlink, which would otherwise resolve
+      // to a file outside the course. Both ends are resolved and compared again before the
+      // read. Course assets are first-party, so this costs one `realpath` per image.
+      const realRoot = await realpath(path.resolve(directory));
+      const realAbsolute = await realpath(absolute);
+      if (realAbsolute !== realRoot && !realAbsolute.startsWith(`${realRoot}${path.sep}`)) {
+        throw new HttpError(404, "Asset not found.", "ASSET_NOT_FOUND");
+      }
+      file = await readFile(realAbsolute);
+    } catch (error) {
+      if (error instanceof HttpError) throw error;
       throw new HttpError(404, "Asset not found.", "ASSET_NOT_FOUND");
     }
     return reply

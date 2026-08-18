@@ -12,7 +12,9 @@ export type TutorProviderErrorCode =
   | "PROVIDER_OUTPUT_MISSING"
   | "PROVIDER_OUTPUT_INVALID"
   | "PROVIDER_WRITING_GATE"
-  | "PROVIDER_ABORTED";
+  | "PROVIDER_ABORTED"
+  /** The caller supplied a session identifier the provider will not put on a command line. */
+  | "PROVIDER_SESSION_INVALID";
 
 export interface TutorProviderErrorOptions {
   provider: string;

@@ -1,10 +1,15 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import type { FastifyInstance } from "fastify";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createApp } from "../src/app.js";
-import { isApplicationRoute, resolveWebRoot } from "../src/web-root.js";
+import {
+  isApiPath,
+  isApplicationRoute,
+  isContainedRealPath,
+  resolveWebRoot,
+} from "../src/web-root.js";
 
 let app: FastifyInstance | null = null;
 let bundle: string;
@@ -114,5 +119,89 @@ describe("web root resolution", () => {
     expect(isApplicationRoute("/courses/a/lessons/b/notebook?x=1")).toBe(true);
     expect(isApplicationRoute("/api/health")).toBe(false);
     expect(isApplicationRoute("/api")).toBe(false);
+  });
+});
+
+describe("the bundle can never answer for the API", () => {
+  it("keeps /api/* a JSON 404 even when the bundle holds an api directory", async () => {
+    // A bundle that happens to ship an `api/` directory must not be able to answer, or
+    // shadow, anything under /api. Both a colliding name and an unclaimed one are covered.
+    mkdirSync(path.join(bundle, "api"), { recursive: true });
+    writeFileSync(path.join(bundle, "api", "health"), "not the API", "utf8");
+    writeFileSync(path.join(bundle, "api", "nothing-here"), "not the API", "utf8");
+    const server = await start();
+
+    const health = await server.inject({ method: "GET", url: "/api/health" });
+    expect(health.statusCode).toBe(200);
+    expect(health.json()).toMatchObject({ status: "ok", service: "discere" });
+
+    const unknown = await server.inject({ method: "GET", url: "/api/nothing-here" });
+    expect(unknown.statusCode).toBe(404);
+    expect(unknown.headers["content-type"]).toContain("application/json");
+    expect(unknown.json()).toMatchObject({ code: "NOT_FOUND" });
+    expect(unknown.body).not.toContain("not the API");
+
+    // Nor through a deeper path, and never as the application shell.
+    const nested = await server.inject({ method: "GET", url: "/api/a/b/c" });
+    expect(nested.statusCode).toBe(404);
+    expect(nested.body).not.toContain('<div id="root">');
+  });
+
+  it("still serves a bundle file whose name merely starts with api", async () => {
+    writeFileSync(path.join(bundle, "assets", "api-client-abc.js"), "export const x = 1;\n");
+    const server = await start();
+    const asset = await server.inject({ method: "GET", url: "/assets/api-client-abc.js" });
+    expect(asset.statusCode).toBe(200);
+    expect(asset.body).toContain("export const x = 1;");
+  });
+
+  it("names the paths the API owns", () => {
+    expect(isApiPath("/api")).toBe(true);
+    expect(isApiPath("/api/health")).toBe(true);
+    expect(isApiPath("/apianything")).toBe(false);
+    expect(isApiPath("/review")).toBe(false);
+  });
+});
+
+describe("symlink containment", () => {
+  it("refuses a bundle file that is a symlink out of the web root", async () => {
+    symlinkSync(path.join(bundle, "..", "outside-the-bundle.txt"), path.join(bundle, "escape.txt"));
+    symlinkSync(
+      path.join(bundle, "..", "outside-the-bundle.txt"),
+      path.join(bundle, "assets", "escape-asset.txt"),
+    );
+    const server = await start();
+
+    for (const url of ["/escape.txt", "/assets/escape-asset.txt"]) {
+      const response = await server.inject({ method: "GET", url });
+      expect(response.body).not.toContain("secret");
+      // It falls through to the application shell rather than reading through the link.
+      expect(response.statusCode).toBe(200);
+      expect(response.body).toContain('<div id="root">');
+    }
+  });
+
+  it("refuses a symlinked directory that leaves the web root", async () => {
+    const outside = path.join(bundle, "..", `outside-dir-${path.basename(bundle)}`);
+    mkdirSync(outside, { recursive: true });
+    writeFileSync(path.join(outside, "leaked.txt"), "secret", "utf8");
+    try {
+      symlinkSync(outside, path.join(bundle, "linked"), "dir");
+      const server = await start();
+      const response = await server.inject({ method: "GET", url: "/linked/leaked.txt" });
+      expect(response.body).not.toContain("secret");
+    } finally {
+      rmSync(outside, { recursive: true, force: true });
+    }
+  });
+
+  it("decides containment by the real path, not the written one", () => {
+    expect(isContainedRealPath(bundle, path.join(bundle, "assets"))).toBe(true);
+    expect(isContainedRealPath(bundle, bundle)).toBe(true);
+    expect(isContainedRealPath(bundle, path.join(bundle, "..", "outside-the-bundle.txt"))).toBe(
+      false,
+    );
+    // A path that does not exist is left to the file layer to refuse.
+    expect(isContainedRealPath(bundle, path.join(bundle, "missing.txt"))).toBe(true);
   });
 });

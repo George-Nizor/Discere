@@ -2,6 +2,7 @@ export {
   CodexTutorProvider,
   type CodexProviderOptions,
   extractSessionId,
+  isResumableSessionId,
   parseModelJson,
   safeAttachmentName,
 } from "./codex.js";

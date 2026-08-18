@@ -1,4 +1,4 @@
-import { existsSync } from "node:fs";
+import { existsSync, realpathSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { resolveFromRepoRoot } from "@discere/paths";
@@ -28,19 +28,53 @@ export function resolveWebRoot(configured: string | undefined): string | null {
 /** True for a path the browser router owns rather than the API. */
 export function isApplicationRoute(url: string): boolean {
   const pathname = url.split("?")[0] ?? url;
-  return !pathname.startsWith("/api/") && pathname !== "/api";
+  return !isApiPath(pathname);
+}
+
+/** True for a path the API owns. The bundle is never allowed to answer one of these. */
+export function isApiPath(pathname: string): boolean {
+  return pathname === "/api" || pathname.startsWith("/api/");
+}
+
+/**
+ * True when `candidate` really lives inside `root` after every symlink is followed.
+ *
+ * The lexical check that `@fastify/send` performs is not enough on its own: a symlink inside
+ * the bundle resolves to wherever it points, and the file would be served from there. The
+ * bundle is first-party, so this only ever costs a `realpath` on a local read.
+ */
+export function isContainedRealPath(root: string, candidate: string): boolean {
+  let realRoot: string;
+  let realCandidate: string;
+  try {
+    realRoot = realpathSync(root);
+    realCandidate = realpathSync(candidate);
+  } catch {
+    // A path that cannot be resolved does not exist. Let the file layer answer with its own
+    // 404 rather than deciding containment on a guess.
+    return true;
+  }
+  return realCandidate === realRoot || realCandidate.startsWith(`${realRoot}${path.sep}`);
 }
 
 export async function registerWebRoot(app: FastifyInstance, root: string): Promise<void> {
   const indexHtml = await readFile(path.join(root, "index.html"));
-  // `wildcard: false` leaves unmatched paths to the not-found handler below, which is what
-  // turns a deep link into the application rather than a 404. Files are resolved inside the
-  // root by @fastify/static, so a crafted path cannot read outside the bundle.
+
+  // `wildcard: true` registers one `GET /*` route rather than an exact route per bundled
+  // file. That matters for more than tidiness: with a route per file, a bundle that happened
+  // to contain `api/health` would register that exact path and collide with, or shadow, the
+  // API. A single wildcard always loses to an explicitly registered route, so `/api/*` stays
+  // the API's however the bundle is laid out. `allowedPath` then refuses to read anything
+  // under `/api` at all, so an unclaimed `/api` path cannot be answered from disk either.
   await app.register(fastifyStatic, {
     root,
     index: ["index.html"],
-    wildcard: false,
+    wildcard: true,
     dotfiles: "deny",
+    allowedPath(pathname) {
+      if (isApiPath(pathname)) return false;
+      return isContainedRealPath(root, path.join(root, pathname));
+    },
     // The hashed asset names make a long cache safe; index.html must not be cached.
     setHeaders(reply, filePath) {
       const value =
@@ -64,6 +98,9 @@ export async function registerWebRoot(app: FastifyInstance, root: string): Promi
         .status(404)
         .send({ code: "NOT_FOUND", message: "That endpoint does not exist." });
     }
-    return reply.type("text/html; charset=utf-8").header("Cache-Control", "no-store").send(indexHtml);
+    return reply
+      .type("text/html; charset=utf-8")
+      .header("Cache-Control", "no-store")
+      .send(indexHtml);
   });
 }

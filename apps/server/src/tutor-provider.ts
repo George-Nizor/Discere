@@ -58,6 +58,9 @@ export function tutorProviderHttpError(error: TutorProviderError): HttpError {
       return new HttpError(502, error.message, "TUTOR_WRITING_GATE");
     case "PROVIDER_ABORTED":
       return new HttpError(499, error.message, "TUTOR_PROVIDER_ABORTED");
+    // A bad session identifier is a fault in the request, not in the provider.
+    case "PROVIDER_SESSION_INVALID":
+      return new HttpError(400, error.message, "TUTOR_SESSION_INVALID");
     default:
       return new HttpError(502, error.message, "TUTOR_PROVIDER_FAILED");
   }

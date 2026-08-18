@@ -156,6 +156,16 @@ interface CodexRunInput {
   images: readonly TutorImageAttachment[];
 }
 
+/**
+ * A session identifier reaches the CLI as a bare positional argument, so anything that could
+ * be read as an option must never get that far. `codex exec resume` would happily accept
+ * `--dangerously-bypass-approvals-and-sandbox` in that position and drop the sandbox. Only a
+ * UUID, which is the shape the CLI itself reports, is allowed through.
+ */
+export function isResumableSessionId(value: string): boolean {
+  return UUID_PATTERN.test(value);
+}
+
 /** Keeps a supplied name to a plain file inside the run directory. */
 export function safeAttachmentName(filename: string, index: number): string {
   const base = path.basename(filename).replaceAll(/[^A-Za-z0-9._-]/g, "-");
@@ -211,6 +221,9 @@ export class CodexTutorProvider implements TutorProvider {
     });
     const maxAttempts = Math.max(1, options.maxAttempts ?? 2);
     const timeoutMs = options.timeoutMs ?? this.timeoutMs;
+
+    // Checked before anything is spawned, so a crafted identifier never reaches a process.
+    this.assertResumableSession(options.sessionId);
 
     let lastError: TutorProviderError | undefined;
     let sessionId = options.sessionId;
@@ -368,12 +381,25 @@ export class CodexTutorProvider implements TutorProvider {
     return parsed.data.revisedText;
   }
 
+  /** Refuses a session identifier that is not a UUID, before it can become a CLI argument. */
+  private assertResumableSession(sessionId: string | undefined): void {
+    if (sessionId === undefined || isResumableSessionId(sessionId)) return;
+    throw new TutorProviderError(
+      "PROVIDER_SESSION_INVALID",
+      "The session identifier is not a valid conversation id. Start a new conversation.",
+      { provider: this.id },
+    );
+  }
+
   private buildArguments(input: {
     schemaFile: string | undefined;
     outputFile: string;
     sessionId: string | undefined;
     imageFiles: readonly string[];
   }): string[] {
+    // Re-checked at the boundary that builds the argument list, so no future caller can
+    // reach the command line without passing the same guard.
+    this.assertResumableSession(input.sessionId);
     const shared = ["--skip-git-repo-check", "-C", this.scratchDirectory];
     if (this.model) shared.push("-m", this.model);
     shared.push("-c", `model_reasoning_effort=${JSON.stringify(this.reasoningEffort)}`);
@@ -399,20 +425,23 @@ export class CodexTutorProvider implements TutorProvider {
     const runDirectory = path.join(this.scratchDirectory, ".runs", runId);
     mkdirSync(runDirectory, { recursive: true });
     const outputFile = path.join(runDirectory, "output.json");
-    let schemaFile: string | undefined;
-    if (input.outputSchema !== undefined) {
-      schemaFile = path.join(runDirectory, "schema.json");
-      writeFileSync(schemaFile, JSON.stringify(input.outputSchema, null, 2), "utf8");
-    }
-    // The CLI reads an attachment from disk, so the bytes are written beside the run and
-    // removed with it. Nothing is left in the scratch directory after the generation.
-    const imageFiles = input.images.map((image, index) => {
-      const file = path.join(runDirectory, safeAttachmentName(image.filename, index));
-      writeFileSync(file, image.data);
-      return file;
-    });
 
+    // The directory is removed however this ends. Writing the schema or an attachment can
+    // fail on a full or read-only disk, and that must not leave the run behind either.
     try {
+      let schemaFile: string | undefined;
+      if (input.outputSchema !== undefined) {
+        schemaFile = path.join(runDirectory, "schema.json");
+        writeFileSync(schemaFile, JSON.stringify(input.outputSchema, null, 2), "utf8");
+      }
+      // The CLI reads an attachment from disk, so the bytes are written beside the run and
+      // removed with it. Nothing is left in the scratch directory after the generation.
+      const imageFiles = input.images.map((image, index) => {
+        const file = path.join(runDirectory, safeAttachmentName(image.filename, index));
+        writeFileSync(file, image.data);
+        return file;
+      });
+
       const outcome = await this.spawnCodex(input, { schemaFile, outputFile, imageFiles });
       let text: string;
       try {

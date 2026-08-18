@@ -1,3 +1,5 @@
+import { rmSync, symlinkSync } from "node:fs";
+import path from "node:path";
 import type { FastifyInstance } from "fastify";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createApp } from "../src/app.js";
@@ -169,6 +171,27 @@ describe("Discere API", () => {
     });
     expect(outsideCourse.statusCode).toBe(404);
     expect(outsideCourse.json().code).toBe("ASSET_NOT_FOUND");
+  });
+
+  it("refuses a course asset that is a symlink out of the course directory", async () => {
+    // A lexical containment check cannot see through a link, so the route resolves both ends
+    // before it reads. The link is first-party here only because a test has to create one.
+    const assets = path.resolve(import.meta.dirname, "../../../content/roman-empire/assets");
+    const link = path.join(assets, "escaped-bundle.json");
+    const target = path.resolve(assets, "../bundle.json");
+    rmSync(link, { force: true });
+    symlinkSync(target, link);
+    try {
+      const escaped = await app.inject({
+        method: "GET",
+        url: "/api/content/roman-empire/assets/escaped-bundle.json",
+      });
+      expect(escaped.statusCode).toBe(404);
+      expect(escaped.json().code).toBe("ASSET_NOT_FOUND");
+      expect(escaped.body).not.toContain("lessons");
+    } finally {
+      rmSync(link, { force: true });
+    }
   });
 
   it("reaches every lesson of every course, whatever activity it uses", async () => {

@@ -1,11 +1,16 @@
-import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { TutorReplyDraftSchema, WorkingsReviewDraftSchema } from "@discere/contracts";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { z } from "zod";
-import { CodexTutorProvider, safeAttachmentName, TutorProviderError } from "../src/index.js";
+import {
+  CodexTutorProvider,
+  isResumableSessionId,
+  safeAttachmentName,
+  TutorProviderError,
+} from "../src/index.js";
 
 const FAKE_CODEX = fileURLToPath(new URL("./fixtures/fake-codex.mjs", import.meta.url));
 
@@ -303,7 +308,12 @@ describe("Codex tutor provider", () => {
 
   it("keeps an attachment out of the style repair pass", async () => {
     environment([
-      { output: { ...WORKINGS_REVIEW, feedback: "The working is not only started, but also wrong." } },
+      {
+        output: {
+          ...WORKINGS_REVIEW,
+          feedback: "The working is not only started, but also wrong.",
+        },
+      },
       {
         output: {
           revisedText: "The working is started and then goes wrong.",
@@ -337,5 +347,68 @@ describe("Codex tutor provider", () => {
     });
     const images = invocations()[0]?.["images"] as Array<{ file: string }>;
     expect(existsSync(String(images[0]?.file))).toBe(false);
+  });
+
+  it("refuses a flag-shaped session id before anything is spawned", async () => {
+    environment([{ output: CLEAN_REPLY }]);
+    const error = await provider()
+      .generate(REQUEST, {
+        ...REPLY_OPTIONS,
+        sessionId: "--dangerously-bypass-approvals-and-sandbox",
+      })
+      .catch((cause: unknown) => cause);
+
+    expect(error).toBeInstanceOf(TutorProviderError);
+    expect((error as TutorProviderError).code).toBe("PROVIDER_SESSION_INVALID");
+    // The point of the guard: the CLI never ran, so the option never reached it.
+    expect(invocations()).toHaveLength(0);
+  });
+
+  it("refuses every other shape that is not a conversation id", async () => {
+    environment([{ output: CLEAN_REPLY }]);
+    for (const sessionId of [
+      "-s",
+      "--json",
+      "11111111-2222-4333-8444-555555555555 --yolo",
+      "../../etc/passwd",
+      "",
+      "not-a-uuid",
+    ]) {
+      const error = await provider()
+        .generate(REQUEST, { ...REPLY_OPTIONS, sessionId })
+        .catch((cause: unknown) => cause);
+      expect((error as TutorProviderError).code).toBe("PROVIDER_SESSION_INVALID");
+    }
+    expect(invocations()).toHaveLength(0);
+    expect(isResumableSessionId("11111111-2222-4333-8444-555555555555")).toBe(true);
+  });
+
+  it("still resumes a real conversation id", async () => {
+    environment([{ output: CLEAN_REPLY }]);
+    const sessionId = "11111111-2222-4333-8444-555555555555";
+    await provider().generate(REQUEST, { ...REPLY_OPTIONS, sessionId });
+    const args = invocations()[0]?.["args"] as string[];
+    expect(args.slice(0, 2)).toEqual(["exec", "resume"]);
+    expect(args).toEqual(expect.arrayContaining([sessionId]));
+    expect(args.at(-1)).toBe("-");
+  });
+
+  it("clears the run directory when preparing the run fails", async () => {
+    environment([{ output: CLEAN_REPLY }]);
+    const scratch = path.join(workspace, "scratch");
+    // A schema that cannot be serialised throws after the run directory exists but before the
+    // CLI is ever spawned, which is the window where cleanup used to be skipped.
+    const circular: Record<string, unknown> = {};
+    circular["self"] = circular;
+
+    const error = await provider({ scratchDirectory: scratch })
+      .generate(REQUEST, { ...REPLY_OPTIONS, outputSchema: circular })
+      .catch((cause: unknown) => cause);
+
+    expect(error).toBeInstanceOf(TypeError);
+    expect(invocations()).toHaveLength(0);
+    // Nothing is left behind in the scratch directory.
+    const runs = path.join(scratch, ".runs");
+    expect(existsSync(runs) ? readdirSync(runs) : []).toEqual([]);
   });
 });
