@@ -1,25 +1,23 @@
 import { randomUUID } from "node:crypto";
-import type Database from "better-sqlite3";
-import type { Question, TransferChallenge, TransferSubmitResponse } from "@discere/contracts";
 import { assessNumericAnswer } from "@discere/assessment-engine";
+import type { Question, TransferChallenge, TransferSubmitResponse } from "@discere/contracts";
 import { scoreAttempt, updateMastery } from "@discere/progression-engine";
+import type Database from "better-sqlite3";
 import type { DiscereStore } from "./db/store.js";
 
 const LOCAL_USER_ID = "local-user";
 
-export const CURRENT_TRANSFER_CHALLENGE: TransferChallenge = {
-  id: "transfer-current-6v-200ohm",
-  prompt: "A 6 V battery is connected across a 200 Ω resistor. Calculate the current in amperes.",
-  responseType: "numeric",
-  expectedUnit: "A",
-};
-
-const TRANSFER_AUTHORITY = {
-  value: 0.03,
-  unit: "A",
-  absoluteTolerance: 1e-9,
-  relativeTolerance: 0.02,
-};
+/** The changed case a question carries, presented as the learner-safe challenge record. */
+export function transferChallengeFor(question: Question): TransferChallenge | null {
+  const transfer = question.transfer;
+  if (!transfer) return null;
+  return {
+    id: transfer.id,
+    prompt: transfer.prompt,
+    responseType: "numeric",
+    expectedUnit: transfer.expectedUnit,
+  };
+}
 
 interface TransferRow {
   attemptId: string;
@@ -58,8 +56,15 @@ export function getTransferRecord(
   return { ...row, correct: row.correct === 1 };
 }
 
-function feedbackFor(response: string): { correct: boolean; feedback: string } {
-  const assessment = assessNumericAnswer(response, TRANSFER_AUTHORITY);
+function feedbackFor(response: string, question: Question): { correct: boolean; feedback: string } {
+  const transfer = question.transfer;
+  if (!transfer) throw new Error(`Question '${question.id}' has no transfer challenge.`);
+  const assessment = assessNumericAnswer(response, {
+    value: transfer.value,
+    unit: transfer.expectedUnit,
+    absoluteTolerance: transfer.absoluteTolerance,
+    relativeTolerance: transfer.relativeTolerance,
+  });
   if (assessment.correct) {
     return {
       correct: true,
@@ -70,18 +75,18 @@ function feedbackFor(response: string): { correct: boolean; feedback: string } {
   if (assessment.error === "unreadable") {
     return {
       correct: false,
-      feedback: "Enter one numerical current with its unit, such as 0.02 A or 20 mA.",
+      feedback: `Enter one numerical value with its unit, in ${transfer.expectedUnit}.`,
     };
   }
   if (assessment.error === "unit_mismatch") {
     return {
       correct: false,
-      feedback: "The value needs a current unit. Use amperes or milliamperes.",
+      feedback: `The unit does not match the quantity asked for. Answer in ${transfer.expectedUnit}.`,
     };
   }
   return {
     correct: false,
-    feedback: "Use current equals voltage divided by resistance, then check the decimal place.",
+    feedback: "Apply the same relationship to the new values, then check the arithmetic.",
   };
 }
 
@@ -102,7 +107,7 @@ export function saveTransferResponse(input: {
   const existing = getTransferRecord(store.database, attemptId);
   if (existing?.correct) throw new Error("Transfer challenge is already complete.");
 
-  const assessment = feedbackFor(response);
+  const assessment = feedbackFor(response, question);
   const timestamp = new Date().toISOString();
   let xpAwarded = 0;
   let mastery = minimumMastery(store, question.conceptIds);
@@ -128,6 +133,7 @@ export function saveTransferResponse(input: {
     mastery = values.length === 0 ? 0 : Math.min(...values);
   }
 
+  const transferId = question.transfer?.id ?? "";
   const transaction = store.database.transaction(() => {
     store.database
       .prepare(`
@@ -145,7 +151,7 @@ export function saveTransferResponse(input: {
       `)
       .run(
         attemptId,
-        CURRENT_TRANSFER_CHALLENGE.id,
+        transferId,
         response,
         assessment.correct ? 1 : 0,
         assessment.feedback,
@@ -177,25 +183,13 @@ export function saveTransferResponse(input: {
               updated_at = ?
           WHERE user_id = ? AND concept_id = ?
         `)
-        .run(
-          nextMastery,
-          nextMastery,
-          nextMastery,
-          timestamp,
-          LOCAL_USER_ID,
-          conceptId,
-        );
+        .run(nextMastery, nextMastery, nextMastery, timestamp, LOCAL_USER_ID, conceptId);
     }
     store.database
       .prepare(
         "INSERT INTO assistance_events (id, attempt_id, type, detail, created_at) VALUES (?, ?, 'transfer_recovery', ?, ?)",
       )
-      .run(
-        randomUUID(),
-        attemptId,
-        CURRENT_TRANSFER_CHALLENGE.id,
-        timestamp,
-      );
+      .run(randomUUID(), attemptId, transferId, timestamp);
   });
   transaction();
 

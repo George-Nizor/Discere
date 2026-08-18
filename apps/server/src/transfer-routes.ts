@@ -1,14 +1,10 @@
-import type { FastifyInstance } from "fastify";
 import { TransferSubmitRequestSchema } from "@discere/contracts";
+import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import type { ContentRepository } from "./content.js";
 import type { DiscereStore } from "./db/store.js";
 import { HttpError } from "./errors.js";
-import {
-  CURRENT_TRANSFER_CHALLENGE,
-  getTransferRecord,
-  saveTransferResponse,
-} from "./transfer.js";
+import { getTransferRecord, saveTransferResponse, transferChallengeFor } from "./transfer.js";
 
 export interface TransferRouteDependencies {
   content: ContentRepository;
@@ -36,12 +32,27 @@ export async function registerTransferRoutes(
 ): Promise<void> {
   const { content, store } = dependencies;
 
+  function transferChallenge(questionId: string) {
+    const question = content.getQuestion(questionId);
+    if (!question) throw new HttpError(404, "Question not found.", "QUESTION_NOT_FOUND");
+    const challenge = transferChallengeFor(question);
+    if (!challenge) {
+      throw new HttpError(
+        404,
+        "This question has no transfer challenge.",
+        "TRANSFER_NOT_AVAILABLE",
+      );
+    }
+    return challenge;
+  }
+
   app.get("/api/attempts/:attemptId/transfer", async (request) => {
     const { attemptId } = AttemptParamsSchema.parse(request.params);
-    revealedAttempt(store, attemptId);
+    const attempt = revealedAttempt(store, attemptId);
+    const challenge = transferChallenge(attempt.questionId);
     const record = getTransferRecord(store.database, attemptId);
     return {
-      challenge: CURRENT_TRANSFER_CHALLENGE,
+      challenge,
       completed: record?.correct ?? false,
       lastCorrect: record?.correct ?? null,
       feedback: record?.feedback ?? null,
@@ -51,21 +62,17 @@ export async function registerTransferRoutes(
   app.post("/api/attempts/:attemptId/transfer", async (request) => {
     const { attemptId } = AttemptParamsSchema.parse(request.params);
     const body = TransferSubmitRequestSchema.parse(request.body);
-    if (body.transferId !== CURRENT_TRANSFER_CHALLENGE.id) {
+    const attempt = revealedAttempt(store, attemptId);
+    if (body.transferId !== transferChallenge(attempt.questionId).id) {
       throw new HttpError(
         409,
-        "The transfer challenge does not match this lesson.",
+        "The transfer challenge does not match this question.",
         "TRANSFER_MISMATCH",
       );
     }
-    const attempt = revealedAttempt(store, attemptId);
     const existing = getTransferRecord(store.database, attemptId);
     if (existing?.correct) {
-      throw new HttpError(
-        409,
-        "The transfer challenge is already complete.",
-        "TRANSFER_COMPLETE",
-      );
+      throw new HttpError(409, "The transfer challenge is already complete.", "TRANSFER_COMPLETE");
     }
     const question = content.getQuestion(attempt.questionId);
     if (!question) throw new HttpError(404, "Question not found.", "QUESTION_NOT_FOUND");

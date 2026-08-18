@@ -1,6 +1,6 @@
-import Fastify, { type FastifyInstance } from "fastify";
-import cors from "@fastify/cors";
 import { resolveDatabasePath } from "@discere/paths";
+import cors from "@fastify/cors";
+import Fastify, { type FastifyInstance } from "fastify";
 import { ZodError } from "zod";
 import { ContentRepository } from "./content.js";
 import { DiscereStore } from "./db/store.js";
@@ -13,7 +13,8 @@ import { registerWorkingsReviewRoutes } from "./workings-routes.js";
 
 export interface AppOptions {
   dbPath?: string;
-  contentPath?: string;
+  /** Root directory holding one sub-directory per course bundle. */
+  contentRoot?: string;
   revealDelayMs?: number;
   logger?: boolean;
   /** Applies pending migrations before serving. Tests and disposable databases use this;
@@ -46,11 +47,11 @@ export async function createApp(options: AppOptions = {}): Promise<DiscereApp> {
     methods: ["GET", "POST", "PUT"],
   });
   const content = await ContentRepository.load(
-    options.contentPath ?? ContentRepository.defaultPath(),
+    options.contentRoot ?? ContentRepository.defaultContentRoot(),
   );
   const dbPath = options.dbPath ?? resolveDatabasePath(process.env["DISCERE_DATABASE_PATH"]);
   const store = new DiscereStore(dbPath, { migrate: options.migrate ?? false });
-  store.initialiseConcepts(content.bundle.concepts);
+  store.initialiseConcepts(content.concepts);
   app.setErrorHandler((error, _request, reply) => {
     if (error instanceof ZodError) {
       return reply.status(400).send({

@@ -1,5 +1,4 @@
 import { randomUUID } from "node:crypto";
-import type { FastifyInstance } from "fastify";
 import type {
   EssayAssessmentDraft,
   EssayAssessmentResponse,
@@ -7,8 +6,8 @@ import type {
   LessonResponse,
   Question,
   TutorAskResponse,
-  TutoringMode,
   TutorIssue,
+  TutoringMode,
 } from "@discere/contracts";
 import {
   EssayAssessmentDraftSchema,
@@ -22,6 +21,7 @@ import {
   TutorProviderError,
   type TutorRequest,
 } from "@discere/tutor-providers";
+import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import {
   acceptTutorReply,
@@ -33,7 +33,7 @@ import {
 import type { ContentRepository } from "./content.js";
 import type { DiscereStore, EssayAssessmentRow } from "./db/store.js";
 import { HttpError } from "./errors.js";
-import { createTutorRuntime, tutorProviderHttpError, type TutorRuntime } from "./tutor-provider.js";
+import { createTutorRuntime, type TutorRuntime, tutorProviderHttpError } from "./tutor-provider.js";
 
 export interface TutorRouteDependencies {
   content: ContentRepository;
@@ -98,11 +98,16 @@ export async function registerTutorRoutes(
     return { lesson, question };
   }
 
+  /** The essay stage and the lesson that sets it, found wherever the essay lives. */
   function essayStage(essayId: string): { stage: EssayStage; lesson: LessonResponse } {
-    const lessonId = content.currentLesson.lesson.id;
-    const journey = content.getJourney(lessonId);
+    const topic = content.getEssay(essayId);
+    const lessonId = topic
+      ? content.bundle(topic.courseId)?.lessons.find((item) => item.essayId === essayId)?.id
+      : undefined;
+    const journey = topic && lessonId ? content.getJourney(topic.courseId, lessonId) : undefined;
     const stage = journey?.stages.find((item) => item.type === "essay" && item.essayId === essayId);
-    if (stage?.type !== "essay") throw new HttpError(404, "Essay not found.", "ESSAY_NOT_FOUND");
+    if (!lessonId || stage?.type !== "essay")
+      throw new HttpError(404, "Essay not found.", "ESSAY_NOT_FOUND");
     return { stage, lesson: lessonAndQuestion(lessonId).lesson };
   }
 

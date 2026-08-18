@@ -10,7 +10,7 @@ import type { DiscereStore } from "../src/db/store.js";
 const FAKE_CODEX = fileURLToPath(
   new URL("../../../packages/tutor-providers/tests/fixtures/fake-codex.mjs", import.meta.url),
 );
-const ESSAY_ID = "current-in-one-loop:teach-back";
+const ESSAY_ID = "ohms-law-teach-back";
 const ESSAY_TEXT =
   "Voltage provides the push, resistance limits current, and Ohm's law relates them. With five volts and one hundred ohms, the current is fifty milliamps.";
 
