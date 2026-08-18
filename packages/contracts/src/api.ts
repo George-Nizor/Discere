@@ -1,16 +1,24 @@
 import { z } from "zod";
 import {
+  ActivitySchema,
+  ConceptSchema,
   LearnerQuestionSchema,
   LessonBeatSchema,
-  OhmsLawActivitySchema,
   SourceSchema,
 } from "./curriculum.js";
-import { CourseSummarySchema, JourneyProgressSchema, LessonJourneySchema, StageProgressRequestSchema } from "./journey.js";
+import {
+  CourseSummarySchema,
+  JourneyProgressSchema,
+  LessonJourneySchema,
+  StageProgressRequestSchema,
+} from "./journey.js";
 import { ConceptStateSchema, TutoringModeSchema } from "./modes.js";
 
 export const ConceptProgressSchema = z
   .object({
     conceptId: z.string().min(1),
+    /** The authored concept title, so no screen has to humanise an identifier. */
+    title: z.string().min(1),
     state: ConceptStateSchema,
     mastery: z.number().min(0).max(1),
     independentAttempts: z.number().int().nonnegative(),
@@ -28,6 +36,8 @@ export const HomeResponseSchema = z
     currentMission: z
       .object({
         id: z.string().min(1),
+        /** The course the lesson belongs to, so the home screen continues the right one. */
+        courseId: z.string().min(1),
         title: z.string().min(1),
         description: z.string().min(1),
         estimatedMinutes: z.number().int().positive(),
@@ -42,7 +52,7 @@ export type HomeResponse = z.infer<typeof HomeResponseSchema>;
 export const LessonResponseSchema = z
   .object({
     lesson: LessonBeatSchema,
-    activity: OhmsLawActivitySchema,
+    activity: ActivitySchema,
     question: LearnerQuestionSchema,
     sources: z.array(SourceSchema),
   })
@@ -66,10 +76,19 @@ export const CourseLessonSummarySchema = z
   .strict();
 export type CourseLessonSummary = z.infer<typeof CourseLessonSummarySchema>;
 
+/** A concept as the course page names it, so no screen has to humanise an identifier. */
+export const CourseConceptSummarySchema = ConceptSchema.pick({
+  id: true,
+  title: true,
+  summary: true,
+}).strict();
+export type CourseConceptSummary = z.infer<typeof CourseConceptSummarySchema>;
+
 export const CourseDetailResponseSchema = z
   .object({
     course: CourseSummarySchema,
     lessons: z.array(CourseLessonSummarySchema).min(1),
+    concepts: z.array(CourseConceptSummarySchema).min(1),
   })
   .strict();
 export type CourseDetailResponse = z.infer<typeof CourseDetailResponseSchema>;
@@ -94,9 +113,7 @@ export const EssayDraftResponseSchema = z
   .strict();
 export type EssayDraftResponse = z.infer<typeof EssayDraftResponseSchema>;
 
-export const EssaySaveRequestSchema = z
-  .object({ content: z.string().max(100_000) })
-  .strict();
+export const EssaySaveRequestSchema = z.object({ content: z.string().max(100_000) }).strict();
 export type EssaySaveRequest = z.infer<typeof EssaySaveRequestSchema>;
 
 export const StyleViolationSchema = z
@@ -179,7 +196,10 @@ export const ReviewRateResponseSchema = z
 export type ReviewRateResponse = z.infer<typeof ReviewRateResponseSchema>;
 
 export const ReviewHomeResponseSchema = z
-  .object({ dueCount: z.number().int().nonnegative(), estimatedMinutes: z.number().int().nonnegative() })
+  .object({
+    dueCount: z.number().int().nonnegative(),
+    estimatedMinutes: z.number().int().nonnegative(),
+  })
   .strict();
 export type ReviewHomeResponse = z.infer<typeof ReviewHomeResponseSchema>;
 
@@ -231,7 +251,7 @@ export const RevealConfirmRequestSchema = z
   .strict();
 
 export const RevealConfirmResponseSchema = z
-  .object({ answer: z.string().min(1), transferPrompt: z.string().min(1) })
+  .object({ answer: z.string().min(1), transferPrompt: z.string().min(1).nullable() })
   .strict();
 export type RevealConfirmResponse = z.infer<typeof RevealConfirmResponseSchema>;
 

@@ -4,6 +4,7 @@ import { TutoringModeSchema } from "./modes.js";
 import { VisualBriefSchema } from "./visuals.js";
 
 export const TutorOperationSchema = z.enum([
+  "author_lesson",
   "tutor_reply",
   "workings_review",
   "draft_lesson",
@@ -207,13 +208,14 @@ export const EssayAssessmentResponseSchema = z
     assessment: EssayAssessmentDraftSchema.nullable(),
     issues: z.array(TutorIssueSchema),
     error: z.object({ code: z.string().min(1), message: z.string().min(1) }).nullable(),
-    packet: z.object({ filename: z.string().min(1), text: z.string().min(1) }).strict().nullable(),
+    packet: z
+      .object({ filename: z.string().min(1), text: z.string().min(1) })
+      .strict()
+      .nullable(),
     updatedAt: z.string().datetime(),
   })
   .strict();
 export type EssayAssessmentResponse = z.infer<typeof EssayAssessmentResponseSchema>;
 
-export const EssayAssessRequestSchema = z
-  .object({ mode: TutoringModeSchema.optional() })
-  .strict();
+export const EssayAssessRequestSchema = z.object({ mode: TutoringModeSchema.optional() }).strict();
 export type EssayAssessRequest = z.infer<typeof EssayAssessRequestSchema>;

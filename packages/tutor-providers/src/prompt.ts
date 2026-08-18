@@ -33,6 +33,18 @@ const PAYLOAD_CONTRACTS: Partial<Record<TutorOperation, string>> = {
   "sourceIds": ["Only identifiers supplied in allowedSourceIds; use an empty array when none are needed."],
   "uncertainty": ["Any material uncertainty; otherwise return an empty array."]
 }`,
+  author_lesson: `{
+  "title": "The learner-facing headline for this lesson.",
+  "orientation": "One or two sentences telling the learner where to look first.",
+  "explanation": "The lesson body, 120 to 350 words, in plain paragraphs separated by blank lines.",
+  "takeaway": "The single sentence the learner should keep.",
+  "reviewLabel": "A short name for the recall set this lesson feeds.",
+  "nextAction": "What the learner should do after finishing this lesson.",
+  "stageTitles": { "quiz": "...", "review": "...", "completion": "..." },
+  "questions": [{ "id": "kebab-case-id", "prompt": "...", "responseType": "numeric | short_text | long_text", "difficulty": 1, "hints": ["Progressive steps that never state the answer."], "answerAuthority": { "kind": "numeric | text", "...": "the fields that kind requires" }, "choices": [{ "id": "a", "label": "..." }] }],
+  "flashcards": [{ "id": "kebab-case-id", "front": "A question answerable without the lesson around it.", "back": "The answer.", "conceptIds": ["..."] }],
+  "uncertainty": ["Anything the supplied plan did not support; otherwise an empty array."]
+}`,
   edit_style: `{
   "revisedText": "The repaired passage, with the smallest coherent edits applied.",
   "edits": ["One line per repaired violation, naming the rule and what changed."],
@@ -87,6 +99,14 @@ export function buildTutorPrompt<T>(
     "Preserve supplied values, units, equations, source identifiers, and answer boundaries.",
     "Follow the tutoring mode and responsePolicy. In Coach or Assisted mode, do not reveal a hidden final answer.",
   );
+  if (request.operation === "author_lesson") {
+    instructions.push(
+      "Write only from the supplied content plan. Do not invent facts, values, dates, or sources.",
+      "Every numeric answerAuthority must be arithmetically correct for the values in the prompt.",
+      "A hint may name the next step. A hint must never state the final answer or an equivalent form of it.",
+      "Include a choices array only for a question that is genuinely answered by selection, and give it a text answerAuthority whose acceptedIdeas match exactly one option.",
+    );
+  }
   if (request.operation === "workings_review") {
     instructions.push(
       "Review the image attached by the learner. Set imageReviewed to false when no usable image is attached.",
