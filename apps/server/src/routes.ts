@@ -16,12 +16,7 @@ import {
   TutorReplyRequestSchema,
   WritingLintRequestSchema,
 } from "@discere/contracts";
-import {
-  createFlashcardFromReviewedQuestion,
-  createReviewState,
-  scoreAttempt,
-  updateMastery,
-} from "@discere/progression-engine";
+import { createReviewState, scoreAttempt, updateMastery } from "@discere/progression-engine";
 import { buildCompanionPacket } from "@discere/tutor-providers";
 import {
   createImageGenerationPrompt,
@@ -120,7 +115,17 @@ export async function registerRoutes(
     }
   }
 
-  app.get("/api/health", async () => ({ status: "ok", service: "discere", version: "0.1.0" }));
+  /**
+   * The launcher's readiness probe. Registration only happens after the content loaded and the
+   * database passed its migration check, so a 200 here means the server can serve a lesson, not
+   * merely that a process is listening.
+   */
+  app.get("/api/health", async () => ({
+    status: "ok",
+    service: "discere",
+    version: "0.1.0",
+    courses: content.bundles.length,
+  }));
   app.get("/api/home", async () => {
     const { courseId, lessonId } = content.currentLessonId(store.courseActivity());
     const journey = content.getJourney(courseId, lessonId);
@@ -258,8 +263,8 @@ export async function registerRoutes(
    * lessons, so the queue reflects the whole course rather than the lesson last opened.
    */
   function ensureAuthoredReviewCards() {
-    const reviewedAt = new Date().toISOString();
-    const registered = content.flashcards.map(({ card }) => {
+    const reviewedAt = store.now();
+    const registered = content.flashcards.map(({ courseId, card }) => {
       const flashcard = {
         id: card.id,
         questionId: card.questionId ?? card.id,
@@ -269,7 +274,11 @@ export async function registerRoutes(
         sourceIds: [...card.sourceIds],
         reviewedAt,
       };
-      return store.ensureReviewCard(flashcard, createReviewState(flashcard.id, reviewedAt));
+      return store.ensureReviewCard(
+        courseId,
+        flashcard,
+        createReviewState(flashcard.id, reviewedAt),
+      );
     });
     const first = registered[0];
     if (!first) throw new HttpError(404, "No review card is available.", "REVIEW_CARD_NOT_FOUND");
@@ -294,12 +303,26 @@ export async function registerRoutes(
   }
   app.get("/api/review", async () => {
     ensureAuthoredReviewCards();
-    const dueCount = store.countDueReviewCards(new Date().toISOString());
-    return { dueCount, estimatedMinutes: dueCount === 0 ? 0 : Math.max(2, dueCount * 2) };
+    const timestamp = store.now();
+    const dueCount = store.countDueReviewCards(timestamp);
+    // A course row is named by its own title. A card whose course is no longer in the library
+    // still counts towards the total, and says so rather than disappearing.
+    const courses = store.countDueReviewCardsByCourse(timestamp).map((row) => ({
+      courseId: row.courseId,
+      title: content.bundle(row.courseId)?.course.title ?? row.courseId,
+      dueCount: row.dueCount,
+      cardCount: row.cardCount,
+      nextDueAt: row.nextDueAt,
+    }));
+    return {
+      dueCount,
+      estimatedMinutes: dueCount === 0 ? 0 : Math.max(2, dueCount * 2),
+      courses,
+    };
   });
   app.post("/api/review/sessions", async () => {
     const card = ensureAuthoredReviewCards();
-    const due = store.getDueReviewCard(new Date().toISOString()) ?? card;
+    const due = store.getDueReviewCard(store.now()) ?? card;
     return safeReviewSession(store.createReviewSession(due.card.id).id);
   });
   app.get("/api/review/sessions/:sessionId", async (request) => {

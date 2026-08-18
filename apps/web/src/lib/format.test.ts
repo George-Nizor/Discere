@@ -38,6 +38,13 @@ describe("format helpers", () => {
     expect(formatInterval(6.4)).toBe("6 days");
   });
 
+  it("names an FSRS learning step in minutes rather than rounding it up to an hour", () => {
+    expect(formatInterval(10 / (24 * 60))).toBe("10 minutes");
+    expect(formatInterval(1 / (24 * 60))).toBe("1 minute");
+    expect(formatInterval(6 / (24 * 60))).toBe("6 minutes");
+    expect(formatInterval(1 / 24)).toBe("1 hour");
+  });
+
   it("builds initials from a learner name", () => {
     expect(initialsOf("George Nizoridis")).toBe("GN");
     expect(initialsOf("Ada")).toBe("A");

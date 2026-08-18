@@ -195,10 +195,23 @@ export const ReviewRateResponseSchema = z
   .strict();
 export type ReviewRateResponse = z.infer<typeof ReviewRateResponseSchema>;
 
+/** One course's share of the review queue, so the screen can say where the work is. */
+export const ReviewCourseDueSchema = z
+  .object({
+    courseId: z.string().min(1),
+    title: z.string().min(1),
+    dueCount: z.number().int().nonnegative(),
+    cardCount: z.number().int().positive(),
+    nextDueAt: z.string().datetime().nullable(),
+  })
+  .strict();
+export type ReviewCourseDue = z.infer<typeof ReviewCourseDueSchema>;
+
 export const ReviewHomeResponseSchema = z
   .object({
     dueCount: z.number().int().nonnegative(),
     estimatedMinutes: z.number().int().nonnegative(),
+    courses: z.array(ReviewCourseDueSchema),
   })
   .strict();
 export type ReviewHomeResponse = z.infer<typeof ReviewHomeResponseSchema>;

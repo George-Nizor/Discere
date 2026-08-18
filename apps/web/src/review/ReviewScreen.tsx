@@ -5,6 +5,7 @@ import { Link, useNavigate, useParams } from "react-router";
 import { errorMessage } from "../api/client.js";
 import { createReviewSession, getReviewSession } from "../api/endpoints.js";
 import { queryKeys, useReviewHome } from "../api/queries.js";
+import { formatDueDate } from "../lib/format.js";
 import { paths } from "../lib/paths.js";
 import { ErrorScreen, LoadingScreen, Notice } from "../ui/Feedback.js";
 import { Flashcard } from "./Flashcard.js";
@@ -37,7 +38,7 @@ export function ReviewScreen() {
     }
   }
 
-  const { dueCount, estimatedMinutes } = review.data;
+  const { dueCount, estimatedMinutes, courses } = review.data;
 
   return (
     <main className="page" id="stage">
@@ -59,6 +60,41 @@ export function ReviewScreen() {
             : "Nothing is due at the moment."}
         </p>
       </section>
+
+      {courses.length > 0 ? (
+        <section aria-label="Due by course" className="review-courses">
+          <h2>Where the work is</h2>
+          {/* A session takes turns between courses, so the split is worth showing. */}
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Course</th>
+                <th scope="col">Due</th>
+                <th scope="col">Cards</th>
+                <th scope="col">Next</th>
+              </tr>
+            </thead>
+            <tbody>
+              {courses.map((course) => (
+                <tr key={course.courseId}>
+                  <th scope="row">
+                    <Link to={paths.course(course.courseId)}>{course.title}</Link>
+                  </th>
+                  <td>{course.dueCount}</td>
+                  <td>{course.cardCount}</td>
+                  <td className="muted">
+                    {course.dueCount > 0
+                      ? "Now"
+                      : course.nextDueAt
+                        ? formatDueDate(course.nextDueAt)
+                        : "Not scheduled"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      ) : null}
 
       <div className="button-row">
         <button

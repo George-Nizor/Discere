@@ -22,6 +22,8 @@ export interface AppOptions {
   migrate?: boolean;
   /** Overrides the provider chosen by `DISCERE_TUTOR_PROVIDER`. */
   tutor?: TutorRuntimeOptions;
+  /** Supplies the current instant to the store, so a test can move through several days. */
+  clock?: () => Date;
 }
 
 export interface DiscereApp {
@@ -50,7 +52,10 @@ export async function createApp(options: AppOptions = {}): Promise<DiscereApp> {
     options.contentRoot ?? ContentRepository.defaultContentRoot(),
   );
   const dbPath = options.dbPath ?? resolveDatabasePath(process.env["DISCERE_DATABASE_PATH"]);
-  const store = new DiscereStore(dbPath, { migrate: options.migrate ?? false });
+  const store = new DiscereStore(dbPath, {
+    migrate: options.migrate ?? false,
+    ...(options.clock === undefined ? {} : { clock: options.clock }),
+  });
   store.initialiseConcepts(content.concepts);
   app.setErrorHandler((error, _request, reply) => {
     if (error instanceof ZodError) {

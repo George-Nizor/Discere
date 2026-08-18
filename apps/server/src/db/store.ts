@@ -12,9 +12,14 @@ import type {
   WritingLintResponse,
 } from "@discere/contracts";
 import {
+  computeStreakDays,
+  type CourseQueueEntry,
   type Flashcard,
+  interleaveByCourse,
   type ReviewEvidence,
   type ReviewOutcome,
+  type ReviewPhase,
+  type ReviewRating,
   type ReviewState,
   scheduleReview,
 } from "@discere/progression-engine";
@@ -22,6 +27,7 @@ import Database from "better-sqlite3";
 import { assertSchemaReady, runMigrations } from "./migrations.js";
 
 const LOCAL_USER_ID = "local-user";
+const REVIEW_PHASES = new Set<ReviewPhase>(["new", "learning", "review", "relearning"]);
 
 export interface AttemptRow {
   id: string;
@@ -81,6 +87,14 @@ export type EssayAssessmentWrite = Omit<EssayAssessmentRow, "updatedAt">;
 export interface ReviewCardRow {
   card: Flashcard;
   state: ReviewState;
+  /** The course that authored the card, so the queue can take turns between courses. */
+  courseId: string;
+}
+export interface CourseDueCount {
+  courseId: string;
+  dueCount: number;
+  cardCount: number;
+  nextDueAt: string | null;
 }
 export interface ReviewSessionRow {
   id: string;
@@ -90,9 +104,6 @@ export interface ReviewSessionRow {
   createdAt: string;
 }
 
-function now(): string {
-  return new Date().toISOString();
-}
 function bool(value: unknown): boolean {
   return value === 1 || value === true;
 }
@@ -103,12 +114,19 @@ export interface StoreOptions {
    * migration script, tests, and the smoke harness own their databases; the server does not.
    */
   migrate?: boolean;
+  /**
+   * Supplies the current instant. Streak counting and review scheduling both read it, so a
+   * test can move the workspace through several days without waiting for them.
+   */
+  clock?: () => Date;
 }
 
 export class DiscereStore {
   readonly database: Database.Database;
+  private readonly clock: () => Date;
   constructor(databasePath: string, options: StoreOptions = {}) {
     if (databasePath !== ":memory:") mkdirSync(path.dirname(databasePath), { recursive: true });
+    this.clock = options.clock ?? (() => new Date());
     this.database = new Database(databasePath);
     this.database.pragma("journal_mode = WAL");
     this.database.pragma("foreign_keys = ON");
@@ -117,8 +135,13 @@ export class DiscereStore {
     this.ensureUser();
   }
 
+  /** The current instant as an ISO 8601 string, from the injected clock. */
+  now(): string {
+    return this.clock().toISOString();
+  }
+
   private ensureUser(): void {
-    const timestamp = now();
+    const timestamp = this.now();
     const learnerName = process.env["DISCERE_LEARNER_NAME"]?.trim() || "Learner";
     this.database
       .prepare(
@@ -141,7 +164,7 @@ export class DiscereStore {
           LOCAL_USER_ID,
           concept.id,
           concept.prerequisiteIds.length === 0 ? "available" : "locked",
-          now(),
+          this.now(),
         );
       }
     });
@@ -171,14 +194,40 @@ export class DiscereStore {
     return activity;
   }
 
+  /**
+   * Every instant the learner did recorded study: answering a question, working a transfer
+   * challenge, or rating a review. The streak counts distinct days from this, so it can never
+   * report a day on which nothing happened.
+   */
+  studyTimestamps(): string[] {
+    const rows = this.database
+      .prepare(
+        `SELECT created_at AS at FROM attempts WHERE user_id = ?
+         UNION ALL SELECT updated_at AS at FROM attempts WHERE user_id = ?
+         UNION ALL SELECT created_at AS at FROM transfer_attempts
+         UNION ALL SELECT last_reviewed_at AS at FROM review_cards WHERE user_id = ? AND last_reviewed_at IS NOT NULL`,
+      )
+      .all(LOCAL_USER_ID, LOCAL_USER_ID, LOCAL_USER_ID) as Array<{ at: string }>;
+    return rows.map((row) => row.at);
+  }
+
+  /** Consecutive days of recorded study, recomputed from the activity itself. */
+  streakDays(): number {
+    return computeStreakDays(this.studyTimestamps(), this.now());
+  }
+
   getProfile(): { learnerName: string; xp: number; streakDays: number } {
     const row = this.database
-      .prepare(
-        "SELECT learner_name AS learnerName, xp, streak_days AS streakDays FROM user_profiles WHERE id = ?",
-      )
-      .get(LOCAL_USER_ID) as { learnerName: string; xp: number; streakDays: number } | undefined;
+      .prepare("SELECT learner_name AS learnerName, xp FROM user_profiles WHERE id = ?")
+      .get(LOCAL_USER_ID) as { learnerName: string; xp: number } | undefined;
     if (!row) throw new Error("Local learner profile is missing.");
-    return row;
+    const streakDays = this.streakDays();
+    // The column is kept in step so an inspection of the database sees the same number the
+    // learner does, but the answer always comes from the activity rather than from the column.
+    this.database
+      .prepare("UPDATE user_profiles SET streak_days = ? WHERE id = ? AND streak_days != ?")
+      .run(streakDays, LOCAL_USER_ID, streakDays);
+    return { ...row, streakDays };
   }
 
   getProgress(): Array<Omit<ConceptProgress, "title">> {
@@ -238,7 +287,7 @@ export class DiscereStore {
       }
       const state: StageState = previousComplete ? "available" : "locked";
       previousComplete = false;
-      return { stageId, state, interactionState: {}, updatedAt: now() };
+      return { stageId, state, interactionState: {}, updatedAt: this.now() };
     });
     const active =
       stages.find((stage) => stage.state === "active") ??
@@ -254,7 +303,7 @@ export class DiscereStore {
   ): JourneyProgress {
     if (!stageOrder.includes(input.stageId))
       throw new Error(`Stage '${input.stageId}' is not part of journey '${journeyId}'.`);
-    const timestamp = now();
+    const timestamp = this.now();
     const transaction = this.database.transaction(() => {
       this.database
         .prepare(
@@ -301,7 +350,7 @@ export class DiscereStore {
   }
 
   saveEssayDraft(essayId: string, content: string): EssayDraftRow {
-    const timestamp = now();
+    const timestamp = this.now();
     this.database
       .prepare(
         "INSERT INTO essay_drafts (user_id, essay_id, content, submitted, updated_at) VALUES (?, ?, ?, 0, ?) ON CONFLICT(user_id, essay_id) DO UPDATE SET content = CASE WHEN essay_drafts.submitted = 1 THEN essay_drafts.content ELSE excluded.content END, updated_at = CASE WHEN essay_drafts.submitted = 1 THEN essay_drafts.updated_at ELSE excluded.updated_at END",
@@ -311,7 +360,7 @@ export class DiscereStore {
   }
 
   submitEssay(essayId: string, content: string): EssayDraftRow {
-    const timestamp = now();
+    const timestamp = this.now();
     this.database
       .prepare(
         "INSERT INTO essay_drafts (user_id, essay_id, content, submitted, updated_at) VALUES (?, ?, ?, 1, ?) ON CONFLICT(user_id, essay_id) DO UPDATE SET content = CASE WHEN essay_drafts.submitted = 1 THEN essay_drafts.content ELSE excluded.content END, submitted = 1, updated_at = CASE WHEN essay_drafts.submitted = 1 THEN essay_drafts.updated_at ELSE excluded.updated_at END",
@@ -333,7 +382,7 @@ export class DiscereStore {
   }
 
   saveEssayAssessment(row: EssayAssessmentWrite): EssayAssessmentRow {
-    const timestamp = now();
+    const timestamp = this.now();
     this.database
       .prepare(
         "INSERT INTO essay_assessments (user_id, essay_id, request_id, status, provider, accepted, assessment_json, issues_json, error_code, error_message, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(user_id, essay_id) DO UPDATE SET request_id = excluded.request_id, status = excluded.status, provider = excluded.provider, accepted = excluded.accepted, assessment_json = excluded.assessment_json, issues_json = excluded.issues_json, error_code = excluded.error_code, error_message = excluded.error_message, updated_at = excluded.updated_at",
@@ -360,17 +409,18 @@ export class DiscereStore {
       .prepare(
         "INSERT INTO assistance_events (id, attempt_id, type, detail, created_at) VALUES (?, ?, 'tutor_reply', ?, ?)",
       )
-      .run(randomUUID(), attemptId, detail, now());
+      .run(randomUUID(), attemptId, detail, this.now());
   }
 
-  ensureReviewCard(card: Flashcard, state: ReviewState): ReviewCardRow {
+  ensureReviewCard(courseId: string, card: Flashcard, state: ReviewState): ReviewCardRow {
     this.database
       .prepare(
-        "INSERT OR IGNORE INTO review_cards (user_id, card_id, question_id, concept_ids, front, back, source_ids, due_at, interval_days, repetition, last_outcome, last_evidence, independent_reviews, assisted_reviews, last_reviewed_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        "INSERT INTO review_cards (user_id, card_id, course_id, question_id, concept_ids, front, back, source_ids, due_at, interval_days, repetition, last_outcome, last_evidence, independent_reviews, assisted_reviews, last_reviewed_at, stability, difficulty, lapses, phase, learning_step, elapsed_days, scheduled_days) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(user_id, card_id) DO UPDATE SET course_id = excluded.course_id",
       )
       .run(
         LOCAL_USER_ID,
         card.id,
+        courseId,
         card.questionId,
         JSON.stringify(card.conceptIds),
         card.front,
@@ -384,18 +434,26 @@ export class DiscereStore {
         state.independentReviews,
         state.assistedReviews,
         state.lastReviewedAt,
+        state.stability,
+        state.difficulty,
+        state.lapses,
+        state.phase,
+        state.learningStep,
+        state.elapsedDays,
+        state.scheduledDays,
       );
-    return this.getReviewCard(card.id) ?? { card, state };
+    return this.getReviewCard(card.id) ?? { card, state, courseId };
   }
 
   getReviewCard(cardId: string): ReviewCardRow | null {
     const row = this.database
       .prepare(
-        "SELECT card_id AS cardId, question_id AS questionId, concept_ids AS conceptIds, front, back, source_ids AS sourceIds, due_at AS dueAt, interval_days AS intervalDays, repetition, last_outcome AS lastOutcome, last_evidence AS lastEvidence, independent_reviews AS independentReviews, assisted_reviews AS assistedReviews, last_reviewed_at AS lastReviewedAt FROM review_cards WHERE user_id = ? AND card_id = ?",
+        "SELECT card_id AS cardId, course_id AS courseId, question_id AS questionId, concept_ids AS conceptIds, front, back, source_ids AS sourceIds, due_at AS dueAt, interval_days AS intervalDays, repetition, last_outcome AS lastOutcome, last_evidence AS lastEvidence, independent_reviews AS independentReviews, assisted_reviews AS assistedReviews, last_reviewed_at AS lastReviewedAt, stability, difficulty, lapses, phase, learning_step AS learningStep, elapsed_days AS elapsedDays, scheduled_days AS scheduledDays FROM review_cards WHERE user_id = ? AND card_id = ?",
       )
       .get(LOCAL_USER_ID, cardId) as
       | {
           cardId: string;
+          courseId: string;
           questionId: string;
           conceptIds: string;
           front: string;
@@ -409,6 +467,13 @@ export class DiscereStore {
           independentReviews: number;
           assistedReviews: number;
           lastReviewedAt: string | null;
+          stability: number;
+          difficulty: number;
+          lapses: number;
+          phase: string;
+          learningStep: number;
+          elapsedDays: number;
+          scheduledDays: number;
         }
       | undefined;
     if (!row) return null;
@@ -429,8 +494,16 @@ export class DiscereStore {
       independentReviews: Number(row.independentReviews),
       assistedReviews: Number(row.assistedReviews),
       lastReviewedAt: row.lastReviewedAt ? String(row.lastReviewedAt) : null,
+      stability: Number(row.stability),
+      difficulty: Number(row.difficulty),
+      lapses: Number(row.lapses),
+      phase: REVIEW_PHASES.has(row.phase as ReviewPhase) ? (row.phase as ReviewPhase) : "new",
+      learningStep: Number(row.learningStep),
+      elapsedDays: Number(row.elapsedDays),
+      scheduledDays: Number(row.scheduledDays),
     };
     return {
+      courseId: String(row.courseId),
       card: {
         id: String(row.cardId),
         questionId: String(row.questionId),
@@ -444,13 +517,29 @@ export class DiscereStore {
     };
   }
 
-  getDueReviewCard(nowTimestamp: string): ReviewCardRow | null {
-    const row = this.database
+  /** How recently each course was studied, over every card rather than only the due ones. */
+  private courseReviewRecency(): Map<string, string | null> {
+    const rows = this.database
       .prepare(
-        "SELECT card_id AS cardId FROM review_cards WHERE user_id = ? AND due_at <= ? ORDER BY due_at, repetition, rowid LIMIT 1",
+        "SELECT course_id AS courseId, MAX(last_reviewed_at) AS lastReviewedAt FROM review_cards WHERE user_id = ? GROUP BY course_id",
       )
-      .get(LOCAL_USER_ID, nowTimestamp) as { cardId: string } | undefined;
-    return row ? this.getReviewCard(row.cardId) : null;
+      .all(LOCAL_USER_ID) as Array<{ courseId: string; lastReviewedAt: string | null }>;
+    return new Map(rows.map((row) => [row.courseId, row.lastReviewedAt]));
+  }
+
+  /** Every due card, in the order the learner should meet them: courses take turns. */
+  dueReviewQueue(nowTimestamp: string): CourseQueueEntry[] {
+    const rows = this.database
+      .prepare(
+        "SELECT card_id AS cardId, course_id AS courseId, due_at AS dueAt, repetition, rowid AS sequence FROM review_cards WHERE user_id = ? AND due_at <= ?",
+      )
+      .all(LOCAL_USER_ID, nowTimestamp) as CourseQueueEntry[];
+    return interleaveByCourse(rows, this.courseReviewRecency());
+  }
+
+  getDueReviewCard(nowTimestamp: string): ReviewCardRow | null {
+    const next = this.dueReviewQueue(nowTimestamp)[0];
+    return next ? this.getReviewCard(next.cardId) : null;
   }
 
   countDueReviewCards(nowTimestamp: string): number {
@@ -460,6 +549,15 @@ export class DiscereStore {
     return row.count;
   }
 
+  /** Due and total card counts per course, so the review screen can name where the work is. */
+  countDueReviewCardsByCourse(nowTimestamp: string): CourseDueCount[] {
+    return this.database
+      .prepare(
+        "SELECT course_id AS courseId, SUM(CASE WHEN due_at <= ? THEN 1 ELSE 0 END) AS dueCount, COUNT(*) AS cardCount, MIN(due_at) AS nextDueAt FROM review_cards WHERE user_id = ? GROUP BY course_id ORDER BY course_id",
+      )
+      .all(nowTimestamp, LOCAL_USER_ID) as CourseDueCount[];
+  }
+
   createReviewSession(cardId: string): ReviewSessionRow {
     if (!this.getReviewCard(cardId)) throw new Error(`Review card '${cardId}' was not found.`);
     const session: ReviewSessionRow = {
@@ -467,7 +565,7 @@ export class DiscereStore {
       cardId,
       revealed: false,
       rated: false,
-      createdAt: now(),
+      createdAt: this.now(),
     };
     this.database
       .prepare(
@@ -507,7 +605,7 @@ export class DiscereStore {
 
   rateReviewSession(
     sessionId: string,
-    rating: "again" | "hard" | "good" | "easy",
+    rating: ReviewRating,
     recalled: boolean,
   ): { state: ReviewState; evidence: ReviewEvidence } | null {
     const session = this.getReviewSession(sessionId);
@@ -516,11 +614,17 @@ export class DiscereStore {
     if (!card) return null;
     const outcome: ReviewOutcome = rating === "again" ? "incorrect" : "correct";
     const evidence: ReviewEvidence = recalled ? "independent" : "assisted";
-    const next = scheduleReview(card.state, { outcome, evidence, reviewedAt: now() });
+    // The learner's own rating reaches FSRS; assisted recall is capped inside the engine.
+    const next = scheduleReview(card.state, {
+      outcome,
+      evidence,
+      rating,
+      reviewedAt: this.now(),
+    });
     const updated = this.database.transaction(() => {
       this.database
         .prepare(
-          "UPDATE review_cards SET due_at = ?, interval_days = ?, repetition = ?, last_outcome = ?, last_evidence = ?, independent_reviews = ?, assisted_reviews = ?, last_reviewed_at = ? WHERE user_id = ? AND card_id = ?",
+          "UPDATE review_cards SET due_at = ?, interval_days = ?, repetition = ?, last_outcome = ?, last_evidence = ?, independent_reviews = ?, assisted_reviews = ?, last_reviewed_at = ?, stability = ?, difficulty = ?, lapses = ?, phase = ?, learning_step = ?, elapsed_days = ?, scheduled_days = ? WHERE user_id = ? AND card_id = ?",
         )
         .run(
           next.dueAt,
@@ -531,6 +635,13 @@ export class DiscereStore {
           next.independentReviews,
           next.assistedReviews,
           next.lastReviewedAt,
+          next.stability,
+          next.difficulty,
+          next.lapses,
+          next.phase,
+          next.learningStep,
+          next.elapsedDays,
+          next.scheduledDays,
           LOCAL_USER_ID,
           session.cardId,
         );
@@ -584,7 +695,7 @@ export class DiscereStore {
   saveAttempt(input: AttemptWrite): AttemptRow {
     const id = input.id ?? randomUUID();
     const previous = input.id ? this.getAttempt(input.id) : null;
-    const timestamp = now();
+    const timestamp = this.now();
     const xpDelta = Math.max(0, input.xpAwarded - (previous?.xpAwarded ?? 0));
     const transaction = this.database.transaction(() => {
       if (previous) {
@@ -657,7 +768,7 @@ export class DiscereStore {
     const attempt = this.getAttempt(attemptId);
     if (!attempt) throw new Error("Attempt not found.");
     const next = attempt.hintCount + 1;
-    const timestamp = now();
+    const timestamp = this.now();
     const transaction = this.database.transaction(() => {
       this.database
         .prepare("UPDATE attempts SET hint_count = ?, updated_at = ? WHERE id = ?")
@@ -674,7 +785,7 @@ export class DiscereStore {
 
   createReveal(attemptId: string, reason: string, availableAt: string): RevealRow {
     const token = randomUUID();
-    const createdAt = now();
+    const createdAt = this.now();
     this.database
       .prepare(
         "INSERT INTO reveal_sessions (token, attempt_id, reason, available_at, used_at, created_at) VALUES (?, ?, ?, ?, NULL, ?)",
@@ -695,7 +806,7 @@ export class DiscereStore {
   consumeReveal(token: string): boolean {
     const reveal = this.getReveal(token);
     if (!reveal) return false;
-    const timestamp = now();
+    const timestamp = this.now();
     const transaction = this.database.transaction(() => {
       const consumed = this.database
         .prepare("UPDATE reveal_sessions SET used_at = ? WHERE token = ? AND used_at IS NULL")
@@ -720,7 +831,7 @@ export class DiscereStore {
       .prepare(
         "INSERT INTO writing_gate_runs (id, context, passed, text_hash, violation_count, created_at) VALUES (?, ?, ?, ?, ?, ?)",
       )
-      .run(randomUUID(), context, result.passed ? 1 : 0, hash, result.violations.length, now());
+      .run(randomUUID(), context, result.passed ? 1 : 0, hash, result.violations.length, this.now());
   }
 
   close(): void {

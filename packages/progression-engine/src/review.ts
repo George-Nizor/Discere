@@ -1,7 +1,12 @@
 import type { Question } from "@discere/contracts";
+import { createEmptyCard, fsrs, generatorParameters, Rating, State } from "ts-fsrs";
+import type { Card, FSRS, Grade } from "ts-fsrs";
 
 export type ReviewEvidence = "independent" | "assisted";
 export type ReviewOutcome = "correct" | "incorrect";
+export type ReviewRating = "again" | "hard" | "good" | "easy";
+/** The FSRS memory phase a card is in, stored as a word rather than an enum ordinal. */
+export type ReviewPhase = "new" | "learning" | "review" | "relearning";
 
 export interface ReviewedQuestion {
   question: Question;
@@ -28,26 +33,56 @@ export interface ReviewState {
   independentReviews: number;
   assistedReviews: number;
   lastReviewedAt: string | null;
+  /** FSRS memory state. Stability is the retrievable half-life in days. */
+  stability: number;
+  /** FSRS item difficulty, between 1 and 10. */
+  difficulty: number;
+  lapses: number;
+  phase: ReviewPhase;
+  /** Position in the FSRS learning or relearning step ladder. */
+  learningStep: number;
+  elapsedDays: number;
+  scheduledDays: number;
 }
 
 export interface ReviewResult {
   outcome: ReviewOutcome;
   evidence: ReviewEvidence;
   reviewedAt: string;
+  /** The learner's own recall rating. Absent means the outcome alone decides the grade. */
+  rating?: ReviewRating;
 }
 
-const INDEPENDENT_INTERVALS_DAYS = [1, 3, 7, 14, 30] as const;
-const ASSISTED_INTERVALS_DAYS = [0.25, 1, 3, 7, 14] as const;
-const INCORRECT_INTERVAL_DAYS = 0.25;
+const PHASE_BY_STATE: Record<State, ReviewPhase> = {
+  [State.New]: "new",
+  [State.Learning]: "learning",
+  [State.Review]: "review",
+  [State.Relearning]: "relearning",
+};
+const STATE_BY_PHASE: Record<ReviewPhase, State> = {
+  new: State.New,
+  learning: State.Learning,
+  review: State.Review,
+  relearning: State.Relearning,
+};
+const GRADE_BY_RATING: Record<ReviewRating, Grade> = {
+  again: Rating.Again,
+  hard: Rating.Hard,
+  good: Rating.Good,
+  easy: Rating.Easy,
+};
+const MILLISECONDS_PER_DAY = 24 * 60 * 60 * 1000;
+
+/**
+ * One scheduler for the whole workspace. Fuzz is off so a given card, grade, and timestamp
+ * always produce the same next due date, which is what the scheduling tests assert.
+ */
+const scheduler: FSRS = fsrs(generatorParameters({ enable_fuzz: false }));
 
 function parseTimestamp(value: string): number {
   const timestamp = Date.parse(value);
   if (!Number.isFinite(timestamp)) throw new RangeError(`Invalid review timestamp '${value}'.`);
   return timestamp;
-}
-
-function addDays(timestamp: string, days: number): string {
-  return new Date(parseTimestamp(timestamp) + days * 24 * 60 * 60 * 1000).toISOString();
 }
 
 function answerText(question: Question): string {
@@ -80,11 +115,12 @@ export function createFlashcardFromReviewedQuestion(input: ReviewedQuestion): Fl
 }
 
 export function createReviewState(cardId: string, now: string): ReviewState {
-  parseTimestamp(now);
+  const timestamp = parseTimestamp(now);
   if (!cardId.trim()) throw new Error("A review state needs a card ID.");
+  const empty = createEmptyCard(new Date(timestamp));
   return {
     cardId,
-    dueAt: now,
+    dueAt: new Date(timestamp).toISOString(),
     intervalDays: 0,
     repetition: 0,
     lastOutcome: null,
@@ -92,47 +128,80 @@ export function createReviewState(cardId: string, now: string): ReviewState {
     independentReviews: 0,
     assistedReviews: 0,
     lastReviewedAt: null,
+    stability: empty.stability,
+    difficulty: empty.difficulty,
+    lapses: empty.lapses,
+    phase: PHASE_BY_STATE[empty.state],
+    learningStep: empty.learning_steps,
+    elapsedDays: empty.elapsed_days,
+    scheduledDays: empty.scheduled_days,
   };
 }
 
 /**
- * Schedule the next review with explainable Leitner-like intervals.
- * Independent success advances the interval. Assisted success is recorded
- * separately and keeps the card on a shorter interval until independent work
- * demonstrates retention. Incorrect work returns the card to relearning.
+ * The grade FSRS receives. Incorrect work is always Again. Assisted recall is never allowed
+ * past Hard, because the learner did not retrieve the card unaided and the schedule should not
+ * behave as though they had.
+ */
+export function gradeForResult(result: ReviewResult): Grade {
+  if (result.outcome === "incorrect") return Rating.Again;
+  const requested = result.rating ? GRADE_BY_RATING[result.rating] : undefined;
+  if (result.evidence === "assisted") {
+    return requested !== undefined && requested < Rating.Hard ? requested : Rating.Hard;
+  }
+  return requested ?? Rating.Good;
+}
+
+function toCard(state: ReviewState): Card {
+  return {
+    due: new Date(parseTimestamp(state.dueAt)),
+    stability: state.stability,
+    difficulty: state.difficulty,
+    elapsed_days: state.elapsedDays,
+    scheduled_days: state.scheduledDays,
+    learning_steps: state.learningStep,
+    reps: state.repetition,
+    lapses: state.lapses,
+    state: STATE_BY_PHASE[state.phase],
+    ...(state.lastReviewedAt === null
+      ? {}
+      : { last_review: new Date(parseTimestamp(state.lastReviewedAt)) }),
+  };
+}
+
+/** Days between two instants, rounded so a stored interval is stable across a round trip. */
+function intervalDaysBetween(from: number, to: number): number {
+  return Math.max(0, Math.round(((to - from) / MILLISECONDS_PER_DAY) * 100_000) / 100_000);
+}
+
+/**
+ * Schedule the next review with FSRS. The learner's rating and whether the recall was
+ * independent both reach the scheduler through one grade, and the evidence counters stay
+ * separate so the interface can still say how a card was earned.
  */
 export function scheduleReview(state: ReviewState, result: ReviewResult): ReviewState {
-  parseTimestamp(result.reviewedAt);
+  const reviewedAt = parseTimestamp(result.reviewedAt);
   const independentReviews = state.independentReviews + (result.evidence === "independent" ? 1 : 0);
   const assistedReviews = state.assistedReviews + (result.evidence === "assisted" ? 1 : 0);
-
-  if (result.outcome === "incorrect") {
-    return {
-      ...state,
-      dueAt: addDays(result.reviewedAt, INCORRECT_INTERVAL_DAYS),
-      intervalDays: INCORRECT_INTERVAL_DAYS,
-      repetition: 0,
-      lastOutcome: result.outcome,
-      lastEvidence: result.evidence,
-      independentReviews,
-      assistedReviews,
-      lastReviewedAt: result.reviewedAt,
-    };
-  }
-
-  const repetition = result.evidence === "independent" ? state.repetition + 1 : state.repetition;
-  const intervals = result.evidence === "independent" ? INDEPENDENT_INTERVALS_DAYS : ASSISTED_INTERVALS_DAYS;
-  const intervalDays = intervals[Math.min(repetition, intervals.length) - 1] ?? intervals[0];
+  const next = scheduler.next(toCard(state), new Date(reviewedAt), gradeForResult(result)).card;
+  const dueAt = next.due.toISOString();
   return {
-    ...state,
-    dueAt: addDays(result.reviewedAt, intervalDays),
-    intervalDays,
-    repetition,
+    cardId: state.cardId,
+    dueAt,
+    intervalDays: intervalDaysBetween(reviewedAt, next.due.getTime()),
+    repetition: next.reps,
     lastOutcome: result.outcome,
     lastEvidence: result.evidence,
     independentReviews,
     assistedReviews,
-    lastReviewedAt: result.reviewedAt,
+    lastReviewedAt: new Date(reviewedAt).toISOString(),
+    stability: next.stability,
+    difficulty: next.difficulty,
+    lapses: next.lapses,
+    phase: PHASE_BY_STATE[next.state],
+    learningStep: next.learning_steps,
+    elapsedDays: next.elapsed_days,
+    scheduledDays: next.scheduled_days,
   };
 }
 
@@ -140,5 +209,10 @@ export function queueDueReviews(states: ReviewState[], now: string): ReviewState
   parseTimestamp(now);
   return states
     .filter((state) => parseTimestamp(state.dueAt) <= parseTimestamp(now))
-    .sort((left, right) => left.dueAt.localeCompare(right.dueAt) || left.repetition - right.repetition || left.cardId.localeCompare(right.cardId));
+    .sort(
+      (left, right) =>
+        left.dueAt.localeCompare(right.dueAt) ||
+        left.repetition - right.repetition ||
+        left.cardId.localeCompare(right.cardId),
+    );
 }

@@ -67,6 +67,27 @@ const courseDetail = {
   ],
 };
 
+const reviewHome = {
+  dueCount: 3,
+  estimatedMinutes: 6,
+  courses: [
+    {
+      courseId: "electronics-foundations",
+      title: "Electronics Foundations",
+      dueCount: 2,
+      cardCount: 10,
+      nextDueAt: "2026-08-19T08:00:00.000Z",
+    },
+    {
+      courseId: "roman-empire",
+      title: "The Rise of the Roman Empire",
+      dueCount: 1,
+      cardCount: 8,
+      nextDueAt: "2026-08-19T08:00:00.000Z",
+    },
+  ],
+};
+
 function renderApp(path: string) {
   const router = createMemoryRouter(routes, { initialEntries: [path] });
   return render(
@@ -102,7 +123,7 @@ describe("routed application", () => {
           ],
         },
       },
-      "GET /api/review": { body: { dueCount: 2, estimatedMinutes: 4 } },
+      "GET /api/review": { body: reviewHome },
     });
     renderApp("/");
 
@@ -117,6 +138,26 @@ describe("routed application", () => {
     expect(await screen.findByText("Resistance in series")).toBeInTheDocument();
     expect(screen.getByText("Written, not open yet")).toBeInTheDocument();
     expect(await screen.findByText("Signed in locally as Journey Tester")).toBeInTheDocument();
+  });
+
+  it("splits the review queue by course so no course is quietly starved", async () => {
+    stubFetch({ "GET /api/home": { body: home }, "GET /api/review": { body: reviewHome } });
+    renderApp("/review");
+
+    expect(
+      await screen.findByRole("heading", { level: 1, name: "Return to what you learned" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("3")).toBeInTheDocument();
+    const rows = screen.getByRole("table");
+    expect(rows).toBeInTheDocument();
+    expect(
+      screen.getByRole("rowheader", { name: "Electronics Foundations" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("rowheader", { name: "The Rise of the Roman Empire" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: "Due" })).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: "Cards" })).toBeInTheDocument();
   });
 
   it("renders concept mastery with independent and assisted evidence apart", async () => {

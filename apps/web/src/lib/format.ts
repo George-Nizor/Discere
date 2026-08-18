@@ -49,10 +49,19 @@ export function formatDueDate(isoTimestamp: string): string {
   return date.toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" });
 }
 
+/**
+ * An FSRS learning step is measured in minutes, not days, so the shortest intervals are named
+ * in the unit they were actually scheduled in rather than rounded up to an hour.
+ */
 export function formatInterval(days: number): string {
+  const hours = days * 24;
+  if (hours < 1) {
+    const minutes = Math.max(1, Math.round(hours * 60));
+    return `${minutes} ${minutes === 1 ? "minute" : "minutes"}`;
+  }
   if (days < 1) {
-    const hours = Math.max(1, Math.round(days * 24));
-    return `${hours} ${hours === 1 ? "hour" : "hours"}`;
+    const rounded = Math.round(hours);
+    return `${rounded} ${rounded === 1 ? "hour" : "hours"}`;
   }
   const rounded = Math.round(days);
   return `${rounded} ${rounded === 1 ? "day" : "days"}`;
