@@ -1,7 +1,7 @@
 import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
-import { mkdir, readdir, readFile, rename, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 
@@ -146,13 +146,11 @@ async function generate(key: string, prompt: string): Promise<void> {
     child.stdin.end(`${prompt}\n\nSave the image to exactly this path: ${scratch}\nThen reply with only that path.`, "utf8");
   });
 
+  // Fail rather than adopt some other file. An earlier version took "the newest PNG lying
+  // around", which on a run that saved nothing would happily steal another illustration's
+  // cached image and serve it under this key.
   if (!existsSync(scratch)) {
-    // Some runs save under the CLI's own name; take the newest PNG the run left behind.
-    const stray = (await readdir(directory))
-      .filter((name) => name.endsWith(".png") && !name.startsWith(key))
-      .at(-1);
-    if (!stray) throw new Error("The generator finished without producing an image.");
-    await rename(path.join(directory, stray), scratch);
+    throw new Error("The generator finished without writing an image to the requested path.");
   }
   await rename(scratch, illustrationImagePath(key));
 }

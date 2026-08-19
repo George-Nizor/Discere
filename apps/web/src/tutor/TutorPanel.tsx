@@ -55,7 +55,7 @@ function ReplyView({ exchange, accent }: { exchange: Exchange; accent: string })
         */}
         <Illustration
           accent={accent}
-          alt={`An illustration of: ${exchange.reply.followUpQuestion}`}
+          alt={exchange.reply.answer}
           subject={exchange.reply.answer}
         />
         {exchange.accepted ? null : (
