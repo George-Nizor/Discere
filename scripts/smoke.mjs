@@ -8,6 +8,7 @@ import {
   isSupportedNode,
   minimumNodeLabel,
   resolvePackageManager,
+  runPackageManager,
   spawnPackageManager,
   terminateProcessTree,
   waitForHttp,
@@ -60,6 +61,13 @@ const environment = childEnvironment({
   DISCERE_WEB_PORT: String(webPort),
   DISCERE_DATABASE_PATH: join(tempRoot, "smoke.sqlite"),
   DISCERE_LEARNER_NAME: "Smoke Tester",
+  // The launcher opens one hardened window on one port, so the API must be able to serve the
+  // built interface from its own origin. The proxied Vite preview below is still checked, and
+  // the two together cover both the development and the packaged shapes.
+  DISCERE_WEB_ROOT: "apps/web/dist",
+  // The offline fixture provider answers in process, so the workings review below runs without
+  // a subscription and without a network call.
+  DISCERE_TUTOR_PROVIDER: "mock",
 });
 const apiUrl = `http://${formatHostForUrl(host)}:${apiPort}`;
 const webUrl = `http://${formatHostForUrl(host)}:${webPort}`;
@@ -70,6 +78,10 @@ let serverOutput = () => "";
 let webOutput = () => "";
 
 try {
+  runPackageManager(manager, ["--filter", "@discere/server", "db:migrate"], {
+    env: environment,
+    stdio: "ignore",
+  });
   server = spawnPackageManager(manager, ["--filter", "@discere/server", "start"], {
     env: environment,
     stdio: ["ignore", "pipe", "pipe"],
@@ -98,6 +110,29 @@ try {
     throw new Error("The proxied health response was invalid.");
   }
 
+  // Single origin: the interface, a deep link, and the API all answer on the API's own port.
+  const singleOriginHealth = await requestJson(`${apiUrl}/api/health`);
+  const singleOriginPage = await fetch(`${apiUrl}/`, { signal: AbortSignal.timeout(5_000) });
+  const singleOriginHtml = await singleOriginPage.text();
+  const singleOriginDeepLink = await fetch(`${apiUrl}/review`, {
+    signal: AbortSignal.timeout(5_000),
+  });
+  const singleOriginDeepLinkHtml = await singleOriginDeepLink.text();
+  const singleOriginMissingApi = await fetch(`${apiUrl}/api/not-a-route`, {
+    signal: AbortSignal.timeout(5_000),
+  });
+  if (
+    singleOriginHealth.status !== "ok" ||
+    !singleOriginPage.ok ||
+    !singleOriginHtml.includes('<div id="root">') ||
+    !singleOriginHtml.includes("/assets/") ||
+    !singleOriginDeepLink.ok ||
+    !singleOriginDeepLinkHtml.includes('<div id="root">') ||
+    singleOriginMissingApi.status !== 404
+  ) {
+    throw new Error("The server did not serve the built interface and the API from one origin.");
+  }
+
   const lesson = await requestJson(`${apiUrl}/api/lessons/current`);
   if (
     !lesson.lesson?.id ||
@@ -107,7 +142,13 @@ try {
     throw new Error("The learner-safe lesson contract was invalid or leaked answer authority.");
   }
 
-  for (const path of ["/", "/courses", "/courses/electronics-foundations", "/legacy", "/qa/roman"]) {
+  for (const path of [
+    "/",
+    "/courses",
+    `/courses/${lesson.lesson.courseId}`,
+    "/review",
+    "/progress",
+  ]) {
     const page = await fetch(`${webUrl}${path}`, { signal: AbortSignal.timeout(5_000) });
     const html = await page.text();
     if (!page.ok || !html.includes("/assets/")) {
@@ -116,26 +157,82 @@ try {
   }
 
   const courseList = await requestJson(`${apiUrl}/api/courses`);
-  const course = courseList.courses?.[0];
+  const course = courseList.courses?.find((item) => item.id === lesson.lesson.courseId);
   if (
     !course?.id ||
     !course.availableLessonIds?.includes(lesson.lesson.id) ||
-    course.lessonCount < 2
+    course.lessonCount < 2 ||
+    courseList.courses.length < 2
   ) {
-    throw new Error("The course catalogue did not expose the redesigned learning journey.");
+    throw new Error("The course catalogue did not expose every bundled course.");
   }
   const courseDetail = await requestJson(`${apiUrl}/api/courses/${encodeURIComponent(course.id)}`);
   const journey = await requestJson(
     `${apiUrl}/api/courses/${encodeURIComponent(course.id)}/lessons/${encodeURIComponent(lesson.lesson.id)}/journey`,
   );
-  const stageTypes = journey.stages?.map((stage) => stage.type).join(",");
+  // A lesson asks as many questions as its content declares, so the stage list is checked by
+  // its shape rather than by a fixed length.
+  const stageTypes = [...new Set(journey.stages?.map((stage) => stage.type) ?? [])].join(",");
   if (
-    courseDetail.lessons?.find((item) => item.id === lesson.lesson.id)?.stageCount !== 6 ||
+    courseDetail.lessons?.find((item) => item.id === lesson.lesson.id)?.stageCount !==
+      journey.stages.length ||
     stageTypes !== "explainer,interactive_visual,quiz,essay,review,completion" ||
-    journey.stages.some((stage) => stage.answerAuthority !== undefined)
+    journey.stages.filter((stage) => stage.type === "quiz").length < 2 ||
+    journey.stages.some((stage) => stage.answerAuthority !== undefined) ||
+    journey.stages.some((stage) => stage.question?.transfer !== undefined)
   ) {
-    throw new Error("The interactive story journey contract was incomplete or leaked answer authority.");
+    throw new Error(
+      "The interactive story journey contract was incomplete or leaked answer authority.",
+    );
   }
+  if (!courseDetail.concepts?.every((concept) => concept.title && concept.summary)) {
+    throw new Error("The course detail did not name its concepts.");
+  }
+
+  // The second course proves the delivery path is not shaped around one subject.
+  const secondCourse = courseList.courses.find((item) => item.id !== course.id);
+  const secondDetail = await requestJson(
+    `${apiUrl}/api/courses/${encodeURIComponent(secondCourse.id)}`,
+  );
+  const secondLessonId = secondCourse.availableLessonIds[0];
+  const secondJourney = await requestJson(
+    `${apiUrl}/api/courses/${encodeURIComponent(secondCourse.id)}/lessons/${encodeURIComponent(secondLessonId)}/journey`,
+  );
+  const secondExplainer = secondJourney.stages.find((stage) => stage.type === "explainer");
+  const secondActivity = secondJourney.stages.find((stage) => stage.type === "interactive_visual");
+  if (
+    secondDetail.lessons.length < 2 ||
+    secondExplainer?.visual?.kind !== "image" ||
+    !secondExplainer.visual.image?.attribution ||
+    secondActivity?.activity?.type !== "timeline_explorer" ||
+    !Array.isArray(secondActivity.activity.events)
+  ) {
+    throw new Error("The second course did not deliver a retrieved image and a timeline activity.");
+  }
+
+  const assetPath = `/api/content/${encodeURIComponent(secondCourse.id)}/assets/${secondExplainer.visual.image.src.split("/").pop()}`;
+  const asset = await fetch(`${apiUrl}${assetPath}`, { signal: AbortSignal.timeout(5_000) });
+  if (!asset.ok || !asset.headers.get("content-type")?.startsWith("image/")) {
+    throw new Error("The course asset route did not serve the retrieved image.");
+  }
+  // Percent-encoded, so the traversal reaches the route rather than being folded away by the
+  // URL parser before the request is sent.
+  const traversal = await fetch(
+    `${apiUrl}/api/content/${encodeURIComponent(secondCourse.id)}/assets/%2e%2e%2fbundle.json`,
+    { signal: AbortSignal.timeout(5_000), redirect: "manual" },
+  );
+  if (traversal.status === 200) {
+    throw new Error("The course asset route served a file outside its own directory.");
+  }
+  for (const stageId of journey.stageOrder) {
+    const deepLink = `/courses/${encodeURIComponent(course.id)}/lessons/${encodeURIComponent(lesson.lesson.id)}/stages/${encodeURIComponent(stageId)}`;
+    const stagePage = await fetch(`${webUrl}${deepLink}`, { signal: AbortSignal.timeout(5_000) });
+    const stageHtml = await stagePage.text();
+    if (!stagePage.ok || !stageHtml.includes("/assets/")) {
+      throw new Error(`The stage deep link ${deepLink} did not resolve to the built application.`);
+    }
+  }
+
   const journeyBase = `${apiUrl}/api/courses/${encodeURIComponent(course.id)}/lessons/${encodeURIComponent(lesson.lesson.id)}`;
   const initialJourneyProgress = await requestJson(`${journeyBase}/progress`);
   if (initialJourneyProgress.activeStageId !== journey.stageOrder[0]) {
@@ -143,42 +240,77 @@ try {
   }
   const savedJourneyProgress = await requestJson(`${journeyBase}/progress`, {
     method: "PUT",
-    body: JSON.stringify({ stageId: journey.stageOrder[0], state: "completed", interactionState: { smoke: true } }),
+    body: JSON.stringify({
+      stageId: journey.stageOrder[0],
+      state: "completed",
+      interactionState: { smoke: true },
+    }),
   });
-  if (savedJourneyProgress.activeStageId !== journey.stageOrder[1] || savedJourneyProgress.stages[0].state !== "completed") {
+  if (
+    savedJourneyProgress.activeStageId !== journey.stageOrder[1] ||
+    savedJourneyProgress.stages[0].state !== "completed"
+  ) {
     throw new Error("Journey stage completion did not activate the next stage.");
   }
 
   const essayStage = journey.stages.find((stage) => stage.type === "essay");
   if (!essayStage?.essayId) throw new Error("The journey did not expose an essay stage.");
-  const essayContent = "Roman government changed as Augustus concentrated authority, expansion increased administrative demands, and western deposition did not end government in the east.";
-  const savedEssay = await requestJson(`${apiUrl}/api/essays/${encodeURIComponent(essayStage.essayId)}`, {
-    method: "PUT",
-    body: JSON.stringify({ content: essayContent }),
-  });
-  const submittedEssay = await requestJson(`${apiUrl}/api/essays/${encodeURIComponent(essayStage.essayId)}/submit`, {
-    method: "POST",
-    body: JSON.stringify({ content: essayContent }),
-  });
+  const essayContent =
+    "Roman government changed as Augustus concentrated authority, expansion increased administrative demands, and western deposition did not end government in the east.";
+  const savedEssay = await requestJson(
+    `${apiUrl}/api/essays/${encodeURIComponent(essayStage.essayId)}`,
+    {
+      method: "PUT",
+      body: JSON.stringify({ content: essayContent }),
+    },
+  );
+  const submittedEssay = await requestJson(
+    `${apiUrl}/api/essays/${encodeURIComponent(essayStage.essayId)}/submit`,
+    {
+      method: "POST",
+      body: JSON.stringify({ content: essayContent }),
+    },
+  );
   if (savedEssay.wordCount < 20 || submittedEssay.submitted !== true) {
     throw new Error("Essay autosave or accountable submission failed its runtime check.");
   }
 
   const reviewHome = await requestJson(`${apiUrl}/api/review`);
-  const reviewSession = await requestJson(`${apiUrl}/api/review/sessions`, { method: "POST", body: "{}" });
-  if (typeof reviewHome.dueCount !== "number" || reviewSession.card.back !== undefined) {
-    throw new Error("The review queue was not learner-safe before answer reveal.");
+  // Two courses are bundled, so the queue must report both rather than one global number.
+  const perCourseDue = (reviewHome.courses ?? []).reduce((total, row) => total + row.dueCount, 0);
+  if (
+    !Array.isArray(reviewHome.courses) ||
+    reviewHome.courses.length < 2 ||
+    perCourseDue !== reviewHome.dueCount ||
+    !reviewHome.courses.every((row) => row.title && row.cardCount > 0)
+  ) {
+    throw new Error("The review queue did not report a named, per-course breakdown.");
   }
-  const reviewReveal = await requestJson(`${apiUrl}/api/review/sessions/${reviewSession.sessionId}/reveal`, {
+  const reviewSession = await requestJson(`${apiUrl}/api/review/sessions`, {
     method: "POST",
     body: "{}",
   });
-  const reviewRating = await requestJson(`${apiUrl}/api/review/sessions/${reviewSession.sessionId}/rate`, {
-    method: "POST",
-    body: JSON.stringify({ rating: "good", recalled: true }),
-  });
+  if (typeof reviewHome.dueCount !== "number" || reviewSession.card.back !== undefined) {
+    throw new Error("The review queue was not learner-safe before answer reveal.");
+  }
+  const reviewReveal = await requestJson(
+    `${apiUrl}/api/review/sessions/${reviewSession.sessionId}/reveal`,
+    {
+      method: "POST",
+      body: "{}",
+    },
+  );
+  const reviewRating = await requestJson(
+    `${apiUrl}/api/review/sessions/${reviewSession.sessionId}/rate`,
+    {
+      method: "POST",
+      body: JSON.stringify({ rating: "good", recalled: true }),
+    },
+  );
   if (!reviewReveal.back || reviewRating.evidence !== "independent" || !reviewRating.dueAt) {
-    throw new Error("Review reveal, evidence classification, or scheduling failed its runtime check.");
+    throw new Error(
+      "Review reveal, evidence classification, or scheduling failed its runtime check.",
+    );
   }
 
   const circuit = await fetch(
@@ -308,6 +440,43 @@ try {
     throw new Error("Notebook persistence failed its round-trip check.");
   }
 
+  // A one-pixel PNG, so the image path is exercised with real bytes.
+  const workingsPng = Buffer.from(
+    "89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000a49444154789c6300010000050001",
+    "hex",
+  ).toString("base64");
+  const workingsReview = await requestJson(`${apiUrl}/api/tutor/workings/review`, {
+    method: "POST",
+    body: JSON.stringify({
+      lessonId: lesson.lesson.id,
+      reviewQuestion: "Check my working and name the first real mistake.",
+      mode: "coach",
+      image: { filename: `discere-${lesson.lesson.id}-workings.png`, base64: workingsPng },
+    }),
+  });
+  if (
+    workingsReview.status !== "answered" ||
+    workingsReview.accepted !== true ||
+    workingsReview.review?.imageReviewed !== true ||
+    !workingsReview.review.nextStep
+  ) {
+    throw new Error("The workings review did not return an accepted, image-backed assessment.");
+  }
+  const emptyPageReview = await fetch(`${apiUrl}/api/tutor/workings/review`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    signal: AbortSignal.timeout(5_000),
+    body: JSON.stringify({
+      lessonId: lesson.lesson.id,
+      reviewQuestion: "Check my working.",
+      mode: "coach",
+      image: { filename: "not-a-png.png", base64: Buffer.from("nope").toString("base64") },
+    }),
+  });
+  if (emptyPageReview.status !== 400) {
+    throw new Error("The workings review accepted an attachment that was not a PNG.");
+  }
+
   const attempt = await requestJson(`${apiUrl}/api/attempts`, {
     method: "POST",
     body: JSON.stringify({
@@ -320,9 +489,9 @@ try {
     throw new Error("The numeric assessment runtime check failed.");
   }
 
-  console.log(`Discere smoke test passed at ${webUrl}.`);
+  console.log(`Discere smoke test passed at ${webUrl}, and single-origin at ${apiUrl}.`);
   console.log(
-    "Verified redesigned routes, safe journey delivery and persistence, essay submission, review scheduling, visuals, writing gate, ChatGPT tutor validation, notebook persistence, and assessment.",
+    "Verified every bundled course, safe journey delivery and persistence, retrieved image serving with path containment, the timeline activity, essay submission, FSRS review scheduling with a per-course queue, visuals, writing gate, ChatGPT tutor validation, notebook persistence, workings review through the provider, single-origin serving of the built interface, and assessment.",
   );
 } catch (error) {
   console.error(error instanceof Error ? error.message : error);

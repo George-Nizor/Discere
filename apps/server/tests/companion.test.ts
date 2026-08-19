@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createApp } from "../src/app.js";
 
 let app: FastifyInstance;
-beforeEach(async () => { ({ app } = await createApp({ dbPath: ":memory:" })); });
+beforeEach(async () => { ({ app } = await createApp({ dbPath: ":memory:", migrate: true })); });
 afterEach(async () => { await app.close(); });
 
 function tutorEnvelope(payload: unknown) {
@@ -32,7 +32,8 @@ describe("ChatGPT tutor companion", () => {
     expect(body.requestId).toMatch(/^[0-9a-f-]{36}$/i);
     expect(body.text).toContain("Return payload with this exact shape");
     expect(body.text).toContain("Why does current fall when resistance rises?");
-    expect(body.text).toContain("do not state the final answer");
+    expect(body.text).toContain("Ask for an attempt when reasonable.");
+    expect(body.text).toContain("Do not expose the final answer.");
     expect(body.text).not.toContain('"answerAuthority"');
   });
 

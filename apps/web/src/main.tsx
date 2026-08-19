@@ -1,18 +1,30 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import App from "./App";
-import "./styles.css";
-import "./accessibility.css";
-import "./story.css";
-import "./story-stages.css";
-import "./story-quiz.css";
-import "./story-essay.css";
-import "./story-review.css";
-import "./story-home.css";
-import "./roman-fixture.css";
+import { createBrowserRouter, RouterProvider } from "react-router";
+import { routes } from "./routes.js";
+import "katex/dist/katex.min.css";
+import "./styles/tokens.css";
+import "./styles/base.css";
+import "./styles/shell.css";
+import "./styles/stages.css";
+import "./styles/notebook.css";
 
-const queryClient = new QueryClient({ defaultOptions: { queries: { staleTime: 15_000, retry: 1 }, mutations: { retry: 0 } } });
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: { staleTime: 15_000, retry: 1, refetchOnWindowFocus: false },
+    mutations: { retry: 0 },
+  },
+});
+
+const router = createBrowserRouter(routes);
 const root = document.getElementById("root");
-if (!root) throw new Error("Discere root element is missing.");
-createRoot(root).render(<StrictMode><QueryClientProvider client={queryClient}><App /></QueryClientProvider></StrictMode>);
+if (!root) throw new Error("The Discere root element is missing.");
+
+createRoot(root).render(
+  <StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>
+  </StrictMode>,
+);

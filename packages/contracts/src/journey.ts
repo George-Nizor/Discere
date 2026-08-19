@@ -1,5 +1,10 @@
 import { z } from "zod";
-import { ActivitySchema, LearnerQuestionSchema, SourceSchema } from "./curriculum.js";
+import {
+  ActivitySchema,
+  ExplainerVisualKindSchema,
+  LearnerQuestionSchema,
+  SourceSchema,
+} from "./curriculum.js";
 
 export const JourneyStageTypeSchema = z.enum([
   "explainer",
@@ -40,15 +45,34 @@ const StageBaseSchema = z
   })
   .strict();
 
+/**
+ * A retrieved picture as the learner receives it: a served path plus the attribution the
+ * interface must print beside it. Nothing here identifies a file on the authoring machine.
+ */
+export const StageImageSchema = z
+  .object({
+    src: z.string().min(1),
+    caption: z.string().min(1),
+    attribution: z.string().min(1),
+    licence: z.string().min(1),
+    licenceUrl: z.string().url().optional(),
+    landingPageUrl: z.string().url(),
+  })
+  .strict();
+export type StageImage = z.infer<typeof StageImageSchema>;
+
 export const ExplainerStageSchema = StageBaseSchema.extend({
   type: z.literal("explainer"),
   body: z.string().min(1),
   takeaway: z.string().min(1),
   visual: z
     .object({
-      kind: z.enum(["circuit", "timeline", "diagram", "none"]),
+      kind: ExplainerVisualKindSchema,
       briefId: z.string().optional(),
       alt: z.string().min(1),
+      /** Served path for a visual the interface can draw. Absent means "describe it instead". */
+      src: z.string().min(1).optional(),
+      image: StageImageSchema.optional(),
     })
     .strict(),
 }).strict();
@@ -66,6 +90,8 @@ export const QuizStageSchema = StageBaseSchema.extend({
   type: z.literal("quiz"),
   questionId: z.string().min(1),
   question: LearnerQuestionSchema,
+  /** One-based position of this question among the lesson's quiz stages. */
+  questionIndex: z.number().int().positive(),
   questionCount: z.number().int().positive(),
 }).strict();
 export type QuizStage = z.infer<typeof QuizStageSchema>;
@@ -155,6 +181,8 @@ export const CourseSummarySchema = z
     description: z.string().min(1),
     lessonCount: z.number().int().positive(),
     availableLessonIds: z.array(z.string().min(1)),
+    /** Most recent stage activity in this course, used to choose what to continue. */
+    lastActiveAt: z.string().datetime().nullable(),
   })
   .strict();
 export type CourseSummary = z.infer<typeof CourseSummarySchema>;

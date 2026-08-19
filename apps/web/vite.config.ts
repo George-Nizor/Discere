@@ -33,6 +33,11 @@ export default defineConfig(({ mode }) => {
     plugins: [react()],
     server: { host: webHost, port: webPort, strictPort: true, proxy },
     preview: { host: webHost, port: webPort, strictPort: true, proxy },
-    test: { environment: "jsdom", setupFiles: "./src/test/setup.ts" },
+    test: {
+      environment: "jsdom",
+      setupFiles: "./src/test/setup.ts",
+      // Playwright owns the browser suite; vitest must not try to run it.
+      exclude: ["e2e/**", "node_modules/**", "dist/**"],
+    },
   };
 });

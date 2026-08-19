@@ -4,6 +4,7 @@ import { TutoringModeSchema } from "./modes.js";
 import { VisualBriefSchema } from "./visuals.js";
 
 export const TutorOperationSchema = z.enum([
+  "author_lesson",
   "tutor_reply",
   "workings_review",
   "draft_lesson",
@@ -76,6 +77,27 @@ export const WorkingsReviewDraftSchema = z
   .strict();
 export type WorkingsReviewDraft = z.infer<typeof WorkingsReviewDraftSchema>;
 
+/**
+ * A workings review asked of a provider that can look at the image itself. The PNG travels
+ * with the request because the exported page never leaves the learner's machine, and the
+ * provider needs the bytes to attach them.
+ */
+export const WorkingsReviewGenerateRequestSchema = z
+  .object({
+    lessonId: z.string().min(1).max(200),
+    reviewQuestion: z.string().trim().min(2).max(2_000),
+    mode: TutoringModeSchema,
+    image: z
+      .object({
+        filename: z.string().min(1).max(200),
+        /** The exported page, base64 encoded. Roughly six megabytes of PNG at the limit. */
+        base64: z.string().min(1).max(8_000_000),
+      })
+      .strict(),
+  })
+  .strict();
+export type WorkingsReviewGenerateRequest = z.infer<typeof WorkingsReviewGenerateRequestSchema>;
+
 export const LessonDraftSchema = z
   .object({
     conceptIds: z.array(z.string()).min(1),
@@ -99,3 +121,154 @@ export const LessonDraftSchema = z
   })
   .strict();
 export type LessonDraft = z.infer<typeof LessonDraftSchema>;
+
+/**
+ * A single accountability finding raised while a tutor response is validated. The pasted
+ * companion reply and the directly generated reply produce the same shape because they run
+ * through the same validation core on the server.
+ */
+export const TutorIssueSchema = z
+  .object({
+    field: z.string().min(1),
+    code: z.string().min(1),
+    severity: z.enum(["hard", "warning"]),
+    message: z.string().min(1),
+  })
+  .strict();
+export type TutorIssue = z.infer<typeof TutorIssueSchema>;
+
+export const EssayAssessmentDraftSchema = z
+  .object({
+    assessment: WorkingsAssessmentSchema,
+    summary: z.string().trim().min(1).max(8_000),
+    firstMeaningfulError: z.string().trim().min(1).max(2_000).nullable(),
+    nextStep: z.string().trim().min(1).max(2_000),
+    sourceIds: z.array(z.string().min(1)).max(20),
+    uncertainty: z.array(z.string().trim().min(1).max(1_000)).max(20),
+  })
+  .strict();
+export type EssayAssessmentDraft = z.infer<typeof EssayAssessmentDraftSchema>;
+
+/** The reply shape asked of `prompts/style-editor.md` during a targeted repair pass. */
+export const StyleEditDraftSchema = z
+  .object({
+    revisedText: z.string().trim().min(1).max(20_000),
+    edits: z.array(z.string().trim().min(1).max(1_000)).max(50),
+    unrepaired: z.array(z.string().trim().min(1).max(1_000)).max(50),
+    protectedItemsChecked: z.array(z.string().trim().min(1).max(200)).max(100),
+  })
+  .strict();
+export type StyleEditDraft = z.infer<typeof StyleEditDraftSchema>;
+
+export const TutorProviderIdSchema = z.enum(["codex", "companion", "mock"]);
+export type TutorProviderId = z.infer<typeof TutorProviderIdSchema>;
+
+export const TutorAskRequestSchema = z
+  .object({
+    lessonId: z.string().min(1).max(200),
+    conceptIds: z.array(z.string().min(1).max(200)).max(20).optional(),
+    mode: TutoringModeSchema,
+    question: z.string().trim().min(2).max(2_000),
+    /** Continues an earlier generated conversation when the provider supports resuming. */
+    sessionId: z.string().min(1).max(200).optional(),
+    /** Links the exchange to an open attempt so the assistance is recorded against it. */
+    attemptId: z.string().uuid().optional(),
+  })
+  .strict();
+export type TutorAskRequest = z.infer<typeof TutorAskRequestSchema>;
+
+export const TutorAskAnsweredSchema = z
+  .object({
+    status: z.literal("answered"),
+    provider: TutorProviderIdSchema,
+    operation: z.literal("tutor_reply"),
+    requestId: z.string().uuid(),
+    accepted: z.boolean(),
+    issues: z.array(TutorIssueSchema),
+    reply: TutorReplyDraftSchema,
+    sessionId: z.string().min(1).nullable(),
+  })
+  .strict();
+
+/**
+ * The copy/paste provider cannot answer in process. It returns the packet the learner pastes
+ * into ChatGPT, so one client flow serves every provider.
+ */
+export const TutorAskPacketRequiredSchema = z
+  .object({
+    status: z.literal("packet_required"),
+    provider: TutorProviderIdSchema,
+    operation: z.literal("tutor_reply"),
+    requestId: z.string().uuid(),
+    packet: z.object({ filename: z.string().min(1), text: z.string().min(1) }).strict(),
+    message: z.string().min(1),
+  })
+  .strict();
+
+export const TutorAskResponseSchema = z.discriminatedUnion("status", [
+  TutorAskAnsweredSchema,
+  TutorAskPacketRequiredSchema,
+]);
+export type TutorAskResponse = z.infer<typeof TutorAskResponseSchema>;
+
+export const WorkingsReviewAnsweredSchema = z
+  .object({
+    status: z.literal("answered"),
+    provider: TutorProviderIdSchema,
+    operation: z.literal("workings_review"),
+    requestId: z.string().uuid(),
+    accepted: z.boolean(),
+    issues: z.array(TutorIssueSchema),
+    review: WorkingsReviewDraftSchema,
+  })
+  .strict();
+
+/** The copy/paste provider cannot see an image, so it hands back the packet and the filename
+ * the learner must attach in ChatGPT themselves. */
+export const WorkingsReviewPacketRequiredSchema = z
+  .object({
+    status: z.literal("packet_required"),
+    provider: TutorProviderIdSchema,
+    operation: z.literal("workings_review"),
+    requestId: z.string().uuid(),
+    packet: z.object({ filename: z.string().min(1), text: z.string().min(1) }).strict(),
+    expectedFilename: z.string().min(1),
+    message: z.string().min(1),
+  })
+  .strict();
+
+export const WorkingsReviewResponseSchema = z.discriminatedUnion("status", [
+  WorkingsReviewAnsweredSchema,
+  WorkingsReviewPacketRequiredSchema,
+]);
+export type WorkingsReviewResponse = z.infer<typeof WorkingsReviewResponseSchema>;
+
+export const EssayAssessmentStatusSchema = z.enum([
+  "pending",
+  "ready",
+  "failed",
+  "packet_required",
+]);
+export type EssayAssessmentStatus = z.infer<typeof EssayAssessmentStatusSchema>;
+
+export const EssayAssessmentResponseSchema = z
+  .object({
+    essayId: z.string().min(1),
+    status: EssayAssessmentStatusSchema,
+    provider: TutorProviderIdSchema,
+    requestId: z.string().uuid(),
+    accepted: z.boolean(),
+    assessment: EssayAssessmentDraftSchema.nullable(),
+    issues: z.array(TutorIssueSchema),
+    error: z.object({ code: z.string().min(1), message: z.string().min(1) }).nullable(),
+    packet: z
+      .object({ filename: z.string().min(1), text: z.string().min(1) })
+      .strict()
+      .nullable(),
+    updatedAt: z.string().datetime(),
+  })
+  .strict();
+export type EssayAssessmentResponse = z.infer<typeof EssayAssessmentResponseSchema>;
+
+export const EssayAssessRequestSchema = z.object({ mode: TutoringModeSchema.optional() }).strict();
+export type EssayAssessRequest = z.infer<typeof EssayAssessRequestSchema>;

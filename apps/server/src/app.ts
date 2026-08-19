@@ -1,19 +1,35 @@
-import path from "node:path";
-import Fastify, { type FastifyInstance } from "fastify";
+import { resolveDatabasePath } from "@discere/paths";
 import cors from "@fastify/cors";
+import Fastify, { type FastifyInstance } from "fastify";
 import { ZodError } from "zod";
 import { ContentRepository } from "./content.js";
 import { DiscereStore } from "./db/store.js";
 import { HttpError } from "./errors.js";
 import { registerRoutes } from "./routes.js";
 import { registerTransferRoutes } from "./transfer-routes.js";
+import { createTutorRuntime, type TutorRuntimeOptions } from "./tutor-provider.js";
+import { registerTutorRoutes } from "./tutor-routes.js";
+import { registerWebRoot, resolveWebRoot } from "./web-root.js";
 import { registerWorkingsReviewRoutes } from "./workings-routes.js";
 
 export interface AppOptions {
   dbPath?: string;
-  contentPath?: string;
+  /** Root directory holding one sub-directory per course bundle. */
+  contentRoot?: string;
   revealDelayMs?: number;
   logger?: boolean;
+  /** Applies pending migrations before serving. Tests and disposable databases use this;
+   * the deployed server refuses to start against an unmigrated database instead. */
+  migrate?: boolean;
+  /** Overrides the provider chosen by `DISCERE_TUTOR_PROVIDER`. */
+  tutor?: TutorRuntimeOptions;
+  /** Supplies the current instant to the store, so a test can move through several days. */
+  clock?: () => Date;
+  /**
+   * Directory holding the built browser bundle. When set, the interface is served from the
+   * API's own origin. Defaults to `DISCERE_WEB_ROOT`, relative to the repository root.
+   */
+  webRoot?: string;
 }
 
 export interface DiscereApp {
@@ -39,14 +55,14 @@ export async function createApp(options: AppOptions = {}): Promise<DiscereApp> {
     methods: ["GET", "POST", "PUT"],
   });
   const content = await ContentRepository.load(
-    options.contentPath ?? ContentRepository.defaultPath(),
+    options.contentRoot ?? ContentRepository.defaultContentRoot(),
   );
-  const dbPath =
-    options.dbPath ??
-    process.env["DISCERE_DATABASE_PATH"] ??
-    path.resolve(import.meta.dirname, "../../../data/discere.sqlite");
-  const store = new DiscereStore(dbPath);
-  store.initialiseConcepts(content.bundle.concepts);
+  const dbPath = options.dbPath ?? resolveDatabasePath(process.env["DISCERE_DATABASE_PATH"]);
+  const store = new DiscereStore(dbPath, {
+    migrate: options.migrate ?? false,
+    ...(options.clock === undefined ? {} : { clock: options.clock }),
+  });
+  store.initialiseConcepts(content.concepts);
   app.setErrorHandler((error, _request, reply) => {
     if (error instanceof ZodError) {
       return reply.status(400).send({
@@ -63,13 +79,21 @@ export async function createApp(options: AppOptions = {}): Promise<DiscereApp> {
       .status(500)
       .send({ code: "INTERNAL_ERROR", message: "Discere could not complete the request." });
   });
+  // One runtime for every tutor path, so the tutor drawer, the essay assessment, and the
+  // workings review all speak to the same provider under the same limits.
+  const runtime = createTutorRuntime(options.tutor);
   await registerRoutes(app, {
     content,
     store,
     revealDelayMs: options.revealDelayMs ?? 5000,
   });
   await registerTransferRoutes(app, { content, store });
-  await registerWorkingsReviewRoutes(app, { content, store });
+  await registerWorkingsReviewRoutes(app, { content, store, runtime });
+  await registerTutorRoutes(app, { content, store, runtime });
+  // The bundle is registered last so `/api/*` always wins and the fallback only sees a path
+  // no route claimed.
+  const webRoot = resolveWebRoot(options.webRoot ?? process.env["DISCERE_WEB_ROOT"]);
+  if (webRoot) await registerWebRoot(app, webRoot);
   app.addHook("onClose", async () => store.close());
   return { app, store, content };
 }

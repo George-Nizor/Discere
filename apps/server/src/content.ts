@@ -1,92 +1,276 @@
+import { readdir } from "node:fs/promises";
 import path from "node:path";
-import type { CourseBundle, CourseDetailResponse, CourseSummary, LearnerQuestion, LessonJourney, LessonResponse, Question } from "@discere/contracts";
-import { loadCourseBundle } from "@discere/curriculum";
+import type {
+  Activity,
+  Concept,
+  CourseBundle,
+  CourseDetailResponse,
+  CourseSummary,
+  EssayStage,
+  EssayTopic,
+  FlashcardRecord,
+  LearnerQuestion,
+  LearnerStage,
+  LessonBeat,
+  LessonJourney,
+  LessonResponse,
+  Question,
+} from "@discere/contracts";
+import { courseAssetDirectory, loadCourseBundle } from "@discere/curriculum";
 
+/** The interactive canvas each activity type asks for. */
+const ACTIVITY_VISUAL_KIND = {
+  ohms_law_explorer: "circuit",
+  series_circuit_explorer: "circuit",
+  parallel_circuit_explorer: "circuit",
+  timeline_explorer: "timeline",
+} as const satisfies Record<Activity["type"], "circuit" | "graph" | "timeline" | "map">;
+
+export interface CourseActivity {
+  /** ISO timestamp of the most recent stage progress in the course, when there is any. */
+  lastActiveAt: string | null;
+  lessonId: string | null;
+}
+
+interface LoadedCourse {
+  bundle: CourseBundle;
+  assetDirectory: string;
+}
+
+function stageIds(lesson: LessonBeat, count: number): string[] {
+  return Array.from({ length: count }, (_, index) => `${lesson.id}:quiz-${index + 1}`);
+}
+
+/**
+ * Every course bundle under `content/`, with the lookups the routes need. Nothing here knows
+ * the name of a particular course: a directory holding a valid bundle becomes a course.
+ */
 export class ContentRepository {
-  private constructor(readonly bundle: CourseBundle) {}
+  private readonly byCourseId: Map<string, LoadedCourse>;
 
-  static async load(bundlePath: string): Promise<ContentRepository> {
-    return new ContentRepository(await loadCourseBundle(bundlePath));
+  private constructor(private readonly courses: LoadedCourse[]) {
+    this.byCourseId = new Map(courses.map((course) => [course.bundle.course.id, course]));
   }
 
-  static defaultPath(): string {
-    return path.resolve(import.meta.dirname, "../../../content/electronics-foundations/bundle.json");
+  static async load(contentRoot: string): Promise<ContentRepository> {
+    const entries = await readdir(contentRoot, { withFileTypes: true });
+    const directories = entries
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => entry.name)
+      .sort((left, right) => left.localeCompare(right));
+    const courses: LoadedCourse[] = [];
+    for (const directory of directories) {
+      const bundlePath = path.join(contentRoot, directory, "bundle.json");
+      const bundle = await loadCourseBundle(bundlePath);
+      courses.push({ bundle, assetDirectory: courseAssetDirectory(bundlePath) });
+    }
+    if (courses.length === 0) throw new Error(`No course bundle was found under '${contentRoot}'.`);
+    assertUniqueIdentifiers(courses);
+    return new ContentRepository(courses);
   }
 
-  get currentLesson(): LessonResponse {
-    const lesson = this.bundle.lessons[0];
-    if (!lesson) throw new Error("Course contains no lessons.");
-    const response = this.getLesson(lesson.id);
-    if (!response) throw new Error("Current lesson references missing content.");
-    return response;
+  static defaultContentRoot(): string {
+    return path.resolve(import.meta.dirname, "../../../content");
   }
 
-  get courseSummary(): CourseSummary {
+  get bundles(): CourseBundle[] {
+    return this.courses.map((course) => course.bundle);
+  }
+
+  get concepts(): Concept[] {
+    return this.courses.flatMap((course) => course.bundle.concepts);
+  }
+
+  get flashcards(): Array<{ courseId: string; card: FlashcardRecord }> {
+    return this.courses.flatMap((course) =>
+      course.bundle.flashcards.map((card) => ({ courseId: course.bundle.course.id, card })),
+    );
+  }
+
+  get defaultCourseId(): string {
+    const first = this.courses[0];
+    if (!first) throw new Error("Discere loaded no courses.");
+    return first.bundle.course.id;
+  }
+
+  has(courseId: string): boolean {
+    return this.byCourseId.has(courseId);
+  }
+
+  bundle(courseId: string): CourseBundle | undefined {
+    return this.byCourseId.get(courseId)?.bundle;
+  }
+
+  /** Absolute directory holding one course's retrieved images. */
+  assetDirectory(courseId: string): string | undefined {
+    return this.byCourseId.get(courseId)?.assetDirectory;
+  }
+
+  courseOfLesson(lessonId: string): string | undefined {
+    return this.courses.find((course) =>
+      course.bundle.lessons.some((lesson) => lesson.id === lessonId),
+    )?.bundle.course.id;
+  }
+
+  courseSummary(courseId: string, lastActiveAt: string | null = null): CourseSummary | undefined {
+    const bundle = this.bundle(courseId);
+    if (!bundle) return undefined;
     return {
-      id: this.bundle.course.id,
-      title: this.bundle.course.title,
-      description: this.bundle.course.description,
-      lessonCount: this.bundle.lessons.length,
-      availableLessonIds: this.bundle.lessons.slice(0, 1).map((lesson) => lesson.id),
+      id: bundle.course.id,
+      title: bundle.course.title,
+      description: bundle.course.description,
+      lessonCount: bundle.lessons.length,
+      availableLessonIds: bundle.lessons.map((lesson) => lesson.id),
+      lastActiveAt,
     };
   }
 
-  get courseDetail(): CourseDetailResponse {
-    const availableLessonIds = new Set(this.courseSummary.availableLessonIds);
+  courseSummaries(activity: Map<string, CourseActivity> = new Map()): CourseSummary[] {
+    return this.courses.flatMap((course) => {
+      const id = course.bundle.course.id;
+      const summary = this.courseSummary(id, activity.get(id)?.lastActiveAt ?? null);
+      return summary ? [summary] : [];
+    });
+  }
+
+  courseDetail(
+    courseId: string,
+    lastActiveAt: string | null = null,
+  ): CourseDetailResponse | undefined {
+    const bundle = this.bundle(courseId);
+    const course = this.courseSummary(courseId, lastActiveAt);
+    if (!bundle || !course) return undefined;
     return {
-      course: this.courseSummary,
-      lessons: this.bundle.lessons.map((lesson) => ({
+      course,
+      lessons: bundle.lessons.map((lesson) => ({
         id: lesson.id,
         title: lesson.title,
         orientation: lesson.orientation,
         conceptIds: lesson.conceptIds,
-        available: availableLessonIds.has(lesson.id),
-        stageCount: availableLessonIds.has(lesson.id) ? 6 : 0,
+        available: true,
+        stageCount: this.getJourney(courseId, lesson.id)?.stages.length ?? 0,
+      })),
+      concepts: bundle.concepts.map((concept) => ({
+        id: concept.id,
+        title: concept.title,
+        summary: concept.summary,
       })),
     };
   }
 
-  getLesson(id: string): LessonResponse | undefined {
-    const lesson = this.bundle.lessons.find((item) => item.id === id);
-    if (!lesson) return undefined;
-    const activity = this.bundle.activities.find((item) => item.id === lesson.activityId);
-    const question = this.bundle.questions.find((item) => item.id === lesson.questionId);
-    if (activity?.type !== "ohms_law_explorer" || !question) {
-      throw new Error(`Lesson '${id}' references unsupported or missing content.`);
+  /**
+   * The lesson the learner should be offered first: the most recently worked course when there
+   * is one, otherwise the first course in the library.
+   */
+  currentLessonId(activity: Map<string, CourseActivity> = new Map()): {
+    courseId: string;
+    lessonId: string;
+  } {
+    const recent = [...activity.entries()]
+      .filter(([courseId, record]) => this.has(courseId) && record.lastActiveAt !== null)
+      .sort(([, left], [, right]) =>
+        (right.lastActiveAt ?? "").localeCompare(left.lastActiveAt ?? ""),
+      )[0];
+    const courseId = recent?.[0] ?? this.defaultCourseId;
+    const lessonId = recent?.[1].lessonId ?? this.bundle(courseId)?.lessons[0]?.id;
+    if (!lessonId) throw new Error(`Course '${courseId}' contains no lessons.`);
+    return { courseId, lessonId };
+  }
+
+  currentLesson(activity: Map<string, CourseActivity> = new Map()): LessonResponse {
+    const { courseId, lessonId } = this.currentLessonId(activity);
+    const response = this.getLesson(lessonId, courseId);
+    if (!response) throw new Error("The current lesson references missing content.");
+    return response;
+  }
+
+  getLesson(lessonId: string, courseId?: string): LessonResponse | undefined {
+    const resolvedCourseId = courseId ?? this.courseOfLesson(lessonId);
+    const bundle = resolvedCourseId === undefined ? undefined : this.bundle(resolvedCourseId);
+    const lesson = bundle?.lessons.find((item) => item.id === lessonId);
+    if (!bundle || !lesson) return undefined;
+    const activity = bundle.activities.find((item) => item.id === lesson.activityId);
+    const questionId = lesson.questionIds[0];
+    const question = bundle.questions.find((item) => item.id === questionId);
+    if (!activity || !question) {
+      throw new Error(`Lesson '${lessonId}' references missing content.`);
     }
     const sources = lesson.sourceIds.map((sourceId) => {
-      const source = this.bundle.sources.find((item) => item.id === sourceId);
+      const source = bundle.sources.find((item) => item.id === sourceId);
       if (!source) throw new Error(`Lesson references missing source '${sourceId}'.`);
       return source;
     });
-    const { answerAuthority: _hidden, ...learnerQuestion } = question;
+    const { answerAuthority: _authority, transfer: _transfer, ...learnerQuestion } = question;
     return { lesson, activity, question: learnerQuestion as LearnerQuestion, sources };
   }
 
-  getJourney(id: string): LessonJourney | undefined {
-    const response = this.getLesson(id);
-    if (!response) return undefined;
-    const { lesson, activity, question, sources } = response;
-    const prefix = `${lesson.id}:`;
-    const stages: LessonJourney["stages"] = [
+  getJourney(courseId: string, lessonId: string): LessonJourney | undefined {
+    const bundle = this.bundle(courseId);
+    const lesson = bundle?.lessons.find((item) => item.id === lessonId);
+    if (!bundle || !lesson) return undefined;
+    const activity = bundle.activities.find((item) => item.id === lesson.activityId);
+    if (!activity) throw new Error(`Lesson '${lessonId}' references missing activity.`);
+
+    const questions = lesson.questionIds.map((id) => {
+      const question = bundle.questions.find((item) => item.id === id);
+      if (!question) throw new Error(`Lesson '${lessonId}' references missing question '${id}'.`);
+      const { answerAuthority: _authority, transfer: _transfer, ...learner } = question;
+      return learner as LearnerQuestion;
+    });
+    const essay =
+      lesson.essayId === undefined
+        ? undefined
+        : bundle.essays.find((item) => item.id === lesson.essayId);
+    if (lesson.essayId !== undefined && !essay) {
+      throw new Error(`Lesson '${lessonId}' references missing essay '${lesson.essayId}'.`);
+    }
+    const sources = lesson.sourceIds.flatMap((sourceId) => {
+      const source = bundle.sources.find((item) => item.id === sourceId);
+      return source ? [source] : [];
+    });
+
+    const quizIds = stageIds(lesson, questions.length);
+    const stages: LearnerStage[] = [
       {
-        id: `${prefix}explainer`,
+        id: `${lesson.id}:explainer`,
         type: "explainer",
-        title: "Build the idea",
+        title: lesson.title,
         conceptIds: lesson.conceptIds,
         sourceIds: lesson.sourceIds,
         optional: false,
         completionPolicy: "view",
         body: `${lesson.orientation}\n\n${lesson.explanation}`,
-        takeaway: "Current is the rate of charge flow. Voltage provides the push, and resistance limits the flow.",
+        takeaway: lesson.takeaway,
         visual: {
-          kind: "circuit",
-          briefId: lesson.visualBrief.id,
-          alt: "A battery and resistor connected in one closed loop.",
+          kind: lesson.visualKind,
+          ...(lesson.visualKind === "none" ? {} : { briefId: lesson.visualBrief.id }),
+          alt: lesson.visualBrief.altTextDraft,
+          ...(lesson.visualKind === "circuit" && lesson.circuitSpec
+            ? { src: `/api/visuals/circuit.svg?lessonId=${encodeURIComponent(lesson.id)}` }
+            : {}),
+          ...(lesson.visualKind === "image" && lesson.image
+            ? {
+                src: `/api/content/${encodeURIComponent(courseId)}/assets/${encodeURIComponent(lesson.image.file)}`,
+              }
+            : {}),
+          ...(lesson.image
+            ? {
+                image: {
+                  src: `/api/content/${encodeURIComponent(courseId)}/assets/${encodeURIComponent(lesson.image.file)}`,
+                  caption: lesson.image.caption,
+                  attribution: lesson.image.attribution,
+                  licence: lesson.image.licence,
+                  ...(lesson.image.licenceUrl === undefined
+                    ? {}
+                    : { licenceUrl: lesson.image.licenceUrl }),
+                  landingPageUrl: lesson.image.landingPageUrl,
+                },
+              }
+            : {}),
         },
       },
       {
-        id: `${prefix}visual`,
+        id: `${lesson.id}:visual`,
         type: "interactive_visual",
         title: activity.title,
         conceptIds: activity.conceptIds,
@@ -95,68 +279,55 @@ export class ContentRepository {
         completionPolicy: "interaction",
         activity,
         prompt: activity.predictionPrompt,
-        visualKind: "circuit",
+        visualKind: ACTIVITY_VISUAL_KIND[activity.type],
       },
+      ...questions.map(
+        (question, index): LearnerStage => ({
+          id: quizIds[index] ?? `${lesson.id}:quiz-${index + 1}`,
+          type: "quiz",
+          title: lesson.stageTitles.quiz,
+          conceptIds: question.conceptIds,
+          sourceIds: question.sourceIds,
+          optional: false,
+          completionPolicy: "assessment",
+          questionId: question.id,
+          question,
+          questionIndex: index + 1,
+          questionCount: questions.length,
+        }),
+      ),
+      ...(essay ? [essayStage(lesson, essay)] : []),
       {
-        id: `${prefix}quiz`,
-        type: "quiz",
-        title: "Check your understanding",
-        conceptIds: question.conceptIds,
-        sourceIds: question.sourceIds,
-        optional: false,
-        completionPolicy: "assessment",
-        questionId: question.id,
-        question,
-        questionCount: 1,
-      },
-      {
-        id: `${prefix}essay`,
-        type: "essay",
-        title: "Explain it in your own words",
-        conceptIds: lesson.conceptIds,
-        sourceIds: lesson.sourceIds,
-        optional: true,
-        completionPolicy: "submission",
-        essayId: `${lesson.id}:teach-back`,
-        prompt: "Explain how voltage, resistance, and current are related in this circuit. Use the equation and one example from the experiment.",
-        expectedScope: "A short teach-back of two to four sentences.",
-        successCriteria: [
-          "Names the relationship between voltage, resistance, and current.",
-          "Uses I = V / R accurately.",
-          "Includes a concrete circuit example.",
-        ],
-        minWords: 20,
-      },
-      {
-        id: `${prefix}review`,
+        id: `${lesson.id}:review`,
         type: "review",
-        title: "Return through review",
+        title: lesson.stageTitles.review,
         conceptIds: lesson.conceptIds,
         sourceIds: lesson.sourceIds,
         optional: false,
         completionPolicy: "assessment",
-        reviewLabel: "Current, voltage, and resistance",
-        itemCount: 1,
+        reviewLabel: lesson.reviewLabel,
+        itemCount: Math.max(1, lesson.flashcardIds.length),
         concepts: lesson.conceptIds,
       },
       {
-        id: `${prefix}completion`,
+        id: `${lesson.id}:completion`,
         type: "completion",
-        title: "Lesson complete",
+        title: lesson.stageTitles.completion,
         conceptIds: lesson.conceptIds,
         sourceIds: lesson.sourceIds,
         optional: false,
         completionPolicy: "view",
         concepts: lesson.conceptIds,
-        nextAction: "Continue to the next lesson when you are ready.",
+        nextAction: lesson.nextAction,
       },
     ];
+
     return {
       id: `${lesson.courseId}:${lesson.id}`,
       courseId: lesson.courseId,
       lessonId: lesson.id,
       title: lesson.title,
-      estimatedMinutes: 12,
+      estimatedMinutes: estimatedMinutes(lesson, questions.length, essay !== undefined),
       conceptIds: lesson.conceptIds,
       stageOrder: stages.map((stage) => stage.id),
       stages,
@@ -165,6 +336,86 @@ export class ContentRepository {
   }
 
   getQuestion(id: string): Question | undefined {
-    return this.bundle.questions.find((item) => item.id === id);
+    for (const course of this.courses) {
+      const question = course.bundle.questions.find((item) => item.id === id);
+      if (question) return question;
+    }
+    return undefined;
+  }
+
+  getEssay(id: string): { courseId: string; essay: EssayTopic } | undefined {
+    for (const course of this.courses) {
+      const essay = course.bundle.essays.find((item) => item.id === id);
+      if (essay) return { courseId: course.bundle.course.id, essay };
+    }
+    return undefined;
+  }
+
+  getFlashcard(id: string): { courseId: string; card: FlashcardRecord } | undefined {
+    for (const course of this.courses) {
+      const card = course.bundle.flashcards.find((item) => item.id === id);
+      if (card) return { courseId: course.bundle.course.id, card };
+    }
+    return undefined;
+  }
+
+  /** Every visual brief in the library, used by the image-prompt endpoint. */
+  visualBriefs(): Array<LessonBeat["visualBrief"]> {
+    return this.courses.flatMap((course) =>
+      course.bundle.lessons.map((lesson) => lesson.visualBrief),
+    );
+  }
+}
+
+function essayStage(lesson: LessonBeat, essay: EssayTopic): EssayStage {
+  return {
+    id: `${lesson.id}:essay`,
+    type: "essay",
+    title: essay.title,
+    conceptIds: essay.conceptIds,
+    sourceIds: essay.sourceIds,
+    optional: true,
+    completionPolicy: "submission",
+    essayId: essay.id,
+    prompt: essay.prompt,
+    expectedScope: essay.expectedScope,
+    successCriteria: essay.successCriteria,
+    minWords: essay.minWords,
+  };
+}
+
+/** A rough reading and working budget, so the estimate moves with the lesson's real length. */
+function estimatedMinutes(lesson: LessonBeat, questionCount: number, hasEssay: boolean): number {
+  const words = `${lesson.orientation} ${lesson.explanation}`.split(/\s+/u).filter(Boolean).length;
+  return Math.max(5, Math.round(words / 130) + 3 + questionCount * 2 + (hasEssay ? 6 : 0));
+}
+
+/**
+ * Identifiers reach the API without a course prefix, so two bundles that reuse one identifier
+ * would silently shadow each other. That is a content fault and is refused at start-up.
+ */
+function assertUniqueIdentifiers(courses: LoadedCourse[]): void {
+  const seen = new Map<string, string>();
+  for (const course of courses) {
+    const courseId = course.bundle.course.id;
+    const identifiers: Array<[string, string[]]> = [
+      ["course", [courseId]],
+      ["lesson", course.bundle.lessons.map((item) => item.id)],
+      ["question", course.bundle.questions.map((item) => item.id)],
+      ["activity", course.bundle.activities.map((item) => item.id)],
+      ["concept", course.bundle.concepts.map((item) => item.id)],
+      ["flashcard", course.bundle.flashcards.map((item) => item.id)],
+      ["essay", course.bundle.essays.map((item) => item.id)],
+    ];
+    for (const [kind, ids] of identifiers) {
+      for (const id of ids) {
+        const key = `${kind}:${id}`;
+        const owner = seen.get(key);
+        if (owner !== undefined) {
+          throw new Error(`Courses '${owner}' and '${courseId}' both define ${kind} '${id}'.`);
+        }
+        seen.set(key, courseId);
+      }
+    }
   }
 }

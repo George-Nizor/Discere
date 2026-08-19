@@ -4,7 +4,7 @@ import { createApp } from "../src/app.js";
 
 let app: FastifyInstance;
 beforeEach(async () => {
-  ({ app } = await createApp({ dbPath: ":memory:" }));
+  ({ app } = await createApp({ dbPath: ":memory:", migrate: true }));
 });
 afterEach(async () => {
   await app.close();
@@ -221,5 +221,80 @@ describe("workings review companion", () => {
     });
     expect(response.statusCode).toBe(409);
     expect(response.json().code).toBe("COMPANION_REQUEST_MISMATCH");
+  });
+});
+
+describe("generated workings review", () => {
+  /** A one-pixel PNG. Real bytes, so the signature check is exercised rather than mocked. */
+  const PNG_BASE64 = Buffer.from(
+    "89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000a49444154789c6300010000050001",
+    "hex",
+  ).toString("base64");
+
+  async function reviewWith(
+    payload: Record<string, unknown>,
+    options: { provider?: "mock" | "companion"; skipSave?: boolean } = {},
+  ) {
+    await app.close();
+    ({ app } = await createApp({
+      dbPath: ":memory:",
+      migrate: true,
+      tutor: { providerId: options.provider ?? "mock" },
+    }));
+    const id = await lessonId();
+    if (options.skipSave !== true) await saveWorkings(id);
+    return app.inject({
+      method: "POST",
+      url: "/api/tutor/workings/review",
+      payload: {
+        lessonId: id,
+        reviewQuestion: "Have I set this calculation up correctly?",
+        mode: "coach",
+        image: { filename: `discere-${id}-workings.png`, base64: PNG_BASE64 },
+        ...payload,
+      },
+    });
+  }
+
+  it("returns a validated review from a provider that can see the image", async () => {
+    const response = await reviewWith({});
+    expect(response.statusCode).toBe(200);
+    const body = response.json();
+    expect(body.status).toBe("answered");
+    expect(body.provider).toBe("mock");
+    expect(body.accepted).toBe(true);
+    // The provider only claims to have read an image because one really was attached.
+    expect(body.review.imageReviewed).toBe(true);
+    expect(body.review.transcription.length).toBeGreaterThan(0);
+    expect(body.review.firstMeaningfulError).not.toBeNull();
+  });
+
+  it("refuses a review of an empty page", async () => {
+    const response = await reviewWith({}, { skipSave: true });
+    expect(response.statusCode).toBe(409);
+    expect(response.json().code).toBe("NOTEBOOK_EMPTY");
+  });
+
+  it("refuses an attachment that is not a PNG", async () => {
+    const response = await reviewWith({
+      image: { filename: "workings.png", base64: Buffer.from("not a png").toString("base64") },
+    });
+    expect(response.statusCode).toBe(400);
+    expect(response.json().code).toBe("IMAGE_NOT_PNG");
+  });
+
+  it("keeps the review closed in Exam mode", async () => {
+    const response = await reviewWith({ mode: "exam" });
+    expect(response.statusCode).toBe(403);
+    expect(response.json().code).toBe("EXAM_GUARDRAIL");
+  });
+
+  it("hands back the packet when the provider cannot look at an image", async () => {
+    const response = await reviewWith({}, { provider: "companion" });
+    expect(response.statusCode).toBe(200);
+    const body = response.json();
+    expect(body.status).toBe("packet_required");
+    expect(body.expectedFilename).toMatch(/-workings\.png$/);
+    expect(body.packet.text).toContain("workings_review");
   });
 });

@@ -8,6 +8,7 @@ import {
   minimumNodeLabel,
   parsePort,
   portAvailable,
+  REPO_ROOT,
   resolvePackageManager,
   runPackageManager,
 } from "./lib/runtime.mjs";
@@ -45,7 +46,8 @@ if (isLoopbackHost(apiHost) && isLoopbackHost(webHost)) {
 if (existsSync(resolve("node_modules"))) record("ok", "Dependencies", "node_modules is present");
 else record("error", "Dependencies", "node_modules is missing; run 'pnpm install'");
 
-const databasePath = resolve(environment.DISCERE_DATABASE_PATH || "./data/discere.sqlite");
+const configuredDatabasePath = environment.DISCERE_DATABASE_PATH || "./data/discere.sqlite";
+const databasePath = resolve(REPO_ROOT, configuredDatabasePath);
 if (existsSync(databasePath)) record("ok", "Database", databasePath);
 else record("warning", "Database", `${databasePath} does not exist yet; run 'pnpm db:migrate' and 'pnpm db:seed'`);
 
