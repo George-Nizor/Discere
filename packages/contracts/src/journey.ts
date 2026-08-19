@@ -3,6 +3,8 @@ import {
   ActivitySchema,
   ExplainerVisualKindSchema,
   LearnerQuestionSchema,
+  LessonStepKindSchema,
+  RichTextBlockSchema,
   SourceSchema,
 } from "./curriculum.js";
 
@@ -61,10 +63,28 @@ export const StageImageSchema = z
   .strict();
 export type StageImage = z.infer<typeof StageImageSchema>;
 
+/**
+ * A step as the learner receives it. The authored step names a question by id; this carries the
+ * question itself, already stripped of its answer authority and transfer task exactly as the
+ * quiz stages are, so the answer never leaves the server before it is earned.
+ */
+export const LearnerStepSchema = z
+  .object({
+    id: z.string().min(1),
+    kind: LessonStepKindSchema,
+    blocks: z.array(RichTextBlockSchema).min(1),
+    visualStateId: z.string(),
+    /** Present on `check` and `transfer` steps. */
+    question: LearnerQuestionSchema.optional(),
+    /** Present on `interact` steps. */
+    activity: ActivitySchema.optional(),
+  })
+  .strict();
+export type LearnerStep = z.infer<typeof LearnerStepSchema>;
+
 export const ExplainerStageSchema = StageBaseSchema.extend({
   type: z.literal("explainer"),
-  body: z.string().min(1),
-  takeaway: z.string().min(1),
+  steps: z.array(LearnerStepSchema).min(1),
   visual: z
     .object({
       kind: ExplainerVisualKindSchema,

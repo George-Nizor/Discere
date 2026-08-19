@@ -11,10 +11,22 @@ test.describe("the lesson journey", () => {
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     await page.getByRole("link", { name: /Resume|Begin/ }).first().click();
 
-    // Explainer
+    // The lesson plays as steps: prose, an inline check that cannot be skipped, then the rest.
     await expect(page.getByText("Explainer")).toBeVisible();
-    await expect(page.getByText("Key takeaway")).toBeVisible();
-    await page.getByRole("button", { name: "Continue", exact: true }).click();
+    await expect(page.getByText("Step 1 of 6")).toBeVisible();
+    for (const step of [2, 3, 4, 5]) {
+      await page.getByRole("button", { name: /^Continue/ }).click();
+      await expect(page.getByText(`Step ${step} of 6`)).toBeVisible();
+    }
+
+    // Step 5 asks a question, so there is no way past it until it has been answered.
+    await expect(page.getByRole("button", { name: /^Continue/ })).toBeHidden();
+    await page.getByRole("button", { name: "Raising the supply voltage" }).click();
+    await page.getByRole("button", { name: "Check answer" }).click();
+    await expect(page.getByText("Correct")).toBeVisible();
+    await page.getByRole("button", { name: /^Continue/ }).click();
+    await expect(page.getByText("Step 6 of 6")).toBeVisible();
+    await page.getByRole("button", { name: /^Finish/ }).click();
 
     // Interactive visual
     await expect(page.getByText("Diagram / visual")).toBeVisible();
@@ -27,7 +39,7 @@ test.describe("the lesson journey", () => {
 
     // First question: a wrong answer, a hint, then the right answer
     await expect(page.getByText("Check understanding")).toBeVisible();
-    await expect(page.getByText("Question 1 of 4")).toBeVisible();
+    await expect(page.getByText("Question 1 of 3")).toBeVisible();
     await page.getByLabel("Value").fill("0.5");
     await page.getByLabel("Unit").fill("A");
     await page.getByRole("button", { name: "Check answer" }).click();
@@ -42,7 +54,7 @@ test.describe("the lesson journey", () => {
     await page.getByRole("button", { name: /^Continue/ }).click();
 
     // Second question: the same numeric surface with different values
-    await expect(page.getByText("Question 2 of 4")).toBeVisible();
+    await expect(page.getByText("Question 2 of 3")).toBeVisible();
     await page.getByLabel("Value").fill("0.04");
     await page.getByLabel("Unit").fill("A");
     await page.getByRole("button", { name: "Check answer" }).click();
@@ -50,19 +62,12 @@ test.describe("the lesson journey", () => {
     await page.getByRole("button", { name: /^Continue/ }).click();
 
     // Third question: a written response marked against the accepted ideas
-    await expect(page.getByText("Question 3 of 4")).toBeVisible();
+    await expect(page.getByText("Question 3 of 3")).toBeVisible();
     await page
       .getByLabel("Your answer")
       .fill(
         "There is only one path, so the same current passes every point. The charge is not used up by the resistor.",
       );
-    await page.getByRole("button", { name: "Check answer" }).click();
-    await expect(page.getByText("Correct", { exact: true })).toBeVisible();
-    await page.getByRole("button", { name: /^Continue/ }).click();
-
-    // Fourth question: a selection
-    await expect(page.getByText("Question 4 of 4")).toBeVisible();
-    await page.getByRole("button", { name: "Raising the supply voltage" }).click();
     await page.getByRole("button", { name: "Check answer" }).click();
     await expect(page.getByText("Correct", { exact: true })).toBeVisible();
     await page.getByRole("button", { name: /^Continue/ }).click();
@@ -96,8 +101,8 @@ test.describe("the lesson journey", () => {
   }) => {
     const journey = await readJourney(request);
     await gotoStage(page, journey, "explainer");
-    await page.getByRole("button", { name: "Continue", exact: true }).click();
-    // Wait for the next stage itself, not merely for a stage-shaped address: the explainer
+    await gotoStage(page, journey, "interactive_visual");
+    // Wait for the stage itself, not merely for a stage-shaped address: the explainer
     // address already matches that pattern.
     await expect(page.getByText("Diagram / visual")).toBeVisible();
     const stageUrl = page.url();
@@ -110,13 +115,19 @@ test.describe("the lesson journey", () => {
     await expect(page.getByText("Explainer")).toBeVisible();
   });
 
-  test("jumps to the question from the explainer and comes back", async ({ page, request }) => {
+  test("resumes a lesson at the step the learner had reached", async ({ page, request }) => {
     const journey = await readJourney(request);
     await gotoStage(page, journey, "explainer");
-    await page.getByRole("button", { name: /Try a question first/ }).click();
-    await expect(page.getByText("Check understanding")).toBeVisible();
-    await page.getByRole("button", { name: /^Back to / }).click();
-    await expect(page.getByText("Explainer")).toBeVisible();
+    await expect(page.getByText("Step 1 of 6")).toBeVisible();
+
+    await page.getByRole("button", { name: /^Continue/ }).click();
+    await page.getByRole("button", { name: /^Continue/ }).click();
+    await expect(page.getByText("Step 3 of 6")).toBeVisible();
+
+    // The position is saved as it moves, so a reload does not send the learner back to the top.
+    await page.reload();
+    await expect(page.getByText("Step 3 of 6")).toBeVisible();
+    await expect(page.getByText("This loop gives charge exactly one route.")).toBeVisible();
   });
 
   test("answers a tutor question inside the lesson", async ({ page, request }) => {
@@ -218,6 +229,7 @@ test.describe("the lesson journey", () => {
     await expect(
       page.getByRole("heading", { level: 1, name: "The rise of the Roman Empire" }),
     ).toBeVisible();
+    await expect(page.getByText("Step 1 of 5")).toBeVisible();
     const map = page.getByRole("img", { name: /Roman Empire at its greatest extent/i });
     await expect(map).toBeVisible();
     await expect(map).toHaveAttribute("src", /\/api\/content\/roman-empire\/assets\//);
@@ -227,7 +239,16 @@ test.describe("the lesson journey", () => {
     expect(await map.evaluate((element: HTMLImageElement) => element.naturalWidth)).toBeGreaterThan(
       0,
     );
-    await page.getByRole("button", { name: "Continue", exact: true }).click();
+    // Work through the lesson: three prose steps, an inline check, then the closing step.
+    for (const step of [2, 3, 4]) {
+      await page.getByRole("button", { name: /^Continue/ }).click();
+      await expect(page.getByText(`Step ${step} of 5`)).toBeVisible();
+    }
+    await page.getByRole("button", { name: /The Senate granted Octavian the name Augustus/ }).click();
+    await page.getByRole("button", { name: "Check answer" }).click();
+    await expect(page.getByText("Correct")).toBeVisible();
+    await page.getByRole("button", { name: /^Continue/ }).click();
+    await page.getByRole("button", { name: /^Finish/ }).click();
 
     // Timeline: the scrubber reveals events in date order and checks an ordering prediction.
     await expect(page.getByText("Diagram / visual")).toBeVisible();
@@ -242,16 +263,10 @@ test.describe("the lesson journey", () => {
     await expect(page.getByText("Matched")).toBeVisible();
     await page.getByRole("button", { name: /^Continue/ }).click();
 
-    // The mockup's multiple-choice question, marked by the server.
+    // A quiz stage still follows the visual; the transition question is now asked inside the
+    // lesson itself, which the walk above already answered.
     await expect(page.getByText("Check understanding")).toBeVisible();
-    await expect(
-      page.getByRole("heading", { name: /Which event marked the transition/ }),
-    ).toBeVisible();
-    await page
-      .getByRole("button", { name: "The Senate granted Octavian the name Augustus in 27 BCE" })
-      .click();
-    await page.getByRole("button", { name: "Check answer" }).click();
-    await expect(page.getByText("Correct", { exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 
     // Completion names the concepts by their titles rather than by their identifiers.
     const completionStageId = journey.stageIds.at(-1);

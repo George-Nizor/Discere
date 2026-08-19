@@ -95,12 +95,26 @@ export const explainerStage: ExplainerStage = {
   id: "lesson:explainer",
   type: "explainer",
   title: "Build the idea",
+  steps: [
+    {
+      id: "hook",
+      kind: "hook",
+      visualStateId: "",
+      blocks: [{ kind: "paragraph", text: "Trace the wire around the loop." }],
+    },
+    {
+      id: "idea",
+      kind: "explain",
+      visualStateId: "",
+      blocks: [
+        { kind: "paragraph", text: "Current measures how quickly charge passes a point." },
+      ],
+    },
+  ],
   conceptIds: ["current"],
   sourceIds: [],
   optional: false,
-  completionPolicy: "view",
-  body: "Trace the wire around the loop.\n\nCurrent measures how quickly charge passes a point.",
-  takeaway: "Voltage pushes, resistance limits.",
+  completionPolicy: "interaction",
   visual: {
     kind: "circuit",
     briefId: "brief-1",

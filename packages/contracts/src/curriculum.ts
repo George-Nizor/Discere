@@ -359,16 +359,82 @@ export const StageTitlesSchema = z
   .strict();
 export type StageTitles = z.infer<typeof StageTitlesSchema>;
 
+/**
+ * A run of learner-facing prose, as structured blocks rather than one string. Splitting it up
+ * is what lets a definition become a disclosure and an equation be typeset, instead of every
+ * paragraph looking the same.
+ *
+ * This is an internal schema and never reaches constrained decoding, so a discriminated union
+ * is safe here. The authoring boundary flattens it (see `AuthoredLessonDraftSchema`).
+ */
+export const RichTextBlockSchema = z.discriminatedUnion("kind", [
+  // `$…$` spans are KaTeX, as in every other learner-facing string.
+  z.object({ kind: z.literal("paragraph"), text: z.string().min(1) }).strict(),
+  z.object({ kind: z.literal("heading"), text: z.string().min(1) }).strict(),
+  z
+    .object({ kind: z.literal("definition"), term: z.string().min(1), text: z.string().min(1) })
+    .strict(),
+  z
+    .object({
+      kind: z.literal("callout"),
+      tone: z.enum(["info", "key"]),
+      text: z.string().min(1),
+    })
+    .strict(),
+  z.object({ kind: z.literal("equation"), latex: z.string().min(1) }).strict(),
+]);
+export type RichTextBlock = z.infer<typeof RichTextBlockSchema>;
+
+/**
+ * The kinds of beat a lesson is built from, following the Beats A–G architecture in
+ * `docs/learning-experience-redesign-draft.md`. A lesson opens with a `hook`, alternates
+ * `explain` and `interact`, and closes on a `check` or `transfer`.
+ */
+export const LessonStepKindSchema = z.enum([
+  "hook",
+  "explain",
+  "worked_example",
+  "check",
+  "interact",
+  "transfer",
+  "teach_back",
+]);
+export type LessonStepKind = z.infer<typeof LessonStepKindSchema>;
+
+/**
+ * One screen of a lesson: a short piece of prose, optionally a change to the visual, and
+ * optionally one thing for the learner to do. Keeping a step small is the point — the evidence
+ * on segmentation says a learner should not face a wall of text and a test as separate blocks.
+ */
+export const LessonStepSchema = z
+  .object({
+    /** Stable slug, unique within the lesson. Saved progress refers to steps by index, not id. */
+    id: z.string().min(1),
+    kind: LessonStepKindSchema,
+    blocks: z.array(RichTextBlockSchema).min(1),
+    /** Names a state of the lesson's visual. Empty keeps whatever the previous step showed. */
+    visualStateId: z.string().default(""),
+    /** Required for `check` and `transfer`: the question the learner answers inline. */
+    checkQuestionId: z.string().default(""),
+    /** Required for `interact`: the activity this step hands over to. */
+    activityId: z.string().default(""),
+  })
+  .strict();
+export type LessonStep = z.infer<typeof LessonStepSchema>;
+
 export const LessonBeatSchema = z
   .object({
     id: z.string().min(1),
     courseId: z.string().min(1),
     conceptIds: z.array(z.string()).min(1),
     title: z.string().min(1),
+    /**
+     * The lesson as a sequence of short beats. This is the lesson: there is no longer a prose
+     * body beside it, because two sources for the same teaching drift apart.
+     */
+    steps: z.array(LessonStepSchema).min(3),
+    /** One line naming what the lesson is about, used wherever a lesson is listed. */
     orientation: z.string().min(1),
-    explanation: z.string().min(1),
-    /** The one sentence the learner should keep. Shown beside the explanation. */
-    takeaway: z.string().min(1),
     visualBrief: VisualBriefSchema,
     circuitSpec: CircuitDiagramSpecSchema.optional(),
     image: CourseImageSchema.optional(),

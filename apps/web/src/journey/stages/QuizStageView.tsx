@@ -1,24 +1,16 @@
-import type {
-  AttemptResponse,
-  HintResponse,
-  QuizStage,
-  RevealConfirmResponse,
-} from "@discere/contracts";
-import { useQueryClient } from "@tanstack/react-query";
+import type { QuizStage, RevealConfirmResponse } from "@discere/contracts";
 import { ArrowRight, Lightbulb, Loader2 } from "lucide-react";
 import { useState } from "react";
-import { errorMessage } from "../../api/client.js";
-import { requestHint, submitAttempt } from "../../api/endpoints.js";
-import { queryKeys } from "../../api/queries.js";
 import { Notice } from "../../ui/Feedback.js";
 import { ReadAloudButton } from "../../ui/ReadAloud.js";
 import { InlineRichText } from "../../ui/RichText.js";
 import { ModeSelector } from "../ModeSelector.js";
 import { useTutoringMode } from "../mode-context.js";
 import { AnswerInput } from "../quiz/AnswerInput.js";
-import { type AnswerDraft, answerResponse, initialAnswerDraft } from "../quiz/answer-draft.js";
 import { RevealFlow } from "../quiz/RevealFlow.js";
 import { TransferChallenge } from "../quiz/TransferChallenge.js";
+import { AttemptResult, HintLadder } from "../quiz-shared/AttemptFeedback.js";
+import { useAttempt } from "../quiz-shared/use-attempt.js";
 
 export function QuizStageView({
   stage,
@@ -29,55 +21,23 @@ export function QuizStageView({
   onContinue: () => void;
   returnLink: { label: string; onSelect: () => void } | null;
 }) {
-  const queryClient = useQueryClient();
   const { mode, setMode } = useTutoringMode();
   const question = stage.question;
-  const [draft, setDraft] = useState<AnswerDraft>(() => initialAnswerDraft(question));
-  const [attemptId, setAttemptId] = useState<string | null>(null);
-  const [result, setResult] = useState<AttemptResponse | null>(null);
-  const [hints, setHints] = useState<HintResponse[]>([]);
   const [revealed, setRevealed] = useState<RevealConfirmResponse | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [failure, setFailure] = useState<string | null>(null);
-
-  const response = answerResponse(question, draft);
-  const solved = result?.correct === true;
-  const hintsLeft = question.hints.length - hints.length;
-
-  async function send(): Promise<void> {
-    if (!response) return;
-    setBusy(true);
-    setFailure(null);
-    try {
-      const attempt = await submitAttempt({
-        questionId: question.id,
-        response,
-        mode,
-        ...(attemptId === null ? {} : { attemptId }),
-      });
-      setAttemptId(attempt.attemptId);
-      setResult(attempt);
-      await queryClient.invalidateQueries({ queryKey: queryKeys.home });
-    } catch (error) {
-      setFailure(errorMessage(error, "The answer could not be checked."));
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function askForHint(): Promise<void> {
-    if (!attemptId) return;
-    setBusy(true);
-    setFailure(null);
-    try {
-      const hint = await requestHint(attemptId);
-      setHints((current) => [...current, hint]);
-    } catch (error) {
-      setFailure(errorMessage(error, "No hint could be loaded."));
-    } finally {
-      setBusy(false);
-    }
-  }
+  const {
+    draft,
+    setDraft,
+    response,
+    attemptId,
+    result,
+    hints,
+    hintsLeft,
+    solved,
+    busy,
+    failure,
+    send,
+    askForHint,
+  } = useAttempt(question);
 
   return (
     <div className="quiz">
@@ -145,35 +105,8 @@ export function QuizStageView({
         </p>
       ) : null}
 
-      {hints.length > 0 ? (
-        <ol aria-label="Hints used" className="hint-ladder">
-          {hints.map((hint) => (
-            <li key={hint.level}>
-              <p className="eyebrow">
-                Hint {hint.level} of {hint.level + hint.remaining}
-              </p>
-              <p>{hint.hint}</p>
-            </li>
-          ))}
-          <li className="hint-cost muted">
-            Each hint records assisted evidence for this attempt rather than independent evidence.
-          </li>
-        </ol>
-      ) : null}
-
-      {result ? (
-        <Notice
-          live
-          tone={result.correct ? "correct" : "info"}
-          title={result.correct ? "Correct" : "Not correct yet"}
-        >
-          <p>{result.feedback}</p>
-          <p className="muted feedback-meta">
-            {result.xpAwarded} XP · {result.independent ? "independent" : "assisted"} evidence ·
-            mastery {Math.round(result.mastery * 100)}%
-          </p>
-        </Notice>
-      ) : null}
+      <HintLadder hints={hints} />
+      <AttemptResult result={result} />
 
       {revealed ? (
         <section className="revealed-answer">
