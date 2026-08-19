@@ -9,6 +9,8 @@ const MESSAGES: Record<string, string> = {
     "The reply failed the writing quality gate and was withheld rather than shown to you.",
   TUTOR_PROVIDER_ABORTED: "The request stopped before the tutor finished.",
   TUTOR_PROVIDER_FAILED: "The tutor provider failed and produced no reply.",
+  TUTOR_PROVIDER_BUSY: "The tutor is finishing another task. Try again in a moment.",
+  TUTOR_SESSION_INVALID: "The tutor conversation expired. Start a new question.",
   NETWORK_UNAVAILABLE: "Discere could not reach the local server.",
 };
 

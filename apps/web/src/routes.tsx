@@ -5,6 +5,7 @@ import { ProgressScreen } from "./home/ProgressScreen.js";
 import { LessonJourneyScreen } from "./journey/LessonJourneyScreen.js";
 import { NotebookScreen } from "./notebook/NotebookScreen.js";
 import { ReviewScreen, ReviewSessionScreen } from "./review/ReviewScreen.js";
+import { SettingsScreen } from "./settings/SettingsScreen.js";
 import { AppShell } from "./shell/AppShell.js";
 import { NotFoundScreen } from "./shell/NotFoundScreen.js";
 
@@ -26,6 +27,7 @@ export const routes: RouteObject[] = [
       { path: "review", element: <ReviewScreen /> },
       { path: "review/session/:sessionId", element: <ReviewSessionScreen /> },
       { path: "progress", element: <ProgressScreen /> },
+      { path: "settings", element: <SettingsScreen /> },
       { path: "*", element: <NotFoundScreen /> },
     ],
   },

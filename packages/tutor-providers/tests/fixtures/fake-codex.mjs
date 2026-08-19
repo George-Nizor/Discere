@@ -34,6 +34,25 @@ async function readStdin() {
 }
 
 const args = process.argv.slice(2);
+
+/**
+ * `codex exec resume` (0.147.0) accepts a strictly smaller option set than `codex exec`, and
+ * rejects the difference at argument-parse time with exit 2 — before the model is ever
+ * reached. The fixture used to accept any argv, so it happily "answered" a command line the
+ * real CLI refuses, and every follow-up turn failed only in the owner's hands.
+ */
+const RESUME_REJECTS = ["-C", "--cd", "--color", "-s", "--sandbox"];
+if (args[0] === "exec" && args[1] === "resume") {
+  const offender = args.find(
+    (arg) => RESUME_REJECTS.includes(arg) || RESUME_REJECTS.some((flag) => arg.startsWith(`${flag}=`)),
+  );
+  if (offender) {
+    const flag = offender.split("=")[0];
+    process.stderr.write(`error: unexpected argument '${flag}' found\n`);
+    process.exit(2);
+  }
+}
+
 const statePath = process.env.FAKE_CODEX_STATE;
 const logPath = process.env.FAKE_CODEX_LOG;
 const sessionId = process.env.FAKE_CODEX_SESSION_ID ?? "11111111-2222-4333-8444-555555555555";

@@ -25,7 +25,7 @@ export interface CodexProviderOptions {
   model?: string;
   /** Reasoning effort. Defaults to `DISCERE_CODEX_EFFORT`, then `low`. */
   reasoningEffort?: string;
-  /** Working root handed to the CLI. Defaults to `data/codex-scratch`. */
+  /** Working root handed to the CLI. Defaults to `~/.local/share/discere/codex-scratch`. */
   scratchDirectory?: string;
   /** Wall-clock budget for one generation. Defaults to `DISCERE_CODEX_TIMEOUT_MS`, then 120s. */
   timeoutMs?: number;
@@ -44,6 +44,25 @@ const SESSION_KEYS = ["session_id", "sessionId", "thread_id", "threadId", "conve
  * serialised so a second request never competes with the first for the same quota.
  */
 let queue: Promise<unknown> = Promise.resolve();
+let queueDepth = 0;
+let lastOutcome: CodexOutcome = "none";
+let lastError = "";
+
+/** Beyond this, waiting behind the queue takes longer than the answer is worth. */
+const MAX_QUEUE_DEPTH = 3;
+
+export type CodexOutcome = "none" | "ok" | "error";
+
+export interface CodexRuntimeStatus {
+  queueDepth: number;
+  lastOutcome: CodexOutcome;
+  lastError: string;
+}
+
+/** Live counters for the status endpoint. The provider is a singleton per process. */
+export function codexRuntimeStatus(): CodexRuntimeStatus {
+  return { queueDepth, lastOutcome, lastError };
+}
 
 function enqueue<T>(task: () => Promise<T>): Promise<T> {
   const result = queue.then(task, task);
@@ -201,11 +220,65 @@ export class CodexTutorProvider implements TutorProvider {
     this.killGraceMs = options.killGraceMs ?? KILL_GRACE_MS;
   }
 
+  /**
+   * The deadline runs from the moment the request is accepted, not from the moment it reaches
+   * the front of the queue. Before, a learner queued behind a two-minute essay assessment
+   * waited on a spinner with no limit at all, because the timer only started after dequeue.
+   */
   async generate<TRequest, TResponse>(
     request: TutorRequest<TRequest>,
     options: TutorGenerateOptions = {},
   ): Promise<TutorResponse<TResponse>> {
-    return enqueue(async () => this.run<TRequest, TResponse>(request, options));
+    if (queueDepth >= MAX_QUEUE_DEPTH) {
+      throw new TutorProviderError(
+        "PROVIDER_BUSY",
+        "The tutor is already working through other requests.",
+        { provider: this.id },
+      );
+    }
+    const deadlineMs = options.timeoutMs ?? this.timeoutMs;
+    // Abandoning the wait also cancels the work: a caller that has given up must not spend
+    // the subscription when its turn finally arrives.
+    const controller = new AbortController();
+    const abortUpstream = (): void => controller.abort();
+    options.signal?.addEventListener("abort", abortUpstream, { once: true });
+
+    queueDepth += 1;
+    const work = enqueue(async () =>
+      this.run<TRequest, TResponse>(request, { ...options, signal: controller.signal }),
+    ).finally(() => {
+      queueDepth -= 1;
+      options.signal?.removeEventListener("abort", abortUpstream);
+    });
+
+    let deadline: NodeJS.Timeout | undefined;
+    try {
+      const response = await new Promise<TutorResponse<TResponse>>((resolve, reject) => {
+        deadline = setTimeout(() => {
+          controller.abort();
+          reject(
+            new TutorProviderError(
+              "PROVIDER_TIMEOUT",
+              `The tutor did not answer within ${Math.round(deadlineMs / 1000)} seconds.`,
+              { provider: this.id },
+            ),
+          );
+        }, deadlineMs);
+        deadline.unref();
+        work.then(resolve, reject);
+      });
+      lastOutcome = "ok";
+      lastError = "";
+      return response;
+    } catch (error) {
+      lastOutcome = "error";
+      lastError = error instanceof Error ? error.message : String(error);
+      // On the deadline path `work` is still running and would otherwise reject unhandled.
+      void work.catch(() => undefined);
+      throw error;
+    } finally {
+      if (deadline) clearTimeout(deadline);
+    }
   }
 
   private async run<TRequest, TResponse>(
@@ -400,19 +473,38 @@ export class CodexTutorProvider implements TutorProvider {
     // Re-checked at the boundary that builds the argument list, so no future caller can
     // reach the command line without passing the same guard.
     this.assertResumableSession(input.sessionId);
-    const shared = ["--skip-git-repo-check", "-C", this.scratchDirectory];
-    if (this.model) shared.push("-m", this.model);
-    shared.push("-c", `model_reasoning_effort=${JSON.stringify(this.reasoningEffort)}`);
-    if (input.schemaFile) shared.push("--output-schema", input.schemaFile);
+    // `codex exec` and `codex exec resume` do not take the same options. Resume rejects
+    // `-C`/`--cd`, `--color` and `-s`/`--sandbox` outright ("error: unexpected argument"),
+    // exits 2, and never reaches the model — which is why every follow-up turn used to fail
+    // while the opening question worked. Only flags both subcommands accept belong here.
+    const common: string[] = ["--skip-git-repo-check"];
+    if (this.model) common.push("-m", this.model);
+    common.push("-c", `model_reasoning_effort=${JSON.stringify(this.reasoningEffort)}`);
+    // A tutor turn calls no tools, so the globally configured MCP servers are booted and
+    // billed for nothing on every exec.
+    common.push("-c", "mcp_servers={}");
+    if (input.schemaFile) common.push("--output-schema", input.schemaFile);
     // `--image` is variadic, so the `=` form keeps the trailing `-` reading the prompt from
     // stdin rather than being swallowed as another image path.
-    for (const file of input.imageFiles) shared.push(`--image=${file}`);
-    shared.push("-o", input.outputFile, "--json", "--color", "never");
-    // `codex exec resume` has no `-s` flag, so the sandbox is set through configuration.
+    for (const file of input.imageFiles) common.push(`--image=${file}`);
+    common.push("-o", input.outputFile, "--json");
+
     if (input.sessionId) {
-      return ["exec", "resume", ...shared, "-c", 'sandbox_mode="read-only"', input.sessionId, "-"];
+      // The working root comes from the spawn's `cwd` instead of `-C`, and the sandbox from
+      // configuration instead of `-s`.
+      return ["exec", "resume", ...common, "-c", 'sandbox_mode="read-only"', input.sessionId, "-"];
     }
-    return ["exec", ...shared, "-s", "read-only", "-"];
+    return [
+      "exec",
+      "-C",
+      this.scratchDirectory,
+      ...common,
+      "--color",
+      "never",
+      "-s",
+      "read-only",
+      "-",
+    ];
   }
 
   private async execute(input: CodexRunInput): Promise<CodexRunOutcome> {

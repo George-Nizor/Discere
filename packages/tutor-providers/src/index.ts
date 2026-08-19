@@ -1,6 +1,9 @@
 export {
   CodexTutorProvider,
+  type CodexOutcome,
   type CodexProviderOptions,
+  type CodexRuntimeStatus,
+  codexRuntimeStatus,
   extractSessionId,
   isResumableSessionId,
   parseModelJson,

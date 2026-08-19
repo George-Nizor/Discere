@@ -1,4 +1,5 @@
 import { existsSync } from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -12,7 +13,8 @@ const WORKSPACE_MARKER = "pnpm-workspace.yaml";
 
 export const DEFAULT_DATABASE_PATH = "data/discere.sqlite";
 export const PROMPTS_DIRECTORY = "prompts";
-export const CODEX_SCRATCH_DIRECTORY = "data/codex-scratch";
+/** Relative to the user's home directory, following the XDG data convention. */
+export const CODEX_SCRATCH_SEGMENTS = [".local", "share", "discere", "codex-scratch"] as const;
 
 export function findRepoRoot(startDirectory: string): string {
   let current = path.resolve(startDirectory);
@@ -57,11 +59,13 @@ export function resolvePromptsDirectory(configured?: string | undefined): string
 }
 
 /**
- * Working root handed to a spawned local model. It sits under the ignored `data/` directory so
- * a generation never writes inside the source tree.
+ * Working root handed to a spawned local model. It sits outside the repository on purpose:
+ * the CLI reads whatever `AGENTS.md` it finds above its working root, and a scratch directory
+ * under the checkout meant every tutor turn shipped this repo's instructions as ~20k input
+ * tokens of context nobody asked for.
  */
 export function resolveCodexScratchDirectory(configured?: string | undefined): string {
   const raw = configured?.trim();
-  if (!raw) return resolveFromRepoRoot(CODEX_SCRATCH_DIRECTORY);
+  if (!raw) return path.join(os.homedir(), ...CODEX_SCRATCH_SEGMENTS);
   return path.isAbsolute(raw) ? raw : resolveFromRepoRoot(raw);
 }

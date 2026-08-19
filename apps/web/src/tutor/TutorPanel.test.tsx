@@ -129,6 +129,37 @@ describe("tutor panel", () => {
     expect(await screen.findByText(/did not finish in time/)).toBeInTheDocument();
   });
 
+  it("shows the cause the server named beneath the generic sentence", async () => {
+    stubFetch({
+      "POST /api/tutor/ask": {
+        status: 502,
+        body: {
+          code: "TUTOR_PROVIDER_FAILED",
+          message: "The local model exited with code 2.",
+          detail: "error: unexpected argument '-C' found",
+        },
+      },
+    });
+    renderPanel();
+    await userEvent.type(screen.getByLabelText("Your question"), "Why did that fail?");
+    await userEvent.click(screen.getByRole("button", { name: "Ask the tutor" }));
+    expect(await screen.findByText(/failed and produced no reply/)).toBeInTheDocument();
+    expect(screen.getByText("error: unexpected argument '-C' found")).toBeInTheDocument();
+  });
+
+  it("tells the learner to start over when the conversation has expired", async () => {
+    stubFetch({
+      "POST /api/tutor/ask": {
+        status: 400,
+        body: { code: "TUTOR_SESSION_INVALID", message: "Bad session id." },
+      },
+    });
+    renderPanel();
+    await userEvent.type(screen.getByLabelText("Your question"), "Carry on from before.");
+    await userEvent.click(screen.getByRole("button", { name: "Ask the tutor" }));
+    expect(await screen.findByText(/conversation expired/)).toBeInTheDocument();
+  });
+
   it("closes on Escape", async () => {
     stubFetch({});
     const onClose = renderPanel();

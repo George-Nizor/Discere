@@ -1,7 +1,7 @@
 import type { TutorIssue, TutoringMode, TutorReplyDraft } from "@discere/contracts";
 import { Loader2, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { errorCode, errorMessage } from "../api/client.js";
+import { errorCode, errorDetail, errorMessage } from "../api/client.js";
 import { askTutor, importTutorReply } from "../api/endpoints.js";
 import { CopyButton } from "../ui/CopyButton.js";
 import { Notice } from "../ui/Feedback.js";
@@ -85,6 +85,7 @@ export function TutorPanel({
   const [pasted, setPasted] = useState("");
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState<string | null>(null);
+  const [failureDetail, setFailureDetail] = useState<string | null>(null);
   const input = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -101,6 +102,7 @@ export function TutorPanel({
     if (asked.length < 2) return;
     setBusy(true);
     setFailure(null);
+    setFailureDetail(null);
     try {
       const result = await askTutor({
         lessonId,
@@ -134,6 +136,7 @@ export function TutorPanel({
       }
     } catch (error) {
       setFailure(tutorErrorMessage(errorCode(error), errorMessage(error, "The tutor failed.")));
+      setFailureDetail(errorDetail(error));
     } finally {
       setBusy(false);
     }
@@ -143,6 +146,7 @@ export function TutorPanel({
     if (!packet) return;
     setBusy(true);
     setFailure(null);
+    setFailureDetail(null);
     try {
       const result = await importTutorReply({
         text: pasted,
@@ -240,6 +244,7 @@ export function TutorPanel({
           {failure ? (
             <Notice live tone="error" title="No reply was produced">
               <p>{failure}</p>
+              {failureDetail ? <p className="tutor-failure-detail">{failureDetail}</p> : null}
             </Notice>
           ) : null}
         </div>

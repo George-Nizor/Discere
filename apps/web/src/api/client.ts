@@ -4,6 +4,8 @@ export class ApiError extends Error {
     message: string,
     readonly status: number,
     readonly code: string,
+    /** One short line naming the underlying cause, when the server knows one. */
+    readonly detail: string | null = null,
   ) {
     super(message);
     this.name = "ApiError";
@@ -13,6 +15,7 @@ export class ApiError extends Error {
 interface ErrorBody {
   code?: unknown;
   message?: unknown;
+  detail?: unknown;
 }
 
 export async function requestJson<T>(url: string, init?: RequestInit): Promise<T> {
@@ -41,7 +44,8 @@ export async function requestJson<T>(url: string, init?: RequestInit): Promise<T
         ? details.message
         : `The request failed with status ${response.status}.`;
     const code = typeof details.code === "string" ? details.code : "REQUEST_FAILED";
-    throw new ApiError(message, response.status, code);
+    const detail = typeof details.detail === "string" ? details.detail : null;
+    throw new ApiError(message, response.status, code, detail);
   }
   return body as T;
 }
@@ -54,4 +58,12 @@ export function errorMessage(error: unknown, fallback: string): string {
 
 export function errorCode(error: unknown): string | null {
   return error instanceof ApiError ? error.code : null;
+}
+
+/**
+ * The generic sentence tells the learner a request failed; this tells them, and the owner,
+ * what actually went wrong. Shown quietly beneath the notice rather than in place of it.
+ */
+export function errorDetail(error: unknown): string | null {
+  return error instanceof ApiError ? error.detail : null;
 }
