@@ -2,6 +2,7 @@ import type {
   JourneyProgress,
   JourneyStageType,
   LearnerStage,
+  LearnerStep,
   LessonJourney,
   StageState,
 } from "@discere/contracts";
@@ -108,7 +109,54 @@ export function completedCount(views: StageView[]): number {
   return views.filter((view) => isStageComplete(view.state)).length;
 }
 
-/** The first quiz in the journey, used by the explainer's "try the question first" action. */
-export function firstStageOfType(views: StageView[], type: JourneyStageType): StageView | null {
-  return views.find((view) => view.stage.type === type) ?? null;
+
+/** Where the learner is inside a stepped lesson, read back from saved interaction state. */
+export const STEP_INDEX_KEY = "stepIndex";
+
+/**
+ * The step the learner should be on. Progress is stored as an index rather than a step id
+ * because a step is a position in a sequence, not an identity — and because an id that no
+ * longer exists after an edit would strand the learner, while an index simply clamps.
+ */
+export function resumeStepIndex(
+  stepCount: number,
+  interactionState: Record<string, unknown> | undefined,
+): number {
+  const saved = interactionState?.[STEP_INDEX_KEY];
+  if (typeof saved !== "number" || !Number.isFinite(saved)) return 0;
+  return Math.max(0, Math.min(stepCount - 1, Math.trunc(saved)));
+}
+
+/** Steps up to and including the active one. Later steps stay unread until they are reached. */
+export function stepViewsFor(
+  steps: readonly LearnerStep[],
+  activeIndex: number,
+): Array<{ step: LearnerStep; index: number; active: boolean }> {
+  return steps
+    .slice(0, Math.max(0, Math.min(steps.length, activeIndex + 1)))
+    .map((step, index) => ({ step, index, active: index === activeIndex }));
+}
+
+/**
+ * Whether a step will let the learner move on. Prose steps advance on request; a step that asks
+ * something waits until it has been answered, so a check cannot be skipped by pressing Continue.
+ */
+export function canAdvanceStep(
+  step: LearnerStep | undefined,
+  answered: { solved: boolean; revealed: boolean },
+): boolean {
+  if (!step) return false;
+  if (step.kind === "check" || step.kind === "transfer") {
+    return answered.solved || answered.revealed;
+  }
+  return true;
+}
+
+/** The visual state a step should show, inheriting the last named one when it names none. */
+export function visualStateAt(steps: readonly LearnerStep[], activeIndex: number): string {
+  for (let index = Math.min(activeIndex, steps.length - 1); index >= 0; index -= 1) {
+    const named = steps[index]?.visualStateId;
+    if (named) return named;
+  }
+  return "";
 }

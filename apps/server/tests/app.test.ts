@@ -32,10 +32,59 @@ describe("Discere API", () => {
       "review",
       "completion",
     ]);
-    expect(body.stages.filter((stage: { type: string }) => stage.type === "quiz")).toHaveLength(4);
+    // One question moved inside the lesson as an inline check, so three remain as quiz stages.
+    expect(body.stages.filter((stage: { type: string }) => stage.type === "quiz")).toHaveLength(3);
     const quiz = body.stages.find((stage: { type: string }) => stage.type === "quiz");
     expect(quiz.question.answerAuthority).toBeUndefined();
     expect(quiz.question.transfer).toBeUndefined();
+  });
+
+  it("delivers the lesson as steps with inline checks stripped of their answers", async () => {
+    const response = await app.inject({
+      method: "GET",
+      url: "/api/courses/electronics-foundations/lessons/current-in-one-loop/journey",
+    });
+    const body = response.json();
+    const explainer = body.stages.find((stage: { type: string }) => stage.type === "explainer");
+
+    // The stage id is unchanged, so progress recorded before the step model still resolves.
+    expect(explainer.id).toBe("current-in-one-loop:explainer");
+    expect(explainer.completionPolicy).toBe("interaction");
+    expect(explainer.steps.length).toBeGreaterThanOrEqual(3);
+    expect(explainer.steps[0].kind).toBe("hook");
+
+    const check = explainer.steps.find((step: { kind: string }) => step.kind === "check");
+    expect(check.question.id).toBe("choose-change-that-raises-current");
+    // Exactly the same protection a quiz stage gets: the answer never leaves the server.
+    expect(check.question.answerAuthority).toBeUndefined();
+    expect(check.question.transfer).toBeUndefined();
+    expect(check.question.choices.length).toBeGreaterThan(1);
+
+    // A question asked inline is not also asked as a quiz stage.
+    const quizIds = body.stages
+      .filter((stage: { type: string }) => stage.type === "quiz")
+      .map((stage: { questionId: string }) => stage.questionId);
+    expect(quizIds).not.toContain("choose-change-that-raises-current");
+  });
+
+  it("keeps the learner's position in a stepped lesson across a reload", async () => {
+    await app.inject({
+      method: "PUT",
+      url: "/api/courses/electronics-foundations/lessons/current-in-one-loop/progress",
+      payload: {
+        stageId: "current-in-one-loop:explainer",
+        state: "active",
+        interactionState: { stepIndex: 3 },
+      },
+    });
+    const restored = await app.inject({
+      method: "GET",
+      url: "/api/courses/electronics-foundations/lessons/current-in-one-loop/progress",
+    });
+    const stage = restored
+      .json()
+      .stages.find((entry: { stageId: string }) => entry.stageId === "current-in-one-loop:explainer");
+    expect(stage.interactionState).toEqual({ stepIndex: 3 });
   });
 
   it("persists journey stage progress and restores the next active stage", async () => {

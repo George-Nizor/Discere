@@ -28,13 +28,36 @@ describe("shared contracts", () => {
       conceptIds: ["current"],
       sourceIds: ["source-1"],
       optional: false,
-      completionPolicy: "view",
-      body: "Current is the rate of charge flow.",
-      takeaway: "Voltage provides the push.",
+      completionPolicy: "interaction",
+      steps: [
+        {
+          id: "hook",
+          kind: "hook",
+          visualStateId: "",
+          blocks: [{ kind: "paragraph", text: "Current is the rate of charge flow." }],
+        },
+        {
+          id: "check",
+          kind: "check",
+          visualStateId: "",
+          blocks: [{ kind: "paragraph", text: "Your turn." }],
+          question: {
+            id: "q1",
+            conceptIds: ["current"],
+            prompt: "What raises the current?",
+            responseType: "short_text",
+            difficulty: 1,
+            hints: [],
+            sourceIds: [],
+          },
+        },
+      ],
       visual: { kind: "circuit", alt: "A closed circuit." },
     });
     expect(stage.type).toBe("explainer");
     expect("answerAuthority" in stage).toBe(false);
+    // A step's inline question is delivered exactly as a quiz stage's is: no marking data.
+    expect(stage.steps[1]?.question && "answerAuthority" in stage.steps[1].question).toBe(false);
   });
 
   it("requires an active stage in persisted journey progress", () => {

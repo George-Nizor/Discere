@@ -8,6 +8,7 @@ import {
   type AuthoredLessonDraft,
   AuthoredLessonDraftSchema,
   type CourseBundle,
+  type LessonStep,
   StyleEditDraftSchema,
   type StyleViolation,
   toAnswerAuthority,
@@ -105,6 +106,47 @@ async function courseDirectories(): Promise<string[]> {
  * writing gate and the review file both read the course through this one list, so neither can
  * quietly skip a field the other checks.
  */
+/**
+ * Turns a generated draft into steps. A model writes one run of prose and a single takeaway;
+ * this is where that becomes beats. Paragraph blocks only — a definition or a callout is a
+ * judgement about what deserves emphasis, which is a human authoring edit, not a generated one.
+ *
+ * Splitting on blank lines keeps the author's own paragraphing rather than guessing at breaks.
+ */
+export function draftSteps(draft: AuthoredLessonDraft): LessonStep[] {
+  const paragraphs = draft.explanation
+    .split(/\n{2,}/)
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+  const steps: LessonStep[] = [
+    {
+      id: "orientation",
+      kind: "hook",
+      blocks: [{ kind: "paragraph", text: draft.orientation }],
+      visualStateId: "",
+      checkQuestionId: "",
+      activityId: "",
+    },
+    ...paragraphs.map((text, index) => ({
+      id: `explain-${index + 1}`,
+      kind: "explain" as const,
+      blocks: [{ kind: "paragraph" as const, text }],
+      visualStateId: "",
+      checkQuestionId: "",
+      activityId: "",
+    })),
+    {
+      id: "takeaway",
+      kind: "explain",
+      blocks: [{ kind: "callout", tone: "key", text: draft.takeaway }],
+      visualStateId: "",
+      checkQuestionId: "",
+      activityId: "",
+    },
+  ];
+  return steps;
+}
+
 export function bundleFields(bundle: CourseBundle): AuthoredField[] {
   const fields: AuthoredField[] = [
     { path: "course.description", text: bundle.course.description, context: "lesson" },
@@ -127,11 +169,23 @@ export function bundleFields(bundle: CourseBundle): AuthoredField[] {
     fields.push(
       { path: `lessons.${lesson.id}.title`, text: lesson.title, context: "lesson" },
       { path: `lessons.${lesson.id}.orientation`, text: lesson.orientation, context: "lesson" },
-      { path: `lessons.${lesson.id}.explanation`, text: lesson.explanation, context: "lesson" },
-      { path: `lessons.${lesson.id}.takeaway`, text: lesson.takeaway, context: "lesson" },
       { path: `lessons.${lesson.id}.reviewLabel`, text: lesson.reviewLabel, context: "lesson" },
       { path: `lessons.${lesson.id}.nextAction`, text: lesson.nextAction, context: "lesson" },
     );
+    // Every learner-facing string has to be enumerated here or it silently bypasses the lint
+    // and answer-leak gate. Step blocks are prose the learner reads, so they belong.
+    for (const step of lesson.steps) {
+      step.blocks.forEach((block, index) => {
+        const path = `lessons.${lesson.id}.steps.${step.id}.blocks.${index}`;
+        if (block.kind === "equation") return;
+        if (block.kind === "definition") {
+          fields.push({ path: `${path}.term`, text: block.term, context: "lesson" });
+          fields.push({ path: `${path}.text`, text: block.text, context: "lesson" });
+          return;
+        }
+        fields.push({ path: `${path}.text`, text: block.text, context: "lesson" });
+      });
+    }
     for (const [name, title] of Object.entries(lesson.stageTitles)) {
       fields.push({
         path: `lessons.${lesson.id}.stageTitles.${name}`,
@@ -571,8 +625,7 @@ async function merge(courseId: string, slug: string, lessonId: string): Promise<
 
   lesson.title = draft.title;
   lesson.orientation = draft.orientation;
-  lesson.explanation = draft.explanation;
-  lesson.takeaway = draft.takeaway;
+  lesson.steps = draftSteps(draft);
   lesson.reviewLabel = draft.reviewLabel;
   lesson.nextAction = draft.nextAction;
   lesson.stageTitles = draft.stageTitles;

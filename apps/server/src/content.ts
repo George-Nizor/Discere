@@ -11,6 +11,7 @@ import type {
   FlashcardRecord,
   LearnerQuestion,
   LearnerStage,
+  LearnerStep,
   LessonBeat,
   LessonJourney,
   LessonResponse,
@@ -39,6 +40,44 @@ interface LoadedCourse {
 
 function stageIds(lesson: LessonBeat, count: number): string[] {
   return Array.from({ length: count }, (_, index) => `${lesson.id}:quiz-${index + 1}`);
+}
+
+/**
+ * Resolves each authored step's references into the payload the learner receives. An inline
+ * check carries its question with the answer authority and transfer task removed, exactly as a
+ * quiz stage does — a step is a different way of asking, not a different way of grading, and it
+ * submits through the same attempts endpoint.
+ */
+function learnerSteps(lesson: LessonBeat, bundle: CourseBundle): LearnerStep[] {
+  return lesson.steps.map((step) => {
+    const question = step.checkQuestionId
+      ? bundle.questions.find((item) => item.id === step.checkQuestionId)
+      : undefined;
+    if (step.checkQuestionId && !question) {
+      throw new Error(
+        `Lesson '${lesson.id}' step '${step.id}' references missing question '${step.checkQuestionId}'.`,
+      );
+    }
+    const activity = step.activityId
+      ? bundle.activities.find((item) => item.id === step.activityId)
+      : undefined;
+    if (step.activityId && !activity) {
+      throw new Error(
+        `Lesson '${lesson.id}' step '${step.id}' references missing activity '${step.activityId}'.`,
+      );
+    }
+    const learnerQuestion = question
+      ? (({ answerAuthority: _authority, transfer: _transfer, ...rest }) => rest)(question)
+      : undefined;
+    return {
+      id: step.id,
+      kind: step.kind,
+      blocks: step.blocks,
+      visualStateId: step.visualStateId,
+      ...(learnerQuestion ? { question: learnerQuestion as LearnerQuestion } : {}),
+      ...(activity ? { activity } : {}),
+    };
+  });
 }
 
 /**
@@ -259,9 +298,9 @@ export class ContentRepository {
         conceptIds: lesson.conceptIds,
         sourceIds: lesson.sourceIds,
         optional: false,
-        completionPolicy: "view",
-        body: `${lesson.orientation}\n\n${lesson.explanation}`,
-        takeaway: lesson.takeaway,
+        // A lesson is finished by working through it, not by looking at it.
+        completionPolicy: "interaction",
+        steps: learnerSteps(lesson, bundle),
         visual: {
           kind: lesson.visualKind,
           ...(lesson.visualKind === "none" ? {} : { briefId: lesson.visualBrief.id }),
@@ -407,7 +446,15 @@ function essayStage(lesson: LessonBeat, essay: EssayTopic): EssayStage {
 
 /** A rough reading and working budget, so the estimate moves with the lesson's real length. */
 function estimatedMinutes(lesson: LessonBeat, questionCount: number, hasEssay: boolean): number {
-  const words = `${lesson.orientation} ${lesson.explanation}`.split(/\s+/u).filter(Boolean).length;
+  const words = [
+    lesson.orientation,
+    ...lesson.steps.flatMap((step) =>
+      step.blocks.map((block) => (block.kind === "equation" ? "" : block.text ?? "")),
+    ),
+  ]
+    .join(" ")
+    .split(/\s+/u)
+    .filter(Boolean).length;
   return Math.max(5, Math.round(words / 130) + 3 + questionCount * 2 + (hasEssay ? 6 : 0));
 }
 

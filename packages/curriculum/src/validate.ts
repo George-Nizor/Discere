@@ -213,10 +213,121 @@ function multipleChoiceShareIssues(bundle: CourseBundle): ContentIssue[] {
   ];
 }
 
+/** Words a learner actually reads in a step, so an equation is not counted as prose. */
+function stepWordCount(step: CourseBundle["lessons"][number]["steps"][number]): number {
+  return step.blocks
+    .flatMap((block) => (block.kind === "equation" ? [] : [block.kind === "definition" ? `${block.term} ${block.text}` : block.text]))
+    .join(" ")
+    .split(/\s+/u)
+    .filter(Boolean).length;
+}
+
+const MAX_EXPLAIN_WORDS = 120;
+
+/**
+ * Rules for the step model. Broken references are errors because the lesson cannot play; shape
+ * advice is a warning, because a lesson that opens without a hook is worse rather than invalid.
+ */
+function lessonStepIssues(
+  lesson: CourseBundle["lessons"][number],
+  questionIds: ReadonlySet<string>,
+  activityIds: ReadonlySet<string>,
+): ContentIssue[] {
+  const issues: ContentIssue[] = [];
+  const path = `lessons.${lesson.id}.steps`;
+  if (lesson.steps.length === 0) return issues;
+
+  const seen = new Set<string>();
+  const quizIds = new Set(lesson.questionIds);
+  for (const step of lesson.steps) {
+    const at = `${path}.${step.id}`;
+    if (seen.has(step.id)) {
+      issues.push({
+        path: at,
+        code: "DUPLICATE_STEP_ID",
+        severity: "error",
+        message: `Lesson '${lesson.id}' has more than one step called '${step.id}'.`,
+      });
+    }
+    seen.add(step.id);
+
+    if (step.checkQuestionId) {
+      if (!questionIds.has(step.checkQuestionId)) {
+        missingReference(issues, at, "question", step.checkQuestionId);
+      }
+      // Answering inline and then meeting the same question as a quiz stage is a drafting slip.
+      if (quizIds.has(step.checkQuestionId)) {
+        issues.push({
+          path: at,
+          code: "QUESTION_ASKED_TWICE",
+          severity: "error",
+          message: `Question '${step.checkQuestionId}' is asked by step '${step.id}' and again as a quiz stage of '${lesson.id}'. Remove it from questionIds.`,
+        });
+      }
+    }
+    if (step.activityId && !activityIds.has(step.activityId)) {
+      missingReference(issues, at, "activity", step.activityId);
+    }
+    if ((step.kind === "check" || step.kind === "transfer") && !step.checkQuestionId) {
+      issues.push({
+        path: at,
+        code: "STEP_MISSING_QUESTION",
+        severity: "error",
+        message: `Step '${step.id}' is a ${step.kind} step, so it needs a question to ask.`,
+      });
+    }
+    if (step.kind === "interact" && !step.activityId) {
+      issues.push({
+        path: at,
+        code: "STEP_MISSING_ACTIVITY",
+        severity: "error",
+        message: `Step '${step.id}' is an interact step, so it needs an activity.`,
+      });
+    }
+    if (step.kind === "explain" && stepWordCount(step) > MAX_EXPLAIN_WORDS) {
+      issues.push({
+        path: at,
+        code: "STEP_TOO_LONG",
+        severity: "warning",
+        message: `Step '${step.id}' runs to ${stepWordCount(step)} words. Split it: a step should be readable without losing the visual.`,
+      });
+    }
+  }
+
+  if (lesson.steps[0]?.kind !== "hook") {
+    issues.push({
+      path,
+      code: "LESSON_WITHOUT_HOOK",
+      severity: "warning",
+      message: `Lesson '${lesson.id}' does not open with a hook, so the learner reads before they predict.`,
+    });
+  }
+  if (!lesson.steps.some((step) => step.kind === "check" || step.kind === "transfer")) {
+    issues.push({
+      path,
+      code: "LESSON_WITHOUT_CHECK",
+      severity: "warning",
+      message: `Lesson '${lesson.id}' asks the learner nothing while it teaches.`,
+    });
+  }
+  return issues;
+}
+
 /** Authored material no lesson reaches is a drafting slip worth reporting, not a failure. */
 function unreachableContentIssues(bundle: CourseBundle): ContentIssue[] {
-  const usedActivities = new Set(bundle.lessons.map((lesson) => lesson.activityId));
-  const usedQuestions = new Set(bundle.lessons.flatMap((lesson) => lesson.questionIds));
+  const usedActivities = new Set([
+    ...bundle.lessons.map((lesson) => lesson.activityId),
+    ...bundle.lessons.flatMap((lesson) =>
+      lesson.steps.map((step) => step.activityId).filter(Boolean),
+    ),
+  ]);
+  // A question asked inline by a step is reached, even though it is not a quiz stage.
+  const usedQuestions = new Set([
+    ...bundle.lessons.flatMap((lesson) => lesson.questionIds),
+    ...bundle.lessons.flatMap((lesson) =>
+      lesson.steps.map((step) => step.checkQuestionId).filter(Boolean),
+    ),
+  ]);
   const usedCards = new Set(bundle.lessons.flatMap((lesson) => lesson.flashcardIds));
   const usedEssays = new Set(
     bundle.lessons.flatMap((lesson) => (lesson.essayId ? [lesson.essayId] : [])),
@@ -408,6 +519,7 @@ export function validateCourseBundle(input: unknown): ContentValidation {
       missingReference(issues, `lessons.${lesson.id}.essayId`, "essay", lesson.essayId);
     }
     issues.push(...lessonVisualIssues(lesson));
+    issues.push(...lessonStepIssues(lesson, questionIds, activityIds));
     for (const visualIssue of inspectVisualBrief(lesson.visualBrief)) {
       issues.push({
         path: `lessons.${lesson.id}.visualBrief`,
@@ -417,8 +529,14 @@ export function validateCourseBundle(input: unknown): ContentValidation {
       });
     }
     lintField(issues, `lessons.${lesson.id}.orientation`, lesson.orientation, "lesson");
-    lintField(issues, `lessons.${lesson.id}.explanation`, lesson.explanation, "lesson");
-    lintField(issues, `lessons.${lesson.id}.takeaway`, lesson.takeaway, "lesson");
+    for (const step of lesson.steps) {
+      step.blocks.forEach((block, index) => {
+        if (block.kind === "equation") return;
+        const at = `lessons.${lesson.id}.steps.${step.id}.blocks.${index}`;
+        if (block.kind === "definition") lintField(issues, `${at}.term`, block.term, "lesson");
+        lintField(issues, `${at}.text`, block.text, "lesson");
+      });
+    }
     lintField(issues, `lessons.${lesson.id}.nextAction`, lesson.nextAction, "lesson");
     lintField(issues, `lessons.${lesson.id}.reviewLabel`, lesson.reviewLabel, "lesson");
     for (const [name, title] of Object.entries(lesson.stageTitles)) {

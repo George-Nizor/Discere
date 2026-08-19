@@ -16,14 +16,13 @@ import {
   buildStageViews,
   canAdvanceFrom,
   findStageView,
-  firstStageOfType,
   resolveStageId,
   type StageView,
   stageTypeLabel,
 } from "./stage-machine.js";
 import { CompletionStageView } from "./stages/CompletionStageView.js";
 import { EssayStageView } from "./stages/EssayStageView.js";
-import { ExplainerStageView } from "./stages/ExplainerStageView.js";
+import { StoryStageView } from "./stages/StoryStageView.js";
 import { InteractiveVisualStageView } from "./stages/InteractiveVisualStageView.js";
 import { QuizStageView } from "./stages/QuizStageView.js";
 import { ReviewStageView } from "./stages/ReviewStageView.js";
@@ -79,6 +78,19 @@ function LessonJourney({
     [courseId, lessonId, navigate],
   );
 
+  const saveStepPosition = useCallback(
+    (stageId: string, stepIndex: number) => {
+      // Deliberately not awaited and not invalidating: the learner is mid-lesson and a refetch
+      // here would rebuild the stage under them. The position is read again on the next load.
+      void saveJourneyProgress(courseId, lessonId, {
+        stageId,
+        state: "active",
+        interactionState: { stepIndex },
+      });
+    },
+    [courseId, lessonId],
+  );
+
   const complete = useCallback(
     async (view: StageView, followingStageId: string | null) => {
       const saved = await saveJourneyProgress(courseId, lessonId, {
@@ -118,7 +130,6 @@ function LessonJourney({
     return <ErrorScreen message="That stage is not part of this lesson." title="Stage not found" />;
   }
 
-  const quiz = firstStageOfType(views, "quiz");
   const following = views[current.index + 1] ?? null;
   const returnTo = findStageView(views, returnToStageId ?? undefined);
   const lessons = course.data?.lessons ?? [];
@@ -171,10 +182,10 @@ function LessonJourney({
           courseId={courseId}
           nextLesson={upcoming ? { id: upcoming.id, title: upcoming.title } : null}
           onComplete={() => void complete(current, following?.stage.id ?? null)}
-          onTryQuestion={
-            quiz && quiz.index !== current.index
-              ? () => goToStage(quiz.stage.id, current.stage.id)
-              : null
+          onStepChange={(stepIndex) => saveStepPosition(current.stage.id, stepIndex)}
+          savedInteractionState={
+            progress.data?.stages.find((entry) => entry.stageId === current.stage.id)
+              ?.interactionState
           }
           returnLink={
             returnTo && returnTo.index !== current.index
@@ -212,20 +223,27 @@ function StageCanvas({
   courseId,
   nextLesson,
   onComplete,
-  onTryQuestion,
+  onStepChange,
+  savedInteractionState,
   returnLink,
 }: {
   stage: LearnerStage;
   courseId: string;
   nextLesson: { id: string; title: string } | null;
   onComplete: () => void;
-  onTryQuestion: (() => void) | null;
+  onStepChange: (stepIndex: number) => void;
+  savedInteractionState: Record<string, unknown> | undefined;
   returnLink: { label: string; onSelect: () => void } | null;
 }) {
   switch (stage.type) {
     case "explainer":
       return (
-        <ExplainerStageView onContinue={onComplete} onTryQuestion={onTryQuestion} stage={stage} />
+        <StoryStageView
+          onComplete={onComplete}
+          onStepChange={onStepChange}
+          savedInteractionState={savedInteractionState}
+          stage={stage}
+        />
       );
     case "interactive_visual":
       return <InteractiveVisualStageView onContinue={onComplete} stage={stage} />;
