@@ -8,6 +8,8 @@ import type {
   TutorAskResponse,
   TutorIssue,
   TutoringMode,
+  TutorProbeResponse,
+  TutorStatus,
 } from "@discere/contracts";
 import {
   EssayAssessmentDraftSchema,
@@ -34,6 +36,7 @@ import type { ContentRepository } from "./content.js";
 import type { DiscereStore, EssayAssessmentRow } from "./db/store.js";
 import { HttpError } from "./errors.js";
 import { createTutorRuntime, type TutorRuntime, tutorProviderHttpError } from "./tutor-provider.js";
+import { buildTutorStatus } from "./tutor-status.js";
 
 export interface TutorRouteDependencies {
   content: ContentRepository;
@@ -110,6 +113,60 @@ export async function registerTutorRoutes(
       throw new HttpError(404, "Essay not found.", "ESSAY_NOT_FOUND");
     return { stage, lesson: lessonAndQuestion(lessonId).lesson };
   }
+
+  /** Read-only, so the settings screen can poll it without touching the subscription. */
+  app.get("/api/tutor/status", async (): Promise<TutorStatus> => buildTutorStatus(runtime));
+
+  /**
+   * Deliberately a live generation: the owner asked for proof the OpenAI link works, and only
+   * a real round trip is proof. It runs the same provider, schema and prompt builder as a
+   * tutor question, and stops before the acceptance gate — a probe reports whether the link
+   * answered, not whether the answer was good enough to show a learner.
+   */
+  app.post("/api/tutor/probe", async (): Promise<TutorProbeResponse> => {
+    if (!runtime.provider.generatesInProcess) {
+      return {
+        ok: false,
+        durationMs: 0,
+        message: `The ${runtime.id} provider answers by copy and paste, so there is no link to test.`,
+      };
+    }
+    const lesson = content.currentLesson();
+    const probeRequest: TutorRequest<unknown> = {
+      operation: "tutor_reply",
+      requestId: randomUUID(),
+      payload: buildTutorReplyPayload(
+        lesson,
+        { question: "Reply with one short sentence confirming you received this.", mode: "coach" },
+        undefined,
+      ),
+    };
+    const startedAt = Date.now();
+    try {
+      await runtime.provider.generate(probeRequest, {
+        outputSchema: TUTOR_REPLY_SCHEMA,
+        parsePayload: (value) => TutorReplyDraftSchema.parse(value),
+        timeoutMs: runtime.askTimeoutMs,
+        signal: abort.signal,
+      });
+    } catch (error) {
+      const duration = Date.now() - startedAt;
+      if (error instanceof TutorProviderError) {
+        const http = tutorProviderHttpError(error);
+        return {
+          ok: false,
+          durationMs: duration,
+          message: http.detail ? `${error.message} ${http.detail}` : error.message,
+        };
+      }
+      throw error;
+    }
+    return {
+      ok: true,
+      durationMs: Date.now() - startedAt,
+      message: `${runtime.provider.label} answered.`,
+    };
+  });
 
   app.post("/api/tutor/ask", async (request): Promise<TutorAskResponse> => {
     const body = TutorAskRequestSchema.parse(request.body);

@@ -163,6 +163,42 @@ export type StyleEditDraft = z.infer<typeof StyleEditDraftSchema>;
 export const TutorProviderIdSchema = z.enum(["codex", "companion", "mock"]);
 export type TutorProviderId = z.infer<typeof TutorProviderIdSchema>;
 
+/**
+ * What the owner needs to see to know whether the OpenAI link is live, without reading a log.
+ * Deliberately flat: no unions and no optionals, so the same shape can be handed to constrained
+ * decoding later without `oneOf` appearing in its JSON Schema. Unknown values are the empty
+ * string, `0`, or `false`, and `quotaKnown` says whether the quota fields mean anything.
+ */
+export const TutorStatusSchema = z
+  .object({
+    provider: TutorProviderIdSchema,
+    /** Empty when the provider follows the account default. */
+    model: z.string(),
+    binaryFound: z.boolean(),
+    binaryVersion: z.string(),
+    authPresent: z.boolean(),
+    queueDepth: z.number().int().min(0),
+    lastOutcome: z.enum(["none", "ok", "error"]),
+    lastError: z.string(),
+    quotaKnown: z.boolean(),
+    quotaPlanType: z.string(),
+    quotaUsedPercent: z.number(),
+    /** Unix seconds at which the current quota window resets; `0` when unknown. */
+    quotaResetsAt: z.number().int().min(0),
+  })
+  .strict();
+export type TutorStatus = z.infer<typeof TutorStatusSchema>;
+
+export const TutorProbeResponseSchema = z
+  .object({
+    ok: z.boolean(),
+    /** Round-trip milliseconds for the live call. */
+    durationMs: z.number().int().min(0),
+    message: z.string(),
+  })
+  .strict();
+export type TutorProbeResponse = z.infer<typeof TutorProbeResponseSchema>;
+
 export const TutorAskRequestSchema = z
   .object({
     lessonId: z.string().min(1).max(200),

@@ -6,6 +6,7 @@ import type {
   JourneyProgress,
   JourneyResponse,
   ReviewHomeResponse,
+  TutorStatus,
 } from "@discere/contracts";
 import { type UseQueryResult, useQuery } from "@tanstack/react-query";
 import {
@@ -16,6 +17,7 @@ import {
   getJourney,
   getJourneyProgress,
   getReviewHome,
+  getTutorStatus,
 } from "./endpoints.js";
 
 export const queryKeys = {
@@ -30,10 +32,16 @@ export const queryKeys = {
   notebook: (lessonId: string) => ["notebook", lessonId] as const,
   reviewHome: ["review-home"] as const,
   reviewSession: (sessionId: string) => ["review-session", sessionId] as const,
+  tutorStatus: ["tutor-status"] as const,
 };
 
 export function useHome(): UseQueryResult<HomeResponse> {
   return useQuery({ queryKey: queryKeys.home, queryFn: getHome });
+}
+
+/** Cheap and file-backed on the server, so the settings screen may re-read it freely. */
+export function useTutorStatus(): UseQueryResult<TutorStatus> {
+  return useQuery({ queryKey: queryKeys.tutorStatus, queryFn: getTutorStatus, staleTime: 5_000 });
 }
 
 export function useCourses(): UseQueryResult<CourseListResponse> {

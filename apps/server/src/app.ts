@@ -72,7 +72,16 @@ export async function createApp(options: AppOptions = {}): Promise<DiscereApp> {
       });
     }
     if (error instanceof HttpError) {
-      return reply.status(error.statusCode).send({ code: error.code, message: error.message });
+      // A server-side fault leaves a trace even though the learner only sees one sentence.
+      // Provider diagnostics used to be attached to the error and then dropped here.
+      if (error.statusCode >= 500) {
+        app.log.error({ code: error.code, detail: error.detail }, error.message);
+      }
+      return reply.status(error.statusCode).send({
+        code: error.code,
+        message: error.message,
+        ...(error.detail === undefined ? {} : { detail: error.detail }),
+      });
     }
     app.log.error(error);
     return reply

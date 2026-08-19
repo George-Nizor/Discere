@@ -78,6 +78,12 @@ function invocations(): Array<Record<string, unknown>> {
   return logEntries().filter((entry) => "args" in entry);
 }
 
+/** The argument list of one recorded invocation, or an empty list if it never happened. */
+function argsOf(index: number): string[] {
+  const entry = invocations()[index];
+  return Array.isArray(entry?.["args"]) ? (entry["args"] as string[]) : [];
+}
+
 function provider(overrides: Record<string, unknown> = {}): CodexTutorProvider {
   return new CodexTutorProvider({
     binary: FAKE_CODEX,
@@ -242,6 +248,123 @@ describe("Codex tutor provider", () => {
     expect(args).toEqual(expect.arrayContaining(['sandbox_mode="read-only"']));
     expect(args).not.toContain("-s");
     expect(invocations()[0]?.["resumedSessionId"]).toBe("99999999-8888-4777-8666-555555555555");
+  });
+
+  it("builds the opening command line with the working root and sandbox on it", async () => {
+    environment([{ output: CLEAN_REPLY }]);
+    const scratch = path.join(workspace, "scratch");
+    await provider({ scratchDirectory: scratch, model: "gpt-test" }).generate(
+      REQUEST,
+      REPLY_OPTIONS,
+    );
+
+    const args = argsOf(0).map((arg) =>
+      arg.startsWith(scratch) ? arg.replace(scratch, "<scratch>") : arg,
+    );
+    expect(args.filter((arg) => !arg.startsWith("<scratch>"))).toEqual([
+      "exec",
+      "-C",
+      "--skip-git-repo-check",
+      "-m",
+      "gpt-test",
+      "-c",
+      'model_reasoning_effort="low"',
+      "-c",
+      "mcp_servers={}",
+      "--output-schema",
+      "-o",
+      "--json",
+      "--color",
+      "never",
+      "-s",
+      "read-only",
+      "-",
+    ]);
+  });
+
+  it("builds a resume command line free of the options the CLI rejects", async () => {
+    environment([{ output: CLEAN_REPLY }]);
+    const scratch = path.join(workspace, "scratch");
+    await provider({ scratchDirectory: scratch, model: "gpt-test" }).generate(REQUEST, {
+      ...REPLY_OPTIONS,
+      sessionId: "99999999-8888-4777-8666-555555555555",
+    });
+
+    const args = argsOf(0).map((arg) =>
+      arg.startsWith(scratch) ? arg.replace(scratch, "<scratch>") : arg,
+    );
+    expect(args.filter((arg) => !arg.startsWith("<scratch>"))).toEqual([
+      "exec",
+      "resume",
+      "--skip-git-repo-check",
+      "-m",
+      "gpt-test",
+      "-c",
+      'model_reasoning_effort="low"',
+      "-c",
+      "mcp_servers={}",
+      "--output-schema",
+      "-o",
+      "--json",
+      "-c",
+      'sandbox_mode="read-only"',
+      "99999999-8888-4777-8666-555555555555",
+      "-",
+    ]);
+    // The CLI exits 2 on any of these before the model is reached.
+    for (const rejected of ["-C", "--cd", "--color", "-s", "--sandbox"]) {
+      expect(args).not.toContain(rejected);
+    }
+  });
+
+  it("carries a conversation across an opening question and a follow-up", async () => {
+    environment([{ output: CLEAN_REPLY }]);
+    const instance = provider();
+
+    const first = await instance.generate(REQUEST, REPLY_OPTIONS);
+    expect(first.sessionId).toBe("11111111-2222-4333-8444-555555555555");
+
+    const followUp = await instance.generate(
+      { ...REQUEST, payload: { learnerQuestion: "And if the resistance doubles?" } },
+      { ...REPLY_OPTIONS, sessionId: first.sessionId ?? "" },
+    );
+    expect(followUp.payload).toEqual(CLEAN_REPLY);
+    expect(followUp.sessionId).toBe("11111111-2222-4333-8444-555555555555");
+
+    const calls = invocations();
+    expect(calls).toHaveLength(2);
+    expect(argsOf(0)[1]).not.toBe("resume");
+    expect(argsOf(1).slice(0, 2)).toEqual(["exec", "resume"]);
+  });
+
+  it("times a queued request out from when it was accepted, not from when it starts", async () => {
+    environment([{ sleepMs: 800, output: CLEAN_REPLY }]);
+    const instance = provider();
+
+    const running = instance.generate(REQUEST, { ...REPLY_OPTIONS, timeoutMs: 2_000 });
+    const queued = await instance
+      .generate(REQUEST, { ...REPLY_OPTIONS, timeoutMs: 200 })
+      .catch((error: unknown) => error);
+
+    expect(queued).toBeInstanceOf(TutorProviderError);
+    expect((queued as TutorProviderError).code).toBe("PROVIDER_TIMEOUT");
+    // The waiting request never reached the CLI, so no quota was spent on it.
+    expect(invocations()).toHaveLength(1);
+    await running;
+  });
+
+  it("refuses a fourth queued generation rather than making the learner wait", async () => {
+    environment([{ sleepMs: 400, output: CLEAN_REPLY }]);
+    const instance = provider();
+
+    const accepted = [0, 1, 2].map(async () => instance.generate(REQUEST, REPLY_OPTIONS));
+    const rejected = await instance
+      .generate(REQUEST, REPLY_OPTIONS)
+      .catch((error: unknown) => error);
+
+    expect(rejected).toBeInstanceOf(TutorProviderError);
+    expect((rejected as TutorProviderError).code).toBe("PROVIDER_BUSY");
+    await Promise.all(accepted);
   });
 
   it("runs one generation at a time so the subscription is never used twice at once", async () => {

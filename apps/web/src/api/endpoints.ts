@@ -41,6 +41,10 @@ import {
   type TutorAskRequest,
   type TutorAskResponse,
   TutorAskResponseSchema,
+  type TutorProbeResponse,
+  TutorProbeResponseSchema,
+  type TutorStatus,
+  TutorStatusSchema,
   type TutorIssue,
   type TutoringMode,
   type TutorReplyDraft,
@@ -229,6 +233,17 @@ export async function submitTransfer(
       method: "POST",
       body: JSON.stringify(input),
     }),
+  );
+}
+
+export async function getTutorStatus(): Promise<TutorStatus> {
+  return TutorStatusSchema.parse(await requestJson<unknown>("/api/tutor/status"));
+}
+
+/** Spends one real generation on purpose: only a round trip proves the link is up. */
+export async function probeTutor(): Promise<TutorProbeResponse> {
+  return TutorProbeResponseSchema.parse(
+    await requestJson<unknown>("/api/tutor/probe", { method: "POST" }),
   );
 }
 

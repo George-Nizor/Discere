@@ -1,4 +1,4 @@
-import { BookOpen, ChartNoAxesColumn, House, Layers } from "lucide-react";
+import { BookOpen, ChartNoAxesColumn, House, Layers, Settings } from "lucide-react";
 import { NavLink } from "react-router";
 import { useHome } from "../api/queries.js";
 import { initialsOf } from "../lib/format.js";
@@ -9,6 +9,7 @@ const DESTINATIONS = [
   { to: paths.courses, label: "Courses", icon: BookOpen, end: false },
   { to: paths.review, label: "Review", icon: Layers, end: false },
   { to: paths.progress, label: "Progress", icon: ChartNoAxesColumn, end: false },
+  { to: paths.settings, label: "Settings", icon: Settings, end: false },
 ];
 
 /**

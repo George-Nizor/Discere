@@ -101,6 +101,10 @@ test.describe("approved reference screens", () => {
       await page.goto("/progress");
       await capture("progress");
 
+      await page.goto("/settings");
+      await expect(page.getByRole("heading", { name: "Tutor and OpenAI link" })).toBeVisible();
+      await capture("settings");
+
       await gotoStage(page, journey, "explainer");
       await page.getByRole("button", { name: "Ask the tutor" }).click();
       await capture("tutor-panel");

@@ -14,7 +14,9 @@ export type TutorProviderErrorCode =
   | "PROVIDER_WRITING_GATE"
   | "PROVIDER_ABORTED"
   /** The caller supplied a session identifier the provider will not put on a command line. */
-  | "PROVIDER_SESSION_INVALID";
+  | "PROVIDER_SESSION_INVALID"
+  /** Too many generations are already queued; waiting would outlast the learner's patience. */
+  | "PROVIDER_BUSY";
 
 export interface TutorProviderErrorOptions {
   provider: string;

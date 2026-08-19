@@ -1,4 +1,6 @@
-import { existsSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { existsSync, readdirSync } from "node:fs";
+import { homedir } from "node:os";
 import { resolve } from "node:path";
 import {
   childEnvironment,
@@ -84,6 +86,54 @@ async function inspectPort(name, host, port, kind) {
 
 await inspectPort("API port", apiHost, apiPort, "api");
 await inspectPort("Web port", webHost, webPort, "web");
+
+/**
+ * Playwright downloads Chromium but not the system libraries it links against, and a missing
+ * one surfaces as a browser that will not launch rather than as a missing package. Asking the
+ * dynamic linker is the only check that also accounts for an LD_LIBRARY_PATH workaround.
+ */
+function checkBrowserLibraries() {
+  const cache = process.env.PLAYWRIGHT_BROWSERS_PATH || resolve(homedir(), ".cache/ms-playwright");
+  if (!existsSync(cache)) {
+    record("warning", "Browser libraries", `no Playwright browsers in ${cache}; run 'pnpm --filter @discere/web exec playwright install chromium'`);
+    return;
+  }
+  let binary;
+  for (const entry of readdirSync(cache).filter((name) => name.startsWith("chromium")).sort().reverse()) {
+    for (const candidate of ["chrome-linux64/chrome", "chrome-linux/chrome", "chrome-linux/headless_shell"]) {
+      const full = resolve(cache, entry, candidate);
+      if (existsSync(full)) { binary = full; break; }
+    }
+    if (binary) break;
+  }
+  if (!binary) {
+    record("warning", "Browser libraries", "no Chromium binary found; run 'pnpm --filter @discere/web exec playwright install chromium'");
+    return;
+  }
+  let output;
+  try {
+    output = spawnSync("ldd", [binary], { encoding: "utf8" }).stdout ?? "";
+  } catch {
+    record("warning", "Browser libraries", "'ldd' is unavailable, so Chromium's libraries could not be checked");
+    return;
+  }
+  const missing = output
+    .split("\n")
+    .filter((line) => line.includes("not found"))
+    .map((line) => line.trim().split(/\s+/)[0])
+    .filter(Boolean);
+  if (missing.length === 0) {
+    record("ok", "Browser libraries", "Chromium's shared libraries all resolve");
+    return;
+  }
+  record(
+    "warning",
+    "Browser libraries",
+    `${missing.join(", ")} missing, so Playwright cannot launch Chromium. Install them with 'sudo apt-get install -y libnspr4 libnss3 libasound2t64', or without root: 'mkdir -p /tmp/discere-browser-libs/debs && cd /tmp/discere-browser-libs/debs && apt-get download libnspr4 libnss3 libasound2t64 && for d in *.deb; do dpkg -x "$d" /tmp/discere-browser-libs; done' then export LD_LIBRARY_PATH=/tmp/discere-browser-libs/usr/lib/x86_64-linux-gnu`,
+  );
+}
+
+checkBrowserLibraries();
 
 if (manager && existsSync(resolve("node_modules"))) {
   try {
