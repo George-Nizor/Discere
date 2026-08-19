@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { AssuranceLevelSchema } from "./modes.js";
-import { CircuitDiagramSpecSchema, VisualBriefSchema } from "./visuals.js";
+import { CircuitDiagramSpecSchema, VisualBriefSchema, VisualStateSchema } from "./visuals.js";
 
 export const ConceptSchema = z
   .object({
@@ -220,11 +220,106 @@ export function timelineActivityIssues(activity: TimelineActivity): string[] {
   return issues;
 }
 
+/**
+ * A place on a figure the learner can tap. Coordinates are percentages of the figure's box, so
+ * a target keeps its meaning whatever size the figure is drawn at and whichever renderer drew
+ * it — a circuit, a graph, or a photograph.
+ */
+export const DiagramTargetSchema = z
+  .object({
+    id: z.string().min(1),
+    /** Named for a screen reader, and shown when the pointer or focus is on the target. */
+    label: z.string().min(1),
+    x: z.number().min(0).max(100),
+    y: z.number().min(0).max(100),
+    /** Radius as a percentage of the figure's width. */
+    r: z.number().positive().max(50).default(8),
+  })
+  .strict();
+export type DiagramTarget = z.infer<typeof DiagramTargetSchema>;
+
+export const ActivityFeedbackSchema = z
+  .object({ correct: z.string().min(1), incorrect: z.string().min(1) })
+  .strict();
+
+/** Point at the thing you mean, rather than describing it in words the question supplied. */
+export const DiagramChoiceActivitySchema = z
+  .object({
+    id: z.string().min(1),
+    type: z.literal("diagram_choice"),
+    title: z.string().min(1),
+    conceptIds: z.array(z.string()).min(1),
+    instructions: z.string().min(1),
+    prompt: z.string().min(1),
+    /** Drawn beneath the targets when the figure is a circuit. */
+    circuit: CircuitDiagramSpecSchema.optional(),
+    /** A course asset drawn beneath the targets instead, by file name. */
+    imageFile: z.string().default(""),
+    imageAlt: z.string().default(""),
+    targets: z.array(DiagramTargetSchema).min(2).max(8),
+    correctTargetId: z.string().min(1),
+    feedback: ActivityFeedbackSchema,
+  })
+  .strict();
+export type DiagramChoiceActivity = z.infer<typeof DiagramChoiceActivitySchema>;
+
+/** Put the steps in order. Sequence is a kind of understanding a multiple choice cannot test. */
+export const OrderSequenceActivitySchema = z
+  .object({
+    id: z.string().min(1),
+    type: z.literal("order_sequence"),
+    title: z.string().min(1),
+    conceptIds: z.array(z.string()).min(1),
+    instructions: z.string().min(1),
+    prompt: z.string().min(1),
+    items: z.array(z.object({ id: z.string().min(1), label: z.string().min(1) }).strict()).min(3).max(8),
+    correctOrder: z.array(z.string().min(1)).min(3).max(8),
+    feedback: ActivityFeedbackSchema,
+  })
+  .strict();
+export type OrderSequenceActivity = z.infer<typeof OrderSequenceActivitySchema>;
+
+export const GraphAxisSchema = z
+  .object({
+    label: z.string().min(1),
+    unit: z.string().default(""),
+    min: z.number(),
+    max: z.number(),
+    /** Gridline spacing, which is also what a placed point snaps to. */
+    step: z.number().positive(),
+  })
+  .strict();
+
+/** Read a value off a graph, or place a point on one. */
+export const GraphPlotActivitySchema = z
+  .object({
+    id: z.string().min(1),
+    type: z.literal("graph_plot"),
+    title: z.string().min(1),
+    conceptIds: z.array(z.string()).min(1),
+    instructions: z.string().min(1),
+    prompt: z.string().min(1),
+    mode: z.enum(["read", "place"]),
+    x: GraphAxisSchema,
+    y: GraphAxisSchema,
+    /** A line already on the axes for a `read` task, as a series of points. */
+    series: z.array(z.object({ x: z.number(), y: z.number() }).strict()).default([]),
+    answer: z.object({ x: z.number(), y: z.number() }).strict(),
+    /** How far off the answer may be, in axis units. */
+    tolerance: z.object({ x: z.number().nonnegative(), y: z.number().nonnegative() }).strict(),
+    feedback: ActivityFeedbackSchema,
+  })
+  .strict();
+export type GraphPlotActivity = z.infer<typeof GraphPlotActivitySchema>;
+
 export const ActivitySchema = z.discriminatedUnion("type", [
   OhmsLawActivitySchema,
   SeriesCircuitActivitySchema,
   ParallelCircuitActivitySchema,
   TimelineActivitySchema,
+  DiagramChoiceActivitySchema,
+  OrderSequenceActivitySchema,
+  GraphPlotActivitySchema,
 ]);
 export type Activity = z.infer<typeof ActivitySchema>;
 export type ActivityType = Activity["type"];
@@ -437,6 +532,11 @@ export const LessonBeatSchema = z
     orientation: z.string().min(1),
     visualBrief: VisualBriefSchema,
     circuitSpec: CircuitDiagramSpecSchema.optional(),
+    /**
+     * Configurations the lesson's visual moves between as the learner advances. A step names
+     * one by id; the player interpolates from whichever state was showing.
+     */
+    visualStates: z.array(VisualStateSchema).default([]),
     image: CourseImageSchema.optional(),
     visualKind: ExplainerVisualKindSchema,
     activityId: z.string().min(1),

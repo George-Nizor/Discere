@@ -1,5 +1,10 @@
 import { assessTextAnswer } from "@discere/assessment-engine";
 import {
+  diagramChoiceIssues,
+  graphPlotIssues,
+  orderSequenceIssues,
+} from "@discere/activity-engine";
+import {
   type CourseBundle,
   CourseBundleSchema,
   REDISTRIBUTABLE_LICENCE_PATTERN,
@@ -239,6 +244,7 @@ function lessonStepIssues(
 
   const seen = new Set<string>();
   const quizIds = new Set(lesson.questionIds);
+  const stateIds = new Set(lesson.visualStates.map((state) => state.id));
   for (const step of lesson.steps) {
     const at = `${path}.${step.id}`;
     if (seen.has(step.id)) {
@@ -268,6 +274,10 @@ function lessonStepIssues(
     if (step.activityId && !activityIds.has(step.activityId)) {
       missingReference(issues, at, "activity", step.activityId);
     }
+    // A step naming a state that was never authored would silently show the previous one.
+    if (step.visualStateId && !stateIds.has(step.visualStateId)) {
+      missingReference(issues, at, "visual state", step.visualStateId);
+    }
     if ((step.kind === "check" || step.kind === "transfer") && !step.checkQuestionId) {
       issues.push({
         path: at,
@@ -292,6 +302,17 @@ function lessonStepIssues(
         message: `Step '${step.id}' runs to ${stepWordCount(step)} words. Split it: a step should be readable without losing the visual.`,
       });
     }
+  }
+
+  const namedStates = new Set(lesson.steps.map((step) => step.visualStateId).filter(Boolean));
+  for (const state of lesson.visualStates) {
+    if (namedStates.has(state.id)) continue;
+    issues.push({
+      path: `lessons.${lesson.id}.visualStates`,
+      code: "UNREACHABLE_CONTENT",
+      severity: "warning",
+      message: `No step of '${lesson.id}' shows visual state '${state.id}'.`,
+    });
   }
 
   if (lesson.steps[0]?.kind !== "hook") {
@@ -568,12 +589,49 @@ export function validateCourseBundle(input: unknown): ContentValidation {
       }
     }
     lintField(issues, `activities.${activity.id}.instructions`, activity.instructions, "lesson");
-    lintField(
-      issues,
-      `activities.${activity.id}.predictionPrompt`,
-      activity.predictionPrompt,
-      "question",
-    );
+    // The explorers ask the learner to predict before checking; the newer types ask directly.
+    if ("predictionPrompt" in activity) {
+      lintField(
+        issues,
+        `activities.${activity.id}.predictionPrompt`,
+        activity.predictionPrompt,
+        "question",
+      );
+    }
+    if ("prompt" in activity) {
+      lintField(issues, `activities.${activity.id}.prompt`, activity.prompt, "question");
+    }
+    if ("feedback" in activity) {
+      lintField(
+        issues,
+        `activities.${activity.id}.feedback.correct`,
+        activity.feedback.correct,
+        "feedback",
+      );
+      lintField(
+        issues,
+        `activities.${activity.id}.feedback.incorrect`,
+        activity.feedback.incorrect,
+        "feedback",
+      );
+    }
+    // Structural faults the schema cannot express.
+    const structural =
+      activity.type === "diagram_choice"
+        ? diagramChoiceIssues(activity)
+        : activity.type === "order_sequence"
+          ? orderSequenceIssues(activity)
+          : activity.type === "graph_plot"
+            ? graphPlotIssues(activity)
+            : [];
+    for (const message of structural) {
+      issues.push({
+        path: `activities.${activity.id}`,
+        code: "ACTIVITY_INVALID",
+        severity: "error",
+        message,
+      });
+    }
   }
 
   for (const question of bundle.questions) {

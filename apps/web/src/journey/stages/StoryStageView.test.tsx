@@ -16,7 +16,7 @@ const stage: ExplainerStage = {
   sourceIds: [],
   optional: false,
   completionPolicy: "interaction",
-  visual: { kind: "none", alt: "No visual for this lesson." },
+  visual: { kind: "none", alt: "No visual for this lesson.", states: [] },
   steps: [
     {
       id: "hook",
@@ -68,6 +68,7 @@ function render(overrides: Partial<Parameters<typeof StoryStageView>[0]> = {}) {
   renderWithProviders(
     <ModeProvider lessonId="lesson">
       <StoryStageView
+        courseId="electronics-foundations"
         onComplete={onComplete}
         onStepChange={onStepChange}
         savedInteractionState={undefined}

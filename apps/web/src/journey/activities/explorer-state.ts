@@ -10,9 +10,13 @@ import {
   updateSeriesCircuitState,
   updateTimelineState,
 } from "@discere/activity-engine";
-import type { Activity, TimelineActivity, TimelineEvent } from "@discere/contracts";
+import type {
+  Activity,
+  CircuitDiagramSpec,
+  TimelineActivity,
+  TimelineEvent,
+} from "@discere/contracts";
 import { formatCurrent } from "../../lib/format.js";
-import { circuitVisualUrl } from "../visual-source.js";
 
 export type ExplorerState =
   | { type: "ohms_law_explorer"; voltage: number; resistance: number }
@@ -39,7 +43,8 @@ export type ExplorerReading =
       current: number;
       rows: ExplorerRow[];
       readout: ExplorerReadout;
-      visualSrc: string;
+      /** The diagram as a spec the browser renders itself. */
+      visualSpec: CircuitDiagramSpec;
       visualAlt: string;
     }
   | {
@@ -74,7 +79,23 @@ export function isSupportedActivity(activity: { type: string }): boolean {
   return SUPPORTED_TYPES.has(activity.type);
 }
 
-export function initialExplorerState(activity: Activity): ExplorerState {
+export type ExplorerActivity = Extract<
+  Activity,
+  {
+    type:
+      | "ohms_law_explorer"
+      | "series_circuit_explorer"
+      | "parallel_circuit_explorer"
+      | "timeline_explorer";
+  }
+>;
+
+/** Narrows to the activities this explorer drives, which is what `isSupportedActivity` tests. */
+export function asExplorerActivity(activity: Activity): ExplorerActivity | null {
+  return SUPPORTED_TYPES.has(activity.type) ? (activity as ExplorerActivity) : null;
+}
+
+export function initialExplorerState(activity: ExplorerActivity): ExplorerState {
   if (activity.type === "ohms_law_explorer") {
     const state = getOhmsLawState(activity);
     return { type: activity.type, voltage: state.voltage, resistance: state.resistance };
@@ -95,7 +116,7 @@ export function initialExplorerState(activity: Activity): ExplorerState {
  * relationship it is teaching. `showValues` stays false until the learner has predicted.
  */
 export function readExplorer(
-  activity: Activity,
+  activity: ExplorerActivity,
   state: ExplorerState,
   showValues: boolean,
 ): ExplorerReading {
@@ -118,7 +139,15 @@ export function readExplorer(
         label: "Current",
         value: showValues ? formatCurrent(reading.current) : "Predict first",
       },
-      visualSrc: circuitVisualUrl(reading.voltage, reading.resistance, showValues),
+      visualSpec: {
+        id: activity.id,
+        voltage: reading.voltage,
+        resistance: reading.resistance,
+        showValues,
+        showCurrentArrow: true,
+        batteryLabel: "Battery",
+        resistorLabel: "Resistor",
+      },
       visualAlt:
         "A battery and one resistor connected in a single closed loop. Component values stay hidden until the prediction is checked.",
     };
@@ -146,7 +175,18 @@ export function readExplorer(
         label: "Total resistance",
         value: showValues ? `${reading.totalResistance} Ω` : "Predict first",
       },
-      visualSrc: circuitVisualUrl(reading.voltage, reading.totalResistance, showValues),
+      visualSpec: {
+        id: activity.id,
+        kind: "series",
+        voltage: reading.voltage,
+        resistances: reading.resistances,
+        showValues,
+        showCurrentArrow: true,
+        batteryLabel: "Battery",
+        resistorLabels: reading.resistances.map(
+          (_value, index) => activity.resistors[index]?.label ?? `Resistor ${index + 1}`,
+        ),
+      },
       visualAlt:
         "A battery driving current through resistors placed one after another in a single loop. Component values stay hidden until the prediction is checked.",
     };
@@ -183,7 +223,17 @@ export function readExplorer(
       },
       // Two branches are drawn as the single resistor they are equivalent to, which is the
       // relationship the activity is teaching. The caption says so rather than implying a loop.
-      visualSrc: circuitVisualUrl(reading.voltage, roundTo(reading.totalResistance, 2), showValues),
+      // A parallel network has no engine renderer yet, so the equivalent single resistor is
+      // drawn instead. The readout beside it carries the branch currents.
+      visualSpec: {
+        id: activity.id,
+        voltage: reading.voltage,
+        resistance: roundTo(reading.totalResistance, 2),
+        showValues,
+        showCurrentArrow: true,
+        batteryLabel: "Battery",
+        resistorLabel: "Equivalent resistance",
+      },
       visualAlt:
         "The equivalent single-resistor circuit for the two parallel branches. Values stay hidden until the prediction is checked.",
     };

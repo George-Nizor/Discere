@@ -146,7 +146,7 @@ export function canAdvanceStep(
   answered: { solved: boolean; revealed: boolean },
 ): boolean {
   if (!step) return false;
-  if (step.kind === "check" || step.kind === "transfer") {
+  if (step.kind === "check" || step.kind === "transfer" || step.kind === "interact") {
     return answered.solved || answered.revealed;
   }
   return true;

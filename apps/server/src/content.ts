@@ -25,7 +25,13 @@ const ACTIVITY_VISUAL_KIND = {
   series_circuit_explorer: "circuit",
   parallel_circuit_explorer: "circuit",
   timeline_explorer: "timeline",
-} as const satisfies Record<Activity["type"], "circuit" | "graph" | "timeline" | "map">;
+  diagram_choice: "circuit",
+  order_sequence: "diagram",
+  graph_plot: "graph",
+} as const satisfies Record<
+  Activity["type"],
+  "circuit" | "graph" | "timeline" | "map" | "diagram"
+>;
 
 export interface CourseActivity {
   /** ISO timestamp of the most recent stage progress in the course, when there is any. */
@@ -306,8 +312,14 @@ export class ContentRepository {
           ...(lesson.visualKind === "none" ? {} : { briefId: lesson.visualBrief.id }),
           alt: lesson.visualBrief.altTextDraft,
           ...(lesson.visualKind === "circuit" && lesson.circuitSpec
-            ? { src: `/api/visuals/circuit.svg?lessonId=${encodeURIComponent(lesson.id)}` }
+            ? {
+                src: `/api/visuals/circuit.svg?lessonId=${encodeURIComponent(lesson.id)}`,
+                // The spec travels too, so the browser can redraw it as the lesson advances
+                // instead of fetching a new image for every frame.
+                circuit: lesson.circuitSpec,
+              }
             : {}),
+          states: lesson.visualStates,
           ...(lesson.visualKind === "image" && lesson.image
             ? {
                 src: `/api/content/${encodeURIComponent(courseId)}/assets/${encodeURIComponent(lesson.image.file)}`,
@@ -338,7 +350,8 @@ export class ContentRepository {
         optional: false,
         completionPolicy: "interaction",
         activity,
-        prompt: activity.predictionPrompt,
+        // An explorer asks the learner to predict; the newer types ask their question directly.
+        prompt: "predictionPrompt" in activity ? activity.predictionPrompt : activity.prompt,
         visualKind: ACTIVITY_VISUAL_KIND[activity.type],
       },
       ...questions.map(

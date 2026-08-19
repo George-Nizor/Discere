@@ -107,3 +107,54 @@ export const VisualReviewSchema = z
   })
   .strict();
 export type VisualReview = z.infer<typeof VisualReviewSchema>;
+
+/**
+ * One reviewable configuration of a lesson's visual. States are authored data, not animation:
+ * ADR-0002 requires every technical diagram a learner sees to be a deterministic render of
+ * checked values. Interpolating between two states is presentation, and every frame it passes
+ * through lies on the straight line between two configurations that were reviewed.
+ *
+ * Parameters are numeric so they can be interpolated at all; a flag is 0 or 1 and snaps at the
+ * midpoint rather than being drawn half-on.
+ */
+export const VisualStateSchema = z
+  .object({
+    id: z.string().min(1),
+    params: z.record(z.string(), z.number()),
+    /** What this state shows, read out when the visual changes. */
+    caption: z.string().min(1),
+  })
+  .strict();
+export type VisualState = z.infer<typeof VisualStateSchema>;
+
+export const VisualSequenceSchema = z
+  .object({
+    visualId: z.string().min(1),
+    states: z.array(VisualStateSchema).min(1),
+  })
+  .strict();
+export type VisualSequence = z.infer<typeof VisualSequenceSchema>;
+
+/** Flags are held as 0 or 1; anything at or above the midpoint counts as on. */
+export function flagFromParam(value: number | undefined, fallback: boolean): boolean {
+  return value === undefined ? fallback : value >= 0.5;
+}
+
+/**
+ * The straight-line blend of two states at `fraction`. A key present in only one state holds
+ * its own value rather than being interpolated from zero, which would make a diagram pass
+ * through a configuration nobody authored.
+ */
+export function blendVisualParams(
+  from: Record<string, number>,
+  to: Record<string, number>,
+  fraction: number,
+): Record<string, number> {
+  const clamped = Math.max(0, Math.min(1, fraction));
+  const blended: Record<string, number> = { ...from };
+  for (const [key, target] of Object.entries(to)) {
+    const start = from[key];
+    blended[key] = start === undefined ? target : start + (target - start) * clamped;
+  }
+  return blended;
+}

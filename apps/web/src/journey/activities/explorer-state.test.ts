@@ -58,10 +58,10 @@ describe("explorer state", () => {
     const state = initialExplorerState(ohmsLawActivity);
     const hidden = circuit(readExplorer(ohmsLawActivity, state, false));
     expect(hidden.rows.at(-1)).toEqual({ label: "Current", value: "Predict first" });
-    expect(hidden.visualSrc).toContain("values=false");
+    expect(hidden.visualSpec).toMatchObject({ showValues: false });
     const shown = circuit(readExplorer(ohmsLawActivity, state, true));
     expect(shown.rows.at(-1)).toEqual({ label: "Current", value: "50 mA" });
-    expect(shown.visualSrc).toContain("values=true");
+    expect(shown.visualSpec).toMatchObject({ showValues: true, voltage: 5, resistance: 100 });
   });
 
   it("adds series resistances and lists every resistor", () => {

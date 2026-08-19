@@ -24,3 +24,22 @@ export {
   timelinePosition,
   updateTimelineState,
 } from "./timeline.js";
+export {
+  diagramChoiceIssues,
+  type DiagramChoiceOutcome,
+  evaluateDiagramChoice,
+} from "./diagram-choice.js";
+export {
+  evaluateOrderSequence,
+  moveInOrder,
+  type OrderSequenceOutcome,
+  orderSequenceIssues,
+} from "./order-sequence.js";
+export {
+  evaluateGraphPlot,
+  type GraphPlotOutcome,
+  type GraphPoint,
+  graphPlotIssues,
+  pointFromFraction,
+  snapToGrid,
+} from "./graph-plot.js";

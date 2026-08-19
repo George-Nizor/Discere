@@ -8,10 +8,12 @@ import {
   type ExplorerState,
   evaluatePrediction,
   initialExplorerState,
-  isSupportedActivity,
+  asExplorerActivity,
+  type ExplorerActivity,
   predictionChoices,
   readExplorer,
 } from "../activities/explorer-state.js";
+import { CircuitVisual } from "../activities/CircuitVisual.js";
 import { TimelineTrack } from "../activities/TimelineTrack.js";
 
 function UnsupportedActivity({ type, prompt }: { type: string; prompt: string }) {
@@ -33,13 +35,15 @@ function ExplorerCanvas({
   activity,
   reading,
 }: {
-  activity: InteractiveVisualStage["activity"];
+  activity: ExplorerActivity;
   reading: ExplorerReading;
 }) {
   if (activity.type === "timeline_explorer" && reading.kind === "timeline") {
     return <TimelineTrack activity={activity} year={reading.year} />;
   }
-  if (reading.kind === "circuit") return <img alt={reading.visualAlt} src={reading.visualSrc} />;
+  if (reading.kind === "circuit") {
+    return <CircuitVisual spec={reading.visualSpec} />;
+  }
   return null;
 }
 
@@ -50,22 +54,19 @@ export function InteractiveVisualStageView({
   stage: InteractiveVisualStage;
   onContinue: () => void;
 }) {
-  const activity = stage.activity;
-  const supported = isSupportedActivity(activity);
+  // Narrowed once, at the boundary: everything below drives a slider or a scrubber.
+  const activity = asExplorerActivity(stage.activity);
   const [state, setState] = useState<ExplorerState | null>(() =>
-    supported ? initialExplorerState(activity) : null,
+    activity ? initialExplorerState(activity) : null,
   );
   const [prediction, setPrediction] = useState<string | null>(null);
   const [checked, setChecked] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
 
-  const baseline = useMemo(
-    () => (supported ? initialExplorerState(activity) : null),
-    [activity, supported],
-  );
+  const baseline = useMemo(() => (activity ? initialExplorerState(activity) : null), [activity]);
 
-  if (!supported || !state || !baseline) {
-    return <UnsupportedActivity prompt={stage.prompt} type={activity.type} />;
+  if (!activity || !state || !baseline) {
+    return <UnsupportedActivity prompt={stage.prompt} type={stage.activity.type} />;
   }
 
   const reading = readExplorer(activity, state, checked);
@@ -76,10 +77,11 @@ export function InteractiveVisualStageView({
       ? evaluatePrediction(activity, baselineReading, reading, prediction)
       : null;
 
+  const activityType = activity.type;
   function changeState(next: ExplorerState): void {
     setState(next);
     // A timeline is read by moving through it, so moving the scrubber is not a new experiment.
-    if (activity.type !== "timeline_explorer") setChecked(false);
+    if (activityType !== "timeline_explorer") setChecked(false);
   }
 
   return (

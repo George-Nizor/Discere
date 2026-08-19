@@ -1,6 +1,7 @@
+import type { Locator } from "@playwright/test";
 import { mkdirSync } from "node:fs";
 import { join } from "node:path";
-import { expect, test, gotoStage, notebookPath, readJourney } from "./fixtures.js";
+import { advanceUntil, expect, test, gotoStage, notebookPath, readJourney } from "./fixtures.js";
 
 const OUTPUT = join(import.meta.dirname, "../../../docs/ui-ux/screenshots");
 
@@ -45,10 +46,16 @@ test.describe("approved reference screens", () => {
       await page.setViewportSize({ width: viewport.width, height: viewport.height });
       const journey = await readJourney(request);
 
-      async function capture(name: string): Promise<void> {
+      /**
+       * `subject` names something that must be in the frame. Without it a capture starts at the
+       * top of the screen, which is right for a whole screen and wrong for an activity that
+       * sits part-way down a long lesson.
+       */
+      async function capture(name: string, subject?: Locator): Promise<void> {
         await page.waitForLoadState("networkidle");
+        if (subject) await subject.scrollIntoViewIfNeeded();
         // Interacting with a control scrolls it into view; a reference screen starts at the top.
-        await page.evaluate(() => window.scrollTo(0, 0));
+        else await page.evaluate(() => window.scrollTo(0, 0));
         // A viewport capture, not a full-page stitch: the sticky header and the fixed drawer
         // paint where the learner actually sees them, and animations are settled first.
         await page.screenshot({
@@ -70,6 +77,24 @@ test.describe("approved reference screens", () => {
 
       await gotoStage(page, journey, "explainer");
       await capture("explainer");
+
+      // The new interaction types, captured answered so the feedback is part of the reference.
+      await gotoStage(page, journey, "explainer");
+      await advanceUntil(page, page.getByRole("button", { name: "The resistor" }));
+      await page.getByRole("button", { name: "The resistor" }).click();
+      await capture("activity-diagram-choice", page.getByText(/it sets the current/));
+
+      await page.goto(
+        `/courses/${encodeURIComponent(journey.courseId)}/lessons/electrical-power/stages/${encodeURIComponent("electrical-power:explainer")}`,
+      );
+      await page.waitForLoadState("networkidle");
+      await advanceUntil(page, page.getByRole("button", { name: "Check the point" }));
+      await capture("activity-graph-plot", page.getByRole("button", { name: "Check the point" }));
+
+      const romanOrder = await readJourney(request, "roman-empire");
+      await gotoStage(page, romanOrder, "explainer");
+      await advanceUntil(page, page.getByRole("button", { name: "Check the order" }));
+      await capture("activity-order-sequence", page.getByRole("button", { name: "Check the order" }));
 
       await gotoStage(page, journey, "interactive_visual");
       // Change the circuit before predicting, so the captured feedback shows a real comparison
