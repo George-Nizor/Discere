@@ -201,19 +201,31 @@ function acceptedIdeaIssues(question: CourseBundle["questions"][number]): Conten
 }
 
 /** Spec v0.2 section 18.4: at most 35% of a course's questions may be multiple choice. */
+/**
+ * A course that is mostly multiple choice is testing recognition rather than understanding.
+ *
+ * The share is only enforced once there are enough questions for it to mean anything: over two
+ * or three questions a proportion is an artefact of the count, and a course being written one
+ * lesson at a time would be blocked by its own first import. Below the threshold the imbalance
+ * is still reported, as a warning.
+ */
+const MULTIPLE_CHOICE_LIMIT = 0.35;
+const SHARE_MEANINGFUL_FROM = 8;
+
 function multipleChoiceShareIssues(bundle: CourseBundle): ContentIssue[] {
   if (bundle.questions.length === 0) return [];
   const selected = bundle.questions.filter(
     (question) => (question.choices?.length ?? 0) > 0,
   ).length;
   const share = selected / bundle.questions.length;
-  if (share <= 0.35) return [];
+  if (share <= MULTIPLE_CHOICE_LIMIT) return [];
+  const settled = bundle.questions.length >= SHARE_MEANINGFUL_FROM;
   return [
     {
       path: "questions",
       code: "MULTIPLE_CHOICE_SHARE",
-      severity: "error",
-      message: `${selected} of ${bundle.questions.length} questions are multiple choice (${Math.round(share * 100)}%). The limit is 35%.`,
+      severity: settled ? "error" : "warning",
+      message: `${selected} of ${bundle.questions.length} questions are multiple choice (${Math.round(share * 100)}%). The limit is ${Math.round(MULTIPLE_CHOICE_LIMIT * 100)}%.${settled ? "" : " Reported as a warning while the course is small."}`,
     },
   ];
 }
@@ -290,8 +302,8 @@ function lessonStepIssues(
       issues.push({
         path: at,
         code: "STEP_MISSING_ACTIVITY",
-        severity: "error",
-        message: `Step '${step.id}' is an interact step, so it needs an activity.`,
+        severity: "warning",
+        message: `Step '${step.id}' is an interact step with no activity wired to it yet, so it reads as plain prose. Add an activity or change its kind.`,
       });
     }
     if (step.kind === "explain" && stepWordCount(step) > MAX_EXPLAIN_WORDS) {
@@ -513,11 +525,11 @@ export function validateCourseBundle(input: unknown): ContentValidation {
       if (!sourceIds.has(id))
         missingReference(issues, `lessons.${lesson.id}.sourceIds`, "source", id);
     }
-    for (const id of lesson.visualBrief.sourceIds) {
+    for (const id of lesson.visualBrief?.sourceIds ?? []) {
       if (!sourceIds.has(id))
         missingReference(issues, `lessons.${lesson.id}.visualBrief.sourceIds`, "source", id);
     }
-    if (!activityIds.has(lesson.activityId)) {
+    if (lesson.activityId && !activityIds.has(lesson.activityId)) {
       missingReference(issues, `lessons.${lesson.id}.activityId`, "activity", lesson.activityId);
     }
     for (const id of lesson.questionIds) {
@@ -541,7 +553,7 @@ export function validateCourseBundle(input: unknown): ContentValidation {
     }
     issues.push(...lessonVisualIssues(lesson));
     issues.push(...lessonStepIssues(lesson, questionIds, activityIds));
-    for (const visualIssue of inspectVisualBrief(lesson.visualBrief)) {
+    for (const visualIssue of lesson.visualBrief ? inspectVisualBrief(lesson.visualBrief) : []) {
       issues.push({
         path: `lessons.${lesson.id}.visualBrief`,
         code: visualIssue.code,

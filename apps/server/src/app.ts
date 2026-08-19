@@ -6,6 +6,7 @@ import { ContentRepository } from "./content.js";
 import { DiscereStore } from "./db/store.js";
 import { HttpError } from "./errors.js";
 import { registerRoutes } from "./routes.js";
+import { TopicMapRepository } from "./topic-maps.js";
 import { registerTransferRoutes } from "./transfer-routes.js";
 import { createTutorRuntime, type TutorRuntimeOptions } from "./tutor-provider.js";
 import { registerTutorRoutes } from "./tutor-routes.js";
@@ -54,9 +55,9 @@ export async function createApp(options: AppOptions = {}): Promise<DiscereApp> {
     ],
     methods: ["GET", "POST", "PUT"],
   });
-  const content = await ContentRepository.load(
-    options.contentRoot ?? ContentRepository.defaultContentRoot(),
-  );
+  const contentRoot = options.contentRoot ?? ContentRepository.defaultContentRoot();
+  const content = await ContentRepository.load(contentRoot);
+  const topicMaps = await TopicMapRepository.load(contentRoot);
   const dbPath = options.dbPath ?? resolveDatabasePath(process.env["DISCERE_DATABASE_PATH"]);
   const store = new DiscereStore(dbPath, {
     migrate: options.migrate ?? false,
@@ -94,6 +95,7 @@ export async function createApp(options: AppOptions = {}): Promise<DiscereApp> {
   await registerRoutes(app, {
     content,
     store,
+    topicMaps,
     revealDelayMs: options.revealDelayMs ?? 5000,
   });
   await registerTransferRoutes(app, { content, store });

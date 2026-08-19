@@ -91,3 +91,57 @@ export const AuthoredLessonDraftSchema = z
   })
   .strict();
 export type AuthoredLessonDraft = z.infer<typeof AuthoredLessonDraftSchema>;
+
+/**
+ * A lesson as pasted back from a frontier model, in the flattest shape that can express one.
+ *
+ * Every field is required and no field is a union. That is not tidiness: a schema handed to
+ * constrained decoding emits `oneOf` for any union, which OpenAI's structured output rejects
+ * outright. Unused halves carry an empty string rather than being absent, and the boundary
+ * mapper below turns the flat shape into the rich blocks the player reads.
+ */
+export const ImportedStepSchema = z
+  .object({
+    id: z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/),
+    /** One of hook, explain, worked_example, check, interact, transfer, teach_back. */
+    kind: z.string().min(1),
+    /** Paragraphs separated by a blank line. Definitions and callouts are a human edit. */
+    text: z.string().trim().min(1).max(2_000),
+    /** A state named in the lesson's visual states, or "" to keep the current one. */
+    visualStateId: z.string(),
+    /** The question a check or transfer step asks, by id, or "". */
+    checkQuestionId: z.string(),
+    /** The activity an interact step hands over to, by id, or "". */
+    activityId: z.string(),
+  })
+  .strict();
+export type ImportedStep = z.infer<typeof ImportedStepSchema>;
+
+export const ImportedLessonSchema = z
+  .object({
+    slug: z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/),
+    title: z.string().trim().min(3).max(120),
+    orientation: z.string().trim().min(20).max(400),
+    reviewLabel: z.string().trim().min(3).max(120),
+    nextAction: z.string().trim().min(10).max(300),
+    stageTitles: StageTitlesSchema,
+    steps: z.array(ImportedStepSchema).min(4).max(20),
+    questions: z.array(AuthoredQuestionSchema).min(2).max(8),
+    flashcards: z
+      .array(
+        z
+          .object({
+            id: z.string().trim().min(3).max(120),
+            front: z.string().trim().min(10).max(400),
+            back: z.string().trim().min(2).max(600),
+            conceptIds: z.array(z.string().min(1)).min(1),
+          })
+          .strict(),
+      )
+      .min(1)
+      .max(6),
+    /** Anything the writer could not support from the outline. Never silently dropped. */
+    uncertainty: z.array(z.string().trim().max(500)).max(20),
+  })
+  .strict();
+export type ImportedLesson = z.infer<typeof ImportedLessonSchema>;
