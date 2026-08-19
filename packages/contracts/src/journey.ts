@@ -183,6 +183,13 @@ export const CourseSummarySchema = z
     availableLessonIds: z.array(z.string().min(1)),
     /** Most recent stage activity in this course, used to choose what to continue. */
     lastActiveAt: z.string().datetime().nullable(),
+    /** Identity colour for this course, as a CSS hex. */
+    accent: z.string().min(1),
+    /** Same-origin URL for the cover art, or empty when the course has none. */
+    coverUrl: z.string(),
+    status: z.enum(["available", "coming_soon"]),
+    /** Lessons the learner has finished every stage of, for the catalogue progress ring. */
+    completedLessonCount: z.number().int().nonnegative(),
   })
   .strict();
 export type CourseSummary = z.infer<typeof CourseSummarySchema>;

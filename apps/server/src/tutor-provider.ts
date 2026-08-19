@@ -2,8 +2,8 @@ import type { TutorProviderId } from "@discere/contracts";
 import {
   createTutorProvider,
   resolveTutorProviderId,
-  TutorProviderError,
   type TutorProvider,
+  type TutorProviderError,
 } from "@discere/tutor-providers";
 import { HttpError } from "./errors.js";
 

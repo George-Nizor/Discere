@@ -1,4 +1,5 @@
 import type {
+  ActivityResponse,
   CourseDetailResponse,
   CourseListResponse,
   EssayDraftResponse,
@@ -10,6 +11,7 @@ import type {
 } from "@discere/contracts";
 import { type UseQueryResult, useQuery } from "@tanstack/react-query";
 import {
+  getActivity,
   getCourseDetail,
   getCourses,
   getEssayDraft,
@@ -33,6 +35,7 @@ export const queryKeys = {
   reviewHome: ["review-home"] as const,
   reviewSession: (sessionId: string) => ["review-session", sessionId] as const,
   tutorStatus: ["tutor-status"] as const,
+  activity: ["progress-activity"] as const,
 };
 
 export function useHome(): UseQueryResult<HomeResponse> {
@@ -42,6 +45,10 @@ export function useHome(): UseQueryResult<HomeResponse> {
 /** Cheap and file-backed on the server, so the settings screen may re-read it freely. */
 export function useTutorStatus(): UseQueryResult<TutorStatus> {
   return useQuery({ queryKey: queryKeys.tutorStatus, queryFn: getTutorStatus, staleTime: 5_000 });
+}
+
+export function useActivity(): UseQueryResult<ActivityResponse> {
+  return useQuery({ queryKey: queryKeys.activity, queryFn: getActivity });
 }
 
 export function useCourses(): UseQueryResult<CourseListResponse> {

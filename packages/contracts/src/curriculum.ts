@@ -35,6 +35,19 @@ export const CourseSchema = z
     assuranceLevel: AssuranceLevelSchema,
     moduleIds: z.array(z.string()).min(1),
     sourceIds: z.array(z.string()),
+    /**
+     * The course's identity colour, as a CSS hex. Courses have to be told apart at a glance on
+     * a catalogue; green stays reserved for action and correctness, so it cannot also mean
+     * "this course". Defaults to the house green when a bundle does not choose one.
+     */
+    accent: z.string().regex(/^#[0-9a-f]{6}$/i).default("#0b8f3c"),
+    /** Cover art file inside the course's own assets directory. Empty means no cover yet. */
+    coverAsset: z.string().default(""),
+    /**
+     * `coming_soon` renders the card as present but unopenable, so a roadmap can be shown
+     * without pretending the lessons exist.
+     */
+    status: z.enum(["available", "coming_soon"]).default("available"),
   })
   .strict();
 export type Course = z.infer<typeof CourseSchema>;

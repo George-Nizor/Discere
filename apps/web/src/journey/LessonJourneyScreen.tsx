@@ -71,10 +71,10 @@ function LessonJourney({
 
   const goToStage = useCallback(
     (nextStageId: string, returnTo?: string) => {
-      void navigate(
-        paths.stage(courseId, lessonId, nextStageId),
-        returnTo === undefined ? undefined : { state: { returnTo } },
-      );
+      void navigate(paths.stage(courseId, lessonId, nextStageId), {
+        viewTransition: true,
+        ...(returnTo === undefined ? {} : { state: { returnTo } }),
+      });
     },
     [courseId, lessonId, navigate],
   );

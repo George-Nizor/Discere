@@ -3,13 +3,18 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router";
 import { routes } from "./routes.js";
+// Bundled rather than fetched: the hub enforces script-src/style-src 'self', so a web font
+// must ship from our own origin. The variable file covers every weight the design uses.
+import "@fontsource-variable/inter/wght.css";
 import "katex/dist/katex.min.css";
 import "./styles/tokens.css";
 import "./styles/base.css";
 import "./styles/shell.css";
 import "./styles/stages.css";
 import "./styles/notebook.css";
+import "./styles/home.css";
 import "./styles/settings.css";
+import "./styles/motion.css";
 
 const queryClient = new QueryClient({
   defaultOptions: {

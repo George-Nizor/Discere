@@ -1,4 +1,23 @@
 import type { APIRequestContext, Page } from "@playwright/test";
+import { test as base } from "@playwright/test";
+
+/**
+ * Every browser test runs with reduced motion. Route transitions and entrance animations are
+ * real behaviour, but a screenshot taken mid-flight differs between runs, and reduced motion is
+ * the accessibility path the design promises — so asserting against it keeps that path honest
+ * rather than leaving it untested. A test that needs the motion asks for it explicitly.
+ *
+ * `reducedMotion` is a browser-context option in Playwright 1.62 rather than a config-level
+ * `use` option, so it is applied here instead of in `playwright.config.ts`.
+ */
+export const test = base.extend({
+  page: async ({ page }, run) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await run(page);
+  },
+});
+
+export { expect } from "@playwright/test";
 
 export interface JourneyMap {
   courseId: string;

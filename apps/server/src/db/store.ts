@@ -6,13 +6,16 @@ import type {
   ConceptProgress,
   ConceptState,
   JourneyProgress,
+  JourneyStageType,
   StageProgressRequest,
   StageState,
   TutoringMode,
   WritingLintResponse,
 } from "@discere/contracts";
 import {
+  activityDay,
   computeStreakDays,
+  stageCompletionXp,
   type CourseQueueEntry,
   type Flashcard,
   interleaveByCourse,
@@ -195,6 +198,94 @@ export class DiscereStore {
   }
 
   /**
+   * Lessons the learner has finished, per course. A lesson counts once every stage it recorded
+   * is done, which is what the catalogue's progress ring reports.
+   */
+  completedLessonsByCourse(): Map<string, number> {
+    const rows = this.database
+      .prepare(
+        `SELECT journey_id AS journeyId,
+                SUM(CASE WHEN state IN ('completed', 'skipped_optional') THEN 0 ELSE 1 END) AS unfinished
+         FROM journey_progress WHERE user_id = ? GROUP BY journey_id`,
+      )
+      .all(LOCAL_USER_ID) as Array<{ journeyId: string; unfinished: number }>;
+    const counts = new Map<string, number>();
+    for (const row of rows) {
+      if (row.unfinished > 0) continue;
+      const separator = row.journeyId.indexOf(":");
+      if (separator <= 0) continue;
+      const courseId = row.journeyId.slice(0, separator);
+      counts.set(courseId, (counts.get(courseId) ?? 0) + 1);
+    }
+    return counts;
+  }
+
+  /** Journey ids the learner has finished every recorded stage of, as `courseId:lessonId`. */
+  completedJourneyIds(): Set<string> {
+    const rows = this.database
+      .prepare(
+        `SELECT journey_id AS journeyId,
+                SUM(CASE WHEN state IN ('completed', 'skipped_optional') THEN 0 ELSE 1 END) AS unfinished
+         FROM journey_progress WHERE user_id = ? GROUP BY journey_id`,
+      )
+      .all(LOCAL_USER_ID) as Array<{ journeyId: string; unfinished: number }>;
+    return new Set(rows.filter((row) => row.unfinished === 0).map((row) => row.journeyId));
+  }
+
+  /** Review cards ready right now, across every course. */
+  dueReviewCount(): number {
+    const row = this.database
+      .prepare("SELECT COUNT(*) AS due FROM review_cards WHERE user_id = ? AND due_at <= ?")
+      .get(LOCAL_USER_ID, this.now()) as { due: number } | undefined;
+    return row?.due ?? 0;
+  }
+
+  /**
+   * Minutes studied today, inferred from the spacing of recorded activity rather than from a
+   * timer. Consecutive events less than a break apart are one sitting; a longer gap ends it.
+   * A single lone event still counts as having done something, so the number is never zero on
+   * a day the learner worked.
+   */
+  todayMinutes(): number {
+    const today = activityDay(this.now());
+    const stamps = this.studyTimestamps()
+      .filter((stamp) => stamp && activityDay(stamp) === today)
+      .map((stamp) => Date.parse(stamp))
+      .filter((value) => Number.isFinite(value))
+      .sort((left, right) => left - right);
+    if (stamps.length === 0) return 0;
+    const BREAK_MS = 10 * 60 * 1000;
+    let total = 0;
+    let sittingStart = stamps[0] as number;
+    let previous = stamps[0] as number;
+    for (const stamp of stamps.slice(1)) {
+      if (stamp - previous > BREAK_MS) {
+        total += previous - sittingStart;
+        sittingStart = stamp;
+      }
+      previous = stamp;
+    }
+    total += previous - sittingStart;
+    return Math.max(1, Math.round(total / 60_000));
+  }
+
+  /** Completions per UTC day since `from`, for the streak calendar. */
+  activityByDay(fromDay: string): Array<{ date: string; completions: number }> {
+    const rows = this.database
+      .prepare(
+        `SELECT substr(updated_at, 1, 10) AS date, COUNT(*) AS completions
+         FROM journey_progress
+         WHERE user_id = ? AND state IN ('completed', 'skipped_optional') AND updated_at >= ?
+         GROUP BY date ORDER BY date`,
+      )
+      .all(LOCAL_USER_ID, `${fromDay}T00:00:00.000Z`) as Array<{
+      date: string;
+      completions: number;
+    }>;
+    return rows;
+  }
+
+  /**
    * Every instant the learner did recorded study: answering a question, working a transfer
    * challenge, or rating a review. The streak counts distinct days from this, so it can never
    * report a day on which nothing happened.
@@ -300,10 +391,22 @@ export class DiscereStore {
     journeyId: string,
     stageOrder: string[],
     input: StageProgressRequest,
+    /** Stage type, so finishing a stage with no question behind it is still worth something. */
+    stageType?: JourneyStageType,
   ): JourneyProgress {
     if (!stageOrder.includes(input.stageId))
       throw new Error(`Stage '${input.stageId}' is not part of journey '${journeyId}'.`);
     const timestamp = this.now();
+    // Read before the write: XP is paid the first time a stage is finished, so replaying a
+    // lesson does not mint it again.
+    const alreadyComplete =
+      (
+        this.database
+          .prepare(
+            "SELECT state FROM journey_progress WHERE user_id = ? AND journey_id = ? AND stage_id = ?",
+          )
+          .get(LOCAL_USER_ID, journeyId, input.stageId) as { state?: string } | undefined
+      )?.state ?? "";
     const transaction = this.database.transaction(() => {
       this.database
         .prepare(
@@ -318,6 +421,13 @@ export class DiscereStore {
           timestamp,
         );
       if (input.state === "completed" || input.state === "skipped_optional") {
+        const freshlyDone = alreadyComplete !== "completed" && alreadyComplete !== "skipped_optional";
+        const award = stageType && input.state === "completed" ? stageCompletionXp(stageType) : 0;
+        if (freshlyDone && award > 0) {
+          this.database
+            .prepare("UPDATE user_profiles SET xp = xp + ?, updated_at = ? WHERE id = ?")
+            .run(award, timestamp, LOCAL_USER_ID);
+        }
         const next = stageOrder[stageOrder.indexOf(input.stageId) + 1];
         if (next) {
           this.database

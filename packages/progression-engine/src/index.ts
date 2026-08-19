@@ -16,3 +16,4 @@ export {
 } from "./review.js";
 export { activityDay, computeStreakDays } from "./streak.js";
 export { interleaveByCourse, type CourseQueueEntry } from "./queue.js";
+export { levelForXp, levelProgress, stageCompletionXp, XP_AWARDS } from "./xp.js";

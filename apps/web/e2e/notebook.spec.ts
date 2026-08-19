@@ -1,6 +1,5 @@
 import type { APIRequestContext } from "@playwright/test";
-import { expect, test } from "@playwright/test";
-import { type JourneyMap, notebookPath, readJourney } from "./fixtures.js";
+import { expect, test, type JourneyMap, notebookPath, readJourney } from "./fixtures.js";
 
 /**
  * The suite shares one database, and a notebook page is per lesson rather than per test, so
