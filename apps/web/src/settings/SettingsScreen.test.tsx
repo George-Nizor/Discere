@@ -9,7 +9,8 @@ afterEach(() => vi.unstubAllGlobals());
 
 const LINKED: TutorStatus = {
   provider: "codex",
-  model: "",
+  model: "gpt-5.6-luna",
+  reasoningEffort: "xhigh",
   binaryFound: true,
   binaryVersion: "codex-cli 0.147.0",
   authPresent: true,
@@ -35,7 +36,8 @@ describe("settings screen", () => {
     expect(screen.getByText("codex-cli 0.147.0")).toBeInTheDocument();
     expect(screen.getByText("prolite")).toBeInTheDocument();
     expect(screen.getByText("93% used")).toBeInTheDocument();
-    expect(screen.getByText("Account default")).toBeInTheDocument();
+    expect(screen.getByText("gpt-5.6-luna")).toBeInTheDocument();
+    expect(screen.getByText("xhigh")).toBeInTheDocument();
   });
 
   it("names the fix when the CLI is signed out", async () => {

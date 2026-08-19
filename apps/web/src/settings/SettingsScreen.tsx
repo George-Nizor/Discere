@@ -116,6 +116,10 @@ export function SettingsScreen() {
             <dd>{data.model || "Account default"}</dd>
           </div>
           <div>
+            <dt>Reasoning effort</dt>
+            <dd>{data.reasoningEffort || "Not applicable"}</dd>
+          </div>
+          <div>
             <dt>CLI</dt>
             <dd>{data.binaryVersion || "Not found"}</dd>
           </div>

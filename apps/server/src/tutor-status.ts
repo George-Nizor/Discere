@@ -159,7 +159,8 @@ export function buildTutorStatus(runtime: TutorRuntime): TutorStatus {
   const live = codexRuntimeStatus();
   return {
     provider: runtime.id,
-    model: process.env["DISCERE_CODEX_MODEL"]?.trim() ?? "",
+    model: codex ? (process.env["DISCERE_CODEX_MODEL"]?.trim() ?? "") : "",
+    reasoningEffort: codex ? (process.env["DISCERE_CODEX_EFFORT"]?.trim() ?? "xhigh") : "",
     binaryFound: probe.found,
     binaryVersion: probe.version,
     authPresent: codex ? codexAuthPresent() : false,

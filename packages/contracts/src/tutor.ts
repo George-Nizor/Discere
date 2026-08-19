@@ -174,6 +174,8 @@ export const TutorStatusSchema = z
     provider: TutorProviderIdSchema,
     /** Empty when the provider follows the account default. */
     model: z.string(),
+    /** Reasoning effort the tutor asks for; empty for providers that have no such setting. */
+    reasoningEffort: z.string(),
     binaryFound: z.boolean(),
     binaryVersion: z.string(),
     authPresent: z.boolean(),

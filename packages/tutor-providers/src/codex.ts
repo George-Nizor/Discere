@@ -33,6 +33,12 @@ export interface CodexProviderOptions {
   killGraceMs?: number;
 }
 
+/**
+ * Tutoring asks short questions where the quality of the reasoning matters more than the
+ * breadth of the model. Measured on a coaching turn, high effort costs about 1.6 seconds and
+ * a hundred reasoning tokens over low, which is a good trade for a better hint.
+ */
+const DEFAULT_REASONING_EFFORT = "xhigh";
 const DEFAULT_TIMEOUT_MS = 120_000;
 const KILL_GRACE_MS = 5_000;
 const MAX_DIAGNOSTIC_CHARS = 4_000;
@@ -209,7 +215,9 @@ export class CodexTutorProvider implements TutorProvider {
     const model = options.model ?? process.env["DISCERE_CODEX_MODEL"]?.trim();
     this.model = model ? model : undefined;
     this.reasoningEffort =
-      options.reasoningEffort ?? process.env["DISCERE_CODEX_EFFORT"]?.trim() ?? "low";
+      options.reasoningEffort ??
+      process.env["DISCERE_CODEX_EFFORT"]?.trim() ??
+      DEFAULT_REASONING_EFFORT;
     this.scratchDirectory = resolveCodexScratchDirectory(
       options.scratchDirectory ?? process.env["DISCERE_CODEX_SCRATCH"],
     );
