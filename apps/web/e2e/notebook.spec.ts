@@ -48,7 +48,7 @@ test.describe("the working notebook", () => {
 
     await drawOnCanvas(page);
     await expect(page.locator("polyline[data-stroke-id]")).toHaveCount(1);
-    await page.getByLabel("A note about this working").fill("I divided 5 by 100.");
+    await page.getByLabel("Typed working").fill("I divided 5 by 100.");
     await expect(page.getByText("Unsaved changes")).toBeVisible();
 
     await page.getByRole("button", { name: "Save workings" }).click();

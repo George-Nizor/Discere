@@ -43,6 +43,9 @@ import {
   type TutorAskRequest,
   type TutorAskResponse,
   TutorAskResponseSchema,
+  type IllustrationRequest,
+  type IllustrationResponse,
+  IllustrationResponseSchema,
   type TutorProbeResponse,
   TutorProbeResponseSchema,
   type TutorStatus,
@@ -239,6 +242,24 @@ export async function submitTransfer(
       method: "POST",
       body: JSON.stringify(input),
     }),
+  );
+}
+
+/** Asks for a picture. Returns immediately; the drawing itself takes a couple of minutes. */
+export async function startIllustration(
+  input: IllustrationRequest,
+): Promise<IllustrationResponse> {
+  return IllustrationResponseSchema.parse(
+    await requestJson<unknown>("/api/illustrations", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+  );
+}
+
+export async function getIllustration(key: string): Promise<IllustrationResponse> {
+  return IllustrationResponseSchema.parse(
+    await requestJson<unknown>(`/api/illustrations/${encodeURIComponent(key)}`),
   );
 }
 

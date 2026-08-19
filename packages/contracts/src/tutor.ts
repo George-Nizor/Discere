@@ -310,3 +310,35 @@ export type EssayAssessmentResponse = z.infer<typeof EssayAssessmentResponseSche
 
 export const EssayAssessRequestSchema = z.object({ mode: TutoringModeSchema.optional() }).strict();
 export type EssayAssessRequest = z.infer<typeof EssayAssessRequestSchema>;
+
+/**
+ * An illustration the tutor drew to show something.
+ *
+ * Flat and union-free like the rest of the tutor contracts. `status` is the only thing the
+ * interface branches on: a picture arrives late, so the first reply is nearly always
+ * `generating` and the panel collects it afterwards.
+ */
+export const IllustrationRequestSchema = z
+  .object({
+    /** What to draw, in the tutor's own words. Never the learner's raw text. */
+    subject: z.string().trim().min(8).max(600),
+    /** The alt text, which is also the caption. */
+    alt: z.string().trim().min(4).max(300),
+    /** Course accent as a CSS hex, so an illustration matches the course it belongs to. */
+    accent: z.string().regex(/^#[0-9a-f]{6}$/i),
+  })
+  .strict();
+export type IllustrationRequest = z.infer<typeof IllustrationRequestSchema>;
+
+export const IllustrationResponseSchema = z
+  .object({
+    key: z.string().min(1),
+    status: z.enum(["ready", "generating", "failed"]),
+    alt: z.string(),
+    /** Same-origin path for the picture. Empty until the status is `ready`. */
+    url: z.string(),
+    /** Why it failed, when it did. */
+    detail: z.string(),
+  })
+  .strict();
+export type IllustrationResponse = z.infer<typeof IllustrationResponseSchema>;

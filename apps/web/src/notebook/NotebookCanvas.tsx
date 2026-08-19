@@ -208,10 +208,7 @@ export function NotebookCanvas({
   return (
     <section aria-labelledby="notebook-title" className="notebook">
       <div className="notebook-heading">
-        <div>
-          <p className="eyebrow">Working page</p>
-          <h2 id="notebook-title">Show your working</h2>
-        </div>
+        <h2 id="notebook-title">Show your working</h2>
         <p aria-live="polite" className="notebook-state muted">
           {dirty ? "Unsaved changes" : formatSavedAt(savedAt)}
         </p>
@@ -271,87 +268,101 @@ export function NotebookCanvas({
         </div>
       </div>
 
-      <svg
-        aria-label="Working canvas"
-        className={`notebook-canvas notebook-${tool}`}
-        height={NOTEBOOK_HEIGHT}
-        onPointerCancel={endPointer}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={endPointer}
-        ref={svgRef}
-        role="application"
-        viewBox={`0 0 ${NOTEBOOK_WIDTH} ${NOTEBOOK_HEIGHT}`}
-        width={NOTEBOOK_WIDTH}
-      >
-        <title>The lesson working page</title>
-        <rect fill="#ffffff" height={NOTEBOOK_HEIGHT} width={NOTEBOOK_WIDTH} />
-        {pageType === "lined"
-          ? LINED_Y.map((y) => (
-              <line
-                key={`rule-${y}`}
-                stroke="#d9d9d4"
-                strokeWidth="1"
-                x1="0"
-                x2={NOTEBOOK_WIDTH}
-                y1={y}
-                y2={y}
-              />
-            ))
-          : null}
-        {pageType === "graph" ? (
-          <g>
-            {GRAPH_X.map((x) => (
-              <line
-                key={`column-${x}`}
-                stroke={x % 100 === 0 ? "#c2c2bc" : "#e6e6e1"}
-                strokeWidth={x % 100 === 0 ? "1.3" : "0.7"}
-                x1={x}
-                x2={x}
-                y1="0"
-                y2={NOTEBOOK_HEIGHT}
-              />
-            ))}
-            {GRAPH_Y.map((y) => (
-              <line
-                key={`row-${y}`}
-                stroke={y % 100 === 0 ? "#c2c2bc" : "#e6e6e1"}
-                strokeWidth={y % 100 === 0 ? "1.3" : "0.7"}
-                x1="0"
-                x2={NOTEBOOK_WIDTH}
-                y1={y}
-                y2={y}
-              />
-            ))}
-          </g>
-        ) : null}
-        {strokes.map((stroke) => (
-          <polyline
-            data-stroke-id={stroke.id}
-            fill="none"
-            key={stroke.id}
-            points={strokePoints(stroke)}
-            stroke="#15171a"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={stroke.width}
-          />
-        ))}
-      </svg>
+      <div className="notebook-split">
+        <div className="notebook-pane notebook-pane-pad">
+          <p className="notebook-pane-label" id="notebook-pad-label">
+            Sketch
+          </p>
+        <svg
+          aria-label="Working canvas"
+          className={`notebook-canvas notebook-${tool}`}
+          height={NOTEBOOK_HEIGHT}
+          onPointerCancel={endPointer}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={endPointer}
+          ref={svgRef}
+          role="application"
+          viewBox={`0 0 ${NOTEBOOK_WIDTH} ${NOTEBOOK_HEIGHT}`}
+          width={NOTEBOOK_WIDTH}
+        >
+          <title>The lesson working page</title>
+          <rect fill="#ffffff" height={NOTEBOOK_HEIGHT} width={NOTEBOOK_WIDTH} />
+          {pageType === "lined"
+            ? LINED_Y.map((y) => (
+                <line
+                  key={`rule-${y}`}
+                  stroke="#d9d9d4"
+                  strokeWidth="1"
+                  x1="0"
+                  x2={NOTEBOOK_WIDTH}
+                  y1={y}
+                  y2={y}
+                />
+              ))
+            : null}
+          {pageType === "graph" ? (
+            <g>
+              {GRAPH_X.map((x) => (
+                <line
+                  key={`column-${x}`}
+                  stroke={x % 100 === 0 ? "#c2c2bc" : "#e6e6e1"}
+                  strokeWidth={x % 100 === 0 ? "1.3" : "0.7"}
+                  x1={x}
+                  x2={x}
+                  y1="0"
+                  y2={NOTEBOOK_HEIGHT}
+                />
+              ))}
+              {GRAPH_Y.map((y) => (
+                <line
+                  key={`row-${y}`}
+                  stroke={y % 100 === 0 ? "#c2c2bc" : "#e6e6e1"}
+                  strokeWidth={y % 100 === 0 ? "1.3" : "0.7"}
+                  x1="0"
+                  x2={NOTEBOOK_WIDTH}
+                  y1={y}
+                  y2={y}
+                />
+              ))}
+            </g>
+          ) : null}
+          {strokes.map((stroke) => (
+            <polyline
+              data-stroke-id={stroke.id}
+              fill="none"
+              key={stroke.id}
+              points={strokePoints(stroke)}
+              stroke="#15171a"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={stroke.width}
+            />
+          ))}
+        </svg>
+        </div>
 
-      <label className="notebook-note">
-        <span>A note about this working</span>
-        <textarea
-          maxLength={MAX_NOTEBOOK_NOTE_LENGTH}
-          onChange={(event) => {
-            setNote(event.currentTarget.value);
-            setMessage(null);
-          }}
-          placeholder="Describe a step that may be hard to read from the drawing."
-          rows={3}
-          value={note}
-        />
-      </label>
+        <div className="notebook-pane notebook-pane-typed">
+          <label className="notebook-typed" htmlFor="notebook-typed-field">
+            Typed working
+          </label>
+          <textarea
+            className="notebook-typed-field"
+            id="notebook-typed-field"
+            maxLength={MAX_NOTEBOOK_NOTE_LENGTH}
+            onChange={(event) => {
+              setNote(event.currentTarget.value);
+              setMessage(null);
+            }}
+            placeholder={"Set the problem out in steps.\n\nI = V / R\nI = 5 / 100"}
+            value={note}
+          />
+          <p className="notebook-typed-count muted">
+            {note.length} / {MAX_NOTEBOOK_NOTE_LENGTH}
+          </p>
+        </div>
+      </div>
+
 
       <div className="button-row notebook-actions">
         {dirty && !saving ? (

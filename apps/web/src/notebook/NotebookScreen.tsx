@@ -5,7 +5,7 @@ import { useCallback, useState } from "react";
 import { Link, useParams } from "react-router";
 import { errorMessage } from "../api/client.js";
 import { getNotebookPage, saveNotebookPage } from "../api/endpoints.js";
-import { queryKeys, useCourse, useJourney } from "../api/queries.js";
+import { queryKeys, useJourney } from "../api/queries.js";
 import { ModeProvider, useTutoringMode } from "../journey/mode-context.js";
 import { paths } from "../lib/paths.js";
 import { ErrorScreen, LoadingScreen } from "../ui/Feedback.js";
@@ -34,7 +34,6 @@ function Notebook({ courseId, lessonId }: { courseId: string; lessonId: string }
   const queryClient = useQueryClient();
   const { mode } = useTutoringMode();
   const journey = useJourney(courseId, lessonId);
-  const course = useCourse(courseId);
   const [draft, setDraft] = useState<NotebookDraft | null>(null);
   const [svg, setSvg] = useState<SVGSVGElement | null>(null);
 
@@ -72,12 +71,7 @@ function Notebook({ courseId, lessonId }: { courseId: string; lessonId: string }
 
   return (
     <main className="page notebook-page" id="stage">
-      <p className="eyebrow">{course.data?.course.title ?? "Course"}</p>
       <h1>{journey.data?.title ?? "Working notebook"}</h1>
-      <p className="deck page-deck">
-        Work the problem here by hand. The page is kept with the lesson, and you can ask the
-        tutor to read it.
-      </p>
 
       <NotebookCanvas
         onDraftChange={onDraftChange}
