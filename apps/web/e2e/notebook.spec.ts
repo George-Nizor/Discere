@@ -107,9 +107,7 @@ test.describe("the working notebook", () => {
 test.describe("the review queue", () => {
   test("names every course that has cards waiting", async ({ page }) => {
     await page.goto("/review");
-    await expect(page.getByRole("heading", { level: 1 })).toContainText(
-      "Return to what you learned",
-    );
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("Review");
     const table = page.getByRole("table");
     await expect(table).toBeVisible();
     await expect(page.getByRole("columnheader", { name: "Due" })).toBeVisible();

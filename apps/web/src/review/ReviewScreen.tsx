@@ -42,28 +42,31 @@ export function ReviewScreen() {
 
   return (
     <main className="page" id="stage">
-      <p className="eyebrow">Spaced review</p>
-      <h1>Return to what you learned</h1>
-      <p className="deck page-deck">
-        Cards stay hidden until you try to recall them. Your rating decides when each one comes
-        back.
-      </p>
+      <h1>Review</h1>
 
       <section aria-label="Due now" className="review-summary">
         <p className="review-count">
           <strong>{dueCount}</strong>
-          <span>{dueCount === 1 ? "card due" : "cards due"}</span>
+          <span>
+            {dueCount === 1 ? "card due" : "cards due"}
+            {estimatedMinutes > 0 ? ` · about ${estimatedMinutes} min` : ""}
+          </span>
         </p>
-        <p className="muted">
-          {estimatedMinutes > 0
-            ? `About ${estimatedMinutes} ${estimatedMinutes === 1 ? "minute" : "minutes"}`
-            : "Nothing is due at the moment."}
-        </p>
+        <button
+          aria-busy={busy}
+          className="button button-primary"
+          onClick={() => void start()}
+          type="button"
+        >
+          {busy ? <Loader2 aria-hidden="true" className="spin" size={16} /> : null}
+          {dueCount > 0 ? "Start review" : "Review the earliest card"}
+          <ArrowRight aria-hidden="true" size={16} strokeWidth={1.8} />
+        </button>
       </section>
 
       {courses.length > 0 ? (
         <section aria-label="Due by course" className="review-courses">
-          <h2>Where the work is</h2>
+          <h2 className="section-title">By course</h2>
           {/* A session takes turns between courses, so the split is worth showing. */}
           <table>
             <thead>
@@ -96,21 +99,6 @@ export function ReviewScreen() {
         </section>
       ) : null}
 
-      <div className="button-row">
-        <button
-          aria-busy={busy}
-          className="button button-primary"
-          onClick={() => void start()}
-          type="button"
-        >
-          {busy ? <Loader2 aria-hidden="true" className="spin" size={16} /> : null}
-          {dueCount > 0 ? "Start review" : "Review the earliest card"}
-          <ArrowRight aria-hidden="true" size={16} strokeWidth={1.8} />
-        </button>
-        <Link className="button button-quiet" to={paths.home}>
-          Back to home
-        </Link>
-      </div>
 
       {failure ? (
         <Notice live tone="error" title="Review could not start">

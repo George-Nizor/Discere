@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { DiscereMark } from "../ui/DiscereMark.js";
 
 const SEEN_KEY = "discere:welcomed";
 /** Long enough for the mark to draw and the line to land; short enough not to be in the way. */
@@ -81,30 +82,7 @@ export function WelcomeScreen() {
         type="button"
       />
       <div className="welcome-inner">
-        <svg
-          aria-hidden="true"
-          className="welcome-mark"
-          height="72"
-          viewBox="0 0 20 20"
-          width="72"
-        >
-          <circle
-            className="welcome-mark-ring"
-            cx="10"
-            cy="10"
-            fill="none"
-            r="8.25"
-            stroke="currentColor"
-            strokeWidth="1.5"
-          />
-          <path
-            className="welcome-mark-bar"
-            d="M6.4 10.2h7.2"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeWidth="1.5"
-          />
-        </svg>
+        <DiscereMark className="welcome-mark" size={84} />
         <p className="welcome-wordmark">Discere</p>
         <p className="welcome-line">Learn something real today</p>
       </div>

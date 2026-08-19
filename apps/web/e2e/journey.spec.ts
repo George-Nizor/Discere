@@ -206,13 +206,11 @@ test.describe("the lesson journey", () => {
 
   test("shows review and progress from real data", async ({ page }) => {
     await page.goto("/review");
-    await expect(page.getByRole("heading", { level: 1 })).toContainText(
-      "Return to what you learned",
-    );
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("Review");
     await expect(page.getByText(/cards? due/)).toBeVisible();
 
     await page.goto("/progress");
-    await expect(page.getByRole("heading", { level: 1, name: "Your learning" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Progress" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Concept mastery" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Study calendar" })).toBeVisible();
     await expect(page.getByText(/independent ·/).first()).toBeVisible();

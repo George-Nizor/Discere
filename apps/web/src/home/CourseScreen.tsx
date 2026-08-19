@@ -26,13 +26,13 @@ export function CourseListScreen() {
 
   return (
     <main className="page" id="stage">
-      <p className="eyebrow">Library</p>
-      <h1>Courses</h1>
-      <p className="deck page-deck">
-        {open.length} {open.length === 1 ? "course" : "courses"} open, {finished} of {lessons}{" "}
-        lessons finished
-        {planned > 0 ? `, ${planned} more in production.` : "."}
-      </p>
+      <header className="page-head">
+        <h1>Courses</h1>
+        <p className="page-tally">
+          <strong>{finished}</strong> of {lessons} lessons
+          {planned > 0 ? ` · ${planned} in production` : ""}
+        </p>
+      </header>
       <ul className="course-grid">
         {courses.data.courses.map((course, index) => (
           <li key={course.id}>
@@ -65,7 +65,6 @@ export function CourseScreen() {
 
   return (
     <main className="page" id="stage" style={accent}>
-      <p className="eyebrow">Course</p>
       <h1>{course.data.course.title}</h1>
       <p className="deck page-deck">{course.data.course.description}</p>
 

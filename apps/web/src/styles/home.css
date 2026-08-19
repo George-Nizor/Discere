@@ -154,9 +154,11 @@
 /* ---------- Continue card ---------- */
 
 .continue-card {
-  border: 1px solid var(--line);
   border-radius: var(--radius-card);
-  background: var(--course-accent-pale);
+  background:
+    radial-gradient(110% 160% at 100% 0%, color-mix(in srgb, #ffffff 20%, transparent), transparent 55%),
+    linear-gradient(135deg, var(--course-accent), var(--course-accent-deep));
+  box-shadow: var(--shadow-md);
   overflow: hidden;
 }
 
@@ -165,11 +167,9 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-6);
-  padding: var(--space-6);
+  padding: var(--space-7) var(--space-6);
   text-decoration: none;
-  color: inherit;
-  /* The accent enters as a rule down the leading edge, not as a wash over the type. */
-  border-inline-start: 3px solid var(--course-accent);
+  color: #ffffff;
 }
 
 .continue-body {
@@ -178,21 +178,34 @@
 }
 
 .continue-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  color: var(--ink);
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: var(--tracking-title);
+  color: #ffffff;
 }
 
 .continue-description {
   max-width: 52ch;
-  color: var(--ink-soft);
+  color: rgb(255 255 255 / 84%);
   line-height: var(--leading-body);
 }
 
 .continue-meta {
-  color: var(--muted);
+  color: rgb(255 255 255 / 66%);
   font-size: var(--text-label);
+}
+
+/* On a colour field the ring's unfilled track has to be light, not the page's grey hairline. */
+.continue-side .progress-ring circle:first-child {
+  stroke: rgb(255 255 255 / 28%);
+}
+
+.continue-side .progress-ring circle + circle {
+  stroke: #ffffff;
+}
+
+.continue-side .progress-ring-value {
+  color: #ffffff;
 }
 
 .continue-side {
@@ -213,11 +226,17 @@
   align-items: center;
   gap: var(--space-3);
   margin-block-start: var(--space-4);
-  padding: var(--space-4) var(--space-5);
-  border: 1px solid var(--line);
+  padding: var(--space-5);
   border-radius: var(--radius-card);
+  background: var(--canvas);
+  box-shadow: inset 0 0 0 2px var(--green-soft);
   color: var(--ink-soft);
+  font-size: var(--text-body-large);
   text-decoration: none;
+}
+
+.review-strip:hover {
+  box-shadow: inset 0 0 0 2px var(--green);
 }
 
 .review-strip svg {
@@ -235,12 +254,25 @@
 
 /* ---------- Course cards ---------- */
 
+/* A section heading beside its own number, the same shape as the page head. */
+.section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.section-head .section-title {
+  margin-block-end: 0;
+}
+
 .section-title {
   margin: var(--space-8) 0 var(--space-4);
-  font-size: var(--text-label);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--muted);
+  font-size: var(--text-section);
+  letter-spacing: var(--tracking-title);
+  font-weight: 680;
+  color: var(--ink);
 }
 
 .course-grid {
@@ -260,9 +292,11 @@
   display: grid;
   grid-template-rows: auto 1fr;
   height: 100%;
-  border: 1px solid var(--line);
   border-radius: var(--radius-card);
   background: var(--canvas);
+  box-shadow:
+    inset 0 0 0 1px var(--line),
+    var(--shadow-sm);
   overflow: hidden;
   text-decoration: none;
   color: inherit;
@@ -270,30 +304,29 @@
 
 .course-card:hover,
 .course-card:focus-visible {
-  border-color: var(--course-accent);
+  box-shadow:
+    inset 0 0 0 1px var(--course-accent),
+    var(--shadow-md);
 }
 
-/* A band of the course's colour along the top, so the grid reads as distinct courses. */
-.course-card-stripe {
-  position: absolute;
-  inset-inline: 0;
-  inset-block-start: 0;
-  height: 3px;
-  background: var(--course-accent);
-}
-
+/*
+ * The cover is a field of the course's colour, deepening toward one corner so the card has a
+ * light source rather than a flat fill. The artwork is reversed out of it in white.
+ */
 .course-card-cover {
   display: block;
   width: 100%;
   aspect-ratio: 16 / 9;
   object-fit: cover;
-  background: var(--course-accent-pale);
-  border-block-end: 1px solid var(--line);
+  background:
+    radial-gradient(120% 140% at 15% 0%, color-mix(in srgb, #ffffff 22%, transparent), transparent 60%),
+    linear-gradient(150deg, var(--course-accent), var(--course-accent-deep));
 }
 
 .course-card-compact .course-card-cover {
-  aspect-ratio: 21 / 9;
+  aspect-ratio: 2 / 1;
 }
+
 
 .course-card-body {
   display: grid;
@@ -302,27 +335,32 @@
   padding: var(--space-5);
 }
 
+
+
 .course-card-heading {
   display: flex;
   align-items: baseline;
   gap: var(--space-3);
-  justify-content: space-between;
 }
 
 .course-card-title {
-  font-size: 1.125rem;
-  font-weight: 600;
+  font-size: 1.1875rem;
+  font-weight: 680;
+  letter-spacing: var(--tracking-title);
   color: var(--ink);
 }
 
 .course-card-tag {
-  flex-shrink: 0;
-  padding: 2px var(--space-2);
+  position: absolute;
+  inset-block-start: var(--space-3);
+  inset-inline-end: var(--space-3);
+  z-index: 1;
+  padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-pill);
-  background: var(--canvas-subtle);
-  border: 1px solid var(--line);
-  color: var(--muted);
+  background: rgb(255 255 255 / 92%);
+  color: var(--ink-soft);
   font-size: var(--text-stage-label);
+  font-weight: 650;
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
@@ -346,7 +384,36 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
-  margin-block-start: var(--space-3);
+  margin-block-start: var(--space-4);
+}
+
+.course-card-media {
+  position: relative;
+  display: block;
+}
+
+/*
+ * A pill floating on the artwork rather than a strip flush with the card's foot. Flush, its
+ * white fill sat directly above the white body and vanished into it: only the unfilled track
+ * was visible, which read as progress running the wrong way.
+ */
+.course-card-bar {
+  position: absolute;
+  inset-inline: var(--space-4);
+  inset-block-end: var(--space-4);
+  z-index: 1;
+  height: 7px;
+  border-radius: var(--radius-pill);
+  background: rgb(0 0 0 / 26%);
+  overflow: hidden;
+}
+
+.course-card-bar span {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: #ffffff;
+  transition: width var(--motion-page) var(--ease-out-expo);
 }
 
 .course-card-meta {
@@ -354,10 +421,17 @@
   font-size: var(--text-label);
 }
 
+/* Planned courses keep their colour but lose their light: present, clearly not ready. */
 .course-card.is-coming-soon {
-  filter: saturate(0.25);
-  opacity: 0.72;
   cursor: default;
+}
+
+.course-card.is-coming-soon .course-card-cover {
+  opacity: 0.55;
+}
+
+.course-card.is-coming-soon .course-card-title {
+  color: var(--ink-soft);
 }
 
 /* ---------- Progress ring ---------- */
@@ -656,7 +730,7 @@
   align-items: center;
   gap: var(--space-2);
   flex-shrink: 0;
-  color: var(--green);
+  color: var(--course-accent);
   font-size: var(--text-label);
   font-weight: 600;
 }

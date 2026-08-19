@@ -58,8 +58,9 @@ function HomeContent({
   return (
     <main className="page home" id="stage">
       <header className="home-hero">
-        <p className="eyebrow">{`${greeting(new Date().getHours())}, ${home.learnerName}`}</p>
-        <h1 className="home-hero-title">What will you understand today?</h1>
+        <h1 className="home-hero-title">
+          {`${greeting(new Date().getHours())}, ${home.learnerName}`}
+        </h1>
         <ul className="home-chips">
           <li className="chip">
             <Flame aria-hidden="true" className="flame-pulse" size={16} strokeWidth={1.7} />
@@ -82,7 +83,6 @@ function HomeContent({
       <section aria-label="Continue learning" className="continue-card lift" style={accent}>
         <Link className="continue-link" to={resumePath} viewTransition>
           <span className="continue-body">
-            <span className="eyebrow">{started ? "Pick up where you left off" : "Start here"}</span>
             <span className="continue-title">{home.currentMission.title}</span>
             <span className="continue-description">{home.currentMission.description}</span>
             <span className="continue-meta">
@@ -90,7 +90,7 @@ function HomeContent({
             </span>
           </span>
           <span className="continue-side">
-            {stages.length > 0 ? (
+            {done > 0 ? (
               <ProgressRing
                 caption={`${done}/${stages.length}`}
                 completed={done}
@@ -99,7 +99,7 @@ function HomeContent({
                 total={stages.length}
               />
             ) : null}
-            <span className="button button-primary continue-action">
+            <span className="button button-inverse continue-action">
               {started ? "Resume" : "Begin"}
               <ArrowRight aria-hidden="true" size={16} strokeWidth={1.8} />
             </span>
