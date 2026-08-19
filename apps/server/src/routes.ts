@@ -482,7 +482,7 @@ export async function registerRoutes(
       key: record.key,
       status: record.status,
       alt: record.alt,
-      url: record.status === "ready" ? `/api/illustrations/${record.key}.png` : "",
+      url: record.status === "ready" ? `/api/illustrations/${record.key}/image` : "",
       detail: record.detail,
     };
   });
@@ -495,15 +495,13 @@ export async function registerRoutes(
       key: record.key,
       status: record.status,
       alt: record.alt,
-      url: record.status === "ready" ? `/api/illustrations/${record.key}.png` : "",
+      url: record.status === "ready" ? `/api/illustrations/${record.key}/image` : "",
       detail: record.detail,
     };
   });
 
-  app.get("/api/illustrations/:key.png", async (request, reply) => {
-    const { key } = IllustrationParamsSchema.parse({
-      key: String((request.params as Record<string, string>)["key*"] ?? "").replace(/\.png$/, ""),
-    });
+  app.get("/api/illustrations/:key/image", async (request, reply) => {
+    const { key } = IllustrationParamsSchema.parse(request.params);
     let file: Buffer;
     try {
       file = await readFile(illustrationImagePath(key));
