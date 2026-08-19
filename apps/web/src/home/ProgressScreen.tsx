@@ -100,7 +100,10 @@ export function ProgressScreen() {
             <p className="standing-value">
               {home.data.streakDays === 1 ? "Day in a row" : "Days in a row"}
             </p>
-            <p className="standing-label">{home.data.todayMinutes} minutes studied today</p>
+            <p className="standing-label">
+              {home.data.todayMinutes} {home.data.todayMinutes === 1 ? "minute" : "minutes"}{" "}
+              studied today
+            </p>
           </div>
         </div>
       </section>
@@ -150,7 +153,9 @@ export function ProgressScreen() {
             Courses
           </h2>
           <ul className="course-progress-list">
-            {courses.data.courses.map((course) => (
+            {courses.data.courses
+              .filter((course) => course.status === "available")
+              .map((course) => (
               <li
                 className="course-progress"
                 key={course.id}
@@ -169,8 +174,8 @@ export function ProgressScreen() {
                     {course.completedLessonCount} of {course.lessonCount} lessons finished
                   </p>
                 </div>
-              </li>
-            ))}
+                </li>
+              ))}
           </ul>
         </section>
       ) : null}

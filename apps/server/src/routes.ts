@@ -34,10 +34,13 @@ import type { DiscereStore } from "./db/store.js";
 import { HttpError } from "./errors.js";
 import { getNotebookPage, saveNotebookPage } from "./notebook.js";
 import { coerceQueryBoolean } from "./query-coercion.js";
+import type { TopicMapRepository } from "./topic-maps.js";
 
 export interface RouteDependencies {
   content: ContentRepository;
   store: DiscereStore;
+  /** Curated outlines for courses that are planned but have no lessons yet. */
+  topicMaps: TopicMapRepository;
   revealDelayMs: number;
 }
 const AttemptBodySchema = AttemptRequestSchema.extend({ attemptId: z.string().uuid().optional() });
@@ -94,7 +97,7 @@ export async function registerRoutes(
   app: FastifyInstance,
   dependencies: RouteDependencies,
 ): Promise<void> {
-  const { content, store, revealDelayMs } = dependencies;
+  const { content, store, topicMaps, revealDelayMs } = dependencies;
 
   /** Concept mastery, named the way the course names each concept. */
   function conceptProgressWithTitles() {
@@ -147,9 +150,28 @@ export async function registerRoutes(
       progress: conceptProgressWithTitles(),
     };
   });
-  app.get("/api/courses", async () => ({
-    courses: content.courseSummaries(store.courseActivity(), store.completedLessonsByCourse()),
-  }));
+  app.get("/api/courses", async () => {
+    const built = content.courseSummaries(store.courseActivity(), store.completedLessonsByCourse());
+    const planned = topicMaps.plannedSummaries(new Set(built.map((course) => course.id)));
+    return { courses: [...built, ...planned] };
+  });
+
+  /** Cover art for a course that is planned but not yet written. */
+  app.get("/api/roadmap/:courseId/cover.svg", async (request, reply) => {
+    const { courseId } = CourseParamsSchema.parse(request.params);
+    const absolute = topicMaps.coverPath(courseId);
+    if (!absolute) throw new HttpError(404, "No cover.", "ASSET_NOT_FOUND");
+    let file: Buffer;
+    try {
+      file = await readFile(absolute);
+    } catch {
+      throw new HttpError(404, "No cover.", "ASSET_NOT_FOUND");
+    }
+    return reply
+      .type("image/svg+xml; charset=utf-8")
+      .header("Cache-Control", "public, max-age=3600")
+      .send(file);
+  });
 
   /**
    * Ten weeks of completions, so the progress screen can draw a calendar of real study rather

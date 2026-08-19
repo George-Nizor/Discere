@@ -3,7 +3,7 @@ import { unique } from "./helpers.js";
 
 const NUMBER_PATTERN = /(?<![\p{L}\p{N}])[-+]?\d+(?:\.\d+)?(?:e[-+]?\d+)?%?/giu;
 const UNIT_PATTERN = /\b(?:mA|A|mV|V|kΩ|Ω|ohms?|volts?|amps?|amperes?|watts?|W|Hz|kHz|MHz|kg|g|ms|s)\b/giu;
-const CITATION_PATTERN = /(?:\[[^\]]+\]\([^\)]+\)|\[[0-9]+\]|https?:\/\/\S+)/giu;
+const CITATION_PATTERN = /(?:\[[^\]]+\]\([^)]+\)|\[[0-9]+\]|https?:\/\/\S+)/giu;
 const EQUATION_PATTERN = /(?:^|\s)([A-Za-z]\s*=\s*[^\n.!?;]{1,80})/g;
 
 function captures(text: string, pattern: RegExp): string[] {

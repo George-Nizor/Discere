@@ -20,6 +20,7 @@ export function CourseListScreen() {
     );
   }
   const open = courses.data.courses.filter((course) => course.status === "available");
+  const planned = courses.data.courses.length - open.length;
   const finished = open.reduce((sum, course) => sum + course.completedLessonCount, 0);
   const lessons = open.reduce((sum, course) => sum + course.lessonCount, 0);
 
@@ -28,8 +29,9 @@ export function CourseListScreen() {
       <p className="eyebrow">Library</p>
       <h1>Courses</h1>
       <p className="deck page-deck">
-        {open.length} {open.length === 1 ? "course" : "courses"}, {lessons} lessons, {finished}{" "}
-        finished.
+        {open.length} {open.length === 1 ? "course" : "courses"} open, {finished} of {lessons}{" "}
+        lessons finished
+        {planned > 0 ? `, ${planned} more in production.` : "."}
       </p>
       <ul className="course-grid">
         {courses.data.courses.map((course, index) => (

@@ -530,7 +530,11 @@ export const LessonBeatSchema = z
     steps: z.array(LessonStepSchema).min(3),
     /** One line naming what the lesson is about, used wherever a lesson is listed. */
     orientation: z.string().min(1),
-    visualBrief: VisualBriefSchema,
+    /**
+     * Present when the lesson has a technical diagram to show. A lesson can teach entirely
+     * through its steps and its questions, so this is optional rather than a brief nobody wrote.
+     */
+    visualBrief: VisualBriefSchema.optional(),
     circuitSpec: CircuitDiagramSpecSchema.optional(),
     /**
      * Configurations the lesson's visual moves between as the learner advances. A step names
@@ -538,8 +542,12 @@ export const LessonBeatSchema = z
      */
     visualStates: z.array(VisualStateSchema).default([]),
     image: CourseImageSchema.optional(),
-    visualKind: ExplainerVisualKindSchema,
-    activityId: z.string().min(1),
+    visualKind: ExplainerVisualKindSchema.default("none"),
+    /**
+     * A slider or scrubber explorer, given a stage of its own. Optional: since lessons became
+     * steps, an interaction can live inside a step instead, and most subjects have no explorer.
+     */
+    activityId: z.string().default(""),
     questionIds: z.array(z.string().min(1)).min(1),
     essayId: z.string().min(1).optional(),
     flashcardIds: z.array(z.string().min(1)),
@@ -597,3 +605,55 @@ export const CourseBundleSchema = z
   })
   .strict();
 export type CourseBundle = z.infer<typeof CourseBundleSchema>;
+
+/**
+ * A curated course outline, committed as data before any lesson exists.
+ *
+ * A topic map is the plan: what the course covers, in what order, and what each lesson should
+ * leave the learner able to do. It is assembled by hand from open curricula rather than
+ * generated, because the shape of a subject is the part worth getting right yourself — and it
+ * lets the catalogue show a course as planned long before its lessons are written.
+ */
+export const TopicMapLessonSchema = z
+  .object({
+    slug: z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/),
+    title: z.string().min(1),
+    /** What the learner should be able to do afterwards, in one sentence. */
+    outcome: z.string().min(1),
+    /** The beats the lesson should hit, in order. One line each. */
+    outline: z.array(z.string().min(1)).min(3).max(12),
+    conceptIds: z.array(z.string().min(1)).min(1),
+    /** Interaction types this lesson should use, so the plan commits to more than prose. */
+    activityKinds: z
+      .array(z.enum(["diagram_choice", "order_sequence", "graph_plot", "explorer"]))
+      .default([]),
+  })
+  .strict();
+export type TopicMapLesson = z.infer<typeof TopicMapLessonSchema>;
+
+export const TopicMapModuleSchema = z
+  .object({
+    id: z.string().min(1),
+    title: z.string().min(1),
+    summary: z.string().min(1),
+    concepts: z
+      .array(z.object({ id: z.string().min(1), title: z.string().min(1), summary: z.string().min(1) }).strict())
+      .min(1),
+    lessons: z.array(TopicMapLessonSchema).min(1),
+  })
+  .strict();
+
+export const TopicMapSchema = z
+  .object({
+    courseId: z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/),
+    title: z.string().min(1),
+    description: z.string().min(1),
+    audience: z.string().min(1),
+    accent: z.string().regex(/^#[0-9a-f]{6}$/i),
+    coverAsset: z.string().default("cover.svg"),
+    /** Where the outline came from, so the plan can be checked against its sources. */
+    sources: z.array(z.object({ title: z.string().min(1), url: z.string().url() }).strict()).min(1),
+    modules: z.array(TopicMapModuleSchema).min(1),
+  })
+  .strict();
+export type TopicMap = z.infer<typeof TopicMapSchema>;

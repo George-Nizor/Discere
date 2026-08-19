@@ -146,9 +146,12 @@ export function canAdvanceStep(
   answered: { solved: boolean; revealed: boolean },
 ): boolean {
   if (!step) return false;
-  if (step.kind === "check" || step.kind === "transfer" || step.kind === "interact") {
+  if (step.kind === "check" || step.kind === "transfer") {
     return answered.solved || answered.revealed;
   }
+  // An interact step waits for its activity, unless none has been wired to it yet — a
+  // placeholder must read as prose rather than trapping the learner behind a missing control.
+  if (step.kind === "interact") return step.activity === undefined || answered.solved;
   return true;
 }
 

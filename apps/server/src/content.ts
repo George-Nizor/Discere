@@ -1,4 +1,3 @@
-import { readdir } from "node:fs/promises";
 import path from "node:path";
 import type {
   Activity,
@@ -17,7 +16,7 @@ import type {
   LessonResponse,
   Question,
 } from "@discere/contracts";
-import { courseAssetDirectory, loadCourseBundle } from "@discere/curriculum";
+import { courseAssetDirectory, courseDirectories, loadCourseBundle } from "@discere/curriculum";
 
 /** The interactive canvas each activity type asks for. */
 const ACTIVITY_VISUAL_KIND = {
@@ -98,11 +97,7 @@ export class ContentRepository {
   }
 
   static async load(contentRoot: string): Promise<ContentRepository> {
-    const entries = await readdir(contentRoot, { withFileTypes: true });
-    const directories = entries
-      .filter((entry) => entry.isDirectory())
-      .map((entry) => entry.name)
-      .sort((left, right) => left.localeCompare(right));
+    const directories = await courseDirectories(contentRoot);
     const courses: LoadedCourse[] = [];
     for (const directory of directories) {
       const bundlePath = path.join(contentRoot, directory, "bundle.json");
@@ -274,8 +269,14 @@ export class ContentRepository {
     const bundle = this.bundle(courseId);
     const lesson = bundle?.lessons.find((item) => item.id === lessonId);
     if (!bundle || !lesson) return undefined;
-    const activity = bundle.activities.find((item) => item.id === lesson.activityId);
-    if (!activity) throw new Error(`Lesson '${lessonId}' references missing activity.`);
+    // A lesson only gets an explorer stage when it names one. Since lessons became steps, an
+    // interaction can live inside a step instead, and most subjects have no explorer at all.
+    const activity = lesson.activityId
+      ? bundle.activities.find((item) => item.id === lesson.activityId)
+      : undefined;
+    if (lesson.activityId && !activity) {
+      throw new Error(`Lesson '${lessonId}' references missing activity.`);
+    }
 
     const questions = lesson.questionIds.map((id) => {
       const question = bundle.questions.find((item) => item.id === id);
@@ -309,8 +310,10 @@ export class ContentRepository {
         steps: learnerSteps(lesson, bundle),
         visual: {
           kind: lesson.visualKind,
-          ...(lesson.visualKind === "none" ? {} : { briefId: lesson.visualBrief.id }),
-          alt: lesson.visualBrief.altTextDraft,
+          ...(lesson.visualKind === "none" || !lesson.visualBrief
+            ? {}
+            : { briefId: lesson.visualBrief.id }),
+          alt: lesson.visualBrief?.altTextDraft || "This lesson has no diagram.",
           ...(lesson.visualKind === "circuit" && lesson.circuitSpec
             ? {
                 src: `/api/visuals/circuit.svg?lessonId=${encodeURIComponent(lesson.id)}`,
@@ -341,19 +344,25 @@ export class ContentRepository {
             : {}),
         },
       },
-      {
-        id: `${lesson.id}:visual`,
-        type: "interactive_visual",
-        title: activity.title,
-        conceptIds: activity.conceptIds,
-        sourceIds: lesson.sourceIds,
-        optional: false,
-        completionPolicy: "interaction",
-        activity,
-        // An explorer asks the learner to predict; the newer types ask their question directly.
-        prompt: "predictionPrompt" in activity ? activity.predictionPrompt : activity.prompt,
-        visualKind: ACTIVITY_VISUAL_KIND[activity.type],
-      },
+      // A lesson only gets an explorer stage when it names one.
+      ...(activity
+        ? [
+            {
+              id: `${lesson.id}:visual`,
+              type: "interactive_visual" as const,
+              title: activity.title,
+              conceptIds: activity.conceptIds,
+              sourceIds: lesson.sourceIds,
+              optional: false,
+              completionPolicy: "interaction" as const,
+              activity,
+              // An explorer asks the learner to predict; newer types ask their question directly.
+              prompt:
+                "predictionPrompt" in activity ? activity.predictionPrompt : activity.prompt,
+              visualKind: ACTIVITY_VISUAL_KIND[activity.type],
+            },
+          ]
+        : []),
       ...questions.map(
         (question, index): LearnerStage => ({
           id: quizIds[index] ?? `${lesson.id}:quiz-${index + 1}`,
@@ -433,9 +442,10 @@ export class ContentRepository {
   }
 
   /** Every visual brief in the library, used by the image-prompt endpoint. */
-  visualBriefs(): Array<LessonBeat["visualBrief"]> {
+  /** Every brief a lesson actually carries. Lessons without a diagram contribute none. */
+  visualBriefs(): Array<NonNullable<LessonBeat["visualBrief"]>> {
     return this.courses.flatMap((course) =>
-      course.bundle.lessons.map((lesson) => lesson.visualBrief),
+      course.bundle.lessons.flatMap((lesson) => (lesson.visualBrief ? [lesson.visualBrief] : [])),
     );
   }
 }

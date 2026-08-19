@@ -325,7 +325,30 @@ vitest per module; e2e interaction tests using dispatched pointer events (avoid 
 not by Discere — one dev session on 2026-08-19 spent 3.7M input tokens, about 185 tutor questions'
 worth. Do not redesign the tutor around quota. Check `GET /api/tutor/status` if a run fails.
 
-### 6.1 Factory tooling (build first, no codex needed)
+### 6.1 Factory tooling — BUILT
+
+Delivered as `pnpm curate` (`scripts/curate.ts`, with the pure logic in
+`packages/curriculum/src/authoring-import.ts` and tests beside it):
+
+| Command | What it does |
+| --- | --- |
+| `pnpm curate plan <id> [subject]` | Writes the prompt that produces a topic map for a course that has none. |
+| `pnpm curate scaffold <id>` | Turns a topic map into a `bundle.json` with the course, modules, concepts and sources. |
+| `pnpm curate prompt <id> [slug]` | Writes a paste-ready prompt per pending lesson. |
+| `pnpm curate import <id>` | Validates, merges and archives everything in the inbox. Writes nothing unless the whole bundle validates. |
+| `pnpm curate status <id>` | What is done, what is waiting, what to run next. |
+
+Committed topic maps: `logic-and-reasoning` (8 lessons), `maths-foundations` (6), `cs-basics`
+(6). They render on the catalogue as `coming_soon` cards straight away, so the roadmap is
+visible before any lesson exists.
+
+The import contract is `ImportedLessonSchema` — flat, union-free, every field required, because
+that is the only shape constrained decoding will emit (fact #6). `mergeLesson` fills in what a
+writer is never asked for: source attribution, concept links, and the discriminated answer
+authority. A re-import keeps hand-wired plumbing (visual brief, circuit spec, explorer, visual
+states) and replaces only the written parts.
+
+### 6.1b Original plan (superseded)
 
 - `content/_topic-maps/*.json`: curated topic trees. Create by hand-curating from open sources (Khan Academy topic structure, OpenStax ToCs, Wikiversity) — the maps are committed DATA (title/summary/concept list/lesson outline per course), written by you (the executing model) without codex. Schema: `TopicMapSchema` in `packages/contracts` `{courseId, title, description, accent, modules: [{title, concepts: [{title, summary}], lessons: [{slug, title, outcome, outline: string[]}]}]}`.
 - `scripts/curate.ts`: topic map → bundle skeleton (course/modules/concepts/lesson stubs with empty steps, `status: "coming_soon"` in catalogue until lessons land).

@@ -209,12 +209,55 @@ export function bundleFields(bundle: CourseBundle): AuthoredField[] {
         text: activity.instructions,
         context: "lesson",
       },
-      {
+    );
+    // Explorers ask the learner to predict; the newer types ask directly and answer back. Both
+    // are learner-facing prose, so both go through the gate.
+    if ("predictionPrompt" in activity) {
+      fields.push({
         path: `activities.${activity.id}.predictionPrompt`,
         text: activity.predictionPrompt,
         context: "question",
-      },
-    );
+      });
+    }
+    if ("prompt" in activity) {
+      fields.push({
+        path: `activities.${activity.id}.prompt`,
+        text: activity.prompt,
+        context: "question",
+      });
+    }
+    if ("feedback" in activity) {
+      fields.push(
+        {
+          path: `activities.${activity.id}.feedback.correct`,
+          text: activity.feedback.correct,
+          context: "feedback",
+        },
+        {
+          path: `activities.${activity.id}.feedback.incorrect`,
+          text: activity.feedback.incorrect,
+          context: "feedback",
+        },
+      );
+    }
+    if (activity.type === "order_sequence") {
+      for (const item of activity.items) {
+        fields.push({
+          path: `activities.${activity.id}.items.${item.id}`,
+          text: item.label,
+          context: "lesson",
+        });
+      }
+    }
+    if (activity.type === "diagram_choice") {
+      for (const target of activity.targets) {
+        fields.push({
+          path: `activities.${activity.id}.targets.${target.id}`,
+          text: target.label,
+          context: "lesson",
+        });
+      }
+    }
     if (activity.type === "timeline_explorer") {
       for (const event of activity.events) {
         fields.push({
