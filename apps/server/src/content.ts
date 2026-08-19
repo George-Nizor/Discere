@@ -112,7 +112,11 @@ export class ContentRepository {
     )?.bundle.course.id;
   }
 
-  courseSummary(courseId: string, lastActiveAt: string | null = null): CourseSummary | undefined {
+  courseSummary(
+    courseId: string,
+    lastActiveAt: string | null = null,
+    completedLessonCount = 0,
+  ): CourseSummary | undefined {
     const bundle = this.bundle(courseId);
     if (!bundle) return undefined;
     return {
@@ -122,13 +126,27 @@ export class ContentRepository {
       lessonCount: bundle.lessons.length,
       availableLessonIds: bundle.lessons.map((lesson) => lesson.id),
       lastActiveAt,
+      accent: bundle.course.accent,
+      // Served through the existing course-asset route, which keeps its symlink containment.
+      coverUrl: bundle.course.coverAsset
+        ? `/api/content/${encodeURIComponent(bundle.course.id)}/assets/${encodeURIComponent(bundle.course.coverAsset)}`
+        : "",
+      status: bundle.course.status,
+      completedLessonCount: Math.min(completedLessonCount, bundle.lessons.length),
     };
   }
 
-  courseSummaries(activity: Map<string, CourseActivity> = new Map()): CourseSummary[] {
+  courseSummaries(
+    activity: Map<string, CourseActivity> = new Map(),
+    completedLessons: Map<string, number> = new Map(),
+  ): CourseSummary[] {
     return this.courses.flatMap((course) => {
       const id = course.bundle.course.id;
-      const summary = this.courseSummary(id, activity.get(id)?.lastActiveAt ?? null);
+      const summary = this.courseSummary(
+        id,
+        activity.get(id)?.lastActiveAt ?? null,
+        completedLessons.get(id) ?? 0,
+      );
       return summary ? [summary] : [];
     });
   }
@@ -136,9 +154,11 @@ export class ContentRepository {
   courseDetail(
     courseId: string,
     lastActiveAt: string | null = null,
+    completedLessonIds: ReadonlySet<string> = new Set(),
+    completedLessonCount = 0,
   ): CourseDetailResponse | undefined {
     const bundle = this.bundle(courseId);
-    const course = this.courseSummary(courseId, lastActiveAt);
+    const course = this.courseSummary(courseId, lastActiveAt, completedLessonCount);
     if (!bundle || !course) return undefined;
     return {
       course,
@@ -149,6 +169,7 @@ export class ContentRepository {
         conceptIds: lesson.conceptIds,
         available: true,
         stageCount: this.getJourney(courseId, lesson.id)?.stages.length ?? 0,
+        completed: completedLessonIds.has(lesson.id),
       })),
       concepts: bundle.concepts.map((concept) => ({
         id: concept.id,

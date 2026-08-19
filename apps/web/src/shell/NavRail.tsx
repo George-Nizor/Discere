@@ -22,7 +22,7 @@ export function NavRail() {
 
   return (
     <nav aria-label="Discere" className="nav-rail">
-      <NavLink aria-label="Discere home" className="nav-rail-mark" end to={paths.home}>
+      <NavLink aria-label="Discere home" className="nav-rail-mark" end to={paths.home} viewTransition>
         <svg aria-hidden="true" height="20" viewBox="0 0 20 20" width="20">
           <title>Discere</title>
           <circle cx="10" cy="10" fill="none" r="8.25" stroke="currentColor" strokeWidth="1.5" />
@@ -37,6 +37,7 @@ export function NavRail() {
               className="nav-rail-link"
               end={destination.end}
               to={destination.to}
+              viewTransition
             >
               <destination.icon aria-hidden="true" size={20} strokeWidth={1.6} />
               <span className="nav-rail-tip">{destination.label}</span>

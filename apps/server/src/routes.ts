@@ -134,6 +134,8 @@ export async function registerRoutes(
     const lesson = content.getLesson(lessonId, courseId);
     return {
       ...store.getProfile(),
+      dueReviews: store.dueReviewCount(),
+      todayMinutes: store.todayMinutes(),
       currentMission: {
         id: `mission:${journey.id}`,
         courseId,
@@ -146,13 +148,37 @@ export async function registerRoutes(
     };
   });
   app.get("/api/courses", async () => ({
-    courses: content.courseSummaries(store.courseActivity()),
+    courses: content.courseSummaries(store.courseActivity(), store.completedLessonsByCourse()),
   }));
+
+  /**
+   * Ten weeks of completions, so the progress screen can draw a calendar of real study rather
+   * than a single streak number. Days with nothing done are absent, not zero.
+   */
+  app.get("/api/progress/activity", async () => {
+    const WEEKS = 10;
+    const from = new Date(Date.now() - WEEKS * 7 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .slice(0, 10);
+    const days = store.activityByDay(from);
+    return {
+      days,
+      busiestCount: days.reduce((most, day) => Math.max(most, day.completions), 0),
+    };
+  });
   app.get("/api/courses/:courseId", async (request) => {
     const { courseId } = CourseParamsSchema.parse(request.params);
+    const finished = store.completedJourneyIds();
+    const lessonIds = new Set(
+      [...finished]
+        .filter((journeyId) => journeyId.startsWith(`${courseId}:`))
+        .map((journeyId) => journeyId.slice(courseId.length + 1)),
+    );
     const detail = content.courseDetail(
       courseId,
       store.courseActivity().get(courseId)?.lastActiveAt ?? null,
+      lessonIds,
+      lessonIds.size,
     );
     if (!detail) throw new HttpError(404, "Course not found.", "COURSE_NOT_FOUND");
     return detail;
@@ -216,7 +242,8 @@ export async function registerRoutes(
     if (!journey) throw new HttpError(404, "Lesson journey not found.", "JOURNEY_NOT_FOUND");
     const body = StageProgressRequestSchema.parse(request.body);
     try {
-      return store.saveStageProgress(journey.id, journey.stageOrder, body);
+      const stage = journey.stages.find((item) => item.id === body.stageId);
+      return store.saveStageProgress(journey.id, journey.stageOrder, body, stage?.type);
     } catch (error) {
       if (error instanceof Error && error.message.startsWith("Stage '"))
         throw new HttpError(409, error.message, "STAGE_NOT_IN_JOURNEY");

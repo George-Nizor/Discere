@@ -12,6 +12,8 @@ const home = {
   learnerName: "Journey Tester",
   xp: 48,
   streakDays: 3,
+  dueReviews: 3,
+  todayMinutes: 12,
   currentMission: {
     id: "mission-current",
     courseId: "electronics-foundations",
@@ -39,6 +41,10 @@ const course = {
   lessonCount: 2,
   availableLessonIds: ["current-in-one-loop"],
   lastActiveAt: null,
+  accent: "#0b8f3c",
+  coverUrl: "/api/content/electronics-foundations/assets/cover.svg",
+  status: "available",
+  completedLessonCount: 1,
 };
 
 const courseDetail = {
@@ -55,6 +61,7 @@ const courseDetail = {
       conceptIds: ["current"],
       available: true,
       stageCount: 6,
+      completed: false,
     },
     {
       id: "series-circuit-resistance",
@@ -63,6 +70,7 @@ const courseDetail = {
       conceptIds: ["series-circuits"],
       available: false,
       stageCount: 0,
+      completed: false,
     },
   ],
 };
@@ -128,15 +136,17 @@ describe("routed application", () => {
     renderApp("/");
 
     expect(
-      await screen.findByRole("heading", { level: 1, name: "Electronics Foundations" }),
+      await screen.findByRole("heading", { level: 1, name: "What will you understand today?" }),
     ).toBeInTheDocument();
+    expect(screen.getByText(/Good (morning|afternoon|evening), Journey Tester/)).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: "Discere" })).toBeInTheDocument();
-    for (const label of ["Home", "Courses", "Review", "Progress"]) {
+    for (const label of ["Home", "Courses", "Review", "Progress", "Settings"]) {
       expect(screen.getByRole("link", { name: label })).toBeInTheDocument();
     }
-    expect(await screen.findByRole("link", { name: /Resume lesson/ })).toBeInTheDocument();
-    expect(await screen.findByText("Resistance in series")).toBeInTheDocument();
-    expect(screen.getByText("Written, not open yet")).toBeInTheDocument();
+    // The hero continues the lesson the mission names, and the catalogue sits below it.
+    expect(await screen.findByRole("link", { name: /Follow the current/ })).toBeInTheDocument();
+    expect(await screen.findByText("Electronics Foundations")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /3 cards are ready to review/ })).toBeInTheDocument();
     expect(await screen.findByText("Signed in locally as Journey Tester")).toBeInTheDocument();
   });
 
@@ -161,15 +171,23 @@ describe("routed application", () => {
   });
 
   it("renders concept mastery with independent and assisted evidence apart", async () => {
-    stubFetch({ "GET /api/home": { body: home } });
+    stubFetch({
+      "GET /api/home": { body: home },
+      "GET /api/courses": { body: { courses: [course] } },
+      "GET /api/progress/activity": {
+        body: { days: [{ date: "2026-08-18", completions: 2 }], busiestCount: 2 },
+      },
+    });
     renderApp("/progress");
     expect(
-      await screen.findByRole("heading", { level: 1, name: "Concept mastery" }),
+      await screen.findByRole("heading", { level: 1, name: "Your learning" }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("columnheader", { name: "Independent" })).toBeInTheDocument();
-    expect(screen.getByRole("columnheader", { name: "Assisted" })).toBeInTheDocument();
-    expect(screen.getByRole("rowheader", { name: "Ohm's law" })).toBeInTheDocument();
+    expect(await screen.findByText("Ohm's law")).toBeInTheDocument();
     expect(screen.getByText("62%")).toBeInTheDocument();
+    expect(screen.getByText("2 independent · 1 assisted")).toBeInTheDocument();
+    // XP 48 is short of the first level boundary, and the calendar drew the recorded day.
+    expect(screen.getByText("Level 0")).toBeInTheDocument();
+    expect(await screen.findByText("2026-08-18: 2 finished")).toBeInTheDocument();
   });
 
   it("assembles the lesson shell around a stage from its address", async () => {

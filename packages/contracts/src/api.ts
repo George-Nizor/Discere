@@ -33,6 +33,10 @@ export const HomeResponseSchema = z
     learnerName: z.string().min(1),
     xp: z.number().int().nonnegative(),
     streakDays: z.number().int().nonnegative(),
+    /** Cards the review queue would hand over right now, so the home screen can offer them. */
+    dueReviews: z.number().int().nonnegative(),
+    /** Minutes of recorded study today, from the spacing of the learner's own activity. */
+    todayMinutes: z.number().int().nonnegative(),
     currentMission: z
       .object({
         id: z.string().min(1),
@@ -48,6 +52,25 @@ export const HomeResponseSchema = z
   })
   .strict();
 export type HomeResponse = z.infer<typeof HomeResponseSchema>;
+
+/** One day on the streak calendar. Days with no activity are absent rather than zeroed. */
+export const ActivityDaySchema = z
+  .object({
+    /** UTC calendar day, `YYYY-MM-DD`. */
+    date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    completions: z.number().int().positive(),
+  })
+  .strict();
+export type ActivityDay = z.infer<typeof ActivityDaySchema>;
+
+export const ActivityResponseSchema = z
+  .object({
+    days: z.array(ActivityDaySchema),
+    /** Busiest day in the returned window, so the calendar can scale its shading. */
+    busiestCount: z.number().int().nonnegative(),
+  })
+  .strict();
+export type ActivityResponse = z.infer<typeof ActivityResponseSchema>;
 
 export const LessonResponseSchema = z
   .object({
@@ -72,6 +95,8 @@ export const CourseLessonSummarySchema = z
     conceptIds: z.array(z.string()).min(1),
     available: z.boolean(),
     stageCount: z.number().int().nonnegative(),
+    /** Every recorded stage of this lesson is done. */
+    completed: z.boolean(),
   })
   .strict();
 export type CourseLessonSummary = z.infer<typeof CourseLessonSummarySchema>;

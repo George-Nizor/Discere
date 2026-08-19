@@ -1,4 +1,6 @@
 import {
+  type ActivityResponse,
+  ActivityResponseSchema,
   type AttemptRequest,
   type AttemptResponse,
   type CourseDetailResponse,
@@ -58,6 +60,10 @@ const encode = encodeURIComponent;
 
 function journeyBase(courseId: string, lessonId: string): string {
   return `/api/courses/${encode(courseId)}/lessons/${encode(lessonId)}`;
+}
+
+export async function getActivity(): Promise<ActivityResponse> {
+  return ActivityResponseSchema.parse(await requestJson<unknown>("/api/progress/activity"));
 }
 
 export async function getHome(): Promise<HomeResponse> {

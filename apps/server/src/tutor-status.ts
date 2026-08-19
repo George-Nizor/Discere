@@ -122,7 +122,7 @@ export function readCodexQuota(): CodexQuota | undefined {
     const lines = readTail(newest.file, ROLLOUT_TAIL_BYTES).split("\n");
     for (let index = lines.length - 1; index >= 0; index -= 1) {
       const line = lines[index];
-      if (!line || !line.includes('"rate_limits"')) continue;
+      if (!line?.includes('"rate_limits"')) continue;
       let parsed: unknown;
       try {
         parsed = JSON.parse(line) as unknown;

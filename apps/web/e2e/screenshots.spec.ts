@@ -1,7 +1,6 @@
 import { mkdirSync } from "node:fs";
 import { join } from "node:path";
-import { expect, test } from "@playwright/test";
-import { gotoStage, notebookPath, readJourney } from "./fixtures.js";
+import { expect, test, gotoStage, notebookPath, readJourney } from "./fixtures.js";
 
 const OUTPUT = join(import.meta.dirname, "../../../docs/ui-ux/screenshots");
 
@@ -14,6 +13,28 @@ test.describe("approved reference screens", () => {
   test.beforeAll(() => {
     mkdirSync(OUTPUT, { recursive: true });
   });
+
+  /*
+   * The welcome plays once per launch and then removes itself, so it is captured in isolation:
+   * the clock is frozen to stop it dismissing itself mid-capture, and motion is re-enabled
+   * because reduced motion skips the moment entirely — correct behaviour, and unphotographable.
+   * Freezing time breaks anything that waits, so this must not share a test with other screens.
+   */
+  for (const viewport of VIEWPORTS) {
+    test(`captures the welcome at ${viewport.width}x${viewport.height}`, async ({ page }) => {
+      await page.setViewportSize({ width: viewport.width, height: viewport.height });
+      await page.clock.install();
+      await page.emulateMedia({ reducedMotion: "no-preference" });
+      await page.goto("/");
+      await expect(page.getByRole("button", { name: "Skip the welcome" })).toBeVisible();
+      await page.screenshot({
+        path: join(OUTPUT, `welcome-${viewport.label}.png`),
+        fullPage: false,
+        // Freezes the draw-in at its finished state rather than catching it part-way.
+        animations: "disabled",
+      });
+    });
+  }
 
   for (const viewport of VIEWPORTS) {
     test(`captures every screen at ${viewport.width}x${viewport.height}`, async ({

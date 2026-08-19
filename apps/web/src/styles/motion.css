@@ -1,0 +1,109 @@
+/*
+ * Motion. Every rule here exists to explain a state change: where a screen came from, which
+ * card the pointer is on, that a number went up. Nothing loops except the welcome brand moment,
+ * and everything stops under `prefers-reduced-motion`.
+ */
+
+/* Route changes: the outgoing screen leaves, the incoming one arrives from just below. */
+::view-transition-old(root) {
+  animation: discere-page-out var(--motion-page) var(--ease-out-expo) both;
+}
+
+::view-transition-new(root) {
+  animation: discere-page-in var(--motion-page) var(--ease-out-expo) both;
+}
+
+@keyframes discere-page-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes discere-page-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* A card the pointer is over lifts toward it. Keyboard focus gets the same treatment. */
+.lift {
+  transition:
+    transform var(--motion-base) var(--ease-out-expo),
+    box-shadow var(--motion-base) var(--ease-out-expo),
+    border-color var(--motion-fast) var(--ease);
+}
+
+.lift:hover,
+.lift:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.lift:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
+/*
+ * Staggered entrance for a list of cards. The delay is set per item as --enter-index, so the
+ * eye is led across the grid in reading order instead of everything appearing at once.
+ */
+@keyframes discere-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+.rise-in {
+  animation: discere-rise var(--motion-slow) var(--ease-out-expo) both;
+  animation-delay: calc(var(--enter-index, 0) * 45ms);
+}
+
+/* A progress ring draws itself once, so the number is watched rather than just read. */
+@keyframes discere-ring-draw {
+  from {
+    stroke-dashoffset: var(--ring-circumference);
+  }
+}
+
+.ring-draw {
+  animation: discere-ring-draw var(--motion-page) var(--ease-out-expo) both;
+}
+
+/* The streak flame breathes twice on arrival and then stops. */
+@keyframes discere-flame {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.14);
+  }
+}
+
+.flame-pulse {
+  animation: discere-flame 900ms var(--ease) 2;
+  transform-origin: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+
+  .lift:hover,
+  .lift:focus-visible,
+  .lift:active {
+    transform: none;
+  }
+
+  .rise-in,
+  .ring-draw,
+  .flame-pulse {
+    animation: none;
+  }
+}

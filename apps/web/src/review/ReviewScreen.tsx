@@ -31,7 +31,7 @@ export function ReviewScreen() {
     setFailure(null);
     try {
       const session = await createReviewSession();
-      void navigate(paths.reviewSession(session.sessionId));
+      void navigate(paths.reviewSession(session.sessionId), { viewTransition: true });
     } catch (error) {
       setFailure(errorMessage(error, "A review session could not be started."));
       setBusy(false);
@@ -154,7 +154,7 @@ export function ReviewSessionScreen() {
       const next = await createReviewSession();
       await queryClient.invalidateQueries({ queryKey: queryKeys.reviewHome });
       setRated(false);
-      void navigate(paths.reviewSession(next.sessionId));
+      void navigate(paths.reviewSession(next.sessionId), { viewTransition: true });
     } finally {
       setBusy(false);
     }

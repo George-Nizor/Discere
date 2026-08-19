@@ -2,6 +2,7 @@ import { ArrowRight } from "lucide-react";
 import { Link, useParams } from "react-router";
 import { errorMessage } from "../api/client.js";
 import { useCourse, useCourses } from "../api/queries.js";
+import { CourseCard } from "./CourseCard.js";
 import { humaniseId } from "../lib/format.js";
 import { paths } from "../lib/paths.js";
 import { ErrorScreen, LoadingScreen } from "../ui/Feedback.js";
@@ -18,21 +19,22 @@ export function CourseListScreen() {
       />
     );
   }
+  const open = courses.data.courses.filter((course) => course.status === "available");
+  const finished = open.reduce((sum, course) => sum + course.completedLessonCount, 0);
+  const lessons = open.reduce((sum, course) => sum + course.lessonCount, 0);
+
   return (
     <main className="page" id="stage">
       <p className="eyebrow">Library</p>
       <h1>Courses</h1>
-      <ul className="course-list">
-        {courses.data.courses.map((course) => (
+      <p className="deck page-deck">
+        {open.length} {open.length === 1 ? "course" : "courses"}, {lessons} lessons, {finished}{" "}
+        finished.
+      </p>
+      <ul className="course-grid">
+        {courses.data.courses.map((course, index) => (
           <li key={course.id}>
-            <Link className="course-card" to={paths.course(course.id)}>
-              <strong>{course.title}</strong>
-              <span className="muted">{course.description}</span>
-              <span className="muted course-card-meta">
-                {course.lessonCount} {course.lessonCount === 1 ? "lesson" : "lessons"} ·{" "}
-                {course.availableLessonIds.length} open
-              </span>
-            </Link>
+            <CourseCard course={course} index={index} />
           </li>
         ))}
       </ul>
@@ -57,9 +59,10 @@ export function CourseScreen() {
   }
 
   const concepts = [...new Set(course.data.lessons.flatMap((lesson) => lesson.conceptIds))];
+  const accent = { "--course-accent": course.data.course.accent } as React.CSSProperties;
 
   return (
-    <main className="page" id="stage">
+    <main className="page" id="stage" style={accent}>
       <p className="eyebrow">Course</p>
       <h1>{course.data.course.title}</h1>
       <p className="deck page-deck">{course.data.course.description}</p>

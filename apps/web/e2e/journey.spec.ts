@@ -1,5 +1,4 @@
-import { expect, test } from "@playwright/test";
-import { gotoStage, readJourney, stageIdPath } from "./fixtures.js";
+import { expect, test, gotoStage, readJourney, stageIdPath } from "./fixtures.js";
 
 const TEACH_BACK =
   "Voltage pushes charge around the loop and resistance limits how quickly that charge moves. " +
@@ -10,7 +9,7 @@ test.describe("the lesson journey", () => {
   test("carries a learner from home to lesson completion", async ({ page }) => {
     await page.goto("/");
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-    await page.getByRole("link", { name: /Start lesson|Resume lesson/ }).click();
+    await page.getByRole("link", { name: /Resume|Begin/ }).first().click();
 
     // Explainer
     await expect(page.getByText("Explainer")).toBeVisible();
@@ -192,8 +191,10 @@ test.describe("the lesson journey", () => {
     await expect(page.getByText(/cards? due/)).toBeVisible();
 
     await page.goto("/progress");
-    await expect(page.getByRole("heading", { level: 1, name: "Concept mastery" })).toBeVisible();
-    await expect(page.getByRole("columnheader", { name: "Independent" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Your learning" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Concept mastery" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Study calendar" })).toBeVisible();
+    await expect(page.getByText(/independent ·/).first()).toBeVisible();
   });
 
   test("keeps the mobile layout usable without horizontal scrolling", async ({ page, request }) => {

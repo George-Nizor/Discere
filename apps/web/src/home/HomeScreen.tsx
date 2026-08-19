@@ -1,11 +1,18 @@
-import type { CourseSummary, HomeResponse } from "@discere/contracts";
-import { ArrowRight, Flame, Layers, Sparkles } from "lucide-react";
+import type { CourseListResponse, CourseSummary, HomeResponse } from "@discere/contracts";
+import { ArrowRight, Clock, Flame, Layers, Sparkles } from "lucide-react";
 import { Link } from "react-router";
 import { errorMessage } from "../api/client.js";
-import { useCourses, useHome, useJourneyProgress, useReviewHome } from "../api/queries.js";
+import { useCourses, useHome, useJourneyProgress } from "../api/queries.js";
 import { paths } from "../lib/paths.js";
 import { ErrorScreen, LoadingScreen } from "../ui/Feedback.js";
-import { LessonRows } from "./LessonRows.js";
+import { ProgressRing } from "../ui/ProgressRing.js";
+import { CourseCard } from "./CourseCard.js";
+
+function greeting(hour: number): string {
+  if (hour < 12) return "Good morning";
+  if (hour < 18) return "Good afternoon";
+  return "Good evening";
+}
 
 export function HomeScreen() {
   const home = useHome();
@@ -16,7 +23,7 @@ export function HomeScreen() {
   const course =
     courses.data?.courses.find((item) => item.id === home.data?.currentMission.courseId) ??
     courses.data?.courses[0];
-  if (home.error || courses.error || !home.data || !course) {
+  if (home.error || courses.error || !home.data || !courses.data || !course) {
     return (
       <ErrorScreen
         message={errorMessage(home.error ?? courses.error, "The local server did not answer.")}
@@ -24,13 +31,20 @@ export function HomeScreen() {
       />
     );
   }
-  return <HomeContent course={course} home={home.data} />;
+  return <HomeContent catalogue={courses.data} course={course} home={home.data} />;
 }
 
-function HomeContent({ home, course }: { home: HomeResponse; course: CourseSummary }) {
+function HomeContent({
+  home,
+  course,
+  catalogue,
+}: {
+  home: HomeResponse;
+  course: CourseSummary;
+  catalogue: CourseListResponse;
+}) {
   const lessonId = home.currentMission.lessonBeatId;
   const progress = useJourneyProgress(course.id, lessonId);
-  const review = useReviewHome();
   const stages = progress.data?.stages ?? [];
   const done = stages.filter(
     (stage) => stage.state === "completed" || stage.state === "skipped_optional",
@@ -39,69 +53,80 @@ function HomeContent({ home, course }: { home: HomeResponse; course: CourseSumma
   const resumePath = progress.data
     ? paths.stage(course.id, lessonId, progress.data.activeStageId)
     : paths.lesson(course.id, lessonId);
+  const accent = { "--course-accent": course.accent } as React.CSSProperties;
 
   return (
-    <main className="page" id="stage">
-      <p className="eyebrow">Continue learning</p>
-      <h1>{course.title}</h1>
-      <p className="deck page-deck">{course.description}</p>
+    <main className="page home" id="stage">
+      <header className="home-hero">
+        <p className="eyebrow">{`${greeting(new Date().getHours())}, ${home.learnerName}`}</p>
+        <h1 className="home-hero-title">What will you understand today?</h1>
+        <ul className="home-chips">
+          <li className="chip">
+            <Flame aria-hidden="true" className="flame-pulse" size={16} strokeWidth={1.7} />
+            <strong>{home.streakDays}</strong>
+            <span>{home.streakDays === 1 ? "day streak" : "day streak"}</span>
+          </li>
+          <li className="chip">
+            <Sparkles aria-hidden="true" size={16} strokeWidth={1.7} />
+            <strong>{home.xp}</strong>
+            <span>XP</span>
+          </li>
+          <li className="chip">
+            <Clock aria-hidden="true" size={16} strokeWidth={1.7} />
+            <strong>{home.todayMinutes}</strong>
+            <span>min today</span>
+          </li>
+        </ul>
+      </header>
 
-      <section aria-label="Current lesson" className="continue">
-        <h2 className="continue-title">{home.currentMission.title}</h2>
-        <p className="prose">
-          <span>{home.currentMission.description}</span>
-        </p>
-        <p className="muted continue-meta">
-          About {home.currentMission.estimatedMinutes} minutes
-          {stages.length > 0 ? ` · ${done} of ${stages.length} stages done` : ""}
-        </p>
-        {stages.length > 0 ? (
-          <ol className="stage-dots" aria-hidden="true">
-            {stages.map((stage) => (
-              <li
-                className={
-                  stage.state === "completed" || stage.state === "skipped_optional"
-                    ? "stage-dot stage-dot-complete"
-                    : stage.state === "active"
-                      ? "stage-dot stage-dot-current"
-                      : "stage-dot"
-                }
-                key={stage.stageId}
+      <section aria-label="Continue learning" className="continue-card lift" style={accent}>
+        <Link className="continue-link" to={resumePath} viewTransition>
+          <span className="continue-body">
+            <span className="eyebrow">{started ? "Pick up where you left off" : "Start here"}</span>
+            <span className="continue-title">{home.currentMission.title}</span>
+            <span className="continue-description">{home.currentMission.description}</span>
+            <span className="continue-meta">
+              {course.title} · about {home.currentMission.estimatedMinutes} minutes
+            </span>
+          </span>
+          <span className="continue-side">
+            {stages.length > 0 ? (
+              <ProgressRing
+                caption={`${done}/${stages.length}`}
+                completed={done}
+                label="stages"
+                size={60}
+                total={stages.length}
               />
-            ))}
-          </ol>
-        ) : null}
-        <Link className="button button-primary" to={resumePath}>
-          {started ? "Resume lesson" : "Start lesson"}
-          <ArrowRight aria-hidden="true" size={16} strokeWidth={1.8} />
+            ) : null}
+            <span className="button button-primary continue-action">
+              {started ? "Resume" : "Begin"}
+              <ArrowRight aria-hidden="true" size={16} strokeWidth={1.8} />
+            </span>
+          </span>
         </Link>
       </section>
 
-      <section aria-label="Your standing" className="stat-row">
-        <p className="stat">
-          <Sparkles aria-hidden="true" size={16} strokeWidth={1.6} />
-          <strong>{home.xp}</strong>
-          <span>XP earned</span>
-        </p>
-        <p className="stat">
-          <Flame aria-hidden="true" size={16} strokeWidth={1.6} />
-          <strong>{home.streakDays}</strong>
-          <span>{home.streakDays === 1 ? "day streak" : "days streak"}</span>
-        </p>
-        <Link className="stat stat-link" to={paths.review}>
-          <Layers aria-hidden="true" size={16} strokeWidth={1.6} />
-          <strong>{review.data?.dueCount ?? 0}</strong>
-          <span>due for review</span>
-        </Link>
-      </section>
-
-      <section aria-label="Lessons" className="lesson-list">
-        <h2>Lessons in this course</h2>
-        <LessonRows courseId={course.id} currentLessonId={lessonId} />
-        <Link className="button button-quiet" to={paths.course(course.id)}>
-          Explore the course
+      {home.dueReviews > 0 ? (
+        <Link className="review-strip lift" to={paths.review} viewTransition>
+          <Layers aria-hidden="true" size={18} strokeWidth={1.7} />
+          <span>
+            <strong>{home.dueReviews}</strong>{" "}
+            {home.dueReviews === 1 ? "card is" : "cards are"} ready to review
+          </span>
           <ArrowRight aria-hidden="true" size={16} strokeWidth={1.8} />
         </Link>
+      ) : null}
+
+      <section aria-label="Your courses" className="home-courses">
+        <h2 className="section-title">Your courses</h2>
+        <ul className="course-grid course-grid-compact">
+          {catalogue.courses.map((entry, index) => (
+            <li key={entry.id}>
+              <CourseCard compact course={entry} index={index} />
+            </li>
+          ))}
+        </ul>
       </section>
     </main>
   );
