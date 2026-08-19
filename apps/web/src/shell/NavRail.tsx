@@ -1,5 +1,6 @@
 import { BookOpen, ChartNoAxesColumn, House, Layers, Settings } from "lucide-react";
 import { NavLink } from "react-router";
+import { DiscereMark } from "../ui/DiscereMark.js";
 import { useHome } from "../api/queries.js";
 import { initialsOf } from "../lib/format.js";
 import { paths } from "../lib/paths.js";
@@ -23,11 +24,7 @@ export function NavRail() {
   return (
     <nav aria-label="Discere" className="nav-rail">
       <NavLink aria-label="Discere home" className="nav-rail-mark" end to={paths.home} viewTransition>
-        <svg aria-hidden="true" height="20" viewBox="0 0 20 20" width="20">
-          <title>Discere</title>
-          <circle cx="10" cy="10" fill="none" r="8.25" stroke="currentColor" strokeWidth="1.5" />
-          <path d="M6.4 10.2h7.2" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" />
-        </svg>
+        <DiscereMark size={26} />
       </NavLink>
       <ul className="nav-rail-list">
         {DESTINATIONS.map((destination) => (

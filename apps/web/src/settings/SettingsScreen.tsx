@@ -85,12 +85,7 @@ export function SettingsScreen() {
 
   return (
     <main className="page" id="stage">
-      <p className="eyebrow">Settings</p>
-      <h1>Tutor and OpenAI link</h1>
-      <p className="deck page-deck">
-        Discere answers through the Codex CLI signed in to your own OpenAI account. Everything
-        below is read from this machine.
-      </p>
+      <h1>Settings</h1>
 
       <section aria-labelledby="link-heading" className="settings-card">
         <h2 className="settings-card-title" id="link-heading">

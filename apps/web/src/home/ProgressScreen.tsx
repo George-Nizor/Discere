@@ -71,8 +71,7 @@ export function ProgressScreen() {
 
   return (
     <main className="page" id="stage">
-      <p className="eyebrow">Progress</p>
-      <h1>Your learning</h1>
+      <h1>Progress</h1>
 
       <section aria-label="Standing" className="standing-row">
         <div className="standing-card">
@@ -109,12 +108,14 @@ export function ProgressScreen() {
       </section>
 
       <section aria-labelledby="calendar-heading" className="calendar-section">
-        <h2 className="section-title" id="calendar-heading">
-          Study calendar
-        </h2>
-        <p className="muted">
-          {studiedDays} {studiedDays === 1 ? "day" : "days"} of study in the last {WEEKS} weeks.
-        </p>
+        <div className="section-head">
+          <h2 className="section-title" id="calendar-heading">
+            Study calendar
+          </h2>
+          <p className="page-tally">
+            <strong>{studiedDays}</strong> {studiedDays === 1 ? "day" : "days"} in {WEEKS} weeks
+          </p>
+        </div>
         {activity.error ? (
           <p className="muted">The activity history did not load.</p>
         ) : (

@@ -136,9 +136,8 @@ describe("routed application", () => {
     renderApp("/");
 
     expect(
-      await screen.findByRole("heading", { level: 1, name: "What will you understand today?" }),
+      await screen.findByRole("heading", { level: 1, name: /Good (morning|afternoon|evening), Journey Tester/ }),
     ).toBeInTheDocument();
-    expect(screen.getByText(/Good (morning|afternoon|evening), Journey Tester/)).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: "Discere" })).toBeInTheDocument();
     for (const label of ["Home", "Courses", "Review", "Progress", "Settings"]) {
       expect(screen.getByRole("link", { name: label })).toBeInTheDocument();
@@ -155,7 +154,7 @@ describe("routed application", () => {
     renderApp("/review");
 
     expect(
-      await screen.findByRole("heading", { level: 1, name: "Return to what you learned" }),
+      await screen.findByRole("heading", { level: 1, name: "Review" }),
     ).toBeInTheDocument();
     expect(screen.getByText("3")).toBeInTheDocument();
     const rows = screen.getByRole("table");
@@ -180,7 +179,7 @@ describe("routed application", () => {
     });
     renderApp("/progress");
     expect(
-      await screen.findByRole("heading", { level: 1, name: "Your learning" }),
+      await screen.findByRole("heading", { level: 1, name: "Progress" }),
     ).toBeInTheDocument();
     expect(await screen.findByText("Ohm's law")).toBeInTheDocument();
     expect(screen.getByText("62%")).toBeInTheDocument();
@@ -220,7 +219,7 @@ describe("routed application", () => {
     stubFetch({ "GET /api/home": { body: home } });
     renderApp("/qa/roman");
     expect(
-      await screen.findByRole("heading", { level: 1, name: /not part of Discere/ }),
+      await screen.findByRole("heading", { level: 1, name: "Nothing here" }),
     ).toBeInTheDocument();
   });
 });

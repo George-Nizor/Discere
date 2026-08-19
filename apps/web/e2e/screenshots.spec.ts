@@ -148,7 +148,7 @@ test.describe("approved reference screens", () => {
       await capture("progress");
 
       await page.goto("/settings");
-      await expect(page.getByRole("heading", { name: "Tutor and OpenAI link" })).toBeVisible();
+      await expect(page.getByRole("heading", { level: 1, name: "Settings" })).toBeVisible();
       await capture("settings");
 
       await gotoStage(page, journey, "explainer");
