@@ -120,6 +120,7 @@ export const explainerStage: ExplainerStage = {
     briefId: "brief-1",
     alt: "A battery and a resistor in one loop.",
     src: "/api/visuals/circuit.svg?lessonId=lesson",
+    states: [],
   },
 };
 

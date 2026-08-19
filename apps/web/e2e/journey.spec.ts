@@ -13,19 +13,29 @@ test.describe("the lesson journey", () => {
 
     // The lesson plays as steps: prose, an inline check that cannot be skipped, then the rest.
     await expect(page.getByText("Explainer")).toBeVisible();
-    await expect(page.getByText("Step 1 of 6")).toBeVisible();
+    await expect(page.getByText("Step 1 of 7")).toBeVisible();
     for (const step of [2, 3, 4, 5]) {
       await page.getByRole("button", { name: /^Continue/ }).click();
-      await expect(page.getByText(`Step ${step} of 6`)).toBeVisible();
+      await expect(page.getByText(`Step ${step} of 7`)).toBeVisible();
     }
 
-    // Step 5 asks a question, so there is no way past it until it has been answered.
+    // Step 5 asks the learner to point at the component on the diagram, and holds until they do.
+    await expect(page.getByRole("button", { name: /^Continue/ })).toBeHidden();
+    await page.getByRole("button", { name: "The battery" }).click();
+    await expect(page.getByText(/Look for what opposes the flow/)).toBeVisible();
+    await expect(page.getByRole("button", { name: /^Continue/ })).toBeHidden();
+    await page.getByRole("button", { name: "The resistor" }).click();
+    await expect(page.getByText(/it sets the current/)).toBeVisible();
+    await page.getByRole("button", { name: /^Continue/ }).click();
+
+    // Step 6 asks a question, and also cannot be skipped.
+    await expect(page.getByText("Step 6 of 7")).toBeVisible();
     await expect(page.getByRole("button", { name: /^Continue/ })).toBeHidden();
     await page.getByRole("button", { name: "Raising the supply voltage" }).click();
     await page.getByRole("button", { name: "Check answer" }).click();
     await expect(page.getByText("Correct")).toBeVisible();
     await page.getByRole("button", { name: /^Continue/ }).click();
-    await expect(page.getByText("Step 6 of 6")).toBeVisible();
+    await expect(page.getByText("Step 7 of 7")).toBeVisible();
     await page.getByRole("button", { name: /^Finish/ }).click();
 
     // Interactive visual
@@ -118,15 +128,15 @@ test.describe("the lesson journey", () => {
   test("resumes a lesson at the step the learner had reached", async ({ page, request }) => {
     const journey = await readJourney(request);
     await gotoStage(page, journey, "explainer");
-    await expect(page.getByText("Step 1 of 6")).toBeVisible();
+    await expect(page.getByText("Step 1 of 7")).toBeVisible();
 
     await page.getByRole("button", { name: /^Continue/ }).click();
     await page.getByRole("button", { name: /^Continue/ }).click();
-    await expect(page.getByText("Step 3 of 6")).toBeVisible();
+    await expect(page.getByText("Step 3 of 7")).toBeVisible();
 
     // The position is saved as it moves, so a reload does not send the learner back to the top.
     await page.reload();
-    await expect(page.getByText("Step 3 of 6")).toBeVisible();
+    await expect(page.getByText("Step 3 of 7")).toBeVisible();
     await expect(page.getByText("This loop gives charge exactly one route.")).toBeVisible();
   });
 
@@ -229,7 +239,7 @@ test.describe("the lesson journey", () => {
     await expect(
       page.getByRole("heading", { level: 1, name: "The rise of the Roman Empire" }),
     ).toBeVisible();
-    await expect(page.getByText("Step 1 of 5")).toBeVisible();
+    await expect(page.getByText("Step 1 of 6")).toBeVisible();
     const map = page.getByRole("img", { name: /Roman Empire at its greatest extent/i });
     await expect(map).toBeVisible();
     await expect(map).toHaveAttribute("src", /\/api\/content\/roman-empire\/assets\//);
@@ -239,11 +249,21 @@ test.describe("the lesson journey", () => {
     expect(await map.evaluate((element: HTMLImageElement) => element.naturalWidth)).toBeGreaterThan(
       0,
     );
-    // Work through the lesson: three prose steps, an inline check, then the closing step.
+    // Two prose steps, an ordering task, an inline check, then the closing step.
     for (const step of [2, 3, 4]) {
       await page.getByRole("button", { name: /^Continue/ }).click();
-      await expect(page.getByText(`Step ${step} of 5`)).toBeVisible();
+      await expect(page.getByText(`Step ${step} of 6`)).toBeVisible();
     }
+
+    // Ordering is done with the controls rather than by dragging, so it works from a keyboard.
+    await page.getByRole("button", { name: 'Move "Caesar crosses the Rubicon" earlier' }).click();
+    await page.getByRole("button", { name: 'Move "Caesar crosses the Rubicon" earlier' }).click();
+    await page.getByRole("button", { name: 'Move "Caesar crosses the Rubicon" earlier' }).click();
+    await page.getByRole("button", { name: "Check the order" }).click();
+    await expect(page.getByText(/That is the sequence/)).toBeVisible();
+    await page.getByRole("button", { name: /^Continue/ }).click();
+
+    await expect(page.getByText("Step 5 of 6")).toBeVisible();
     await page.getByRole("button", { name: /The Senate granted Octavian the name Augustus/ }).click();
     await page.getByRole("button", { name: "Check answer" }).click();
     await expect(page.getByText("Correct")).toBeVisible();

@@ -1,4 +1,4 @@
-import type { APIRequestContext, Page } from "@playwright/test";
+import type { APIRequestContext, Locator, Page } from "@playwright/test";
 import { test as base } from "@playwright/test";
 
 /**
@@ -81,4 +81,21 @@ export function stagePath(journey: JourneyMap, type: string): string {
 export async function gotoStage(page: Page, journey: JourneyMap, type: string): Promise<void> {
   await page.goto(stagePath(journey, type));
   await page.waitForLoadState("networkidle");
+}
+
+/**
+ * Advances a stepped lesson until `target` appears.
+ *
+ * Counting Continue clicks looks simpler and is wrong: a lesson saves the learner's position, so
+ * a second run of the same suite opens part-way through and every fixed count lands somewhere
+ * else. Advancing until the thing we want is on screen is correct from any starting step.
+ */
+export async function advanceUntil(page: Page, target: Locator, limit = 12): Promise<void> {
+  for (let attempt = 0; attempt < limit; attempt += 1) {
+    if (await target.isVisible().catch(() => false)) return;
+    const next = page.getByRole("button", { name: /^Continue/ });
+    if (!(await next.isVisible().catch(() => false))) break;
+    await next.click();
+  }
+  await expect(target).toBeVisible();
 }

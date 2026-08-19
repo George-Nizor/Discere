@@ -7,6 +7,7 @@ import {
   RichTextBlockSchema,
   SourceSchema,
 } from "./curriculum.js";
+import { CircuitDiagramSpecSchema, VisualStateSchema } from "./visuals.js";
 
 export const JourneyStageTypeSchema = z.enum([
   "explainer",
@@ -93,6 +94,13 @@ export const ExplainerStageSchema = StageBaseSchema.extend({
       /** Served path for a visual the interface can draw. Absent means "describe it instead". */
       src: z.string().min(1).optional(),
       image: StageImageSchema.optional(),
+      /**
+       * The circuit as data, so the browser can draw it itself and animate between states.
+       * The served `src` stays for anything that still wants a plain image.
+       */
+      circuit: CircuitDiagramSpecSchema.optional(),
+      /** Configurations this visual moves between, named by the lesson's steps. */
+      states: z.array(VisualStateSchema).default([]),
     })
     .strict(),
 }).strict();
@@ -102,7 +110,7 @@ export const InteractiveVisualStageSchema = StageBaseSchema.extend({
   type: z.literal("interactive_visual"),
   activity: ActivitySchema,
   prompt: z.string().min(1),
-  visualKind: z.enum(["circuit", "graph", "timeline", "map"]),
+  visualKind: z.enum(["circuit", "graph", "timeline", "map", "diagram"]),
 }).strict();
 export type InteractiveVisualStage = z.infer<typeof InteractiveVisualStageSchema>;
 

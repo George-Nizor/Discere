@@ -1023,7 +1023,8 @@
 
 .story-visual {
   position: sticky;
-  top: var(--space-5);
+  /* Clears the sticky stage header, which would otherwise crop the top of the diagram. */
+  top: calc(var(--stage-header-height) + var(--space-4));
   margin: 0;
   padding: var(--space-4);
   border: 1px solid var(--line);
@@ -1127,4 +1128,217 @@
     position: static;
     order: -1;
   }
+}
+
+/* ---------- Step activities ---------- */
+
+.step-activity {
+  margin-block-start: var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--canvas-subtle);
+}
+
+.diagram-choice-prompt,
+.order-sequence-prompt,
+.graph-plot-prompt {
+  margin: 0 0 var(--space-4);
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* ---------- Diagram choice ---------- */
+
+.diagram-choice-figure {
+  position: relative;
+  background: var(--canvas);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.diagram-choice-figure img,
+.diagram-choice-figure .circuit-visual svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/*
+ * A target is invisible until the pointer or focus reaches it. Ringing every option would tell
+ * the learner where to look, which is the thing the activity is asking.
+ */
+.diagram-target {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  border: 2px solid transparent;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  transition:
+    background var(--motion-fast) var(--ease),
+    border-color var(--motion-fast) var(--ease);
+}
+
+.diagram-target:hover,
+.diagram-target:focus-visible {
+  border-color: var(--course-accent, var(--green));
+  background: color-mix(in srgb, var(--course-accent, var(--green)) 14%, transparent);
+}
+
+.diagram-target.is-correct {
+  border-color: var(--green);
+  background: color-mix(in srgb, var(--green) 22%, transparent);
+}
+
+.diagram-target.is-wrong {
+  border-color: var(--error);
+  background: color-mix(in srgb, var(--error) 16%, transparent);
+}
+
+.diagram-target-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---------- Order sequence ---------- */
+
+.order-list {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-4);
+  padding: 0;
+  list-style: none;
+  counter-reset: order;
+}
+
+.order-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--canvas);
+}
+
+.order-item.is-flagged {
+  border-color: var(--warning);
+  background: var(--warning-soft);
+}
+
+.order-item-position {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-pill);
+  background: var(--canvas-subtle);
+  color: var(--muted);
+  font-size: var(--text-stage-label);
+  font-variant-numeric: tabular-nums;
+}
+
+.order-item-label {
+  flex: 1;
+  min-width: 0;
+}
+
+.order-item-controls {
+  display: flex;
+  gap: var(--space-1);
+  flex-shrink: 0;
+}
+
+.order-move {
+  padding: var(--space-1) var(--space-2);
+}
+
+/* ---------- Graph plot ---------- */
+
+.graph-plot-canvas {
+  display: block;
+  width: 100%;
+  max-width: 460px;
+  height: auto;
+  background: var(--canvas);
+  border-radius: var(--radius-md);
+}
+
+.graph-grid line {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+.graph-axis line {
+  stroke: var(--ink-soft);
+  stroke-width: 2;
+}
+
+.graph-tick text {
+  fill: var(--muted);
+  font-size: 11px;
+}
+
+.graph-label {
+  fill: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.graph-series {
+  fill: none;
+  stroke: var(--course-accent, var(--green));
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.graph-surface {
+  fill: transparent;
+  cursor: crosshair;
+}
+
+.graph-point {
+  fill: var(--course-accent, var(--green));
+  stroke: var(--canvas);
+  stroke-width: 2;
+}
+
+.graph-point.is-correct {
+  fill: var(--green);
+}
+
+.graph-point.is-wrong {
+  fill: var(--error);
+}
+
+.graph-plot-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--space-3);
+  margin-block-start: var(--space-4);
+}
+
+.graph-plot-controls label {
+  display: grid;
+  gap: var(--space-1);
+  font-size: var(--text-label);
+  color: var(--muted);
+}
+
+.graph-plot-controls input {
+  width: 8rem;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  font: inherit;
+  color: var(--ink);
+  background: var(--canvas);
 }

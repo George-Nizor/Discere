@@ -239,6 +239,7 @@ function StageCanvas({
     case "explainer":
       return (
         <StoryStageView
+          courseId={courseId}
           onComplete={onComplete}
           onStepChange={onStepChange}
           savedInteractionState={savedInteractionState}

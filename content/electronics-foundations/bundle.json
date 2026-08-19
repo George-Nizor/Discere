@@ -361,7 +361,19 @@
               "text": "With $5$ V across $100$ \u03a9 the current is $0.05$ A. Raise the resistance and the same battery drives less current, because the denominator grew."
             }
           ],
-          "visualStateId": ""
+          "visualStateId": "higher-resistance"
+        },
+        {
+          "id": "point-at-the-limiter",
+          "kind": "interact",
+          "blocks": [
+            {
+              "kind": "paragraph",
+              "text": "Before working with the numbers, find the part of the loop the relationship is about."
+            }
+          ],
+          "visualStateId": "",
+          "activityId": "find-what-limits-current"
         },
         {
           "id": "check-what-raises-current",
@@ -390,6 +402,38 @@
             }
           ],
           "visualStateId": "current-flowing"
+        }
+      ],
+      "visualStates": [
+        {
+          "id": "loop-marked",
+          "params": {
+            "voltage": 5,
+            "resistance": 100,
+            "showValues": 0,
+            "showCurrentArrow": 0
+          },
+          "caption": "One battery and one resistor on a single loop. No values yet."
+        },
+        {
+          "id": "current-flowing",
+          "params": {
+            "voltage": 5,
+            "resistance": 100,
+            "showValues": 1,
+            "showCurrentArrow": 1
+          },
+          "caption": "The same current passes every point on the loop: 0.05 A from 5 V across 100 \u03a9."
+        },
+        {
+          "id": "higher-resistance",
+          "params": {
+            "voltage": 5,
+            "resistance": 250,
+            "showValues": 1,
+            "showCurrentArrow": 1
+          },
+          "caption": "The same 5 V across 250 \u03a9 instead: the current falls to 0.02 A."
         }
       ]
     },
@@ -632,6 +676,30 @@
           ],
           "visualStateId": ""
         }
+      ],
+      "visualStates": [
+        {
+          "id": "series-both",
+          "params": {
+            "voltage": 9,
+            "resistance0": 100,
+            "resistance1": 200,
+            "showValues": 0,
+            "showCurrentArrow": 0
+          },
+          "caption": "Two resistors, one after another, on a single loop."
+        },
+        {
+          "id": "series-total",
+          "params": {
+            "voltage": 9,
+            "resistance0": 100,
+            "resistance1": 200,
+            "showValues": 1,
+            "showCurrentArrow": 1
+          },
+          "caption": "300 \u03a9 in total, so 9 V drives 0.03 A through both resistors."
+        }
       ]
     },
     {
@@ -784,7 +852,7 @@
               "text": "Predict first: does adding a second branch raise or lower the total resistance the battery sees?"
             }
           ],
-          "visualStateId": "parallel-both"
+          "visualStateId": ""
         },
         {
           "id": "same-two-points",
@@ -815,7 +883,7 @@
               "text": "The supply has to deliver both, so it provides $0.16$ A in total."
             }
           ],
-          "visualStateId": "parallel-currents"
+          "visualStateId": ""
         },
         {
           "id": "check-branch-voltage",
@@ -1011,6 +1079,18 @@
           "visualStateId": ""
         },
         {
+          "id": "plot-the-current",
+          "kind": "interact",
+          "blocks": [
+            {
+              "kind": "paragraph",
+              "text": "Power depends on the current, so find the current first."
+            }
+          ],
+          "visualStateId": "",
+          "activityId": "plot-current-at-six-volts"
+        },
+        {
           "id": "check-power-vs-energy",
           "kind": "check",
           "blocks": [
@@ -1182,7 +1262,7 @@
               "text": "Predict what the same plot looks like for a light-emitting diode."
             }
           ],
-          "visualStateId": "resistor-line"
+          "visualStateId": ""
         },
         {
           "id": "ohmic-means",
@@ -1214,7 +1294,7 @@
               "text": "A diode has no fixed resistance. Its current is decided by whatever else is in the circuit."
             }
           ],
-          "visualStateId": "diode-curve"
+          "visualStateId": ""
         },
         {
           "id": "check-reversed",
@@ -1403,6 +1483,94 @@
         }
       ],
       "predictionPrompt": "What happens to the total resistance of the path when the series resistor R increases?"
+    },
+    {
+      "id": "find-what-limits-current",
+      "type": "diagram_choice",
+      "title": "Find what limits the current",
+      "conceptIds": [
+        "current",
+        "resistance"
+      ],
+      "instructions": "Tap the component on the diagram.",
+      "prompt": "Which component decides how much current flows in this loop?",
+      "imageFile": "",
+      "imageAlt": "",
+      "circuit": {
+        "id": "find-limiter",
+        "voltage": 5,
+        "resistance": 100,
+        "showCurrentArrow": true,
+        "showValues": false,
+        "batteryLabel": "Battery",
+        "resistorLabel": "Resistor"
+      },
+      "targets": [
+        {
+          "id": "battery",
+          "label": "The battery",
+          "x": 17,
+          "y": 50,
+          "r": 10
+        },
+        {
+          "id": "resistor",
+          "label": "The resistor",
+          "x": 50,
+          "y": 17,
+          "r": 10
+        },
+        {
+          "id": "wire",
+          "label": "The connecting wire",
+          "x": 50,
+          "y": 77,
+          "r": 10
+        }
+      ],
+      "correctTargetId": "resistor",
+      "feedback": {
+        "correct": "The resistor opposes the flow, so with the voltage fixed it sets the current.",
+        "incorrect": "The battery supplies the push and the wire carries it. Look for what opposes the flow."
+      }
+    },
+    {
+      "id": "plot-current-at-six-volts",
+      "type": "graph_plot",
+      "title": "Plot the current",
+      "conceptIds": [
+        "ohms-law"
+      ],
+      "instructions": "Click the axes to place your point, or type the coordinates.",
+      "prompt": "A 100 \u03a9 resistor sits across a 6 V supply. Place the point for that current.",
+      "mode": "place",
+      "x": {
+        "label": "Voltage",
+        "unit": "V",
+        "min": 0,
+        "max": 10,
+        "step": 1
+      },
+      "y": {
+        "label": "Current",
+        "unit": "A",
+        "min": 0,
+        "max": 0.1,
+        "step": 0.01
+      },
+      "series": [],
+      "answer": {
+        "x": 6,
+        "y": 0.06
+      },
+      "tolerance": {
+        "x": 0.5,
+        "y": 0.005
+      },
+      "feedback": {
+        "correct": "6 V over 100 \u03a9 is 0.06 A, which is where the point belongs.",
+        "incorrect": "Work out I = V / R first, then find that current on the vertical axis."
+      }
     }
   ],
   "questions": [
