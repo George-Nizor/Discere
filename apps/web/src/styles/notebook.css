@@ -82,12 +82,39 @@
   color: var(--canvas);
 }
 
+/*
+ * Two panes of one page. Working is drawn and written at the same time — a diagram beside the
+ * algebra that goes with it — so the typed side is a surface of equal standing rather than a
+ * three-line note tacked under the canvas.
+ */
+.notebook-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+  align-items: stretch;
+}
+
+.notebook-pane {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.notebook-pane-label,
+.notebook-typed {
+  display: block;
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-label);
+  font-weight: 650;
+  color: var(--muted);
+}
+
 .notebook-canvas {
   display: block;
   width: 100%;
   height: auto;
   max-width: 100%;
-  margin-top: var(--space-4);
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-card);
   background: #ffffff;
@@ -102,31 +129,44 @@
   cursor: cell;
 }
 
-.notebook-note {
-  display: block;
-  margin-top: var(--space-5);
-}
-
-.notebook-note span {
-  display: block;
-  font-size: var(--text-label);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--muted);
-  font-weight: 600;
-  margin-bottom: var(--space-2);
-}
-
-.notebook-note textarea {
+/*
+ * Ruled like the pad beside it, and set in the mono face, because what gets typed here is
+ * working: substitutions, units, and lines that should stay aligned under one another.
+ */
+.notebook-typed-field {
+  flex: 1;
   width: 100%;
-  padding: var(--space-3) var(--space-4);
+  min-height: 320px;
+  padding: var(--space-4) var(--space-5);
   border: 1px solid var(--line-strong);
-  border-radius: var(--radius-md);
-  font: inherit;
-  font-size: var(--text-body);
+  border-radius: var(--radius-card);
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent 27px,
+      var(--line) 27px,
+      var(--line) 28px
+    ),
+    #ffffff;
+  /* Anchors the ruling to the first baseline so the text sits on the lines, not between them. */
+  background-position: 0 var(--space-4);
+  font-family: var(--font-mono);
+  font-size: 0.9375rem;
+  line-height: 28px;
   color: var(--ink);
-  background: var(--canvas);
   resize: vertical;
+}
+
+.notebook-typed-field::placeholder {
+  color: var(--muted);
+}
+
+.notebook-typed-count {
+  margin: var(--space-2) 0 0;
+  font-size: var(--text-stage-label);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
 .notebook-actions {
@@ -234,4 +274,15 @@
   align-items: center;
   gap: var(--space-3);
   flex-wrap: wrap;
+}
+
+@media (max-width: 899px) {
+  /* Stacked, the pad comes first: it is the thing most workings start with. */
+  .notebook-split {
+    grid-template-columns: 1fr;
+  }
+
+  .notebook-typed-field {
+    min-height: 220px;
+  }
 }

@@ -130,7 +130,7 @@ test.describe("approved reference screens", () => {
         }
         await page.mouse.up();
       }
-      const note = page.getByLabel("A note about this working");
+      const note = page.getByLabel("Typed working");
       await note.fill("I = V / R, so 5 / 100.");
       // A focused textarea paints a blinking caret, which `animations: "disabled"` does not
       // stop, so the capture would differ between runs. Blur it before the shot.

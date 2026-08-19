@@ -58,7 +58,7 @@ export class TopicMapRepository {
   coverPath(courseId: string): string | undefined {
     const map = this.find(courseId);
     if (!map?.coverAsset) return undefined;
-    return path.join(this.directory, "assets", `${courseId}.svg`);
+    return path.join(this.directory, "assets", `${courseId}.webp`);
   }
 
   /** Lesson count across every module, which is what a planned card reports. */
@@ -81,9 +81,7 @@ export class TopicMapRepository {
         availableLessonIds: [],
         lastActiveAt: null,
         accent: map.accent,
-        coverUrl: map.coverAsset
-          ? `/api/roadmap/${encodeURIComponent(map.courseId)}/cover.svg`
-          : "",
+        coverUrl: map.coverAsset ? `/api/roadmap/${encodeURIComponent(map.courseId)}/cover` : "",
         status: "coming_soon" as const,
         completedLessonCount: 0,
       }));

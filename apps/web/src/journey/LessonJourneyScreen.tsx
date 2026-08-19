@@ -208,6 +208,7 @@ function LessonJourney({
 
       {tutorOpen ? (
         <TutorPanel
+          accent={course.data?.course.accent ?? "#16a34a"}
           conceptIds={current.stage.conceptIds}
           lessonId={lessonId}
           mode={mode}

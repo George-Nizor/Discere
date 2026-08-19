@@ -12,6 +12,8 @@ import {
   StageProgressRequestSchema,
   TutorEnvelopeBaseSchema,
   TutoringModeSchema,
+  type IllustrationResponse,
+  IllustrationRequestSchema,
   TutorOperationSchema,
   TutorReplyRequestSchema,
   WritingLintRequestSchema,
@@ -34,6 +36,11 @@ import type { DiscereStore } from "./db/store.js";
 import { HttpError } from "./errors.js";
 import { getNotebookPage, saveNotebookPage } from "./notebook.js";
 import { coerceQueryBoolean } from "./query-coercion.js";
+import {
+  illustrationImagePath,
+  readIllustration,
+  requestIllustration,
+} from "./illustrations.js";
 import type { TopicMapRepository } from "./topic-maps.js";
 
 export interface RouteDependencies {
@@ -43,6 +50,7 @@ export interface RouteDependencies {
   topicMaps: TopicMapRepository;
   revealDelayMs: number;
 }
+const IllustrationParamsSchema = z.object({ key: z.string().regex(/^[0-9a-f]{32}$/) }).strict();
 const AttemptBodySchema = AttemptRequestSchema.extend({ attemptId: z.string().uuid().optional() });
 const CompanionBodySchema = z
   .object({
@@ -157,7 +165,7 @@ export async function registerRoutes(
   });
 
   /** Cover art for a course that is planned but not yet written. */
-  app.get("/api/roadmap/:courseId/cover.svg", async (request, reply) => {
+  app.get("/api/roadmap/:courseId/cover", async (request, reply) => {
     const { courseId } = CourseParamsSchema.parse(request.params);
     const absolute = topicMaps.coverPath(courseId);
     if (!absolute) throw new HttpError(404, "No cover.", "ASSET_NOT_FOUND");
@@ -168,7 +176,7 @@ export async function registerRoutes(
       throw new HttpError(404, "No cover.", "ASSET_NOT_FOUND");
     }
     return reply
-      .type("image/svg+xml; charset=utf-8")
+      .type("image/webp")
       .header("Cache-Control", "public, max-age=3600")
       .send(file);
   });
@@ -462,6 +470,52 @@ export async function registerRoutes(
     reply.type("image/svg+xml; charset=utf-8").header("Cache-Control", "no-store");
     return renderOhmsLawGraphSvg({ id: "ohms-law-graph", resistance: query.resistance });
   });
+  /**
+   * Draw something. Deliberately a POST the learner triggers rather than something a reply does
+   * on its own: a picture costs about 150k tokens of the owner's subscription and two minutes,
+   * so it happens when it is asked for, and never twice for the same request.
+   */
+  app.post("/api/illustrations", async (request): Promise<IllustrationResponse> => {
+    const body = IllustrationRequestSchema.parse(request.body);
+    const record = await requestIllustration(body);
+    return {
+      key: record.key,
+      status: record.status,
+      alt: record.alt,
+      url: record.status === "ready" ? `/api/illustrations/${record.key}.png` : "",
+      detail: record.detail,
+    };
+  });
+
+  app.get("/api/illustrations/:key", async (request): Promise<IllustrationResponse> => {
+    const { key } = IllustrationParamsSchema.parse(request.params);
+    const record = await readIllustration(key);
+    if (!record) throw new HttpError(404, "No such illustration.", "ILLUSTRATION_NOT_FOUND");
+    return {
+      key: record.key,
+      status: record.status,
+      alt: record.alt,
+      url: record.status === "ready" ? `/api/illustrations/${record.key}.png` : "",
+      detail: record.detail,
+    };
+  });
+
+  app.get("/api/illustrations/:key.png", async (request, reply) => {
+    const { key } = IllustrationParamsSchema.parse({
+      key: String((request.params as Record<string, string>)["key*"] ?? "").replace(/\.png$/, ""),
+    });
+    let file: Buffer;
+    try {
+      file = await readFile(illustrationImagePath(key));
+    } catch {
+      throw new HttpError(404, "No such illustration.", "ILLUSTRATION_NOT_FOUND");
+    }
+    return reply
+      .type("image/png")
+      .header("Cache-Control", "public, max-age=31536000, immutable")
+      .send(file);
+  });
+
   app.post("/api/visuals/image-prompt", async (request) => {
     const body = ImagePromptBodySchema.parse(request.body);
     const brief = content.visualBriefs().find((item) => item.id === body.visualBriefId);

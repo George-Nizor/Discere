@@ -5,6 +5,7 @@ import { errorCode, errorDetail, errorMessage } from "../api/client.js";
 import { askTutor, importTutorReply } from "../api/endpoints.js";
 import { CopyButton } from "../ui/CopyButton.js";
 import { Notice } from "../ui/Feedback.js";
+import { Illustration } from "../ui/Illustration.js";
 import { InlineRichText } from "../ui/RichText.js";
 import { tutorErrorMessage } from "./tutor-messages.js";
 
@@ -23,7 +24,7 @@ interface PendingPacket {
   question: string;
 }
 
-function ReplyView({ exchange }: { exchange: Exchange }) {
+function ReplyView({ exchange, accent }: { exchange: Exchange; accent: string }) {
   return (
     <li className="tutor-exchange">
       <p className="tutor-question">{exchange.question}</p>
@@ -47,6 +48,16 @@ function ReplyView({ exchange }: { exchange: Exchange }) {
         {exchange.reply.sourceIds.length > 0 ? (
           <p className="muted">Sources: {exchange.reply.sourceIds.join(", ")}</p>
         ) : null}
+        {/*
+          The tutor can show as well as tell. The subject is the tutor's own answer rather than
+          anything the learner typed: what gets drawn should be the explanation, and a prompt
+          assembled from learner input is a prompt someone else is writing.
+        */}
+        <Illustration
+          accent={accent}
+          alt={`An illustration of: ${exchange.reply.followUpQuestion}`}
+          subject={exchange.reply.answer}
+        />
         {exchange.accepted ? null : (
           <Notice tone="warning" title="This reply failed an accountability check">
             <ul className="plain-list">
@@ -70,12 +81,15 @@ export function TutorPanel({
   conceptIds,
   mode,
   attemptId,
+  accent = "#16a34a",
   onClose,
 }: {
   lessonId: string;
   conceptIds: string[];
   mode: TutoringMode;
   attemptId?: string;
+  /** The course's colour, so an illustration matches the lesson it was drawn for. */
+  accent?: string;
   onClose: () => void;
 }) {
   const [question, setQuestion] = useState("");
@@ -199,6 +213,7 @@ export function TutorPanel({
           <ul className="tutor-thread">
             {thread.map((exchange) => (
               <ReplyView
+                accent={accent}
                 exchange={exchange}
                 key={`${exchange.question}-${exchange.reply.answer}`}
               />
