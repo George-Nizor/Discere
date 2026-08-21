@@ -393,7 +393,7 @@ stack, and the icons are compiled in.
 - `instrumenta/product.json` declares the `web-service` adapter, port 49323 with 45023 as the
   fallback, `/api/health`, and the launch environment above. It validates against Instrumenta's
   own `scripts/product-registry.cjs`.
-- `apps/web/public/discere-mark.svg` reproduces the launcher's brand mark.
+- `apps/web/public/discere-mark.png` reproduces the launcher's brand mark.
 - `mcp/` replaces the transport-less `apps/mcp` stub with a real stdio MCP server built to
   `mcp/dist/index.js`, which is what the launcher resolves. Seven tools: `list_courses`,
   `get_course`, `get_lesson_journey`, `get_progress`, `list_due_reviews`, `ask_tutor`, and
