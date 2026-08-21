@@ -1,432 +1,118 @@
-# Implementation Status
-
-## Implemented in the current vertical slice
-
-### Local runtime and verification
-
-- pnpm TypeScript monorepo
-- Node.js 24 pinning for common version managers
-- one-command `pnpm run setup` workflow
-- cross-platform environment diagnostics through `pnpm doctor`
-- coordinated development and built-prototype startup
-- targeted process cleanup through `pnpm stop`
-- configurable local API and web ports
-- loopback-only prototype binding
-- temporary full-stack smoke testing on isolated ports and SQLite data
-- GitHub Actions coverage for lint, TypeScript, tests, curriculum validation, build, and smoke checks
-
-### Learning experience
-
-- React/Vite visual lesson shell
-- Fastify REST server and SQLite persistence
-- electronics seed course and concept map
-- deterministic circuit SVG and Ohm's law explorer
-- prediction-first circuit changes with stale-result invalidation
-- deterministic current-against-voltage relationship graph
-- numeric assessment with SI unit aliases
-- visible lesson provenance and licensing outside Exam mode
-- read-aloud through browser speech synthesis, on the explainer, the quiz question, and the flashcard front
-
-### Accountability and progression
-
-- Coach, Assisted, Direct, and Exam tutoring modes
-- immutable tutoring mode within an attempt
-- immutable completed attempts
-- hint event recording and closed assistance after completion
-- timed, single-use answer-reveal flow
-- original-attempt closure after a worked answer is revealed
-- duplicate reveal, hint, and resubmission rejection after answer reveal
-- deterministic transfer challenge unlocked after reveal
-- retryable transfer assessment with SI-unit support
-- no recovery reward for incorrect transfer attempts
-- one-time recovery XP and reduced mastery evidence for a correct transfer
-- assisted-attempt recording for recovered concepts
-- permanent transfer closure after completion
-- Exam-mode hint, reveal, source, tutor, and workings-review guardrails
-- XP and mastery separation with per-concept mastery updates
-- Direct-mode evidence classified as assisted
-
-### Generated content and ChatGPT companion
-
-- generated-prose lint rules, including equivalent-unit answer-leak detection
-- source-number and factual-token preservation checks
-- visual-brief validation and curriculum referential-integrity checks
-- learner-facing ChatGPT companion handoff using the normal ChatGPT subscription
-- structured tutor packets containing the current lesson, mode, source IDs, response contract, and the tutor system prompt read from `prompts/tutor-system.md`
-- pasted JSON validation before a tutor reply is shown
-- final-answer leakage rejection in Coach and Assisted modes
-- unknown-source rejection and response-request matching
-- Direct-mode answer support with the same prose and source validation
-- a stdio Model Context Protocol server in `mcp/`, exposing the learning API to an agent host
-
-### Local automatic generation
-
-- selectable tutor provider through `DISCERE_TUTOR_PROVIDER`: `companion`, `codex`, or `mock`
-- `CodexTutorProvider` spawning the local Codex CLI as a read-only child process against the owner's own subscription
-- JSON Schema constrained replies, derived from the same Zod contracts the API uses
-- one targeted style-editor repair pass when the writing gate rejects generated prose, and a typed failure when the repair does not hold
-- typed provider failures for spawn, timeout, exit, malformed output, and writing-gate outcomes, surfaced instead of a degraded reply
-- wall-clock limits enforced in the parent, with process-group termination and no orphaned CLI processes
-- one generation at a time, so a single subscription is never used twice at once
-- session capture and resume for multi-turn tutoring
-- `POST /api/tutor/ask` for in-journey questions, sharing one validation core with the pasted-companion import path
-- `POST /api/essays/:essayId/assess` and `GET /api/essays/:essayId/assessment` for background teach-back assessment with a polled status
-- provider-neutral endpoints: the companion provider returns the packet to paste, and the mock provider returns fixed text, so one client flow serves every provider
-- assistance events recorded for a tutor exchange linked to an open attempt
-
-### Learner workings
-
-- persisted digital working page per lesson
-- pen and eraser pointer input with undo and clear
-- blank, lined, and graph-paper notebook backgrounds
-- typed notebook notes and PNG export
-- bounded notebook payloads and unsaved-navigation protection
-- ChatGPT review packets tied to a saved notebook page
-- explicit PNG attachment instructions and expected filenames
-- structured transcription, confidence, assessment, feedback, first-error, and next-step results
-- rejection when the model did not review a usable image
-- low-confidence overclaim detection
-- first-error requirements for incorrect and partly correct reviews
-- guided-mode answer-leak checks across review feedback and next steps
-- source restrictions and request-ID matching for image reviews
-
-### Engineering controls
-
-- explicit query parsing that preserves `values=false` for technical visuals
-- prerequisite-cycle and orphan-reference detection for curriculum bundles
-- learner-safe lesson lookup by ID
-- transfer result persistence in SQLite
-- one declared database schema: every table lives in `apps/server/src/db/schema.ts` and an ordered SQL file under `apps/server/drizzle/`, recorded in `schema_migrations`
-- server startup that fails with the list of outstanding migrations instead of creating tables during request handling
-- repository-root path resolution for the database and the prompt package, so a relative `DISCERE_DATABASE_PATH` means the same file for every workspace command
-- versioned prompt files loaded from `prompts/` at runtime, with clause tests guarding against prompt drift
-- agent operating contract in `AGENTS.md`
-- detailed README, setup guide, ChatGPT workflow, troubleshooting, backup, and reset instructions
-
-## First fleet round additions
-
-- deterministic spaced-review domain functions with fixed, explainable intervals
-- independent and assisted review evidence kept separate
-- reviewed-question flashcard generation behind an answer-bearing domain boundary
-- sourced series-circuit lesson, activity contract, state transitions, and deterministic SVG renderer
-- server-side tutor request-ID matching for pasted tutor replies
-- adversarial regression coverage rejecting injected answer authority in learner attempt payloads
-- fleet coordination reports in `docs/agent-fleet/`
-
-## Interactive Story v1 migration — 17 August 2026
-
-Superseded by the interface rebuild below. The `/legacy` route and the `/qa/roman` fixture named
-here no longer exist.
-
-The approved redesign is now the default learner entry point. It is implemented as separate routed screens rather than one comparison-board dashboard or long page.
-
-- course home at `/`, `/courses`, and `/courses/electronics-foundations`
-- learner-safe journey and stage contracts in `packages/contracts`
-- SQLite-backed journey progress with next-stage activation
-- lesson route at `/courses/electronics-foundations/lessons/current-in-one-loop/stages/:stageId`
-- explainer screen with visual orientation and key takeaway
-- deterministic interactive circuit screen with prediction-first feedback
-- focused quiz with mode-aware hints, reveal boundary, and transfer recovery
-- essay studio with autosave, minimum-word gate, prose-quality validation, and submission persistence
-- authorised review session with concealed card backs, explicit reveal, rating, evidence classification, and fixed scheduling
-- completion screen and return-to-course path
-- separate `/review` home and `/legacy` preservation route
-- Roman Empire five-screen visual QA fixture at `/qa/roman?stage=0..4`
-- expanded full-stack smoke test covering the new routes, contracts, persistence, essay, and review flow
-
-The functional migration currently covers the first electronics lesson. The sourced series-circuit lesson remains validated course content but is intentionally marked planned until the learner-safe activity union and navigation are integrated. Full browser screenshots are documented in [`docs/ui-ux/screenshots/README.md`](ui-ux/screenshots/README.md); this environment lacks the host libraries required to execute Chromium.
-
-## Repository hygiene — 18 August 2026
-
-Groundwork for the v1 rebuild. No learner-facing behaviour changed.
-
-- Biome ignores build output again. The previous `!!dist` patterns re-included the directories they named, so a present `apps/web/dist` produced thousands of lint errors. Biome 2 uses a single `!` prefix and no trailing `/**` for a directory.
-- Runtime artefacts are untracked: the duplicate `apps/server/data/` SQLite files, `apps/web/tsconfig.tsbuildinfo`, and the `.discere-pids.json` process record.
-- One canonical database. `@discere/paths` finds the repository root by walking up to `pnpm-workspace.yaml`, so `DISCERE_DATABASE_PATH=./data/discere.sqlite` no longer resolved against each package directory. The stray `apps/server/data/discere.sqlite` came from that mismatch.
-- One schema. The `CREATE TABLE IF NOT EXISTS` statements that lived in the store constructor and in the notebook, transfer, and route modules now exist only as migrations.
-- `@discere/prompts` reads the seven prompt files from `prompts/` and supplies the tutor system prompt and the accountability-mode policy to the companion packet builder. Clause tests cover every file, as spec v0.2 section 24 requires.
-
-## Interface rebuild — 18 August 2026
-
-`apps/web` was rewritten from scratch. The beige and orange theme, the thin white and green
-overlay, the twelve-line pathname router, the hardcoded course and lesson identifiers, the
-disabled placeholder controls, and the Unicode glyph icons are all gone. Nothing from the old
-`src/` tree survives.
-
-- one design system: tokens in `src/styles/tokens.css`, hand-written CSS, no framework
-- `react-router` v7 routes for `/`, `/courses`, `/courses/:courseId`,
-  `/courses/:courseId/lessons/:lessonId`, `.../stages/:stageId`, `/review`,
-  `/review/session/:sessionId`, and `/progress`
-- `lucide-react` thin-line icons throughout; `katex` renders `$…$` inline equations wherever
-  learner prose is displayed
-- a pure stage machine (`src/journey/stage-machine.ts`) turns the journey and progress payloads
-  into stage state; no stage, course, or lesson identifier is written into a component
-- the explainer visual comes from `stage.visual`; a visual kind with no deterministic renderer
-  falls back to the written description rather than a broken image
-- both activity types render from the activity payload; an unrecognised type states that it is
-  unavailable instead of drawing a control that does nothing
-- the quiz carries mode selection, the three-level hint ladder with its evidence cost, the
-  reason-then-wait-then-confirm reveal, the transfer question, and MCQ option cards that appear
-  whenever a question carries `choices`
-- the essay studio autosaves against the draft endpoint, shows a word count against the minimum,
-  and polls the assessment endpoint through pending, ready, failed, and packet-required states
-- the tutor drawer calls `POST /api/tutor/ask`, keeps the session identifier for follow-ups,
-  renders the companion packet when the provider cannot answer in place, and gives each provider
-  fault its own sentence
-- no disabled control appears anywhere: an action the learner has not unlocked is rendered as
-  text explaining what would open it
-
-Server change: submitting a teach-back no longer fails the writing gate. The gate still runs and
-is still recorded, and its findings return as optional `styleNotes`. The mandatory gate remains
-in force for generated prose.
-
-Test position: 76 web unit and component tests (from 24), 58 server tests, and the full-stack
-smoke suite, which now also checks every stage deep link against the built bundle. The Playwright
-suite in `apps/web/e2e` runs 11 tests green: home → explainer → visual → quiz (wrong, hint,
-right) → essay → review → completion, refresh restoration, browser history, the explainer's jump
-to the question and back, the tutor, Exam restrictions, mobile overflow, an opaque tutor drawer
-above the navigator, and navigator clearance beneath a stage's last action. Twenty-six
-screenshots at 1440×900 and 390×844 are in this repository, captured from the running
-application. Chromium needs `libnss3`, `libnssutil3`, `libnspr4`, and `libasound2`; the supported
-fix is `playwright install-deps` as root, and the run here used the same libraries extracted to a
-scratch directory on `LD_LIBRARY_PATH`. See
-[`ui-ux/screenshots/README.md`](ui-ux/screenshots/README.md).
-
-Fixed after the first browser run: completing a stage now moves to the next stage in order rather
-than to the server's global active stage, which only differed when revisiting a finished journey;
-the explainer's jump to the question records where it came from in history state, so the return
-link no longer depends on the quiz being locked; the tutor drawer is opaque at every animation
-frame, carries a scrim, and sits above the bottom navigator; the stage canvas reserves a
-navigator height of bottom clearance; and the essay editor takes the wide column with the success
-criteria beside it, as the approved mockup shows.
-
-Deferred from this round: the notebook and the workings-review handoff have no place in the new
-shell yet. Their server endpoints and contracts are untouched, so the tools return when the
-notebook route is designed.
-
-## Content pipeline and a second subject — 19 August 2026
-
-Phase 3. Discere went from one subject with two lessons to two courses with eight, and gained the
-authoring pipeline that produced part of them.
-
-### Authoring pipeline
-
-- `pnpm author` (`scripts/author.ts`): `generate`, `lint`, `validate`, `review`, `merge`, and a
-  `pipeline` command that runs the chain end to end
-- generation spawns the local Codex CLI with `prompts/lesson-writer.md` and a JSON Schema derived
-  from `AuthoredLessonDraftSchema`, at `DISCERE_CODEX_EFFORT=medium`
-- raw model output is cached in `content/<course>/generated/`, ignored by Git, so nothing is
-  regenerated needlessly
-- one targeted style-editor repair pass per failing field, followed by a semantic preservation
-  check that discards a repair which moved a number, unit, equation, or citation
-- a human-readable review file per generated item in `content/<course>/review/`, committed as the
-  decision record
-- `merge` refuses to write unless the whole bundle revalidates
-- documented in [`authoring-pipeline.md`](authoring-pipeline.md)
-
-### Curriculum validation
-
-- flashcards and essay topics are first-class bundle collections with their own referential and
-  prose checks
-- a selectable question must be marked by exactly one of its options, checked by running the real
-  text assessor over every option
-- an accepted idea for a written answer must be a matchable phrase rather than a sentence
-- numeric questions must carry a three-step hint ladder
-- at most 35% of a course's questions may be multiple choice
-- a bundled image must carry a redistributable licence, an attribution naming its creator, and a
-  file that is actually on disk
-- material no lesson reaches is reported as a warning
-
-### Content
-
-- Electronics Foundations: 5 lessons, 20 questions (10 numeric, 6 written, 4 multiple choice),
-  10 authored flashcards, 5 activities. Every numeric answer was recomputed from the physics.
-- The Rise of the Roman Empire: 3 lessons, 13 questions, 8 flashcards, 2 essay topics, 3 timeline
-  activities, 3 retrieved images. Every date checked against its cited source.
-- lesson 2 of the electronics course is reachable at last: the series explorer had been in the
-  activity engine and unreachable since it was written
-
-### Activities and visuals
-
-- `parallel_circuit_explorer` in `@discere/activity-engine`, with conductances added and branch
-  currents reported
-- `timeline_explorer`: a scrubbed horizontal track whose markers light as the year advances, with
-  an ordering prediction whose answer is recomputed from the event dates rather than stored
-- `scripts/retrieve-images.ts` retrieves from the Wikimedia Commons API, accepts only public
-  domain, CC0, CC BY, or CC BY-SA, and records landing page, creator, licence, attribution,
-  retrieval date, and a content hash
-- `GET /api/content/:courseId/assets/*` serves course images read-only, resolving inside the
-  course directory and refusing anything that escapes it
-- the web renders a retrieved image with its caption and a visible attribution line
-
-### Server
-
-- `ContentRepository` scans `content/` and loads every bundle; no course identifier is written
-  into the server
-- start-up refuses two bundles that define the same identifier, because identifiers reach the API
-  without a course prefix
-- the journey is built from the lesson's own data: one quiz stage per question it asks, an essay
-  stage only when it names one, and the takeaway, review label, next action, and stage titles all
-  authored rather than hardcoded
-- `/api/courses` lists every course; course detail carries concept titles, which `/progress` and
-  the completion screen now show instead of humanised identifiers
-- home continues the most recently worked course, defaulting to the first
-- the transfer challenge belongs to the question that offers it, instead of one electronics case
-  applied to every subject
-- assessment feedback is subject-neutral
-- the review queue is fed by the authored flashcards of every course
-
-### Fixed
-
-- moving between two quiz stages carried the first stage's answer, hints, and result into the
-  second. Stage views are now keyed by stage id, so each stage starts clean. The bug could not
-  appear while a lesson had a single question.
-- `/api/visuals/circuit.svg` drew the current lesson's circuit whatever lesson asked for it. It
-  now takes an explicit `lessonId`, or renders the single-resistor loop the query describes.
-- concept progress opened only the very first concept in the library. A concept with no
-  prerequisites is now available, which stays correct with more than one course.
-
-### Verification
-
-`pnpm check`, `pnpm build`, and `pnpm smoke` are green. The Playwright suite runs 12 tests,
-including a Roman Empire walk from the retrieved map through the timeline to a marked
-multiple-choice answer, and it asserts the image actually loads and its attribution is shown.
-Thirty-four screenshots at 1440×900 and 390×844 were recaptured, four of them from the new
-course.
-
-## Learning features and the Instrumenta hub — 19 August 2026
-
-Phases 4 and 5. The scheduler became real, the notebook returned to the shell with a working
-image review, and Discere became a product the Instrumenta launcher can start.
-
-### Real spaced repetition
-
-- `ts-fsrs` replaces the fixed interval ladders in `packages/progression-engine/src/review.ts`.
-  A card carries its own memory state: stability, difficulty, lapses, phase, learning step,
-  elapsed and scheduled days. Migration `0003_fsrs_review_state.sql` adds the columns; an
-  existing card keeps its due date and starts from the empty-card defaults rather than being
-  given a stability it never earned.
-- Fuzz is off, so a card, a grade, and an instant always produce the same next due date. Every
-  scheduling test supplies its own timestamps and the store takes an injectable clock, so a
-  multi-day schedule is asserted rather than waited for.
-- The accountability rule survived the change. Assisted recall is capped at a `hard` grade
-  inside `gradeForResult`, so help never buys the interval an unaided recall would earn, and the
-  independent and assisted counters stay separate from the scheduler's own state.
-- `formatInterval` names a learning step in minutes instead of rounding it up to an hour.
-
-### A fair review queue
-
-- `review_cards` now records the course that authored each card.
-- `interleaveByCourse` takes turns between courses: within a turn the course studied longest ago
-  goes first, and inside a course the usual due order applies. Because the recency comes from
-  the stored review times rather than from session state, the rotation continues across separate
-  requests instead of restarting and serving the same course again.
-- `GET /api/review` reports a per-course breakdown beside the global count, and `/review` shows
-  it as a table naming each course, its due count, its card count, and when the next card
-  returns.
-
-### A real streak
-
-The `streak_days` column was written once at profile creation and never again, so the number on
-the home screen was permanently zero. It is now computed from the activity itself: any attempt,
-transfer, or rated review counts as a day of study, and consecutive days are counted back from
-today. Today with no work yet does not break a streak that was alive yesterday, so the figure is
-stable through the day. The column is kept in step for anyone inspecting the database, but the
-answer always comes from the activity.
-
-### The notebook, and workings review through Codex
-
-- `/courses/:courseId/lessons/:lessonId/notebook` is a real route, reachable from the lesson
-  header in every mode. Pointer drawing with pen and eraser, undo, clear, blank, lined and graph
-  pages, a typed note, save through the existing endpoints, and PNG export.
-- `CodexTutorProvider` accepts image attachments. The bytes are written beside the run and
-  passed as `--image=<file>`; the flag is variadic, so the `=` form is what keeps the trailing
-  `-` reading the prompt from stdin. The attachment is removed with the run directory, and it is
-  deliberately not re-attached to the style repair pass.
-- `POST /api/tutor/workings/review` exports the page, sends it through the provider with
-  `prompts/assessor.md`, and pipes the reply through the existing `validateWorkingsReview`
-  boundary. Nothing new was invented for the generated path: the pasted companion reply and the
-  generated one pass the same gate.
-- The panel shows the result honestly. It prints the transcription the tutor read from the page
-  with its confidence and tells the learner to check it, lists anything the tutor was unsure
-  about, lists every accountability finding, and shows a refused review as refused rather than
-  as advice. The companion provider, which cannot see an image, returns the packet and the
-  filename to attach.
-- Verified live against the real Codex CLI on a page reading `I = V / R`, `I = 5 V / 100 Ω`,
-  `I = 0.5 A`. It transcribed the page exactly, marked it incorrect, named the decimal-place
-  error as the first meaningful one, and gave a next step in Coach mode without stating the
-  answer. The gate raised no issues.
-
-### Read-aloud
-
-The 30-line block inside the explainer became `ui/ReadAloud.tsx`, shared by the explainer, the
-quiz question, and the flashcard front. Speech now stops when the surface goes away, so moving
-between stages no longer leaves a voice reading a screen nobody is looking at. Only the question
-is spoken on a quiz stage, and only the front of a card, because neither a hint nor a card back
-should arrive through a control the learner did not open.
-
-### Single-origin serving
-
-`@fastify/static` serves the built bundle when `DISCERE_WEB_ROOT` names one. `/api/*` keeps
-priority, an unknown `/api` path stays a real 404, and any other GET falls back to `index.html`
-so a deep link opens the application. Paths are resolved inside the bundle root. Development is
-untouched: without the variable the server serves the API alone and Vite proxies it.
-
-`DISCERE_AUTO_MIGRATE=1` applies pending migrations at boot, so a launcher starting Discere for
-the first time does not need a separate migration step. Without it the server still refuses to
-start against an unmigrated database. Nothing listens until the content has loaded, the schema
-has passed, and every route is registered, so a `/api/health` that answers at all is answering
-from a ready server.
-
-### Packaged Content Security Policy
-
-`scripts/check-csp.mjs` runs as part of `pnpm build`. It reads the built bundle and fails on an
-inline script, an external script, stylesheet, image or font, a CSS `@import` or `url()` naming
-another origin, or a `fetch`, `WebSocket`, worker or `XMLHttpRequest` pointed anywhere but
-`'self'`. It looks for the constructs that actually issue a request, so a URL inside an error
-message or a JSON Schema identifier is not mistaken for one. The bundle passes: KaTeX and its
-fonts already come from npm and are emitted into `dist/assets`, the type stack is a system font
-stack, and the icons are compiled in.
-
-### Hub product
-
-- `instrumenta/product.json` declares the `web-service` adapter, port 49323 with 45023 as the
-  fallback, `/api/health`, and the launch environment above. It validates against Instrumenta's
-  own `scripts/product-registry.cjs`.
-- `apps/web/public/discere-mark.png` reproduces the launcher's brand mark.
-- `mcp/` replaces the transport-less `apps/mcp` stub with a real stdio MCP server built to
-  `mcp/dist/index.js`, which is what the launcher resolves. Seven tools: `list_courses`,
-  `get_course`, `get_lesson_journey`, `get_progress`, `list_due_reviews`, `ask_tutor`, and
-  `get_attempt_feedback`. None of them can return an answer authority or a flashcard back, and
-  `ask_tutor` does not accept Exam mode. When Discere is not running each tool says so and names
-  the URL it tried.
-- `ai/skills/learn-with-discere/` documents the tools and the rules an agent must respect.
-
-### Verification
-
-`pnpm check` is green: 85 server tests, 108 web tests, and every package suite. `pnpm build`
-passes with the CSP check. `pnpm smoke` passes and now proves the interface, a deep link, and
-the API all answer on one port. The Playwright suite runs 18 tests, including the notebook drawn,
-saved and reviewed through the offline provider, and a review queue that alternates between the
-two courses. Thirty-six screenshots at 1440x900 and 390x844 were recaptured, two of them of the
-notebook.
-
-## Deliberately deferred
-
-- direct ChatGPT MCP transport, pending host compatibility testing
-- generated-image return from ChatGPT into the local workspace
-- automatic in-app handwriting recognition without the ChatGPT handoff
-- persistence of image-review history and formal mastery evidence from reviewed workings, which
-  is why a review is shown once and not kept
-- multiple generated transfer variants and delayed transfer scheduling
-- NotebookLM handoff automation
-- broad curriculum importers
-- Playwright in CI, which still needs the browser system libraries installed as root
-
-These are later phases rather than hidden placeholders. The current vertical slice can operate offline after dependencies are installed. ChatGPT tutoring and image review remain explicit user-controlled handoffs and do not require an OpenAI API key.
-
-## Build boundary
-
-The Fastify service and shared packages are source-run TypeScript modules during the local prototype. Their build commands perform strict typechecking. The React application produces the deployable browser bundle. This avoids publishing a server artifact whose workspace imports still point at TypeScript source.
-
-The latest verification record is in [`validation-results-2026-08-17.md`](validation-results-2026-08-17.md).
+# Implementation status
+
+This file records the current boundary. Older dated plans remain useful as design history; they are
+not a reliable feature list.
+
+## Runtime
+
+Discere is a pnpm TypeScript workspace with a React/Vite learner app, Fastify loopback service, and
+SQLite database. `pnpm run setup` installs dependencies, creates configuration when needed, migrates
+and seeds the database, builds the web app, and runs diagnostics.
+
+`pnpm start` serves the built interface and API. `pnpm dev` runs the development pair. `pnpm stop`
+cleans processes from Discere's own PID record.
+
+The built service can also serve the learner app from one origin. Instrumenta uses that path through
+the `web-service` adapter, a WSL command bridge, a health check, and launcher-owned security headers.
+
+## Curriculum
+
+Two checked-in courses are active:
+
+- Electronics Foundations has five lessons, twenty questions, ten flashcards, five deterministic
+  activities, and teach-back work.
+- The Rise of the Roman Empire has three lessons, thirteen questions, eight flashcards, two essay
+  topics, timeline activities, and sourced images.
+
+`ContentRepository` discovers bundles under `content/`. Startup rejects duplicate identifiers and
+invalid references. Retrieved images carry a redistributable licence record, attribution, landing
+page, retrieval date, and content hash.
+
+The authoring pipeline supports `generate`, `lint`, `validate`, `review`, `merge`, and an end-to-end
+`pipeline` command. Generated drafts stay ignored until review and validation pass.
+
+## Learner interface
+
+The current shell has routed course, lesson, review, progress, and notebook screens. Lessons are
+assembled from content-owned stages. A stage renders one main learning task.
+
+Implemented surfaces include:
+
+- explainer pages with deterministic or licensed visuals;
+- circuit and timeline activities with prediction before reveal;
+- numeric, written, and multiple-choice questions;
+- mode-aware hints, worked-answer confirmation, and transfer recovery;
+- essay autosave, submission, prose findings, and tutor assessment;
+- FSRS review sessions with concealed backs and explicit rating;
+- course-interleaved due queues and concept evidence;
+- a drawing notebook with typed notes and PNG export;
+- desktop and mobile route coverage in Playwright.
+
+## Accountability
+
+Attempts keep their tutoring mode. Completed attempts are immutable. Hints, worked-answer reveals,
+transfer recovery, Direct mode, and tutor exchanges are recorded as assistance.
+
+A worked answer closes the original question. The optional transfer problem is different, retryable,
+and awards reduced recovery evidence once. XP, independent evidence, assisted evidence, and review
+scheduler state remain distinct.
+
+Exam mode removes tutoring, hints, answer reveal, source access, and workings review.
+
+## Tutoring and workings
+
+`DISCERE_TUTOR_PROVIDER` selects `codex`, `companion`, or `mock`.
+
+The Codex provider launches the local CLI with a JSON Schema derived from shared contracts. It limits
+wall-clock time, kills the process group after timeout, runs one request at a time, and keeps session
+IDs for follow-up tutoring.
+
+The companion provider creates a packet for manual use with ChatGPT. Pasted replies pass the same
+schema, request, source, mode, and prose checks as generated replies.
+
+Notebook review sends a temporary PNG attachment to Codex or prepares a manual companion packet. The
+review contract requires a transcription, confidence, assessment, uncertainty, first meaningful
+error when applicable, and a next step. Guided modes reject answer leakage.
+
+## Review and progress
+
+Review cards use deterministic FSRS scheduling. Fuzz is disabled for reproducible tests. Assisted
+recall is capped at Hard before grading. The due queue alternates courses using persisted review
+history.
+
+The home-screen streak is calculated from actual attempt, transfer, and review dates. Concept progress
+shows independent and assisted evidence separately.
+
+## Local boundaries
+
+The service binds to loopback. The database and notebook pages stay local. ChatGPT companion packets
+leave the app only when the learner copies them. Codex attachments are placed in a temporary run and
+removed afterward.
+
+The production build checks its Content Security Policy for remote scripts, styles, images, fonts,
+workers, WebSockets, and fetch targets. Local MCP tools expose course, journey, progress, review, tutor,
+and attempt-feedback operations without returning hidden answer authority.
+
+## Verification
+
+The maintained gate is:
+
+```bash
+pnpm verify
+```
+
+It covers environment diagnostics, lint, typechecking, package tests, curriculum validation, the
+production bundle, CSP, and an isolated full-stack smoke. `pnpm e2e` runs the browser journey and
+screenshot suite when Playwright's system libraries are installed.
+
+Dated validation records are snapshots. Run the current gate before using an old count in a release
+note.
+
+## Unfinished work
+
+- Direct ChatGPT MCP transport still depends on host compatibility.
+- Generated images do not return automatically into the local curriculum.
+- Workings-review history is shown once and is not formal mastery evidence.
+- Transfer variants and delayed transfer scheduling are limited.
+- Broad curriculum importers remain future work.
+- Playwright CI needs the browser system libraries on the runner.
