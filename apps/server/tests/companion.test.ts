@@ -3,8 +3,12 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createApp } from "../src/app.js";
 
 let app: FastifyInstance;
-beforeEach(async () => { ({ app } = await createApp({ dbPath: ":memory:", migrate: true })); });
-afterEach(async () => { await app.close(); });
+beforeEach(async () => {
+  ({ app } = await createApp({ dbPath: ":memory:", migrate: true }));
+});
+afterEach(async () => {
+  await app.close();
+});
 
 function tutorEnvelope(payload: unknown) {
   return {
@@ -58,12 +62,15 @@ describe("ChatGPT tutor companion", () => {
       payload: {
         mode: "coach",
         expectedRequestId: "b3428b5b-07b2-4ab4-840f-c1d723c714b2",
-        text: JSON.stringify(tutorEnvelope({
-          answer: "Use I = V / R. Put the supplied voltage above the resistance and carry the current unit through the calculation.",
-          followUpQuestion: "Which two supplied values belong in the division?",
-          sourceIds: [lesson.sources[0].id],
-          uncertainty: [],
-        })),
+        text: JSON.stringify(
+          tutorEnvelope({
+            answer:
+              "Use I = V / R. Put the supplied voltage above the resistance and carry the current unit through the calculation.",
+            followUpQuestion: "Which two supplied values belong in the division?",
+            sourceIds: [lesson.sources[0].id],
+            uncertainty: [],
+          }),
+        ),
       },
     });
     expect(response.statusCode).toBe(200);
@@ -78,17 +85,21 @@ describe("ChatGPT tutor companion", () => {
       payload: {
         mode: "coach",
         expectedRequestId: "b3428b5b-07b2-4ab4-840f-c1d723c714b2",
-        text: JSON.stringify(tutorEnvelope({
-          answer: "The current is 0.05 A.",
-          followUpQuestion: "Can you substitute the values yourself?",
-          sourceIds: [],
-          uncertainty: [],
-        })),
+        text: JSON.stringify(
+          tutorEnvelope({
+            answer: "The current is 0.05 A.",
+            followUpQuestion: "Can you substitute the values yourself?",
+            sourceIds: [],
+            uncertainty: [],
+          }),
+        ),
       },
     });
     expect(response.statusCode).toBe(200);
     expect(response.json().accepted).toBe(false);
-    expect(response.json().issues.some((issue: { code: string }) => issue.code.startsWith("ANS"))).toBe(true);
+    expect(
+      response.json().issues.some((issue: { code: string }) => issue.code.startsWith("ANS")),
+    ).toBe(true);
   });
 
   it("allows the final answer in Direct mode while retaining prose checks", async () => {
@@ -98,12 +109,14 @@ describe("ChatGPT tutor companion", () => {
       payload: {
         mode: "direct",
         expectedRequestId: "b3428b5b-07b2-4ab4-840f-c1d723c714b2",
-        text: JSON.stringify(tutorEnvelope({
-          answer: "The current is 0.05 A because 5 V divided by 100 Ω equals 0.05 A.",
-          followUpQuestion: "What current would a 200 Ω resistor draw at the same voltage?",
-          sourceIds: [],
-          uncertainty: [],
-        })),
+        text: JSON.stringify(
+          tutorEnvelope({
+            answer: "The current is 0.05 A because 5 V divided by 100 Ω equals 0.05 A.",
+            followUpQuestion: "What current would a 200 Ω resistor draw at the same voltage?",
+            sourceIds: [],
+            uncertainty: [],
+          }),
+        ),
       },
     });
     expect(response.statusCode).toBe(200);
@@ -117,17 +130,21 @@ describe("ChatGPT tutor companion", () => {
       payload: {
         mode: "direct",
         expectedRequestId: "b3428b5b-07b2-4ab4-840f-c1d723c714b2",
-        text: JSON.stringify(tutorEnvelope({
-          answer: "Resistance opposes current in this circuit model.",
-          followUpQuestion: "What should happen when resistance doubles?",
-          sourceIds: ["invented-source"],
-          uncertainty: [],
-        })),
+        text: JSON.stringify(
+          tutorEnvelope({
+            answer: "Resistance opposes current in this circuit model.",
+            followUpQuestion: "What should happen when resistance doubles?",
+            sourceIds: ["invented-source"],
+            uncertainty: [],
+          }),
+        ),
       },
     });
     expect(response.statusCode).toBe(200);
     expect(response.json().accepted).toBe(false);
-    expect(response.json().issues).toContainEqual(expect.objectContaining({ code: "SOURCE_NOT_ALLOWED" }));
+    expect(response.json().issues).toContainEqual(
+      expect.objectContaining({ code: "SOURCE_NOT_ALLOWED" }),
+    );
   });
 
   it("rejects a valid tutor reply from an older prepared request", async () => {

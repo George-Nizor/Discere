@@ -1,4 +1,5 @@
 import type {
+  CapabilitiesResponse,
   ActivityResponse,
   CourseDetailResponse,
   CourseListResponse,
@@ -7,10 +8,12 @@ import type {
   JourneyProgress,
   JourneyResponse,
   ReviewHomeResponse,
+  RomanReferenceProgress,
   TutorStatus,
 } from "@discere/contracts";
 import { type UseQueryResult, useQuery } from "@tanstack/react-query";
 import {
+  getCapabilities,
   getActivity,
   getCourseDetail,
   getCourses,
@@ -19,6 +22,7 @@ import {
   getJourney,
   getJourneyProgress,
   getReviewHome,
+  getRomanReferenceProgress,
   getTutorStatus,
 } from "./endpoints.js";
 
@@ -29,11 +33,14 @@ export const queryKeys = {
   journey: (courseId: string, lessonId: string) => ["journey", courseId, lessonId] as const,
   journeyProgress: (courseId: string, lessonId: string) =>
     ["journey-progress", courseId, lessonId] as const,
+  romanReferenceProgress: (courseId: string, lessonId: string) =>
+    ["roman-reference-progress", courseId, lessonId] as const,
   essay: (essayId: string) => ["essay", essayId] as const,
   essayAssessment: (essayId: string) => ["essay-assessment", essayId] as const,
   notebook: (lessonId: string) => ["notebook", lessonId] as const,
   reviewHome: ["review-home"] as const,
   reviewSession: (sessionId: string) => ["review-session", sessionId] as const,
+  capabilities: ["capabilities"] as const,
   tutorStatus: ["tutor-status"] as const,
   activity: ["progress-activity"] as const,
 };
@@ -43,6 +50,18 @@ export function useHome(): UseQueryResult<HomeResponse> {
 }
 
 /** Cheap and file-backed on the server, so the settings screen may re-read it freely. */
+/**
+ * What this installation can generate. Asked once and cached for the session: it changes when the
+ * owner installs or signs into the CLI, not while a learner is working.
+ */
+export function useCapabilities(): UseQueryResult<CapabilitiesResponse> {
+  return useQuery({
+    queryKey: queryKeys.capabilities,
+    queryFn: getCapabilities,
+    staleTime: 5 * 60_000,
+  });
+}
+
 export function useTutorStatus(): UseQueryResult<TutorStatus> {
   return useQuery({ queryKey: queryKeys.tutorStatus, queryFn: getTutorStatus, staleTime: 5_000 });
 }
@@ -76,6 +95,16 @@ export function useJourneyProgress(
   return useQuery({
     queryKey: queryKeys.journeyProgress(courseId, lessonId),
     queryFn: () => getJourneyProgress(courseId, lessonId),
+  });
+}
+
+export function useRomanReferenceProgress(
+  courseId: string,
+  lessonId: string,
+): UseQueryResult<RomanReferenceProgress> {
+  return useQuery({
+    queryKey: queryKeys.romanReferenceProgress(courseId, lessonId),
+    queryFn: () => getRomanReferenceProgress(courseId, lessonId),
   });
 }
 

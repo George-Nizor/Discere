@@ -47,7 +47,9 @@ export function GraphPlot({
   const xAt = (value: number): number =>
     PAD.left + ((value - activity.x.min) / (activity.x.max - activity.x.min)) * PLOT.width;
   const yAt = (value: number): number =>
-    PAD.top + PLOT.height - ((value - activity.y.min) / (activity.y.max - activity.y.min)) * PLOT.height;
+    PAD.top +
+    PLOT.height -
+    ((value - activity.y.min) / (activity.y.max - activity.y.min)) * PLOT.height;
 
   function place(event: React.MouseEvent<SVGRectElement>): void {
     if (outcome?.correct) return;
@@ -77,10 +79,22 @@ export function GraphPlot({
       >
         <g className="graph-grid">
           {xTicks.map((value) => (
-            <line key={`x${value}`} x1={xAt(value)} x2={xAt(value)} y1={PAD.top} y2={PAD.top + PLOT.height} />
+            <line
+              key={`x${value}`}
+              x1={xAt(value)}
+              x2={xAt(value)}
+              y1={PAD.top}
+              y2={PAD.top + PLOT.height}
+            />
           ))}
           {yTicks.map((value) => (
-            <line key={`y${value}`} x1={PAD.left} x2={PAD.left + PLOT.width} y1={yAt(value)} y2={yAt(value)} />
+            <line
+              key={`y${value}`}
+              x1={PAD.left}
+              x2={PAD.left + PLOT.width}
+              y1={yAt(value)}
+              y2={yAt(value)}
+            />
           ))}
         </g>
         {activity.series.length > 1 ? (
@@ -90,12 +104,22 @@ export function GraphPlot({
           />
         ) : null}
         <g className="graph-axis">
-          <line x1={PAD.left} x2={PAD.left + PLOT.width} y1={PAD.top + PLOT.height} y2={PAD.top + PLOT.height} />
+          <line
+            x1={PAD.left}
+            x2={PAD.left + PLOT.width}
+            y1={PAD.top + PLOT.height}
+            y2={PAD.top + PLOT.height}
+          />
           <line x1={PAD.left} x2={PAD.left} y1={PAD.top} y2={PAD.top + PLOT.height} />
         </g>
         <g className="graph-tick">
           {xTicks.map((value) => (
-            <text key={`xt${value}`} x={xAt(value)} y={PAD.top + PLOT.height + 18} textAnchor="middle">
+            <text
+              key={`xt${value}`}
+              x={xAt(value)}
+              y={PAD.top + PLOT.height + 18}
+              textAnchor="middle"
+            >
               {formatTick(value, activity.x.step)}
             </text>
           ))}
@@ -105,7 +129,12 @@ export function GraphPlot({
             </text>
           ))}
         </g>
-        <text className="graph-label" x={PAD.left + PLOT.width / 2} y={HEIGHT - 6} textAnchor="middle">
+        <text
+          className="graph-label"
+          x={PAD.left + PLOT.width / 2}
+          y={HEIGHT - 6}
+          textAnchor="middle"
+        >
           {activity.x.label}
           {activity.x.unit ? ` (${activity.x.unit})` : ""}
         </text>
@@ -136,7 +165,13 @@ export function GraphPlot({
         />
         {point ? (
           <circle
-            className={outcome ? (outcome.correct ? "graph-point is-correct" : "graph-point is-wrong") : "graph-point"}
+            className={
+              outcome
+                ? outcome.correct
+                  ? "graph-point is-correct"
+                  : "graph-point is-wrong"
+                : "graph-point"
+            }
             cx={xAt(point.x)}
             cy={yAt(point.y)}
             r={7}
@@ -151,7 +186,10 @@ export function GraphPlot({
             max={activity.x.max}
             min={activity.x.min}
             onChange={(event) => {
-              setPoint((current) => ({ x: Number(event.target.value), y: current?.y ?? activity.y.min }));
+              setPoint((current) => ({
+                x: Number(event.target.value),
+                y: current?.y ?? activity.y.min,
+              }));
               setChecked(false);
             }}
             step={activity.x.step}
@@ -165,7 +203,10 @@ export function GraphPlot({
             max={activity.y.max}
             min={activity.y.min}
             onChange={(event) => {
-              setPoint((current) => ({ x: current?.x ?? activity.x.min, y: Number(event.target.value) }));
+              setPoint((current) => ({
+                x: current?.x ?? activity.x.min,
+                y: Number(event.target.value),
+              }));
               setChecked(false);
             }}
             step={activity.y.step}

@@ -136,7 +136,10 @@ describe("routed application", () => {
     renderApp("/");
 
     expect(
-      await screen.findByRole("heading", { level: 1, name: /Good (morning|afternoon|evening), Journey Tester/ }),
+      await screen.findByRole("heading", {
+        level: 1,
+        name: /Good (morning|afternoon|evening), Journey Tester/,
+      }),
     ).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: "Discere" })).toBeInTheDocument();
     for (const label of ["Home", "Courses", "Review", "Progress", "Settings"]) {
@@ -153,15 +156,11 @@ describe("routed application", () => {
     stubFetch({ "GET /api/home": { body: home }, "GET /api/review": { body: reviewHome } });
     renderApp("/review");
 
-    expect(
-      await screen.findByRole("heading", { level: 1, name: "Review" }),
-    ).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { level: 1, name: "Review" })).toBeInTheDocument();
     expect(screen.getByText("3")).toBeInTheDocument();
     const rows = screen.getByRole("table");
     expect(rows).toBeInTheDocument();
-    expect(
-      screen.getByRole("rowheader", { name: "Electronics Foundations" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("rowheader", { name: "Electronics Foundations" })).toBeInTheDocument();
     expect(
       screen.getByRole("rowheader", { name: "The Rise of the Roman Empire" }),
     ).toBeInTheDocument();
@@ -178,9 +177,7 @@ describe("routed application", () => {
       },
     });
     renderApp("/progress");
-    expect(
-      await screen.findByRole("heading", { level: 1, name: "Progress" }),
-    ).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { level: 1, name: "Progress" })).toBeInTheDocument();
     expect(await screen.findByText("Ohm's law")).toBeInTheDocument();
     expect(screen.getByText("62%")).toBeInTheDocument();
     expect(screen.getByText("2 independent · 1 assisted")).toBeInTheDocument();

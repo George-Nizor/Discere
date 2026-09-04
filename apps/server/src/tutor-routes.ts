@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type {
+  CapabilitiesResponse,
   EssayAssessmentDraft,
   EssayAssessmentResponse,
   EssayStage,
@@ -25,16 +26,30 @@ import {
 } from "@discere/tutor-providers";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
+import { capabilities } from "./capabilities.js";
 import {
   acceptTutorReply,
   answerBoundaryFor,
   buildEssayAssessmentPayload,
   buildTutorReplyPayload,
+  type RomanReferenceEssayTutorPayloadContext,
+  type RomanReferenceTutorPayloadContext,
   validateEssayAssessment,
 } from "./companion.js";
 import type { ContentRepository } from "./content.js";
 import type { DiscereStore, EssayAssessmentRow } from "./db/store.js";
 import { HttpError } from "./errors.js";
+import {
+  privateEssayQuestionForRomanReference,
+  ROMAN_REFERENCE_ESSAY_CONCEPT_IDS,
+} from "./roman-reference-essay.js";
+import {
+  lessonForRomanReferenceEssayTutor,
+  lessonForRomanReferenceTutor,
+  ROMAN_REFERENCE_LESSON_ID,
+  resolveRomanReferenceTutorEssay,
+  resolveRomanReferenceTutorQuestion,
+} from "./roman-reference-routes.js";
 import { createTutorRuntime, type TutorRuntime, tutorProviderHttpError } from "./tutor-provider.js";
 import { buildTutorStatus } from "./tutor-status.js";
 
@@ -168,12 +183,67 @@ export async function registerTutorRoutes(
     };
   });
 
+  /**
+   * What this installation can generate, and what still works when it cannot.
+   *
+   * Separate from `/api/tutor/status`, which reports the health of one provider in detail for the
+   * settings screen. This answers a different question that several parts of the interface ask
+   * before they draw a control: is this feature here at all.
+   */
+  app.get(
+    "/api/capabilities",
+    async (): Promise<CapabilitiesResponse> => ({
+      capabilities: capabilities(runtime.id),
+    }),
+  );
+
   app.post("/api/tutor/ask", async (request): Promise<TutorAskResponse> => {
     const body = TutorAskRequestSchema.parse(request.body);
     if (body.mode === "exam") {
       throw new HttpError(403, "ChatGPT assistance is unavailable in Exam mode.", "EXAM_GUARDRAIL");
     }
-    const { lesson, question } = lessonAndQuestion(body.lessonId);
+    const boundToReference =
+      body.referenceQuestionId !== undefined || body.referenceEssayId !== undefined;
+    if (boundToReference && body.attemptId !== undefined) {
+      throw new HttpError(
+        400,
+        "Reference tutoring is not linked to a generic attempt.",
+        "REFERENCE_ATTEMPT_UNSUPPORTED",
+      );
+    }
+    if (boundToReference && body.lessonId !== ROMAN_REFERENCE_LESSON_ID) {
+      throw new HttpError(
+        409,
+        "The reference item does not belong to this lesson.",
+        "REFERENCE_LESSON_MISMATCH",
+      );
+    }
+    let lesson: LessonResponse;
+    let question: Question;
+    let focusConceptIds: readonly string[] | undefined;
+    let referenceContext: RomanReferenceTutorPayloadContext | undefined;
+    let essayContext: RomanReferenceEssayTutorPayloadContext | undefined;
+    if (body.referenceQuestionId !== undefined) {
+      const resolved = resolveRomanReferenceTutorQuestion(store, {
+        referenceQuestionId: body.referenceQuestionId,
+        mode: body.mode,
+      });
+      lesson = lessonForRomanReferenceTutor(content, body.referenceQuestionId);
+      question = resolved.question;
+      focusConceptIds = question.conceptIds;
+      referenceContext = { ...resolved.learnerContext, sourceIds: resolved.sourceIds };
+    } else if (body.referenceEssayId !== undefined) {
+      // The essay's mode is held in the reference row, so the resolution below is what decides
+      // whether this request is allowed at all, not the mode the browser asked with.
+      const resolved = resolveRomanReferenceTutorEssay(store, { mode: body.mode });
+      lesson = lessonForRomanReferenceEssayTutor(content);
+      question = privateEssayQuestionForRomanReference();
+      focusConceptIds = ROMAN_REFERENCE_ESSAY_CONCEPT_IDS;
+      essayContext = { ...resolved.essayContext, sourceIds: resolved.sourceIds };
+    } else {
+      ({ lesson, question } = lessonAndQuestion(body.lessonId));
+      focusConceptIds = body.conceptIds;
+    }
     const requestId = randomUUID();
     const tutorRequest: TutorRequest<unknown> = {
       operation: "tutor_reply",
@@ -181,7 +251,9 @@ export async function registerTutorRoutes(
       payload: buildTutorReplyPayload(
         lesson,
         { question: body.question, mode: body.mode },
-        body.conceptIds,
+        focusConceptIds,
+        referenceContext,
+        essayContext,
       ),
     };
 
@@ -239,6 +311,10 @@ export async function registerTutorRoutes(
       question,
       store,
       attemptId: body.attemptId,
+      ...(body.referenceQuestionId === undefined
+        ? {}
+        : { referenceQuestionId: body.referenceQuestionId }),
+      ...(body.referenceEssayId === undefined ? {} : { referenceEssayId: body.referenceEssayId }),
     });
     return {
       status: "answered",

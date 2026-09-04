@@ -100,8 +100,8 @@ export function ProgressScreen() {
               {home.data.streakDays === 1 ? "Day in a row" : "Days in a row"}
             </p>
             <p className="standing-label">
-              {home.data.todayMinutes} {home.data.todayMinutes === 1 ? "minute" : "minutes"}{" "}
-              studied today
+              {home.data.todayMinutes} {home.data.todayMinutes === 1 ? "minute" : "minutes"} studied
+              today
             </p>
           </div>
         </div>
@@ -157,24 +157,24 @@ export function ProgressScreen() {
             {courses.data.courses
               .filter((course) => course.status === "available")
               .map((course) => (
-              <li
-                className="course-progress"
-                key={course.id}
-                style={{ "--course-accent": course.accent } as React.CSSProperties}
-              >
-                <ProgressRing
-                  caption={`${course.completedLessonCount}/${course.lessonCount}`}
-                  completed={course.completedLessonCount}
-                  label="lessons"
-                  size={44}
-                  total={course.lessonCount}
-                />
-                <div>
-                  <p className="course-progress-title">{course.title}</p>
-                  <p className="muted">
-                    {course.completedLessonCount} of {course.lessonCount} lessons finished
-                  </p>
-                </div>
+                <li
+                  className="course-progress"
+                  key={course.id}
+                  style={{ "--course-accent": course.accent } as React.CSSProperties}
+                >
+                  <ProgressRing
+                    caption={`${course.completedLessonCount}/${course.lessonCount}`}
+                    completed={course.completedLessonCount}
+                    label="lessons"
+                    size={44}
+                    total={course.lessonCount}
+                  />
+                  <div>
+                    <p className="course-progress-title">{course.title}</p>
+                    <p className="muted">
+                      {course.completedLessonCount} of {course.lessonCount} lessons finished
+                    </p>
+                  </div>
                 </li>
               ))}
           </ul>

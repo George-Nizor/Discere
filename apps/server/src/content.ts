@@ -27,10 +27,7 @@ const ACTIVITY_VISUAL_KIND = {
   diagram_choice: "circuit",
   order_sequence: "diagram",
   graph_plot: "graph",
-} as const satisfies Record<
-  Activity["type"],
-  "circuit" | "graph" | "timeline" | "map" | "diagram"
->;
+} as const satisfies Record<Activity["type"], "circuit" | "graph" | "timeline" | "map" | "diagram">;
 
 export interface CourseActivity {
   /** ISO timestamp of the most recent stage progress in the course, when there is any. */
@@ -357,8 +354,7 @@ export class ContentRepository {
               completionPolicy: "interaction" as const,
               activity,
               // An explorer asks the learner to predict; newer types ask their question directly.
-              prompt:
-                "predictionPrompt" in activity ? activity.predictionPrompt : activity.prompt,
+              prompt: "predictionPrompt" in activity ? activity.predictionPrompt : activity.prompt,
               visualKind: ACTIVITY_VISUAL_KIND[activity.type],
             },
           ]
@@ -472,7 +468,7 @@ function estimatedMinutes(lesson: LessonBeat, questionCount: number, hasEssay: b
   const words = [
     lesson.orientation,
     ...lesson.steps.flatMap((step) =>
-      step.blocks.map((block) => (block.kind === "equation" ? "" : block.text ?? "")),
+      step.blocks.map((block) => (block.kind === "equation" ? "" : (block.text ?? ""))),
     ),
   ]
     .join(" ")

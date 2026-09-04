@@ -3,6 +3,8 @@ import {
   ActivityResponseSchema,
   type AttemptRequest,
   type AttemptResponse,
+  type CapabilitiesResponse,
+  CapabilitiesResponseSchema,
   type CourseDetailResponse,
   CourseDetailResponseSchema,
   type CourseListResponse,
@@ -16,6 +18,9 @@ import {
   type HintResponse,
   type HomeResponse,
   HomeResponseSchema,
+  type IllustrationRequest,
+  type IllustrationResponse,
+  IllustrationResponseSchema,
   type JourneyProgress,
   JourneyProgressResponseSchema,
   type JourneyResponse,
@@ -34,6 +39,11 @@ import {
   ReviewRevealResponseSchema,
   type ReviewSessionResponse,
   ReviewSessionResponseSchema,
+  type RomanReferenceAction,
+  type RomanReferenceProgress,
+  RomanReferenceProgressSchema,
+  type RomanReferenceEssayId,
+  type RomanReferenceQuestionId,
   type StageProgressUpdate,
   type TransferStateResponse,
   TransferStateResponseSchema,
@@ -43,17 +53,14 @@ import {
   type TutorAskRequest,
   type TutorAskResponse,
   TutorAskResponseSchema,
-  type IllustrationRequest,
-  type IllustrationResponse,
-  IllustrationResponseSchema,
-  type TutorProbeResponse,
-  TutorProbeResponseSchema,
-  type TutorStatus,
-  TutorStatusSchema,
   type TutorIssue,
   type TutoringMode,
+  type TutorProbeResponse,
+  TutorProbeResponseSchema,
   type TutorReplyDraft,
   TutorReplyDraftSchema,
+  type TutorStatus,
+  TutorStatusSchema,
   type WorkingsReviewResponse,
   WorkingsReviewResponseSchema,
 } from "@discere/contracts";
@@ -107,6 +114,28 @@ export async function saveJourneyProgress(
     await requestJson<unknown>(`${journeyBase(courseId, lessonId)}/progress`, {
       method: "PUT",
       body: JSON.stringify(input),
+    }),
+  );
+}
+
+export async function getRomanReferenceProgress(
+  courseId: string,
+  lessonId: string,
+): Promise<RomanReferenceProgress> {
+  return RomanReferenceProgressSchema.parse(
+    await requestJson<unknown>(`${journeyBase(courseId, lessonId)}/reference/progress`),
+  );
+}
+
+export async function updateRomanReferenceProgress(
+  courseId: string,
+  lessonId: string,
+  action: RomanReferenceAction,
+): Promise<RomanReferenceProgress> {
+  return RomanReferenceProgressSchema.parse(
+    await requestJson<unknown>(`${journeyBase(courseId, lessonId)}/reference/progress`, {
+      method: "PUT",
+      body: JSON.stringify(action),
     }),
   );
 }
@@ -246,9 +275,7 @@ export async function submitTransfer(
 }
 
 /** Asks for a picture. Returns immediately; the drawing itself takes a couple of minutes. */
-export async function startIllustration(
-  input: IllustrationRequest,
-): Promise<IllustrationResponse> {
+export async function startIllustration(input: IllustrationRequest): Promise<IllustrationResponse> {
   return IllustrationResponseSchema.parse(
     await requestJson<unknown>("/api/illustrations", {
       method: "POST",
@@ -261,6 +288,10 @@ export async function getIllustration(key: string): Promise<IllustrationResponse
   return IllustrationResponseSchema.parse(
     await requestJson<unknown>(`/api/illustrations/${encodeURIComponent(key)}`),
   );
+}
+
+export async function getCapabilities(): Promise<CapabilitiesResponse> {
+  return CapabilitiesResponseSchema.parse(await requestJson<unknown>("/api/capabilities"));
 }
 
 export async function getTutorStatus(): Promise<TutorStatus> {
@@ -294,6 +325,8 @@ export async function importTutorReply(input: {
   text: string;
   mode: TutoringMode;
   expectedRequestId: string;
+  referenceQuestionId?: RomanReferenceQuestionId;
+  referenceEssayId?: RomanReferenceEssayId;
 }): Promise<TutorImportResult> {
   const result = await requestJson<TutorImportResult>("/api/tutor/companion/import", {
     method: "POST",

@@ -5,9 +5,7 @@ import { useEffect, useRef, useState } from "react";
 const TRANSITION_MS = 480;
 
 function prefersReducedMotion(): boolean {
-  return (
-    typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches
-  );
+  return typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
 function easeOutCubic(fraction: number): number {
@@ -28,8 +26,7 @@ export function useVisualState(
   states: readonly VisualState[],
   activeStateId: string,
 ): { params: Record<string, number>; caption: string } {
-  const target =
-    states.find((state) => state.id === activeStateId) ?? states[0] ?? undefined;
+  const target = states.find((state) => state.id === activeStateId) ?? states[0] ?? undefined;
   const targetParams = target?.params ?? {};
 
   const [params, setParams] = useState<Record<string, number>>(targetParams);

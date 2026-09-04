@@ -3,8 +3,12 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createApp } from "../src/app.js";
 
 let app: FastifyInstance;
-beforeEach(async () => { ({ app } = await createApp({ dbPath: ":memory:", migrate: true })); });
-afterEach(async () => { await app.close(); });
+beforeEach(async () => {
+  ({ app } = await createApp({ dbPath: ":memory:", migrate: true }));
+});
+afterEach(async () => {
+  await app.close();
+});
 
 describe("notebook API", () => {
   it("returns an empty page and persists saved workings", async () => {
@@ -13,7 +17,13 @@ describe("notebook API", () => {
 
     const empty = await app.inject({ method: "GET", url: `/api/notebook/${lessonId}` });
     expect(empty.statusCode).toBe(200);
-    expect(empty.json()).toMatchObject({ lessonId, pageType: "blank", strokes: [], note: "", updatedAt: null });
+    expect(empty.json()).toMatchObject({
+      lessonId,
+      pageType: "blank",
+      strokes: [],
+      note: "",
+      updatedAt: null,
+    });
 
     const payload = {
       pageType: "graph",

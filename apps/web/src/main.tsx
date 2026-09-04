@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router";
+import { CapabilityProvider } from "./capabilities/capability-context.js";
 import { routes } from "./routes.js";
 // Bundled rather than fetched: the hub enforces script-src/style-src 'self', so a web font
 // must ship from our own origin. The variable file covers every weight the design uses.
@@ -15,6 +16,9 @@ import "./styles/notebook.css";
 import "./styles/home.css";
 import "./styles/settings.css";
 import "./styles/motion.css";
+import "./styles/recovery.css";
+import "./styles/recovery-questions.css";
+import "./styles/recovery-essay.css";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -30,7 +34,9 @@ if (!root) throw new Error("The Discere root element is missing.");
 createRoot(root).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
+      <CapabilityProvider>
+        <RouterProvider router={router} />
+      </CapabilityProvider>
     </QueryClientProvider>
   </StrictMode>,
 );

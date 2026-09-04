@@ -83,7 +83,9 @@ describe("Discere API", () => {
     });
     const stage = restored
       .json()
-      .stages.find((entry: { stageId: string }) => entry.stageId === "current-in-one-loop:explainer");
+      .stages.find(
+        (entry: { stageId: string }) => entry.stageId === "current-in-one-loop:explainer",
+      );
     expect(stage.interactionState).toEqual({ stepIndex: 3 });
   });
 

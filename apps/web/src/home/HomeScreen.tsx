@@ -111,8 +111,8 @@ function HomeContent({
         <Link className="review-strip lift" to={paths.review} viewTransition>
           <Layers aria-hidden="true" size={18} strokeWidth={1.7} />
           <span>
-            <strong>{home.dueReviews}</strong>{" "}
-            {home.dueReviews === 1 ? "card is" : "cards are"} ready to review
+            <strong>{home.dueReviews}</strong> {home.dueReviews === 1 ? "card is" : "cards are"}{" "}
+            ready to review
           </span>
           <ArrowRight aria-hidden="true" size={16} strokeWidth={1.8} />
         </Link>

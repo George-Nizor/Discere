@@ -106,9 +106,7 @@ export const explainerStage: ExplainerStage = {
       id: "idea",
       kind: "explain",
       visualStateId: "",
-      blocks: [
-        { kind: "paragraph", text: "Current measures how quickly charge passes a point." },
-      ],
+      blocks: [{ kind: "paragraph", text: "Current measures how quickly charge passes a point." }],
     },
   ],
   conceptIds: ["current"],

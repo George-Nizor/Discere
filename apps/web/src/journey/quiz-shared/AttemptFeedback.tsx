@@ -39,8 +39,8 @@ export function AttemptResult({ result }: { result: AttemptResponse | null }) {
     >
       <p>{result.feedback}</p>
       <p className="muted feedback-meta">
-        {result.xpAwarded} XP · {result.independent ? "independent" : "assisted"} evidence ·
-        mastery {Math.round(result.mastery * 100)}%
+        {result.xpAwarded} XP · {result.independent ? "independent" : "assisted"} evidence · mastery{" "}
+        {Math.round(result.mastery * 100)}%
       </p>
     </Notice>
   );

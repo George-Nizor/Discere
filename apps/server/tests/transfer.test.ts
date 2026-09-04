@@ -112,9 +112,7 @@ describe("transfer challenge", () => {
     expect(correct.json().mastery).toBeGreaterThan(masteryBefore);
     expect(store.getProfile().xp).toBe(xpBefore + correct.json().xpAwarded);
 
-    const progress = Object.fromEntries(
-      store.getProgress().map((item) => [item.conceptId, item]),
-    );
+    const progress = Object.fromEntries(store.getProgress().map((item) => [item.conceptId, item]));
     expect(progress["current"]?.assistedAttempts).toBe(1);
     expect(progress["resistance"]?.assistedAttempts).toBe(1);
 

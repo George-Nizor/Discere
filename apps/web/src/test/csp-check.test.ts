@@ -45,7 +45,7 @@ describe("packaged Content Security Policy check", () => {
   it("fails an inline script, which script-src 'self' forbids", () => {
     writeFileSync(
       path.join(bundle, "index.html"),
-      CLEAN_HTML.replace("<body>", '<body><script>window.go=1</script>'),
+      CLEAN_HTML.replace("<body>", "<body><script>window.go=1</script>"),
       "utf8",
     );
     const result = check();

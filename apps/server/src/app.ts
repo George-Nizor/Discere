@@ -5,6 +5,7 @@ import { ZodError } from "zod";
 import { ContentRepository } from "./content.js";
 import { DiscereStore } from "./db/store.js";
 import { HttpError } from "./errors.js";
+import { registerRomanReferenceRoutes } from "./roman-reference-routes.js";
 import { registerRoutes } from "./routes.js";
 import { TopicMapRepository } from "./topic-maps.js";
 import { registerTransferRoutes } from "./transfer-routes.js";
@@ -98,6 +99,7 @@ export async function createApp(options: AppOptions = {}): Promise<DiscereApp> {
     topicMaps,
     revealDelayMs: options.revealDelayMs ?? 5000,
   });
+  await registerRomanReferenceRoutes(app, { store });
   await registerTransferRoutes(app, { content, store });
   await registerWorkingsReviewRoutes(app, { content, store, runtime });
   await registerTutorRoutes(app, { content, store, runtime });

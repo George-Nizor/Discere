@@ -99,7 +99,6 @@ export function ReviewScreen() {
         </section>
       ) : null}
 
-
       {failure ? (
         <Notice live tone="error" title="Review could not start">
           <p>{failure}</p>

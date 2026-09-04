@@ -29,7 +29,7 @@ answer authorities, and the same journey contract as the physics course.
 | Essay topics           | 2     |
 | Timeline activities    | 3     |
 | Retrieved images       | 3     |
-| Sources                | 9     |
+| Sources                | 10    |
 
 ## Dates used
 
@@ -53,7 +53,10 @@ the prose says so.
 | 106 CE  | Dacia annexed                                     |
 | 117 CE  | Greatest territorial extent, at Trajan's death    |
 | 212 CE  | Antonine Constitution extends citizenship         |
+| 235-284 CE | Third-century crisis of claimants and civil wars |
+| 284 CE  | Diocletian shares rule under the tetrarchy         |
 | 330 CE  | Constantinople dedicated                          |
+| 395 CE  | Power passes to separate eastern and western rulers |
 | 476 CE  | Romulus Augustulus deposed; no western successor  |
 
 ## Images
@@ -88,3 +91,17 @@ case. Lessons 1 and 2 were authored directly against the same gates.
 Historical claims cite the Wikipedia articles on the Roman Republic, Augustus, the Roman Empire,
 Roman roads, and the fall of the western empire, together with OpenStax *World History Volume 1*.
 Every source record carries its licence and access date.
+
+OpenStax 10.1, "The Eastward Shift" (CC BY 4.0; accessed 2026-08-22), is the named authority for
+four claims that the recovered chronology task and the essay evidence pack both depend on:
+
+| Claim | What the section supports |
+| --- | --- |
+| 235-284 CE | Repeated imperial claimants, civil wars, frontier pressure, and currency trouble |
+| 284 CE | Diocletian's division of rule between two senior and two junior emperors |
+| 330 CE | Constantine's dedication of a capital nearer the eastern trade routes and frontiers |
+| 395 CE | Arcadius governing in the east and Honorius in the west after Theodosius I died |
+
+These four are separated out because the essay asks the learner to weigh size against political
+conflict, and every one of them is evidence a learner may cite for either side. A claim carrying
+that much argumentative weight should say where it came from.

@@ -40,7 +40,10 @@ export const CourseSchema = z
      * a catalogue; green stays reserved for action and correctness, so it cannot also mean
      * "this course". Defaults to the house green when a bundle does not choose one.
      */
-    accent: z.string().regex(/^#[0-9a-f]{6}$/i).default("#0b8f3c"),
+    accent: z
+      .string()
+      .regex(/^#[0-9a-f]{6}$/i)
+      .default("#0b8f3c"),
     /** Cover art file inside the course's own assets directory. Empty means no cover yet. */
     coverAsset: z.string().default(""),
     /**
@@ -272,7 +275,10 @@ export const OrderSequenceActivitySchema = z
     conceptIds: z.array(z.string()).min(1),
     instructions: z.string().min(1),
     prompt: z.string().min(1),
-    items: z.array(z.object({ id: z.string().min(1), label: z.string().min(1) }).strict()).min(3).max(8),
+    items: z
+      .array(z.object({ id: z.string().min(1), label: z.string().min(1) }).strict())
+      .min(3)
+      .max(8),
     correctOrder: z.array(z.string().min(1)).min(3).max(8),
     feedback: ActivityFeedbackSchema,
   })
@@ -637,7 +643,11 @@ export const TopicMapModuleSchema = z
     title: z.string().min(1),
     summary: z.string().min(1),
     concepts: z
-      .array(z.object({ id: z.string().min(1), title: z.string().min(1), summary: z.string().min(1) }).strict())
+      .array(
+        z
+          .object({ id: z.string().min(1), title: z.string().min(1), summary: z.string().min(1) })
+          .strict(),
+      )
       .min(1),
     lessons: z.array(TopicMapLessonSchema).min(1),
   })

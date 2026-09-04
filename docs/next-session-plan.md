@@ -1,207 +1,127 @@
 # Next session — plan
 
-Written at the end of the session of 2026-08-19. Everything below came out of the owner using
-the app rather than from the original playbook, so it takes precedence over what remains of
-`rebuild-execution-playbook.md` §7 (Phase 6, still unstarted).
+Updated: 2026-08-26
 
-## 0. Session setup
+## Stop condition
+
+Gates 1–4 are implemented and verified. **Gate 4 is waiting on George's visual approval.**
+
+Do not begin Gate 5, and do not generalise the lesson grammar or the assessment system, until the
+essay screens have been looked at and accepted.
+
+## What is ready to review
+
+The essay lives at:
+
+```text
+/courses/roman-empire/lessons/rise-of-the-roman-empire/reference/essay
+```
+
+Reachable by finishing the four questions, or by opening the course home and pressing Continue —
+a finished assessment now resumes into the essay rather than back into Q4.
+
+Six captures at the three required viewports:
+
+```text
+docs/recovery-v2/implementation-screens/05a-essay-studio-{1440x900,1024x768,390x844}.png
+docs/recovery-v2/implementation-screens/05b-essay-feedback-{1440x900,1024x768,390x844}.png
+```
+
+Review the composition, the evidence rail and its closed state, the rubric, the planning
+disclosure, the word counter, the feedback rows and their quoted excerpts, the revise loop, and the
+mobile compromises.
+
+## Gate 4 functional boundary
+
+- Progress schema v3, with an in-memory upgrade from v1 and v2 that preserves Gates 2–3 state and
+  adds a blank essay. A stored row that contradicts itself falls back to a clean default.
+- The server owns the prompt, the evidence pack, the five-part rubric, and deterministic feedback
+  tied to exact learner excerpts. The evidence pack is withheld until the learner opens it, and
+  opening it locks the learning mode.
+- Essay drafts, plans, submissions, revisions, and completion persist in the isolated reference
+  progress row. The row awards no XP, records no attempt, and creates no catalogue completion.
+- Word bounds, revision-before-resubmission, and the read-only final essay are enforced on the
+  server, not in the browser.
+- The tutor and the companion import bind to the essay through
+  `resolveRomanReferenceTutorEssay`, which reads the mode from the server's own row. A reply that
+  supplies wording the learner is meant to write is rejected as a hard issue
+  (`ANS007_REFERENCE_ESSAY_WRITTEN`); explanation of history, evidence, and the rubric is not.
+- Generated rubric feedback passes `@discere/writing-engine` at submission, and the run is retained
+  as `recovery-v2:roman-reference-essay-feedback` in `writing_gate_runs`.
+- Exam mode suppresses the evidence pack, the sources dialog, and the tutor, on the server as well
+  as in the interface.
+
+Two defects were found and fixed while closing the gate: rubric rows quoted the same sentence
+several times (each row now takes a distinct sentence, and quotes nothing rather than repeating),
+and the complication row matched "while" inside an unrelated clause (a leading concession now
+wins). A row's status is decided over the whole essay, independent of which quote was still free.
+
+## Gate 4 verification boundary
+
+- `pnpm verify` passed: doctor, lint, typecheck, 185 web tests over 29 files, 164 server tests over
+  15 files, content validation, build, and smoke.
+- Full Playwright suite: 34/34, including three new Gate 4 browser tests covering the write →
+  submit → revise → finish journey against server-held authority, Exam suppression, and 390 px
+  usability with no horizontal overflow.
+- All six Gate 4 captures have the required dimensions.
+
+Four stale assertions left over from the v2 → v3 schema bump were corrected rather than worked
+around: three server tests and one browser test still expected `version: 2`, and one browser test
+expected a finished assessment to resume into Q4.
+
+## Source note
+
+`content/roman-empire/README.md` now names the four claims OpenStax 10.1, "The Eastward Shift"
+(CC BY 4.0, accessed 2026-08-22) supports — 235–284, 284, 330, and 395 CE — with what the section
+supports for each, because all four are evidence a learner may cite on either side of the essay
+question. The bundle's source record says the same.
+
+## Generation is gated
+
+Image generation and the Codex tutor need a subscription that is currently unavailable. Rather than
+leaving controls that fail, `GET /api/capabilities` reports `tutor_generation`, `illustrations`, and
+`authoring` with a reason and a fallback; the interface removes what it cannot honour and the
+settings screen explains it once. `DISCERE_IMAGE_GENERATION=off` forces drawing off regardless of
+what the CLI reports. Nothing in the learning core depends on any of it.
+
+## Work already completed beside the recovery flow
+
+- Tutor conversations persist per lesson across close, reopen, refresh, and reference-beat
+  navigation.
+- Invalid provider sessions restart without erasing visible history.
+- Coach can answer definitions, mechanisms, relationships, and analogous examples while still
+  withholding the active question's requested conclusion.
+- The full product and course-library target is now explicit in
+  [`product-goal-and-library-roadmap.md`](product-goal-and-library-roadmap.md).
+
+## After the Roman recovery gates
+
+Follow the roadmap rather than the 2026-08-19 bulk-import instruction:
+
+1. generalise the accepted Roman lesson grammar;
+2. make Maths Foundations the six-lesson gold course;
+3. repair claim-level provenance, licence capture, uncertainty retention, final editorial records,
+   cover manifests, and missing writing rules;
+4. convert Logic and Computer Science Foundations;
+5. add learner-owned flashcard collections, flexible panes, deeper workings/essay review, restrained
+   gamification, and then the broader library.
+
+The topic-map prompts can still be inspected, but importing twenty lessons before those controls
+would multiply weak provenance and editorial records.
+
+## Setup and validation
 
 ```bash
 export PATH="$HOME/.nvm/versions/node/v22.22.2/bin:$PATH"
 export CI=true
-export LD_LIBRARY_PATH=/tmp/discere-browser-libs/usr/lib/x86_64-linux-gnu   # Playwright
+export LD_LIBRARY_PATH=/tmp/discere-browser-libs/usr/lib/x86_64-linux-gnu
 cd /workspace/dev_projects_master/_PersonalProjects/Instrumenta/Discere
+pnpm verify
+pnpm e2e
 ```
 
-Preview the app the way the hub launches it (demo data, live tutor):
+For the 2026-08-22 run, Chromium needed `libnspr4`, `libnss3`, and `libasound2t64` unpacked beneath
+`/tmp/discere-browser-libs`; no system package installation was made.
 
-```bash
-pnpm build
-env DISCERE_WEB_ROOT=apps/web/dist DISCERE_AUTO_MIGRATE=1 DISCERE_TUTOR_PROVIDER=codex \
-    DISCERE_CODEX_MODEL=gpt-5.6-luna DISCERE_CODEX_EFFORT=xhigh \
-    DISCERE_DATABASE_PATH=/tmp/discere-demo.sqlite DISCERE_LEARNER_NAME=George \
-    PORT=49323 HOST=127.0.0.1 pnpm --filter @discere/server start
-```
-
-Then http://localhost:49323. The demo database is seeded; the owner's real progress is in
-`data/discere.sqlite` and is untouched by that command. **The server caches `index.html` at
-boot, so rebuild *then* restart, or the page loads a bundle hash that no longer exists.**
-
----
-
-## 1. PRIORITY — content prompts ready to paste
-
-This is the first job of the session. The tooling and the three topic maps are already
-committed; nothing here needs designing, only running.
-
-```bash
-pnpm curate scaffold logic-and-reasoning && pnpm curate prompt logic-and-reasoning
-pnpm curate scaffold maths-foundations   && pnpm curate prompt maths-foundations
-pnpm curate scaffold cs-basics           && pnpm curate prompt cs-basics
-pnpm curate status logic-and-reasoning
-```
-
-That writes one paste-ready prompt per lesson to
-`content/<course>/.authoring/prompts/<slug>.md` (20 lessons across the three courses). The
-owner pastes each into ChatGPT Pro, saves the JSON reply to
-`content/<course>/.authoring/inbox/<slug>.json`, and runs `pnpm curate import <course>`.
-
-Before handing them over, **read two or three generated prompts end to end** and check they
-still match the contract — `ImportedLessonSchema` and the seven-field `answerAuthority` in
-particular, because a wrong prompt costs the owner a round trip per lesson. There is a test
-guarding this (`packages/curriculum/tests/authoring-import.test.ts`) but read them anyway.
-
-Also worth doing while the owner authors: the scaffolded courses are `coming_soon`, so flip a
-course to `available` only once it has lessons a learner can start.
-
----
-
-## 2. Bugs and behaviour the owner hit
-
-### 2.1 The tutor refuses ordinary questions
-
-Asked "what is a battery", the tutor declines rather than explaining. Coach mode is meant to
-withhold **the answer to the lesson's current question**, not general knowledge. The guardrail
-is over-applied.
-
-Look at `prompts/tutor-system.md` (§ Accountability behaviour) and `answerBoundaryFor` in
-`apps/server/src/tutor-routes.ts`. The distinction to encode: a definition, a mechanism, or a
-worked *analogous* example is always allowed; what is withheld is the value or conclusion the
-active question is asking for. Add a case to the prompt and a test that asks a definitional
-question in coach mode and expects a real explanation.
-
-### 2.2 The tutor's conversation is lost on close
-
-Closing and reopening the drawer empties the thread. The thread lives in `TutorPanel` component
-state, so unmounting discards it — and the `sessionId` that keeps the codex conversation going
-goes with it, which means the next question starts a fresh, more expensive session.
-
-Lift the thread and session id out of the panel: either into `LessonJourneyScreen`, or into a
-small context keyed by lesson. Persisting to `sessionStorage` per lesson would also survive a
-refresh. Worth a test: open, ask, close, reopen, thread still there.
-
-### 2.3 Illustration route — FIXED, verify it
-
-`/api/illustrations/:key.png` collided with `/api/illustrations/:key` and the handler read a
-parameter that never existed, so every picture 404'd and the panel showed a broken image. It is
-now `/api/illustrations/:key/image` and verified serving. Confirm in the browser.
-
-Also fixed: the generator's "if nothing was saved, adopt the newest stray PNG" fallback could
-serve one illustration's image under another's key. It now fails cleanly. One orphaned record
-was removed from the cache.
-
----
-
-## 3. Layout — panes, not drawers
-
-The owner's framing: the tutor and the notebook should **split the page**, not float over it.
-
-- The tutor panel becomes a pane taking roughly half the width, so a long conversation and a
-  generated picture are both properly visible.
-- The notebook opens as a pane from anywhere, not only from its own route.
-- Two things open → split in two. Three (lesson, tutor, notebook) → split in three.
-
-This is a shell change rather than a screen change: a pane manager in `AppShell` or
-`LessonJourneyScreen` holding which panes are open, with the stage always present. Keep
-`/…/notebook` working as a real route for deep links, rendering the same component.
-
-Watch out for: the sticky stage header and bottom navigator assume full width; the story
-player's `story-split` already splits internally and will need to collapse to one column inside
-a narrow pane; and the reduced-motion/mobile paths need the same treatment as the desktop one.
-
----
-
-## 4. Dark mode
-
-The owner reads at night and the white canvas is hurting. The token file is already the single
-source of colour (`apps/web/src/styles/tokens.css`), so this is mostly a second palette plus an
-audit of the places that hard-code white.
-
-- Add `:root[data-theme="dark"]` and a `prefers-color-scheme: dark` block that does not fight an
-  explicit choice, plus a toggle in Settings persisted to `localStorage`.
-- Known hard-coded whites to fix: `#ffffff` in `--course-accent-soft` / `-pale` mixes, the
-  button `color`, `.course-card-tag`, `.illustration img` background, the notebook's paper and
-  ruling, and `renderCircuitSvg`'s `.component` fill in `packages/visual-engine/src/circuit.ts`
-  (the engine draws with `currentColor` for strokes but a literal cream for component fills).
-- The generated cover images are opaque and light; check they do not glare against a dark card.
-- Add a dark screenshot pass to `e2e/screenshots.spec.ts` so it stays honest.
-
----
-
-## 5. Mascot, favicon, avatar
-
-The current mark is an open book with a spark (`apps/web/src/ui/DiscereMark.tsx`) — better than
-the no-entry circle it replaced, but the owner wants something closer to a **mascot**: a
-character with a face, in the Duolingo sense, that can carry personality across the welcome, the
-tutor, empty states, and celebration moments.
-
-Now that image generation is available (§7), draft candidates with it, then redraw the chosen one
-as SVG so it stays crisp and themeable. Also needed:
-
-- A real favicon (there is none; the browser tab is blank).
-- The nav-rail avatar is currently the learner's initial on a dark circle — decide whether the
-  mascot takes that slot or the learner keeps it.
-- A tutor face, so the drawer has someone in it rather than a heading.
-
----
-
-## 6. Faster illustrations
-
-The first drawing took a couple of minutes for a mediocre result. Things to try, in order of
-likely payoff:
-
-1. **Size and quality knobs.** Read `~/.codex/skills/.system/imagegen/SKILL.md` — it is the skill
-   the CLI used and will document whatever it accepts. A smaller output would be both faster and
-   entirely sufficient at the ~600px the panel displays.
-2. **Effort.** The runner already pins `model_reasoning_effort="low"`; confirm that is actually
-   reaching the image path and is not being overridden by `~/.codex/config.toml`'s `xhigh`.
-3. **Warm the session.** Each run pays ~150k input tokens, most of it the skill preamble. A
-   resumed session would cache it. `requestIllustration` spawns a fresh `codex exec` every time.
-4. **Prompt for speed.** The tutor's subject is currently its whole answer; a short noun phrase
-   would draw faster and better than a paragraph of prose.
-
-Quality was also poor because the subject was the raw answer text. Consider asking the tutor for
-a one-line `illustrationSubject` in its reply schema (flat string, defaults to "") and drawing
-that instead.
-
----
-
-## 7. Image generation is available — write this down
-
-**The local Codex CLI can generate images.** `codex features list` reports
-`image_generation  stable  true`, and the CLI carries an `imagegen` skill at
-`~/.codex/skills/.system/imagegen/SKILL.md`. Run `codex exec` with `-s workspace-write` and ask
-for an image at a path; it writes to `~/.codex/generated_images/…` and copies to the destination.
-
-This is the platform's route to **official artwork**: course covers, mascot studies, lesson
-illustrations, empty-state art, marketing images. It is not only a tutor feature.
-
-Already used for: the five course covers now in
-`content/*/assets/cover.webp` and `content/_topic-maps/assets/*.webp`.
-
-House style that produced good results, worth reusing verbatim:
-
-> Flat vector editorial illustration, in the manner of a Brilliant.org course card. Landscape
-> 16:9, composed to read at 340 pixels wide. One hue only plus tints and shades of it; linework
-> in white or near-white. Geometric and precise, generous negative space. Not photorealistic, not
-> 3D, no neon, no glow. Absolutely no text, letters, numbers, logos or watermarks.
-
-Always re-encode before committing: the generator emits ~1 MB PNGs, and 900px WebP at quality 88
-lands at 14–70 kB with no visible loss at display size.
-
----
-
-## 8. Still outstanding from the original playbook
-
-Phase 6 (§7 of `rebuild-execution-playbook.md`) has not been started:
-
-- `scripts/release.mjs` and a root `release` script.
-- `/api/health` still reports a hardcoded `version: "0.1.0"` and no tutor-readiness summary.
-- Doctor check for a stale `apps/web/dist`.
-- `docs/ui-ux/visual-review-protocol.md` — worth rewriting against the v2 system rather than v1.
-- The hub-pickup simulation, and a dated entry in the workspace `docs/session-log.md`.
-
-## 9. State of the tree
-
-`main` is green: `pnpm verify` passes with two long-standing lint warnings, 20/20 Playwright,
-130 web unit tests. Quota was still reading 93% used on `prolite` and every call succeeded.
+Preview with disposable learner data, not `data/discere.sqlite`. The server caches `index.html` at
+boot, so rebuild before restarting a preview.

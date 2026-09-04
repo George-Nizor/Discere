@@ -4,6 +4,7 @@ import { ImagePlus, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { errorMessage } from "../api/client.js";
 import { getIllustration, startIllustration } from "../api/endpoints.js";
+import { useCapabilityUnavailable } from "../capabilities/capability-context.js";
 import { Notice } from "./Feedback.js";
 
 /** Slow enough not to hammer the server, quick enough that a finished picture appears promptly. */
@@ -33,6 +34,7 @@ export function Illustration({
   label?: string;
 }) {
   const [key, setKey] = useState<string | null>(null);
+  const cannotDraw = useCapabilityUnavailable("illustrations");
 
   const start = useMutation({
     mutationFn: () => startIllustration({ subject, alt, accent }),
@@ -49,6 +51,11 @@ export function Illustration({
   });
 
   const record = poll.data ?? start.data ?? null;
+
+  // Nothing at all when this installation cannot draw. The alternative is a button that spends
+  // two minutes proving it, and the project's own rule is not to show controls that imply
+  // functionality the build does not have. Settings says why, once, where it belongs.
+  if (cannotDraw && !record) return null;
 
   if (!record) {
     return (

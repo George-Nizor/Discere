@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { ActivitySchema, AnswerAuthoritySchema } from "./curriculum.js";
 import { TutoringModeSchema } from "./modes.js";
+import { RomanReferenceEssayIdSchema, RomanReferenceQuestionIdSchema } from "./recovery.js";
 import { VisualBriefSchema } from "./visuals.js";
 
 export const TutorOperationSchema = z.enum([
@@ -211,8 +212,23 @@ export const TutorAskRequestSchema = z
     sessionId: z.string().min(1).max(200).optional(),
     /** Links the exchange to an open attempt so the assistance is recorded against it. */
     attemptId: z.string().uuid().optional(),
+    /** Binds the tutor to the server-owned recovery item instead of the lesson's legacy question. */
+    referenceQuestionId: RomanReferenceQuestionIdSchema.optional(),
+    /** Binds the tutor to the server-owned recovery essay, whose mode and context the server holds. */
+    referenceEssayId: RomanReferenceEssayIdSchema.optional(),
   })
-  .strict();
+  .strict()
+  .superRefine((request, context) => {
+    // One request answers about one thing. A question and an essay carry different permissions, so
+    // a request naming both has no single mode the server could enforce.
+    if (request.referenceQuestionId !== undefined && request.referenceEssayId !== undefined) {
+      context.addIssue({
+        code: "custom",
+        message: "A tutor request binds to the reference question or the essay, not both.",
+        path: ["referenceEssayId"],
+      });
+    }
+  });
 export type TutorAskRequest = z.infer<typeof TutorAskRequestSchema>;
 
 export const TutorAskAnsweredSchema = z

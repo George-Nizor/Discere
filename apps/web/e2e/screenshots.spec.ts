@@ -94,7 +94,10 @@ test.describe("approved reference screens", () => {
       const romanOrder = await readJourney(request, "roman-empire");
       await gotoStage(page, romanOrder, "explainer");
       await advanceUntil(page, page.getByRole("button", { name: "Check the order" }));
-      await capture("activity-order-sequence", page.getByRole("button", { name: "Check the order" }));
+      await capture(
+        "activity-order-sequence",
+        page.getByRole("button", { name: "Check the order" }),
+      );
 
       await gotoStage(page, journey, "interactive_visual");
       // Change the circuit before predicting, so the captured feedback shows a real comparison

@@ -23,7 +23,13 @@ export function NavRail() {
 
   return (
     <nav aria-label="Discere" className="nav-rail">
-      <NavLink aria-label="Discere home" className="nav-rail-mark" end to={paths.home} viewTransition>
+      <NavLink
+        aria-label="Discere home"
+        className="nav-rail-mark"
+        end
+        to={paths.home}
+        viewTransition
+      >
         <DiscereMark size={26} />
       </NavLink>
       <ul className="nav-rail-list">

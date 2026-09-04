@@ -4,11 +4,18 @@ import type {
   LessonResponse,
   NotebookPage,
   Question,
+  RomanReferenceEssayContent,
+  RomanReferenceEssayFeedback,
+  RomanReferenceEssayId,
+  RomanReferenceQuestionContent,
+  RomanReferenceQuestionHint,
+  RomanReferenceQuestionId,
+  RomanReferenceQuestionResponse,
   TutorEnvelopeBase,
   TutorIssue,
+  TutoringMode,
   TutorReplyDraft,
   TutorReplyRequest,
-  TutoringMode,
   WorkingsReviewDraft,
   WorkingsReviewRequest,
 } from "@discere/contracts";
@@ -17,6 +24,8 @@ import { promptSection } from "@discere/prompts";
 import { lintText, type WritingContext } from "@discere/writing-engine";
 import type { DiscereStore } from "./db/store.js";
 import { HttpError } from "./errors.js";
+import { romanReferenceTutorReplyLeaksAnswer } from "./roman-reference-assessment.js";
+import { romanReferenceTutorReplyWritesEssay } from "./roman-reference-essay.js";
 
 /** Named `CompanionIssue` since the copy/paste import raised the first ones; every tutor path
  * now reports the same shape because they share one validation core. */
@@ -36,14 +45,82 @@ export function modePolicy(mode: Exclude<TutoringMode, "exam">): string {
   return promptSection("tutor-system", MODE_SECTIONS[mode]).body;
 }
 
+export interface RomanReferenceTutorPayloadContext {
+  referenceQuestionId: RomanReferenceQuestionId;
+  content: RomanReferenceQuestionContent;
+  submittedResponse: RomanReferenceQuestionResponse | null;
+  earnedHints: readonly RomanReferenceQuestionHint[];
+  sourceIds: readonly string[];
+}
+
+export interface RomanReferenceEssayTutorPayloadContext {
+  essayId: RomanReferenceEssayId;
+  content: RomanReferenceEssayContent;
+  draft: string;
+  claimPlan: string;
+  evidencePlan: readonly string[];
+  complicationPlan: string;
+  status: "editing" | "submitted";
+  revisions: number;
+  latestFeedback: RomanReferenceEssayFeedback | null;
+  sourceIds: readonly string[];
+}
+
 export function buildTutorReplyPayload(
   lesson: LessonResponse,
   request: TutorReplyRequest,
   focusConceptIds?: readonly string[],
+  reference?: RomanReferenceTutorPayloadContext,
+  essay?: RomanReferenceEssayTutorPayloadContext,
 ) {
   if (request.mode === "exam") {
     throw new Error("ChatGPT assistance is unavailable in Exam mode.");
   }
+  if (reference && essay) {
+    throw new Error("A tutor payload carries the reference question or the essay, not both.");
+  }
+  const allowedSourceIds =
+    reference?.sourceIds ?? essay?.sourceIds ?? lesson.sources.map((source) => source.id);
+  const narrowedSources = () => ({
+    lesson: { ...lesson.lesson, sourceIds: [...allowedSourceIds] },
+    sources: lesson.sources.filter((source) => allowedSourceIds.includes(source.id)),
+  });
+  const lessonContext = reference
+    ? {
+        ...narrowedSources(),
+        activeReferenceQuestion: {
+          referenceQuestionId: reference.referenceQuestionId,
+          content: reference.content,
+          submittedResponse: reference.submittedResponse,
+          earnedHints: [...reference.earnedHints],
+        },
+      }
+    : essay
+      ? {
+          ...narrowedSources(),
+          // The learner's own draft, plans, and last rubric result. The tutor is answering about
+          // this piece of writing, so it is given the writing rather than asked to imagine it.
+          activeReferenceEssay: {
+            essayId: essay.essayId,
+            prompt: essay.content.prompt,
+            instruction: essay.content.instruction,
+            rubric: essay.content.rubric,
+            evidence: essay.content.evidence,
+            wordRange: { minimum: essay.content.minWords, maximum: essay.content.maxWords },
+            draft: essay.draft,
+            plan: {
+              claim: essay.claimPlan,
+              evidence: [...essay.evidencePlan],
+              complication: essay.complicationPlan,
+            },
+            status: essay.status,
+            revisions: essay.revisions,
+            latestFeedback: essay.latestFeedback,
+          },
+          essayRule:
+            "Explain history, evidence, and the rubric freely. Do not supply sentences, paragraphs, or a thesis the learner could submit as their own writing.",
+        }
+      : lesson;
   return {
     learnerQuestion: request.question,
     tutoringMode: request.mode,
@@ -51,8 +128,8 @@ export function buildTutorReplyPayload(
     ...(focusConceptIds && focusConceptIds.length > 0
       ? { focusConceptIds: [...focusConceptIds] }
       : {}),
-    lessonContext: lesson,
-    allowedSourceIds: lesson.sources.map((source) => source.id),
+    lessonContext,
+    allowedSourceIds: [...allowedSourceIds],
     sourceRule:
       "Use only allowedSourceIds in payload.sourceIds. Leave sourceIds empty when the response does not rely on a listed source.",
   };
@@ -127,7 +204,10 @@ export function answerBoundaryFor(
   question: Question,
   mode: Exclude<TutoringMode, "exam">,
 ): string | undefined {
-  return mode === "direct" ? undefined : hiddenAnswer(question);
+  if (mode === "direct") return undefined;
+  // An essay has no example answer to withhold. An empty string would match every reply.
+  const answer = hiddenAnswer(question);
+  return answer.trim() === "" ? undefined : answer;
 }
 
 function addTextIssues(
@@ -170,11 +250,39 @@ function addSourceIssues(
   }
 }
 
+function addRomanReferenceLeakIssue(
+  issues: CompanionIssue[],
+  field: string,
+  text: string,
+  questionId: RomanReferenceQuestionId,
+  mode: Exclude<TutoringMode, "exam">,
+): void {
+  if (!romanReferenceTutorReplyLeaksAnswer(questionId, mode, text)) return;
+  issues.push({
+    field,
+    code: "ANS006_REFERENCE_ANSWER_LEAK",
+    severity: "hard",
+    message: "The reply gives away the active reference answer for this tutoring mode.",
+  });
+}
+
+function addRomanReferenceEssayIssue(issues: CompanionIssue[], field: string, text: string): void {
+  if (!romanReferenceTutorReplyWritesEssay(text)) return;
+  issues.push({
+    field,
+    code: "ANS007_REFERENCE_ESSAY_WRITTEN",
+    severity: "hard",
+    message: "The reply supplies wording the learner is meant to write.",
+  });
+}
+
 export function validateTutorReply(input: {
   reply: TutorReplyDraft;
   mode: Exclude<TutoringMode, "exam">;
   lesson: LessonResponse;
   question: Question;
+  referenceQuestionId?: RomanReferenceQuestionId;
+  referenceEssayId?: RomanReferenceEssayId;
 }): CompanionIssue[] {
   const issues: CompanionIssue[] = [];
   const answerBoundary = answerBoundaryFor(input.question, input.mode);
@@ -187,6 +295,26 @@ export function validateTutorReply(input: {
     answerBoundary,
   );
   addSourceIssues(issues, input.reply.sourceIds, input.lesson, "The tutor reply");
+  if (input.referenceQuestionId !== undefined) {
+    addRomanReferenceLeakIssue(
+      issues,
+      "answer",
+      input.reply.answer,
+      input.referenceQuestionId,
+      input.mode,
+    );
+    addRomanReferenceLeakIssue(
+      issues,
+      "followUpQuestion",
+      input.reply.followUpQuestion,
+      input.referenceQuestionId,
+      input.mode,
+    );
+  }
+  if (input.referenceEssayId !== undefined) {
+    addRomanReferenceEssayIssue(issues, "answer", input.reply.answer);
+    addRomanReferenceEssayIssue(issues, "followUpQuestion", input.reply.followUpQuestion);
+  }
   return issues;
 }
 
@@ -212,6 +340,8 @@ export function acceptTutorReply(input: {
   question: Question;
   store?: DiscereStore;
   attemptId?: string | undefined;
+  referenceQuestionId?: RomanReferenceQuestionId;
+  referenceEssayId?: RomanReferenceEssayId;
 }): TutorReplyAcceptance {
   if (input.mode === "exam") {
     throw new HttpError(403, "ChatGPT assistance is unavailable in Exam mode.", "EXAM_GUARDRAIL");
@@ -232,6 +362,10 @@ export function acceptTutorReply(input: {
     mode: input.mode,
     lesson: input.lesson,
     question: input.question,
+    ...(input.referenceQuestionId === undefined
+      ? {}
+      : { referenceQuestionId: input.referenceQuestionId }),
+    ...(input.referenceEssayId === undefined ? {} : { referenceEssayId: input.referenceEssayId }),
   });
   const accepted = issues.every((issue) => issue.severity !== "hard");
   if (input.store && input.attemptId) {
@@ -333,7 +467,8 @@ export function validateWorkingsReview(input: {
       field: "firstMeaningfulError",
       code: "CORRECT_REVIEW_HAS_ERROR",
       severity: "warning",
-      message: "A review marked correct also identifies an error. Check that the assessment is consistent.",
+      message:
+        "A review marked correct also identifies an error. Check that the assessment is consistent.",
     });
   }
   if (

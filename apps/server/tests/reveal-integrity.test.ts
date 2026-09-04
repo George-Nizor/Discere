@@ -3,8 +3,12 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createApp } from "../src/app.js";
 
 let app: FastifyInstance;
-beforeEach(async () => { ({ app } = await createApp({ dbPath: ":memory:", migrate: true, revealDelayMs: 0 })); });
-afterEach(async () => { await app.close(); });
+beforeEach(async () => {
+  ({ app } = await createApp({ dbPath: ":memory:", migrate: true, revealDelayMs: 0 }));
+});
+afterEach(async () => {
+  await app.close();
+});
 
 describe("answer reveal integrity", () => {
   it("closes the original attempt after the worked answer is shown", async () => {
@@ -15,8 +19,16 @@ describe("answer reveal integrity", () => {
     });
     const attemptId = attempt.json().attemptId as string;
     const reason = { reason: "I checked the formula and cannot find the mistake." };
-    const firstStart = await app.inject({ method: "POST", url: `/api/attempts/${attemptId}/reveal/start`, payload: reason });
-    const secondStart = await app.inject({ method: "POST", url: `/api/attempts/${attemptId}/reveal/start`, payload: reason });
+    const firstStart = await app.inject({
+      method: "POST",
+      url: `/api/attempts/${attemptId}/reveal/start`,
+      payload: reason,
+    });
+    const secondStart = await app.inject({
+      method: "POST",
+      url: `/api/attempts/${attemptId}/reveal/start`,
+      payload: reason,
+    });
     const firstToken = firstStart.json().token as string;
     const secondToken = secondStart.json().token as string;
 
@@ -34,12 +46,21 @@ describe("answer reveal integrity", () => {
     const resubmit = await app.inject({
       method: "POST",
       url: "/api/attempts",
-      payload: { attemptId, questionId: "calculate-current-5v-100ohm", response: "0.05 A", mode: "direct" },
+      payload: {
+        attemptId,
+        questionId: "calculate-current-5v-100ohm",
+        response: "0.05 A",
+        mode: "direct",
+      },
     });
     expect(resubmit.statusCode).toBe(409);
     expect(resubmit.json().code).toBe("ANSWER_ALREADY_REVEALED");
 
-    const restart = await app.inject({ method: "POST", url: `/api/attempts/${attemptId}/reveal/start`, payload: reason });
+    const restart = await app.inject({
+      method: "POST",
+      url: `/api/attempts/${attemptId}/reveal/start`,
+      payload: reason,
+    });
     expect(restart.statusCode).toBe(409);
     expect(restart.json().code).toBe("ANSWER_ALREADY_REVEALED");
 

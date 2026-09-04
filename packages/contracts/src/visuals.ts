@@ -64,7 +64,9 @@ export const SingleResistorCircuitDiagramSpecSchema = z
     resistorLabel: z.string().default("Resistor"),
   })
   .strict();
-export type SingleResistorCircuitDiagramSpec = z.infer<typeof SingleResistorCircuitDiagramSpecSchema>;
+export type SingleResistorCircuitDiagramSpec = z.infer<
+  typeof SingleResistorCircuitDiagramSpecSchema
+>;
 
 export const SeriesCircuitDiagramSpecSchema = z
   .object({

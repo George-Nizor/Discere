@@ -1,4 +1,8 @@
-import type { TutorIssue, TutoringMode, TutorReplyDraft } from "@discere/contracts";
+import type {
+  RomanReferenceEssayId,
+  RomanReferenceQuestionId,
+  TutoringMode,
+} from "@discere/contracts";
 import { Loader2, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { errorCode, errorDetail, errorMessage } from "../api/client.js";
@@ -7,14 +11,12 @@ import { CopyButton } from "../ui/CopyButton.js";
 import { Notice } from "../ui/Feedback.js";
 import { Illustration } from "../ui/Illustration.js";
 import { InlineRichText } from "../ui/RichText.js";
+import {
+  loadTutorConversation,
+  saveTutorConversation,
+  type TutorExchange,
+} from "./tutor-conversation.js";
 import { tutorErrorMessage } from "./tutor-messages.js";
-
-interface Exchange {
-  question: string;
-  reply: TutorReplyDraft;
-  issues: TutorIssue[];
-  accepted: boolean;
-}
 
 interface PendingPacket {
   requestId: string;
@@ -24,7 +26,35 @@ interface PendingPacket {
   question: string;
 }
 
-function ReplyView({ exchange, accent }: { exchange: Exchange; accent: string }) {
+interface TutorPanelProps {
+  lessonId: string;
+  conceptIds: string[];
+  mode: TutoringMode;
+  attemptId?: string;
+  /** The course's colour, so an illustration matches the lesson it was drawn for. */
+  accent?: string;
+  onClose: () => void;
+  referenceQuestionId?: RomanReferenceQuestionId;
+  /** Set on the essay beat, where the server holds the mode and the draft the tutor answers about. */
+  referenceEssayId?: RomanReferenceEssayId;
+}
+
+const FOCUSABLE_SELECTOR = [
+  "a[href]",
+  "button:not([disabled])",
+  "input:not([disabled])",
+  "select:not([disabled])",
+  "textarea:not([disabled])",
+  '[tabindex]:not([tabindex="-1"])',
+].join(",");
+
+function focusableElements(panel: HTMLElement): HTMLElement[] {
+  return Array.from(panel.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter(
+    (element) => element.tabIndex >= 0 && !element.hasAttribute("hidden"),
+  );
+}
+
+function ReplyView({ exchange, accent }: { exchange: TutorExchange; accent: string }) {
   return (
     <li className="tutor-exchange">
       <p className="tutor-question">{exchange.question}</p>
@@ -53,11 +83,7 @@ function ReplyView({ exchange, accent }: { exchange: Exchange; accent: string })
           anything the learner typed: what gets drawn should be the explanation, and a prompt
           assembled from learner input is a prompt someone else is writing.
         */}
-        <Illustration
-          accent={accent}
-          alt={exchange.reply.answer}
-          subject={exchange.reply.answer}
-        />
+        <Illustration accent={accent} alt={exchange.reply.answer} subject={exchange.reply.answer} />
         {exchange.accepted ? null : (
           <Notice tone="warning" title="This reply failed an accountability check">
             <ul className="plain-list">
@@ -76,44 +102,97 @@ function ReplyView({ exchange, accent }: { exchange: Exchange; accent: string })
  * The tutor lives in a drawer beside the stage, never inside it. Long generations are stated
  * plainly, and a provider that cannot answer in place hands back its packet instead.
  */
-export function TutorPanel({
+export function TutorPanel(props: TutorPanelProps) {
+  return <TutorPanelConversation key={props.lessonId} {...props} />;
+}
+
+function TutorPanelConversation({
   lessonId,
   conceptIds,
   mode,
   attemptId,
   accent = "#16a34a",
   onClose,
-}: {
-  lessonId: string;
-  conceptIds: string[];
-  mode: TutoringMode;
-  attemptId?: string;
-  /** The course's colour, so an illustration matches the lesson it was drawn for. */
-  accent?: string;
-  onClose: () => void;
-}) {
+  referenceQuestionId,
+  referenceEssayId,
+}: TutorPanelProps) {
+  // A conversation about a question and one about the essay are different threads, so a resumed
+  // provider session must not carry across the boundary between them.
+  const providerSessionContext = `${referenceQuestionId ?? (referenceEssayId ? `essay:${referenceEssayId}` : "lesson")}:${mode}`;
   const [question, setQuestion] = useState("");
-  const [thread, setThread] = useState<Exchange[]>([]);
-  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [conversation, setConversation] = useState(() => {
+    const loaded = loadTutorConversation(lessonId);
+    return loaded.sessionContext === providerSessionContext
+      ? loaded
+      : { ...loaded, sessionId: null, sessionContext: providerSessionContext };
+  });
   const [packet, setPacket] = useState<PendingPacket | null>(null);
   const [pasted, setPasted] = useState("");
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState<string | null>(null);
   const [failureDetail, setFailureDetail] = useState<string | null>(null);
+  const panel = useRef<HTMLElement>(null);
   const input = useRef<HTMLTextAreaElement>(null);
+  const busyRef = useRef(false);
+  const { exchanges: thread, sessionId } = conversation;
+  const resumableSessionId =
+    conversation.sessionContext === providerSessionContext ? sessionId : null;
 
   useEffect(() => {
+    setConversation((current) =>
+      current.sessionContext === providerSessionContext
+        ? current
+        : { ...current, sessionId: null, sessionContext: providerSessionContext },
+    );
+  }, [providerSessionContext]);
+  useEffect(() => {
+    saveTutorConversation(lessonId, conversation);
+  }, [conversation, lessonId]);
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     input.current?.focus();
     function onKey(event: KeyboardEvent): void {
-      if (event.key === "Escape") onClose();
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onClose();
+        return;
+      }
+      if (event.key !== "Tab") return;
+
+      const dialog = panel.current;
+      if (!dialog) return;
+      const focusable = focusableElements(dialog);
+      const first = focusable[0];
+      const last = focusable.at(-1);
+      if (!first || !last) {
+        event.preventDefault();
+        dialog.focus();
+        return;
+      }
+
+      const active = document.activeElement;
+      const activeIsFocusable = active instanceof HTMLElement && focusable.includes(active);
+      if (event.shiftKey && (active === first || !activeIsFocusable)) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && (active === last || !activeIsFocusable)) {
+        event.preventDefault();
+        first.focus();
+      }
     }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = previousOverflow;
+    };
   }, [onClose]);
 
   async function ask(): Promise<void> {
     const asked = question.trim();
-    if (asked.length < 2) return;
+    if (asked.length < 2 || busyRef.current) return;
+    busyRef.current = true;
     setBusy(true);
     setFailure(null);
     setFailureDetail(null);
@@ -123,20 +202,25 @@ export function TutorPanel({
         mode,
         question: asked,
         conceptIds,
-        ...(sessionId === null ? {} : { sessionId }),
+        ...(resumableSessionId === null ? {} : { sessionId: resumableSessionId }),
         ...(attemptId === undefined ? {} : { attemptId }),
+        ...(referenceQuestionId === undefined ? {} : { referenceQuestionId }),
+        ...(referenceEssayId === undefined ? {} : { referenceEssayId }),
       });
       if (result.status === "answered") {
-        setThread((current) => [
-          ...current,
-          {
-            question: asked,
-            reply: result.reply,
-            issues: result.issues,
-            accepted: result.accepted,
-          },
-        ]);
-        setSessionId(result.sessionId);
+        setConversation((current) => ({
+          exchanges: [
+            ...current.exchanges,
+            {
+              question: asked,
+              reply: result.reply,
+              issues: result.issues,
+              accepted: result.accepted,
+            },
+          ],
+          sessionId: result.sessionId,
+          sessionContext: providerSessionContext,
+        }));
         setQuestion("");
         setPacket(null);
       } else {
@@ -149,15 +233,21 @@ export function TutorPanel({
         });
       }
     } catch (error) {
-      setFailure(tutorErrorMessage(errorCode(error), errorMessage(error, "The tutor failed.")));
+      const code = errorCode(error);
+      if (code === "TUTOR_SESSION_INVALID") {
+        setConversation((current) => ({ ...current, sessionId: null }));
+      }
+      setFailure(tutorErrorMessage(code, errorMessage(error, "The tutor failed.")));
       setFailureDetail(errorDetail(error));
     } finally {
+      busyRef.current = false;
       setBusy(false);
     }
   }
 
   async function importReply(): Promise<void> {
-    if (!packet) return;
+    if (!packet || busyRef.current) return;
+    busyRef.current = true;
     setBusy(true);
     setFailure(null);
     setFailureDetail(null);
@@ -166,30 +256,49 @@ export function TutorPanel({
         text: pasted,
         mode,
         expectedRequestId: packet.requestId,
+        ...(referenceQuestionId === undefined ? {} : { referenceQuestionId }),
+        ...(referenceEssayId === undefined ? {} : { referenceEssayId }),
       });
-      setThread((current) => [
+      setConversation((current) => ({
         ...current,
-        {
-          question: packet.question,
-          reply: result.reply,
-          issues: result.issues,
-          accepted: result.accepted,
-        },
-      ]);
+        exchanges: [
+          ...current.exchanges,
+          {
+            question: packet.question,
+            reply: result.reply,
+            issues: result.issues,
+            accepted: result.accepted,
+          },
+        ],
+      }));
       setPacket(null);
       setPasted("");
       setQuestion("");
     } catch (error) {
       setFailure(errorMessage(error, "The pasted reply could not be read."));
     } finally {
+      busyRef.current = false;
       setBusy(false);
     }
   }
 
   return (
     <>
-      <div className="tutor-scrim" />
-      <aside aria-label="Ask the tutor" aria-modal="true" className="tutor-panel" role="dialog">
+      <button
+        aria-label="Close the tutor backdrop"
+        className="tutor-scrim"
+        onClick={onClose}
+        tabIndex={-1}
+        type="button"
+      />
+      <aside
+        aria-label="Ask the tutor"
+        aria-modal="true"
+        className="tutor-panel"
+        ref={panel}
+        role="dialog"
+        tabIndex={-1}
+      >
         <header className="tutor-header">
           <h2>Ask the tutor</h2>
           <button
@@ -240,6 +349,7 @@ export function TutorPanel({
               <textarea
                 className="textarea textarea-short"
                 id="tutor-import"
+                disabled={busy}
                 onChange={(event) => setPasted(event.currentTarget.value)}
                 value={pasted}
               />
@@ -247,6 +357,7 @@ export function TutorPanel({
                 <button
                   aria-busy={busy}
                   className="button button-secondary"
+                  disabled={busy}
                   onClick={() => void importReply()}
                   type="button"
                 >
@@ -270,6 +381,7 @@ export function TutorPanel({
           </label>
           <textarea
             className="textarea textarea-short"
+            disabled={busy}
             id="tutor-question"
             onChange={(event) => setQuestion(event.currentTarget.value)}
             placeholder="Ask about this stage."
@@ -280,6 +392,7 @@ export function TutorPanel({
             <button
               aria-busy={busy}
               className="button button-primary"
+              disabled={busy}
               onClick={() => void ask()}
               type="button"
             >

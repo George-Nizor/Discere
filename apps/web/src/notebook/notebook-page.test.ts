@@ -46,16 +46,24 @@ describe("notebook page geometry", () => {
   });
 
   it("draws a stroke in canvas coordinates", () => {
-    expect(strokePoints(stroke("a", [{ x: 0, y: 0 }, { x: 1, y: 1 }]))).toBe(
-      `0,0 ${NOTEBOOK_WIDTH},${NOTEBOOK_HEIGHT}`,
-    );
+    expect(
+      strokePoints(
+        stroke("a", [
+          { x: 0, y: 0 },
+          { x: 1, y: 1 },
+        ]),
+      ),
+    ).toBe(`0,0 ${NOTEBOOK_WIDTH},${NOTEBOOK_HEIGHT}`);
   });
 });
 
 describe("notebook editing", () => {
   it("erases a whole stroke the eraser passed through", () => {
     const strokes = [
-      stroke("a", [{ x: 0.1, y: 0.1 }, { x: 0.2, y: 0.2 }]),
+      stroke("a", [
+        { x: 0.1, y: 0.1 },
+        { x: 0.2, y: 0.2 },
+      ]),
       stroke("b", [{ x: 0.8, y: 0.8 }]),
     ];
     expect(eraseAt(strokes, { x: 0.11, y: 0.11 }).map((entry) => entry.id)).toEqual(["b"]);

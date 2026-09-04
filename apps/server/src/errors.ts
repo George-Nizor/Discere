@@ -12,7 +12,11 @@ export class HttpError extends Error {
   readonly code: string;
   readonly detail: string | undefined;
 
-  constructor(readonly statusCode: number, message: string, options: string | HttpErrorOptions = {}) {
+  constructor(
+    readonly statusCode: number,
+    message: string,
+    options: string | HttpErrorOptions = {},
+  ) {
     super(message);
     const resolved = typeof options === "string" ? { code: options } : options;
     this.code = resolved.code ?? "REQUEST_ERROR";

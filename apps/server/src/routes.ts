@@ -4,16 +4,20 @@ import path from "node:path";
 import {
   AttemptRequestSchema,
   EssaySaveRequestSchema,
+  IllustrationRequestSchema,
+  type IllustrationResponse,
   LessonDraftSchema,
+  type LessonResponse,
   NotebookSaveRequestSchema,
+  type Question,
   RevealConfirmRequestSchema,
   RevealStartRequestSchema,
   ReviewRateRequestSchema,
+  RomanReferenceEssayIdSchema,
+  RomanReferenceQuestionIdSchema,
   StageProgressRequestSchema,
   TutorEnvelopeBaseSchema,
   TutoringModeSchema,
-  type IllustrationResponse,
-  IllustrationRequestSchema,
   TutorOperationSchema,
   TutorReplyRequestSchema,
   WritingLintRequestSchema,
@@ -30,17 +34,21 @@ import { lintText, type WritingContext } from "@discere/writing-engine";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { assessResponse } from "./assessment.js";
+import { illustrationsCapability } from "./capabilities.js";
 import { acceptTutorReply, buildTutorReplyPayload } from "./companion.js";
 import type { ContentRepository } from "./content.js";
 import type { DiscereStore } from "./db/store.js";
 import { HttpError } from "./errors.js";
+import { illustrationImagePath, readIllustration, requestIllustration } from "./illustrations.js";
 import { getNotebookPage, saveNotebookPage } from "./notebook.js";
 import { coerceQueryBoolean } from "./query-coercion.js";
+import { privateEssayQuestionForRomanReference } from "./roman-reference-essay.js";
 import {
-  illustrationImagePath,
-  readIllustration,
-  requestIllustration,
-} from "./illustrations.js";
+  lessonForRomanReferenceEssayTutor,
+  lessonForRomanReferenceTutor,
+  resolveRomanReferenceTutorEssay,
+  resolveRomanReferenceTutorQuestion,
+} from "./roman-reference-routes.js";
 import type { TopicMapRepository } from "./topic-maps.js";
 
 export interface RouteDependencies {
@@ -65,8 +73,13 @@ const CompanionImportBodySchema = z
     mode: TutoringModeSchema.optional(),
     expectedRequestId: z.string().uuid(),
     attemptId: z.string().uuid().optional(),
+    referenceQuestionId: RomanReferenceQuestionIdSchema.optional(),
+    referenceEssayId: RomanReferenceEssayIdSchema.optional(),
   })
-  .strict();
+  .strict()
+  .refine((body) => body.referenceQuestionId === undefined || body.referenceEssayId === undefined, {
+    message: "An import binds to the reference question or the essay, not both.",
+  });
 const LessonParamsSchema = z.object({ lessonId: z.string().min(1).max(200) }).strict();
 const CourseParamsSchema = z.object({ courseId: z.string().min(1).max(200) }).strict();
 const JourneyParamsSchema = z
@@ -175,10 +188,7 @@ export async function registerRoutes(
     } catch {
       throw new HttpError(404, "No cover.", "ASSET_NOT_FOUND");
     }
-    return reply
-      .type("image/webp")
-      .header("Cache-Control", "public, max-age=3600")
-      .send(file);
+    return reply.type("image/webp").header("Cache-Control", "public, max-age=3600").send(file);
   });
 
   /**
@@ -187,9 +197,7 @@ export async function registerRoutes(
    */
   app.get("/api/progress/activity", async () => {
     const WEEKS = 10;
-    const from = new Date(Date.now() - WEEKS * 7 * 24 * 60 * 60 * 1000)
-      .toISOString()
-      .slice(0, 10);
+    const from = new Date(Date.now() - WEEKS * 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
     const days = store.activityByDay(from);
     return {
       days,
@@ -477,6 +485,13 @@ export async function registerRoutes(
    */
   app.post("/api/illustrations", async (request): Promise<IllustrationResponse> => {
     const body = IllustrationRequestSchema.parse(request.body);
+    // Checked here rather than only in the interface. The interface hides the control when the
+    // capability is absent, but a stale page, a direct call, or a subscription that lapsed
+    // mid-session would otherwise start a generation that can only fail two minutes later.
+    const capability = illustrationsCapability();
+    if (capability.state === "unavailable") {
+      throw new HttpError(503, capability.reason, "ILLUSTRATIONS_UNAVAILABLE");
+    }
     const record = await requestIllustration(body);
     return {
       key: record.key,
@@ -734,8 +749,33 @@ export async function registerRoutes(
           "The tutoring mode is required for a tutor reply.",
           "TUTOR_MODE_REQUIRED",
         );
-      const currentLesson = content.currentLesson(store.courseActivity());
-      const question = content.getQuestion(currentLesson.question.id);
+      const boundToReference =
+        body.referenceQuestionId !== undefined || body.referenceEssayId !== undefined;
+      if (boundToReference && body.attemptId !== undefined) {
+        throw new HttpError(
+          400,
+          "Reference tutoring is not linked to a generic attempt.",
+          "REFERENCE_ATTEMPT_UNSUPPORTED",
+        );
+      }
+      // The pasted reply is re-resolved against server state rather than trusted from the packet,
+      // so a mode changed between copying and pasting is caught here and not honoured.
+      let currentLesson: LessonResponse;
+      let question: Question | undefined;
+      if (body.referenceQuestionId !== undefined) {
+        question = resolveRomanReferenceTutorQuestion(store, {
+          referenceQuestionId: body.referenceQuestionId,
+          mode: body.mode,
+        }).question;
+        currentLesson = lessonForRomanReferenceTutor(content, body.referenceQuestionId);
+      } else if (body.referenceEssayId !== undefined) {
+        resolveRomanReferenceTutorEssay(store, { mode: body.mode });
+        question = privateEssayQuestionForRomanReference();
+        currentLesson = lessonForRomanReferenceEssayTutor(content);
+      } else {
+        currentLesson = content.currentLesson(store.courseActivity());
+        question = content.getQuestion(currentLesson.question.id);
+      }
       if (!question) throw new HttpError(404, "Question not found.", "QUESTION_NOT_FOUND");
       // The pasted reply and the directly generated reply share this gate.
       return acceptTutorReply({
@@ -745,7 +785,11 @@ export async function registerRoutes(
         lesson: currentLesson,
         question,
         store,
-        attemptId: body.attemptId,
+        ...(boundToReference ? {} : { attemptId: body.attemptId }),
+        ...(body.referenceQuestionId === undefined
+          ? {}
+          : { referenceQuestionId: body.referenceQuestionId }),
+        ...(body.referenceEssayId === undefined ? {} : { referenceEssayId: body.referenceEssayId }),
       });
     }
 

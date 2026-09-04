@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { CircuitDiagramSpecSchema, ExplainerStageSchema, JourneyProgressSchema, TutoringModeSchema } from "../src/index.js";
+import {
+  CircuitDiagramSpecSchema,
+  ExplainerStageSchema,
+  JourneyProgressSchema,
+  TutoringModeSchema,
+} from "../src/index.js";
 
 describe("shared contracts", () => {
   it("accepts known tutoring modes", () => {
@@ -65,7 +70,14 @@ describe("shared contracts", () => {
       JourneyProgressSchema.parse({
         journeyId: "course:lesson",
         activeStageId: "lesson:explainer",
-        stages: [{ stageId: "lesson:explainer", state: "active", interactionState: {}, updatedAt: "2026-08-17T00:00:00.000Z" }],
+        stages: [
+          {
+            stageId: "lesson:explainer",
+            state: "active",
+            interactionState: {},
+            updatedAt: "2026-08-17T00:00:00.000Z",
+          },
+        ],
       }).activeStageId,
     ).toBe("lesson:explainer");
   });

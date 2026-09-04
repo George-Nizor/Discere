@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -119,6 +119,40 @@ describe("direct tutor generation", () => {
     expect(body.accepted).toBe(true);
     expect(body.reply.answer).toContain("I = V / R");
     expect(body.sessionId).toBe("11111111-2222-4333-8444-555555555555");
+  });
+
+  it("lets Coach teach background and a genuinely analogous example", async () => {
+    const coachingReply = {
+      answer:
+        "Current measures the rate of charge flow. Resistance reduces that rate for a fixed voltage because I = V / R. With 6 V across 200 Ω, the current is 0.03 A. Use the same relationship with the active question's values.",
+      followUpQuestion: "Which values in the active question should replace 6 V and 200 Ω?",
+      sourceIds: [],
+      uncertainty: [],
+    };
+    useFakeCodex([{ output: coachingReply }]);
+    await startApp("codex");
+
+    const response = await app.inject({
+      method: "POST",
+      url: "/api/tutor/ask",
+      payload: {
+        lessonId: "current-in-one-loop",
+        mode: "coach",
+        question: "What does current mean, and can you show me a similar calculation?",
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    const body = response.json();
+    expect(body.accepted).toBe(true);
+    expect(body.reply.answer).toContain("0.03 A");
+    expect(body.reply.answer).not.toContain("0.05 A");
+
+    const [promptLog] = readFileSync(path.join(workspace, "log.jsonl"), "utf8").trim().split("\n");
+    expect(promptLog).toBeDefined();
+    const prompt = JSON.parse(promptLog ?? "{}").prompt as string;
+    expect(prompt).toContain("Explain any definition, mechanism, or governing relationship");
+    expect(prompt).toContain("Withhold only what the active question asks the learner to supply");
   });
 
   it("rejects a generated reply that leaks the hidden answer in Coach mode", async () => {

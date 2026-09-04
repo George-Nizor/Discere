@@ -421,7 +421,8 @@ export class DiscereStore {
           timestamp,
         );
       if (input.state === "completed" || input.state === "skipped_optional") {
-        const freshlyDone = alreadyComplete !== "completed" && alreadyComplete !== "skipped_optional";
+        const freshlyDone =
+          alreadyComplete !== "completed" && alreadyComplete !== "skipped_optional";
         const award = stageType && input.state === "completed" ? stageCompletionXp(stageType) : 0;
         if (freshlyDone && award > 0) {
           this.database
@@ -941,7 +942,14 @@ export class DiscereStore {
       .prepare(
         "INSERT INTO writing_gate_runs (id, context, passed, text_hash, violation_count, created_at) VALUES (?, ?, ?, ?, ?, ?)",
       )
-      .run(randomUUID(), context, result.passed ? 1 : 0, hash, result.violations.length, this.now());
+      .run(
+        randomUUID(),
+        context,
+        result.passed ? 1 : 0,
+        hash,
+        result.violations.length,
+        this.now(),
+      );
   }
 
   close(): void {

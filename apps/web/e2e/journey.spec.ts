@@ -9,7 +9,10 @@ test.describe("the lesson journey", () => {
   test("carries a learner from home to lesson completion", async ({ page }) => {
     await page.goto("/");
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-    await page.getByRole("link", { name: /Resume|Begin/ }).first().click();
+    await page
+      .getByRole("link", { name: /Resume|Begin/ })
+      .first()
+      .click();
 
     // The lesson plays as steps: prose, an inline check that cannot be skipped, then the rest.
     await expect(page.getByText("Explainer")).toBeVisible();
@@ -147,7 +150,7 @@ test.describe("the lesson journey", () => {
     await page.getByLabel("Your question").fill("How do I begin this calculation?");
     await page.getByRole("button", { name: "Ask the tutor", exact: true }).last().click();
     await expect(page.getByText("Back to you.")).toBeVisible({ timeout: 60_000 });
-    await page.getByRole("button", { name: "Close the tutor" }).click();
+    await page.getByRole("button", { exact: true, name: "Close the tutor" }).click();
     await expect(page.getByRole("dialog")).toHaveCount(0);
   });
 
@@ -262,7 +265,9 @@ test.describe("the lesson journey", () => {
     await page.getByRole("button", { name: /^Continue/ }).click();
 
     await expect(page.getByText("Step 5 of 6")).toBeVisible();
-    await page.getByRole("button", { name: /The Senate granted Octavian the name Augustus/ }).click();
+    await page
+      .getByRole("button", { name: /The Senate granted Octavian the name Augustus/ })
+      .click();
     await page.getByRole("button", { name: "Check answer" }).click();
     await expect(page.getByText("Correct")).toBeVisible();
     await page.getByRole("button", { name: /^Continue/ }).click();

@@ -141,9 +141,13 @@ async function generate(key: string, prompt: string): Promise<void> {
     child.on("close", (code) => {
       clearTimeout(timer);
       if (code === 0) resolve();
-      else reject(new Error(stderr.trim() || `The generator exited with code ${code ?? "unknown"}.`));
+      else
+        reject(new Error(stderr.trim() || `The generator exited with code ${code ?? "unknown"}.`));
     });
-    child.stdin.end(`${prompt}\n\nSave the image to exactly this path: ${scratch}\nThen reply with only that path.`, "utf8");
+    child.stdin.end(
+      `${prompt}\n\nSave the image to exactly this path: ${scratch}\nThen reply with only that path.`,
+      "utf8",
+    );
   });
 
   // Fail rather than adopt some other file. An earlier version took "the newest PNG lying
@@ -166,9 +170,7 @@ export interface IllustrationRequest {
  * Never blocks on the generation: the caller polls, because two minutes is far too long to
  * hold a request open and the learner should be able to keep reading meanwhile.
  */
-export async function requestIllustration(
-  input: IllustrationRequest,
-): Promise<IllustrationRecord> {
+export async function requestIllustration(input: IllustrationRequest): Promise<IllustrationRecord> {
   const subject = input.subject.trim().slice(0, MAX_SUBJECT_CHARS);
   const prompt = buildIllustrationPrompt(subject, input.accent);
   const key = illustrationKey(prompt);
@@ -176,7 +178,16 @@ export async function requestIllustration(
   const existing = await readIllustration(key);
   if (existing?.status === "ready" && existsSync(illustrationImagePath(key))) return existing;
   if (inFlight.has(key)) {
-    return existing ?? { key, status: "generating", alt: input.alt, prompt, createdAt: new Date().toISOString(), detail: "" };
+    return (
+      existing ?? {
+        key,
+        status: "generating",
+        alt: input.alt,
+        prompt,
+        createdAt: new Date().toISOString(),
+        detail: "",
+      }
+    );
   }
 
   const record: IllustrationRecord = {

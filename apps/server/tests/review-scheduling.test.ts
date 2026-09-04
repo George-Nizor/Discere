@@ -35,7 +35,11 @@ async function reviewOneCard(rating: "again" | "hard" | "good" | "easy", recalle
   const session = await app.inject({ method: "POST", url: "/api/review/sessions", payload: {} });
   expect(session.statusCode).toBe(200);
   const { sessionId, card } = session.json();
-  await app.inject({ method: "POST", url: `/api/review/sessions/${sessionId}/reveal`, payload: {} });
+  await app.inject({
+    method: "POST",
+    url: `/api/review/sessions/${sessionId}/reveal`,
+    payload: {},
+  });
   const rated = await app.inject({
     method: "POST",
     url: `/api/review/sessions/${sessionId}/rate`,

@@ -87,11 +87,7 @@ export async function registerWorkingsReviewRoutes(
   app.post("/api/tutor/workings/packets", async (request) => {
     const body = WorkingsReviewRequestSchema.parse(request.body);
     if (body.mode === "exam") {
-      throw new HttpError(
-        403,
-        "Workings review is unavailable in Exam mode.",
-        "EXAM_GUARDRAIL",
-      );
+      throw new HttpError(403, "Workings review is unavailable in Exam mode.", "EXAM_GUARDRAIL");
     }
 
     const lesson = learnerLesson(content, body.lessonId);
@@ -123,11 +119,7 @@ export async function registerWorkingsReviewRoutes(
     async (request): Promise<WorkingsReviewResponse> => {
       const body = WorkingsReviewGenerateRequestSchema.parse(request.body);
       if (body.mode === "exam") {
-        throw new HttpError(
-          403,
-          "Workings review is unavailable in Exam mode.",
-          "EXAM_GUARDRAIL",
-        );
+        throw new HttpError(403, "Workings review is unavailable in Exam mode.", "EXAM_GUARDRAIL");
       }
       const lesson = learnerLesson(content, body.lessonId);
       const question = content.getQuestion(lesson.question.id);
@@ -211,11 +203,7 @@ export async function registerWorkingsReviewRoutes(
   app.post("/api/tutor/workings/import", async (request) => {
     const body = WorkingsImportBodySchema.parse(request.body);
     if (body.mode === "exam") {
-      throw new HttpError(
-        403,
-        "Workings review is unavailable in Exam mode.",
-        "EXAM_GUARDRAIL",
-      );
+      throw new HttpError(403, "Workings review is unavailable in Exam mode.", "EXAM_GUARDRAIL");
     }
 
     let raw: unknown;

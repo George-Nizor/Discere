@@ -49,7 +49,7 @@ Discere rejects a review when the image was omitted, a low-confidence reading cl
 
 ### Coach
 
-The packet asks ChatGPT to identify the next useful step and preserve the active assessment answer boundary. The final answer is rejected when it appears in imported tutor feedback or workings-review guidance.
+The packet asks ChatGPT to identify the next useful step and preserve the active assessment answer boundary. ChatGPT may explain definitions, mechanisms, and governing relationships directly. It may also work a genuinely analogous example when the givens and requested result differ from the active question. Only the value, selection, wording, code, or conclusion the active question asks the learner to supply remains hidden. That answer is rejected when it appears, including in an equivalent form, in imported tutor feedback or workings-review guidance.
 
 ### Assisted
 

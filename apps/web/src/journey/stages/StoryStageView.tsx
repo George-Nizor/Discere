@@ -41,7 +41,15 @@ function CheckStep({ step, onSolved }: { step: LearnerStep; onSolved: () => void
   const question = step.question;
   // Hooks must run unconditionally, so an absent question is handled after the hook call.
   const attempt = useAttempt(
-    question ?? { id: "", conceptIds: [], prompt: "", responseType: "short_text", difficulty: 1, hints: [], sourceIds: [] },
+    question ?? {
+      id: "",
+      conceptIds: [],
+      prompt: "",
+      responseType: "short_text",
+      difficulty: 1,
+      hints: [],
+      sourceIds: [],
+    },
   );
   const announced = useRef(false);
 
@@ -120,9 +128,7 @@ function applyVisualParams(
       ...circuit,
       ...flags,
       ...(params["voltage"] === undefined ? {} : { voltage: params["voltage"] }),
-      resistances: circuit.resistances.map(
-        (value, index) => params[`resistance${index}`] ?? value,
-      ),
+      resistances: circuit.resistances.map((value, index) => params[`resistance${index}`] ?? value),
     };
   }
   return {
@@ -133,13 +139,7 @@ function applyVisualParams(
   };
 }
 
-function StoryVisual({
-  stage,
-  activeStateId,
-}: {
-  stage: ExplainerStage;
-  activeStateId: string;
-}) {
+function StoryVisual({ stage, activeStateId }: { stage: ExplainerStage; activeStateId: string }) {
   const { params, caption } = useVisualState(stage.visual.states, activeStateId);
   const circuit = stage.visual.circuit;
   const visual = resolveStageVisual(stage.visual);

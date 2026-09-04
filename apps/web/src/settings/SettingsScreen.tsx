@@ -1,9 +1,9 @@
-import type { TutorStatus } from "@discere/contracts";
+import type { CapabilityId, TutorStatus } from "@discere/contracts";
 import { useMutation } from "@tanstack/react-query";
 import { CheckCircle2, Loader2, XCircle } from "lucide-react";
 import { errorMessage } from "../api/client.js";
 import { probeTutor } from "../api/endpoints.js";
-import { useTutorStatus } from "../api/queries.js";
+import { useCapabilities, useTutorStatus } from "../api/queries.js";
 import { ErrorScreen, LoadingScreen, Notice } from "../ui/Feedback.js";
 
 const PROVIDER_LABELS: Record<TutorStatus["provider"], string> = {
@@ -57,7 +57,9 @@ function QuotaPanel({ status }: { status: TutorStatus }) {
       <div aria-hidden="true" className="settings-quota-track">
         <span className={`settings-quota-fill is-${tone}`} style={{ width: `${used}%` }} />
       </div>
-      <p className="settings-note">This window resets at {formatResetTime(status.quotaResetsAt)}.</p>
+      <p className="settings-note">
+        This window resets at {formatResetTime(status.quotaResetsAt)}.
+      </p>
     </div>
   );
 }
@@ -66,6 +68,43 @@ function QuotaPanel({ status }: { status: TutorStatus }) {
  * Proof that the OpenAI link is live, on one screen. Discere spends the owner's subscription,
  * so the state of that subscription belongs in the interface rather than in a log file.
  */
+const CAPABILITY_LABELS: Record<CapabilityId, string> = {
+  tutor_generation: "Tutor answers",
+  illustrations: "Drawn illustrations",
+  authoring: "Course authoring",
+};
+
+/**
+ * The one place the interface says what it cannot do.
+ *
+ * Everywhere else, an absent capability simply removes its control — a button that fails after two
+ * minutes teaches a learner nothing. That leaves one obligation: somewhere has to explain the
+ * absence, and this is a settings screen about exactly this subscription.
+ */
+function CapabilityPanel() {
+  const capabilities = useCapabilities();
+  const unavailable =
+    capabilities.data?.capabilities.filter((entry) => entry.state === "unavailable") ?? [];
+
+  if (capabilities.isPending) return <p className="muted">Checking what is available…</p>;
+  if (unavailable.length === 0) {
+    return <p>Tutoring, illustrations, and authoring are all available.</p>;
+  }
+  return (
+    <dl className="settings-facts">
+      {unavailable.map((entry) => (
+        <div key={entry.id}>
+          <dt>{CAPABILITY_LABELS[entry.id]}</dt>
+          <dd>
+            {entry.reason}
+            {entry.fallback ? <span className="settings-remedy">{entry.fallback}</span> : null}
+          </dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
 export function SettingsScreen() {
   const status = useTutorStatus();
   const probe = useMutation({ mutationFn: probeTutor });
@@ -132,6 +171,13 @@ export function SettingsScreen() {
           </div>
         </dl>
         {data.lastError ? <p className="settings-remedy">{data.lastError}</p> : null}
+      </section>
+
+      <section aria-labelledby="capability-heading" className="settings-card">
+        <h2 className="settings-card-title" id="capability-heading">
+          What this installation can generate
+        </h2>
+        <CapabilityPanel />
       </section>
 
       <section aria-labelledby="quota-heading" className="settings-card">

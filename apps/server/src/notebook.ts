@@ -1,5 +1,10 @@
 import type Database from "better-sqlite3";
-import { NotebookPageSchema, NotebookStrokeSchema, type NotebookPage, type NotebookSaveRequest } from "@discere/contracts";
+import {
+  NotebookPageSchema,
+  NotebookStrokeSchema,
+  type NotebookPage,
+  type NotebookSaveRequest,
+} from "@discere/contracts";
 import { z } from "zod";
 
 const LOCAL_USER_ID = "local-user";
@@ -15,11 +20,19 @@ interface NotebookRow {
 
 export function getNotebookPage(database: Database.Database, lessonId: string): NotebookPage {
   const row = database
-    .prepare("SELECT lesson_id AS lessonId, page_type AS pageType, strokes_json AS strokesJson, note, updated_at AS updatedAt FROM notebook_pages WHERE user_id = ? AND lesson_id = ?")
+    .prepare(
+      "SELECT lesson_id AS lessonId, page_type AS pageType, strokes_json AS strokesJson, note, updated_at AS updatedAt FROM notebook_pages WHERE user_id = ? AND lesson_id = ?",
+    )
     .get(LOCAL_USER_ID, lessonId) as NotebookRow | undefined;
 
   if (!row) {
-    return NotebookPageSchema.parse({ lessonId, pageType: "blank", strokes: [], note: "", updatedAt: null });
+    return NotebookPageSchema.parse({
+      lessonId,
+      pageType: "blank",
+      strokes: [],
+      note: "",
+      updatedAt: null,
+    });
   }
 
   let rawStrokes: unknown;
@@ -38,7 +51,11 @@ export function getNotebookPage(database: Database.Database, lessonId: string): 
   });
 }
 
-export function saveNotebookPage(database: Database.Database, lessonId: string, input: NotebookSaveRequest): NotebookPage {
+export function saveNotebookPage(
+  database: Database.Database,
+  lessonId: string,
+  input: NotebookSaveRequest,
+): NotebookPage {
   const updatedAt = new Date().toISOString();
   database
     .prepare(`
@@ -50,7 +67,14 @@ export function saveNotebookPage(database: Database.Database, lessonId: string, 
         note = excluded.note,
         updated_at = excluded.updated_at
     `)
-    .run(LOCAL_USER_ID, lessonId, input.pageType, JSON.stringify(input.strokes), input.note, updatedAt);
+    .run(
+      LOCAL_USER_ID,
+      lessonId,
+      input.pageType,
+      JSON.stringify(input.strokes),
+      input.note,
+      updatedAt,
+    );
 
   return NotebookPageSchema.parse({ lessonId, ...input, updatedAt });
 }

@@ -109,7 +109,6 @@ export function completedCount(views: StageView[]): number {
   return views.filter((view) => isStageComplete(view.state)).length;
 }
 
-
 /** Where the learner is inside a stepped lesson, read back from saved interaction state. */
 export const STEP_INDEX_KEY = "stepIndex";
 
