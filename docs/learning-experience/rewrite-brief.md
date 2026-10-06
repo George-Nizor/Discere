@@ -32,13 +32,16 @@ a specific section. Do not read other courses.
 6. Next lesson. Do them in course order so each `nextHook` and `ITEM_OUTSIDE_SCOPE` line up.
 
 After the last lesson, add one content test, `packages/curriculum/tests/<course>-v2.test.ts`, that
-recomputes the numeric keys you wrote (pattern: the gold lesson test), and run it.
+recomputes the numeric keys you wrote (pattern: the gold lesson test), and run it. Then run
+`pnpm --filter @discere/curriculum typecheck` and fix any error in your test (vitest does not
+typecheck).
 
 ## Rules that matter most
 
 - The hook is a puzzle the learner can attempt from what they already know. Never a definition.
 - A `lead` teaches what the question needs and never contains the answer.
-- `explain` comes before any question that uses its term.
+- `explain` comes before any question that uses its term, and ends with its own one-tap check
+  question (`checkQuestionId`): every screen asks the learner something.
 - `onCorrect` states the idea, not "Correct!". Misconceptions never state the key.
 - Exactly 3 skill-check items, at least one `transfer`, 5 to 7 steps.
 - British spelling, short sentences, "you". No hype. Unicode − × ÷ in prose, including equation

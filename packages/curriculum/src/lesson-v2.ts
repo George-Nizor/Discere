@@ -242,6 +242,19 @@ function v2LessonIssues(
       !step.checkQuestionId
     )
       push(sat, "STEP_MISSING_QUESTION", `A ${step.kind} step needs a question.`);
+    // Curation's gate (every screen asks something) surfaced here, so a writer sees it at apply.
+    if (
+      !step.checkQuestionId &&
+      !step.activityId &&
+      !step.workedSteps?.some((line) => line.blank || line.selfExplain)
+    )
+      push(
+        sat,
+        "STEP_WITHOUT_RESPONSE",
+        step.kind === "explain"
+          ? "An explain step ends with a one-tap check (checkQuestionId): every screen asks the learner something."
+          : `A ${step.kind} step asks the learner something: a question, a blank or a self-explanation.`,
+      );
     const graded =
       Boolean(step.checkQuestionId) || Boolean(step.workedSteps?.some((line) => line.blank));
     if (graded && step.diagram && !step.answerVisibility)

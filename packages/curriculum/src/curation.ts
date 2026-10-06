@@ -1,6 +1,7 @@
 import { isV2Lesson, lessonQuestionRefs } from "./lesson-v2.js";
 import { createHash } from "node:crypto";
 import {
+  type CourseBundle,
   type EditorialApproval,
   EditorialApprovalSchema,
   type TopicMap,
@@ -89,23 +90,14 @@ export function scaffoldTopicMap(map: TopicMap): Record<string, unknown> {
   };
 }
 
-export function assertEditorialApproval(
-  candidate: unknown,
-  review: unknown,
-  validation: ContentValidation,
-): EditorialApproval {
-  const approval = EditorialApprovalSchema.parse(review);
-  if (approval.decision !== "accepted" || approval.unresolvedIssues.length !== 0)
-    throw new Error("Publication needs an accepted review with no unresolved issues.");
-  if (approval.bundleSha256 !== bundleDigest(candidate))
-    throw new Error(
-      "The candidate changed after review. Review its new bundle hash before publishing.",
-    );
-  if (!validation.passed || !validation.bundle)
-    throw new Error("The candidate fails curriculum or writing validation.");
-  reviewedSources(validation.bundle.sources);
-  for (const lesson of validation.bundle.lessons) {
-    const metadata = validation.bundle.authoringMetadata?.find(
+/**
+ * The per-lesson publication rules (citations, enough questions and recall cards, a learner
+ * response on every screen). Exported so the migration's apply step can refuse a draft that would
+ * only fail here, at publish.
+ */
+export function assertLessonsPublishable(bundle: CourseBundle): void {
+  for (const lesson of bundle.lessons) {
+    const metadata = bundle.authoringMetadata?.find(
       (item) => item.lessonId === lesson.id,
     );
     if (!metadata)
@@ -150,6 +142,24 @@ export function assertEditorialApproval(
       if (!metadata.citations.some((item) => `${item.targetKind}:${item.targetId}` === target))
         throw new Error(`Missing citation for ${lesson.id}/${target}.`);
   }
+}
+
+export function assertEditorialApproval(
+  candidate: unknown,
+  review: unknown,
+  validation: ContentValidation,
+): EditorialApproval {
+  const approval = EditorialApprovalSchema.parse(review);
+  if (approval.decision !== "accepted" || approval.unresolvedIssues.length !== 0)
+    throw new Error("Publication needs an accepted review with no unresolved issues.");
+  if (approval.bundleSha256 !== bundleDigest(candidate))
+    throw new Error(
+      "The candidate changed after review. Review its new bundle hash before publishing.",
+    );
+  if (!validation.passed || !validation.bundle)
+    throw new Error("The candidate fails curriculum or writing validation.");
+  reviewedSources(validation.bundle.sources);
+  assertLessonsPublishable(validation.bundle);
   for (const warning of validation.issues.filter((item) => item.severity === "warning")) {
     if (
       !approval.acceptedWarnings.some(

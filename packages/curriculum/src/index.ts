@@ -1,6 +1,11 @@
 export { courseAssetDirectory, courseDirectories, loadCourseBundle } from "./load.js";
 export { type ContentIssue, type ContentValidation, validateCourseBundle } from "./validate.js";
-export { assertEditorialApproval, bundleDigest, scaffoldTopicMap } from "./curation.js";
+export {
+  assertEditorialApproval,
+  assertLessonsPublishable,
+  bundleDigest,
+  scaffoldTopicMap,
+} from "./curation.js";
 export {
   importedToSteps,
   lessonPrompt,

@@ -29,7 +29,6 @@ import { existsSync } from "node:fs";
 import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import type { ClaimCitation } from "@discere/contracts";
 import type {
   CalculatorPolicy,
   CourseBundle,
@@ -38,7 +37,14 @@ import type {
   LessonStepKind,
   Question,
 } from "@discere/curriculum";
-import { isV2Lesson, splitLegacyStep, validateCourseBundle } from "@discere/curriculum";
+import {
+  assertLessonsPublishable,
+  isV2Lesson,
+  splitLegacyStep,
+  validateCourseBundle,
+} from "@discere/curriculum";
+
+type ClaimCitation = NonNullable<CourseBundle["authoringMetadata"]>[number]["citations"][number];
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 export const TODO = "TODO:";
@@ -335,6 +341,14 @@ async function main(): Promise<void> {
         );
     if (!validation.passed || !validation.bundle) {
       console.log(`\n${errors.length} error(s). Nothing was written.`);
+      process.exitCode = 1;
+      return;
+    }
+    // Publication's own lesson rules, so a draft never passes here only to fail at publish.
+    try {
+      assertLessonsPublishable(validation.bundle);
+    } catch (error) {
+      console.log(`✕ publication: ${(error as Error).message}\nNothing was written.`);
       process.exitCode = 1;
       return;
     }

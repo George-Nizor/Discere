@@ -54,7 +54,7 @@ A v2 lesson takes about 10 minutes and teaches one idea that the learner can sta
 
 | Kind | Screen order | Use it when |
 |---|---|---|
-| `explain` | `headline` (the key idea as a sentence), then `lead`, an optional figure and an optional one-tap check | The step introduces a new word, symbol or convention. **It must come before any question that depends on that term.** List the terms in `introducesTerms`. |
+| `explain` | `headline` (the key idea as a sentence), then `lead`, an optional figure and a one-tap check (`checkQuestionId`, required: every screen asks something) | The step introduces a new word, symbol or convention. **It must come before any question that depends on that term.** List the terms in `introducesTerms`. |
 | `explore` | `lead`, then the question, then a live figure whose state is the answer (`answerVisibility: "live"`, with `bindAnswer` on the diagram) | The learner can find the value by playing with the figure. No answer box is drawn. |
 | `predict` | `lead`, then the question, then the figure with results hidden, then the reveal | A prequestion the learner can reason about from prior knowledge. They get one try, then the outcome. The `reveal` must refer to their prediction. |
 | `worked_example` | `headline` (the problem), then `workedSteps` shown one line per press | Showing the method before asking for it. Give one line a `selfExplain` question ("Why …?"). |
@@ -235,6 +235,7 @@ converted.
 | `ITEM_WITHOUT_SKILL`, `V2_MISSING_SKILLS`, `PROMISE_VOICE` | warning | Tag skills, and write the promise in the learner's voice. |
 | `MISCONCEPTION_IS_KEY` | error | A misconception never matches the right answer. |
 | `STEP_WITHOUT_TEXT` | error | Every step has prose: blocks (legacy) or a lead or headline (v2). |
+| `STEP_WITHOUT_RESPONSE` | error | Every v2 screen asks something: a question, a blank or a self-explanation. An `explain` step ends with a one-tap check. |
 
 The validator also lints every new learner-facing string with the writing gate. Misconception
 feedback is linted as a hint, against the hidden answer.
