@@ -29,6 +29,7 @@ import { existsSync } from "node:fs";
 import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import type { ClaimCitation } from "@discere/contracts";
 import type {
   CalculatorPolicy,
   CourseBundle,
@@ -73,6 +74,12 @@ export interface MigrationDraft {
   lesson: LessonBeat;
   /** Questions this lesson asks, with v2 fields to fill. Unchanged ids keep learner history. */
   questions: Question[];
+  /**
+   * The lesson's source citations, replacing its `authoringMetadata` citations on apply. Seeded
+   * with the legacy ones; retarget them to the new step and question ids, and cite every step,
+   * question and flashcard (curation refuses a lesson with an uncited target).
+   */
+  citations?: ClaimCitation[];
 }
 
 function v2Kind(step: LessonStep): LessonStepKind {
@@ -171,6 +178,7 @@ export function scaffoldLesson(bundle: CourseBundle, lesson: LessonBeat): Migrat
     "questions: replace every TODO onCorrect (≤ 25 words, states the idea), tag each skill, add misconceptions for predictable wrong answers (the feedback must not state the key).",
     "vocabulary: give each explain step introducesTerms; no prompt may use a term before the step that introduces it.",
     "add an explain step before any question that needs a new word or symbol; add a transfer if the lesson has none.",
+    "citations: retarget the seeded citations to the new step and question ids, and give every step, question and flashcard at least one (same sourceIds; the claim is what that screen asserts).",
   );
   if (!steps.some((step) => step.kind === "transfer"))
     notes.push("the lesson has no transfer step: add one (the same idea in a changed situation).");
@@ -197,13 +205,35 @@ export function scaffoldLesson(bundle: CourseBundle, lesson: LessonBeat): Migrat
     taughtSkills: lesson.taughtSkills ?? ["todo-name-the-skill"],
     stageTitles: { ...lesson.stageTitles, quiz: "Skill check" },
   };
+  const citations =
+    bundle.authoringMetadata?.find((item) => item.lessonId === lesson.id)?.citations ?? [];
   return {
     lessonId: lesson.id,
     courseId: bundle.course.id,
     migrationNotes: notes,
     lesson: draft,
     questions: usedQuestions,
+    citations,
   };
+}
+
+/** Steps, questions and flashcards of a draft that no citation targets, as "kind:id". */
+export function uncitedTargets(draft: MigrationDraft): string[] {
+  const lesson = draft.lesson;
+  const questionIds = [
+    ...lesson.steps.flatMap((step) => (step.checkQuestionId ? [step.checkQuestionId] : [])),
+    ...lesson.questionIds,
+    ...(lesson.intro?.hook.questionId ? [lesson.intro.hook.questionId] : []),
+  ];
+  const targets = [
+    ...lesson.steps.map((step) => `step:${step.id}`),
+    ...[...new Set(questionIds)].map((id) => `question:${id}`),
+    ...lesson.flashcardIds.map((id) => `flashcard:${id}`),
+  ];
+  const cited = new Set(
+    (draft.citations ?? []).map((item) => `${item.targetKind}:${item.targetId}`),
+  );
+  return targets.filter((target) => !cited.has(target));
 }
 
 /** Paths in a draft that still say TODO, for the apply step's refusal message. */
@@ -226,8 +256,25 @@ export function applyDrafts(bundle: CourseBundle, drafts: MigrationDraft[]): Cou
     drafts.flatMap((draft) => draft.questions.map((q) => [q.id, q] as const)),
   );
   const known = new Set(bundle.questions.map((question) => question.id));
+  const authoringMetadata = bundle.authoringMetadata?.map((metadata) => {
+    const draft = byLesson.get(metadata.lessonId);
+    if (!draft) return metadata;
+    if (draft.citations) return { ...metadata, citations: draft.citations };
+    // A draft from before drafts carried citations: keep only those whose target still exists.
+    const live = new Set([
+      ...draft.lesson.steps.map((step) => `step:${step.id}`),
+      ...bundle.questions.map((q) => `question:${q.id}`),
+      ...draft.questions.map((q) => `question:${q.id}`),
+      ...draft.lesson.flashcardIds.map((id) => `flashcard:${id}`),
+    ]);
+    return {
+      ...metadata,
+      citations: metadata.citations.filter((c) => live.has(`${c.targetKind}:${c.targetId}`)),
+    };
+  });
   return {
     ...bundle,
+    ...(authoringMetadata ? { authoringMetadata } : {}),
     lessons: bundle.lessons.map((lesson) => byLesson.get(lesson.id)?.lesson ?? lesson),
     questions: [
       ...bundle.questions.map((question) => replaced.get(question.id) ?? question),
@@ -263,6 +310,13 @@ async function main(): Promise<void> {
       const todos = remainingTodos(draft);
       if (todos.length) {
         console.log(`· ${file}: ${todos.length} TODO(s) left, skipped (first: ${todos[0]})`);
+        continue;
+      }
+      const uncited = uncitedTargets(draft);
+      if (uncited.length) {
+        console.log(
+          `· ${file}: ${uncited.length} target(s) without a citation, skipped (${uncited.slice(0, 4).join(", ")}${uncited.length > 4 ? ", …" : ""})`,
+        );
         continue;
       }
       drafts.push(draft);
