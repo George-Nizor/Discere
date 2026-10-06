@@ -22,6 +22,10 @@ export const StudyPreferencesSchema = z
     sound: z.boolean(),
     /** The companion pet in the corner of the screen. Absent means shown. */
     companion: z.boolean().optional(),
+    /** Colour scheme. Absent means dark. */
+    theme: z.enum(["dark", "light", "system"]).optional(),
+    /** Behind the interface: the animated galaxy, or a still gradient. Absent means galaxy. */
+    backdrop: z.enum(["galaxy", "calm"]).optional(),
   })
   .strict();
 export type StudyPreferences = z.infer<typeof StudyPreferencesSchema>;

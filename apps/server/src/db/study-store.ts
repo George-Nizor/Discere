@@ -65,7 +65,7 @@ export class StudyStore {
       .run(USER, defaults.timeZone);
     const row = this.database
       .prepare(
-        "SELECT time_zone AS timeZone, daily_goal AS dailyGoal, motion, celebrations, sound, companion FROM study_preferences WHERE user_id = ?",
+        "SELECT time_zone AS timeZone, daily_goal AS dailyGoal, motion, celebrations, sound, companion, theme, backdrop FROM study_preferences WHERE user_id = ?",
       )
       .get(USER) as Record<string, unknown>;
     return StudyPreferencesSchema.parse({
@@ -73,13 +73,15 @@ export class StudyStore {
       celebrations: Boolean(row["celebrations"]),
       sound: Boolean(row["sound"]),
       companion: row["companion"] === undefined ? true : Boolean(row["companion"]),
+      theme: row["theme"] ?? "dark",
+      backdrop: row["backdrop"] ?? "galaxy",
     });
   }
   updatePreferences(update: StudyPreferencesUpdate): StudyPreferences {
     const next = StudyPreferencesSchema.parse({ ...this.preferences(), ...update });
     this.database
       .prepare(
-        "UPDATE study_preferences SET time_zone = ?, daily_goal = ?, motion = ?, celebrations = ?, sound = ?, companion = ? WHERE user_id = ?",
+        "UPDATE study_preferences SET time_zone = ?, daily_goal = ?, motion = ?, celebrations = ?, sound = ?, companion = ?, theme = ?, backdrop = ? WHERE user_id = ?",
       )
       .run(
         next.timeZone,
@@ -88,6 +90,8 @@ export class StudyStore {
         Number(next.celebrations),
         Number(next.sound),
         Number(next.companion ?? true),
+        next.theme ?? "dark",
+        next.backdrop ?? "galaxy",
         USER,
       );
     return next;

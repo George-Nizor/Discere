@@ -56,27 +56,54 @@ describe("study experience", () => {
     expect(container.querySelector(".award-medallion")).not.toBeNull();
   });
   it("responds when the device preference changes during a lesson", async () => {
-    let change: (() => void) | undefined;
-    const media = {
-      matches: false,
-      addEventListener: (_type: string, listener: () => void) => {
-        change = listener;
-      },
-      removeEventListener: vi.fn(),
-    };
-    vi.stubGlobal("matchMedia", () => media);
-    stubFetch({ "GET /api/study/preferences": { body: studyFixture.preferences } });
+    const queries = new Map<string, { matches: boolean; listener?: () => void }>();
+    vi.stubGlobal("matchMedia", (query: string) => {
+      const entry = queries.get(query) ?? { matches: false };
+      queries.set(query, entry);
+      return {
+        get matches() {
+          return entry.matches;
+        },
+        addEventListener: (_type: string, listener: () => void) => {
+          entry.listener = listener;
+        },
+        removeEventListener: vi.fn(),
+      };
+    });
+    stubFetch({
+      "GET /api/study/preferences": { body: { ...studyFixture.preferences, theme: "system" } },
+    });
     renderWithProviders(
       <ExperienceProvider>
         <span>Lesson</span>
       </ExperienceProvider>,
     );
     expect(document.documentElement.dataset["motion"]).toBe("system");
-    act(() => {
-      media.matches = true;
-      change?.();
-    });
+    const flip = (query: string) =>
+      act(() => {
+        const entry = queries.get(query)!;
+        entry.matches = true;
+        entry.listener?.();
+      });
+    flip("(prefers-reduced-motion: reduce)");
     expect(document.documentElement.dataset["motion"]).toBe("reduced");
+    await waitFor(() => expect(document.documentElement.dataset["theme"]).toBe("dark"));
+    flip("(prefers-color-scheme: light)");
+    expect(document.documentElement.dataset["theme"]).toBe("light");
+  });
+  it("applies the chosen theme and background to the page", async () => {
+    stubFetch({
+      "GET /api/study/preferences": {
+        body: { ...studyFixture.preferences, theme: "light", backdrop: "calm" },
+      },
+    });
+    renderWithProviders(
+      <ExperienceProvider>
+        <span>Lesson</span>
+      </ExperienceProvider>,
+    );
+    await waitFor(() => expect(document.documentElement.dataset["theme"]).toBe("light"));
+    expect(document.documentElement.dataset["backdrop"]).toBe("calm");
   });
   it("plays a newly earned celebration once even under StrictMode and on a revisit", async () => {
     const onCelebrate = vi.fn();

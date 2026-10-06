@@ -101,6 +101,41 @@ export function StudyPreferences() {
           </fieldset>
           <label className="practice-setting-row">
             <span>
+              <strong>Theme</strong>
+              <small>Dark, light, or whatever your device is set to.</small>
+            </span>
+            <select
+              aria-label="Theme"
+              value={data.theme ?? "dark"}
+              disabled={mutation.isPending}
+              onChange={(event) =>
+                save({ theme: event.currentTarget.value as "dark" | "light" | "system" })
+              }
+            >
+              <option value="dark">Dark</option>
+              <option value="light">Light</option>
+              <option value="system">Follow device</option>
+            </select>
+          </label>
+          <label className="practice-setting-row">
+            <span>
+              <strong>Background</strong>
+              <small>The moving galaxy, or a still gradient that stays out of the way.</small>
+            </span>
+            <select
+              aria-label="Background"
+              value={data.backdrop ?? "galaxy"}
+              disabled={mutation.isPending}
+              onChange={(event) =>
+                save({ backdrop: event.currentTarget.value as "galaxy" | "calm" })
+              }
+            >
+              <option value="galaxy">Galaxy</option>
+              <option value="calm">Calm gradient</option>
+            </select>
+          </label>
+          <label className="practice-setting-row">
+            <span>
               <strong>Motion</strong>
               <small>Your device’s reduced motion preference is always respected.</small>
             </span>

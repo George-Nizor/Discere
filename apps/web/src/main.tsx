@@ -79,3 +79,5 @@ import "./styles/game-layer.css";
 import "./styles/workbench.css";
 import "./styles/mascot.css";
 import "./styles/brand.css";
+import "./styles/theme-light.generated.css";
+import "./styles/theme.css";

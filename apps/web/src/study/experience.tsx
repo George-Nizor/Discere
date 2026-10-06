@@ -24,6 +24,9 @@ export function cacheExperience(preferences: StudyPreferences) {
     /* Server preferences remain authoritative. */
   }
 }
+function systemLight() {
+  return typeof matchMedia === "function" && matchMedia("(prefers-color-scheme: light)").matches;
+}
 function systemReduced() {
   return typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
@@ -147,6 +150,9 @@ export function playStudySound(kind: StudySound, intensity = 1) {
 }
 interface Experience {
   reduced: boolean;
+  /** The resolved scheme: "system" has already been settled against the device. */
+  theme: "dark" | "light";
+  backdrop: "galaxy" | "calm";
   celebrations: boolean;
   sound: boolean;
   prepare: () => void;
@@ -154,6 +160,8 @@ interface Experience {
 }
 const ExperienceContext = createContext<Experience>({
   reduced: systemReduced(),
+  theme: "dark",
+  backdrop: "galaxy",
   celebrations: true,
   sound: true,
   prepare: () => {},
@@ -179,6 +187,25 @@ export function ExperienceProvider({ children }: { children: ReactNode }) {
       setCached(query.data);
     }
   }, [query.data]);
+  const [osLight, setOsLight] = useState(systemLight);
+  const theme: "dark" | "light" =
+    preferences.theme === "system" ? (osLight ? "light" : "dark") : (preferences.theme ?? "dark");
+  const backdrop = preferences.backdrop ?? "galaxy";
+  useEffect(() => {
+    if (typeof matchMedia !== "function") return;
+    const media = matchMedia("(prefers-color-scheme: light)");
+    const update = () => setOsLight(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
+  useEffect(() => {
+    const root = document.documentElement;
+    root.dataset["theme"] = theme;
+    root.dataset["backdrop"] = backdrop;
+    root.style.colorScheme = theme;
+    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", theme === "light" ? "#f4f6fb" : "#141515");
+  }, [theme, backdrop]);
   useEffect(() => {
     document.documentElement.dataset["motion"] = reduced ? "reduced" : "system";
     return () => {
@@ -189,6 +216,8 @@ export function ExperienceProvider({ children }: { children: ReactNode }) {
     <ExperienceContext.Provider
       value={{
         reduced,
+        theme,
+        backdrop,
         celebrations: preferences.celebrations,
         sound: preferences.sound,
         prepare: () => {

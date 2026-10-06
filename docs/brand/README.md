@@ -43,3 +43,25 @@ copied files.
 Course cover art, Bonehead, the aurora, lesson diagrams, KaTeX maths and each course's diagram
 colours carry meaning or are content. The dark theme stays. `styles/brand.css` is loaded last and
 holds every brand override in one place.
+
+## Appearance: light theme and calm background
+
+Settings → Your practice has **Theme** (Dark, Light, Follow device) and **Background** (Galaxy,
+Calm gradient). Both are study preferences (`theme`, `backdrop`; migration 0013) and land on the
+root element as `data-theme` and `data-backdrop`.
+
+The app is drawn dark first. The light theme is two layers:
+
+- `styles/theme-light.generated.css`, written by `apps/web/scripts/light-theme.mjs`
+  (`pnpm --filter @discere/web theme:light`). It models the cascade across every stylesheet in
+  import order and, for each winning declaration with a literal colour, writes a daylight
+  counterpart in OKLCH under `:where(html[data-theme="light"])`, which adds no specificity. Dark
+  surfaces become paper, light text becomes ink, bright hues deepen to read on white, and shadows
+  soften. Sheets imported before `brilliant.css` predate the dark redesign and are left alone. A
+  rule containing `/* light-theme: keep */` is skipped (the notebook's paper). A unit test fails
+  while the file is stale.
+- `styles/theme.css`, by hand: the light token values (accent `#2f74de`, ink `#0c1626`) and the
+  few components that need judgement, such as raised choice cards and the primary button.
+
+SVG instruments with their own colours (the astronomy sky, the economics frontier, the engineering
+blueprint) stay dark in both themes on purpose.

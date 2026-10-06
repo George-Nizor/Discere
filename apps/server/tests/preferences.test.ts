@@ -43,3 +43,15 @@ describe("companion preference", () => {
     await put({ companion: true });
   });
 });
+
+describe("appearance preferences", () => {
+  it("defaults to the dark galaxy and remembers light and calm", async () => {
+    const initial = await service.app.inject({ method: "GET", url: "/api/study/preferences" });
+    expect(initial.json()).toMatchObject({ theme: "dark", backdrop: "galaxy" });
+    expect((await put({ theme: "light", backdrop: "calm" })).statusCode).toBe(200);
+    const after = await service.app.inject({ method: "GET", url: "/api/study/preferences" });
+    expect(after.json()).toMatchObject({ theme: "light", backdrop: "calm" });
+    expect((await put({ theme: "sepia" })).statusCode).toBe(400);
+    await put({ theme: "dark", backdrop: "galaxy" });
+  });
+});

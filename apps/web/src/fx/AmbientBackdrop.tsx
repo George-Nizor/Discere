@@ -8,7 +8,7 @@ import { useExperience } from "../study/experience.js";
  */
 const vertex = `attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}`;
 const fragment = `precision mediump float;
-uniform vec2 r;uniform float t;uniform vec3 a;uniform float k;
+uniform vec2 r;uniform float t;uniform vec3 a;uniform float k;uniform float l;
 float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
 float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
 return mix(mix(h(i),h(i+vec2(1,0)),f.x),mix(h(i+vec2(0,1)),h(i+vec2(1,1)),f.x),f.y);}
@@ -25,7 +25,8 @@ vec3 col=deep+band*mix(c1,c2,smoothstep(.3,.8,f1))*.85*k+curtain*mix(c1,c3,f2)*.
 float stars=step(.9975,h(floor(gl_FragCoord.xy/2.)))*(.5+.5*sin(t*2.+h(floor(gl_FragCoord.xy))*40.));
 col+=stars*.4*(1.-band);
 float v=1.-.5*length(uv-vec2(.5,.7));
-gl_FragColor=vec4(col*v,1.);}`;
+vec3 day=vec3(.955,.965,.985)-band*(1.-mix(c1,c2,smoothstep(.3,.8,f1)))*.16*k-curtain*(1.-mix(c1,c3,f2))*.07*k;
+gl_FragColor=vec4(mix(col*v,day*(.97+.03*v),l),1.);}`;
 
 function parseColour(value: string): [number, number, number] {
   const match = value.trim().match(/^#?([0-9a-f]{6})$/i);
@@ -36,10 +37,11 @@ function parseColour(value: string): [number, number, number] {
 
 export function AmbientBackdrop({ intensity = 1 }: { intensity?: number }) {
   const canvas = useRef<HTMLCanvasElement>(null);
-  const { reduced } = useExperience();
+  const { reduced, theme, backdrop } = useExperience();
+  const calm = backdrop === "calm";
   useEffect(() => {
     const element = canvas.current;
-    if (!element || typeof WebGLRenderingContext === "undefined") return;
+    if (calm || !element || typeof WebGLRenderingContext === "undefined") return;
     let gl: WebGLRenderingContext | null = null;
     try {
       gl = element.getContext("webgl", { antialias: false, alpha: false, powerPreference: "low-power" });
@@ -70,6 +72,7 @@ export function AmbientBackdrop({ intensity = 1 }: { intensity?: number }) {
     const uTime = gl.getUniformLocation(program, "t");
     const uAccent = gl.getUniformLocation(program, "a");
     const uIntensity = gl.getUniformLocation(program, "k");
+    const uLight = gl.getUniformLocation(program, "l");
     const scale = 0.5;
     const resize = () => {
       element.width = Math.max(1, Math.round(window.innerWidth * scale));
@@ -90,6 +93,7 @@ export function AmbientBackdrop({ intensity = 1 }: { intensity?: number }) {
       gl!.uniform1f(uTime, (now - started) / 1000);
       gl!.uniform3f(uAccent, shown[0], shown[1], shown[2]);
       gl!.uniform1f(uIntensity, intensity);
+      gl!.uniform1f(uLight, theme === "light" ? 1 : 0);
       gl!.drawArrays(gl!.TRIANGLES, 0, 3);
     };
     const loop = (now: number) => {
@@ -108,12 +112,14 @@ export function AmbientBackdrop({ intensity = 1 }: { intensity?: number }) {
       window.removeEventListener("resize", resize);
       delete element.dataset["ready"];
     };
-  }, [reduced, intensity]);
+  }, [reduced, intensity, theme, calm]);
+  // Calm: a still gradient in the course's colour, nothing moving behind the work.
+  if (calm) return <div className="ambient-backdrop ambient-backdrop--calm" data-ready aria-hidden="true" />;
   // A fresh canvas per setting: a WebGL context cannot be reinitialised on the same element.
   return (
     // biome-ignore lint/a11y/noAriaHiddenOnFocusable: a canvas is not focusable; this one is decoration.
     <canvas
-      key={`${reduced}:${intensity}`}
+      key={`${reduced}:${intensity}:${theme}`}
       ref={canvas}
       className="ambient-backdrop"
       aria-hidden="true"
