@@ -61,7 +61,7 @@ It preserves an existing `.env` file and an existing database.
 
 ## 4. Start Discere
 
-For the built prototype:
+For the built local release (Fastify serves the interface and forwards the local API; Vite preview is only a development tool):
 
 ```bash
 pnpm start
@@ -91,7 +91,7 @@ Press `Ctrl+C` in the running terminal to stop both services. When the original 
 pnpm stop
 ```
 
-Discere records only the process IDs it started and uses that record for cleanup.
+Discere records the process IDs and their operating-system start identities. Shutdown checks both, so stale records cannot terminate an unrelated process that reused an ID. For records from an earlier version, stop the original terminal with Ctrl+C before starting the new release.
 
 ## 5. Verify the installation
 
@@ -111,14 +111,14 @@ This performs:
 - a production web build
 - a temporary full-stack smoke test
 
-The smoke test starts isolated services on free ports with a temporary database. It verifies the web preview, API proxy, single-origin serving of the built bundle, learner-safe lesson response, deterministic SVG, prose gate, notebook round trip, the workings review through the offline provider, the per-course review queue, and numeric assessment. The temporary data is deleted when the check finishes.
+The smoke test starts isolated services on free ports with a temporary database. It verifies the release static server, API proxy, single-origin serving of the built bundle, learner-safe lesson response, deterministic SVG, prose gate, notebook round trip, the workings review through the offline provider, the per-course review queue, and numeric assessment. The temporary data is deleted when the check finishes.
 
 `pnpm build` also runs `scripts/check-csp.mjs` over `apps/web/dist`. It refuses a bundle that would fail the Content Security Policy the Instrumenta launcher applies: no inline script, no external script, stylesheet, or font, and no request to another origin. Run it alone with `pnpm check:csp`.
 
 For a faster environment-only check:
 
 ```bash
-pnpm doctor
+pnpm run doctor
 ```
 
 ## Configuration
@@ -186,15 +186,15 @@ The SQLite file contains the local profile, XP, concept mastery, attempts, assis
 
 ### Back up learning state
 
-Stop Discere, then copy these files together:
+Run `pnpm backup` while Discere is running or stopped. It creates a standalone, integrity-checked SQLite snapshot in `data/backups/`, including committed data still in the write-ahead log. The command reads the configured database from `.env` and never overwrites an existing backup.
 
-```text
-data/discere.sqlite
-data/discere.sqlite-shm
-data/discere.sqlite-wal
+To recover, create a separate database:
+
+```bash
+pnpm restore data/backups/<backup-file>.sqlite data/recovered.sqlite
 ```
 
-SQLite may not create the `-shm` and `-wal` files until the application has run.
+The restore command validates the backup and refuses an existing destination or the currently configured database. Stop Discere, set `DISCERE_DATABASE_PATH=data/recovered.sqlite` in `.env`, then run `pnpm start`. Keep the original database until you have verified your progress and notes. Browser-only drafts and preferences belong to the browser profile and are not included in a SQLite backup.
 
 ### Reset learning state
 
@@ -244,7 +244,7 @@ Use Node.js 22.16 or newer, preferably Node.js 24, then reinstall:
 ```bash
 rm -rf node_modules
 pnpm install --force
-pnpm doctor
+pnpm run doctor
 ```
 
 On PowerShell, replace the first command with:
@@ -261,7 +261,7 @@ Run:
 
 ```bash
 pnpm stop
-pnpm doctor
+pnpm run doctor
 ```
 
 When another application owns the port, edit `.env` and choose unused values for `DISCERE_PORT` and `DISCERE_WEB_PORT`.
@@ -282,7 +282,7 @@ pnpm start
 Confirm both services were started by the same `pnpm dev` or `pnpm start` command. Then run:
 
 ```bash
-pnpm doctor
+pnpm run doctor
 ```
 
 Avoid starting the web and API packages separately unless you are debugging them.

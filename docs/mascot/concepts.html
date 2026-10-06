@@ -1,0 +1,834 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Companion concepts</title>
+<style>
+:root{
+  --page:#0f1010; --canvas:#141515; --card:#1a1c1c; --card-2:#202222; --line:#2c302e; --line-strong:#454b47;
+  --ink:#f4f5f2; --ink-soft:#c3c7c1; --muted:#8f978f; --green:#38ce65; --error:#ff9989; --gold:#ffd23e; --focus:#b3d3ff;
+  --suite-ink:#0B0E12; --paper:#F0EDE6;
+  --ease-back:cubic-bezier(.34,1.56,.64,1);
+}
+*{box-sizing:border-box}
+html{color-scheme:dark}
+body{margin:0;background:var(--page);color:var(--ink);font:15px/1.5 "Segoe UI Variable","Segoe UI",system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:3px;border-radius:8px}
+.wrap{max-width:1360px;margin:0 auto;padding:0 28px}
+header.top{padding:44px 0 18px;display:flex;gap:24px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap}
+.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600}
+h1{font-size:40px;line-height:1.08;margin:6px 0 10px;letter-spacing:-.02em}
+h2{font-size:22px;margin:0;letter-spacing:-.01em}
+.lede{color:var(--ink-soft);max-width:66ch;margin:0}
+.controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.switch{display:inline-flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);padding:8px 12px;border-radius:999px;cursor:pointer;user-select:none;font-size:14px}
+.switch input{appearance:none;width:34px;height:20px;border-radius:999px;background:var(--line-strong);position:relative;margin:0;cursor:pointer;transition:background .2s}
+.switch input::after{content:"";position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:#fff;transition:transform .2s var(--ease-back)}
+.switch input:checked{background:var(--green)}
+.switch input:checked::after{transform:translateX(14px)}
+section.block{padding:30px 0 10px}
+.block-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-bottom:16px;flex-wrap:wrap}
+.block-head p{margin:4px 0 0;color:var(--muted);font-size:14px;max-width:72ch}
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+@media (max-width:1100px){.grid4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:620px){.grid4{grid-template-columns:1fr}.wrap{padding:0 16px}h1{font-size:30px}}
+
+/* glance cards */
+.glance{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:18px 18px 20px;position:relative;overflow:hidden}
+.glance::before{content:"";position:absolute;inset:-40% -20% auto;height:80%;background:radial-gradient(closest-side,var(--accent),transparent);opacity:.16;pointer-events:none}
+.glance .hero{width:168px;height:168px;margin:6px auto 4px;position:relative}
+.glance .num{position:absolute;top:14px;left:16px;font-size:12px;color:var(--muted);font-weight:700;letter-spacing:.1em}
+.glance h3{margin:4px 0 0;font-size:24px;letter-spacing:-.01em}
+.glance .kind{color:var(--accent-ink);font-weight:600;font-size:13px;margin-bottom:8px}
+.glance p{margin:0 0 12px;color:var(--ink-soft);font-size:14px}
+.swatches{display:flex;gap:6px;flex-wrap:wrap}
+.sw{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);background:var(--card-2);border-radius:999px;padding:3px 9px 3px 4px;font-variant-numeric:tabular-nums}
+.sw i{width:14px;height:14px;border-radius:50%;display:inline-block;box-shadow:inset 0 0 0 1px rgba(255,255,255,.15)}
+
+/* playground */
+.play{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:14px;display:flex;flex-direction:column;gap:12px}
+.stage{position:relative;height:300px;border-radius:16px;background:radial-gradient(120% 90% at 50% 100%,color-mix(in srgb,var(--accent) 16%,var(--canvas)),var(--canvas) 62%);border:1px solid var(--line);overflow:hidden}
+.stage .pet{position:absolute;left:50%;bottom:14px;width:200px;height:200px;margin-left:-100px;cursor:pointer;border-radius:30px;-webkit-tap-highlight-color:transparent}
+.stage .label{position:absolute;left:14px;top:12px;font-weight:700;font-size:15px}
+.stage .hint{position:absolute;right:12px;top:13px;font-size:11.5px;color:var(--muted)}
+.sleepbar{position:absolute;left:14px;right:14px;bottom:8px;height:3px;border-radius:3px;background:rgba(255,255,255,.06);overflow:hidden}
+.sleepbar i{display:block;height:100%;width:100%;background:color-mix(in srgb,var(--accent) 70%,#fff);opacity:.55;transform-origin:left}
+.bubble{position:absolute;left:50%;top:40px;transform:translate(-50%,6px) scale(.9);background:#f4f5f2;color:#141515;font-weight:600;font-size:13.5px;padding:7px 12px;border-radius:14px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s,transform .3s var(--ease-back);z-index:3;box-shadow:0 6px 20px rgba(0,0,0,.35)}
+.bubble::after{content:"";position:absolute;left:50%;bottom:-6px;margin-left:-6px;border:6px solid transparent;border-bottom:0;border-top-color:#f4f5f2}
+.bubble.show{opacity:1;transform:translate(-50%,0) scale(1)}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid var(--line-strong);background:var(--card-2);border-radius:12px;padding:8px 12px;cursor:pointer;font-weight:600;font-size:13.5px;transition:transform .15s var(--ease-back),background .15s}
+.btn:hover{background:#2a2d2d}
+.btn:active{transform:scale(.96)}
+.btn.good{background:color-mix(in srgb,var(--green) 22%,var(--card-2));border-color:color-mix(in srgb,var(--green) 55%,transparent)}
+.btn.bad{background:color-mix(in srgb,var(--error) 16%,var(--card-2));border-color:color-mix(in srgb,var(--error) 45%,transparent)}
+.btn.small{padding:5px 10px;font-size:12.5px;border-radius:10px;font-weight:500;color:var(--ink-soft)}
+.row.answer .btn{flex:1}
+.confetti{position:absolute;width:8px;height:12px;border-radius:2px;pointer-events:none;z-index:2;left:0;top:0}
+
+/* tables */
+.table{background:var(--card);border:1px solid var(--line);border-radius:22px;overflow-x:auto}
+.table table{border-collapse:collapse;width:100%;min-width:900px}
+.table th,.table td{padding:12px 10px;text-align:center;border-bottom:1px solid var(--line)}
+.table tr:last-child td{border-bottom:0}
+.table thead th{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.table th[scope=row]{text-align:left;font-size:16px;padding-left:20px;width:150px}
+.table th[scope=row] small{display:block;color:var(--muted);font-weight:500;font-size:12px}
+.cell-pet{width:104px;height:104px;margin:0 auto}
+.size-cell{display:flex;align-items:center;justify-content:center;min-height:100px}
+.paper{background:var(--paper);border-radius:12px;padding:10px}
+.sil .m{filter:brightness(0) invert(1)}
+.sil .m .halo{display:none}
+.tab{display:inline-flex;align-items:center;gap:8px;background:#2a2d2d;border-radius:10px 10px 0 0;padding:8px 14px 9px;font-size:12.5px;color:var(--ink-soft);box-shadow:inset 0 -2px 0 #3a3f3c;white-space:nowrap}
+.tab .x{color:var(--muted);margin-left:6px}
+
+/* logo */
+.logo-col{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:14px}
+.logo-col h3{margin:2px 4px 10px;font-size:16px}
+.logo-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.logo-tile{aspect-ratio:1;border-radius:14px;display:grid;place-items:center;padding:12%}
+.logo-tile.chk{background:repeating-conic-gradient(#262828 0 25%,#1d1f1f 0 50%) 0 0/16px 16px}
+.logo-tile.ink{background:var(--suite-ink)}
+.logo-tile.pap{background:var(--paper)}
+.logo-tile > div{width:100%;height:100%}
+.logo-cap{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:6px;font-size:11px;color:var(--muted);text-align:center}
+
+/* context */
+.ctx{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px}
+@media (max-width:980px){.ctx{grid-template-columns:1fr}}
+.mock{position:relative;background:var(--canvas);border:1px solid var(--line);border-radius:22px;min-height:440px;overflow:hidden;padding:22px 26px 26px}
+.mock .bar{height:8px;background:#262928;border-radius:8px;overflow:hidden;margin:4px 0 26px}
+.mock .bar i{display:block;height:100%;width:38%;background:var(--green);border-radius:8px;transition:width .6s var(--ease-back)}
+.mock .q-eyebrow{color:var(--muted);font-size:12.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.mock h3{font-size:26px;margin:6px 0 18px;letter-spacing:-.01em}
+.choices{display:flex;gap:14px;max-width:460px}
+.choice{flex:1;font-size:30px;font-weight:700;padding:18px 0;border-radius:16px;border:2px solid var(--line-strong);background:var(--card-2);cursor:pointer;transition:transform .15s var(--ease-back),border-color .2s,background .2s}
+.choice:hover{border-color:#6b746e}
+.choice.right{border-color:var(--green);background:color-mix(in srgb,var(--green) 16%,var(--card-2))}
+.choice.wrong{border-color:var(--error);background:color-mix(in srgb,var(--error) 12%,var(--card-2))}
+.feedback{margin-top:18px;max-width:460px;min-height:56px;color:var(--ink-soft);font-size:15px}
+.feedback b{color:var(--ink)}
+.dock{position:absolute;right:18px;bottom:14px;width:96px;height:96px;transition:transform .5s var(--ease-back),opacity .3s}
+.dock .pet{width:100%;height:100%;cursor:pointer;border-radius:22px}
+.dock .bubble{top:-34px;left:auto;right:30px;transform:translate(0,6px) scale(.9)}
+.dock .bubble.show{transform:translate(0,0) scale(1)}
+.dock .bubble::after{left:auto;right:20px}
+.mock.hidden .dock{transform:translate(0,120px);opacity:0}
+.peek{position:absolute;right:18px;bottom:0;background:var(--card-2);border:1px solid var(--line);border-bottom:0;border-radius:12px 12px 0 0;padding:6px 12px;font-size:12.5px;color:var(--ink-soft);cursor:pointer;transform:translateY(100%);transition:transform .35s var(--ease-back)}
+.mock.hidden .peek{transform:none}
+.side{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:18px}
+.side h3{margin:0 0 8px;font-size:16px}
+.side ul{margin:0;padding-left:18px;color:var(--ink-soft);font-size:13.5px}
+.side li{margin:6px 0}
+.seg{display:flex;background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:3px;gap:3px;margin-bottom:14px}
+.seg button{flex:1;border:0;background:transparent;border-radius:9px;padding:7px 4px;cursor:pointer;font-size:13px;font-weight:600;color:var(--ink-soft)}
+.seg button[aria-pressed=true]{background:#33373a;color:var(--ink)}
+footer{color:var(--muted);font-size:13px;padding:30px 0 60px}
+
+/* ───── mascot rig ───── */
+.m{display:block;width:100%;height:100%;overflow:visible}
+.m .lid{transform-box:fill-box;transform-origin:center;transition:transform .07s ease-in}
+.m.blinking .lid{transform:scaleY(.08)}
+.m .shadow{fill:#000;opacity:.38;transform-origin:60px 113px}
+.m.is-mark .shadow{display:none}
+.m .rig{transform-origin:60px 110px}
+.m.live .rig{animation:bob 3.4s ease-in-out infinite}
+.m.live.expr-sleepy .rig{animation:breathe 4.4s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-2.4px)}}
+@keyframes breathe{0%,100%{transform:scale(1,1)}50%{transform:scale(1.03,.97)}}
+.m .act{transform-origin:60px 110px}
+.m .pose{transform-origin:60px 108px;transition:transform .5s var(--ease-back)}
+.m.expr-curious .pose{transform:rotate(-7deg)}
+.m.expr-sleepy .pose{transform:translateY(2px) rotate(4deg)}
+.m.expr-proud .pose{transform:translateY(-3px) scale(1.035)}
+.m.expr-delighted .pose{transform:translateY(-2px) scale(1.045)}
+.m.expr-encouraging .pose{transform:rotate(4deg)}
+.m .face-shift{transition:transform .08s linear}
+.m.do-react .act{animation:react .55s ease-out}
+.m.do-bob .act{animation:hop .65s ease-out}
+.m.do-shake .act{animation:shake .5s ease-in-out}
+.m.do-celebrate .act{animation:celebrate 1.05s cubic-bezier(.3,.7,.4,1)}
+.m.do-celebrate .shadow{animation:shadow 1.05s cubic-bezier(.3,.7,.4,1)}
+.m.do-bob .shadow{animation:shadowhop .65s ease-out}
+@keyframes react{25%{transform:scale(1.13,.87)}55%{transform:scale(.93,1.08)}80%{transform:scale(1.03,.97)}}
+@keyframes hop{35%{transform:translateY(-12px) scale(.97,1.04)}65%{transform:translateY(0) scale(1.07,.93)}85%{transform:scale(.99,1.01)}}
+@keyframes shake{20%{transform:translateX(-3.5px) rotate(-3deg)}40%{transform:translateX(3.5px) rotate(3deg)}60%{transform:translateX(-2px) rotate(-1deg)}80%{transform:translateX(1px)}}
+@keyframes celebrate{14%{transform:scale(1.12,.85)}42%{transform:translateY(-30px) rotate(-10deg) scale(.95,1.07)}58%{transform:translateY(-32px) rotate(10deg)}84%{transform:translateY(0) scale(1.12,.88)}93%{transform:scale(.98,1.02)}}
+@keyframes shadow{42%,58%{transform:scale(.55);opacity:.18}84%{transform:scale(1.1)}}
+@keyframes shadowhop{35%{transform:scale(.75);opacity:.25}}
+
+/* fx */
+.fx-z{opacity:0;animation:zfloat 2.6s ease-in infinite;transform-box:fill-box;transform-origin:center}
+.fx-z:nth-child(2){animation-delay:.85s}.fx-z:nth-child(3){animation-delay:1.7s}
+@keyframes zfloat{0%{opacity:0;transform:translate(0,4px) scale(.6)}30%{opacity:1}100%{opacity:0;transform:translate(9px,-16px) scale(1.15)}}
+.fx-spark{transform-box:fill-box;transform-origin:center;animation:twinkle 1.1s ease-in-out infinite}
+.fx-spark:nth-child(2){animation-delay:.35s}.fx-spark:nth-child(3){animation-delay:.7s}
+@keyframes twinkle{0%,100%{transform:scale(.55);opacity:.45}50%{transform:scale(1.15);opacity:1}}
+.fx-q{transform-box:fill-box;transform-origin:50% 100%;animation:qwobble 1.6s ease-in-out infinite}
+@keyframes qwobble{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(10deg) translateY(-2px)}}
+.fx-star{transform-box:fill-box;transform-origin:center;animation:starspin 3s linear infinite}
+@keyframes starspin{to{transform:rotate(360deg)}}
+.fx-heart{transform-box:fill-box;transform-origin:center;animation:heartbeat 1.3s ease-in-out infinite}
+@keyframes heartbeat{0%,100%{transform:scale(.85)}30%{transform:scale(1.1)}}
+
+/* Lumen */
+.m-lumen .halo{transform-origin:60px 84px;opacity:.55;transition:opacity .6s}
+.m-lumen.live .halo{animation:glow 3.4s ease-in-out infinite}
+@keyframes glow{50%{transform:scale(1.09)}}
+.m-lumen.expr-delighted .halo{opacity:1}.m-lumen.expr-proud .halo{opacity:.9}.m-lumen.expr-encouraging .halo{opacity:.75}
+.m-lumen.expr-sleepy .halo{opacity:.1}.m-lumen.expr-sleepy .lantern{filter:saturate(.55) brightness(.8)}
+.m-lumen .lantern{transition:filter .6s}
+.m-lumen .wing{transform-origin:47px 63px;transition:transform .4s}
+.m-lumen.live .wing{animation:flutter 2.8s ease-in-out infinite}
+.m-lumen.live.expr-delighted .wing,.m-lumen.live.do-celebrate .wing,.m-lumen.live.expr-proud .wing{animation:flutter .2s ease-in-out infinite}
+.m-lumen.live.expr-sleepy .wing{animation:none;transform:rotate(-14deg)}
+@keyframes flutter{50%{transform:rotate(-12deg)}}
+.m-lumen .ant{transform-origin:52px 31px;transition:transform .5s var(--ease-back)}
+.m-lumen.expr-delighted .ant,.m-lumen.expr-proud .ant{transform:rotate(12deg)}
+.m-lumen.expr-curious .ant-l{transform:rotate(16deg)}.m-lumen.expr-curious .ant-r{transform:rotate(-10deg)}
+.m-lumen.expr-sleepy .ant{transform:rotate(-30deg)}
+.m-lumen.expr-encouraging .ant{transform:rotate(-8deg)}
+
+/* Sprig */
+.m-sprig .leaf{transform-origin:60px 27px;transition:transform .55s var(--ease-back)}
+.m-sprig.live .leaf-in{transform-origin:60px 27px;animation:sway 3.6s ease-in-out infinite}
+@keyframes sway{50%{transform:rotate(5deg)}}
+.m-sprig.expr-delighted .leaf{transform:rotate(22deg)}
+.m-sprig.expr-proud .leaf{transform:rotate(14deg)}
+.m-sprig.expr-curious .leaf-r{transform:rotate(26deg)}.m-sprig.expr-curious .leaf-l{transform:rotate(-8deg)}
+.m-sprig.expr-sleepy .leaf{transform:rotate(-34deg)}
+.m-sprig.expr-encouraging .leaf-r{transform:rotate(32deg)}
+.m-sprig.live.expr-encouraging .leaf-r .leaf-in{animation:wave .7s ease-in-out infinite}
+@keyframes wave{50%{transform:rotate(-14deg)}}
+.m-sprig .bloom{transform-origin:60px 22px;transform:scale(0);transition:transform .6s var(--ease-back)}
+.m-sprig.expr-proud .bloom,.m-sprig.do-celebrate .bloom{transform:scale(1)}
+.m-sprig.live.expr-proud .bloom{animation:bloomspin 5s linear infinite}
+@keyframes bloomspin{to{transform:scale(1) rotate(360deg)}}
+.m-sprig .stem{transform-origin:60px 44px;transition:transform .5s var(--ease-back)}
+.m-sprig.expr-sleepy .stem{transform:rotate(-6deg)}
+
+/* Nib */
+.m-nib .quills{transform-origin:60px 76px;transition:transform .5s var(--ease-back)}
+.m-nib.live .quills-in{transform-origin:60px 76px;animation:qbreathe 3.4s ease-in-out infinite}
+@keyframes qbreathe{50%{transform:scale(1.025)}}
+.m-nib.expr-delighted .quills{transform:scale(1.1)}
+.m-nib.expr-proud .quills{transform:scale(1.12) rotate(-2deg)}
+.m-nib.expr-curious .quills{transform:scale(1.04) rotate(-4deg)}
+.m-nib.expr-sleepy .quills{transform:scale(.86) translateY(3px)}
+.m-nib.expr-encouraging .quills{transform:scale(.95)}
+.m-nib.do-react .quills,.m-nib.do-celebrate .quills{animation:bristle .5s ease-out}
+@keyframes bristle{30%{transform:scale(1.2)}}
+.m-nib .ear{transform-origin:37px 60px;transition:transform .5s var(--ease-back)}
+.m-nib.expr-curious .ear-r{transform:rotate(14deg)}
+.m-nib.expr-sleepy .ear{transform:rotate(-16deg)}
+
+/* Orbi */
+.m-orbi .spots{transition:opacity .4s}
+
+/* reduced motion: every state stays, nothing travels */
+html[data-motion=reduced] .m *,html[data-motion=reduced] .m{animation:none!important;transition:none!important}
+html[data-motion=reduced] .fx-z{opacity:.9}
+html[data-motion=reduced] .fx-z:nth-child(2){transform:translate(5px,-7px)}
+html[data-motion=reduced] .fx-z:nth-child(3){transform:translate(10px,-14px)}
+html[data-motion=reduced] .bubble,html[data-motion=reduced] .dock{transition:opacity .2s!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="eyebrow">Companion concept sheet · round 1</div>
+      <h1>Four candidates for the companion</h1>
+      <p class="lede">Each one is drawn in code: inline SVG, no image files. Move the cursor and they watch it. Click one to pet it. Answer right or wrong and they react. Leave them alone for seven seconds and they fall asleep. None of them depends on the platform's name.</p>
+    </div>
+    <div class="controls">
+      <label class="switch"><input type="checkbox" id="rm"> Reduced motion</label>
+    </div>
+  </header>
+
+  <section class="block" aria-labelledby="h-glance">
+    <div class="block-head"><div><h2 id="h-glance">At a glance</h2><p>Species, temperament and colour story. The accent colours are chosen to sit on the app's near-black canvas and to stand alone as a mark.</p></div></div>
+    <div class="grid4" id="glance"></div>
+  </section>
+
+  <section class="block" aria-labelledby="h-play">
+    <div class="block-head">
+      <div><h2 id="h-play">Playground</h2><p>Click a companion to pet it (keep clicking). Correct and wrong answers trigger the reactions a lesson would use. The thin bar counts down to sleep; any input wakes them.</p></div>
+      <div class="row"><button class="btn good" id="all-good">Everyone: correct</button><button class="btn bad" id="all-bad">Everyone: wrong</button></div>
+    </div>
+    <div class="grid4" id="play"></div>
+  </section>
+
+  <section class="block" aria-labelledby="h-expr">
+    <div class="block-head"><div><h2 id="h-expr">Expressions</h2><p>The six states every surface draws from. Body language changes with the face: antennae, leaves, quills or the ring tilt with the mood.</p></div></div>
+    <div class="table"><table id="expr"></table></div>
+  </section>
+
+  <section class="block" aria-labelledby="h-size">
+    <div class="block-head"><div><h2 id="h-size">Sizes and silhouette</h2><p>The mark variant drops highlights, blush and small strokes so it holds at favicon size. The silhouette column is the honest test: one flat colour, no detail.</p></div></div>
+    <div class="table"><table id="sizes"></table></div>
+  </section>
+
+  <section class="block" aria-labelledby="h-logo">
+    <div class="block-head"><div><h2 id="h-logo">Logo mark, no wordmark</h2><p>Transparent canvas, no container, as the suite's brand rules ask. Shown on transparency, suite ink and paper.</p></div></div>
+    <div class="grid4" id="logos"></div>
+  </section>
+
+  <section class="block" aria-labelledby="h-ctx">
+    <div class="block-head"><div><h2 id="h-ctx">In a lesson</h2><p>The pet docked in the corner of a lesson. It reacts to answers, says very little, and can be tucked away.</p></div></div>
+    <div class="ctx">
+      <div class="mock" id="mock">
+        <div class="bar"><i id="mock-bar"></i></div>
+        <div class="q-eyebrow">Fractions · comparing</div>
+        <h3>Which fraction is larger?</h3>
+        <div class="choices"><button class="choice" data-v="a">3/4</button><button class="choice" data-v="b">2/3</button></div>
+        <div class="feedback" id="mock-fb" aria-live="polite">Pick one. Rewrite both over twelfths if it helps.</div>
+        <div class="dock"><div class="bubble" id="mock-bubble"></div><div class="pet" id="mock-pet" role="button" tabindex="0"></div></div>
+        <button class="peek" id="peek">Show companion</button>
+      </div>
+      <aside class="side">
+        <h3>Companion</h3>
+        <div class="seg" id="seg" role="group" aria-label="Choose a companion"></div>
+        <label class="switch" style="margin-bottom:14px"><input type="checkbox" id="hide-pet"> Hide the companion</label>
+        <h3>Rules it follows here</h3>
+        <ul>
+          <li>Sits in the corner outside the reading column; never covers a choice or the Check button.</li>
+          <li>Reacts once per answer, then settles. No reaction to visiting a screen.</li>
+          <li>A wrong answer earns encouragement, never a sad face.</li>
+          <li>Sleeps after a pause; wakes on the next input.</li>
+          <li>Reduced motion keeps every expression and drops the movement.</li>
+        </ul>
+      </aside>
+    </div>
+  </section>
+
+  <footer>Concept sheet for review. Nothing here is wired into the app yet. Rationale and rollout notes: docs/mascot/README.md.</footer>
+</div>
+
+<script>
+"use strict";
+/* ───────────── shared drawing helpers ───────────── */
+let UID = 0;
+const EXPRS = ["idle", "curious", "delighted", "encouraging", "sleepy", "proud"];
+const EXPR_LABEL = { idle: "Idle", curious: "Curious", delighted: "Delighted", encouraging: "Encouraging", sleepy: "Sleepy", proud: "Proud" };
+const f = (n) => +n.toFixed(2);
+
+function sparkle(x, y, s, fill, cls = "fx-spark") {
+  const k = s * 0.18;
+  return `<path class="${cls}" fill="${fill}" d="M${f(x)} ${f(y - s)}Q${f(x + k)} ${f(y - k)} ${f(x + s)} ${f(y)}Q${f(x + k)} ${f(y + k)} ${f(x)} ${f(y + s)}Q${f(x - k)} ${f(y + k)} ${f(x - s)} ${f(y)}Q${f(x - k)} ${f(y - k)} ${f(x)} ${f(y - s)}Z"/>`;
+}
+function star5(x, y, R, fill, cls) {
+  let d = "";
+  for (let i = 0; i < 10; i++) {
+    const r = i % 2 ? R * 0.45 : R, a = -Math.PI / 2 + i * Math.PI / 5;
+    d += (i ? "L" : "M") + f(x + r * Math.cos(a)) + " " + f(y + r * Math.sin(a));
+  }
+  return `<path class="${cls}" d="${d}Z" fill="${fill}" stroke="${fill}" stroke-width="1.6" stroke-linejoin="round"/>`;
+}
+function heart(x, y, s, fill, cls) {
+  return `<path class="${cls}" fill="${fill}" d="M${x} ${f(y + s * 0.9)}C${f(x - s * 1.4)} ${f(y)} ${f(x - s * 0.9)} ${f(y - s * 1.1)} ${x} ${f(y - s * 0.35)}C${f(x + s * 0.9)} ${f(y - s * 1.1)} ${f(x + s * 1.4)} ${y} ${x} ${f(y + s * 0.9)}Z"/>`;
+}
+
+function eye(x, y, r, expr, side, c, id, mark) {
+  const ink = c.ink, sw = mark ? r * 0.62 : r * 0.5;
+  let s = "";
+  if (expr === "delighted" || expr === "proud") {
+    const h = expr === "proud" ? r * 0.75 : r * 1.15;
+    s = `<path d="M${f(-r)} ${f(r * 0.35)}Q0 ${f(-h * 1.15)} ${f(r)} ${f(r * 0.35)}" fill="none" stroke="${ink}" stroke-width="${f(sw)}" stroke-linecap="round"/>`;
+  } else if (expr === "sleepy") {
+    s = `<path d="M${f(-r)} ${f(-r * 0.05)}Q0 ${f(r * 0.8)} ${f(r)} ${f(-r * 0.05)}" fill="none" stroke="${ink}" stroke-width="${f(sw * 0.85)}" stroke-linecap="round"/>`;
+  } else {
+    const k = expr === "curious" && side === 1 ? 1.2 : 1, rr = r * k;
+    let pupil = `<ellipse rx="${f(rr * 0.82)}" ry="${f(rr)}" fill="${ink}"/>`;
+    pupil += `<circle cx="${f(-rr * 0.26)}" cy="${f(-rr * 0.38)}" r="${f(rr * (mark ? 0.36 : 0.33))}" fill="#fff"/>`;
+    if (!mark) pupil += `<circle cx="${f(rr * 0.26)}" cy="${f(rr * 0.4)}" r="${f(rr * 0.14)}" fill="#fff" opacity=".75"/>`;
+    let inner = `<g class="pupil"><g class="lid">${pupil}</g></g>`;
+    if (expr === "encouraging") {
+      const cid = `${id}c${side}`;
+      s = `<clipPath id="${cid}"><path d="M${f(-r * 2)} ${f(-r * 2)}H${f(r * 2)}V${f(r * 0.62)}Q0 ${f(-r * 0.05)} ${f(-r * 2)} ${f(r * 0.62)}Z"/></clipPath><g clip-path="url(#${cid})">${inner}</g>`;
+    } else s = inner;
+  }
+  if (expr === "curious" && side === 1)
+    s += `<path d="M${f(-r * 0.9)} ${f(-r * 1.85)}Q0 ${f(-r * 2.6)} ${f(r * 0.95)} ${f(-r * 2)}" fill="none" stroke="${ink}" stroke-width="${f(r * 0.34)}" stroke-linecap="round"/>`;
+  if (expr === "encouraging") {
+    const inner = -side;
+    s += `<path d="M${f(-inner * r * 0.95)} ${f(-r * 1.5)}L${f(inner * r * 0.75)} ${f(-r * 1.95)}" stroke="${ink}" stroke-width="${f(r * 0.32)}" stroke-linecap="round"/>`;
+  }
+  return `<g transform="translate(${x} ${y})">${s}</g>`;
+}
+
+function mouth(x, y, w, expr, c, mark) {
+  const ink = c.ink, sw = mark ? 3 : 2.2;
+  const st = `fill="none" stroke="${ink}" stroke-width="${sw}" stroke-linecap="round"`;
+  switch (expr) {
+    case "curious": return `<ellipse cx="${f(x + w * 0.55)}" cy="${f(y + 1)}" rx="${f(w * 0.36)}" ry="${f(w * 0.46)}" fill="${ink}"/>`;
+    case "delighted":
+      return `<path d="M${f(x - w * 1.2)} ${f(y - 1)}Q${x} ${f(y + w * 2.1)} ${f(x + w * 1.2)} ${f(y - 1)}Z" fill="${ink}" stroke="${ink}" stroke-width="1.2" stroke-linejoin="round"/>` +
+        (mark ? "" : `<ellipse cx="${x}" cy="${f(y + w * 0.98)}" rx="${f(w * 0.55)}" ry="${f(w * 0.3)}" fill="#FF7E8E"/>`);
+    case "encouraging": return `<path d="M${f(x - w * 0.8)} ${y}Q${x} ${f(y + w * 0.75)} ${f(x + w * 0.8)} ${y}" ${st}/>`;
+    case "sleepy": return `<ellipse cx="${x}" cy="${f(y + 1)}" rx="${f(w * 0.3)}" ry="${f(w * 0.24)}" fill="${ink}"/>`;
+    case "proud": return `<path d="M${f(x - w)} ${f(y + 0.4)}Q${f(x + w * 0.1)} ${f(y + w * 1.1)} ${f(x + w * 1.15)} ${f(y - w * 0.35)}" ${st}/>`;
+    default: return `<path d="M${f(x - w)} ${y}Q${x} ${f(y + w * 0.9)} ${f(x + w)} ${y}" ${st}/>`;
+  }
+}
+
+const BLUSH = { idle: 0.35, curious: 0.3, delighted: 0.85, encouraging: 0.55, sleepy: 0.45, proud: 0.65 };
+function faceMarkup(sp, expr, id, mark) {
+  const c = sp.face;
+  let s = "";
+  if (!mark) {
+    const o = BLUSH[expr];
+    s += `<ellipse cx="${f(c.lx - c.r * 0.3)}" cy="${f(c.y + c.r * 1.55)}" rx="${f(c.r * 0.95)}" ry="${f(c.r * 0.48)}" fill="${c.blush}" opacity="${o}"/>`;
+    s += `<ellipse cx="${f(c.rx + c.r * 0.3)}" cy="${f(c.y + c.r * 1.55)}" rx="${f(c.r * 0.95)}" ry="${f(c.r * 0.48)}" fill="${c.blush}" opacity="${o}"/>`;
+  }
+  s += eye(c.lx, c.y, c.r, expr, -1, c, id, mark) + eye(c.rx, c.y, c.r, expr, 1, c, id, mark);
+  s += mouth((c.lx + c.rx) / 2, c.my, c.mw, expr, c, mark);
+  return s;
+}
+function fxMarkup(sp, expr, mark) {
+  if (mark) return "";
+  const [x, y] = sp.fxAt;
+  switch (expr) {
+    case "curious": return `<text class="fx-q" x="${x}" y="${y + 6}" font-size="17" font-weight="800" fill="#FFD23E" font-family="system-ui,sans-serif">?</text>`;
+    case "sleepy": return `<g fill="#B9C6FF" font-weight="800" font-family="system-ui,sans-serif"><text class="fx-z" x="${x}" y="${y + 8}" font-size="9">z</text><text class="fx-z" x="${x}" y="${y + 8}" font-size="12">z</text><text class="fx-z" x="${x}" y="${y + 8}" font-size="15">Z</text></g>`;
+    case "delighted": return `<g>${sparkle(x + 4, y, 5.5, "#FFE07A")}${sparkle(120 - x - 6, y + 8, 4, "#FFFFFF")}${sparkle(x + 10, y + 22, 3.4, "#FFD23E")}</g>`;
+    case "proud": return star5(x + 2, y - 2, 7.5, "#FFD23E", "fx-star");
+    case "encouraging": return heart(x + 2, y + 2, 5.5, "#FF8FB1", "fx-heart");
+    default: return "";
+  }
+}
+
+/* ───────────── species ───────────── */
+function mirror(inner) { return `<g transform="matrix(-1 0 0 1 120 0)">${inner}</g>`; }
+
+const SPECIES = {
+  lumen: {
+    name: "Lumen", kind: "A firefly with a lantern", accent: "#3E83F8", accentInk: "#8DB8FF",
+    blurb: "Quietly curious. Its lantern glows brighter as an idea comes together, and dims when it dozes.",
+    swatches: [["#3E83F8", "Cobalt"], ["#FFC24D", "Lantern"], ["#0D1B3D", "Ink"]],
+    face: { lx: 49.5, rx: 70.5, y: 54, r: 6, my: 66, mw: 4.5, ink: "#0D1B3D", blush: "#FF8FB0" },
+    fxAt: [90, 22], confetti: ["#FFC24D", "#3E83F8", "#9CC2FF", "#FFF2C2"],
+    draw(id, mark) {
+      const wing = `<g class="wing"><path d="M47 60C30 40 12 44 14 60C16 74 34 74 47 66Z" fill="#9CC4FF" fill-opacity="${mark ? 0.5 : 0.3}" stroke="#CFE3FF" stroke-opacity=".85" stroke-width="${mark ? 2.4 : 1.5}" stroke-linejoin="round"/>${mark ? "" : `<path d="M44 63C34 58 25 58 19 61" stroke="#D8E8FF" stroke-opacity=".5" stroke-width="1" fill="none"/>`}</g>`;
+      const ant = (cls) => `<g class="ant ${cls}"><path d="M52 31C49 19 42 13 34 14" stroke="#2C62D6" stroke-width="${mark ? 4.2 : 3.2}" fill="none" stroke-linecap="round"/><circle cx="34" cy="14" r="${mark ? 5.4 : 4.6}" fill="url(#${id}l)"/></g>`;
+      return `<defs>
+        <radialGradient id="${id}b" cx=".36" cy=".3" r=".8"><stop offset="0" stop-color="#A4C7FF"/><stop offset=".5" stop-color="#3E83F8"/><stop offset="1" stop-color="#1B43A8"/></radialGradient>
+        <radialGradient id="${id}l" cx=".45" cy=".35" r=".75"><stop offset="0" stop-color="#FFF6CF"/><stop offset=".45" stop-color="#FFCB52"/><stop offset="1" stop-color="#EE8F27"/></radialGradient>
+        <radialGradient id="${id}h"><stop offset="0" stop-color="#FFC24D" stop-opacity=".62"/><stop offset=".5" stop-color="#FFB23E" stop-opacity=".16"/><stop offset="1" stop-color="#FFB23E" stop-opacity="0"/></radialGradient>
+      </defs>
+      <circle class="halo" cx="60" cy="84" r="${mark ? 34 : 46}" fill="url(#${id}h)"/>
+      <g class="pose">
+        ${wing}${mirror(wing)}
+        <ellipse class="lantern" cx="60" cy="88" rx="20" ry="17" fill="url(#${id}l)"/>
+        ${mark ? "" : `<path d="M45 93Q60 99 75 93" stroke="#C9741C" stroke-opacity=".3" stroke-width="2" fill="none" stroke-linecap="round"/>`}
+        ${ant("ant-l")}${mirror(ant("ant-r"))}
+        <circle cx="60" cy="54" r="27" fill="url(#${id}b)"/>
+        ${mark ? "" : `<path d="M39 46Q44 34 56 31" stroke="#fff" stroke-opacity=".32" stroke-width="3" stroke-linecap="round" fill="none"/>`}
+        <g class="face"><g class="face-shift"></g></g>
+      </g>`;
+    },
+  },
+  sprig: {
+    name: "Sprig", kind: "A seed that has just sprouted", accent: "#38CE65", accentInk: "#7DE89A",
+    blurb: "Patient and steady. Its leaves show its mood, and it flowers when something is properly learned.",
+    swatches: [["#E6A866", "Seed"], ["#38CE65", "Leaf"], ["#FFD23E", "Bloom"]],
+    face: { lx: 48.5, rx: 71.5, y: 72, r: 5.6, my: 85, mw: 4.4, ink: "#3B1F0A", blush: "#FF8E86" },
+    fxAt: [92, 34], confetti: ["#38CE65", "#FFD23E", "#E6A866", "#9DF5A9"],
+    draw(id, mark) {
+      const leaf = (cls) => `<g class="leaf ${cls}"><g class="leaf-in"><path d="M60 27C52 13 36 11 25 18C33 30 49 33 60 27Z" fill="url(#${id}f)"/>${mark ? "" : `<path d="M58 26C48 21 38 19 30 19" stroke="#147a37" stroke-opacity=".55" stroke-width="1.4" fill="none" stroke-linecap="round"/>`}</g></g>`;
+      let petals = "";
+      for (let i = 0; i < 5; i++) { const a = -Math.PI / 2 + i * 2 * Math.PI / 5; petals += `<circle cx="${f(60 + 5.6 * Math.cos(a))}" cy="${f(22 + 5.6 * Math.sin(a))}" r="4.3" fill="#FFD23E"/>`; }
+      return `<defs>
+        <radialGradient id="${id}s" cx=".36" cy=".3" r=".85"><stop offset="0" stop-color="#FFDDB0"/><stop offset=".5" stop-color="#E6A866"/><stop offset="1" stop-color="#A9672E"/></radialGradient>
+        <linearGradient id="${id}f" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#A5F7B0"/><stop offset=".55" stop-color="#38CE65"/><stop offset="1" stop-color="#1B9446"/></linearGradient>
+      </defs>
+      <g class="pose">
+        <ellipse cx="50" cy="107" rx="6.5" ry="3.6" fill="#8E5525"/><ellipse cx="70" cy="107" rx="6.5" ry="3.6" fill="#8E5525"/>
+        <ellipse cx="30" cy="80" rx="4.6" ry="7.5" fill="#C98A4A" transform="rotate(18 30 80)"/><ellipse cx="90" cy="80" rx="4.6" ry="7.5" fill="#B9773A" transform="rotate(-18 90 80)"/>
+        <path class="stem" d="M60 46C60 37 61 31 60 25" stroke="#2DB85A" stroke-width="${mark ? 5 : 4}" stroke-linecap="round" fill="none"/>
+        ${leaf("leaf-l")}${mirror(leaf("leaf-r"))}
+        <g class="bloom">${petals}<circle cx="60" cy="22" r="3.4" fill="#FF8A3D"/></g>
+        <path d="M60 40C84 40 94 62 92 80C90 100 76 109 60 109C44 109 30 100 28 80C26 62 36 40 60 40Z" fill="url(#${id}s)"/>
+        ${mark ? "" : `<path d="M38 62Q42 50 53 45" stroke="#fff" stroke-opacity=".38" stroke-width="3" stroke-linecap="round" fill="none"/><path d="M52 41Q60 46 68 41" stroke="#A9672E" stroke-opacity=".5" stroke-width="1.6" fill="none" stroke-linecap="round"/>`}
+        <g class="face"><g class="face-shift"></g></g>
+      </g>`;
+    },
+  },
+  nib: {
+    name: "Nib", kind: "A hedgehog with paper quills", accent: "#5B8FF0", accentInk: "#A9C4FF",
+    blurb: "Earnest and bookish. Its quills are pages tipped in ink; they bristle when an idea lands.",
+    swatches: [["#F7F2E6", "Paper"], ["#3E83F8", "Ink tip"], ["#F1CD98", "Sand"]],
+    face: { lx: 47, rx: 73, y: 71, r: 5.2, my: 88, mw: 3.8, ink: "#2A1A10", blush: "#FF9C9C" },
+    fxAt: [94, 20], confetti: ["#3E83F8", "#F7F2E6", "#F1CD98", "#A9C4FF"],
+    draw(id, mark) {
+      const C = [60, 74];
+      const spike = (aDeg, L, rb, w, fill, tip, rule) => {
+        const a = aDeg * Math.PI / 180, dx = Math.sin(a), dy = -Math.cos(a), px = Math.cos(a), py = Math.sin(a);
+        const B = [C[0] + dx * rb, C[1] + dy * rb], T = [C[0] + dx * L, C[1] + dy * L];
+        const b1 = [B[0] + px * w, B[1] + py * w], b2 = [B[0] - px * w, B[1] - py * w];
+        const lerp = (p, q, t) => [p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t];
+        const P = (p) => f(p[0]) + " " + f(p[1]);
+        let s = `<path d="M${P(b1)}L${P(T)}L${P(b2)}Z" fill="${fill}" stroke="${fill === "url(#" + id + "p)" ? "#EFE8D8" : fill}" stroke-width="3" stroke-linejoin="round"/>`;
+        if (tip) { const t1 = lerp(b1, T, 0.64), t2 = lerp(b2, T, 0.64); s += `<path d="M${P(t1)}L${P(T)}L${P(t2)}Z" fill="${tip}" stroke="${tip}" stroke-width="3" stroke-linejoin="round"/>`; }
+        if (rule && !mark) { const r1 = lerp(b1, T, 0.4), r2 = lerp(b2, T, 0.4); s += `<path d="M${P(r1)}L${P(r2)}" stroke="#9DB8E8" stroke-width=".9"/>`; }
+        return s;
+      };
+      let back = "", front = "";
+      for (let i = 0; i < 10; i++) back += spike(-74 + i * 16.45, 53, 10, 7.8, "#1F3F86", null, false);
+      for (let i = 0; i < 9; i++) front += spike(-70 + i * 17.5, 49, 10, 8, `url(#${id}p)`, "#3E83F8", true);
+      const ear = (cls) => `<g class="ear ${cls}"><circle cx="37" cy="58" r="7.5" fill="#E2B57C"/><circle cx="37" cy="58" r="3.8" fill="#F59A8E"/></g>`;
+      return `<defs>
+        <radialGradient id="${id}f" cx=".4" cy=".3" r=".8"><stop offset="0" stop-color="#FFF1DC"/><stop offset=".55" stop-color="#F1CD98"/><stop offset="1" stop-color="#D39A5C"/></radialGradient>
+        <linearGradient id="${id}p" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#EDE5D3"/></linearGradient>
+      </defs>
+      <g class="pose">
+        <ellipse cx="49" cy="105" rx="6.5" ry="3.6" fill="#B9814A"/><ellipse cx="71" cy="105" rx="6.5" ry="3.6" fill="#B9814A"/>
+        <g class="quills"><g class="quills-in">${back}${front}</g></g>
+        ${ear("ear-l")}${mirror(ear("ear-r"))}
+        <ellipse cx="60" cy="81" rx="28" ry="25" fill="url(#${id}f)"/>
+        <ellipse cx="60" cy="86" rx="12.5" ry="9" fill="#FFF4E4" opacity=".85"/>
+        <ellipse cx="60" cy="80.5" rx="4.4" ry="3.3" fill="#2A1A10"/>
+        ${mark ? "" : `<ellipse cx="58.6" cy="79.4" rx="1.4" ry=".9" fill="#fff" opacity=".8"/>`}
+        <g class="face"><g class="face-shift"></g></g>
+      </g>`;
+    },
+  },
+  orbi: {
+    name: "Orbi", kind: "A small planet with a moon", accent: "#7D6EF4", accentInk: "#B9AEFF",
+    blurb: "Playful and restless. Its moon circles faster when you are on a run, and drifts when it dozes.",
+    swatches: [["#7D6EF4", "Violet"], ["#FFC53D", "Ring"], ["#F3EEDF", "Moon"]],
+    face: { lx: 49, rx: 71, y: 55, r: 5.8, my: 67, mw: 4.4, ink: "#120C38", blush: "#FF9BD0" },
+    fxAt: [92, 18], confetti: ["#7D6EF4", "#FFC53D", "#F3EEDF", "#B9AEFF"],
+    draw(id, mark) {
+      const moon = (cls) => `<g class="moon ${cls}"><circle r="${mark ? 6.4 : 5.6}" fill="url(#${id}m)"/>${mark ? "" : `<circle cx="1.6" cy="-1.2" r="1.3" fill="#C9C0A6"/><circle cx="-2" cy="1.8" r=".8" fill="#C9C0A6"/>`}</g>`;
+      const rw = mark ? 7.5 : 6;
+      return `<defs>
+        <radialGradient id="${id}p" cx=".36" cy=".3" r=".85"><stop offset="0" stop-color="#D6CCFF"/><stop offset=".5" stop-color="#7D6EF4"/><stop offset="1" stop-color="#34289C"/></radialGradient>
+        <linearGradient id="${id}r" x1="10" y1="0" x2="110" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#D9861A"/><stop offset=".35" stop-color="#FFE9A3"/><stop offset=".7" stop-color="#FFC53D"/><stop offset="1" stop-color="#C77A14"/></linearGradient>
+        <radialGradient id="${id}m" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#FFFDF5"/><stop offset="1" stop-color="#D9D2BE"/></radialGradient>
+      </defs>
+      <g class="pose">
+        <g class="ring ring-back"><ellipse cx="60" cy="76" rx="50" ry="12" fill="none" stroke="url(#${id}r)" stroke-width="${rw}" opacity=".9"/></g>
+        ${moon("moon-b")}
+        <circle cx="60" cy="58" r="32" fill="url(#${id}p)"/>
+        ${mark ? "" : `<g class="spots" fill="#2C2190" opacity=".32"><ellipse cx="80" cy="40" rx="5" ry="3.6"/><circle cx="37" cy="44" r="2.6"/><ellipse cx="83" cy="70" rx="3" ry="2.2"/></g><path d="M37 42Q42 31 54 28" stroke="#fff" stroke-opacity=".36" stroke-width="3" stroke-linecap="round" fill="none"/>`}
+        <g class="face"><g class="face-shift"></g></g>
+        <g class="ring ring-front"><path d="M10 76A50 12 0 0 0 110 76" fill="none" stroke="url(#${id}r)" stroke-width="${rw}" stroke-linecap="round"/></g>
+        ${moon("moon-f")}
+      </g>`;
+    },
+  },
+};
+const ORDER = ["lumen", "sprig", "nib", "orbi"];
+const TILT = { idle: -10, curious: -15, delighted: -18, encouraging: -5, sleepy: 7, proud: 0 };
+const SPEED = { idle: 0.7, curious: 1, delighted: 2.8, encouraging: 0.8, sleepy: 0.12, proud: 1.5 };
+
+const LINES = {
+  correct: ["That's it.", "Nicely reasoned.", "Yes, exactly.", "Spot on."],
+  wrong: ["Not quite. Try another way in.", "Close. Look again.", "Mistakes are how this sticks."],
+  pet: ["Hello.", "Oh, hello.", "Hm?", "That tickles."],
+  lots: ["All right, all right.", "I'm awake, I promise."],
+  wake: ["Oh, I'm here.", "Back again."],
+};
+const pick = (a) => a[Math.floor(Math.random() * a.length)];
+const reduced = () => document.documentElement.dataset.motion === "reduced";
+
+/* ───────────── pet controller ───────────── */
+const live = new Set();
+const SLEEP_MS = 7000;
+const mouse = { x: -1, y: -1, seen: false };
+
+class Pet {
+  constructor(host, key, o = {}) {
+    this.host = host; this.key = key; this.sp = SPECIES[key]; this.o = o;
+    this.expr = o.expr || "idle"; this.timers = []; this.lastInput = performance.now();
+    this.look = { x: 0, y: 0 }; this.moonA = o.moonA ?? Math.random() * 6.28; this.tilt = TILT[this.expr]; this.boost = 0;
+    this.asleep = false; this.clicks = [];
+    const id = "m" + UID++;
+    this.id = id;
+    host.innerHTML = `<svg class="m m-${key} expr-${this.expr}${o.mark ? " is-mark" : ""}${o.live ? " live" : ""}" viewBox="0 0 120 120" aria-hidden="true">
+      <ellipse class="shadow" cx="60" cy="113" rx="27" ry="4.6"/>
+      <g class="rig"><g class="act">${this.sp.draw(id, !!o.mark)}</g></g><g class="fx"></g></svg>`;
+    this.svg = host.querySelector("svg");
+    this.faceEl = this.svg.querySelector(".face-shift");
+    this.fxEl = this.svg.querySelector(".fx");
+    this.moonB = this.svg.querySelector(".moon-b"); this.moonF = this.svg.querySelector(".moon-f");
+    this.rings = [...this.svg.querySelectorAll(".ring")];
+    this.paint();
+    this.placeMoon();
+    if (o.live) { live.add(this); this.scheduleBlink(); }
+    if (o.interactive) {
+      host.addEventListener("click", (e) => { e.stopPropagation(); noteInput(); this.pet(); });
+      host.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); noteInput(); this.pet(); } });
+      host.setAttribute("aria-label", `Pet ${this.sp.name}`);
+    }
+  }
+  paint() {
+    this.faceEl.innerHTML = faceMarkup(this.sp, this.expr, this.id, this.o.mark);
+    this.fxEl.innerHTML = fxMarkup(this.sp, this.expr, this.o.mark);
+    this.pupils = [...this.faceEl.querySelectorAll(".pupil")];
+    this.applyLook();
+  }
+  set(expr) {
+    if (expr === this.expr) return;
+    this.svg.classList.replace("expr-" + this.expr, "expr-" + expr);
+    this.expr = expr; this.paint();
+    if (reduced()) { this.tilt = TILT[expr]; this.placeMoon(); }
+  }
+  play(name) {
+    const dur = { react: 560, bob: 660, shake: 510, celebrate: 1060 }[name];
+    if (name === "blink") return this.blink();
+    if (reduced()) return;
+    this.svg.classList.remove("do-react", "do-bob", "do-shake", "do-celebrate");
+    this.svg.getBoundingClientRect();
+    this.svg.classList.add("do-" + name);
+    if (name === "celebrate") { this.boost = performance.now() + 1100; burst(this.host.parentElement, this.sp.confetti); }
+    clearTimeout(this.playT);
+    this.playT = setTimeout(() => this.svg.classList.remove("do-" + name), dur);
+  }
+  blink() {
+    if (reduced() || !this.pupils.length) return;
+    this.svg.classList.add("blinking");
+    setTimeout(() => this.svg.classList.remove("blinking"), 130);
+  }
+  scheduleBlink() {
+    setTimeout(() => {
+      this.blink();
+      if (Math.random() < 0.22) setTimeout(() => this.blink(), 260);
+      this.scheduleBlink();
+    }, 2200 + Math.random() * 3600);
+  }
+  clear() { this.timers.forEach(clearTimeout); this.timers = []; }
+  seq(steps, end = "idle") {
+    this.clear(); let t = 0;
+    steps.forEach(([e, ms]) => { this.timers.push(setTimeout(() => this.set(e), t)); t += ms; });
+    this.timers.push(setTimeout(() => { this.set(end); this.timers = []; this.lastInput = performance.now(); }, t));
+  }
+  get busy() { return this.timers.length > 0; }
+  say(text) {
+    const b = this.o.bubble; if (!b) return;
+    b.textContent = text; b.classList.add("show");
+    clearTimeout(this.sayT); this.sayT = setTimeout(() => b.classList.remove("show"), 2200);
+  }
+  /* behaviours */
+  correct() { this.wake(true); this.play("celebrate"); this.say(pick(LINES.correct)); this.seq([["delighted", 1400], ["proud", 1700]]); }
+  wrong() { this.wake(true); this.play("shake"); this.say(pick(LINES.wrong)); this.seq([["curious", 450], ["encouraging", 2700]]); }
+  pet() {
+    const now = performance.now(); const wasAsleep = this.asleep; this.wake(true);
+    this.clicks = this.clicks.filter((t) => now - t < 1600); this.clicks.push(now);
+    hearts(this.host, this.sp);
+    if (this.clicks.length >= 4) { this.clicks = []; this.play("celebrate"); this.say(pick(LINES.lots)); this.seq([["delighted", 1500]]); return; }
+    this.play("react"); this.say(wasAsleep ? pick(LINES.wake) : pick(LINES.pet)); this.seq([["delighted", 1100]]);
+  }
+  sleep() { this.clear(); this.asleep = true; this.set("sleepy"); }
+  wake(silent) {
+    this.lastInput = performance.now();
+    if (!this.asleep) return;
+    this.asleep = false;
+    if (silent) { this.set("idle"); return; }
+    this.play("react"); this.seq([["curious", 900]]);
+  }
+  /* per-frame */
+  applyLook() {
+    const r = this.sp.face.r;
+    const t = `translate(${f(this.look.x * r * 0.42)} ${f(this.look.y * r * 0.36)})`;
+    this.pupils.forEach((p) => p.setAttribute("transform", t));
+    this.faceEl.setAttribute("transform", `translate(${f(this.look.x * 2)} ${f(this.look.y * 1.5)})`);
+  }
+  placeMoon() {
+    if (!this.moonB) return;
+    const a = this.o.mark || reduced() ? 0.55 : this.moonA, phi = this.tilt * Math.PI / 180;
+    const lx = 55 * Math.cos(a), ly = 14 * Math.sin(a);
+    const X = 60 + lx * Math.cos(phi) - ly * Math.sin(phi), Y = 76 + lx * Math.sin(phi) + ly * Math.cos(phi);
+    const front = Math.sin(a) > 0, sc = 0.85 + 0.2 * Math.sin(a);
+    const tr = `translate(${f(X)} ${f(Y)}) scale(${f(sc)})`;
+    this.moonB.setAttribute("transform", tr); this.moonF.setAttribute("transform", tr);
+    this.moonB.style.display = front ? "none" : ""; this.moonF.style.display = front ? "" : "none";
+    this.rings.forEach((g) => g.setAttribute("transform", `rotate(${f(this.tilt)} 60 76)`));
+  }
+  tick(now, dt) {
+    let tx = 0, ty = 0;
+    if (this.o.follow && mouse.seen && !reduced() && this.expr !== "sleepy") {
+      const rc = this.svg.getBoundingClientRect();
+      if (rc.bottom > 0 && rc.top < innerHeight) {
+        const cx = rc.left + rc.width / 2, cy = rc.top + rc.height * 0.45;
+        const dx = mouse.x - cx, dy = mouse.y - cy, d = Math.hypot(dx, dy) || 1, k = Math.min(1, d / 260);
+        tx = dx / d * k; ty = dy / d * k;
+      }
+    }
+    const e = 1 - Math.pow(0.0005, dt);
+    this.look.x += (tx - this.look.x) * e; this.look.y += (ty - this.look.y) * e;
+    if (Math.abs(tx - this.look.x) + Math.abs(ty - this.look.y) > 0.002 || this.o.follow) this.applyLook();
+    if (this.moonB) {
+      const sp = now < this.boost ? 8 : SPEED[this.expr];
+      this.moonA += sp * dt;
+      this.tilt += (TILT[this.expr] - this.tilt) * (1 - Math.pow(0.002, dt));
+      this.placeMoon();
+    }
+    if (this.o.interactive) {
+      const idle = now - this.lastInput;
+      if (!this.asleep && !this.busy && idle > SLEEP_MS) this.sleep();
+      if (this.o.bar) this.o.bar.style.transform = `scaleX(${this.asleep ? 0 : f(Math.max(0, 1 - idle / SLEEP_MS))})`;
+    }
+  }
+}
+
+/* particles */
+function burst(stage, colours) {
+  if (reduced() || !stage) return;
+  const w = stage.clientWidth, h = stage.clientHeight;
+  for (let i = 0; i < 26; i++) {
+    const c = document.createElement("i"); c.className = "confetti";
+    c.style.background = colours[i % colours.length];
+    if (i % 3 === 0) { c.style.borderRadius = "50%"; c.style.width = c.style.height = "8px"; }
+    stage.appendChild(c);
+    const x0 = w / 2, y0 = h * 0.55, a = -Math.PI / 2 + (Math.random() - 0.5) * 2.4, v = 110 + Math.random() * 120;
+    const x1 = x0 + Math.cos(a) * v, y1 = y0 + Math.sin(a) * v;
+    c.animate([
+      { transform: `translate(${x0}px,${y0}px) rotate(0)`, opacity: 1 },
+      { transform: `translate(${x1}px,${y1}px) rotate(${Math.random() * 360}deg)`, opacity: 1, offset: 0.45 },
+      { transform: `translate(${x1 + (Math.random() - 0.5) * 40}px,${y1 + 130}px) rotate(${Math.random() * 720}deg)`, opacity: 0 },
+    ], { duration: 1300 + Math.random() * 500, easing: "cubic-bezier(.2,.7,.4,1)" }).onfinish = () => c.remove();
+  }
+}
+function hearts(host, sp) {
+  if (reduced()) return;
+  const stage = host.parentElement, r = host.getBoundingClientRect(), s = stage.getBoundingClientRect();
+  for (let i = 0; i < 3; i++) {
+    const h = document.createElement("i"); h.className = "confetti";
+    h.style.background = "none"; h.style.width = h.style.height = "auto";
+    h.innerHTML = `<svg width="16" height="16" viewBox="-8 -8 16 16">${heart(0, 0, 5.5, i ? sp.accent : "#FF8FB1", "")}</svg>`;
+    stage.appendChild(h);
+    const x = r.left - s.left + r.width * (0.35 + Math.random() * 0.3), y = r.top - s.top + r.height * 0.25;
+    h.animate([{ transform: `translate(${x}px,${y}px) scale(.4)`, opacity: 0 }, { transform: `translate(${x + (Math.random() - 0.5) * 30}px,${y - 20}px) scale(1.1)`, opacity: 1, offset: 0.3 }, { transform: `translate(${x + (Math.random() - 0.5) * 60}px,${y - 70}px) scale(.9)`, opacity: 0 }],
+      { duration: 1000 + i * 200, delay: i * 90, easing: "ease-out", fill: "backwards" }).onfinish = () => h.remove();
+  }
+}
+
+/* global input + loop */
+const interactive = [];
+function noteInput() { interactive.forEach((p) => p.wake(false)); }
+addEventListener("pointermove", (e) => { mouse.x = e.clientX; mouse.y = e.clientY; mouse.seen = true; noteInput(); }, { passive: true });
+addEventListener("keydown", noteInput);
+addEventListener("pointerdown", noteInput);
+let last = performance.now();
+function frame(now) { const dt = Math.min(0.05, (now - last) / 1000); last = now; live.forEach((p) => p.tick(now, dt)); requestAnimationFrame(frame); }
+requestAnimationFrame(frame);
+
+/* ───────────── build the sheet ───────────── */
+const el = (tag, cls, html) => { const n = document.createElement(tag); if (cls) n.className = cls; if (html != null) n.innerHTML = html; return n; };
+
+// glance
+ORDER.forEach((k, i) => {
+  const sp = SPECIES[k];
+  const card = el("article", "glance");
+  card.style.setProperty("--accent", sp.accent); card.style.setProperty("--accent-ink", sp.accentInk);
+  card.innerHTML = `<span class="num">0${i + 1}</span><div class="hero"></div><h3>${sp.name}</h3><div class="kind">${sp.kind}</div><p>${sp.blurb}</p>
+    <div class="swatches">${sp.swatches.map(([c, n]) => `<span class="sw"><i style="background:${c}"></i>${n} ${c}</span>`).join("")}</div>`;
+  document.getElementById("glance").appendChild(card);
+  new Pet(card.querySelector(".hero"), k, { live: true, follow: true });
+});
+
+// playground
+const playPets = [];
+ORDER.forEach((k) => {
+  const sp = SPECIES[k];
+  const box = el("div", "play"); box.style.setProperty("--accent", sp.accent);
+  box.innerHTML = `<div class="stage"><span class="label">${sp.name}</span><span class="hint">sleeps after 7 s</span><div class="bubble"></div><div class="pet" role="button" tabindex="0"></div><div class="sleepbar"><i></i></div></div>
+    <div class="row answer"><button class="btn good" data-a="correct">Correct answer</button><button class="btn bad" data-a="wrong">Wrong answer</button></div>
+    <div class="row">${["blink", "bob", "react", "celebrate"].map((a) => `<button class="btn small" data-p="${a}">${a[0].toUpperCase() + a.slice(1)}</button>`).join("")}<button class="btn small" data-a="sleep">Sleep</button></div>`;
+  document.getElementById("play").appendChild(box);
+  const p = new Pet(box.querySelector(".pet"), k, { live: true, follow: true, interactive: true, bubble: box.querySelector(".bubble"), bar: box.querySelector(".sleepbar i") });
+  playPets.push(p); interactive.push(p);
+  box.addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    e.stopPropagation(); p.wake(true);
+    if (b.dataset.a === "correct") p.correct();
+    else if (b.dataset.a === "wrong") p.wrong();
+    else if (b.dataset.a === "sleep") p.sleep();
+    else if (b.dataset.p) { p.play(b.dataset.p); if (b.dataset.p === "celebrate") p.seq([["delighted", 1300]]); }
+  });
+});
+document.getElementById("all-good").onclick = (e) => { e.stopPropagation(); playPets.forEach((p, i) => setTimeout(() => p.correct(), i * 120)); };
+document.getElementById("all-bad").onclick = (e) => { e.stopPropagation(); playPets.forEach((p, i) => setTimeout(() => p.wrong(), i * 120)); };
+
+// expressions table
+{
+  const t = document.getElementById("expr");
+  t.innerHTML = `<thead><tr><th></th>${EXPRS.map((e) => `<th scope="col">${EXPR_LABEL[e]}</th>`).join("")}</tr></thead><tbody></tbody>`;
+  const tb = t.querySelector("tbody");
+  ORDER.forEach((k) => {
+    const tr = el("tr"); tr.innerHTML = `<th scope="row">${SPECIES[k].name}<small>${SPECIES[k].kind.toLowerCase()}</small></th>`;
+    EXPRS.forEach((e) => { const td = el("td"); const d = el("div", "cell-pet"); td.appendChild(d); tr.appendChild(td); new Pet(d, k, { expr: e, live: true, moonA: 0.6 }); });
+    tb.appendChild(tr);
+  });
+}
+
+// sizes table
+{
+  const cols = [["16", 16, ""], ["24", 24, ""], ["32", 32, ""], ["48", 48, ""], ["96", 96, ""], ["24 on paper", 24, "paper"], ["48 on paper", 48, "paper"], ["Silhouette 32", 32, "sil"], ["Browser tab", 16, "tab"]];
+  const t = document.getElementById("sizes");
+  t.innerHTML = `<thead><tr><th></th>${cols.map((c) => `<th scope="col">${c[0]}</th>`).join("")}</tr></thead><tbody></tbody>`;
+  const tb = t.querySelector("tbody");
+  ORDER.forEach((k) => {
+    const tr = el("tr"); tr.innerHTML = `<th scope="row">${SPECIES[k].name}<small>mark variant</small></th>`;
+    cols.forEach(([, px, mode]) => {
+      const td = el("td"); const wrap = el("div", "size-cell");
+      const box = el("div"); box.style.width = box.style.height = px + "px";
+      if (mode === "tab") { const tab = el("span", "tab"); tab.appendChild(box); tab.appendChild(document.createTextNode("Fractions · Lesson 3")); tab.appendChild(el("span", "x", "×")); wrap.appendChild(tab); }
+      else if (mode === "paper") { const p = el("div", "paper"); p.appendChild(box); wrap.appendChild(p); }
+      else if (mode === "sil") { const p = el("div", "sil"); p.appendChild(box); wrap.appendChild(p); }
+      else wrap.appendChild(box);
+      td.appendChild(wrap); tr.appendChild(td);
+      new Pet(box, k, { mark: px <= 48, expr: "idle" });
+    });
+    tb.appendChild(tr);
+  });
+}
+
+// logos
+ORDER.forEach((k) => {
+  const col = el("div", "logo-col");
+  col.innerHTML = `<h3>${SPECIES[k].name}</h3><div class="logo-tiles"><div class="logo-tile chk"><div></div></div><div class="logo-tile ink"><div></div></div><div class="logo-tile pap"><div></div></div></div><div class="logo-cap"><span>transparent</span><span>suite ink</span><span>paper</span></div>`;
+  document.getElementById("logos").appendChild(col);
+  col.querySelectorAll(".logo-tile > div").forEach((d) => new Pet(d, k, { mark: true }));
+});
+
+// context mock
+{
+  const mock = document.getElementById("mock"), seg = document.getElementById("seg");
+  const fb = document.getElementById("mock-fb"), bar = document.getElementById("mock-bar");
+  let pet = null, answered = false;
+  const choose = (k) => {
+    if (pet) { live.delete(pet); interactive.splice(interactive.indexOf(pet), 1); }
+    const old = document.getElementById("mock-pet"), fresh = old.cloneNode(false); old.replaceWith(fresh);
+    pet = new Pet(document.getElementById("mock-pet"), k, { live: true, follow: true, interactive: true, bubble: document.getElementById("mock-bubble") });
+    interactive.push(pet);
+    seg.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.k === k));
+  };
+  ORDER.forEach((k) => { const b = el("button", "", SPECIES[k].name); b.dataset.k = k; b.type = "button"; b.onclick = () => choose(k); seg.appendChild(b); });
+  choose("lumen");
+  mock.querySelectorAll(".choice").forEach((b) => b.addEventListener("click", () => {
+    if (answered) { reset(); return; }
+    answered = true;
+    if (b.dataset.v === "a") { b.classList.add("right"); fb.innerHTML = "<b>Yes.</b> Over twelfths, 3/4 is 9/12 and 2/3 is 8/12. Click either to try again."; bar.style.width = "52%"; pet.correct(); }
+    else { b.classList.add("wrong"); fb.innerHTML = "<b>Not this time.</b> 2/3 is 8/12, while 3/4 is 9/12. Click either to try again."; pet.wrong(); }
+  }));
+  function reset() { answered = false; mock.querySelectorAll(".choice").forEach((c) => c.classList.remove("right", "wrong")); fb.textContent = "Pick one. Rewrite both over twelfths if it helps."; bar.style.width = "38%"; }
+  const hide = document.getElementById("hide-pet");
+  hide.onchange = () => mock.classList.toggle("hidden", hide.checked);
+  document.getElementById("peek").onclick = () => { hide.checked = false; mock.classList.remove("hidden"); };
+}
+
+// reduced motion
+{
+  const rm = document.getElementById("rm");
+  const mq = matchMedia("(prefers-reduced-motion: reduce)");
+  const apply = () => { document.documentElement.dataset.motion = rm.checked ? "reduced" : "full"; live.forEach((p) => { p.tilt = TILT[p.expr]; p.placeMoon(); }); };
+  rm.checked = mq.matches; apply(); rm.onchange = apply;
+}
+</script>
+</body>
+</html>

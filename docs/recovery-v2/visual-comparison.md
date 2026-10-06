@@ -158,8 +158,9 @@ The maintained browser journey now verifies:
 The maintained `pnpm verify` gate passed with 27 web files/165 tests and 13 server files/129
 tests; the focused contracts set passed 34/34. The full Playwright suite passed 31/31.
 
-That full screenshot run also regenerated 42 pre-existing global baseline PNGs outside the Gate 3
-approval set. They remain pending an explicit restore-or-accept decision.
+That historical run regenerated global PNGs outside the Gate 3 set. The 2026-09-30 delegated
+review accepts the refreshed shared-workspace captures and adds tablet coverage; the reference
+screens retain their approved compositions.
 
 ## Gate 3 responsive renders
 
@@ -186,3 +187,43 @@ The full Playwright suite passed 28/28. Its Gate 2 coverage verifies persistence
 server answer authority, mouse and keyboard ordering, loaded images, sources, tutor focus and
 transcript restoration, Exam suppression, reduced motion, minimum utility targets, and no
 horizontal overflow across every reference screen at 390 × 844. The focused Gate 2 run passed 8/8.
+
+## Delegated Gate 4 decision and Gate 5 — 2026-09-30
+
+George answered the pending essay approval question with “I have no clue decide for me”, then
+instructed us to continue. The essay studio and feedback captures were reviewed under that
+instruction before shared learner work continued. This is a delegated decision, not a claim
+that George personally inspected the captures. The older Gate 4 approval stop is superseded.
+
+Gate 5 follows `reference/06-spaced-review.svg`: white/black/green shell, one subject question,
+a useful visual beside it, concealed answer, and four recall ratings after disclosure. The
+original Rome/Constantinople illustration conveys two centres of government; it is a conceptual
+illustration, not a historical map or technical authority.
+
+The implementation deliberately adds typed recall and a Check action before Reveal. Without
+that response the scheduler would have only self-reported confidence; wrong, blank, or Direct
+recall cannot become independent evidence by choosing Easy. Exam requires a response before
+reveal. The first response and session mode are immutable. Returning after reload restores the
+same draft/result. The narrow marking rule checks western deposition in 476 and continued eastern
+government from Constantinople; it does not claim to assess arbitrary historical essays.
+
+The completion screen reports actual assessment evidence with “Without hints”, “With help”, or
+“Revisit”, the saved recall return date, and a working continuation into the next existing lesson.
+It awards no invented XP, catalogue completion, or mastery. Roman teaching Stages 4–6 remain
+absent. Those gaps remain visible in the stage indicator rather than being marked taught.
+
+Desktop/tablet preserve the side-by-side composition; mobile stacks the illustration above the
+response and wraps ratings into two columns. All nine captures were reviewed for readable copy,
+contained controls, loaded visuals, concealed answers, and unobscured input/feedback. The earlier
+SVG references remain the layout standard; no placeholder functionality was added.
+
+| Screen | 1440 × 900 | 1024 × 768 | 390 × 844 |
+| --- | --- | --- | --- |
+| Recall before reveal | [Capture](implementation-screens/06a-recall-front-1440x900.png) | [Capture](implementation-screens/06a-recall-front-1024x768.png) | [Capture](implementation-screens/06a-recall-front-390x844.png) |
+| Answer and ratings | [Capture](implementation-screens/06b-recall-back-1440x900.png) | [Capture](implementation-screens/06b-recall-back-1024x768.png) | [Capture](implementation-screens/06b-recall-back-390x844.png) |
+| Completion | [Capture](implementation-screens/07-completion-1440x900.png) | [Capture](implementation-screens/07-completion-1024x768.png) | [Capture](implementation-screens/07-completion-390x844.png) |
+
+The final full Playwright run passed 41/41, including the complete essay-to-recall journey,
+response persistence, concealed backs, earned completion, and responsive captures. Server tests
+cover v1–v3 upgrades to v4, invalid stored state, immutable recall/mode, Direct and wrong-answer
+caps, Exam reveal, due-only restart, and isolation from generic progression.
