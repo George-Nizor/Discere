@@ -47,14 +47,21 @@ manifest handles the service command, health check, and launcher-owned window.
 
 The checked-in curriculum contains:
 
+- **Maths Foundations:** six lessons with number machines, equation balances, coordinates,
+  gradients, 36 questions, and 12 recall cards.
+- **Logic and Reasoning:** eight lessons with truth tables, constraint puzzles, inference,
+  validity, fallacies, 48 questions, and 16 recall cards.
+- **How Computers Solve Problems:** six lessons with editable code traces, branching, loops,
+  debugging, searches, 36 questions, and 12 recall cards.
 - **Electronics Foundations:** five lessons, deterministic circuit activities, numeric and written
   questions, flashcards, and teach-back work.
 - **The Rise of the Roman Empire:** three lessons, sourced images, timeline activities, multiple
   choice and written questions, flashcards, and essay topics.
 
 Course content is loaded from `content/` rather than hard-coded into the server. Image records include
-source, creator, licence, attribution, retrieval date, and a content hash. The app no longer assumes
-every human question is Ohm's law. This was progress.
+source, creator, licence, attribution, retrieval date, and a content hash. The library totals
+28 lessons, 153 questions, and 58 recall cards. See [foundation notes](docs/foundations/README.md)
+for the new sequences, sources, publication reviews, and responsive screenshots.
 
 ## The learning flow
 
@@ -74,6 +81,12 @@ stage appears only when the content defines it.
 
 The interface also includes a course library, a due-review queue, concept progress, and a lesson
 notebook. Browser refresh, back/forward, and deep links preserve the current route.
+
+Daily goals, local-calendar streaks, earned protection, course paths, and milestones reflect saved
+work. Lesson finishes show actual XP and recall, with a short SVG celebration. Reduced motion
+follows system or saved preferences; optional sound cues are off by default. Rewards cannot be
+farmed by reopening completed screens or duplicating review sessions. See
+[practice and motion notes](docs/gamification/README.md) for policy, screenshots, and a recording.
 
 Main routes:
 
@@ -102,30 +115,48 @@ open a different transfer problem. A correct transfer earns reduced recovery evi
 assistance, independent mastery, and assisted mastery remain separate.
 
 Spaced review uses deterministic FSRS scheduling with fuzz disabled. Assisted recall is capped before
-the scheduler is graded. The queue interleaves courses using stored review history, so one subject
+the scheduler is graded. First responses are marked on the server before reveal; blank, wrong,
+ungraded, and Direct recall stay assisted regardless of the learner's chosen rating. The queue
+interleaves courses using stored review history, so one subject
 does not sit on the entire pile.
 
-## Tutor options
+## Tutor options: bring your own AI
 
-`DISCERE_TUTOR_PROVIDER` selects the provider:
+`DISCERE_TUTOR_PROVIDER` chooses what drives the tutor, workings review and authoring:
 
+- `auto` (default) uses the first driver this machine has: Claude Code, an OpenAI-compatible API,
+  Codex, then the companion;
+- `claude` runs the local Claude Code CLI on the learner's own Claude plan; no key is stored;
+- `openai-compatible` calls any OpenAI-style endpoint — OpenAI, OpenRouter, a local Ollama or
+  LM Studio — set `DISCERE_AI_BASE_URL`, `DISCERE_AI_API_KEY` and the model names;
 - `codex` runs the local Codex CLI against the user's existing authentication;
-- `companion` prepares a packet for a normal ChatGPT conversation and validates the pasted reply;
+- `companion` prepares a packet for an ordinary chat conversation and validates the pasted reply;
 - `mock` returns fixed local material for testing.
+
+Each request is routed to a fast or a capable model without asking a model to decide
+(`DISCERE_AI_ROUTING=auto|fast|smart`). Short tutoring turns and style repairs use the fast model
+(Haiku 4.5 by default, thinking off); workings review, assessment, authoring, images, questions
+that ask for a proof or an explanation of why, long context, and any retry after unusable output
+use the capable model (Sonnet 5.5 at low effort by default). Settings shows the models in use and
+the calls and cost so far this session.
+
+Adding a driver means extending `PipelineTutorProvider` in `packages/tutor-providers/src/pipeline.ts`
+and implementing one method that sends a prompt and returns text. Queueing, deadlines, retries,
+schema validation, the writing gate and the usage ledger come with the base class.
 
 Only one generated tutoring job runs at a time. Replies must match the request ID, allowed source IDs,
 mode boundary, and JSON contract. Generated prose passes the same writing gate used by the curriculum.
 A failed provider or rejected reply is shown as a failure instead of being dressed up as advice.
 
-The companion flow sends nothing by itself. The learner copies the prepared prompt into ChatGPT and
+The companion flow sends nothing by itself. The learner copies the prepared prompt into a chat and
 pastes the structured reply back into Discere.
 
 ## Notebook and workings review
 
 Each lesson has a saved drawing page with pen, eraser, undo, paper style, typed notes, and PNG export.
 
-With the Codex provider, Discere can send a temporary copy of that page to the local Codex CLI for a
-structured review. The result shows the transcription, reading confidence, first meaningful error,
+With a generating provider (Claude Code, an OpenAI-compatible model with vision, or Codex), Discere
+can send a temporary copy of that page to the model for a structured review. The result shows the transcription, reading confidence, first meaningful error,
 next step, uncertainty, and approved sources. Coach and Assisted modes still block answer leakage.
 
 With the companion provider, Discere prepares the review request and names the PNG to attach manually.
@@ -154,9 +185,18 @@ The content pipeline can generate, lint, validate, review, and merge a lesson dr
 pnpm author -- pipeline <course-id>
 ```
 
-Raw generated output stays in ignored course-local working folders. A merge requires a committed
-human-readable review record and a bundle that passes curriculum validation. Writing repairs are
-checked for changes to numbers, units, equations, and citations.
+Raw output and merged candidates stay in ignored course-local working folders. The maintained
+topic-map workflow separates import from publication:
+
+```bash
+pnpm curate prompt <course-id>
+pnpm curate import <course-id>
+pnpm curate publish <course-id>
+```
+
+Publication requires an accepted `review/publication.json` tied to the exact candidate hash,
+precise source and licence records, claim citations, resolved uncertainty, reviewed artwork, and
+complete teaching beats. Writing repairs preserve numbers, units, equations, and citations.
 
 See [the authoring guide](docs/authoring-pipeline.md) before adding generated material.
 
@@ -176,7 +216,7 @@ pnpm check
 pnpm build
 pnpm smoke
 pnpm e2e
-pnpm doctor
+pnpm run doctor
 pnpm db:migrate
 pnpm db:seed
 ```
@@ -207,6 +247,8 @@ database. `mcp/` exposes a learner-safe local stdio surface for compatible agent
 
 - [Setup, configuration, backup, reset, and troubleshooting](docs/setup.md)
 - [Current implementation boundary](docs/implementation-status.md)
+- [Maths, Logic, and Computer Science library](docs/foundations/README.md)
+- [Practice, rewards, and motion](docs/gamification/README.md)
 - [Architecture](docs/architecture.md)
 - [ChatGPT companion and workings review](docs/chatgpt-companion.md)
 - [Authoring pipeline](docs/authoring-pipeline.md)

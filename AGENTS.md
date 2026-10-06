@@ -6,16 +6,33 @@ This file is the operating contract for coding agents working in this repository
 
 Every learning beat should contain one useful visual, one direct explanation, one meaningful interaction, and one learner response. Keep the interface visually focused and keep generated prose natural.
 
-## Current recovery authority
+## Current learner-experience authority
 
-Before learner-interface work, read:
+George's 1 October 2026 request supersedes the earlier Roman recovery direction. Read `docs/brilliant-experience/README.md` and compare with the three Brilliant screenshots supplied in that request.
 
-- `docs/recovery-v2/reference-lesson-recovery-spec-v2.md`
-- `docs/recovery-v2/sol-handoff-reference-lesson-v2.md`
-- `docs/recovery-v2/reference/README.md`
-- the SVG references in `docs/recovery-v2/reference/`
+Implement illustrated learning paths, dimensional lesson pedestals, a consistent theme, and question-first lessons with correctness sound, a green frame, explanations after mistakes, and fresh recall in review. Archive the Roman and electronics prototypes from active discovery while preserving saved history and routes.
 
-The Roman Empire reference lesson is the current design and pedagogy standard. Do not generalise the learner UI until its first four screens have been rendered, captured at the required viewports, and approved by George.
+The older `docs/recovery-v2/` references apply to the archived Roman flow. Their earlier approval gate does not limit work George has now explicitly authorized.
+
+George's 2 October homepage request adds Home, Courses and You as the main tabs, with a clear
+course resume/start panel and personal learning statistics. Keep leaderboards and the bottom chat
+panel out of Home. See `docs/home-redesign/README.md` and the two supplied reference screenshots.
+
+George's later 2 October instruction closes new-material work for now. Prioritise a quality and
+feature-verification pass over the existing published library. Preserve the unfinished statistics
+extension as unpublished work; do not add courses or lessons during this pass. Record current
+coverage, defects, fixes and release evidence in `docs/quality-pass/README.md`.
+
+George's subsequent 2 October motion feedback makes animated navigation a release requirement.
+Do not accept reduced-motion screenshots as proof of motion quality. Verify normal-speed transitions,
+a stable navigation frame, course/period selection, interrupted navigation, delayed data, browser
+history, and reduced-motion behavior. Inspect recorded frames and videos at desktop, tablet and
+phone sizes. See `docs/motion-polish/README.md` for the implementation and evidence.
+
+George's final 2 October request adds a critical learner walkthrough before handoff. Use private
+learner history, read and answer actual rendered questions, exercise mistakes and recall, and
+repair discovered defects. See docs/learner-review/README.md for completed coverage, exact-delta
+content preservation and the documented browser-controller/audio limits.
 
 ## Information economy
 
@@ -33,7 +50,7 @@ A reusable test is: **Does the screen say something the interface already makes 
 
 ## Visual rules
 
-- Use the approved white, black, and green system in the recovered learner flow.
+- Use one consistent dark neutral and green system across the active catalogue, course roadmap and player, following the latest supplied references.
 - Prefer relevant pictures, maps, diagrams, timelines, and artefacts over explanatory labels.
 - Use a coherent icon library such as `lucide-react`; Unicode placeholder symbols are not final iconography.
 - Replace borders with spacing whenever the border carries no interaction or semantic state.
@@ -90,3 +107,7 @@ The server runs TypeScript through `tsx`; its build command is a strict typechec
 3. Run the narrow package test first, then `pnpm check` and `pnpm build`.
 4. Record deliberate scope changes in `docs/implementation-status.md`.
 5. Keep commits focused and describe any unvalidated dependency or host assumption.
+
+The 2 October second learner pass is recorded in `docs/learner-review/second-pass/README.md`. It preserves the closed content scope, repairs declared chemistry/probability quantities and zero-divisor recall, and checks shared recall, computing layout and companion presentation. Preserve the digest-bound learner-refinement histories when changing these reviewed bundles. Final release verification is 1,468 package tests plus the recorded browser runs; manual tutor handoff, human learning outcomes and heard audio quality remain explicit limitations.
+
+The subsequent 2 October production readiness pass is recorded in `docs/production-readiness/README.md`. It adds no material, preserves the owner database, and verifies a full Maths Foundations course with restarts, recall and a populated recovery drill. The final managed release uses the loopback Fastify web gateway, verified online backups/new-path recovery, and process identity checks; preserve those boundaries. Latest validation is 1,490 package tests plus two lifecycle tests, build/CSP, smoke and recorded Chromium coverage. Native Windows computer use, heard audio, independent subject review and human learning outcomes remain explicit limitations.
