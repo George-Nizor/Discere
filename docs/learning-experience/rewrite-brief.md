@@ -59,6 +59,8 @@ typecheck).
 - A `lead` teaches what the question needs and never contains the answer.
 - `explain` comes before any question that uses its term, and ends with its own one-tap check
   question (`checkQuestionId`): every screen asks the learner something.
+- A graded figure's case labels stay visible before the answer: never put the key in a case label
+  ("Galaxy A", not "Galaxy at 200 Mpc" when 200 is the answer).
 - `onCorrect` states the idea, not "Correct!". Misconceptions never state the key.
 - Exactly 3 skill-check items, at least one `transfer`, 5 to 7 steps.
 - British spelling, short sentences, "you". No hype. Unicode − × ÷ in prose, including equation
