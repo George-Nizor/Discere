@@ -26,7 +26,9 @@ describe("Discere writing gate", () => {
       context: "hint",
       hiddenAnswer: "0.05 A",
     });
-    expect(result.violations.some((item) => item.ruleId === "ANS001_FINAL_ANSWER_IN_HINT")).toBe(true);
+    expect(result.violations.some((item) => item.ruleId === "ANS001_FINAL_ANSWER_IN_HINT")).toBe(
+      true,
+    );
   });
 
   it("rejects equivalent numeric answers written in another unit", () => {
@@ -35,7 +37,9 @@ describe("Discere writing gate", () => {
       hiddenAnswer: "0.05 A",
     });
     expect(result.passed).toBe(false);
-    expect(result.violations.some((item) => item.ruleId === "ANS005_EQUIVALENT_NUMERIC_ANSWER")).toBe(true);
+    expect(
+      result.violations.some((item) => item.ruleId === "ANS005_EQUIVALENT_NUMERIC_ANSWER"),
+    ).toBe(true);
   });
 
   it("detects negative parallelism that uses a contraction", () => {
@@ -68,7 +72,9 @@ describe("Discere writing gate", () => {
       hiddenAnswer: "0.05 A",
     });
     expect(result.passed).toBe(false);
-    expect(result.violations.some((item) => item.ruleId === "ANS005_EQUIVALENT_NUMERIC_ANSWER")).toBe(true);
+    expect(
+      result.violations.some((item) => item.ruleId === "ANS005_EQUIVALENT_NUMERIC_ANSWER"),
+    ).toBe(true);
   });
 
   it("accepts direct learning prose", () => {
@@ -78,8 +84,27 @@ describe("Discere writing gate", () => {
     expect(result.passed).toBe(true);
   });
 
+  it("withholds dimensionless answers, equivalent fractions and zero without matching larger integers", () => {
+    expect(lintText("The final value is 6.", { context: "hint", hiddenAnswer: "6 " }).passed).toBe(
+      false,
+    );
+    expect(lintText("The answer is 3/4.", { context: "hint", hiddenAnswer: "0.75" }).passed).toBe(
+      false,
+    );
+    expect(
+      lintText("You need zero more checks: 0.", { context: "hint", hiddenAnswer: "0" }).passed,
+    ).toBe(false);
+    expect(
+      lintText("Compare the result with 16.", { context: "hint", hiddenAnswer: "6" }).passed,
+    ).toBe(true);
+    expect(lintText("Try -6.", { context: "hint", hiddenAnswer: "6" }).passed).toBe(true);
+  });
+
   it("detects altered numbers during editing", () => {
-    const result = checkPreservation("Use 5 V across 100 Ω. I = V / R.", "Use 6 V across 100 Ω. I = V / R.");
+    const result = checkPreservation(
+      "Use 5 V across 100 Ω. I = V / R.",
+      "Use 6 V across 100 Ω. I = V / R.",
+    );
     expect(result.passed).toBe(false);
     expect(result.missingNumbers).toContain("5");
     expect(result.addedNumbers).toContain("6");

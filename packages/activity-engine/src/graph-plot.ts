@@ -37,11 +37,12 @@ export function evaluateGraphPlot(
 
 /** Converts a click inside the plot area into axis units. */
 export function pointFromFraction(
-  activity: GraphPlotActivity,
+  activity: Pick<GraphPlotActivity, "x" | "y">,
   fractionX: number,
   fractionY: number,
 ): GraphPoint {
-  const x = activity.x.min + (activity.x.max - activity.x.min) * Math.max(0, Math.min(1, fractionX));
+  const x =
+    activity.x.min + (activity.x.max - activity.x.min) * Math.max(0, Math.min(1, fractionX));
   // The vertical fraction is measured from the top of the box, and axes count upwards.
   const y =
     activity.y.min + (activity.y.max - activity.y.min) * (1 - Math.max(0, Math.min(1, fractionY)));

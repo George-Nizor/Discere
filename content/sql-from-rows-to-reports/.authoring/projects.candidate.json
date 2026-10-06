@@ -1,0 +1,3504 @@
+{
+  "courseId": "sql-from-rows-to-reports",
+  "projects": [
+    {
+      "id": "workshop-first-reports",
+      "version": "1.0.0",
+      "title": "Your first workshop reports",
+      "description": "Write queries for a repair workshop. Keep the right rows, calculate estimates and build a reliable shortlist.",
+      "tasks": [
+        {
+          "id": "one-row-per-job",
+          "title": "Keep every repair",
+          "prompt": "The workshop logs one row per repair job. Two jobs can involve the same kind of item. Return id and item for every job, keeping repeated item names. Row order does not matter.",
+          "lessonId": "rows-and-keys",
+          "conceptIds": [
+            "sql-rows-and-keys"
+          ],
+          "sourceIds": [
+            "sqlite-tables",
+            "sqlite-select",
+            "sqlite-expr",
+            "sqlite-aggregate"
+          ],
+          "tables": [
+            {
+              "name": "jobs",
+              "columns": [
+                {
+                  "name": "id",
+                  "type": "INTEGER"
+                },
+                {
+                  "name": "item",
+                  "type": "TEXT"
+                }
+              ],
+              "rows": [
+                [
+                  12,
+                  "lamp"
+                ],
+                [
+                  15,
+                  "chair"
+                ],
+                [
+                  19,
+                  "lamp"
+                ]
+              ]
+            }
+          ],
+          "outputColumns": [
+            "id",
+            "item"
+          ],
+          "ordered": false,
+          "starter": "",
+          "hints": [
+            "A job is identified by id. Two rows can name the same item without being the same job."
+          ],
+          "correction": "Check whether your query removed any jobs that happen to share an item name.",
+          "solution": "SELECT id, item FROM jobs;",
+          "explanation": "Selecting id and item keeps the job as the unit of each row. DISTINCT item would merge separate jobs.",
+          "cases": [
+            {
+              "tables": [
+                {
+                  "name": "jobs",
+                  "columns": [
+                    {
+                      "name": "id",
+                      "type": "INTEGER"
+                    },
+                    {
+                      "name": "item",
+                      "type": "TEXT"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      12,
+                      "lamp"
+                    ],
+                    [
+                      15,
+                      "chair"
+                    ],
+                    [
+                      19,
+                      "lamp"
+                    ]
+                  ]
+                }
+              ],
+              "expected": {
+                "columns": [
+                  "id",
+                  "item"
+                ],
+                "rows": [
+                  [
+                    12,
+                    "lamp"
+                  ],
+                  [
+                    15,
+                    "chair"
+                  ],
+                  [
+                    19,
+                    "lamp"
+                  ]
+                ]
+              }
+            },
+            {
+              "tables": [
+                {
+                  "name": "jobs",
+                  "columns": [
+                    {
+                      "name": "id",
+                      "type": "INTEGER"
+                    },
+                    {
+                      "name": "item",
+                      "type": "TEXT"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      3,
+                      "radio"
+                    ],
+                    [
+                      8,
+                      "radio"
+                    ],
+                    [
+                      21,
+                      "radio"
+                    ],
+                    [
+                      30,
+                      "fan"
+                    ]
+                  ]
+                }
+              ],
+              "expected": {
+                "columns": [
+                  "id",
+                  "item"
+                ],
+                "rows": [
+                  [
+                    3,
+                    "radio"
+                  ],
+                  [
+                    8,
+                    "radio"
+                  ],
+                  [
+                    21,
+                    "radio"
+                  ],
+                  [
+                    30,
+                    "fan"
+                  ]
+                ]
+              }
+            },
+            {
+              "tables": [
+                {
+                  "name": "jobs",
+                  "columns": [
+                    {
+                      "name": "id",
+                      "type": "INTEGER"
+                    },
+                    {
+                      "name": "item",
+                      "type": "TEXT"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      101,
+                      "mixer"
+                    ]
+                  ]
+                }
+              ],
+              "expected": {
+                "columns": [
+                  "id",
+                  "item"
+                ],
+                "rows": [
+                  [
+                    101,
+                    "mixer"
+                  ]
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "estimate-labour",
+          "title": "Name the estimate",
+          "prompt": "Labour costs 2 credits per minute. Return item and the calculated cost named estimate for every repair. Keep NULL when minutes is unknown. Row order does not matter.",
+          "lessonId": "select-and-name",
+          "conceptIds": [
+            "sql-select-and-name"
+          ],
+          "sourceIds": [
+            "sqlite-select",
+            "sqlite-expr"
+          ],
+          "tables": [
+            {
+              "name": "repairs",
+              "columns": [
+                {
+                  "name": "id",
+                  "type": "INTEGER"
+                },
+                {
+                  "name": "item",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "minutes",
+                  "type": "INTEGER"
+                }
+              ],
+              "rows": [
+                [
+                  1,
+                  "fan",
+                  15
+                ],
+                [
+                  2,
+                  "lamp",
+                  null
+                ],
+                [
+                  3,
+                  "radio",
+                  40
+                ]
+              ]
+            }
+          ],
+          "outputColumns": [
+            "item",
+            "estimate"
+          ],
+          "ordered": false,
+          "starter": "",
+          "hints": [
+            "A calculated expression can become a result column. AS supplies its name."
+          ],
+          "correction": "Check the multiplication and the result column name. An unknown duration must stay unknown.",
+          "solution": "SELECT item, minutes * 2 AS estimate FROM repairs;",
+          "explanation": "minutes * 2 calculates each estimate. Arithmetic with NULL stays NULL, so an unknown duration does not become free work.",
+          "cases": [
+            {
+              "tables": [
+                {
+                  "name": "repairs",
+                  "columns": [
+                    {
+                      "name": "id",
+                      "type": "INTEGER"
+                    },
+                    {
+                      "name": "item",
+                      "type": "TEXT"
+                    },
+                    {
+                      "name": "minutes",
+                      "type": "INTEGER"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      1,
+                      "fan",
+                      15
+                    ],
+                    [
+                      2,
+                      "lamp",
+                      null
+                    ],
+                    [
+                      3,
+                      "radio",
+                      40
+                    ]
+                  ]
+                }
+              ],
+              "expected": {
+                "columns": [
+                  "item",
+                  "estimate"
+                ],
+                "rows": [
+                  [
+                    "fan",
+                    30
+                  ],
+                  [
+                    "lamp",
+                    null
+                  ],
+                  [
+                    "radio",
+                    80
+                  ]
+                ]
+              }
+            },
+            {
+              "tables": [
+                {
+                  "name": "repairs",
+                  "columns": [
+                    {
+                      "name": "id",
+                      "type": "INTEGER"
+                    },
+                    {
+                      "name": "item",
+                      "type": "TEXT"
+                    },
+                    {
+                      "name": "minutes",
+                      "type": "INTEGER"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      8,
+                      "mixer",
+                      0
+                    ],
+                    [
+                      9,
+                      "chair",
+                      25
+                    ]
+                  ]
+                }
+              ],
+              "expected": {
+                "columns": [
+                  "item",
+                  "estimate"
+                ],
+                "rows": [
+                  [
+                    "mixer",
+                    0
+                  ],
+                  [
+                    "chair",
+                    50
+                  ]
+                ]
+              }
+            },
+            {
+              "tables": [
+                {
+                  "name": "repairs",
+                  "columns": [
+                    {
+                      "name": "id",
+                      "type": "INTEGER"
+                    },
+                    {
+                      "name": "item",
+                      "type": "TEXT"
+                    },
+                    {
+                      "name": "minutes",
+                      "type": "INTEGER"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      5,
+                      "toaster",
+                      null
+                    ],
+                    [
+                      6,
+                      "clock",
+                      1
+                    ]
+                  ]
+                }
+              ],
+              "expected": {
+                "columns": [
+                  "item",
+                  "estimate"
+                ],
+                "rows": [
+                  [
+                    "toaster",
+                    null
+                  ],
+                  [
+                    "clock",
+                    2
+                  ]
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "choose-open-work",
+          "title": "Find the next jobs",
+          "prompt": "Return id for jobs whose status is 'open' and that either need at least 30 minutes or have urgent = 1. An unknown duration alone does not qualify. Row order does not matter.",
+          "lessonId": "filter-the-rows",
+          "conceptIds": [
+            "sql-filter-the-rows"
+          ],
+          "sourceIds": [
+            "sqlite-expr"
+          ],
+          "tables": [
+            {
+              "name": "queue",
+              "columns": [
+                {
+                  "name": "id",
+                  "type": "INTEGER"
+                },
+                {
+                  "name": "status",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "minutes",
+                  "type": "INTEGER"
+                },
+                {
+                  "name": "urgent",
+                  "type": "INTEGER"
+                }
+              ],
+              "rows": [
+                [
+                  1,
+                  "open",
+                  30,
+                  0
+                ],
+                [
+                  2,
+                  "closed",
+                  60,
+                  1
+                ],
+                [
+                  3,
+                  "open",
+                  10,
+                  1
+                ],
+                [
+                  4,
+                  "open",
+                  null,
+                  0
+                ]
+              ]
+            }
+          ],
+          "outputColumns": [
+            "id"
+          ],
+          "ordered": false,
+          "starter": "",
+          "hints": [
+            "Both routes into the shortlist still require an open job."
+          ],
+          "correction": "Group the duration and urgency alternatives together so a closed urgent job stays out.",
+          "solution": "SELECT id FROM queue WHERE status = 'open' AND (minutes >= 30 OR urgent = 1);",
+          "explanation": "Parentheses put the two alternatives inside the open-job condition. A NULL comparison cannot qualify a row unless urgent = 1 makes the OR true.",
+          "cases": [
+            {
+              "tables": [
+                {
+                  "name": "queue",
+                  "columns": [
+                    {
+                      "name": "id",
+                      "type": "INTEGER"
+                    },
+                    {
+                      "name": "status",
+                      "type": "TEXT"
+                    },
+                    {
+                      "name": "minutes",
+                      "type": "INTEGER"
+                    },
+                    {
+                      "name": "urgent",
+                      "type": "INTEGER"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      1,
+                      "open",
+                      30,
+                      0
+                    ],
+                    [
+                      2,
+                      "closed",
+                      60,
+                      1
+                    ],
+                    [
+                      3,
+                      "open",
+                      10,
+                      1
+                    ],
+                    [
+                      4,
+                      "open",
+                      null,
+                      0
+                    ]
+                  ]
+                }
+              ],
+              "expected": {
+                "columns": [
+                  "id"
+                ],
+                "rows": [
+                  [
+                    1
+                  ],
+                  [
+                    3
+                  ]
+                ]
+              }
+            },
+            {
+              "tables": [
+                {
+                  "name": "queue",
+                  "columns": [
+                    {
+                      "name": "id",
+                      "type": "INTEGER"
+                    },
+                    {
+                      "name": "status",
+                      "type": "TEXT"
+                    },
+                    {
+                      "name": "minutes",
+                      "type": "INTEGER"
+                    },
+                    {
+                      "name": "urgent",
+                      "type": "INTEGER"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      8,
+                      "closed",
+                      5,
+                      1
+                    ],
+                    [
+                      9,
+                      "open",
+                      29,
+                      0
+                    ],
+                    [
+                      10,
+                      "open",
+                      null,
+                      1
+                    ],
+                    [
+                      11,
+                      "open",
+                      31,
+                      0
+                    ]
+                  ]
+                }
+              ],
+              "expected": {
+                "columns": [
+                  "id"
+                ],
+                "rows": [
+                  [
+                    10
+                  ],
+                  [
+                    11
+                  ]
+                ]
+              }
+            },
+            {
+              "tables": [
+                {
+                  "name": "queue",
+                  "columns": [
+                    {
+                      "name": "id",
+                      "type": "INTEGER"
+                    },
+                    {
+                      "name": "status",
+                      "type": "TEXT"
+                    },
+                    {
+                      "name": "minutes",
+                      "type": "INTEGER"
+                    },
+                    {
+                      "name": "urgent",
+                      "type": "INTEGER"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      20,
+                      "open",
+                      0,
+                      0
+                    ],
+                    [
+                      21,
+                      "closed",
+                      80,
+                      0
+                    ],
+                    [
+                      22,
+                      "open",
+                      30,
+                      0
+                    ]
+                  ]
+                }
+              ],
+              "expected": {
+                "columns": [
+                  "id"
+                ],
+                "rows": [
+                  [
+                    22
+                  ]
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "longest-two",
+          "title": "Break the tie",
+          "prompt": "Return id and minutes for the two longest repairs with a known duration. Sort minutes from largest to smallest. For equal durations, the smaller id comes first.",
+          "lessonId": "sort-and-limit",
+          "conceptIds": [
+            "sql-sort-and-limit"
+          ],
+          "sourceIds": [
+            "sqlite-select"
+          ],
+          "tables": [
+            {
+              "name": "repairs",
+              "columns": [
+                {
+                  "name": "id",
+                  "type": "INTEGER"
+                },
+                {
+                  "name": "minutes",
+                  "type": "INTEGER"
+                }
+              ],
+              "rows": [
+                [
+                  4,
+                  40
+                ],
+                [
+                  2,
+                  40
+                ],
+                [
+                  8,
+                  10
+                ],
+                [
+                  9,
+                  null
+                ]
+              ]
+            }
+          ],
+          "outputColumns": [
+            "id",
+            "minutes"
+          ],
+          "ordered": true,
+          "starter": "",
+          "hints": [
+            "Choose the rows, then define a complete ordering before limiting the result."
+          ],
+          "correction": "A tie needs the id ordering too. Exclude unknown durations before taking two rows.",
+          "solution": "SELECT id, minutes FROM repairs WHERE minutes IS NOT NULL ORDER BY minutes DESC, id ASC LIMIT 2;",
+          "explanation": "ORDER BY minutes DESC, id ASC makes the top two deterministic. The WHERE condition removes unknown durations.",
+          "cases": [
+            {
+              "tables": [
+                {
+                  "name": "repairs",
+                  "columns": [
+                    {
+                      "name": "id",
+                      "type": "INTEGER"
+                    },
+                    {
+                      "name": "minutes",
+                      "type": "INTEGER"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      4,
+                      40
+                    ],
+                    [
+                      2,
+                      40
+                    ],
+                    [
+                      8,
+                      10
+                    ],
+                    [
+                      9,
+                      null
+                    ]
+                  ]
+                }
+              ],
+              "expected": {
+                "columns": [
+                  "id",
+                  "minutes"
+                ],
+                "rows": [
+                  [
+                    2,
+                    40
+                  ],
+                  [
+                    4,
+                    40
+                  ]
+                ]
+              }
+            },
+            {
+              "tables": [
+                {
+                  "name": "repairs",
+                  "columns": [
+                    {
+                      "name": "id",
+                      "type": "INTEGER"
+                    },
+                    {
+                      "name": "minutes",
+                      "type": "INTEGER"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      8,
+                      70
+                    ],
+                    [
+                      2,
+                      70
+                    ],
+                    [
+                      5,
+                      70
+                    ],
+                    [
+                      3,
+                      80
+                    ]
+                  ]
+                }
+              ],
+              "expected": {
+                "columns": [
+                  "id",
+                  "minutes"
+                ],
+                "rows": [
+                  [
+                    3,
+                    80
+                  ],
+                  [
+                    2,
+                    70
+                  ]
+                ]
+              }
+            },
+            {
+              "tables": [
+                {
+                  "name": "repairs",
+                  "columns": [
+                    {
+                      "name": "id",
+                      "type": "INTEGER"
+                    },
+                    {
+                      "name": "minutes",
+                      "type": "INTEGER"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      21,
+                      null
+                    ],
+                    [
+                      24,
+                      5
+                    ]
+                  ]
+                }
+              ],
+              "expected": {
+                "columns": [
+                  "id",
+                  "minutes"
+                ],
+                "rows": [
+                  [
+                    24,
+                    5
+                  ]
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "category-list",
+          "title": "List the categories",
+          "prompt": "Return each known category once, in a column named category. Exclude NULL. Row order does not matter.",
+          "lessonId": "distinct-results",
+          "conceptIds": [
+            "sql-distinct-results"
+          ],
+          "sourceIds": [
+            "sqlite-select",
+            "sqlite-aggregate"
+          ],
+          "tables": [
+            {
+              "name": "jobs",
+              "columns": [
+                {
+                  "name": "id",
+                  "type": "INTEGER"
+                },
+                {
+                  "name": "category",
+                  "type": "TEXT"
+                }
+              ],
+              "rows": [
+                [
+                  1,
+                  "wood"
+                ],
+                [
+                  2,
+                  "electrical"
+                ],
+                [
+                  3,
+                  "wood"
+                ],
+                [
+                  4,
+                  null
+                ]
+              ]
+            }
+          ],
+          "outputColumns": [
+            "category"
+          ],
+          "ordered": false,
+          "starter": "",
+          "hints": [
+            "The result represents categories, so repeated jobs in one category should contribute one row."
+          ],
+          "correction": "Check both duplicate category names and missing category values.",
+          "solution": "SELECT DISTINCT category FROM jobs WHERE category IS NOT NULL;",
+          "explanation": "DISTINCT removes repeated result rows after the NULL filter. Selecting id as well would make jobs distinct instead of categories.",
+          "cases": [
+            {
+              "tables": [
+                {
+                  "name": "jobs",
+                  "columns": [
+                    {
+                      "name": "id",
+                      "type": "INTEGER"
+                    },
+                    {
+                      "name": "category",
+                      "type": "TEXT"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      1,
+                      "wood"
+                    ],
+                    [
+                      2,
+                      "electrical"
+                    ],
+                    [
+                      3,
+                      "wood"
+                    ],
+                    [
+                      4,
+                      null
+                    ]
+                  ]
+                }
+              ],
+              "expected": {
+                "columns": [
+                  "category"
+                ],
+                "rows": [
+                  [
+                    "wood"
+                  ],
+                  [
+                    "electrical"
+                  ]
+                ]
+              }
+            },
+            {
+              "tables": [
+                {
+                  "name": "jobs",
+                  "columns": [
+                    {
+                      "name": "id",
+                      "type": "INTEGER"
+                    },
+                    {
+                      "name": "category",
+                      "type": "TEXT"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      8,
+                      "textile"
+                    ],
+                    [
+                      9,
+                      "textile"
+                    ],
+                    [
+                      10,
+                      "metal"
+                    ]
+                  ]
+                }
+              ],
+              "expected": {
+                "columns": [
+                  "category"
+                ],
+                "rows": [
+                  [
+                    "textile"
+                  ],
+                  [
+                    "metal"
+                  ]
+                ]
+              }
+            },
+            {
+              "tables": [
+                {
+                  "name": "jobs",
+                  "columns": [
+                    {
+                      "name": "id",
+                      "type": "INTEGER"
+                    },
+                    {
+                      "name": "category",
+                      "type": "TEXT"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      5,
+                      null
+                    ],
+                    [
+                      6,
+                      null
+                    ]
+                  ]
+                }
+              ],
+              "expected": {
+                "columns": [
+                  "category"
+                ],
+                "rows": []
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "workshop-connections",
+      "version": "1.0.0",
+      "title": "Connect the workshop records",
+      "description": "Turn incomplete durations and related tables into reports that keep the people and parts they should.",
+      "tasks": [
+        {
+          "id": "known-durations",
+          "title": "Report what is known",
+          "prompt": "Return one row with jobs (all rows), measured (known durations), total_minutes (sum of known durations), and mean_minutes (their average). If no duration is known, the sum and average must stay NULL.",
+          "lessonId": "aggregate-known-values",
+          "conceptIds": [
+            "sql-aggregate-known-values"
+          ],
+          "sourceIds": [
+            "sqlite-aggregate",
+            "sqlite-expr"
+          ],
+          "tables": [
+            {
+              "name": "repairs",
+              "columns": [
+                {
+                  "name": "id",
+                  "type": "INTEGER"
+                },
+                {
+                  "name": "minutes",
+                  "type": "INTEGER"
+                }
+              ],
+              "rows": [
+                [
+                  1,
+                  10
+                ],
+                [
+                  2,
+                  null
+                ],
+                [
+                  3,
+                  30
+                ]
+              ]
+            }
+          ],
+          "outputColumns": [
+            "jobs",
+            "measured",
+            "total_minutes",
+            "mean_minutes"
+          ],
+          "ordered": false,
+          "starter": "",
+          "hints": [
+            "COUNT(*) counts rows. Think about how the other aggregates treat NULL."
+          ],
+          "correction": "Use the count of known durations as the average's denominator. Unknown time is not zero time.",
+          "solution": "SELECT COUNT(*) AS jobs, COUNT(minutes) AS measured, SUM(minutes) AS total_minutes, AVG(minutes) AS mean_minutes FROM repairs;",
+          "explanation": "COUNT(minutes), SUM(minutes) and AVG(minutes) use known values. COUNT(*) includes every job. SUM and AVG return NULL when no values are known.",
+          "cases": [
+            {
+              "tables": [
+                {
+                  "name": "repairs",
+                  "columns": [
+                    {
+                      "name": "id",
+                      "type": "INTEGER"
+                    },
+                    {
+                      "name": "minutes",
+                      "type": "INTEGER"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      1,
+                      10
+                    ],
+                    [
+                      2,
+                      null
+                    ],
+                    [
+                      3,
+                      30
+                    ]
+                  ]
+                }
+              ],
+              "expected": {
+                "columns": [
+                  "jobs",
+                  "measured",
+                  "total_minutes",
+                  "mean_minutes"
+                ],
+                "rows": [
+                  [
+                    3,
+                    2,
+                    40,
+                    20
+                  ]
+                ]
+              }
+            },
+            {
+              "tables": [
+                {
+                  "name": "repairs",
+                  "columns": [
+                    {
+                      "name": "id",
+                      "type": "INTEGER"
+                    },
+                    {
+                      "name": "minutes",
+                      "type": "INTEGER"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      4,
+                      0
+                    ],
+                    [
+                      5,
+                      15
+                    ],
+                    [
+                      6,
+                      30
+                    ],
+                    [
+                      7,
+                      null
+                    ]
+                  ]
+                }
+              ],
+              "expected": {
+                "columns": [
+                  "jobs",
+                  "measured",
+                  "total_minutes",
+                  "mean_minutes"
+                ],
+                "rows": [
+                  [
+                    4,
+                    3,
+                    45,
+                    15
+                  ]
+                ]
+              }
+            },
+            {
+              "tables": [
+                {
+                  "name": "repairs",
+                  "columns": [
+                    {
+                      "name": "id",
+                      "type": "INTEGER"
+                    },
+                    {
+                      "name": "minutes",
+                      "type": "INTEGER"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      20,
+                      null
+                    ],
+                    [
+                      21,
+                      null
+                    ]
+                  ]
+                }
+              ],
+              "expected": {
+                "columns": [
+                  "jobs",
+                  "measured",
+                  "total_minutes",
+                  "mean_minutes"
+                ],
+                "rows": [
+                  [
+                    2,
+                    0,
+                    null,
+                    null
+                  ]
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "busy-categories",
+          "title": "Find busy categories",
+          "prompt": "Return category and COUNT(*) named jobs for known categories with at least two jobs. Sort category alphabetically.",
+          "lessonId": "group-and-filter-groups",
+          "conceptIds": [
+            "sql-group-and-filter-groups"
+          ],
+          "sourceIds": [
+            "sqlite-select",
+            "sqlite-aggregate"
+          ],
+          "tables": [
+            {
+              "name": "jobs",
+              "columns": [
+                {
+                  "name": "id",
+                  "type": "INTEGER"
+                },
+                {
+                  "name": "category",
+                  "type": "TEXT"
+                }
+              ],
+              "rows": [
+                [
+                  1,
+                  "wood"
+                ],
+                [
+                  2,
+                  "metal"
+                ],
+                [
+                  3,
+                  "wood"
+                ],
+                [
+                  4,
+                  null
+                ],
+                [
+                  5,
+                  "metal"
+                ],
+                [
+                  6,
+                  "textile"
+                ]
+              ]
+            }
+          ],
+          "outputColumns": [
+            "category",
+            "jobs"
+          ],
+          "ordered": true,
+          "starter": "",
+          "hints": [
+            "A row filter handles missing categories. A group filter handles the count."
+          ],
+          "correction": "The count condition applies after grouping. Keep categories with exactly two jobs.",
+          "solution": "SELECT category, COUNT(*) AS jobs FROM jobs WHERE category IS NOT NULL GROUP BY category HAVING COUNT(*) >= 2 ORDER BY category;",
+          "explanation": "WHERE removes missing categories before grouping. HAVING keeps groups whose job count is at least two.",
+          "cases": [
+            {
+              "tables": [
+                {
+                  "name": "jobs",
+                  "columns": [
+                    {
+                      "name": "id",
+                      "type": "INTEGER"
+                    },
+                    {
+                      "name": "category",
+                      "type": "TEXT"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      1,
+                      "wood"
+                    ],
+                    [
+                      2,
+                      "metal"
+                    ],
+                    [
+                      3,
+                      "wood"
+                    ],
+                    [
+                      4,
+                      null
+                    ],
+                    [
+                      5,
+                      "metal"
+                    ],
+                    [
+                      6,
+                      "textile"
+                    ]
+                  ]
+                }
+              ],
+              "expected": {
+                "columns": [
+                  "category",
+                  "jobs"
+                ],
+                "rows": [
+                  [
+                    "metal",
+                    2
+                  ],
+                  [
+                    "wood",
+                    2
+                  ]
+                ]
+              }
+            },
+            {
+              "tables": [
+                {
+                  "name": "jobs",
+                  "columns": [
+                    {
+                      "name": "id",
+                      "type": "INTEGER"
+                    },
+                    {
+                      "name": "category",
+                      "type": "TEXT"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      8,
+                      "electrical"
+                    ],
+                    [
+                      9,
+                      "electrical"
+                    ],
+                    [
+                      10,
+                      "electrical"
+                    ],
+                    [
+                      11,
+                      "wood"
+                    ]
+                  ]
+                }
+              ],
+              "expected": {
+                "columns": [
+                  "category",
+                  "jobs"
+                ],
+                "rows": [
+                  [
+                    "electrical",
+                    3
+                  ]
+                ]
+              }
+            },
+            {
+              "tables": [
+                {
+                  "name": "jobs",
+                  "columns": [
+                    {
+                      "name": "id",
+                      "type": "INTEGER"
+                    },
+                    {
+                      "name": "category",
+                      "type": "TEXT"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      20,
+                      "metal"
+                    ],
+                    [
+                      21,
+                      null
+                    ],
+                    [
+                      22,
+                      null
+                    ]
+                  ]
+                }
+              ],
+              "expected": {
+                "columns": [
+                  "category",
+                  "jobs"
+                ],
+                "rows": []
+              }
+            }
+          ]
+        },
+        {
+          "id": "match-owners",
+          "title": "Find each owner",
+          "prompt": "Match jobs.person_id to people.id. Return jobs.id as job_id and people.name as owner for matching jobs only. People can share a name. Row order does not matter.",
+          "lessonId": "join-matching-rows",
+          "conceptIds": [
+            "sql-join-matching-rows"
+          ],
+          "sourceIds": [
+            "sqlite-select"
+          ],
+          "tables": [
+            {
+              "name": "jobs",
+              "columns": [
+                {
+                  "name": "id",
+                  "type": "INTEGER"
+                },
+                {
+                  "name": "person_id",
+                  "type": "INTEGER"
+                }
+              ],
+              "rows": [
+                [
+                  1,
+                  10
+                ],
+                [
+                  2,
+                  10
+                ],
+                [
+                  3,
+                  99
+                ]
+              ]
+            },
+            {
+              "name": "people",
+              "columns": [
+                {
+                  "name": "id",
+                  "type": "INTEGER"
+                },
+                {
+                  "name": "name",
+                  "type": "TEXT"
+                }
+              ],
+              "rows": [
+                [
+                  10,
+                  "Ari"
+                ],
+                [
+                  11,
+                  "Bo"
+                ]
+              ]
+            }
+          ],
+          "outputColumns": [
+            "job_id",
+            "owner"
+          ],
+          "ordered": false,
+          "starter": "",
+          "hints": [
+            "Match the relationship keys. A name is a label, not a unique person identifier."
+          ],
+          "correction": "Check the join condition. Every matching job should appear once, including jobs owned by people with the same name.",
+          "solution": "SELECT j.id AS job_id, p.name AS owner FROM jobs j JOIN people p ON j.person_id = p.id;",
+          "explanation": "The key comparison pairs each job with its owner. An inner join omits jobs with no matching person.",
+          "cases": [
+            {
+              "tables": [
+                {
+                  "name": "jobs",
+                  "columns": [
+                    {
+                      "name": "id",
+                      "type": "INTEGER"
+                    },
+                    {
+                      "name": "person_id",
+                      "type": "INTEGER"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      1,
+                      10
+                    ],
+                    [
+                      2,
+                      10
+                    ],
+                    [
+                      3,
+                      99
+                    ]
+                  ]
+                },
+                {
+                  "name": "people",
+                  "columns": [
+                    {
+                      "name": "id",
+                      "type": "INTEGER"
+                    },
+                    {
+                      "name": "name",
+                      "type": "TEXT"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      10,
+                      "Ari"
+                    ],
+                    [
+                      11,
+                      "Bo"
+                    ]
+                  ]
+                }
+              ],
+              "expected": {
+                "columns": [
+                  "job_id",
+                  "owner"
+                ],
+                "rows": [
+                  [
+                    1,
+                    "Ari"
+                  ],
+                  [
+                    2,
+                    "Ari"
+                  ]
+                ]
+              }
+            },
+            {
+              "tables": [
+                {
+                  "name": "jobs",
+                  "columns": [
+                    {
+                      "name": "id",
+                      "type": "INTEGER"
+                    },
+                    {
+                      "name": "person_id",
+                      "type": "INTEGER"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      8,
+                      3
+                    ],
+                    [
+                      9,
+                      4
+                    ],
+                    [
+                      10,
+                      null
+                    ]
+                  ]
+                },
+                {
+                  "name": "people",
+                  "columns": [
+                    {
+                      "name": "id",
+                      "type": "INTEGER"
+                    },
+                    {
+                      "name": "name",
+                      "type": "TEXT"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      3,
+                      "Kai"
+                    ],
+                    [
+                      4,
+                      "Kai"
+                    ]
+                  ]
+                }
+              ],
+              "expected": {
+                "columns": [
+                  "job_id",
+                  "owner"
+                ],
+                "rows": [
+                  [
+                    8,
+                    "Kai"
+                  ],
+                  [
+                    9,
+                    "Kai"
+                  ]
+                ]
+              }
+            },
+            {
+              "tables": [
+                {
+                  "name": "jobs",
+                  "columns": [
+                    {
+                      "name": "id",
+                      "type": "INTEGER"
+                    },
+                    {
+                      "name": "person_id",
+                      "type": "INTEGER"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      21,
+                      8
+                    ]
+                  ]
+                },
+                {
+                  "name": "people",
+                  "columns": [
+                    {
+                      "name": "id",
+                      "type": "INTEGER"
+                    },
+                    {
+                      "name": "name",
+                      "type": "TEXT"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      5,
+                      "Mina"
+                    ]
+                  ]
+                }
+              ],
+              "expected": {
+                "columns": [
+                  "job_id",
+                  "owner"
+                ],
+                "rows": []
+              }
+            }
+          ]
+        },
+        {
+          "id": "include-idle-owners",
+          "title": "Keep people with no jobs",
+          "prompt": "For every person, return people.id as person_id and the number of matching jobs as jobs. Include zero for people with no jobs. Sort person_id from smallest to largest.",
+          "lessonId": "preserve-the-left-table",
+          "conceptIds": [
+            "sql-preserve-the-left-table"
+          ],
+          "sourceIds": [
+            "sqlite-select",
+            "sqlite-aggregate",
+            "sqlite-expr"
+          ],
+          "tables": [
+            {
+              "name": "people",
+              "columns": [
+                {
+                  "name": "id",
+                  "type": "INTEGER"
+                },
+                {
+                  "name": "name",
+                  "type": "TEXT"
+                }
+              ],
+              "rows": [
+                [
+                  10,
+                  "Ari"
+                ],
+                [
+                  11,
+                  "Bo"
+                ],
+                [
+                  12,
+                  "Cy"
+                ]
+              ]
+            },
+            {
+              "name": "jobs",
+              "columns": [
+                {
+                  "name": "id",
+                  "type": "INTEGER"
+                },
+                {
+                  "name": "person_id",
+                  "type": "INTEGER"
+                }
+              ],
+              "rows": [
+                [
+                  1,
+                  10
+                ],
+                [
+                  2,
+                  10
+                ],
+                [
+                  3,
+                  11
+                ]
+              ]
+            }
+          ],
+          "outputColumns": [
+            "person_id",
+            "jobs"
+          ],
+          "ordered": true,
+          "starter": "",
+          "hints": [
+            "Choose the table whose rows must all survive. Count a value that exists only for matched jobs."
+          ],
+          "correction": "A preserved person with no match still produces a joined row. Counting that row would incorrectly give one job.",
+          "solution": "SELECT p.id AS person_id, COUNT(j.id) AS jobs FROM people p LEFT JOIN jobs j ON j.person_id = p.id GROUP BY p.id ORDER BY p.id;",
+          "explanation": "A LEFT JOIN preserves every person. COUNT(j.id) ignores the NULL value in an unmatched job row and returns zero.",
+          "cases": [
+            {
+              "tables": [
+                {
+                  "name": "people",
+                  "columns": [
+                    {
+                      "name": "id",
+                      "type": "INTEGER"
+                    },
+                    {
+                      "name": "name",
+                      "type": "TEXT"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      10,
+                      "Ari"
+                    ],
+                    [
+                      11,
+                      "Bo"
+                    ],
+                    [
+                      12,
+                      "Cy"
+                    ]
+                  ]
+                },
+                {
+                  "name": "jobs",
+                  "columns": [
+                    {
+                      "name": "id",
+                      "type": "INTEGER"
+                    },
+                    {
+                      "name": "person_id",
+                      "type": "INTEGER"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      1,
+                      10
+                    ],
+                    [
+                      2,
+                      10
+                    ],
+                    [
+                      3,
+                      11
+                    ]
+                  ]
+                }
+              ],
+              "expected": {
+                "columns": [
+                  "person_id",
+                  "jobs"
+                ],
+                "rows": [
+                  [
+                    10,
+                    2
+                  ],
+                  [
+                    11,
+                    1
+                  ],
+                  [
+                    12,
+                    0
+                  ]
+                ]
+              }
+            },
+            {
+              "tables": [
+                {
+                  "name": "people",
+                  "columns": [
+                    {
+                      "name": "id",
+                      "type": "INTEGER"
+                    },
+                    {
+                      "name": "name",
+                      "type": "TEXT"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      3,
+                      "Kai"
+                    ],
+                    [
+                      4,
+                      "Kai"
+                    ]
+                  ]
+                },
+                {
+                  "name": "jobs",
+                  "columns": [
+                    {
+                      "name": "id",
+                      "type": "INTEGER"
+                    },
+                    {
+                      "name": "person_id",
+                      "type": "INTEGER"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      8,
+                      4
+                    ],
+                    [
+                      9,
+                      99
+                    ]
+                  ]
+                }
+              ],
+              "expected": {
+                "columns": [
+                  "person_id",
+                  "jobs"
+                ],
+                "rows": [
+                  [
+                    3,
+                    0
+                  ],
+                  [
+                    4,
+                    1
+                  ]
+                ]
+              }
+            },
+            {
+              "tables": [
+                {
+                  "name": "people",
+                  "columns": [
+                    {
+                      "name": "id",
+                      "type": "INTEGER"
+                    },
+                    {
+                      "name": "name",
+                      "type": "TEXT"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      20,
+                      "Mina"
+                    ]
+                  ]
+                },
+                {
+                  "name": "jobs",
+                  "columns": [
+                    {
+                      "name": "id",
+                      "type": "INTEGER"
+                    },
+                    {
+                      "name": "person_id",
+                      "type": "INTEGER"
+                    }
+                  ],
+                  "rows": []
+                }
+              ],
+              "expected": {
+                "columns": [
+                  "person_id",
+                  "jobs"
+                ],
+                "rows": [
+                  [
+                    20,
+                    0
+                  ]
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "reconcile-parts",
+          "title": "Reconcile both lists",
+          "prompt": "Match stock.code to requests.code. Keep every row from either list, including unmatched rows. Return the available code as code, stock.units as stock, and requests.units as requested. Missing quantities stay NULL. NULL codes do not match each other. Row order does not matter.",
+          "lessonId": "preserve-either-side",
+          "conceptIds": [
+            "sql-preserve-either-side"
+          ],
+          "sourceIds": [
+            "sqlite-select"
+          ],
+          "tables": [
+            {
+              "name": "stock",
+              "columns": [
+                {
+                  "name": "code",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "units",
+                  "type": "INTEGER"
+                }
+              ],
+              "rows": [
+                [
+                  "A",
+                  4
+                ],
+                [
+                  "B",
+                  2
+                ]
+              ]
+            },
+            {
+              "name": "requests",
+              "columns": [
+                {
+                  "name": "code",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "units",
+                  "type": "INTEGER"
+                }
+              ],
+              "rows": [
+                [
+                  "B",
+                  5
+                ],
+                [
+                  "C",
+                  1
+                ]
+              ]
+            }
+          ],
+          "outputColumns": [
+            "code",
+            "stock",
+            "requested"
+          ],
+          "ordered": false,
+          "starter": "",
+          "hints": [
+            "Some codes exist on only one side. Both sides need to survive the join."
+          ],
+          "correction": "Keep unmatched rows from both lists. An equality join does not pair two NULL codes.",
+          "solution": "SELECT COALESCE(s.code, r.code) AS code, s.units AS stock, r.units AS requested FROM stock s FULL OUTER JOIN requests r ON s.code = r.code;",
+          "explanation": "FULL OUTER JOIN preserves unmatched rows from either side. COALESCE selects the available code without turning a missing quantity into zero.",
+          "cases": [
+            {
+              "tables": [
+                {
+                  "name": "stock",
+                  "columns": [
+                    {
+                      "name": "code",
+                      "type": "TEXT"
+                    },
+                    {
+                      "name": "units",
+                      "type": "INTEGER"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      "A",
+                      4
+                    ],
+                    [
+                      "B",
+                      2
+                    ]
+                  ]
+                },
+                {
+                  "name": "requests",
+                  "columns": [
+                    {
+                      "name": "code",
+                      "type": "TEXT"
+                    },
+                    {
+                      "name": "units",
+                      "type": "INTEGER"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      "B",
+                      5
+                    ],
+                    [
+                      "C",
+                      1
+                    ]
+                  ]
+                }
+              ],
+              "expected": {
+                "columns": [
+                  "code",
+                  "stock",
+                  "requested"
+                ],
+                "rows": [
+                  [
+                    "A",
+                    4,
+                    null
+                  ],
+                  [
+                    "B",
+                    2,
+                    5
+                  ],
+                  [
+                    "C",
+                    null,
+                    1
+                  ]
+                ]
+              }
+            },
+            {
+              "tables": [
+                {
+                  "name": "stock",
+                  "columns": [
+                    {
+                      "name": "code",
+                      "type": "TEXT"
+                    },
+                    {
+                      "name": "units",
+                      "type": "INTEGER"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      "X",
+                      0
+                    ],
+                    [
+                      null,
+                      3
+                    ]
+                  ]
+                },
+                {
+                  "name": "requests",
+                  "columns": [
+                    {
+                      "name": "code",
+                      "type": "TEXT"
+                    },
+                    {
+                      "name": "units",
+                      "type": "INTEGER"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      null,
+                      2
+                    ],
+                    [
+                      "X",
+                      4
+                    ],
+                    [
+                      "Y",
+                      7
+                    ]
+                  ]
+                }
+              ],
+              "expected": {
+                "columns": [
+                  "code",
+                  "stock",
+                  "requested"
+                ],
+                "rows": [
+                  [
+                    "X",
+                    0,
+                    4
+                  ],
+                  [
+                    null,
+                    3,
+                    null
+                  ],
+                  [
+                    null,
+                    null,
+                    2
+                  ],
+                  [
+                    "Y",
+                    null,
+                    7
+                  ]
+                ]
+              }
+            },
+            {
+              "tables": [
+                {
+                  "name": "stock",
+                  "columns": [
+                    {
+                      "name": "code",
+                      "type": "TEXT"
+                    },
+                    {
+                      "name": "units",
+                      "type": "INTEGER"
+                    }
+                  ],
+                  "rows": []
+                },
+                {
+                  "name": "requests",
+                  "columns": [
+                    {
+                      "name": "code",
+                      "type": "TEXT"
+                    },
+                    {
+                      "name": "units",
+                      "type": "INTEGER"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      "Z",
+                      9
+                    ]
+                  ]
+                }
+              ],
+              "expected": {
+                "columns": [
+                  "code",
+                  "stock",
+                  "requested"
+                ],
+                "rows": [
+                  [
+                    "Z",
+                    null,
+                    9
+                  ]
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "workshop-changing-data",
+      "version": "1.0.0",
+      "title": "Make reports that adapt",
+      "description": "Write queries that still work when the data changes. Compare averages, preserve donations and follow a running balance.",
+      "tasks": [
+        {
+          "id": "above-average-time",
+          "title": "Find unusually long repairs",
+          "prompt": "Return id and minutes for repairs strictly above the average known duration in repairs. Exclude equal durations and unknown durations. Row order does not matter.",
+          "lessonId": "ask-a-query-inside-a-query",
+          "conceptIds": [
+            "sql-ask-a-query-inside-a-query"
+          ],
+          "sourceIds": [
+            "sqlite-expr"
+          ],
+          "tables": [
+            {
+              "name": "repairs",
+              "columns": [
+                {
+                  "name": "id",
+                  "type": "INTEGER"
+                },
+                {
+                  "name": "minutes",
+                  "type": "INTEGER"
+                }
+              ],
+              "rows": [
+                [
+                  1,
+                  10
+                ],
+                [
+                  2,
+                  20
+                ],
+                [
+                  3,
+                  30
+                ],
+                [
+                  4,
+                  null
+                ]
+              ]
+            }
+          ],
+          "outputColumns": [
+            "id",
+            "minutes"
+          ],
+          "ordered": false,
+          "starter": "",
+          "hints": [
+            "The threshold must come from the current table, so a typed numerical cutoff will not work for every dataset."
+          ],
+          "correction": "Compute the average from the same dataset and use a strict comparison.",
+          "solution": "SELECT id, minutes FROM repairs WHERE minutes > (SELECT AVG(minutes) FROM repairs);",
+          "explanation": "The subquery computes one average from known values. The outer query selects durations above it; comparisons to NULL do not select a row.",
+          "cases": [
+            {
+              "tables": [
+                {
+                  "name": "repairs",
+                  "columns": [
+                    {
+                      "name": "id",
+                      "type": "INTEGER"
+                    },
+                    {
+                      "name": "minutes",
+                      "type": "INTEGER"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      1,
+                      10
+                    ],
+                    [
+                      2,
+                      20
+                    ],
+                    [
+                      3,
+                      30
+                    ],
+                    [
+                      4,
+                      null
+                    ]
+                  ]
+                }
+              ],
+              "expected": {
+                "columns": [
+                  "id",
+                  "minutes"
+                ],
+                "rows": [
+                  [
+                    3,
+                    30
+                  ]
+                ]
+              }
+            },
+            {
+              "tables": [
+                {
+                  "name": "repairs",
+                  "columns": [
+                    {
+                      "name": "id",
+                      "type": "INTEGER"
+                    },
+                    {
+                      "name": "minutes",
+                      "type": "INTEGER"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      8,
+                      40
+                    ],
+                    [
+                      9,
+                      40
+                    ],
+                    [
+                      10,
+                      100
+                    ]
+                  ]
+                }
+              ],
+              "expected": {
+                "columns": [
+                  "id",
+                  "minutes"
+                ],
+                "rows": [
+                  [
+                    10,
+                    100
+                  ]
+                ]
+              }
+            },
+            {
+              "tables": [
+                {
+                  "name": "repairs",
+                  "columns": [
+                    {
+                      "name": "id",
+                      "type": "INTEGER"
+                    },
+                    {
+                      "name": "minutes",
+                      "type": "INTEGER"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      20,
+                      5
+                    ],
+                    [
+                      21,
+                      5
+                    ],
+                    [
+                      22,
+                      null
+                    ]
+                  ]
+                }
+              ],
+              "expected": {
+                "columns": [
+                  "id",
+                  "minutes"
+                ],
+                "rows": []
+              }
+            }
+          ]
+        },
+        {
+          "id": "keep-all-donations",
+          "title": "Keep every donation",
+          "prompt": "Combine morning and evening into donor and credits columns. Each row is a separate donation, even when the donor and amount repeat. Keep every donation. Row order does not matter.",
+          "lessonId": "combine-result-sets",
+          "conceptIds": [
+            "sql-combine-result-sets"
+          ],
+          "sourceIds": [
+            "sqlite-select"
+          ],
+          "tables": [
+            {
+              "name": "morning",
+              "columns": [
+                {
+                  "name": "donor",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "credits",
+                  "type": "INTEGER"
+                }
+              ],
+              "rows": [
+                [
+                  "Ari",
+                  5
+                ],
+                [
+                  "Bo",
+                  10
+                ]
+              ]
+            },
+            {
+              "name": "evening",
+              "columns": [
+                {
+                  "name": "donor",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "credits",
+                  "type": "INTEGER"
+                }
+              ],
+              "rows": [
+                [
+                  "Ari",
+                  5
+                ]
+              ]
+            }
+          ],
+          "outputColumns": [
+            "donor",
+            "credits"
+          ],
+          "ordered": false,
+          "starter": "",
+          "hints": [
+            "Decide whether repeated result rows represent duplicate data or separate real events."
+          ],
+          "correction": "A repeated donor and amount can still describe two donations. The combined report must keep both.",
+          "solution": "SELECT donor, credits FROM morning UNION ALL SELECT donor, credits FROM evening;",
+          "explanation": "UNION ALL appends all rows. UNION would remove matching result rows and lose real donations.",
+          "cases": [
+            {
+              "tables": [
+                {
+                  "name": "morning",
+                  "columns": [
+                    {
+                      "name": "donor",
+                      "type": "TEXT"
+                    },
+                    {
+                      "name": "credits",
+                      "type": "INTEGER"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      "Ari",
+                      5
+                    ],
+                    [
+                      "Bo",
+                      10
+                    ]
+                  ]
+                },
+                {
+                  "name": "evening",
+                  "columns": [
+                    {
+                      "name": "donor",
+                      "type": "TEXT"
+                    },
+                    {
+                      "name": "credits",
+                      "type": "INTEGER"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      "Ari",
+                      5
+                    ]
+                  ]
+                }
+              ],
+              "expected": {
+                "columns": [
+                  "donor",
+                  "credits"
+                ],
+                "rows": [
+                  [
+                    "Ari",
+                    5
+                  ],
+                  [
+                    "Bo",
+                    10
+                  ],
+                  [
+                    "Ari",
+                    5
+                  ]
+                ]
+              }
+            },
+            {
+              "tables": [
+                {
+                  "name": "morning",
+                  "columns": [
+                    {
+                      "name": "donor",
+                      "type": "TEXT"
+                    },
+                    {
+                      "name": "credits",
+                      "type": "INTEGER"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      "Cy",
+                      2
+                    ],
+                    [
+                      "Cy",
+                      2
+                    ]
+                  ]
+                },
+                {
+                  "name": "evening",
+                  "columns": [
+                    {
+                      "name": "donor",
+                      "type": "TEXT"
+                    },
+                    {
+                      "name": "credits",
+                      "type": "INTEGER"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      "Cy",
+                      2
+                    ],
+                    [
+                      "Dee",
+                      3
+                    ]
+                  ]
+                }
+              ],
+              "expected": {
+                "columns": [
+                  "donor",
+                  "credits"
+                ],
+                "rows": [
+                  [
+                    "Cy",
+                    2
+                  ],
+                  [
+                    "Cy",
+                    2
+                  ],
+                  [
+                    "Cy",
+                    2
+                  ],
+                  [
+                    "Dee",
+                    3
+                  ]
+                ]
+              }
+            },
+            {
+              "tables": [
+                {
+                  "name": "morning",
+                  "columns": [
+                    {
+                      "name": "donor",
+                      "type": "TEXT"
+                    },
+                    {
+                      "name": "credits",
+                      "type": "INTEGER"
+                    }
+                  ],
+                  "rows": []
+                },
+                {
+                  "name": "evening",
+                  "columns": [
+                    {
+                      "name": "donor",
+                      "type": "TEXT"
+                    },
+                    {
+                      "name": "credits",
+                      "type": "INTEGER"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      "Mina",
+                      9
+                    ]
+                  ]
+                }
+              ],
+              "expected": {
+                "columns": [
+                  "donor",
+                  "credits"
+                ],
+                "rows": [
+                  [
+                    "Mina",
+                    9
+                  ]
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "rank-equal-scores",
+          "title": "Share the rank",
+          "prompt": "Return name, points, and competition rank named place, with the largest points first in the ranking. Equal scores share a rank and leave a gap before the next rank. Sort the output by name alphabetically.",
+          "lessonId": "rank-with-ties",
+          "conceptIds": [
+            "sql-rank-with-ties"
+          ],
+          "sourceIds": [
+            "sqlite-window"
+          ],
+          "tables": [
+            {
+              "name": "teams",
+              "columns": [
+                {
+                  "name": "name",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "points",
+                  "type": "INTEGER"
+                }
+              ],
+              "rows": [
+                [
+                  "Birch",
+                  7
+                ],
+                [
+                  "Ash",
+                  10
+                ],
+                [
+                  "Cedar",
+                  7
+                ],
+                [
+                  "Elm",
+                  4
+                ]
+              ]
+            }
+          ],
+          "outputColumns": [
+            "name",
+            "points",
+            "place"
+          ],
+          "ordered": true,
+          "starter": "",
+          "hints": [
+            "The ranking order and the display order serve different purposes."
+          ],
+          "correction": "Tied scores need the same rank, followed by a gap. Do not break ties inside the ranking window.",
+          "solution": "SELECT name, points, RANK() OVER (ORDER BY points DESC) AS place FROM teams ORDER BY name;",
+          "explanation": "RANK() gives ties the same place and skips subsequent positions. The outer ORDER BY name controls display independently of the window order.",
+          "cases": [
+            {
+              "tables": [
+                {
+                  "name": "teams",
+                  "columns": [
+                    {
+                      "name": "name",
+                      "type": "TEXT"
+                    },
+                    {
+                      "name": "points",
+                      "type": "INTEGER"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      "Birch",
+                      7
+                    ],
+                    [
+                      "Ash",
+                      10
+                    ],
+                    [
+                      "Cedar",
+                      7
+                    ],
+                    [
+                      "Elm",
+                      4
+                    ]
+                  ]
+                }
+              ],
+              "expected": {
+                "columns": [
+                  "name",
+                  "points",
+                  "place"
+                ],
+                "rows": [
+                  [
+                    "Ash",
+                    10,
+                    1
+                  ],
+                  [
+                    "Birch",
+                    7,
+                    2
+                  ],
+                  [
+                    "Cedar",
+                    7,
+                    2
+                  ],
+                  [
+                    "Elm",
+                    4,
+                    4
+                  ]
+                ]
+              }
+            },
+            {
+              "tables": [
+                {
+                  "name": "teams",
+                  "columns": [
+                    {
+                      "name": "name",
+                      "type": "TEXT"
+                    },
+                    {
+                      "name": "points",
+                      "type": "INTEGER"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      "Zinc",
+                      8
+                    ],
+                    [
+                      "Copper",
+                      8
+                    ],
+                    [
+                      "Iron",
+                      3
+                    ]
+                  ]
+                }
+              ],
+              "expected": {
+                "columns": [
+                  "name",
+                  "points",
+                  "place"
+                ],
+                "rows": [
+                  [
+                    "Copper",
+                    8,
+                    1
+                  ],
+                  [
+                    "Iron",
+                    3,
+                    3
+                  ],
+                  [
+                    "Zinc",
+                    8,
+                    1
+                  ]
+                ]
+              }
+            },
+            {
+              "tables": [
+                {
+                  "name": "teams",
+                  "columns": [
+                    {
+                      "name": "name",
+                      "type": "TEXT"
+                    },
+                    {
+                      "name": "points",
+                      "type": "INTEGER"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      "A",
+                      0
+                    ],
+                    [
+                      "B",
+                      0
+                    ],
+                    [
+                      "C",
+                      0
+                    ]
+                  ]
+                }
+              ],
+              "expected": {
+                "columns": [
+                  "name",
+                  "points",
+                  "place"
+                ],
+                "rows": [
+                  [
+                    "A",
+                    0,
+                    1
+                  ],
+                  [
+                    "B",
+                    0,
+                    1
+                  ],
+                  [
+                    "C",
+                    0,
+                    1
+                  ]
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "district-benchmark",
+          "title": "Keep detail beside the average",
+          "prompt": "Return every repair's id and district, with the average known duration in its district named district_mean. Keep one row per repair, including repairs with unknown duration. Sort id from smallest to largest.",
+          "lessonId": "partition-the-window",
+          "conceptIds": [
+            "sql-partition-the-window"
+          ],
+          "sourceIds": [
+            "sqlite-window"
+          ],
+          "tables": [
+            {
+              "name": "repairs",
+              "columns": [
+                {
+                  "name": "id",
+                  "type": "INTEGER"
+                },
+                {
+                  "name": "district",
+                  "type": "TEXT"
+                },
+                {
+                  "name": "minutes",
+                  "type": "INTEGER"
+                }
+              ],
+              "rows": [
+                [
+                  1,
+                  "north",
+                  10
+                ],
+                [
+                  2,
+                  "south",
+                  40
+                ],
+                [
+                  3,
+                  "north",
+                  30
+                ],
+                [
+                  4,
+                  "south",
+                  null
+                ]
+              ]
+            }
+          ],
+          "outputColumns": [
+            "id",
+            "district",
+            "district_mean"
+          ],
+          "ordered": true,
+          "starter": "",
+          "hints": [
+            "A window calculation can repeat a group statistic while preserving the original rows."
+          ],
+          "correction": "Keep the detail rows and calculate each district's own average. Unknown durations must not enter the denominator.",
+          "solution": "SELECT id, district, AVG(minutes) OVER (PARTITION BY district) AS district_mean FROM repairs ORDER BY id;",
+          "explanation": "PARTITION BY district gives each row its district's average. A window preserves every repair, while GROUP BY would collapse them.",
+          "cases": [
+            {
+              "tables": [
+                {
+                  "name": "repairs",
+                  "columns": [
+                    {
+                      "name": "id",
+                      "type": "INTEGER"
+                    },
+                    {
+                      "name": "district",
+                      "type": "TEXT"
+                    },
+                    {
+                      "name": "minutes",
+                      "type": "INTEGER"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      1,
+                      "north",
+                      10
+                    ],
+                    [
+                      2,
+                      "south",
+                      40
+                    ],
+                    [
+                      3,
+                      "north",
+                      30
+                    ],
+                    [
+                      4,
+                      "south",
+                      null
+                    ]
+                  ]
+                }
+              ],
+              "expected": {
+                "columns": [
+                  "id",
+                  "district",
+                  "district_mean"
+                ],
+                "rows": [
+                  [
+                    1,
+                    "north",
+                    20
+                  ],
+                  [
+                    2,
+                    "south",
+                    40
+                  ],
+                  [
+                    3,
+                    "north",
+                    20
+                  ],
+                  [
+                    4,
+                    "south",
+                    40
+                  ]
+                ]
+              }
+            },
+            {
+              "tables": [
+                {
+                  "name": "repairs",
+                  "columns": [
+                    {
+                      "name": "id",
+                      "type": "INTEGER"
+                    },
+                    {
+                      "name": "district",
+                      "type": "TEXT"
+                    },
+                    {
+                      "name": "minutes",
+                      "type": "INTEGER"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      8,
+                      "east",
+                      5
+                    ],
+                    [
+                      6,
+                      "west",
+                      null
+                    ],
+                    [
+                      7,
+                      "east",
+                      15
+                    ],
+                    [
+                      9,
+                      "west",
+                      null
+                    ]
+                  ]
+                }
+              ],
+              "expected": {
+                "columns": [
+                  "id",
+                  "district",
+                  "district_mean"
+                ],
+                "rows": [
+                  [
+                    6,
+                    "west",
+                    null
+                  ],
+                  [
+                    7,
+                    "east",
+                    10
+                  ],
+                  [
+                    8,
+                    "east",
+                    10
+                  ],
+                  [
+                    9,
+                    "west",
+                    null
+                  ]
+                ]
+              }
+            },
+            {
+              "tables": [
+                {
+                  "name": "repairs",
+                  "columns": [
+                    {
+                      "name": "id",
+                      "type": "INTEGER"
+                    },
+                    {
+                      "name": "district",
+                      "type": "TEXT"
+                    },
+                    {
+                      "name": "minutes",
+                      "type": "INTEGER"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      20,
+                      "central",
+                      0
+                    ],
+                    [
+                      21,
+                      "central",
+                      20
+                    ]
+                  ]
+                }
+              ],
+              "expected": {
+                "columns": [
+                  "id",
+                  "district",
+                  "district_mean"
+                ],
+                "rows": [
+                  [
+                    20,
+                    "central",
+                    10
+                  ],
+                  [
+                    21,
+                    "central",
+                    10
+                  ]
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "follow-the-ledger",
+          "title": "Follow the running balance",
+          "prompt": "In increasing seq order, return seq, the running sum of credits named running, and the immediately preceding row's credits named previous. Include the current row in the sum. Keep NULL for an absent or unknown previous value. A sum with no known values is NULL.",
+          "lessonId": "running-totals-and-neighbours",
+          "conceptIds": [
+            "sql-running-totals-and-neighbours"
+          ],
+          "sourceIds": [
+            "sqlite-window"
+          ],
+          "tables": [
+            {
+              "name": "entries",
+              "columns": [
+                {
+                  "name": "seq",
+                  "type": "INTEGER"
+                },
+                {
+                  "name": "credits",
+                  "type": "INTEGER"
+                }
+              ],
+              "rows": [
+                [
+                  3,
+                  -2
+                ],
+                [
+                  1,
+                  5
+                ],
+                [
+                  2,
+                  8
+                ]
+              ]
+            }
+          ],
+          "outputColumns": [
+            "seq",
+            "running",
+            "previous"
+          ],
+          "ordered": true,
+          "starter": "",
+          "hints": [
+            "Give both windows the same sequence. The running sum and the previous value look at different parts of that sequence."
+          ],
+          "correction": "Include the current row in the sum. LAG reads the immediately preceding row, even when its value is NULL.",
+          "solution": "SELECT seq, SUM(credits) OVER (ORDER BY seq ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS running, LAG(credits) OVER (ORDER BY seq) AS previous FROM entries ORDER BY seq;",
+          "explanation": "An explicit ROWS frame accumulates through the current entry. LAG returns the previous row's value; it does not skip NULL entries.",
+          "cases": [
+            {
+              "tables": [
+                {
+                  "name": "entries",
+                  "columns": [
+                    {
+                      "name": "seq",
+                      "type": "INTEGER"
+                    },
+                    {
+                      "name": "credits",
+                      "type": "INTEGER"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      3,
+                      -2
+                    ],
+                    [
+                      1,
+                      5
+                    ],
+                    [
+                      2,
+                      8
+                    ]
+                  ]
+                }
+              ],
+              "expected": {
+                "columns": [
+                  "seq",
+                  "running",
+                  "previous"
+                ],
+                "rows": [
+                  [
+                    1,
+                    5,
+                    null
+                  ],
+                  [
+                    2,
+                    13,
+                    5
+                  ],
+                  [
+                    3,
+                    11,
+                    8
+                  ]
+                ]
+              }
+            },
+            {
+              "tables": [
+                {
+                  "name": "entries",
+                  "columns": [
+                    {
+                      "name": "seq",
+                      "type": "INTEGER"
+                    },
+                    {
+                      "name": "credits",
+                      "type": "INTEGER"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      8,
+                      4
+                    ],
+                    [
+                      5,
+                      null
+                    ],
+                    [
+                      6,
+                      3
+                    ],
+                    [
+                      7,
+                      null
+                    ]
+                  ]
+                }
+              ],
+              "expected": {
+                "columns": [
+                  "seq",
+                  "running",
+                  "previous"
+                ],
+                "rows": [
+                  [
+                    5,
+                    null,
+                    null
+                  ],
+                  [
+                    6,
+                    3,
+                    null
+                  ],
+                  [
+                    7,
+                    3,
+                    3
+                  ],
+                  [
+                    8,
+                    7,
+                    null
+                  ]
+                ]
+              }
+            },
+            {
+              "tables": [
+                {
+                  "name": "entries",
+                  "columns": [
+                    {
+                      "name": "seq",
+                      "type": "INTEGER"
+                    },
+                    {
+                      "name": "credits",
+                      "type": "INTEGER"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      20,
+                      0
+                    ],
+                    [
+                      21,
+                      -5
+                    ],
+                    [
+                      22,
+                      5
+                    ]
+                  ]
+                }
+              ],
+              "expected": {
+                "columns": [
+                  "seq",
+                  "running",
+                  "previous"
+                ],
+                "rows": [
+                  [
+                    20,
+                    0,
+                    null
+                  ],
+                  [
+                    21,
+                    -5,
+                    0
+                  ],
+                  [
+                    22,
+                    0,
+                    -5
+                  ]
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

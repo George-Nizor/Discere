@@ -1,0 +1,353 @@
+import {
+  aluminium,
+  beat,
+  card,
+  choose,
+  kingpost,
+  numeric,
+  steel,
+  triangle,
+  word,
+  type TeachingLesson,
+} from "./definition.js";
+
+export const structureLessons: TeachingLesson[] = [
+  {
+    id: "trusses-by-joints",
+    title: "Trusses: the method of joints",
+    summary: "Find member forces joint by joint and tell tension from compression.",
+    moduleId: "engr-structures",
+    sourceIds: ["engr-es-joints", "engr-up-equilibrium"],
+    beats: [
+      beat(
+        "Start at a joint with two unknowns",
+        "A truss is a frame of straight members pinned at joints and loaded only at joints, so each member carries a pure push or pull along its length. The method of joints isolates one joint at a time. At C, two unknown member forces meet. By symmetry they are equal, and their vertical components must hold up 12 kN: 2F × 1.5/2.5 = 12, so F = 10 kN.",
+        ["Shallow: 4 m span, 1.5 m high", triangle(4, 1.5, 12)],
+        ["Steep: 3 m span, 2 m high", triangle(3, 2, 12)],
+      ),
+      beat(
+        "Tension or compression",
+        "A tension member pulls on its joints and gets longer; a compression member pushes on them and gets shorter. The sloping members here push down and outward on A and B, so they are in compression. The bottom chord AB stops the feet spreading by pulling inward on both joints, so it is in tension. A tie can be a slim rod; a strut must also resist buckling.",
+        ["Shallow truss", triangle(4, 1.5, 12)],
+        ["Steep truss", triangle(3, 2, 12)],
+      ),
+      beat(
+        "Joint A gives the tie force",
+        "With no horizontal load, the pin at A supplies no horizontal reaction, so the horizontal components at A must cancel. Member AC pushes on A with a horizontal component of 10 × 2/2.5 = 8 kN outward, so AB must pull 8 kN inward. The vertical component, 10 × 1.5/2.5 = 6 kN, matches the 6 kN reaction at A.",
+        ["Shallow truss", triangle(4, 1.5, 12)],
+        ["Steep truss", triangle(3, 2, 12)],
+      ),
+      beat(
+        "Members that carry nothing",
+        "At D, members AD and DB lie on one line and no load is applied. Vertical equilibrium at D involves only DC, so DC carries no force. The rule: where two collinear members meet a third at an unloaded joint, the third is a zero-force member. It is not useless. Hang the load from D instead and DC becomes the member that carries it up to the apex.",
+        ["Load at the apex", kingpost(4, 1.5, 12, "C")],
+        ["Load at the middle of the tie", kingpost(4, 1.5, 12, "D")],
+      ),
+    ],
+    questions: [
+      numeric(
+        "A triangular truss spans 4 m with its apex C 1.5 m above the supports, so each sloping member is 2.5 m long. A 12 kN load hangs from C. Find the size of the force in member AC in kN.",
+        10,
+        "At C, both sloping members have vertical components of F × 1.5/2.5. Then 2 × 0.6F = 12, so F = 10 kN. Forgetting the second member gives 20 kN.",
+        [
+          "Isolate joint C. Two equal member forces meet there.",
+          "Each contributes a vertical component of F × rise/length.",
+          "Solve 2 × F × 1.5/2.5 = 12.",
+        ],
+        "kN",
+      ),
+      word(
+        "In that same truss, is the bottom member AB in tension or compression?",
+        ["tension"],
+        ["compression"],
+        "Tension: AB pulls inward to stop the supports spreading apart.",
+        "Picture the sloping members spreading under the load. What must AB do to stop the feet moving apart?",
+      ),
+      numeric(
+        "Use joint A of the shallow truss. The 10 kN force in AC acts along a line with run 2 m and rise 1.5 m. Find the force in AB in kN.",
+        8,
+        "Horizontal balance at A: F_AB = 10 × 2/2.5 = 8 kN, in tension.",
+        [
+          "The pin at A has no horizontal reaction because no load acts horizontally.",
+          "AB must cancel the horizontal component of AC.",
+          "Calculate 10 × 2/2.5.",
+        ],
+        "kN",
+      ),
+      numeric(
+        "A king-post truss adds a vertical member DC from the middle of the bottom chord, D, up to the apex C. The only load is 12 kN at C. Find the force in DC in kN.",
+        0,
+        "At D, AD and DB are collinear and horizontal and no load acts, so vertical balance leaves DC with no force.",
+        [
+          "Isolate joint D and list the members meeting there.",
+          "AD and DB lie on one straight line; DC is the only member with a vertical component.",
+          "Write ΣFy = 0 at D with no load applied there.",
+        ],
+        "kN",
+      ),
+      numeric(
+        "A triangular truss spans 3 m with its apex 2 m high, so each sloping member is 2.5 m long. A 16 kN load acts at the apex. Find the tension in the bottom member in kN.",
+        6,
+        "At the apex: 2F × 2/2.5 = 16, so F = 10 kN in each sloping member. At a support: tension = 10 × 1.5/2.5 = 6 kN.",
+        [
+          "Find the sloping member force first, at the apex.",
+          "Then use horizontal balance at a support joint.",
+          "Calculate (16 ÷ 1.6) × 1.5/2.5.",
+        ],
+        "kN",
+      ),
+      word(
+        "A member pushes outward on the joints at both its ends. What is it in: tension or compression?",
+        ["compression"],
+        ["tension"],
+        "Compression: a strut pushes on its joints.",
+        "Ask whether the member is being stretched or squashed.",
+      ),
+    ],
+    cards: [
+      card(
+        "A symmetric triangular truss has sloping members rising 3 m for every 4 m across (5 m long). A 30 kN load acts at the apex. Find the force in each sloping member, in kN.",
+        25,
+        "2F × 3/5 = 30, so F = 25 kN, in compression.",
+        "kN",
+      ),
+      card(
+        "In that truss, with 25 kN in each sloping member, find the tension in the bottom tie in kN.",
+        20,
+        "Horizontal component: 25 × 4/5 = 20 kN.",
+        "kN",
+      ),
+    ],
+  },
+  {
+    id: "stress-and-strain",
+    title: "Stress, strain and stiffness",
+    summary: "Relate force per area to stretch per length through Young's modulus.",
+    moduleId: "engr-structures",
+    sourceIds: ["engr-up-stress", "engr-up-plasticity"],
+    beats: [
+      beat(
+        "Stress is force per area",
+        "Stress is internal force per unit area: σ = F/A. Engineers use newtons per square millimetre, which equal megapascals. 20 kN is 20,000 N; spread over 400 mm² it gives 50 MPa. Stress, not force, decides whether a material yields: a thicker bar carries the same force at lower stress.",
+        ["400 mm² bar", steel(400, 2000, 20)],
+        ["200 mm² bar", steel(200, 2000, 20)],
+      ),
+      beat(
+        "Strain is stretch per length",
+        "Strain is extension divided by original length, ε = δ/L, a pure number. In the elastic range stress and strain are proportional, σ = Eε. Here ε = 50/200,000 = 0.00025, so the 2,000 mm bar stretches 0.00025 × 2,000 = 0.5 mm: too small to see, easy to measure with a strain gauge.",
+        ["2,000 mm long", steel(400, 2000, 20)],
+        ["4,000 mm long", steel(400, 4000, 20)],
+      ),
+      beat(
+        "Young's modulus is the slope",
+        "Young's modulus E is the slope of the straight, elastic part of the stress–strain curve. Aluminium alloy has E ≈ 70 GPa and steel about 200 GPa, so at equal stress aluminium strains 200/70 ≈ 2.9 times as much. Stiffness and strength are different properties: this alloy yields at about the stress mild steel does, yet stretches far more on the way.",
+        ["Aluminium alloy", aluminium(400, 1400, 20)],
+        ["Structural steel", steel(400, 1400, 20)],
+      ),
+      beat(
+        "Past the yield point",
+        "Below the yield stress, unloading retraces the straight line and the bar recovers its length. Beyond yield, planes of atoms slip; unloading follows a line parallel to the elastic one and leaves a permanent strain. The bar still holds load until stress reaches the ultimate strength, where it necks and then fractures. Design keeps working stresses below yield.",
+        ["Loaded to 300 MPa", steel(400, 2000, 120)],
+        ["Loaded to 200 MPa", steel(400, 2000, 80)],
+      ),
+    ],
+    questions: [
+      numeric(
+        "A steel bar with a cross-section of 400 mm² carries a 20 kN axial pull. Find the stress in MPa.",
+        50,
+        "σ = 20,000 N ÷ 400 mm² = 50 N/mm² = 50 MPa. Leaving the load in kN gives 0.05, a thousand times too small.",
+        [
+          "Convert the load to newtons.",
+          "Divide by the area in mm²; 1 N/mm² is 1 MPa.",
+          "Calculate 20,000 ÷ 400.",
+        ],
+        "MPa",
+      ),
+      numeric(
+        "The same bar is 2,000 mm long, and its steel has E = 200 GPa (200,000 MPa). At 50 MPa, how much does it stretch, in mm?",
+        0.5,
+        "ε = 50/200,000 = 0.00025; δ = 0.00025 × 2,000 = 0.5 mm.",
+        [
+          "Strain is stress divided by Young's modulus, in the same units.",
+          "Stretch is strain times original length.",
+          "Calculate 50 ÷ 200,000 × 2,000.",
+        ],
+        "mm",
+      ),
+      numeric(
+        "An aluminium bar (E = 70 GPa) 1,400 mm long carries a stress of 50 MPa. Find its stretch in mm.",
+        1,
+        "ε = 50/70,000; δ = 50/70,000 × 1,400 = 1 mm, double the steel bar's stretch over a shorter length.",
+        [
+          "Write E in MPa: 70 GPa is 70,000 MPa.",
+          "Strain = stress ÷ E, then multiply by length.",
+          "Calculate 50 × 1,400 ÷ 70,000.",
+        ],
+        "mm",
+      ),
+      choose(
+        "A steel bar with yield stress 250 MPa and ultimate strength 400 MPa is loaded to 300 MPa, then unloaded. What happens?",
+        [
+          "It returns to its original length",
+          "It keeps a permanent stretch",
+          "It has already fractured",
+        ],
+        1,
+        "300 MPa is past yield but below the ultimate strength, so the bar survives with a permanent set.",
+        "Compare 300 MPa with both strengths.",
+      ),
+      numeric(
+        "A square rod 10 mm × 10 mm carries a 15 kN axial pull. Find the stress in MPa.",
+        150,
+        "A = 100 mm²; σ = 15,000 ÷ 100 = 150 MPa.",
+        [
+          "Find the cross-sectional area first.",
+          "Convert the load to newtons and divide.",
+          "Calculate 15,000 ÷ (10 × 10).",
+        ],
+        "MPa",
+      ),
+      numeric(
+        "A steel tie (E = 200 GPa) 5 m long works at 100 MPa. Find its stretch in mm.",
+        2.5,
+        "δ = 100/200,000 × 5,000 = 2.5 mm.",
+        [
+          "Convert the length to millimetres.",
+          "Strain = stress ÷ E with E in MPa.",
+          "Calculate 100 ÷ 200,000 × 5,000.",
+        ],
+        "mm",
+      ),
+    ],
+    cards: [
+      card(
+        "A 25 kN pull acts on a 500 mm² cross-section. Find the stress in MPa.",
+        50,
+        "25,000 ÷ 500 = 50 MPa.",
+        "MPa",
+      ),
+      card(
+        "A material with E = 70 GPa is strained elastically to 0.001. Find the stress in MPa.",
+        70,
+        "σ = Eε = 70,000 MPa × 0.001 = 70 MPa.",
+        "MPa",
+      ),
+    ],
+  },
+  {
+    id: "factor-of-safety",
+    title: "Factor of safety and sizing",
+    summary: "Size a member for strength with a margin, then check that it is stiff enough.",
+    moduleId: "engr-structures",
+    sourceIds: ["engr-up-stress", "engr-up-plasticity"],
+    beats: [
+      beat(
+        "Margin against yield",
+        "The factor of safety compares the stress that causes failure with the stress in service: FoS = σ_yield/σ_working. 40 kN on 400 mm² is 100 MPa; with a 250 MPa yield stress the factor is 2.5. The margin covers loads larger than expected, weaker material, corrosion and the simplifications in the calculation itself.",
+        ["40 kN", steel(400, 3000, 40)],
+        ["80 kN", steel(400, 3000, 80)],
+      ),
+      beat(
+        "Size the section",
+        "Design runs the calculation backwards. The allowable stress is σ_yield/FoS = 250/2 = 125 MPa, so the area must be at least 60,000/125 = 480 mm². Any section with less area works harder than allowed; any with more is safe but heavier and dearer.",
+        ["400 mm² bar", steel(400, 3000, 60)],
+        ["625 mm² bar", steel(625, 3000, 60)],
+      ),
+      beat(
+        "Choose from stock",
+        "Members come in stock sizes, so the choice is the smallest available section that meets the required area. A 20 mm square gives 400 mm², too little; a 25 mm square gives 625 mm². Its stress falls to 96 MPa and its factor of safety rises to about 2.6. Rounding up is normal practice.",
+        ["20 mm square", steel(400, 3000, 60)],
+        ["25 mm square", steel(625, 3000, 60)],
+        ["30 mm square", steel(900, 3000, 60)],
+      ),
+      beat(
+        "Stiffness can govern",
+        "Strength is not the only check. A member safe against yield may still stretch, sag or vibrate too much. At 96 MPa the 3 m tie lengthens 96/200,000 × 3,000 = 1.44 mm. If the connection it serves tolerates only 1 mm, stiffness governs and the section must grow beyond what strength alone requires.",
+        ["3 m tie", steel(625, 3000, 60)],
+        ["6 m tie", steel(625, 6000, 60)],
+      ),
+    ],
+    questions: [
+      numeric(
+        "A steel tie with yield stress 250 MPa and area 400 mm² carries 40 kN. Find its factor of safety against yield.",
+        2.5,
+        "Working stress = 40,000 ÷ 400 = 100 MPa; FoS = 250 ÷ 100 = 2.5.",
+        [
+          "Find the working stress first.",
+          "Divide the yield stress by the working stress.",
+          "Calculate 250 ÷ (40,000 ÷ 400).",
+        ],
+        "",
+      ),
+      numeric(
+        "A tie must carry 60 kN with a factor of safety of 2, using steel that yields at 250 MPa. Find the minimum cross-sectional area in mm².",
+        480,
+        "Allowable stress = 250 ÷ 2 = 125 MPa; area = 60,000 ÷ 125 = 480 mm².",
+        [
+          "Divide the yield stress by the factor of safety.",
+          "Area = load in newtons ÷ allowable stress.",
+          "Calculate 60,000 ÷ 125.",
+        ],
+        "mm²",
+      ),
+      numeric(
+        "Square steel bars come with 20, 25 and 30 mm sides. Which side length, in mm, is the smallest that gives at least 480 mm² of area?",
+        25,
+        "Areas are 400, 625 and 900 mm². 400 mm² is too small, so the 25 mm bar is the lightest that works.",
+        [
+          "Work out the area of each bar.",
+          "Discard any below the required area.",
+          "Pick the smallest remaining side.",
+        ],
+        "mm",
+      ),
+      numeric(
+        "A 25 mm square steel tie (625 mm²) is 3 m long and carries 60 kN. With E = 200 GPa, find its stretch in mm.",
+        1.44,
+        "σ = 60,000 ÷ 625 = 96 MPa; δ = 96/200,000 × 3,000 = 1.44 mm.",
+        [
+          "Find the stress in MPa.",
+          "Strain = stress ÷ 200,000 MPa; multiply by 3,000 mm.",
+          "Calculate (60,000 ÷ 625) ÷ 200,000 × 3,000.",
+        ],
+        "mm",
+      ),
+      numeric(
+        "A steel with yield stress 355 MPa is used with a factor of safety of 2.5. Find the allowable working stress in MPa.",
+        142,
+        "Allowable stress = 355 ÷ 2.5 = 142 MPa.",
+        [
+          "The factor of safety divides the failure stress.",
+          "Allowable = yield ÷ FoS.",
+          "Calculate 355 ÷ 2.5.",
+        ],
+        "MPa",
+      ),
+      numeric(
+        "A 300 mm² bar of steel that yields at 250 MPa must keep a factor of safety of 1.5. Find the largest axial load it may carry, in kN.",
+        50,
+        "Allowable stress = 250 ÷ 1.5 MPa; load = 300 × 250 ÷ 1.5 = 50,000 N = 50 kN.",
+        [
+          "Find the allowable stress.",
+          "Load = allowable stress × area, in newtons.",
+          "Calculate 300 × 250 ÷ 1.5, then convert to kN.",
+        ],
+        "kN",
+      ),
+    ],
+    cards: [
+      card(
+        "A member works at 80 MPa and its material yields at 240 MPa. Find the factor of safety.",
+        3,
+        "240 ÷ 80 = 3.",
+        "",
+      ),
+      card(
+        "A 30 kN load must not exceed an allowable stress of 150 MPa. Find the minimum area in mm².",
+        200,
+        "30,000 ÷ 150 = 200 mm².",
+        "mm²",
+      ),
+    ],
+  },
+];

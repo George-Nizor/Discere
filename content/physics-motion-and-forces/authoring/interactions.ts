@@ -1,0 +1,346 @@
+import {
+  pair,
+  friction,
+  work,
+  beat,
+  numeric,
+  choose,
+  card,
+  type TeachingLesson,
+} from "./definition.js";
+export const interactionLessons: TeachingLesson[] = [
+  {
+    id: "pairs-of-forces",
+    title: "Forces come in pairs",
+    summary:
+      "Identify an interaction pair and explain why equal forces can produce different accelerations.",
+    moduleId: "phys-interactions",
+    sourceIds: ["phys-pairs", "phys-newton"],
+    beats: [
+      beat(
+        "Name both objects",
+        "When A pushes B, B pushes A with an equal force in the opposite direction. These forces act on different objects. If B pushes A left with 10 N, A pushes B right with 10 N, even when their masses differ.",
+        ["Different masses", pair(2, 5, 10)],
+        ["Equal masses", pair(2, 2, 10)],
+      ),
+      beat(
+        "Equal forces, different motion",
+        "The interaction forces have equal magnitudes, but acceleration also depends on mass. Under the 10 N interaction, a 5 kg cart accelerates at 2 m/s² while a 2 kg cart accelerates at 5 m/s² in the opposite direction.",
+        ["B has mass 5 kg", pair(2, 5, 10)],
+        ["B has mass 10 kg", pair(2, 10, 10)],
+      ),
+      beat(
+        "Keep the direction",
+        "Choose right as positive for both carts. Cart A experiences a leftward force, so its acceleration is negative. For a 2 kg cart with force −10 N, acceleration is −5 m/s².",
+        ["A has mass 2 kg", pair(2, 5, 10)],
+        ["A has mass 4 kg", pair(4, 5, 10)],
+      ),
+      beat(
+        "Choose the system",
+        "The two forces do not cancel on either cart: each cart accelerates. They do cancel when adding internal forces for the combined A-and-B system. That cancellation does not remove any external force on the system.",
+        ["Interaction 10 N", pair(2, 5, 10)],
+        ["Interaction 20 N", pair(2, 5, 20)],
+      ),
+    ],
+    questions: [
+      numeric(
+        "B pushes A left with a force of 10 N. Find the magnitude of A's force on B in newtons.",
+        10,
+        "Newton's third law gives an equal magnitude: 10 N, directed right.",
+        [
+          "Identify the two objects in the interaction.",
+          "The two forces have equal magnitudes.",
+          "The partner force has the same magnitude and opposite direction.",
+        ],
+        "N",
+      ),
+      numeric(
+        "Cart A pushes a 5 kg cart B right with 10 N. This is B's only horizontal force. Find B's acceleration in m/s² with right positive.",
+        2,
+        "a_B = 10/5 = +2 m/s².",
+        [
+          "Apply the second law to B alone.",
+          "Divide the force on B by B's mass.",
+          "Divide the interaction force by B's mass.",
+        ],
+        "m/s²",
+      ),
+      numeric(
+        "Cart A has mass 2 kg. Its only horizontal force is 10 N left. With right positive, find A's acceleration in m/s².",
+        -5,
+        "a_A = −10/2 = −5 m/s².",
+        [
+          "Use the mass of the object being accelerated.",
+          "The leftward force has a negative sign.",
+          "Divide the leftward force magnitude by mass and retain its sign.",
+        ],
+        "m/s²",
+      ),
+      choose(
+        "A and B push each other while isolated horizontally. Why do the interaction forces cancel in the combined system's force sum?",
+        [
+          "They act on the same cart",
+          "They are equal, opposite internal forces",
+          "Neither cart accelerates",
+        ],
+        1,
+        "For the combined system, the pair is internal and sums to zero. Each cart can still accelerate.",
+        "Choose a boundary containing both interacting objects.",
+      ),
+      numeric(
+        "Two carts interact with forces of magnitude 18 N. Cart B has mass 6 kg and no other horizontal force. Find its acceleration magnitude in m/s².",
+        3,
+        "a_B = 18/6 = 3 m/s².",
+        [
+          "Use the force acting on B.",
+          "Equal interaction forces do not require equal accelerations.",
+          "Divide the force magnitude by the mass of B.",
+        ],
+        "m/s²",
+      ),
+      choose(
+        "A book rests on a table. Which is the interaction partner of the table's upward force on the book?",
+        [
+          "Earth's downward gravitational force on the book",
+          "The book's downward force on the table",
+          "The book's mass",
+        ],
+        1,
+        "The paired force swaps the two objects: book on table, opposite to table on book.",
+        "A third-law pair acts on different objects.",
+      ),
+    ],
+    cards: [
+      card(
+        "A person pushes a wall with 27 N. Find the magnitude of the wall's force on the person in newtons.",
+        27,
+        "The interaction partner has equal magnitude, 27 N.",
+        "N",
+      ),
+      card(
+        "A 4 kg cart experiences one horizontal interaction force of 28 N left. With right positive, find its acceleration in m/s².",
+        -7,
+        "a = −28/4 = −7 m/s².",
+        "m/s²",
+      ),
+    ],
+  },
+  {
+    id: "friction-and-motion",
+    title: "Friction that adjusts",
+    summary: "Distinguish static and sliding friction, and predict whether a push moves a box.",
+    moduleId: "phys-interactions",
+    sourceIds: ["phys-friction", "phys-newton"],
+    beats: [
+      beat(
+        "Before the box moves",
+        "Static friction adjusts to oppose the tendency to slide, up to a limit. For a 4 kg box with g = 10 m/s² and static coefficient 0.5, that limit is 20 N. A 12 N push is balanced by 12 N of static friction.",
+        ["Push 12 N", friction(4, 12)],
+        ["Push 18 N", friction(4, 18)],
+      ),
+      beat(
+        "Beyond the limit",
+        "On a horizontal surface with no vertical acceleration, the support force is mg. Maximum static friction is μ_s mg. A push above that maximum starts sliding; static friction is not automatically at its maximum before then.",
+        ["Below the limit", friction(4, 18)],
+        ["Above the limit", friction(4, 24)],
+      ),
+      beat(
+        "While it slides",
+        "For this ideal model, sliding friction has magnitude μ_k mg and opposes sliding. With mass 4 kg, g = 10 m/s² and μ_k = 0.3, its magnitude is 12 N. It need not match the applied push.",
+        ["Sliding, push 24 N", friction(4, 24, 2)],
+        ["Sliding, push 16 N", friction(4, 16, 2)],
+      ),
+      beat(
+        "Subtract the opposing force",
+        "A sliding 4 kg box pushed right with 24 N has 12 N of sliding friction left. Net force is 12 N, so acceleration is 3 m/s². With the push removed it slows; friction does not launch it backward after it stops.",
+        ["Continue pushing", friction(4, 24, 2)],
+        ["Remove the push", friction(4, 0, 2)],
+      ),
+    ],
+    questions: [
+      numeric(
+        "A resting 4 kg box has g = 10 m/s² and static coefficient 0.5. A 12 N horizontal push does not move it. Find the static-friction magnitude in newtons.",
+        12,
+        "The 12 N push is below the 20 N limit, so static friction is 12 N.",
+        [
+          "A stationary box has zero horizontal acceleration.",
+          "Static friction adjusts below its maximum.",
+          "Match the applied horizontal push without exceeding the limit.",
+        ],
+        "N",
+      ),
+      numeric(
+        "A 4 kg box rests on a horizontal surface with no other vertical forces. Use g = 10 m/s² and μ_s = 0.5. Find maximum static friction in newtons.",
+        20,
+        "f_s,max = μ_s mg = 0.5 × 4 × 10 = 20 N.",
+        [
+          "First find the support force.",
+          "Multiply mg by the static coefficient.",
+          "Calculate 0.5 × 4 × 10.",
+        ],
+        "N",
+      ),
+      numeric(
+        "A 4 kg box slides on a horizontal surface. With g = 10 m/s², no vertical acceleration and μ_k = 0.3, find the sliding-friction magnitude in newtons.",
+        12,
+        "f_k = 0.3 × 4 × 10 = 12 N.",
+        ["Use the coefficient for sliding.", "The support force equals mg.", "Calculate 0.3 × 40."],
+        "N",
+      ),
+      numeric(
+        "A 4 kg box slides right. A 24 N push acts right and sliding friction is 12 N left. Find its acceleration in m/s² with right positive.",
+        3,
+        "a = (24 − 12)/4 = 3 m/s².",
+        [
+          "Combine the opposing horizontal forces.",
+          "Divide net force by mass.",
+          "Calculate (24 − 12)/4.",
+        ],
+        "m/s²",
+      ),
+      choose(
+        "A stationary box can sustain at most 30 N of static friction. You push horizontally with 8 N and it stays at rest. What is its friction magnitude?",
+        ["8 N", "30 N", "38 N"],
+        0,
+        "Static friction balances the 8 N push; 30 N is a limit, not its automatic value.",
+        "Use zero acceleration while the box remains at rest.",
+      ),
+      choose(
+        "A sliding box slows to rest on a horizontal floor after its push is removed. What happens next in this model?",
+        [
+          "Friction accelerates it backward",
+          "It stays at rest with zero horizontal friction",
+          "It keeps sliding at a smaller constant speed",
+        ],
+        1,
+        "Once sliding stops and no horizontal force tries to move it, friction is zero.",
+        "Friction opposes sliding or a tendency to slide; it is not a constant backward motor.",
+      ),
+    ],
+    cards: [
+      card(
+        "A 5 kg box slides horizontally with μ_k = 0.2 and g = 10 m/s². With no other vertical force or acceleration, find the friction magnitude in newtons.",
+        10,
+        "f_k = 0.2 × 5 × 10 = 10 N.",
+        "N",
+      ),
+      card(
+        "A resting box has a 25 N static-friction limit. A 9 N horizontal push leaves it at rest. Find the friction magnitude in newtons.",
+        9,
+        "Static friction balances the 9 N push, below the limit.",
+        "N",
+      ),
+    ],
+  },
+  {
+    id: "work-by-a-force",
+    title: "When a force does work",
+    summary: "Calculate signed work for forces along, against and perpendicular to displacement.",
+    moduleId: "phys-interactions",
+    sourceIds: ["phys-work", "phys-kinetic"],
+    beats: [
+      beat(
+        "Force along a displacement",
+        "A constant force does positive work when it acts along the displacement. Work is force times displacement in that direction: W = Fd. A 15 N force acting along a 4 m displacement does 60 J of work.",
+        ["Along the motion", work(15, 4)],
+        ["Twice the displacement", work(15, 8)],
+      ),
+      beat(
+        "Force against a displacement",
+        "A force opposite to displacement does negative work. A 6 N friction force acting against 5 m of travel does −30 J. The sign describes the force's energy transfer, not whether the object exists to the left or right.",
+        ["Against the motion", work(6, 5, "against")],
+        ["Along the motion", work(6, 5)],
+      ),
+      beat(
+        "A perpendicular force",
+        "Only the component of force along displacement contributes to work. A perpendicular support force does zero work during a horizontal displacement, even though the force is nonzero.",
+        ["Perpendicular", work(20, 3, "perpendicular")],
+        ["Parallel", work(20, 3)],
+      ),
+      beat(
+        "Track the chosen force",
+        "Work is calculated for a particular force. A 10 N pull along 7 m does 70 J, while a separate opposing 4 N force would do −28 J over the same displacement. Adding all the forces' work gives net work.",
+        ["Pulling force", work(10, 7)],
+        ["Opposing force", work(4, 7, "against")],
+      ),
+    ],
+    questions: [
+      numeric(
+        "A constant 15 N force acts along a 4 m displacement. Find its work in joules.",
+        60,
+        "W = 15 × 4 = 60 J.",
+        [
+          "Force and displacement point the same way.",
+          "Multiply their magnitudes.",
+          "Calculate 15 × 4.",
+        ],
+        "J",
+      ),
+      numeric(
+        "A constant 6 N force acts opposite to a 5 m displacement. Find its signed work in joules.",
+        -30,
+        "W = −6 × 5 = −30 J.",
+        [
+          "An opposing force does negative work.",
+          "Multiply force and distance, retaining the negative sign.",
+          "Calculate −6 × 5.",
+        ],
+        "J",
+      ),
+      numeric(
+        "A constant 20 N upward support force acts during a 3 m horizontal displacement. Find the work done by this support force in joules.",
+        0,
+        "The force is perpendicular to displacement, so its work is 0 J.",
+        [
+          "Look for the force component along displacement.",
+          "The vertical force has no horizontal component.",
+          "A zero component gives zero work.",
+        ],
+        "J",
+      ),
+      numeric(
+        "A constant 10 N pull acts along a 7 m displacement. Find the work done by this pull alone in joules.",
+        70,
+        "The pull's work is 10 × 7 = 70 J.",
+        [
+          "The question asks about one force, not the net force.",
+          "Use W = Fd for this parallel pull.",
+          "Calculate 10 × 7.",
+        ],
+        "J",
+      ),
+      choose(
+        "You hold a box stationary for 5 s. What mechanical work does your support force do on the box during that time?",
+        [
+          "Positive work because time passes",
+          "Zero work because displacement is zero",
+          "Negative work because gravity acts",
+        ],
+        1,
+        "The box has no displacement, so this support force does zero mechanical work on it.",
+        "Mechanical work depends on displacement, not the duration of effort.",
+      ),
+      choose(
+        "A pull does +70 J on a cart and friction does −28 J. All other forces do zero work. What is the net work?",
+        ["Positive ninety-eight joules", "Positive forty-two joules", "Negative forty-two joules"],
+        1,
+        "Net work is the signed sum: 70 − 28 = 42 J.",
+        "Add work contributions with their signs.",
+      ),
+    ],
+    cards: [
+      card(
+        "A constant 8 N force acts along a 9 m displacement. Find its work in joules.",
+        72,
+        "W = 8 × 9 = 72 J.",
+        "J",
+      ),
+      card(
+        "A constant 5 N force opposes a 6 m displacement. Find its signed work in joules.",
+        -30,
+        "W = −5 × 6 = −30 J.",
+        "J",
+      ),
+    ],
+  },
+];

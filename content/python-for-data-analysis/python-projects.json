@@ -1,0 +1,2054 @@
+{
+  "courseId": "python-for-data-analysis",
+  "projects": [
+    {
+      "id": "python-workshop-tools",
+      "version": "1.0.0",
+      "title": "Write your workshop tools",
+      "description": "Write small programs that calculate job costs, clean text and handle work notes.",
+      "tasks": [
+        {
+          "id": "labour-estimate",
+          "title": "Build a labour estimate",
+          "prompt": "A repair costs hours × rate plus callout. Calculate the labour subtotal before adding the callout fee. Assign the final amount to result.",
+          "lessonId": "run-and-bind",
+          "conceptIds": [
+            "python-run-and-bind"
+          ],
+          "sourceIds": [
+            "py-intro",
+            "jupyter-cells"
+          ],
+          "inputs": {
+            "hours": 2,
+            "rate": 40,
+            "callout": 15
+          },
+          "starter": "# Use the supplied input variables.\nresult = None\n",
+          "hints": [
+            "Follow which values each assignment needs.",
+            "The callout fee is added once, after the hourly calculation."
+          ],
+          "correction": "Keep the fixed callout fee outside the multiplication by hours.",
+          "solution": "subtotal = hours * rate\nresult = subtotal + callout",
+          "explanation": "The hourly subtotal depends on hours and rate. Adding callout afterwards charges the fixed fee once.",
+          "cases": [
+            {
+              "inputs": {
+                "hours": 2,
+                "rate": 40,
+                "callout": 15
+              },
+              "expected": 95
+            },
+            {
+              "inputs": {
+                "hours": 5,
+                "rate": 18,
+                "callout": 0
+              },
+              "expected": 90
+            },
+            {
+              "inputs": {
+                "hours": 0,
+                "rate": 32,
+                "callout": 12
+              },
+              "expected": 12
+            }
+          ]
+        },
+        {
+          "id": "full-boxes",
+          "title": "Pack complete boxes",
+          "prompt": "items must fit into boxes of capacity. Assign result a dictionary with boxes for the number of full boxes and left for the remaining items.",
+          "lessonId": "numbers-and-types",
+          "conceptIds": [
+            "python-numbers-and-types"
+          ],
+          "sourceIds": [
+            "py-types"
+          ],
+          "inputs": {
+            "items": 23,
+            "capacity": 5
+          },
+          "starter": "# Use the supplied input variables.\nresult = None\n",
+          "hints": [
+            "Separate the whole-box count from the remainder.",
+            "For nonnegative items, // gives the full-box count and % gives the leftover count."
+          ],
+          "correction": "Ordinary division can return a fraction of a box. The task asks for whole boxes and a separate remainder.",
+          "solution": "result = {'boxes': items // capacity, 'left': items % capacity}",
+          "explanation": "Integer division counts complete groups. Modulo preserves the items that do not fill another group.",
+          "cases": [
+            {
+              "inputs": {
+                "items": 23,
+                "capacity": 5
+              },
+              "expected": {
+                "boxes": 4,
+                "left": 3
+              }
+            },
+            {
+              "inputs": {
+                "items": 24,
+                "capacity": 6
+              },
+              "expected": {
+                "boxes": 4,
+                "left": 0
+              }
+            },
+            {
+              "inputs": {
+                "items": 0,
+                "capacity": 4
+              },
+              "expected": {
+                "boxes": 0,
+                "left": 0
+              }
+            }
+          ]
+        },
+        {
+          "id": "clean-part-name",
+          "title": "Extract a part name",
+          "prompt": "raw contains a part name and may include | followed by a batch code. Take the text before the first |, remove surrounding spaces and convert it to uppercase. Assign it to result.",
+          "lessonId": "strings-and-slices",
+          "conceptIds": [
+            "python-strings-and-slices"
+          ],
+          "sourceIds": [
+            "py-intro"
+          ],
+          "inputs": {
+            "raw": " bolt |B12"
+          },
+          "starter": "# Use the supplied input variables.\nresult = None\n",
+          "hints": [
+            "The batch code starts after the first delimiter.",
+            "Split once, then apply the text methods to the first piece."
+          ],
+          "correction": "Keep the part name alone. Spaces and later delimiters can vary between inputs.",
+          "solution": "result = raw.split('|', 1)[0].strip().upper()",
+          "explanation": "Splitting at the first delimiter preserves the whole name. strip and upper give a consistent identifier.",
+          "cases": [
+            {
+              "inputs": {
+                "raw": " bolt |B12"
+              },
+              "expected": "BOLT"
+            },
+            {
+              "inputs": {
+                "raw": "Washer|B3|spare"
+              },
+              "expected": "WASHER"
+            },
+            {
+              "inputs": {
+                "raw": " nut "
+              },
+              "expected": "NUT"
+            }
+          ]
+        },
+        {
+          "id": "copy-work-steps",
+          "title": "Extend a work list",
+          "prompt": "Make a separate working copy of steps and append extra to it. Assign result a dictionary containing original and updated. The original list must keep its earlier values.",
+          "lessonId": "lists-and-tuples",
+          "conceptIds": [
+            "python-lists-and-tuples"
+          ],
+          "sourceIds": [
+            "py-structures"
+          ],
+          "inputs": {
+            "steps": [
+              "cut",
+              "drill"
+            ],
+            "extra": "sand"
+          },
+          "starter": "# Use the supplied input variables.\nresult = None\n",
+          "hints": [
+            "A second variable can still refer to the same list.",
+            "Copy the list before appending the new step."
+          ],
+          "correction": "Appending through another reference changes the original list too. Keep a separate list for the update.",
+          "solution": "working = steps.copy()\nworking.append(extra)\nresult = {'original': steps, 'updated': working}",
+          "explanation": "copy creates a new outer list. Appending to that copy leaves the original sequence intact.",
+          "cases": [
+            {
+              "inputs": {
+                "steps": [
+                  "cut",
+                  "drill"
+                ],
+                "extra": "sand"
+              },
+              "expected": {
+                "original": [
+                  "cut",
+                  "drill"
+                ],
+                "updated": [
+                  "cut",
+                  "drill",
+                  "sand"
+                ]
+              }
+            },
+            {
+              "inputs": {
+                "steps": [],
+                "extra": "inspect"
+              },
+              "expected": {
+                "original": [],
+                "updated": [
+                  "inspect"
+                ]
+              }
+            },
+            {
+              "inputs": {
+                "steps": [
+                  "check",
+                  "check"
+                ],
+                "extra": "test"
+              },
+              "expected": {
+                "original": [
+                  "check",
+                  "check"
+                ],
+                "updated": [
+                  "check",
+                  "check",
+                  "test"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "count-parts",
+          "title": "Count repeated parts",
+          "prompt": "Count how often each name appears in parts. Assign result a dictionary from each part name to its count. Preserve repeated observations in the counts.",
+          "lessonId": "keys-and-sets",
+          "conceptIds": [
+            "python-keys-and-sets"
+          ],
+          "sourceIds": [
+            "py-structures"
+          ],
+          "inputs": {
+            "parts": [
+              "bolt",
+              "nut",
+              "bolt"
+            ]
+          },
+          "starter": "# Use the supplied input variables.\nresult = None\n",
+          "hints": [
+            "Each dictionary key needs one running count.",
+            "Start a previously unseen key at zero before adding one."
+          ],
+          "correction": "A set removes repeats. This task needs the number of observations for each name.",
+          "solution": "counts = {}\nfor part in parts:\n    counts[part] = counts.get(part, 0) + 1\nresult = counts",
+          "explanation": "The dictionary combines repeated names under one key while retaining their frequencies.",
+          "cases": [
+            {
+              "inputs": {
+                "parts": [
+                  "bolt",
+                  "nut",
+                  "bolt"
+                ]
+              },
+              "expected": {
+                "bolt": 2,
+                "nut": 1
+              }
+            },
+            {
+              "inputs": {
+                "parts": []
+              },
+              "expected": {}
+            },
+            {
+              "inputs": {
+                "parts": [
+                  "washer",
+                  "washer",
+                  "nut",
+                  "washer"
+                ]
+              },
+              "expected": {
+                "washer": 3,
+                "nut": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "approved-hour-total",
+          "title": "Select hours to total",
+          "prompt": "Add only the values in hours that are at least minimum. Assign the total to result. A list with no qualifying values must return zero.",
+          "lessonId": "conditions-and-loops",
+          "conceptIds": [
+            "python-conditions-and-loops"
+          ],
+          "sourceIds": [
+            "py-flow",
+            "py-types"
+          ],
+          "inputs": {
+            "hours": [
+              1,
+              4,
+              2,
+              5
+            ],
+            "minimum": 3
+          },
+          "starter": "# Use the supplied input variables.\nresult = None\n",
+          "hints": [
+            "Test each value before adding it.",
+            "Start the running total at zero so an empty selection has a defined result."
+          ],
+          "correction": "The condition applies to each observation. Keep the qualifying values separate from those below the threshold.",
+          "solution": "total = 0\nfor value in hours:\n    if value >= minimum:\n        total += value\nresult = total",
+          "explanation": "The loop adds a value only after its comparison passes. The initial zero also handles an empty selection.",
+          "cases": [
+            {
+              "inputs": {
+                "hours": [
+                  1,
+                  4,
+                  2,
+                  5
+                ],
+                "minimum": 3
+              },
+              "expected": 9
+            },
+            {
+              "inputs": {
+                "hours": [
+                  -2,
+                  0,
+                  3
+                ],
+                "minimum": 0
+              },
+              "expected": 3
+            },
+            {
+              "inputs": {
+                "hours": [
+                  1,
+                  2
+                ],
+                "minimum": 5
+              },
+              "expected": 0
+            }
+          ]
+        },
+        {
+          "id": "define-job-cost",
+          "title": "Write a reusable cost function",
+          "prompt": "Define job_cost(unit_price, quantity) to return their product. Run and Check call your function with the supplied inputs. The function must return the amount.",
+          "lessonId": "functions-and-imports",
+          "conceptIds": [
+            "python-functions-and-imports"
+          ],
+          "sourceIds": [
+            "py-flow",
+            "py-modules"
+          ],
+          "inputs": {
+            "unit_price": 3.5,
+            "quantity": 4
+          },
+          "call": {
+            "name": "job_cost",
+            "arguments": [
+              "unit_price",
+              "quantity"
+            ]
+          },
+          "starter": "# Define the requested function below.\n",
+          "hints": [
+            "The caller needs a returned value.",
+            "Use the function's parameters rather than numbers from the displayed example."
+          ],
+          "correction": "Printing an amount leaves the caller without a return value. Compute from the parameters and return the product.",
+          "solution": "def job_cost(unit_price, quantity):\n    return unit_price * quantity",
+          "explanation": "The checker calls job_cost with each input pair. Returning the product makes the same function usable for other orders.",
+          "cases": [
+            {
+              "inputs": {
+                "unit_price": 3.5,
+                "quantity": 4
+              },
+              "expected": 14
+            },
+            {
+              "inputs": {
+                "unit_price": 8,
+                "quantity": 0
+              },
+              "expected": 0
+            },
+            {
+              "inputs": {
+                "unit_price": 0.25,
+                "quantity": 12
+              },
+              "expected": 3
+            }
+          ]
+        },
+        {
+          "id": "parse-work-note",
+          "title": "Read a temporary work note",
+          "prompt": "Write text to /tmp/work-note.txt using with. Read it back using with and return it as an integer in result. If the text is not a valid integer, return None.",
+          "lessonId": "errors-and-resources",
+          "conceptIds": [
+            "python-errors-and-resources"
+          ],
+          "sourceIds": [
+            "py-errors"
+          ],
+          "inputs": {
+            "text": " 12\n"
+          },
+          "starter": "# Use the supplied input variables.\nresult = None\n",
+          "hints": [
+            "Use with around each opened file.",
+            "Catch the conversion's ValueError so an invalid observation has an explicit missing result."
+          ],
+          "correction": "A text value can fail integer conversion. Handle that failure without replacing a valid zero or negative number.",
+          "solution": "with open('/tmp/work-note.txt', 'w') as note:\n    note.write(text)\nwith open('/tmp/work-note.txt') as note:\n    raw = note.read()\ntry:\n    result = int(raw)\nexcept ValueError:\n    result = None",
+          "explanation": "The with blocks close their files. The conversion returns an integer when possible and None for invalid text.",
+          "cases": [
+            {
+              "inputs": {
+                "text": " 12\n"
+              },
+              "expected": 12
+            },
+            {
+              "inputs": {
+                "text": "unknown"
+              },
+              "expected": null
+            },
+            {
+              "inputs": {
+                "text": "-3"
+              },
+              "expected": -3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "python-measurements-and-tables",
+      "version": "1.0.0",
+      "title": "Turn readings into tables",
+      "description": "Shape arrays, inspect CSV data and select the rows a report needs.",
+      "tasks": [
+        {
+          "id": "reshape-readings",
+          "title": "Arrange readings into rows",
+          "prompt": "Convert readings to a NumPy array. Reshape it using the supplied rows and columns, then assign the array to result. Each case supplies exactly enough readings.",
+          "lessonId": "arrays-and-shape",
+          "conceptIds": [
+            "python-arrays-and-shape"
+          ],
+          "sourceIds": [
+            "np-quickstart"
+          ],
+          "inputs": {
+            "readings": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6
+            ],
+            "rows": 2,
+            "columns": 3
+          },
+          "starter": "# Use the supplied input variables.\nresult = None\n",
+          "hints": [
+            "The dimensions must multiply to the number of readings.",
+            "reshape receives the requested row and column counts."
+          ],
+          "correction": "The requested shape determines where each reading belongs. Preserve the original reading order.",
+          "solution": "import numpy as np\nresult = np.array(readings).reshape(rows, columns)",
+          "explanation": "reshape changes the arrangement of the same values. The number of elements stays constant.",
+          "cases": [
+            {
+              "inputs": {
+                "readings": [
+                  1,
+                  2,
+                  3,
+                  4,
+                  5,
+                  6
+                ],
+                "rows": 2,
+                "columns": 3
+              },
+              "expected": [
+                [
+                  1,
+                  2,
+                  3
+                ],
+                [
+                  4,
+                  5,
+                  6
+                ]
+              ]
+            },
+            {
+              "inputs": {
+                "readings": [
+                  8,
+                  4,
+                  2,
+                  1
+                ],
+                "rows": 4,
+                "columns": 1
+              },
+              "expected": [
+                [
+                  8
+                ],
+                [
+                  4
+                ],
+                [
+                  2
+                ],
+                [
+                  1
+                ]
+              ]
+            },
+            {
+              "inputs": {
+                "readings": [
+                  0,
+                  -2,
+                  5
+                ],
+                "rows": 1,
+                "columns": 3
+              },
+              "expected": [
+                [
+                  0,
+                  -2,
+                  5
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "id": "row-totals",
+          "title": "Total each work session",
+          "prompt": "Each inner list in sessions holds one session's readings. Use NumPy to total each row and assign the resulting one-dimensional array to result.",
+          "lessonId": "array-calculations",
+          "conceptIds": [
+            "python-array-calculations"
+          ],
+          "sourceIds": [
+            "np-quickstart",
+            "np-index"
+          ],
+          "inputs": {
+            "sessions": [
+              [
+                2,
+                3,
+                1
+              ],
+              [
+                4,
+                0,
+                2
+              ]
+            ]
+          },
+          "starter": "# Use the supplied input variables.\nresult = None\n",
+          "hints": [
+            "One output belongs to each row.",
+            "Summing across columns uses axis=1."
+          ],
+          "correction": "A single grand total loses the session boundaries. Reduce across each row separately.",
+          "solution": "import numpy as np\nresult = np.array(sessions).sum(axis=1)",
+          "explanation": "axis=1 removes the column dimension, leaving one total per session.",
+          "cases": [
+            {
+              "inputs": {
+                "sessions": [
+                  [
+                    2,
+                    3,
+                    1
+                  ],
+                  [
+                    4,
+                    0,
+                    2
+                  ]
+                ]
+              },
+              "expected": [
+                6,
+                6
+              ]
+            },
+            {
+              "inputs": {
+                "sessions": [
+                  [
+                    1,
+                    1
+                  ],
+                  [
+                    2,
+                    4
+                  ],
+                  [
+                    0,
+                    3
+                  ]
+                ]
+              },
+              "expected": [
+                2,
+                6,
+                3
+              ]
+            },
+            {
+              "inputs": {
+                "sessions": [
+                  [
+                    -2,
+                    5,
+                    0
+                  ]
+                ]
+              },
+              "expected": [
+                3
+              ]
+            }
+          ]
+        },
+        {
+          "id": "range-boundaries",
+          "title": "Choose the range endpoints",
+          "prompt": "Assign result a dictionary with ticks from NumPy arange(start, stop, step) and samples from linspace(start, stop, count). Keep each function's endpoint rule.",
+          "lessonId": "ranges-and-randomness",
+          "conceptIds": [
+            "python-ranges-and-randomness"
+          ],
+          "sourceIds": [
+            "np-quickstart",
+            "np-random",
+            "np-linspace"
+          ],
+          "inputs": {
+            "start": 0,
+            "stop": 6,
+            "step": 2,
+            "count": 4
+          },
+          "starter": "# Use the supplied input variables.\nresult = None\n",
+          "hints": [
+            "The two functions describe spacing differently.",
+            "arange uses a step and excludes stop. linspace uses a count and includes stop by default."
+          ],
+          "correction": "Keep the exclusive arange stop separate from linspace's included endpoint.",
+          "solution": "import numpy as np\nresult = {'ticks': np.arange(start, stop, step), 'samples': np.linspace(start, stop, count)}",
+          "explanation": "arange produces step-spaced ticks before stop. linspace spreads the requested number of samples across both endpoints.",
+          "cases": [
+            {
+              "inputs": {
+                "start": 0,
+                "stop": 6,
+                "step": 2,
+                "count": 4
+              },
+              "expected": {
+                "ticks": [
+                  0,
+                  2,
+                  4
+                ],
+                "samples": [
+                  0,
+                  2,
+                  4,
+                  6
+                ]
+              }
+            },
+            {
+              "inputs": {
+                "start": 2,
+                "stop": 10,
+                "step": 3,
+                "count": 3
+              },
+              "expected": {
+                "ticks": [
+                  2,
+                  5,
+                  8
+                ],
+                "samples": [
+                  2,
+                  6,
+                  10
+                ]
+              }
+            },
+            {
+              "inputs": {
+                "start": -2,
+                "stop": 2,
+                "step": 1,
+                "count": 3
+              },
+              "expected": {
+                "ticks": [
+                  -2,
+                  -1,
+                  0,
+                  1
+                ],
+                "samples": [
+                  -2,
+                  0,
+                  2
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "read-csv-preview",
+          "title": "Inspect an incoming CSV",
+          "prompt": "Read csv_text with pandas and StringIO. Assign the first two rows, with their original columns, to result as a DataFrame.",
+          "lessonId": "read-and-inspect",
+          "conceptIds": [
+            "python-read-and-inspect"
+          ],
+          "sourceIds": [
+            "pd-io",
+            "pd-intro"
+          ],
+          "inputs": {
+            "csv_text": "job,hours\nA,2\nB,4\nC,3\n"
+          },
+          "starter": "# Use the supplied input variables.\nresult = None\n",
+          "hints": [
+            "StringIO gives the CSV reader a file-like text stream.",
+            "head(2) retains up to two rows without changing the column names."
+          ],
+          "correction": "Use the CSV header as columns. An empty field stays missing, and a short file can contain fewer than two rows.",
+          "solution": "from io import StringIO\nimport pandas as pd\nresult = pd.read_csv(StringIO(csv_text)).head(2)",
+          "explanation": "read_csv parses the stream into a table. head limits its preview while preserving the data's columns.",
+          "cases": [
+            {
+              "inputs": {
+                "csv_text": "job,hours\nA,2\nB,4\nC,3\n"
+              },
+              "expected": {
+                "columns": [
+                  "job",
+                  "hours"
+                ],
+                "rows": [
+                  [
+                    "A",
+                    2
+                  ],
+                  [
+                    "B",
+                    4
+                  ]
+                ]
+              }
+            },
+            {
+              "inputs": {
+                "csv_text": "part,price\nbolt,\nnut,0\n"
+              },
+              "expected": {
+                "columns": [
+                  "part",
+                  "price"
+                ],
+                "rows": [
+                  [
+                    "bolt",
+                    null
+                  ],
+                  [
+                    "nut",
+                    0
+                  ]
+                ]
+              }
+            },
+            {
+              "inputs": {
+                "csv_text": "job,hours\n"
+              },
+              "expected": {
+                "columns": [
+                  "job",
+                  "hours"
+                ],
+                "rows": []
+              }
+            }
+          ]
+        },
+        {
+          "id": "inclusive-label-range",
+          "title": "Select a label range",
+          "prompt": "Build a pandas Series from values with labels as its index. Assign the label slice from first through last, including both labels, to result.",
+          "lessonId": "labels-and-positions",
+          "conceptIds": [
+            "python-labels-and-positions"
+          ],
+          "sourceIds": [
+            "pd-index"
+          ],
+          "inputs": {
+            "labels": [
+              "J1",
+              "J4",
+              "J7"
+            ],
+            "values": [
+              20,
+              35,
+              10
+            ],
+            "first": "J1",
+            "last": "J4"
+          },
+          "starter": "# Use the supplied input variables.\nresult = None\n",
+          "hints": [
+            "The endpoints are index labels.",
+            "A sorted loc label slice includes its last existing label."
+          ],
+          "correction": "Positional slicing excludes its stop. This task asks for an inclusive label slice.",
+          "solution": "import pandas as pd\nseries = pd.Series(values, index=labels)\nresult = series.loc[first:last]",
+          "explanation": "loc uses the supplied labels and includes the two endpoints. The Series result retains their values.",
+          "cases": [
+            {
+              "inputs": {
+                "labels": [
+                  "J1",
+                  "J4",
+                  "J7"
+                ],
+                "values": [
+                  20,
+                  35,
+                  10
+                ],
+                "first": "J1",
+                "last": "J4"
+              },
+              "expected": [
+                20,
+                35
+              ]
+            },
+            {
+              "inputs": {
+                "labels": [
+                  "J2",
+                  "J3",
+                  "J9"
+                ],
+                "values": [
+                  1,
+                  5,
+                  8
+                ],
+                "first": "J3",
+                "last": "J9"
+              },
+              "expected": [
+                5,
+                8
+              ]
+            },
+            {
+              "inputs": {
+                "labels": [
+                  "J4",
+                  "J8"
+                ],
+                "values": [
+                  0,
+                  12
+                ],
+                "first": "J4",
+                "last": "J8"
+              },
+              "expected": [
+                0,
+                12
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ready-estimates",
+          "title": "Keep ready estimates",
+          "prompt": "Build a DataFrame from jobs. Calculate estimate as hours × rate. Keep ready jobs with estimates at least minimum. Assign columns job and estimate, in original row order, to result.",
+          "lessonId": "filters-and-columns",
+          "conceptIds": [
+            "python-filters-and-columns"
+          ],
+          "sourceIds": [
+            "pd-index",
+            "pd-intro",
+            "pd-cow"
+          ],
+          "inputs": {
+            "jobs": [
+              {
+                "job": "A",
+                "hours": 2,
+                "rate": 30,
+                "ready": true
+              },
+              {
+                "job": "B",
+                "hours": 1,
+                "rate": 50,
+                "ready": false
+              },
+              {
+                "job": "C",
+                "hours": 3,
+                "rate": 15,
+                "ready": true
+              }
+            ],
+            "minimum": 50
+          },
+          "starter": "# Use the supplied input variables.\nresult = None\n",
+          "hints": [
+            "Both conditions must pass for the same row.",
+            "Parenthesize the comparison before combining it with the Boolean ready column."
+          ],
+          "correction": "Calculate the estimate from each row, then apply ready and the minimum together. A known zero can qualify.",
+          "solution": "import pandas as pd\ndf = pd.DataFrame(jobs)\ndf['estimate'] = df['hours'] * df['rate']\nresult = df.loc[df['ready'] & (df['estimate'] >= minimum), ['job', 'estimate']]",
+          "explanation": "The derived column keeps each calculation aligned with its job. The Boolean mask retains only qualifying rows.",
+          "cases": [
+            {
+              "inputs": {
+                "jobs": [
+                  {
+                    "job": "A",
+                    "hours": 2,
+                    "rate": 30,
+                    "ready": true
+                  },
+                  {
+                    "job": "B",
+                    "hours": 1,
+                    "rate": 50,
+                    "ready": false
+                  },
+                  {
+                    "job": "C",
+                    "hours": 3,
+                    "rate": 15,
+                    "ready": true
+                  }
+                ],
+                "minimum": 50
+              },
+              "expected": {
+                "columns": [
+                  "job",
+                  "estimate"
+                ],
+                "rows": [
+                  [
+                    "A",
+                    60
+                  ]
+                ]
+              }
+            },
+            {
+              "inputs": {
+                "jobs": [
+                  {
+                    "job": "D",
+                    "hours": 1,
+                    "rate": 20,
+                    "ready": true
+                  },
+                  {
+                    "job": "E",
+                    "hours": 4,
+                    "rate": 20,
+                    "ready": true
+                  }
+                ],
+                "minimum": 50
+              },
+              "expected": {
+                "columns": [
+                  "job",
+                  "estimate"
+                ],
+                "rows": [
+                  [
+                    "E",
+                    80
+                  ]
+                ]
+              }
+            },
+            {
+              "inputs": {
+                "jobs": [
+                  {
+                    "job": "F",
+                    "hours": 0,
+                    "rate": 90,
+                    "ready": true
+                  },
+                  {
+                    "job": "G",
+                    "hours": 2,
+                    "rate": 10,
+                    "ready": false
+                  }
+                ],
+                "minimum": 0
+              },
+              "expected": {
+                "columns": [
+                  "job",
+                  "estimate"
+                ],
+                "rows": [
+                  [
+                    "F",
+                    0
+                  ]
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "python-reliable-reports",
+      "version": "1.0.0",
+      "title": "Build reports you can trust",
+      "description": "Handle missing observations, check joins and create a revenue report with a visible evidence gap.",
+      "tasks": [
+        {
+          "id": "known-hour-summary",
+          "title": "Keep unknown hours separate",
+          "prompt": "Build a pandas Series from hours. Assign result a dictionary with known for nonmissing count, unknown for missing count and total for the sum of known values. A list containing only missing values has total zero.",
+          "lessonId": "missing-values",
+          "conceptIds": [
+            "python-missing-values"
+          ],
+          "sourceIds": [
+            "pd-missing",
+            "pd-cow"
+          ],
+          "inputs": {
+            "hours": [
+              2,
+              null,
+              0,
+              5
+            ]
+          },
+          "starter": "# Use the supplied input variables.\nresult = None\n",
+          "hints": [
+            "A known zero is still an observation.",
+            "count excludes missing values. isna identifies the missing observations."
+          ],
+          "correction": "Keep missing observations out of known count. Preserve zero and negative values in the known total.",
+          "solution": "import pandas as pd\nseries = pd.Series(hours)\nresult = {'known': series.count(), 'unknown': series.isna().sum(), 'total': series.sum()}",
+          "explanation": "The counts retain the denominator information beside the sum. pandas sum returns zero for an all-missing Series by default.",
+          "cases": [
+            {
+              "inputs": {
+                "hours": [
+                  2,
+                  null,
+                  0,
+                  5
+                ]
+              },
+              "expected": {
+                "known": 3,
+                "unknown": 1,
+                "total": 7
+              }
+            },
+            {
+              "inputs": {
+                "hours": [
+                  null,
+                  null
+                ]
+              },
+              "expected": {
+                "known": 0,
+                "unknown": 2,
+                "total": 0
+              }
+            },
+            {
+              "inputs": {
+                "hours": [
+                  -1,
+                  3,
+                  null
+                ]
+              },
+              "expected": {
+                "known": 2,
+                "unknown": 1,
+                "total": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "count-clean-tags",
+          "title": "Count usable tags",
+          "prompt": "Use a pandas Series to count the nonempty comma-separated tags in each entry of tags. Ignore surrounding spaces and empty pieces. Missing entries have zero tags. Assign the counts to result.",
+          "lessonId": "text-and-transformations",
+          "conceptIds": [
+            "python-text-and-transformations"
+          ],
+          "sourceIds": [
+            "pd-text",
+            "pd-apply"
+          ],
+          "inputs": {
+            "tags": [
+              " bolt, nut ",
+              "washer",
+              null
+            ]
+          },
+          "starter": "# Use the supplied input variables.\nresult = None\n",
+          "hints": [
+            "An empty split piece is not a usable tag.",
+            "Test missing values before calling a string method."
+          ],
+          "correction": "Missing text cannot be split. Filter blank pieces after splitting so extra delimiters do not increase the count.",
+          "solution": "import pandas as pd\nseries = pd.Series(tags)\nresult = series.map(lambda value: 0 if pd.isna(value) else len([part for part in value.split(',') if part.strip()]))",
+          "explanation": "The transformation handles each entry independently. It counts only pieces that contain text after trimming.",
+          "cases": [
+            {
+              "inputs": {
+                "tags": [
+                  " bolt, nut ",
+                  "washer",
+                  null
+                ]
+              },
+              "expected": [
+                2,
+                1,
+                0
+              ]
+            },
+            {
+              "inputs": {
+                "tags": [
+                  "",
+                  "nut,,bolt",
+                  " , "
+                ]
+              },
+              "expected": [
+                0,
+                2,
+                0
+              ]
+            },
+            {
+              "inputs": {
+                "tags": [
+                  "gear",
+                  null,
+                  "washer, bolt, nut"
+                ]
+              },
+              "expected": [
+                1,
+                0,
+                3
+              ]
+            }
+          ]
+        },
+        {
+          "id": "parse-calendar-years",
+          "title": "Read calendar years",
+          "prompt": "Parse dates as YYYY-MM-DD with pandas. Invalid values become missing. Assign the years as a nullable integer Series to result.",
+          "lessonId": "dates-and-units",
+          "conceptIds": [
+            "python-dates-and-units"
+          ],
+          "sourceIds": [
+            "pd-dates"
+          ],
+          "inputs": {
+            "dates": [
+              "2025-01-03",
+              "bad",
+              "2026-12-31"
+            ]
+          },
+          "starter": "# Use the supplied input variables.\nresult = None\n",
+          "hints": [
+            "Make the expected date format explicit.",
+            "Coerce invalid dates, then use the datetime accessor for year."
+          ],
+          "correction": "An invalid calendar date stays missing. Keep it separate from a valid year.",
+          "solution": "import pandas as pd\nparsed = pd.to_datetime(pd.Series(dates), format='%Y-%m-%d', errors='coerce')\nresult = parsed.dt.year.astype('Int64')",
+          "explanation": "The explicit format removes date-order guessing. Nullable integer years preserve failed parses.",
+          "cases": [
+            {
+              "inputs": {
+                "dates": [
+                  "2025-01-03",
+                  "bad",
+                  "2026-12-31"
+                ]
+              },
+              "expected": [
+                2025,
+                null,
+                2026
+              ]
+            },
+            {
+              "inputs": {
+                "dates": [
+                  "2024-02-29",
+                  "2025-02-29"
+                ]
+              },
+              "expected": [
+                2024,
+                null
+              ]
+            },
+            {
+              "inputs": {
+                "dates": [
+                  null,
+                  "2000-01-01"
+                ]
+              },
+              "expected": [
+                null,
+                2000
+              ]
+            }
+          ]
+        },
+        {
+          "id": "department-hours",
+          "title": "Summarise department hours",
+          "prompt": "Group records by department and sort departments ascending. Return a DataFrame with department, rows, known and total. total must stay missing if a department has no known hours.",
+          "lessonId": "summaries-and-groups",
+          "conceptIds": [
+            "python-summaries-and-groups"
+          ],
+          "sourceIds": [
+            "pd-group",
+            "pd-missing",
+            "pd-basic"
+          ],
+          "inputs": {
+            "records": [
+              {
+                "department": "A",
+                "hours": 2
+              },
+              {
+                "department": "A",
+                "hours": null
+              },
+              {
+                "department": "B",
+                "hours": 0
+              },
+              {
+                "department": "B",
+                "hours": 4
+              }
+            ]
+          },
+          "starter": "# Use the supplied input variables.\nresult = None\n",
+          "hints": [
+            "size and count use different denominators.",
+            "Require at least one known value when summing each group."
+          ],
+          "correction": "Report the total row count beside the known-value count. An entirely unknown group has no known total.",
+          "solution": "import pandas as pd\ndf = pd.DataFrame(records, columns=['department', 'hours'])\nresult = df.groupby('department', sort=True)['hours'].agg(rows='size', known='count', total=lambda x: x.sum(min_count=1)).reset_index()",
+          "explanation": "The aggregation keeps row count, available observations and their sum together. min_count=1 preserves an unknown total.",
+          "cases": [
+            {
+              "inputs": {
+                "records": [
+                  {
+                    "department": "A",
+                    "hours": 2
+                  },
+                  {
+                    "department": "A",
+                    "hours": null
+                  },
+                  {
+                    "department": "B",
+                    "hours": 0
+                  },
+                  {
+                    "department": "B",
+                    "hours": 4
+                  }
+                ]
+              },
+              "expected": {
+                "columns": [
+                  "department",
+                  "rows",
+                  "known",
+                  "total"
+                ],
+                "rows": [
+                  [
+                    "A",
+                    2,
+                    1,
+                    2
+                  ],
+                  [
+                    "B",
+                    2,
+                    2,
+                    4
+                  ]
+                ]
+              }
+            },
+            {
+              "inputs": {
+                "records": [
+                  {
+                    "department": "A",
+                    "hours": null
+                  },
+                  {
+                    "department": "C",
+                    "hours": 5
+                  },
+                  {
+                    "department": "C",
+                    "hours": -1
+                  }
+                ]
+              },
+              "expected": {
+                "columns": [
+                  "department",
+                  "rows",
+                  "known",
+                  "total"
+                ],
+                "rows": [
+                  [
+                    "A",
+                    1,
+                    0,
+                    null
+                  ],
+                  [
+                    "C",
+                    2,
+                    2,
+                    4
+                  ]
+                ]
+              }
+            },
+            {
+              "inputs": {
+                "records": []
+              },
+              "expected": {
+                "columns": [
+                  "department",
+                  "rows",
+                  "known",
+                  "total"
+                ],
+                "rows": []
+              }
+            }
+          ]
+        },
+        {
+          "id": "validate-price-join",
+          "title": "Check a price lookup",
+          "prompt": "Left-join jobs to prices on part with many_to_one validation. Return only job and price in job order. If a part appears more than once in prices, return None.",
+          "lessonId": "combine-tables",
+          "conceptIds": [
+            "python-combine-tables"
+          ],
+          "sourceIds": [
+            "pd-merge",
+            "pd-merge-api"
+          ],
+          "inputs": {
+            "jobs": [
+              {
+                "job": "A",
+                "part": "bolt"
+              },
+              {
+                "job": "B",
+                "part": "other"
+              }
+            ],
+            "prices": [
+              {
+                "part": "bolt",
+                "price": 2
+              },
+              {
+                "part": "nut",
+                "price": 1
+              }
+            ]
+          },
+          "starter": "# Use the supplied input variables.\nresult = None\n",
+          "hints": [
+            "The lookup should have one row per part.",
+            "many_to_one permits repeated parts in jobs and checks uniqueness in prices."
+          ],
+          "correction": "An unmatched job stays in a left join. Duplicate lookup keys must be detected before they multiply the jobs.",
+          "solution": "import pandas as pd\njobs_df = pd.DataFrame(jobs)\nprices_df = pd.DataFrame(prices)\ntry:\n    result = jobs_df.merge(prices_df, on='part', how='left', validate='many_to_one')[['job', 'price']]\nexcept pd.errors.MergeError:\n    result = None",
+          "explanation": "Relationship validation checks the lookup's key grain. The left join then preserves every job, including unmatched ones.",
+          "cases": [
+            {
+              "inputs": {
+                "jobs": [
+                  {
+                    "job": "A",
+                    "part": "bolt"
+                  },
+                  {
+                    "job": "B",
+                    "part": "other"
+                  }
+                ],
+                "prices": [
+                  {
+                    "part": "bolt",
+                    "price": 2
+                  },
+                  {
+                    "part": "nut",
+                    "price": 1
+                  }
+                ]
+              },
+              "expected": {
+                "columns": [
+                  "job",
+                  "price"
+                ],
+                "rows": [
+                  [
+                    "A",
+                    2
+                  ],
+                  [
+                    "B",
+                    null
+                  ]
+                ]
+              }
+            },
+            {
+              "inputs": {
+                "jobs": [
+                  {
+                    "job": "C",
+                    "part": "bolt"
+                  }
+                ],
+                "prices": [
+                  {
+                    "part": "bolt",
+                    "price": 2
+                  },
+                  {
+                    "part": "bolt",
+                    "price": 3
+                  }
+                ]
+              },
+              "expected": null
+            },
+            {
+              "inputs": {
+                "jobs": [
+                  {
+                    "job": "D",
+                    "part": "bolt"
+                  },
+                  {
+                    "job": "E",
+                    "part": "bolt"
+                  }
+                ],
+                "prices": [
+                  {
+                    "part": "bolt",
+                    "price": 0
+                  }
+                ]
+              },
+              "expected": {
+                "columns": [
+                  "job",
+                  "price"
+                ],
+                "rows": [
+                  [
+                    "D",
+                    0
+                  ],
+                  [
+                    "E",
+                    0
+                  ]
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "pivot-shift-totals",
+          "title": "Lay out shift totals",
+          "prompt": "Sum units by area and period. Return a wide DataFrame with area, morning and afternoon, sorted by area. Missing area-period combinations count as zero; units are known counts.",
+          "lessonId": "reshape-a-report",
+          "conceptIds": [
+            "python-reshape-a-report"
+          ],
+          "sourceIds": [
+            "pd-reshape"
+          ],
+          "inputs": {
+            "records": [
+              {
+                "area": "A",
+                "period": "morning",
+                "units": 2
+              },
+              {
+                "area": "A",
+                "period": "morning",
+                "units": 3
+              },
+              {
+                "area": "A",
+                "period": "afternoon",
+                "units": 1
+              },
+              {
+                "area": "B",
+                "period": "afternoon",
+                "units": 4
+              }
+            ]
+          },
+          "starter": "# Use the supplied input variables.\nresult = None\n",
+          "hints": [
+            "Repeated area-period observations need aggregation.",
+            "Keep both requested period columns even when one has no observations."
+          ],
+          "correction": "A plain pivot can fail on repeated keys. Sum their known counts and preserve the requested column layout.",
+          "solution": "import pandas as pd\ndf = pd.DataFrame(records, columns=['area', 'period', 'units'])\nwide = df.pivot_table(index='area', columns='period', values='units', aggfunc='sum', fill_value=0)\nresult = wide.reindex(columns=['morning', 'afternoon'], fill_value=0).reset_index()",
+          "explanation": "pivot_table combines repeated observations before widening the table. Reindex keeps the two report columns consistent.",
+          "cases": [
+            {
+              "inputs": {
+                "records": [
+                  {
+                    "area": "A",
+                    "period": "morning",
+                    "units": 2
+                  },
+                  {
+                    "area": "A",
+                    "period": "morning",
+                    "units": 3
+                  },
+                  {
+                    "area": "A",
+                    "period": "afternoon",
+                    "units": 1
+                  },
+                  {
+                    "area": "B",
+                    "period": "afternoon",
+                    "units": 4
+                  }
+                ]
+              },
+              "expected": {
+                "columns": [
+                  "area",
+                  "morning",
+                  "afternoon"
+                ],
+                "rows": [
+                  [
+                    "A",
+                    5,
+                    1
+                  ],
+                  [
+                    "B",
+                    0,
+                    4
+                  ]
+                ]
+              }
+            },
+            {
+              "inputs": {
+                "records": [
+                  {
+                    "area": "A",
+                    "period": "morning",
+                    "units": 0
+                  },
+                  {
+                    "area": "C",
+                    "period": "morning",
+                    "units": 2
+                  },
+                  {
+                    "area": "C",
+                    "period": "afternoon",
+                    "units": 3
+                  }
+                ]
+              },
+              "expected": {
+                "columns": [
+                  "area",
+                  "morning",
+                  "afternoon"
+                ],
+                "rows": [
+                  [
+                    "A",
+                    0,
+                    0
+                  ],
+                  [
+                    "C",
+                    2,
+                    3
+                  ]
+                ]
+              }
+            },
+            {
+              "inputs": {
+                "records": []
+              },
+              "expected": {
+                "columns": [
+                  "area",
+                  "morning",
+                  "afternoon"
+                ],
+                "rows": []
+              }
+            }
+          ]
+        },
+        {
+          "id": "melt-shift-report",
+          "title": "Return a report to observations",
+          "prompt": "Melt report into columns area, period and units. Keep both morning and afternoon observations, including zeros. Sort by area and then period ascending.",
+          "lessonId": "reshape-a-report",
+          "conceptIds": [
+            "python-reshape-a-report"
+          ],
+          "sourceIds": [
+            "pd-reshape"
+          ],
+          "inputs": {
+            "report": [
+              {
+                "area": "A",
+                "morning": 5,
+                "afternoon": 1
+              },
+              {
+                "area": "B",
+                "morning": 0,
+                "afternoon": 4
+              }
+            ]
+          },
+          "starter": "# Use the supplied input variables.\nresult = None\n",
+          "hints": [
+            "area identifies the report row.",
+            "The period names become values in a new column."
+          ],
+          "correction": "Preserve both observations for each area. A known zero is part of the data.",
+          "solution": "import pandas as pd\ndf = pd.DataFrame(report, columns=['area', 'morning', 'afternoon'])\nresult = df.melt(id_vars='area', value_vars=['morning', 'afternoon'], var_name='period', value_name='units').sort_values(['area', 'period']).reset_index(drop=True)",
+          "explanation": "melt turns period columns into labelled observations. Sorting defines the requested output order.",
+          "cases": [
+            {
+              "inputs": {
+                "report": [
+                  {
+                    "area": "A",
+                    "morning": 5,
+                    "afternoon": 1
+                  },
+                  {
+                    "area": "B",
+                    "morning": 0,
+                    "afternoon": 4
+                  }
+                ]
+              },
+              "expected": {
+                "columns": [
+                  "area",
+                  "period",
+                  "units"
+                ],
+                "rows": [
+                  [
+                    "A",
+                    "afternoon",
+                    1
+                  ],
+                  [
+                    "A",
+                    "morning",
+                    5
+                  ],
+                  [
+                    "B",
+                    "afternoon",
+                    4
+                  ],
+                  [
+                    "B",
+                    "morning",
+                    0
+                  ]
+                ]
+              }
+            },
+            {
+              "inputs": {
+                "report": [
+                  {
+                    "area": "C",
+                    "morning": 2,
+                    "afternoon": 0
+                  }
+                ]
+              },
+              "expected": {
+                "columns": [
+                  "area",
+                  "period",
+                  "units"
+                ],
+                "rows": [
+                  [
+                    "C",
+                    "afternoon",
+                    0
+                  ],
+                  [
+                    "C",
+                    "morning",
+                    2
+                  ]
+                ]
+              }
+            },
+            {
+              "inputs": {
+                "report": []
+              },
+              "expected": {
+                "columns": [
+                  "area",
+                  "period",
+                  "units"
+                ],
+                "rows": []
+              }
+            }
+          ]
+        },
+        {
+          "id": "auditable-revenue",
+          "title": "Build an auditable revenue report",
+          "prompt": "Left-join sales to the unique prices lookup by part. Calculate units × price. Return department, known_revenue and unknown_prices, sorted by department. Keep known_revenue missing when every price in that department is unknown.",
+          "lessonId": "audit-a-sales-report",
+          "conceptIds": [
+            "python-audit-a-sales-report"
+          ],
+          "sourceIds": [
+            "pd-group",
+            "pd-merge",
+            "pd-missing"
+          ],
+          "inputs": {
+            "sales": [
+              {
+                "department": "A",
+                "part": "bolt",
+                "units": 2
+              },
+              {
+                "department": "A",
+                "part": "other",
+                "units": 1
+              },
+              {
+                "department": "B",
+                "part": "nut",
+                "units": 3
+              }
+            ],
+            "prices": [
+              {
+                "part": "bolt",
+                "price": 3
+              },
+              {
+                "part": "nut",
+                "price": 2
+              }
+            ]
+          },
+          "starter": "# Use the supplied input variables.\nresult = None\n",
+          "hints": [
+            "Check the price lookup's grain before aggregating.",
+            "Track missing prices beside the known revenue instead of turning them into zeros."
+          ],
+          "correction": "Keep unmatched sales and count their unknown prices. A wholly unknown department needs a missing revenue total.",
+          "solution": "import pandas as pd\nsales_df = pd.DataFrame(sales)\nprices_df = pd.DataFrame(prices)\njoined = sales_df.merge(prices_df, on='part', how='left', validate='many_to_one')\njoined['revenue'] = joined['units'] * joined['price']\njoined['unknown'] = joined['price'].isna()\nresult = joined.groupby('department', sort=True).agg(known_revenue=('revenue', lambda x: x.sum(min_count=1)), unknown_prices=('unknown', 'sum')).reset_index()",
+          "explanation": "The validated left join preserves sales grain. The report presents the known subtotal beside the amount of missing price evidence.",
+          "cases": [
+            {
+              "inputs": {
+                "sales": [
+                  {
+                    "department": "A",
+                    "part": "bolt",
+                    "units": 2
+                  },
+                  {
+                    "department": "A",
+                    "part": "other",
+                    "units": 1
+                  },
+                  {
+                    "department": "B",
+                    "part": "nut",
+                    "units": 3
+                  }
+                ],
+                "prices": [
+                  {
+                    "part": "bolt",
+                    "price": 3
+                  },
+                  {
+                    "part": "nut",
+                    "price": 2
+                  }
+                ]
+              },
+              "expected": {
+                "columns": [
+                  "department",
+                  "known_revenue",
+                  "unknown_prices"
+                ],
+                "rows": [
+                  [
+                    "A",
+                    6,
+                    1
+                  ],
+                  [
+                    "B",
+                    6,
+                    0
+                  ]
+                ]
+              }
+            },
+            {
+              "inputs": {
+                "sales": [
+                  {
+                    "department": "A",
+                    "part": "bolt",
+                    "units": 0
+                  },
+                  {
+                    "department": "B",
+                    "part": "other",
+                    "units": 2
+                  }
+                ],
+                "prices": [
+                  {
+                    "part": "bolt",
+                    "price": 4
+                  }
+                ]
+              },
+              "expected": {
+                "columns": [
+                  "department",
+                  "known_revenue",
+                  "unknown_prices"
+                ],
+                "rows": [
+                  [
+                    "A",
+                    0,
+                    0
+                  ],
+                  [
+                    "B",
+                    null,
+                    1
+                  ]
+                ]
+              }
+            },
+            {
+              "inputs": {
+                "sales": [
+                  {
+                    "department": "A",
+                    "part": "nut",
+                    "units": 2
+                  },
+                  {
+                    "department": "A",
+                    "part": "bolt",
+                    "units": 3
+                  },
+                  {
+                    "department": "C",
+                    "part": "other",
+                    "units": 2
+                  }
+                ],
+                "prices": [
+                  {
+                    "part": "bolt",
+                    "price": 2
+                  },
+                  {
+                    "part": "nut",
+                    "price": 5
+                  }
+                ]
+              },
+              "expected": {
+                "columns": [
+                  "department",
+                  "known_revenue",
+                  "unknown_prices"
+                ],
+                "rows": [
+                  [
+                    "A",
+                    16,
+                    0
+                  ],
+                  [
+                    "C",
+                    null,
+                    1
+                  ]
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

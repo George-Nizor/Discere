@@ -1,0 +1,534 @@
+{
+  "courseId": "sql-from-rows-to-reports",
+  "title": "SQL: From Rows to Reports",
+  "description": "Read a table, compare queries, and build reports with joins, groups and windows.",
+  "audience": "An adult beginning SQL; arithmetic and familiarity with rows and columns are sufficient.",
+  "accent": "#b8552d",
+  "coverAsset": "cover.svg",
+  "sources": [
+    {
+      "id": "sqlite-tables",
+      "title": "CREATE TABLE",
+      "publisher": "SQLite Project",
+      "url": "https://www.sqlite.org/lang_createtable.html",
+      "licence": "Public domain",
+      "accessedAt": "2026-10-01",
+      "notes": "Definitions checked against the official documentation. Discere datasets, teaching prose, queries and diagrams are original. All displayed results are executed in an isolated in-memory SQLite database during authoring and independently checked before publication.",
+      "licenceUrl": "https://www.sqlite.org/copyright.html",
+      "attribution": "SQLite Project, official SQL language documentation.",
+      "section": "3: Column Definitions; 3.5 PRIMARY KEY constraints; 3.7 FOREIGN KEY constraints",
+      "edition": "SQLite web documentation, accessed October 2026",
+      "reuse": "reference_only"
+    },
+    {
+      "id": "sqlite-select",
+      "title": "SELECT",
+      "publisher": "SQLite Project",
+      "url": "https://www.sqlite.org/lang_select.html",
+      "licence": "Public domain",
+      "accessedAt": "2026-10-01",
+      "notes": "Definitions checked against the official documentation. Discere datasets, teaching prose, queries and diagrams are original. All displayed results are executed in an isolated in-memory SQLite database during authoring and independently checked before publication.",
+      "licenceUrl": "https://www.sqlite.org/copyright.html",
+      "attribution": "SQLite Project, official SQL language documentation.",
+      "section": "2: Simple Select Processing; 2.1 FROM and joins; 2.3 WHERE; 2.4 grouping; 2.6 DISTINCT; 3 compound queries; 4 ORDER BY; 5 LIMIT",
+      "edition": "SQLite web documentation, accessed October 2026",
+      "reuse": "reference_only"
+    },
+    {
+      "id": "sqlite-expr",
+      "title": "SQL Language Expressions",
+      "publisher": "SQLite Project",
+      "url": "https://www.sqlite.org/lang_expr.html",
+      "licence": "Public domain",
+      "accessedAt": "2026-10-01",
+      "notes": "Definitions checked against the official documentation. Discere datasets, teaching prose, queries and diagrams are original. All displayed results are executed in an isolated in-memory SQLite database during authoring and independently checked before publication.",
+      "licenceUrl": "https://www.sqlite.org/copyright.html",
+      "attribution": "SQLite Project, official SQL language documentation.",
+      "section": "2: Operators; 5 LIKE; 6 BETWEEN; 7 CASE; 8 IN and NOT IN; 10 EXISTS; 11 subqueries",
+      "edition": "SQLite web documentation, accessed October 2026",
+      "reuse": "reference_only"
+    },
+    {
+      "id": "sqlite-aggregate",
+      "title": "Built-in Aggregate Functions",
+      "publisher": "SQLite Project",
+      "url": "https://www.sqlite.org/lang_aggfunc.html",
+      "licence": "Public domain",
+      "accessedAt": "2026-10-01",
+      "notes": "Definitions checked against the official documentation. Discere datasets, teaching prose, queries and diagrams are original. All displayed results are executed in an isolated in-memory SQLite database during authoring and independently checked before publication.",
+      "licenceUrl": "https://www.sqlite.org/copyright.html",
+      "attribution": "SQLite Project, official SQL language documentation.",
+      "section": "Descriptions of avg(X), count(X), count(*), min(X), max(X) and sum(X)",
+      "edition": "SQLite web documentation, accessed October 2026",
+      "reuse": "reference_only"
+    },
+    {
+      "id": "sqlite-window",
+      "title": "Window Functions",
+      "publisher": "SQLite Project",
+      "url": "https://www.sqlite.org/windowfunctions.html",
+      "licence": "Public domain",
+      "accessedAt": "2026-10-01",
+      "notes": "Definitions checked against the official documentation. Discere datasets, teaching prose, queries and diagrams are original. All displayed results are executed in an isolated in-memory SQLite database during authoring and independently checked before publication.",
+      "licenceUrl": "https://www.sqlite.org/copyright.html",
+      "attribution": "SQLite Project, official SQL language documentation.",
+      "section": "2: Aggregate Window Functions; 2.1 PARTITION BY; 2.2 Frame Specifications; 3 Built-in Window Functions",
+      "edition": "SQLite web documentation, accessed October 2026",
+      "reuse": "reference_only"
+    }
+  ],
+  "modules": [
+    {
+      "id": "sql-reading",
+      "title": "Read the rows",
+      "summary": "Identity, result columns, conditions and ordering.",
+      "concepts": [
+        {
+          "id": "sql-rows-and-keys",
+          "title": "Know what a row represents",
+          "summary": "Identify the thing each table row represents and keep missing values distinct from zero.",
+          "prerequisiteIds": []
+        },
+        {
+          "id": "sql-select-and-name",
+          "title": "Choose the columns you need",
+          "summary": "Use SELECT and aliases to shape a result without changing the stored table.",
+          "prerequisiteIds": [
+            "sql-rows-and-keys"
+          ]
+        },
+        {
+          "id": "sql-filter-the-rows",
+          "title": "Write the condition you mean",
+          "summary": "Use SQL conditions to select exactly the rows your question requires.",
+          "prerequisiteIds": [
+            "sql-select-and-name"
+          ]
+        },
+        {
+          "id": "sql-sort-and-limit",
+          "title": "Make the first row meaningful",
+          "summary": "Use a deterministic order to decide which rows a limited result retains.",
+          "prerequisiteIds": [
+            "sql-filter-the-rows"
+          ]
+        }
+      ],
+      "lessons": [
+        {
+          "slug": "rows-and-keys",
+          "title": "Know what a row represents",
+          "outcome": "Identify the thing each table row represents and keep missing values distinct from zero.",
+          "outline": [
+            "One row, one thing",
+            "Use the identifier",
+            "Missing is a separate state",
+            "A customer can have no order"
+          ],
+          "conceptIds": [
+            "sql-rows-and-keys"
+          ],
+          "prerequisiteLessonIds": [],
+          "activityKinds": [
+            "explorer"
+          ]
+        },
+        {
+          "slug": "select-and-name",
+          "title": "Choose the columns you need",
+          "outcome": "Use SELECT and aliases to shape a result without changing the stored table.",
+          "outline": [
+            "Select the useful fields",
+            "Name the result",
+            "Compute a new column",
+            "Change the expression"
+          ],
+          "conceptIds": [
+            "sql-select-and-name"
+          ],
+          "prerequisiteLessonIds": [
+            "rows-and-keys"
+          ],
+          "activityKinds": [
+            "explorer"
+          ]
+        },
+        {
+          "slug": "filter-the-rows",
+          "title": "Write the condition you mean",
+          "outcome": "Use SQL conditions to select exactly the rows your question requires.",
+          "outline": [
+            "Keep rows that pass",
+            "Both conditions or either",
+            "Decide on the boundaries",
+            "Match a set or a pattern"
+          ],
+          "conceptIds": [
+            "sql-filter-the-rows"
+          ],
+          "prerequisiteLessonIds": [
+            "select-and-name"
+          ],
+          "activityKinds": [
+            "explorer"
+          ]
+        },
+        {
+          "slug": "sort-and-limit",
+          "title": "Make the first row meaningful",
+          "outcome": "Use a deterministic order to decide which rows a limited result retains.",
+          "outline": [
+            "Order is an instruction",
+            "Break a tie",
+            "Take the top rows",
+            "Filter before selecting the top"
+          ],
+          "conceptIds": [
+            "sql-sort-and-limit"
+          ],
+          "prerequisiteLessonIds": [
+            "filter-the-rows"
+          ],
+          "activityKinds": [
+            "explorer"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sql-summaries",
+      "title": "Build a summary",
+      "summary": "Distinct values, missing observations, groups and totals.",
+      "concepts": [
+        {
+          "id": "sql-distinct-results",
+          "title": "Count distinct things",
+          "summary": "Distinguish result rows, distinct values and distinct combinations of values.",
+          "prerequisiteIds": [
+            "sql-sort-and-limit"
+          ]
+        },
+        {
+          "id": "sql-aggregate-known-values",
+          "title": "Choose the right denominator",
+          "summary": "Use COUNT, SUM, AVG, MIN and MAX while keeping missing values visible.",
+          "prerequisiteIds": [
+            "sql-distinct-results"
+          ]
+        },
+        {
+          "id": "sql-group-and-filter-groups",
+          "title": "Build a grouped report",
+          "summary": "Build a report whose rows represent groups, then filter its calculated totals.",
+          "prerequisiteIds": [
+            "sql-aggregate-known-values"
+          ]
+        }
+      ],
+      "lessons": [
+        {
+          "slug": "distinct-results",
+          "title": "Count distinct things",
+          "outcome": "Distinguish result rows, distinct values and distinct combinations of values.",
+          "outline": [
+            "Remove repeated result values",
+            "The whole selected row matters",
+            "One missing result value",
+            "A combination can repeat"
+          ],
+          "conceptIds": [
+            "sql-distinct-results"
+          ],
+          "prerequisiteLessonIds": [
+            "sort-and-limit"
+          ],
+          "activityKinds": [
+            "explorer"
+          ]
+        },
+        {
+          "slug": "aggregate-known-values",
+          "title": "Choose the right denominator",
+          "outcome": "Use COUNT, SUM, AVG, MIN and MAX while keeping missing values visible.",
+          "outline": [
+            "Count rows or known values",
+            "Average the known amounts",
+            "Minimum and maximum",
+            "No matches still has a meaning"
+          ],
+          "conceptIds": [
+            "sql-aggregate-known-values"
+          ],
+          "prerequisiteLessonIds": [
+            "distinct-results"
+          ],
+          "activityKinds": [
+            "explorer"
+          ]
+        },
+        {
+          "slug": "group-and-filter-groups",
+          "title": "Build a grouped report",
+          "outcome": "Build a report whose rows represent groups, then filter its calculated totals.",
+          "outline": [
+            "One result per group",
+            "Count the data inside a group",
+            "Filter totals with HAVING",
+            "Define the eligible rows first"
+          ],
+          "conceptIds": [
+            "sql-group-and-filter-groups"
+          ],
+          "prerequisiteLessonIds": [
+            "aggregate-known-values"
+          ],
+          "activityKinds": [
+            "explorer"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sql-combining",
+      "title": "Connect and combine",
+      "summary": "Matching pairs, preserved rows, nested questions and result sets.",
+      "concepts": [
+        {
+          "id": "sql-join-matching-rows",
+          "title": "Follow a relationship between tables",
+          "summary": "Join keys deliberately and account for every matching pair.",
+          "prerequisiteIds": [
+            "sql-group-and-filter-groups"
+          ]
+        },
+        {
+          "id": "sql-preserve-the-left-table",
+          "title": "Keep the customers with no orders",
+          "summary": "Preserve unmatched customers without counting them as orders.",
+          "prerequisiteIds": [
+            "sql-join-matching-rows"
+          ]
+        },
+        {
+          "id": "sql-preserve-either-side",
+          "title": "Keep unmatched rows on either side",
+          "summary": "Compare RIGHT JOIN and FULL OUTER JOIN with a guest order that has no customer reference.",
+          "prerequisiteIds": [
+            "sql-preserve-the-left-table"
+          ]
+        },
+        {
+          "id": "sql-ask-a-query-inside-a-query",
+          "title": "Use one query to define another",
+          "summary": "Use scalar subqueries, IN and EXISTS without multiplying the outer result.",
+          "prerequisiteIds": [
+            "sql-preserve-either-side"
+          ]
+        },
+        {
+          "id": "sql-combine-result-sets",
+          "title": "Combine reports deliberately",
+          "summary": "Stack compatible results with UNION or UNION ALL and account for overlapping rows.",
+          "prerequisiteIds": [
+            "sql-ask-a-query-inside-a-query"
+          ]
+        }
+      ],
+      "lessons": [
+        {
+          "slug": "join-matching-rows",
+          "title": "Follow a relationship between tables",
+          "outcome": "Join keys deliberately and account for every matching pair.",
+          "outline": [
+            "Bring the name to the order",
+            "The matches set the count",
+            "A missing condition multiplies rows",
+            "Join first, then select the report"
+          ],
+          "conceptIds": [
+            "sql-join-matching-rows"
+          ],
+          "prerequisiteLessonIds": [
+            "group-and-filter-groups"
+          ],
+          "activityKinds": [
+            "explorer"
+          ]
+        },
+        {
+          "slug": "preserve-the-left-table",
+          "title": "Keep the customers with no orders",
+          "outcome": "Preserve unmatched customers without counting them as orders.",
+          "outline": [
+            "Keep the left-hand row",
+            "Count the matched key",
+            "A WHERE filter can remove the retained row",
+            "Find the absence itself"
+          ],
+          "conceptIds": [
+            "sql-preserve-the-left-table"
+          ],
+          "prerequisiteLessonIds": [
+            "join-matching-rows"
+          ],
+          "activityKinds": [
+            "explorer"
+          ]
+        },
+        {
+          "slug": "preserve-either-side",
+          "title": "Keep unmatched rows on either side",
+          "outcome": "Compare RIGHT JOIN and FULL OUTER JOIN with a guest order that has no customer reference.",
+          "outline": [
+            "Which side stays?",
+            "Keep both unmatched records",
+            "Inspect the missing side",
+            "Restrict matches without hiding the rest"
+          ],
+          "conceptIds": [
+            "sql-preserve-either-side"
+          ],
+          "prerequisiteLessonIds": [
+            "preserve-the-left-table"
+          ],
+          "activityKinds": [
+            "explorer"
+          ]
+        },
+        {
+          "slug": "ask-a-query-inside-a-query",
+          "title": "Use one query to define another",
+          "outcome": "Use scalar subqueries, IN and EXISTS without multiplying the outer result.",
+          "outline": [
+            "Compare with a calculated value",
+            "Use a returned set",
+            "Ask whether a match exists",
+            "Compare with the appropriate group"
+          ],
+          "conceptIds": [
+            "sql-ask-a-query-inside-a-query"
+          ],
+          "prerequisiteLessonIds": [
+            "preserve-either-side"
+          ],
+          "activityKinds": [
+            "explorer"
+          ]
+        },
+        {
+          "slug": "combine-result-sets",
+          "title": "Combine reports deliberately",
+          "outcome": "Stack compatible results with UNION or UNION ALL and account for overlapping rows.",
+          "outline": [
+            "Stack results with the same shape",
+            "Decide whether duplicates matter",
+            "Compare the whole result row",
+            "Order the combined result"
+          ],
+          "conceptIds": [
+            "sql-combine-result-sets"
+          ],
+          "prerequisiteLessonIds": [
+            "ask-a-query-inside-a-query"
+          ],
+          "activityKinds": [
+            "explorer"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sql-windows",
+      "title": "Keep rows while calculating",
+      "summary": "Ranks, partitions, buckets, running frames and neighbouring rows.",
+      "concepts": [
+        {
+          "id": "sql-rank-with-ties",
+          "title": "Rank rows without collapsing them",
+          "summary": "Distinguish ROW_NUMBER, RANK and DENSE_RANK and choose tie behaviour deliberately.",
+          "prerequisiteIds": [
+            "sql-combine-result-sets"
+          ]
+        },
+        {
+          "id": "sql-partition-the-window",
+          "title": "Choose which rows a window sees",
+          "summary": "Calculate within each row's group and filter the resulting values.",
+          "prerequisiteIds": [
+            "sql-rank-with-ties"
+          ]
+        },
+        {
+          "id": "sql-running-totals-and-neighbours",
+          "title": "Read the rows before and after",
+          "summary": "Specify running frames and use LAG or LEAD with an explicit ordering.",
+          "prerequisiteIds": [
+            "sql-partition-the-window"
+          ]
+        }
+      ],
+      "lessons": [
+        {
+          "slug": "rank-with-ties",
+          "title": "Rank rows without collapsing them",
+          "outcome": "Distinguish ROW_NUMBER, RANK and DENSE_RANK and choose tie behaviour deliberately.",
+          "outline": [
+            "Keep the individual records",
+            "Equal values share a rank",
+            "Choose whether ranks have gaps",
+            "A tie-breaker changes a rank's meaning"
+          ],
+          "conceptIds": [
+            "sql-rank-with-ties"
+          ],
+          "prerequisiteLessonIds": [
+            "combine-result-sets"
+          ],
+          "activityKinds": [
+            "explorer"
+          ]
+        },
+        {
+          "slug": "partition-the-window",
+          "title": "Choose which rows a window sees",
+          "outcome": "Calculate within each row's group and filter the resulting values.",
+          "outline": [
+            "Start again for each customer",
+            "Attach a group total",
+            "Divide an ordered set into buckets",
+            "Filter after the calculation"
+          ],
+          "conceptIds": [
+            "sql-partition-the-window"
+          ],
+          "prerequisiteLessonIds": [
+            "rank-with-ties"
+          ],
+          "activityKinds": [
+            "explorer"
+          ]
+        },
+        {
+          "slug": "running-totals-and-neighbours",
+          "title": "Read the rows before and after",
+          "outcome": "Specify running frames and use LAG or LEAD with an explicit ordering.",
+          "outline": [
+            "Extend a running total",
+            "Peers can enter together",
+            "Look at the previous row",
+            "Look ahead explicitly"
+          ],
+          "conceptIds": [
+            "sql-running-totals-and-neighbours"
+          ],
+          "prerequisiteLessonIds": [
+            "partition-the-window"
+          ],
+          "activityKinds": [
+            "explorer"
+          ]
+        }
+      ]
+    }
+  ]
+}

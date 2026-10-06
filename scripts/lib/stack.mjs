@@ -7,7 +7,9 @@ import {
   isProcessRunning,
   isSupportedNode,
   minimumNodeLabel,
+  matchesRecordedProcess,
   parsePort,
+  processStartToken,
   portAvailable,
   resolvePackageManager,
   spawnPackageManager,
@@ -31,7 +33,9 @@ function assertNoRunningStack() {
   const state = readPidState();
   if (!state) return;
   const recorded = [state.parent, ...(Array.isArray(state.children) ? state.children : [])];
-  if (recorded.some((pid) => isProcessRunning(pid))) {
+  if (recorded.some((pid) => state.schemaVersion === 2
+    ? matchesRecordedProcess(pid, state.processStartTokens?.[pid])
+    : isProcessRunning(pid))) {
     throw new Error("Discere already has recorded processes. Run 'pnpm stop' before starting another copy.");
   }
   rmSync(PID_FILE, { force: true });
@@ -74,10 +78,11 @@ export async function runStack(mode) {
   const apiUrl = `http://${formatHostForUrl(apiHost)}:${apiPort}`;
   const webUrl = `http://${formatHostForUrl(webHost)}:${webPort}`;
   const serverCommand = mode === "development" ? "dev" : "start";
-  const webCommand = mode === "development" ? "dev" : "preview";
+  const webPackage = mode === "development" ? "@discere/web" : "@discere/server";
+  const webCommand = mode === "development" ? "dev" : "start:web";
   const children = [
     spawnPackageManager(manager, ["--filter", "@discere/server", serverCommand], { env: environment }),
-    spawnPackageManager(manager, ["--filter", "@discere/web", webCommand], { env: environment }),
+    spawnPackageManager(manager, ["--filter", webPackage, webCommand], { env: environment }),
   ];
 
   if (children.some((child) => !child.pid)) {
@@ -88,7 +93,9 @@ export async function runStack(mode) {
   writeFileSync(
     PID_FILE,
     `${JSON.stringify({
-      schemaVersion: 1,
+      schemaVersion: 2,
+      processStartTokens: Object.fromEntries([process.pid, ...children.map((child) => child.pid)]
+        .map((pid) => [pid, processStartToken(pid)])),
       parent: process.pid,
       children: children.map((child) => child.pid),
       mode,

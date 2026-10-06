@@ -8,6 +8,7 @@ import {
   type AuthoredLessonDraft,
   AuthoredLessonDraftSchema,
   type CourseBundle,
+  CourseBundleSchema,
   type LessonStep,
   StyleEditDraftSchema,
   type StyleViolation,
@@ -633,7 +634,7 @@ function reviewMarkdown(record: GeneratedRecord): string {
     "",
     "## Decision",
     "",
-    "Accept by running `pnpm author merge --course <id> --item <slug>`, which re-validates the whole bundle before writing it.",
+    "Stage by running `pnpm author merge --course <id> --item <slug> --lesson <id>`. Complete claim citations and review the candidate with `pnpm curate review <course>`, then publish its accepted hash with `pnpm curate publish <course>`.",
     "",
   );
   return lines.join("\n");
@@ -658,7 +659,10 @@ async function merge(courseId: string, slug: string, lessonId: string): Promise<
     await readFile(generatedPath(courseId, slug), "utf8"),
   ) as GeneratedRecord;
   const draft = record.repaired;
-  const bundle = await readBundle(courseId);
+  const candidatePath = path.join(CONTENT_ROOT, courseId, ".authoring", "candidate.json");
+  const bundle = existsSync(candidatePath)
+    ? CourseBundleSchema.parse(JSON.parse(await readFile(candidatePath, "utf8")))
+    : await readBundle(courseId);
   const lesson = bundle.lessons.find((item) => item.id === lessonId);
   if (!lesson) {
     throw new Error(
@@ -712,8 +716,10 @@ async function merge(courseId: string, slug: string, lessonId: string): Promise<
     process.exitCode = 1;
     return;
   }
-  await writeJson(bundlePath(courseId), bundle);
-  log(`✓ merged ${slug} into ${path.relative(ROOT, bundlePath(courseId))}`);
+  await writeJson(candidatePath, validation.bundle);
+  log(
+    `✓ staged ${slug} in ${path.relative(ROOT, candidatePath)}. Complete its claim citations, then use pnpm curate review ${courseId} and pnpm curate publish ${courseId}.`,
+  );
 }
 
 function flag(argv: string[], name: string): string | undefined {
@@ -791,8 +797,6 @@ async function main(argv: string[]): Promise<void> {
     await review(courseId, slug);
     if (command === "pipeline") {
       await merge(courseId, slug, requireFlag(argv, "lesson"));
-      if (!(await validateCourses([courseId]))) process.exitCode = 1;
-      if (!(await lintCourses([courseId]))) process.exitCode = 1;
     }
     return;
   }

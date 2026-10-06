@@ -43,3 +43,59 @@ export {
   pointFromFraction,
   snapToGrid,
 } from "./graph-plot.js";
+export { runTeachingProgram, type ProgramResult, type ProgramStep } from "./teaching-program.js";
+export { truthValue, traceSearch, type TruthFormula, type SearchStep } from "./reasoning.js";
+export {
+  enumerateOutcomes,
+  summariseData,
+  type OutcomeGridSpec,
+  type OutcomeCell,
+} from "./statistics.js";
+
+export {
+  geometryVertices,
+  geometryMeasures,
+  geometryDescription,
+  geometryUnitScale,
+  type GeometryPoint,
+} from "./geometry.js";
+
+export {
+  mechanicsBounds,
+  mechanicsDuration,
+  mechanicsFrame,
+  mechanicsGivens,
+  mechanicsMeasures,
+  mechanicsNumber,
+  mechanicsTimed,
+  type MechanicsFrame,
+  type MechanicsBody,
+} from "./mechanics.js";
+
+export {
+  polynomialValue,
+  derivativeCoefficients,
+  primitiveCoefficients,
+  polynomialIntegral,
+  rectangleSum,
+  polynomialLabel,
+  calculusGivens,
+  calculusWindow,
+  calculusResults,
+  calcNumber,
+} from "./calculus.js";
+
+export * from "./chemistry.js";
+
+export * from "./biology.js";
+
+export * from "./linear-algebra.js";
+
+export * from "./inference.js";
+export * from "./inference-probability.js";
+export * from "./engineering.js";
+export * from "./economics.js";
+export * from "./philosophy.js";
+export * from "./language.js";
+export * from "./astronomy.js";
+export * from "./psychology.js";

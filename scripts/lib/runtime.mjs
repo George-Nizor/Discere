@@ -175,3 +175,27 @@ export async function waitForHttp(url, options = {}) {
   const detail = lastError instanceof Error ? ` Last result: ${lastError.message}` : "";
   throw new Error(`Timed out waiting for ${url}.${detail}`);
 }
+
+/** A PID alone can be reused after a crash. Pair it with its OS process start token. */
+export function processStartToken(pid) {
+  if (!Number.isSafeInteger(pid) || pid <= 0) return null;
+  try {
+    if (process.platform === "win32") {
+      const output = execFileSync("powershell.exe", [
+        "-NoProfile", "-NonInteractive", "-Command",
+        "(Get-Process -Id " + pid + " -ErrorAction Stop).StartTime.ToUniversalTime().Ticks",
+      ], { encoding: "utf8", timeout: 5000, windowsHide: true }).trim();
+      return /^\d+$/.test(output) ? output : null;
+    }
+    if (process.platform === "linux") {
+      const stat = readFileSync("/proc/" + pid + "/stat", "utf8");
+      return stat.slice(stat.lastIndexOf(")") + 2).split(" ")[19] ?? null;
+    }
+    return execFileSync("ps", ["-p", String(pid), "-o", "lstart="], {
+      encoding: "utf8", timeout: 5000,
+    }).trim() || null;
+  } catch { return null; }
+}
+export function matchesRecordedProcess(pid, token) {
+  return typeof token === "string" && token.length > 0 && processStartToken(pid) === token;
+}

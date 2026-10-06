@@ -12,6 +12,7 @@ import {
 } from "@discere/contracts";
 import { inspectVisualBrief } from "@discere/visual-engine";
 import { lintText, type WritingContext } from "@discere/writing-engine";
+import { isV2Lesson, lessonQuestionRefs, lessonV2Issues } from "./lesson-v2.js";
 
 export interface ContentIssue {
   path: string;
@@ -233,7 +234,11 @@ function multipleChoiceShareIssues(bundle: CourseBundle): ContentIssue[] {
 /** Words a learner actually reads in a step, so an equation is not counted as prose. */
 function stepWordCount(step: CourseBundle["lessons"][number]["steps"][number]): number {
   return step.blocks
-    .flatMap((block) => (block.kind === "equation" ? [] : [block.kind === "definition" ? `${block.term} ${block.text}` : block.text]))
+    .flatMap((block) =>
+      block.kind === "equation"
+        ? []
+        : [block.kind === "definition" ? `${block.term} ${block.text}` : block.text],
+    )
     .join(" ")
     .split(/\s+/u)
     .filter(Boolean).length;
@@ -327,7 +332,7 @@ function lessonStepIssues(
     });
   }
 
-  if (lesson.steps[0]?.kind !== "hook") {
+  if (lesson.steps[0]?.kind !== "hook" && !isV2Lesson(lesson)) {
     issues.push({
       path,
       code: "LESSON_WITHOUT_HOOK",
@@ -335,7 +340,11 @@ function lessonStepIssues(
       message: `Lesson '${lesson.id}' does not open with a hook, so the learner reads before they predict.`,
     });
   }
-  if (!lesson.steps.some((step) => step.kind === "check" || step.kind === "transfer")) {
+  if (
+    !lesson.steps.some(
+      (step) => step.kind === "check" || step.kind === "transfer" || step.kind === "try",
+    )
+  ) {
     issues.push({
       path,
       code: "LESSON_WITHOUT_CHECK",
@@ -355,12 +364,7 @@ function unreachableContentIssues(bundle: CourseBundle): ContentIssue[] {
     ),
   ]);
   // A question asked inline by a step is reached, even though it is not a quiz stage.
-  const usedQuestions = new Set([
-    ...bundle.lessons.flatMap((lesson) => lesson.questionIds),
-    ...bundle.lessons.flatMap((lesson) =>
-      lesson.steps.map((step) => step.checkQuestionId).filter(Boolean),
-    ),
-  ]);
+  const usedQuestions = new Set(bundle.lessons.flatMap((lesson) => lessonQuestionRefs(lesson)));
   const usedCards = new Set(bundle.lessons.flatMap((lesson) => lesson.flashcardIds));
   const usedEssays = new Set(
     bundle.lessons.flatMap((lesson) => (lesson.essayId ? [lesson.essayId] : [])),
@@ -444,6 +448,62 @@ export function validateCourseBundle(input: unknown): ContentValidation {
   const flashcardIds = new Set(bundle.flashcards.map((item) => item.id));
   const essayIds = new Set(bundle.essays.map((item) => item.id));
   const courseModuleIds = new Set(bundle.course.moduleIds);
+  const lessonIds = new Set(bundle.lessons.map((lesson) => lesson.id));
+  for (const metadata of bundle.authoringMetadata ?? []) {
+    if (!lessonIds.has(metadata.lessonId))
+      missingReference(issues, "authoringMetadata", "lesson", metadata.lessonId);
+    for (const prerequisite of metadata.prerequisiteLessonIds) {
+      if (!lessonIds.has(prerequisite))
+        missingReference(
+          issues,
+          `authoringMetadata.${metadata.lessonId}.prerequisiteLessonIds`,
+          "lesson",
+          prerequisite,
+        );
+      if (prerequisite === metadata.lessonId)
+        issues.push({
+          path: "authoringMetadata",
+          code: "SELF_REFERENCE",
+          severity: "error",
+          message: "A lesson cannot require itself.",
+        });
+    }
+    for (const citation of metadata.citations) {
+      if (!sourceIds.has(citation.sourceId))
+        missingReference(
+          issues,
+          `authoringMetadata.${metadata.lessonId}.citations`,
+          "source",
+          citation.sourceId,
+        );
+      const lesson = bundle.lessons.find((item) => item.id === metadata.lessonId);
+      const targets =
+        citation.targetKind === "step"
+          ? new Set(lesson?.steps.map((step) => step.id))
+          : citation.targetKind === "question"
+            ? new Set(lesson ? lessonQuestionRefs(lesson) : [])
+            : new Set(lesson?.flashcardIds);
+      if (!targets.has(citation.targetId))
+        missingReference(
+          issues,
+          `authoringMetadata.${metadata.lessonId}.citations`,
+          citation.targetKind,
+          citation.targetId,
+        );
+    }
+  }
+  const orderedLessonIds = bundle.lessons.map((lesson) => lesson.id);
+  for (const metadata of bundle.authoringMetadata ?? []) {
+    for (const prerequisite of metadata.prerequisiteLessonIds) {
+      if (orderedLessonIds.indexOf(prerequisite) >= orderedLessonIds.indexOf(metadata.lessonId))
+        issues.push({
+          path: `authoringMetadata.${metadata.lessonId}.prerequisiteLessonIds`,
+          code: "PREREQUISITE_ORDER",
+          severity: "error",
+          message: "A prerequisite lesson must appear earlier in the course.",
+        });
+    }
+  }
 
   for (const id of bundle.course.moduleIds) {
     if (!moduleIds.has(id)) missingReference(issues, "course.moduleIds", "module", id);
@@ -646,7 +706,104 @@ export function validateCourseBundle(input: unknown): ContentValidation {
     }
   }
 
-  for (const question of bundle.questions) {
+  const checkQuestions = (bundle.courseChecks ?? []).flatMap((check) =>
+    check.items.map((item) => item.question),
+  );
+  for (const id of duplicates([...bundle.questions, ...checkQuestions].map((q) => q.id)))
+    issues.push({
+      path: "courseChecks",
+      code: "DUPLICATE_ID",
+      severity: "error",
+      message: "Course check question id is reused: " + id,
+    });
+  for (const id of duplicates((bundle.courseChecks ?? []).map((c) => c.id)))
+    issues.push({
+      path: "courseChecks",
+      code: "DUPLICATE_ID",
+      severity: "error",
+      message: "Course check id is reused: " + id,
+    });
+  for (const kind of duplicates((bundle.courseChecks ?? []).map((c) => c.kind)))
+    issues.push({
+      path: "courseChecks",
+      code: "DUPLICATE_CHECK_KIND",
+      severity: "error",
+      message: "Use one check per kind: " + kind,
+    });
+  for (const check of bundle.courseChecks ?? []) {
+    const prefix = "courseChecks." + check.id;
+    lintField(issues, prefix + ".title", check.title, "lesson");
+    lintField(issues, prefix + ".description", check.description, "lesson");
+    for (const id of check.requiredLessonIds)
+      if (!lessonIds.has(id)) missingReference(issues, prefix + ".requiredLessonIds", "lesson", id);
+    if (
+      check.kind === "checkpoint" &&
+      (check.requiredLessonIds.length !== lessonIds.size ||
+        bundle.lessons.some((l) => !check.requiredLessonIds.includes(l.id)))
+    )
+      issues.push({
+        path: prefix,
+        code: "CHECK_PREREQUISITES",
+        severity: "error",
+        message: "The final course check requires every course lesson.",
+      });
+    if (
+      check.kind === "transfer" &&
+      !bundle.courseChecks?.some((c) => c.id === check.afterCheckId && c.kind === "checkpoint")
+    )
+      issues.push({
+        path: prefix,
+        code: "CHECK_PREREQUISITES",
+        severity: "error",
+        message: "A delayed transfer must follow the course checkpoint.",
+      });
+    for (const item of check.items) {
+      const lesson = bundle.lessons.find((l) => l.id === item.lessonId);
+      if (!lesson) missingReference(issues, prefix, "lesson", item.lessonId);
+      else if (item.question.conceptIds.some((id) => !lesson.conceptIds.includes(id)))
+        issues.push({
+          path: prefix,
+          code: "CHECK_CONCEPT",
+          severity: "error",
+          message: "Each check item must map to the lesson that teaches its concepts.",
+        });
+      if (!item.question.sourceIds.length)
+        issues.push({
+          path: prefix,
+          code: "CHECK_SOURCE",
+          severity: "error",
+          message: "Each check question needs a precise subject source.",
+        });
+      const visualText =
+        item.visual.type === "statements"
+          ? [
+              item.visual.title,
+              ...item.visual.statements.flatMap((s) => [s.label, s.text]),
+              ...(item.visual.conclusion ? [item.visual.conclusion] : []),
+            ]
+          : item.visual.type === "data_series"
+            ? [item.visual.label, ...item.visual.series.map((s) => s.label)]
+            : item.visual.type === "machine"
+              ? [item.visual.input, ...item.visual.operations]
+              : item.visual.type === "balance"
+                ? [item.visual.left, item.visual.right]
+                : item.visual.type === "table"
+                  ? [...item.visual.columns, ...item.visual.rows.flat()]
+                  : item.visual.type === "coordinates"
+                    ? item.visual.points.map((p) => p.label)
+                    : []; // Program/query source and input cells are literal data; schemas bound them.
+      for (const text of visualText) lintField(issues, prefix + ".visual", text, "lesson");
+    }
+    if (bundle.lessons.some((l) => !check.items.some((item) => item.lessonId === l.id)))
+      issues.push({
+        path: prefix,
+        code: "CHECK_COVERAGE",
+        severity: "error",
+        message: "The check must assess each course lesson.",
+      });
+  }
+  const checkIds = new Set(checkQuestions.map((q) => q.id));
+  for (const question of [...bundle.questions, ...checkQuestions]) {
     for (const id of question.conceptIds) {
       if (!conceptIds.has(id))
         missingReference(issues, `questions.${question.id}.conceptIds`, "concept", id);
@@ -656,6 +813,16 @@ export function validateCourseBundle(input: unknown): ContentValidation {
         missingReference(issues, `questions.${question.id}.sourceIds`, "source", id);
     }
     lintField(issues, `questions.${question.id}.prompt`, question.prompt, "question");
+    for (const choice of question.choices ?? [])
+      lintField(issues, `questions.${question.id}.choices.${choice.id}`, choice.label, "question");
+    lintField(
+      issues,
+      `questions.${question.id}.answerAuthority`,
+      question.answerAuthority.kind === "numeric"
+        ? question.answerAuthority.workedAnswer
+        : question.answerAuthority.exampleAnswer,
+      "lesson",
+    );
     const hiddenAnswer =
       question.answerAuthority.kind === "numeric"
         ? `${question.answerAuthority.value} ${question.answerAuthority.unit}`
@@ -663,7 +830,11 @@ export function validateCourseBundle(input: unknown): ContentValidation {
     question.hints.forEach((hint, index) => {
       lintField(issues, `questions.${question.id}.hints.${index}`, hint, "hint", hiddenAnswer);
     });
-    if (question.answerAuthority.kind === "numeric" && question.hints.length < 3) {
+    if (
+      !checkIds.has(question.id) &&
+      question.answerAuthority.kind === "numeric" &&
+      question.hints.length < 3
+    ) {
       issues.push({
         path: `questions.${question.id}.hints`,
         code: "HINT_LADDER_TOO_SHORT",
@@ -692,6 +863,15 @@ export function validateCourseBundle(input: unknown): ContentValidation {
     }
     lintField(issues, `flashcards.${card.id}.front`, card.front, "question");
     lintField(issues, `flashcards.${card.id}.back`, card.back, "lesson");
+    if (card.answerAuthority)
+      lintField(
+        issues,
+        `flashcards.${card.id}.answerAuthority`,
+        card.answerAuthority.kind === "numeric"
+          ? card.answerAuthority.workedAnswer
+          : card.answerAuthority.exampleAnswer,
+        "lesson",
+      );
     // A card must be answerable on its own (spec v0.2 section 16.1), so a front that only
     // points at surrounding material is reported rather than shipped.
     if (/\b(?:this (?:lesson|circuit|diagram|passage)|the above|as shown)\b/iu.test(card.front)) {
@@ -721,6 +901,11 @@ export function validateCourseBundle(input: unknown): ContentValidation {
   }
 
   issues.push(...unreachableContentIssues(bundle));
+  issues.push(
+    ...lessonV2Issues(bundle, (path, text, context, hiddenAnswer) =>
+      lintField(issues, path, text, context, hiddenAnswer),
+    ),
+  );
 
   return {
     passed: issues.every((item) => item.severity !== "error"),

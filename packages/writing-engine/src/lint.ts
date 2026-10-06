@@ -15,7 +15,8 @@ function emDashViolations(text: string, wordCount: number): StyleViolation[] {
       ruleId: "FMT001_EM_DASH_DENSITY",
       severity: "hard",
       category: "formatting",
-      message: "Use commas, full stops, or parentheses. The passage relies too heavily on em dashes.",
+      message:
+        "Use commas, full stops, or parentheses. The passage relies too heavily on em dashes.",
       start: first.index,
       end: first.index + 1,
       excerpt: "—",
@@ -46,7 +47,9 @@ function repeatedSentenceOpeningViolations(text: string): StyleViolation[] {
   for (const sentence of sentences(text)) {
     const index = text.indexOf(sentence, offset);
     offset = Math.max(offset, index + sentence.length);
-    const opening = (sentence.match(/^["“']?([\p{L}]+(?:\s+[\p{L}]+)?)/u)?.[1] ?? "").toLocaleLowerCase();
+    const opening = (
+      sentence.match(/^["“']?([\p{L}]+(?:\s+[\p{L}]+)?)/u)?.[1] ?? ""
+    ).toLocaleLowerCase();
     if (!opening) continue;
     const current = openingCounts.get(opening);
     openingCounts.set(opening, {
@@ -84,9 +87,13 @@ interface Measurement {
   excerpt: string;
 }
 
-const MEASUREMENT_PATTERN = /-?(?:\d+(?:\.\d+)?|\.\d+)(?:e[+-]?\d+)?\s*(?:milliamperes?|milliamps?|microamperes?|microamps?|amperes?|amps?|millivolts?|kilovolts?|volts?|kiloohms?|megaohms?|ohms?|mA|[µμu]A|A|mV|kV|V|kΩ|KΩ|MΩ|Ω)/giu;
+const MEASUREMENT_PATTERN =
+  /-?(?:\d+(?:\.\d+)?|\.\d+)(?:e[+-]?\d+)?\s*(?:milliamperes?|milliamps?|microamperes?|microamps?|amperes?|amps?|millivolts?|kilovolts?|volts?|kiloohms?|megaohms?|ohms?|mA|[µμu]A|A|mV|kV|V|kΩ|KΩ|MΩ|Ω)/giu;
 
-function normaliseMeasurement(value: number, rawUnit: string): Pick<Measurement, "value" | "dimension"> | null {
+function normaliseMeasurement(
+  value: number,
+  rawUnit: string,
+): Pick<Measurement, "value" | "dimension"> | null {
   const compact = rawUnit.normalize("NFKC").replace(/\s+/g, "");
   if (compact === "MΩ") return { value: value * 1e6, dimension: "resistance" };
 
@@ -138,7 +145,9 @@ function normaliseMeasurement(value: number, rawUnit: string): Pick<Measurement,
   }
 }
 function measurements(text: string): Measurement[] {
-  return [...text.matchAll(new RegExp(MEASUREMENT_PATTERN.source, MEASUREMENT_PATTERN.flags))].flatMap((match) => {
+  return [
+    ...text.matchAll(new RegExp(MEASUREMENT_PATTERN.source, MEASUREMENT_PATTERN.flags)),
+  ].flatMap((match) => {
     if (match.index === undefined) return [];
     const numberMatch = match[0].match(/^-?(?:\d+(?:\.\d+)?|\.\d+)(?:e[+-]?\d+)?/u);
     if (!numberMatch) return [];
@@ -147,7 +156,9 @@ function measurements(text: string): Measurement[] {
     const rawUnit = match[0].slice(numberMatch[0].length).trim();
     const normalized = normaliseMeasurement(numericValue, rawUnit);
     if (!normalized) return [];
-    return [{ ...normalized, start: match.index, end: match.index + match[0].length, excerpt: match[0] }];
+    return [
+      { ...normalized, start: match.index, end: match.index + match[0].length, excerpt: match[0] },
+    ];
   });
 }
 
@@ -158,6 +169,31 @@ function nearlyEqual(left: number, right: number): boolean {
 
 function answerLeakViolations(text: string, hiddenAnswer?: string): StyleViolation[] {
   if (!hiddenAnswer?.trim()) return [];
+  const bare = hiddenAnswer.trim();
+  if (/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/u.test(bare)) {
+    const expected = Number(bare);
+    for (const match of text
+      .replaceAll("−", "-")
+      .matchAll(
+        /(?<![\w.])[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:\s*\/\s*[+-]?(?:\d+(?:\.\d*)?|\.\d+))?(?![\w.])/gu,
+      )) {
+      const parts = match[0].split("/").map(Number);
+      const value = parts.length === 2 ? parts[0]! / parts[1]! : parts[0]!;
+      if (Number.isFinite(value) && Math.abs(value - expected) <= 1e-9)
+        return [
+          {
+            ruleId: "ANS005_EQUIVALENT_NUMERIC_ANSWER",
+            severity: "hard",
+            category: "answer_leakage",
+            message: "Keep the final numerical answer hidden in this mode.",
+            start: match.index,
+            end: match.index + match[0].length,
+            excerpt: match[0],
+          },
+        ];
+    }
+    return [];
+  }
   const normalizedText = normaliseForLeakCheck(text);
   const normalizedAnswer = normaliseForLeakCheck(hiddenAnswer);
   if (normalizedAnswer.length >= 2 && normalizedText.includes(normalizedAnswer)) {
@@ -170,7 +206,8 @@ function answerLeakViolations(text: string, hiddenAnswer?: string): StyleViolati
         message: "The hint contains the hidden answer. Replace it with the next reasoning step.",
         start: Math.max(0, plainIndex),
         end: Math.max(0, plainIndex) + hiddenAnswer.length,
-        excerpt: plainIndex >= 0 ? text.slice(plainIndex, plainIndex + hiddenAnswer.length) : hiddenAnswer,
+        excerpt:
+          plainIndex >= 0 ? text.slice(plainIndex, plainIndex + hiddenAnswer.length) : hiddenAnswer,
       },
     ];
   }
@@ -178,7 +215,8 @@ function answerLeakViolations(text: string, hiddenAnswer?: string): StyleViolati
   const expected = measurements(hiddenAnswer).at(-1);
   if (!expected) return [];
   const equivalent = measurements(text).find(
-    (candidate) => candidate.dimension === expected.dimension && nearlyEqual(candidate.value, expected.value),
+    (candidate) =>
+      candidate.dimension === expected.dimension && nearlyEqual(candidate.value, expected.value),
   );
   if (!equivalent) return [];
   return [
@@ -186,7 +224,8 @@ function answerLeakViolations(text: string, hiddenAnswer?: string): StyleViolati
       ruleId: "ANS005_EQUIVALENT_NUMERIC_ANSWER",
       severity: "hard",
       category: "answer_leakage",
-      message: "The hint gives a numerically equivalent form of the hidden answer. Replace it with the next reasoning step.",
+      message:
+        "The hint gives a numerically equivalent form of the hidden answer. Replace it with the next reasoning step.",
       start: equivalent.start,
       end: equivalent.end,
       excerpt: equivalent.excerpt,
@@ -198,15 +237,17 @@ function placeholderViolations(text: string): StyleViolation[] {
   const pattern = /\b(?:TODO|TBD|lorem ipsum|insert (?:text|image|example) here|placeholder)\b/giu;
   return [...text.matchAll(pattern)].flatMap((match) => {
     if (match.index === undefined) return [];
-    return [{
-      ruleId: "QLT001_PLACEHOLDER_CONTENT",
-      severity: "hard" as const,
-      category: "quality",
-      message: "Replace placeholder content before the text can be shown to a learner.",
-      start: match.index,
-      end: match.index + match[0].length,
-      excerpt: match[0],
-    }];
+    return [
+      {
+        ruleId: "QLT001_PLACEHOLDER_CONTENT",
+        severity: "hard" as const,
+        category: "quality",
+        message: "Replace placeholder content before the text can be shown to a learner.",
+        start: match.index,
+        end: match.index + match[0].length,
+        excerpt: match[0],
+      },
+    ];
   });
 }
 

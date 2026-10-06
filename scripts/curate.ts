@@ -1,5 +1,5 @@
 /**
- * The curriculum pipeline: plan → prompt → paste → import.
+ * The curriculum pipeline: plan → prompt → paste → import → review → publish.
  *
  * Discere's lessons are written by a frontier model the owner drives by hand, not by an
  * automated generation run. That is a deliberate trade. Content is the part of this product
@@ -27,6 +27,10 @@ import {
   TopicMapSchema,
 } from "../packages/contracts/src/index.ts";
 import {
+  assertEditorialApproval,
+  bundleDigest,
+  loadCourseBundle,
+  scaffoldTopicMap,
   lessonPrompt,
   mergeLesson,
   topicMapLessons,
@@ -47,6 +51,7 @@ export interface CurationPaths {
 }
 
 export function curationPaths(courseId: string): CurationPaths {
+  if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(courseId)) throw new Error("Use a kebab-case course id.");
   const courseDirectory = path.join(CONTENT_ROOT, courseId);
   const authoring = path.join(courseDirectory, ".authoring");
   return {
@@ -58,7 +63,7 @@ export function curationPaths(courseId: string): CurationPaths {
   };
 }
 
-export type LessonStatus = "pending" | "imported";
+export type LessonStatus = "pending" | "staged" | "imported";
 
 export interface Ledger {
   courseId: string;
@@ -68,6 +73,7 @@ export interface Ledger {
 }
 
 export async function loadTopicMap(courseId: string): Promise<TopicMap> {
+  curationPaths(courseId);
   const file = path.join(TOPIC_MAPS, `${courseId}.json`);
   if (!existsSync(file)) {
     const available = existsSync(TOPIC_MAPS)
@@ -83,6 +89,7 @@ export async function loadTopicMap(courseId: string): Promise<TopicMap> {
         .join("\n")}`,
     );
   }
+  if (parsed.data.courseId !== courseId) throw new Error("Topic map id must match its file name.");
   return parsed.data;
 }
 
@@ -115,9 +122,7 @@ function heading(text: string): void {
 }
 
 async function commandPlan(courseId: string, subject: string): Promise<void> {
-  // Deliberately not under content/<courseId>: that directory must not exist until it holds a
-  // bundle, because every directory under content/ that is not underscore-prefixed is loaded
-  // as a course at boot.
+  curationPaths(courseId);
   const directory = path.join(TOPIC_MAPS, "prompts");
   await mkdir(directory, { recursive: true });
   const file = path.join(directory, `${courseId}.md`);
@@ -138,8 +143,8 @@ async function commandPrompt(courseId: string, only: string | undefined): Promis
   await mkdir(paths.prompts, { recursive: true });
   await mkdir(paths.inbox, { recursive: true });
 
-  const entries = topicMapLessons(map).filter(
-    ({ lesson }) => (only ? lesson.slug === only : ledger.lessons[lesson.slug] !== "imported"),
+  const entries = topicMapLessons(map).filter(({ lesson }) =>
+    only ? lesson.slug === only : ledger.lessons[lesson.slug] === "pending",
   );
   if (entries.length === 0) {
     console.log(`Nothing to write. Every lesson of ${courseId} has been imported.`);
@@ -176,14 +181,20 @@ async function commandStatus(courseId: string): Promise<void> {
   const entries = topicMapLessons(map);
   for (const { module, lesson } of entries) {
     const state = ledger.lessons[lesson.slug] ?? "pending";
-    const inbox = waiting.includes(`${lesson.slug}.json`) ? " (in the inbox, not yet imported)" : "";
-    console.log(`  ${state === "imported" ? "✓" : "·"} ${lesson.slug.padEnd(32)} ${module}${inbox}`);
+    const inbox = waiting.includes(`${lesson.slug}.json`)
+      ? " (in the inbox, not yet imported)"
+      : "";
+    console.log(`  ${state.padEnd(9)} ${lesson.slug.padEnd(32)} ${module}${inbox}`);
   }
-  const done = entries.filter(({ lesson }) => ledger.lessons[lesson.slug] === "imported").length;
-  console.log(`\n${done} of ${entries.length} lessons imported.`);
-  if (waiting.length > 0) console.log(`${waiting.length} file(s) waiting: pnpm curate import ${courseId}`);
+  const done = entries.filter(({ lesson }) => ledger.lessons[lesson.slug] !== "pending").length;
+  console.log(`\n${done} of ${entries.length} lessons staged or published.`);
+  if (waiting.length > 0)
+    console.log(`${waiting.length} file(s) waiting: pnpm curate import ${courseId}`);
   else if (done < entries.length) console.log(`Next: pnpm curate prompt ${courseId}`);
-  else console.log("This course is complete.");
+  else
+    console.log(
+      "Drafts are staged. Review and publish the candidate before it enters the library.",
+    );
 }
 
 /**
@@ -194,58 +205,12 @@ async function commandStatus(courseId: string): Promise<void> {
 async function commandScaffold(courseId: string): Promise<void> {
   const map = await loadTopicMap(courseId);
   const paths = curationPaths(courseId);
-  const bundlePath = path.join(paths.courseDirectory, "bundle.json");
+  const bundlePath = path.join(paths.authoring, "candidate.json");
   if (existsSync(bundlePath)) {
-    console.log(`content/${courseId}/bundle.json already exists; leaving it alone.`);
+    console.log("A candidate already exists; leaving it alone.");
     return;
   }
-  const sources = map.sources.map((source, index) => ({
-    id: `${courseId}-source-${index + 1}`,
-    title: source.title,
-    publisher: new URL(source.url).hostname.replace(/^www\./, ""),
-    url: source.url,
-    licence: "See the publisher's terms",
-    accessedAt: new Date().toISOString().slice(0, 10),
-  }));
-  const bundle = {
-    course: {
-      id: map.courseId,
-      version: "0.1.0",
-      title: map.title,
-      description: map.description,
-      audience: map.audience,
-      assuranceLevel: "source_backed",
-      moduleIds: map.modules.map((module) => module.id),
-      sourceIds: sources.map((source) => source.id),
-      accent: map.accent,
-      coverAsset: map.coverAsset,
-      // Stays out of the catalogue's open shelf until it has lessons the learner can start.
-      status: "coming_soon",
-    },
-    modules: map.modules.map((module) => ({
-      id: module.id,
-      title: module.title,
-      description: module.summary,
-      conceptIds: module.concepts.map((concept) => concept.id),
-    })),
-    concepts: map.modules.flatMap((module) =>
-      module.concepts.map((concept) => ({
-        id: concept.id,
-        moduleId: module.id,
-        title: concept.title,
-        summary: concept.summary,
-        prerequisiteIds: [],
-        misconceptionIds: [],
-        assuranceLevel: "source_backed",
-      })),
-    ),
-    lessons: [],
-    activities: [],
-    questions: [],
-    flashcards: [],
-    essays: [],
-    sources,
-  };
+  const bundle = scaffoldTopicMap(map);
   const validation = validateCourseBundle(bundle);
   const blocking = validation.issues.filter((issue) => issue.severity === "error");
   if (!validation.passed || blocking.length > 0) {
@@ -256,10 +221,10 @@ async function commandScaffold(courseId: string): Promise<void> {
   }
   await mkdir(paths.courseDirectory, { recursive: true });
   await mkdir(path.join(paths.courseDirectory, "assets"), { recursive: true });
-  await writeFile(bundlePath, `${JSON.stringify(bundle, null, 2)}\n`, "utf8");
+  await mkdir(paths.authoring, { recursive: true });
+  await writeFile(bundlePath, `${JSON.stringify(validation.bundle, null, 2)}\n`, "utf8");
   heading(`Scaffolded ${map.title}`);
-  console.log(`  content/${courseId}/bundle.json`);
-  console.log(`  ${bundle.modules.length} module(s), ${bundle.concepts.length} concept(s), ${sources.length} source(s)`);
+  console.log(`  content/${courseId}/.authoring/candidate.json`);
   console.log(`\nNext: pnpm curate prompt ${courseId}`);
 }
 
@@ -267,12 +232,11 @@ async function commandImport(courseId: string): Promise<void> {
   const map = await loadTopicMap(courseId);
   const ledger = await loadLedger(map);
   const paths = curationPaths(courseId);
-  const bundlePath = path.join(paths.courseDirectory, "bundle.json");
-  if (!existsSync(bundlePath)) {
-    throw new Error(
-      `Course '${courseId}' has no bundle.json yet. A course needs its plumbing — modules, concepts, sources, a visual brief — before lessons can be merged into it.`,
-    );
-  }
+  const bundlePath = path.join(paths.authoring, "candidate.json");
+  const basePath = existsSync(bundlePath)
+    ? bundlePath
+    : path.join(paths.courseDirectory, "bundle.json");
+  if (!existsSync(basePath)) throw new Error(`Run pnpm curate scaffold ${courseId} first.`);
   const waiting = existsSync(paths.inbox)
     ? (await readdir(paths.inbox)).filter((name) => name.endsWith(".json")).sort()
     : [];
@@ -281,7 +245,7 @@ async function commandImport(courseId: string): Promise<void> {
     return;
   }
 
-  const bundle = JSON.parse(await readFile(bundlePath, "utf8")) as Record<string, unknown>;
+  const bundle = JSON.parse(await readFile(basePath, "utf8")) as Record<string, unknown>;
   const entries = topicMapLessons(map);
   const imported: string[] = [];
   const rejected: Array<{ file: string; problems: string[] }> = [];
@@ -312,7 +276,9 @@ async function commandImport(courseId: string): Promise<void> {
       continue;
     }
     try {
-      mergeLesson(bundle, map, entry, parsed);
+      const candidate = structuredClone(bundle);
+      mergeLesson(candidate, map, entry, parsed);
+      Object.assign(bundle, candidate);
       imported.push(slug);
     } catch (error) {
       rejected.push({ file, problems: [error instanceof Error ? error.message : String(error)] });
@@ -341,18 +307,20 @@ async function commandImport(courseId: string): Promise<void> {
     return;
   }
 
-  await writeFile(bundlePath, `${JSON.stringify(bundle, null, 2)}\n`, "utf8");
+  await mkdir(paths.authoring, { recursive: true });
+  await writeFile(`${bundlePath}.tmp`, `${JSON.stringify(validation.bundle, null, 2)}\n`, "utf8");
+  await rename(`${bundlePath}.tmp`, bundlePath);
   // Imported files leave the inbox, so what is in there always means "still waiting". They are
   // kept rather than deleted: a merge that turns out wrong is easier to re-run than to retype.
   const archive = path.join(paths.authoring, "imported");
   await mkdir(archive, { recursive: true });
   for (const slug of imported) {
-    ledger.lessons[slug] = "imported";
+    ledger.lessons[slug] = "staged";
     await rename(path.join(paths.inbox, `${slug}.json`), path.join(archive, `${slug}.json`));
   }
   await saveLedger(ledger);
 
-  heading(`Imported ${imported.length} lesson(s) into ${map.title}`);
+  heading(`Staged ${imported.length} lesson(s) for ${map.title}`);
   for (const slug of imported) console.log(`  ✓ ${slug}`);
   for (const entry of rejected) {
     console.log(`\n  ✕ ${entry.file}`);
@@ -364,10 +332,75 @@ async function commandImport(courseId: string): Promise<void> {
     for (const issue of warnings) console.log(`  · ${issue.path}: ${issue.message}`);
   }
   console.log(`
-Now run the writing gate over the prose:
-  pnpm author lint ${courseId}
-Then check what is left:
-  pnpm curate status ${courseId}`);
+The candidate passed the writing and curriculum gates. It is not published.
+Next: pnpm curate review ${courseId}
+Inspect the candidate, complete its review record, then run pnpm curate publish ${courseId}.`);
+}
+
+async function commandReview(courseId: string): Promise<void> {
+  const paths = curationPaths(courseId);
+  const candidate = JSON.parse(
+    await readFile(path.join(paths.authoring, "candidate.json"), "utf8"),
+  ) as unknown;
+  const validation = validateCourseBundle(candidate);
+  const file = path.join(paths.courseDirectory, "review", "publication.json");
+  await mkdir(path.dirname(file), { recursive: true });
+  const record = {
+    decision: "pending",
+    reviewer: "",
+    reviewedAt: new Date().toISOString(),
+    bundleSha256: bundleDigest(candidate),
+    factChecks: [],
+    acceptedWarnings: validation.issues
+      .filter((item) => item.severity === "warning")
+      .map((item) => ({ code: item.code, path: item.path, reason: "" })),
+    resolvedUncertainty: (validation.bundle?.authoringMetadata ?? []).flatMap((item) =>
+      item.uncertainty.map((concern) => ({ lessonId: item.lessonId, concern, resolution: "" })),
+    ),
+    unresolvedIssues: [],
+    changes: [],
+  };
+  if (existsSync(file))
+    throw new Error(
+      `A review already exists at ${path.relative(ROOT, file)}. Revise it against the candidate hash; it will not be overwritten.`,
+    );
+  await writeFile(file, `${JSON.stringify(record, null, 2)}\n`, "utf8");
+  console.log(
+    `Review ${path.relative(ROOT, file)} against .authoring/candidate.json (SHA-256 ${record.bundleSha256}).`,
+  );
+}
+
+async function commandPublish(courseId: string): Promise<void> {
+  const paths = curationPaths(courseId);
+  const candidatePath = path.join(paths.authoring, "candidate.json");
+  const candidate = JSON.parse(await readFile(candidatePath, "utf8"));
+  const validation = validateCourseBundle(candidate);
+  const review = JSON.parse(
+    await readFile(path.join(paths.courseDirectory, "review", "publication.json"), "utf8"),
+  );
+  assertEditorialApproval(candidate, review, validation);
+  if (
+    candidate.course.id !== courseId ||
+    candidate.course.status !== "available" ||
+    !candidate.lessons.length
+  )
+    throw new Error("Publish an available course with playable lessons and the matching id.");
+  // Loading the candidate also proves its referenced cover and lesson images are present.
+  const temporary = path.join(paths.courseDirectory, "publication-candidate.json");
+  try {
+    await writeFile(temporary, `${JSON.stringify(candidate, null, 2)}\n`, "utf8");
+    await loadCourseBundle(temporary);
+    await rename(temporary, path.join(paths.courseDirectory, "bundle.json"));
+  } catch (error) {
+    const { rm } = await import("node:fs/promises");
+    await rm(temporary, { force: true });
+    throw error;
+  }
+  const map = await loadTopicMap(courseId);
+  const ledger = await loadLedger(map);
+  for (const lesson of candidate.lessons) ledger.lessons[lesson.id] = "imported";
+  await saveLedger(ledger);
+  console.log(`Published ${courseId}. Restart Discere to load the reviewed bundle.`);
 }
 
 const [command, courseId, extra] = process.argv.slice(2);
@@ -388,7 +421,9 @@ if (!command || command === "help" || command === "--help") {
   pnpm curate plan     <course-id> [subject] write the prompt that plans a whole course
   pnpm curate scaffold <course-id>           create the bundle a course needs before lessons
   pnpm curate prompt <course-id> [slug]      write lesson prompts for what is still pending
-  pnpm curate import <course-id>             validate and merge everything in the inbox
+  pnpm curate import <course-id>             validate and stage inbox drafts
+  pnpm curate review <course-id>             prepare a review tied to the candidate hash
+  pnpm curate publish <course-id>            publish the accepted, unchanged candidate
   pnpm curate status <course-id>             what is done and what is left
 
 The loop: prompt → paste into ChatGPT → save the reply into the inbox → import → repeat.`);
@@ -403,6 +438,10 @@ The loop: prompt → paste into ChatGPT → save the reply into the inbox → im
   await run(async () => commandPrompt(courseId, extra));
 } else if (command === "import") {
   await run(async () => commandImport(courseId));
+} else if (command === "review") {
+  await run(async () => commandReview(courseId));
+} else if (command === "publish") {
+  await run(async () => commandPublish(courseId));
 } else if (command === "status") {
   await run(async () => commandStatus(courseId));
 } else {

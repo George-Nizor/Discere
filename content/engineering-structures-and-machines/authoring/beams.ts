@@ -1,0 +1,346 @@
+import {
+  beam,
+  beat,
+  card,
+  cantilever,
+  choose,
+  ibeam,
+  numeric,
+  rect,
+  word,
+  type TeachingLesson,
+} from "./definition.js";
+
+export const beamLessons: TeachingLesson[] = [
+  {
+    id: "shear-and-moment",
+    title: "Shear force and bending moment",
+    summary: "Cut a beam, balance one piece and draw how shear and moment vary along it.",
+    moduleId: "engr-beams",
+    sourceIds: ["engr-es-shear-moment", "engr-up-equilibrium-examples"],
+    beats: [
+      beat(
+        "Cut the beam",
+        "Cut the beam anywhere and the left piece must still balance. The shear force V at the cut is the sum of vertical forces to its left, upward positive. Left of the load only R_A = 8 kN acts, so V = +8 kN; right of it, V = 8 − 12 = −4 kN. A point load makes the shear diagram jump by exactly its size.",
+        ["Point load at 2 m", beam(6, [0, 6], [[2, 12]], [], "shear")],
+        ["Point load at 3 m", beam(6, [0, 6], [[3, 12]], [], "shear")],
+      ),
+      beat(
+        "Moment peaks under a point load",
+        "The bending moment at a cut is the total moment, about the cut, of the forces to its left. Under the load only R_A acts on the left piece, so M = 8 × 2 = 16 kN·m, sagging. Between point loads the moment changes linearly: here it rises from zero at A to its peak under the load and falls back to zero at B.",
+        ["Point load at 2 m", beam(6, [0, 6], [[2, 12]], [], "moment")],
+        ["Point load at 3 m", beam(6, [0, 6], [[3, 12]], [], "moment")],
+      ),
+      beat(
+        "A uniform load makes a parabola",
+        "Under a uniform load the shear falls steadily and the moment curve becomes a parabola. Each reaction is wL/2 = 12 kN. At midspan, the left half has 12 kN up at 4 m from the cut and 12 kN of load acting 2 m from it: M = 12 × 4 − 12 × 2 = 24 kN·m. That is the standard result M_max = wL²/8.",
+        ["Uniform 3 kN/m", beam(8, [0, 8], [], [[0, 8, 3]], "moment")],
+        ["Same 24 kN at midspan", beam(8, [0, 8], [[4, 24]], [], "moment")],
+      ),
+      beat(
+        "Where the moment peaks",
+        "The slope of the moment diagram equals the shear force: dM/dx = V. Where V changes sign, from positive to negative, the moment stops rising and starts falling, so its peak sits where the shear passes through zero. Move the section marker and compare the two readings: the largest moment lines up with the shear diagram's crossing.",
+        ["Point and uniform loads", beam(8, [0, 8], [[2, 10]], [[0, 8, 2]], "moment")],
+        ["Same loads, shear view", beam(8, [0, 8], [[2, 10]], [[0, 8, 2]], "shear")],
+      ),
+    ],
+    questions: [
+      numeric(
+        "A 6 m beam on end supports carries 12 kN at x = 2 m, so the reactions are 8 kN at A and 4 kN at B. Find the shear force just to the right of the load, in kN, counting upward forces on the left piece as positive.",
+        -4,
+        "Left of the cut: +8 kN reaction and −12 kN load, so V = 8 − 12 = −4 kN.",
+        [
+          "Add the vertical forces on the piece to the left of the cut.",
+          "Just right of the load, both R_A and the load are on the left piece.",
+          "Calculate 8 − 12, keeping the sign.",
+        ],
+        "kN",
+      ),
+      numeric(
+        "For the same beam, find the bending moment under the 12 kN load, in kN·m.",
+        16,
+        "Only R_A acts left of the cut: M = 8 × 2 = 16 kN·m, sagging.",
+        [
+          "Take moments about the cut of the forces on its left.",
+          "R_A is the only force to the left, 2 m away.",
+          "Calculate 8 × 2.",
+        ],
+        "kN·m",
+      ),
+      numeric(
+        "An 8 m beam on end supports carries a uniform 3 kN/m along its full length. Find the largest bending moment, in kN·m.",
+        24,
+        "M_max = wL²/8 = 3 × 64 ÷ 8 = 24 kN·m, at midspan.",
+        [
+          "By symmetry the peak is at midspan.",
+          "Use M_max = wL²/8, or balance the left half about the cut.",
+          "Calculate 3 × 8² ÷ 8.",
+        ],
+        "kN·m",
+      ),
+      word(
+        "Along a simply supported beam, what is the shear force where the bending moment reaches its peak? Answer in one word.",
+        ["zero", "0", "nil"],
+        [],
+        "Zero: the moment's slope is the shear, and the slope vanishes at the peak.",
+        "The slope of the moment diagram equals the shear force.",
+      ),
+      numeric(
+        "A 3 m cantilever carries 5 kN at its free end. Find the size of the bending moment at the wall, in kN·m.",
+        15,
+        "The load acts 3 m from the wall: M = 5 × 3 = 15 kN·m, hogging.",
+        [
+          "Cut at the wall and look at the free piece.",
+          "Only the end load acts on it.",
+          "Calculate 5 × 3.",
+        ],
+        "kN·m",
+      ),
+      numeric(
+        "A 10 m beam on end supports carries 20 kN at midspan. Find the largest bending moment, in kN·m.",
+        50,
+        "Each reaction is 10 kN; under the load M = 10 × 5 = 50 kN·m. This is PL/4.",
+        ["Find the reactions by symmetry.", "The peak is under the load.", "Calculate 10 × 5."],
+        "kN·m",
+      ),
+    ],
+    cards: [
+      card(
+        "A 4 m beam on end supports carries 10 kN at midspan. Find the largest bending moment in kN·m.",
+        10,
+        "PL/4 = 10 × 4 ÷ 4 = 10 kN·m.",
+        "kN·m",
+      ),
+      card(
+        "A 6 m beam on end supports carries 2 kN/m along its full span. Find the largest bending moment in kN·m.",
+        9,
+        "wL²/8 = 2 × 36 ÷ 8 = 9 kN·m.",
+        "kN·m",
+      ),
+    ],
+  },
+  {
+    id: "bending-stress",
+    title: "Bending stress and the I-beam",
+    summary: "Use σ = My/I and see why depth and flanges make a beam efficient.",
+    moduleId: "engr-beams",
+    sourceIds: ["engr-mit-bending", "engr-es-area-moment"],
+    beats: [
+      beat(
+        "Stress grows from the neutral axis",
+        "Bending stretches one face of a beam and squashes the other. Stress is zero on the neutral axis and grows linearly with distance y from it: σ = My/I. For a 100 × 200 mm section, I = 100 × 200³/12 = 66.7 × 10⁶ mm⁴, and the outer fibres sit 100 mm out, so σ = 20 × 10⁶ × 100/(66.7 × 10⁶) = 30 MPa.",
+        ["Standing on edge", rect(100, 200, 20)],
+        ["Laid flat", rect(200, 100, 20)],
+      ),
+      beat(
+        "Depth matters most",
+        "Same material, same area, different orientation. Laid flat, I = 200 × 100³/12 = 16.7 × 10⁶ mm⁴, a quarter of before, while the outer fibres move in to 50 mm. The stress doubles to 60 MPa. Depth enters I as a cube, which is why floor joists stand on edge.",
+        ["Laid flat", rect(200, 100, 20)],
+        ["Standing on edge", rect(100, 200, 20)],
+      ),
+      beat(
+        "The second moment of area",
+        "The second moment of area I measures how far a section's material sits from the neutral axis: each small area is weighted by the square of its distance. For a rectangle, I = bh³/12. For 60 × 100 mm that is 5 × 10⁶ mm⁴. Double the width and I doubles; double the depth and it rises eightfold.",
+        ["60 × 100 mm", rect(60, 100, 10)],
+        ["60 × 200 mm", rect(60, 200, 10)],
+      ),
+      beat(
+        "Put material far from the axis",
+        "Material near the neutral axis carries little stress and adds little to I. An I-section moves it into flanges at the top and bottom. This one uses 3,080 mm² against 20,000 mm² for the solid 100 × 200 mm rectangle, 15% of the material, yet keeps 31% of its I. Per kilogram of steel it is about twice as effective in bending.",
+        ["I-section", ibeam(100, 200, 10, 6, 20)],
+        ["Solid rectangle, same outline", rect(100, 200, 20)],
+      ),
+    ],
+    questions: [
+      numeric(
+        "A solid rectangular beam 100 mm wide and 200 mm deep carries a bending moment of 20 kN·m. Its second moment of area is bh³/12. Find the largest bending stress, in MPa.",
+        30,
+        "I = 100 × 200³/12 = 66.67 × 10⁶ mm⁴; σ = 20 × 10⁶ N·mm × 100 mm ÷ I = 30 MPa.",
+        [
+          "Convert the moment to N·mm: 1 kN·m = 10⁶ N·mm.",
+          "The outer fibre is half the depth from the neutral axis.",
+          "Calculate 20 × 10⁶ × 100 ÷ (100 × 200³/12).",
+        ],
+        "MPa",
+      ),
+      numeric(
+        "The same beam is laid flat, 200 mm wide and 100 mm deep, under the same 20 kN·m. Find the largest bending stress, in MPa.",
+        60,
+        "I = 200 × 100³/12 = 16.67 × 10⁶ mm⁴ and y = 50 mm, so σ = 20 × 10⁶ × 50 ÷ I = 60 MPa.",
+        [
+          "Swap the width and depth in bh³/12.",
+          "The outer fibre is now 50 mm from the axis.",
+          "Calculate 20 × 10⁶ × 50 ÷ (200 × 100³/12).",
+        ],
+        "MPa",
+      ),
+      numeric(
+        "Find the second moment of area of a rectangle 60 mm wide and 100 mm deep about its horizontal centroidal axis, in units of 10⁶ mm⁴.",
+        5,
+        "I = 60 × 100³/12 = 5,000,000 mm⁴ = 5 × 10⁶ mm⁴.",
+        [
+          "Use I = bh³/12 with h the depth.",
+          "Cube the depth before multiplying by the width.",
+          "Calculate 60 × 1,000,000 ÷ 12, then divide by 10⁶.",
+        ],
+        "× 10⁶ mm⁴",
+      ),
+      numeric(
+        "An I-section is 200 mm deep with 100 mm wide, 10 mm thick flanges and a 6 mm web. Its I is the outer rectangle minus the two empty side regions: (100 × 200³ − 94 × 180³)/12. Find I in units of 10⁶ mm⁴, to two decimal places.",
+        20.98,
+        "100 × 200³ = 800 × 10⁶ and 94 × 180³ = 548.2 × 10⁶; the difference over 12 is 20.98 × 10⁶ mm⁴.",
+        [
+          "Each empty region is 47 mm wide; together they are 94 mm wide and 180 mm deep.",
+          "Subtract their combined bh³ from the outer rectangle's.",
+          "Divide the difference by 12 and by 10⁶.",
+        ],
+        "× 10⁶ mm⁴",
+        0.006,
+      ),
+      numeric(
+        "A square beam 100 mm × 100 mm carries 5 kN·m. Find the largest bending stress in MPa.",
+        30,
+        "I = 100⁴/12 = 8.33 × 10⁶ mm⁴; σ = 5 × 10⁶ × 50 ÷ I = 30 MPa.",
+        [
+          "Find I for the square with bh³/12.",
+          "The outer fibre is 50 mm from the axis.",
+          "Calculate 5 × 10⁶ × 50 ÷ (100⁴/12).",
+        ],
+        "MPa",
+      ),
+      word(
+        "Name the line through a bent beam's cross-section where the bending stress is zero.",
+        ["neutral axis", "neutral surface", "neutral plane"],
+        [],
+        "The neutral axis, which passes through the centroid of the section.",
+        "Fibres on one side are stretched and on the other squashed. What lies between?",
+      ),
+    ],
+    cards: [
+      card(
+        "Find I for a rectangle 50 mm wide and 120 mm deep, about its horizontal centroidal axis, in units of 10⁶ mm⁴.",
+        7.2,
+        "50 × 120³/12 = 7,200,000 mm⁴ = 7.2 × 10⁶ mm⁴.",
+        "× 10⁶ mm⁴",
+      ),
+      card(
+        "A section has I = 4 × 10⁶ mm⁴ and outer fibres 50 mm from the neutral axis. Find the largest bending stress under 8 kN·m, in MPa.",
+        100,
+        "σ = 8 × 10⁶ × 50 ÷ (4 × 10⁶) = 100 MPa.",
+        "MPa",
+      ),
+    ],
+  },
+  {
+    id: "deflection-and-stiffness",
+    title: "Deflection and stiffness",
+    summary:
+      "Predict how far a cantilever bends with δ = PL³/3EI and trade length, material and shape.",
+    moduleId: "engr-beams",
+    sourceIds: ["engr-mit-deflection", "engr-up-stress"],
+    beats: [
+      beat(
+        "Tip deflection",
+        "An end-loaded cantilever deflects δ = PL³/3EI at its tip. Work in base units: P = 3,000 N, L³ = 8 m³, E = 200 × 10⁹ Pa and I = 2 × 10⁻⁶ m⁴, so EI = 400,000 N·m² and δ = 24,000/1,200,000 = 0.02 m, or 20 mm. The product EI, the flexural rigidity, joins material and shape.",
+        ["2 m long", cantilever(2, 3, 200, 2)],
+        ["4 m long", cantilever(4, 3, 200, 2)],
+      ),
+      beat(
+        "Length is cubed",
+        "Length enters as a cube. Doubling L makes the tip deflection 2³ = 8 times larger, 160 mm here, because the longer arm both raises the bending moment and gives more length over which the curvature adds up. Long spans are usually governed by stiffness well before strength.",
+        ["4 m long", cantilever(4, 3, 200, 2)],
+        ["2 m long", cantilever(2, 3, 200, 2)],
+      ),
+      beat(
+        "Material and section",
+        "Swap steel for aluminium and E falls from 200 to 70 GPa, so deflection rises by 200/70 ≈ 2.9 for the same section. To match steel, an aluminium beam needs 2.9 times the I, usually from a deeper section. Because I grows with depth cubed, a section about 42% deeper is enough, at roughly half the weight of the steel.",
+        ["Aluminium, E = 70 GPa", cantilever(1, 2.1, 70, 1)],
+        ["Steel, E = 200 GPa", cantilever(1, 2.1, 200, 1)],
+      ),
+      beat(
+        "Stiffness is load per deflection",
+        "Stiffness is load per unit deflection. For an end-loaded cantilever, k = P/δ = 3EI/L³. For the 2 m steel arm, 3 × 400,000/8 = 150,000 N/m, or 150 kN/m: each kilonewton at the tip moves it about 6.7 mm. A diving board is designed for low stiffness; a machine-tool arm for very high stiffness.",
+        ["I = 2 × 10⁶ mm⁴", cantilever(2, 3, 200, 2)],
+        ["I = 4 × 10⁶ mm⁴", cantilever(2, 3, 200, 4)],
+      ),
+    ],
+    questions: [
+      numeric(
+        "A steel cantilever 2 m long (E = 200 GPa, I = 2 × 10⁶ mm⁴) carries 3 kN at its tip. Using δ = PL³/3EI, find the tip deflection in mm.",
+        20,
+        "δ = 3,000 × 8 ÷ (3 × 200 × 10⁹ × 2 × 10⁻⁶) = 0.02 m = 20 mm.",
+        [
+          "Convert to N, m, Pa and m⁴: 10⁶ mm⁴ is 10⁻⁶ m⁴.",
+          "Compute EI first, then PL³/3EI in metres.",
+          "Calculate 3,000 × 2³ ÷ (3 × 400,000), then convert to mm.",
+        ],
+        "mm",
+      ),
+      numeric(
+        "Keep the load and section but double the cantilever's length. By what factor does the tip deflection grow?",
+        8,
+        "δ ∝ L³, so doubling L multiplies δ by 2³ = 8.",
+        [
+          "Only L changes in PL³/3EI.",
+          "Deflection depends on the cube of length.",
+          "Calculate 2³.",
+        ],
+        "",
+      ),
+      numeric(
+        "An aluminium cantilever 1 m long (E = 70 GPa, I = 1 × 10⁶ mm⁴) carries 2.1 kN at its tip. Find the tip deflection in mm.",
+        10,
+        "EI = 70 × 10⁹ × 10⁻⁶ = 70,000 N·m²; δ = 2,100 × 1 ÷ (3 × 70,000) = 0.01 m = 10 mm.",
+        [
+          "Find EI in N·m².",
+          "Apply δ = PL³/3EI with L = 1 m.",
+          "Calculate 2,100 ÷ 210,000 and convert to mm.",
+        ],
+        "mm",
+      ),
+      numeric(
+        "For the 2 m steel cantilever (E = 200 GPa, I = 2 × 10⁶ mm⁴), find the tip stiffness k = 3EI/L³ in kN/m.",
+        150,
+        "k = 3 × 400,000 ÷ 8 = 150,000 N/m = 150 kN/m. Check: 3 kN ÷ 0.02 m = 150 kN/m.",
+        [
+          "EI is 400,000 N·m².",
+          "Divide 3EI by L³.",
+          "Calculate 3 × 400,000 ÷ 8, then convert N/m to kN/m.",
+        ],
+        "kN/m",
+      ),
+      numeric(
+        "A 2 m steel cantilever (E = 200 GPa) carries 3 kN at its tip, and its deflection is limited to 8 mm. Find the minimum I, in units of 10⁶ mm⁴.",
+        5,
+        "I = PL³/(3Eδ) = 3,000 × 8 ÷ (3 × 200 × 10⁹ × 0.008) = 5 × 10⁻⁶ m⁴ = 5 × 10⁶ mm⁴.",
+        [
+          "Rearrange δ = PL³/3EI for I.",
+          "Keep δ in metres and E in pascals.",
+          "Calculate 24,000 ÷ (4.8 × 10⁹), then convert m⁴ to 10⁶ mm⁴.",
+        ],
+        "× 10⁶ mm⁴",
+      ),
+      choose(
+        "Which single change halves a cantilever's tip deflection under the same load?",
+        ["Doubling the second moment of area", "Doubling the length", "Halving Young's modulus"],
+        0,
+        "δ = PL³/3EI, so doubling I halves δ. Doubling L multiplies δ by 8; halving E doubles it.",
+        "Look at where each quantity sits in PL³/3EI.",
+      ),
+    ],
+    cards: [
+      card(
+        "A 3 m cantilever (E = 200 GPa, I = 4.5 × 10⁶ mm⁴) carries 1 kN at its tip. Find the tip deflection in mm.",
+        10,
+        "EI = 900,000 N·m²; δ = 1,000 × 27 ÷ 2,700,000 = 0.01 m = 10 mm.",
+        "mm",
+      ),
+      card(
+        "A cantilever's length is halved, with load and section unchanged. By what factor is its tip deflection multiplied?",
+        0.125,
+        "(1/2)³ = 0.125.",
+        "",
+      ),
+    ],
+  },
+];

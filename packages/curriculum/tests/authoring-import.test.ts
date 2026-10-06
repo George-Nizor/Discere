@@ -15,9 +15,7 @@ const map: TopicMap = {
       id: "deduction",
       title: "Deduction",
       summary: "What follows from what.",
-      concepts: [
-        { id: "conditional", title: "Conditional", summary: "An if-then claim." },
-      ],
+      concepts: [{ id: "conditional", title: "Conditional", summary: "An if-then claim." }],
       lessons: [
         {
           slug: "if-then-claims",
@@ -44,10 +42,38 @@ const imported: ImportedLesson = {
   nextAction: "Try turning a conditional around.",
   stageTitles: { quiz: "Check understanding", review: "Recall", completion: "Done" },
   steps: [
-    { id: "hook", kind: "hook", text: "First line.\n\nSecond line.", visualStateId: "", checkQuestionId: "", activityId: "" },
-    { id: "explain", kind: "explain", text: "The four cases.", visualStateId: "", checkQuestionId: "", activityId: "" },
-    { id: "check", kind: "check", text: "Your turn.", visualStateId: "", checkQuestionId: "falsifies", activityId: "" },
-    { id: "close", kind: "explain", text: "A narrow promise.", visualStateId: "", checkQuestionId: "", activityId: "" },
+    {
+      id: "hook",
+      kind: "hook",
+      text: "First line.\n\nSecond line.",
+      visualStateId: "",
+      checkQuestionId: "",
+      activityId: "",
+    },
+    {
+      id: "explain",
+      kind: "explain",
+      text: "The four cases.",
+      visualStateId: "",
+      checkQuestionId: "",
+      activityId: "",
+    },
+    {
+      id: "check",
+      kind: "check",
+      text: "Your turn.",
+      visualStateId: "",
+      checkQuestionId: "falsifies",
+      activityId: "",
+    },
+    {
+      id: "close",
+      kind: "explain",
+      text: "A narrow promise.",
+      visualStateId: "",
+      checkQuestionId: "",
+      activityId: "",
+    },
   ],
   questions: [
     {
@@ -89,9 +115,37 @@ const imported: ImportedLesson = {
     },
   ],
   flashcards: [
-    { id: "when-false", front: "When is a conditional false?", back: "Antecedent true, consequent false.", conceptIds: ["conditional"] },
+    {
+      id: "when-false",
+      front: "When is a conditional false?",
+      back: "Antecedent true, consequent false.",
+      conceptIds: ["conditional"],
+    },
   ],
   uncertainty: [],
+  citations: [
+    ...["hook", "explain", "check", "close"].map((targetId) => ({
+      claim: "A conditional is false when its antecedent is true and consequent false.",
+      sourceId: "src-1",
+      section: "Conditionals",
+      targetKind: "step" as const,
+      targetId,
+    })),
+    ...["falsifies", "silent-case"].map((targetId) => ({
+      claim: "A conditional makes no promise when its antecedent is false.",
+      sourceId: "src-1",
+      section: "Conditionals",
+      targetKind: "question" as const,
+      targetId,
+    })),
+    {
+      claim: "A conditional is false in the true-false case.",
+      sourceId: "src-1",
+      section: "Conditionals",
+      targetKind: "flashcard",
+      targetId: "when-false",
+    },
+  ],
 };
 
 function emptyBundle(): Record<string, unknown> {
@@ -138,6 +192,53 @@ describe("imported to steps", () => {
 });
 
 describe("merge", () => {
+  it("retains uncertainty and scopes sources to each claim", () => {
+    const bundle = emptyBundle();
+    (bundle["course"] as { sourceIds: string[] }).sourceIds.push("src-2");
+    const citations = imported.citations?.map((item) =>
+      item.targetId === "silent-case" ? { ...item, sourceId: "src-2" } : item,
+    );
+    mergeLesson(bundle, map, entry, {
+      ...imported,
+      citations,
+      uncertainty: ["Check the wording of the conditional."],
+    });
+    expect(
+      (bundle["questions"] as { id: string; sourceIds: string[] }[]).find(
+        (item) => item.id === "silent-case",
+      )?.sourceIds,
+    ).toEqual(["src-2"]);
+    expect((bundle["authoringMetadata"] as { uncertainty: string[] }[])[0]?.uncertainty).toEqual([
+      "Check the wording of the conditional.",
+    ]);
+  });
+
+  it("rejects missing or invented citations before mutating the bundle", () => {
+    for (const citations of [
+      [],
+      imported.citations?.map((item) => ({ ...item, sourceId: "invented" })),
+    ]) {
+      const bundle = emptyBundle();
+      const before = structuredClone(bundle);
+      expect(() => mergeLesson(bundle, map, entry, { ...imported, citations })).toThrow(
+        /citation/i,
+      );
+      expect(bundle).toEqual(before);
+    }
+  });
+
+  it("rejects question collisions with another lesson before mutation", () => {
+    const bundle = emptyBundle();
+    (bundle["lessons"] as unknown[]).push({
+      id: "another",
+      questionIds: ["falsifies"],
+      steps: [],
+      flashcardIds: [],
+    });
+    const before = structuredClone(bundle);
+    expect(() => mergeLesson(bundle, map, entry, imported)).toThrow(/another lesson/);
+    expect(bundle).toEqual(before);
+  });
   it("keeps a question asked inline out of the quiz stages", () => {
     const bundle = emptyBundle();
     mergeLesson(bundle, map, entry, imported);
@@ -185,12 +286,16 @@ describe("merge", () => {
     if (!wired) throw new Error("The merge produced no lesson.");
     wired["visualKind"] = "circuit";
     wired["circuitSpec"] = { id: "loop" };
+    (wired["steps"] as { id: string; visualStateId: string }[])[0]!.visualStateId = "wired-state";
 
     mergeLesson(bundle, map, entry, { ...imported, title: "Revised title" });
     expect(lessons).toHaveLength(1);
     expect(lessons[0]?.["title"]).toBe("Revised title");
     expect(lessons[0]?.["visualKind"]).toBe("circuit");
     expect(lessons[0]?.["circuitSpec"]).toEqual({ id: "loop" });
+    expect(((lessons[0]?.["steps"] ?? []) as { visualStateId: string }[])[0]?.visualStateId).toBe(
+      "wired-state",
+    );
   });
 });
 

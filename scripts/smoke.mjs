@@ -62,7 +62,7 @@ const environment = childEnvironment({
   DISCERE_DATABASE_PATH: join(tempRoot, "smoke.sqlite"),
   DISCERE_LEARNER_NAME: "Smoke Tester",
   // The launcher opens one hardened window on one port, so the API must be able to serve the
-  // built interface from its own origin. The proxied Vite preview below is still checked, and
+  // built interface from its own origin. The release web gateway below is also checked, and
   // the two together cover both the development and the packaged shapes.
   DISCERE_WEB_ROOT: "apps/web/dist",
   // The offline fixture provider answers in process, so the workings review below runs without
@@ -86,7 +86,7 @@ try {
     env: environment,
     stdio: ["ignore", "pipe", "pipe"],
   });
-  web = spawnPackageManager(manager, ["--filter", "@discere/web", "preview"], {
+  web = spawnPackageManager(manager, ["--filter", "@discere/server", "start:web"], {
     env: environment,
     stdio: ["ignore", "pipe", "pipe"],
   });
@@ -133,14 +133,21 @@ try {
     throw new Error("The server did not serve the built interface and the API from one origin.");
   }
 
-  const lesson = await requestJson(`${apiUrl}/api/lessons/current`);
+  const currentLesson = await requestJson(`${apiUrl}/api/lessons/current`);
   if (
-    !lesson.lesson?.id ||
-    lesson.question?.answerAuthority !== undefined ||
-    !Array.isArray(lesson.sources)
+    currentLesson.lesson?.courseId !== "maths-foundations" ||
+    currentLesson.question?.answerAuthority !== undefined ||
+    !Array.isArray(currentLesson.sources)
   ) {
     throw new Error("The learner-safe lesson contract was invalid or leaked answer authority.");
   }
+  const electronicsJourney = await requestJson(
+    `${apiUrl}/api/courses/electronics-foundations/lessons/current-in-one-loop/journey`,
+  );
+  const lesson = {
+    lesson: { id: electronicsJourney.lessonId, courseId: electronicsJourney.courseId },
+    question: electronicsJourney.stages.find((stage) => stage.type === "quiz").question,
+  };
 
   for (const path of [
     "/",
@@ -157,16 +164,78 @@ try {
   }
 
   const courseList = await requestJson(`${apiUrl}/api/courses`);
-  const course = courseList.courses?.find((item) => item.id === lesson.lesson.courseId);
-  if (
-    !course?.id ||
-    !course.availableLessonIds?.includes(lesson.lesson.id) ||
-    course.lessonCount < 2 ||
-    courseList.courses.length < 2
-  ) {
-    throw new Error("The course catalogue did not expose every bundled course.");
+  for (const [courseId, count] of [
+    ["maths-foundations", 6],
+    ["logic-and-reasoning", 8],
+    ["cs-basics", 6],
+    ["probability-statistics", 6],
+    ["sql-from-rows-to-reports", 15],
+    ["python-for-data-analysis", 21],
+    ["geometry-shape-and-space", 12],
+    ["physics-motion-and-forces", 18],
+    ["calculus-change-and-accumulation", 12],
+    ["linear-algebra-vectors-and-maps", 20],
+    ["chemistry-atoms-to-reactions", 12],
+    ["biology-cells-to-ecosystems", 16],
+    ["engineering-structures-and-machines", 12],
+    ["economics-markets-and-strategy", 12],
+    ["philosophy-knowledge-mind-and-ethics", 13],
+    ["english-reading-writing-and-rhetoric", 12],
+    ["astronomy-sky-to-cosmos", 12],
+    ["psychology-how-minds-work", 12],
+  ]) {
+    const detail = await requestJson(`${apiUrl}/api/courses/${courseId}`);
+    if (detail.lessons.length !== count) throw new Error(`${courseId} is incomplete.`);
+    for (const item of detail.lessons) {
+      const delivered = await requestJson(
+        `${apiUrl}/api/courses/${courseId}/lessons/${item.id}/journey`,
+      );
+      const explainer = delivered.stages.find((stage) => stage.type === "explainer");
+      // A lesson in the newer anatomy has typed steps; worked and faded examples carry their own
+      // steps instead of a single question. The classic shape is four answered visual beats.
+      const typed = explainer?.steps.some((step) => step.kind);
+      const teaches = typed
+        ? explainer.steps.length >= 4 &&
+          explainer.steps.every(
+            (step) => step.question || step.kind === "worked_example" || step.kind === "faded_example",
+          )
+        : explainer?.steps.length === 4 && explainer.steps.every((step) => step.diagram && step.question);
+      if (!teaches || JSON.stringify(delivered).includes('"answerAuthority"'))
+        throw new Error(`${courseId}/${item.id} lost a teaching beat or exposed answers.`);
+    }
   }
-  const courseDetail = await requestJson(`${apiUrl}/api/courses/${encodeURIComponent(course.id)}`);
+  const activeIds = [
+    "maths-foundations",
+    "logic-and-reasoning",
+    "cs-basics",
+    "probability-statistics",
+    "sql-from-rows-to-reports",
+    "python-for-data-analysis",
+    "geometry-shape-and-space",
+    "physics-motion-and-forces",
+    "calculus-change-and-accumulation",
+    "linear-algebra-vectors-and-maps",
+    "chemistry-atoms-to-reactions",
+    "biology-cells-to-ecosystems",
+    "engineering-structures-and-machines",
+    "economics-markets-and-strategy",
+    "philosophy-knowledge-mind-and-ethics",
+    "english-reading-writing-and-rhetoric",
+    "astronomy-sky-to-cosmos",
+    "psychology-how-minds-work",
+  ];
+  if (
+    courseList.courses?.length !== activeIds.length ||
+    activeIds.some((id) => !courseList.courses.some((item) => item.id === id))
+  ) {
+    throw new Error("The course catalogue did not expose exactly the required active courses.");
+  }
+  // Saved prototype routes remain readable without appearing in course discovery.
+  const courseDetail = await requestJson(`${apiUrl}/api/courses/${lesson.lesson.courseId}`);
+  const course = courseDetail.course;
+  if (!course?.availableLessonIds?.includes(lesson.lesson.id)) {
+    throw new Error("The archived lesson lost its saved course route.");
+  }
   const journey = await requestJson(
     `${apiUrl}/api/courses/${encodeURIComponent(course.id)}/lessons/${encodeURIComponent(lesson.lesson.id)}/journey`,
   );
@@ -189,11 +258,9 @@ try {
     throw new Error("The course detail did not name its concepts.");
   }
 
-  // The second course proves the delivery path is not shaped around one subject.
-  const secondCourse = courseList.courses.find((item) => item.id !== course.id);
-  const secondDetail = await requestJson(
-    `${apiUrl}/api/courses/${encodeURIComponent(secondCourse.id)}`,
-  );
+  // Archived history keeps its retrieved media and timeline delivery intact.
+  const secondDetail = await requestJson(`${apiUrl}/api/courses/roman-empire`);
+  const secondCourse = secondDetail.course;
   const secondLessonId = secondCourse.availableLessonIds[0];
   const secondJourney = await requestJson(
     `${apiUrl}/api/courses/${encodeURIComponent(secondCourse.id)}/lessons/${encodeURIComponent(secondLessonId)}/journey`,
@@ -242,15 +309,15 @@ try {
     method: "PUT",
     body: JSON.stringify({
       stageId: journey.stageOrder[0],
-      state: "completed",
+      state: "active",
       interactionState: { smoke: true },
     }),
   });
   if (
-    savedJourneyProgress.activeStageId !== journey.stageOrder[1] ||
-    savedJourneyProgress.stages[0].state !== "completed"
+    savedJourneyProgress.activeStageId !== journey.stageOrder[0] ||
+    savedJourneyProgress.stages[0].interactionState.smoke !== true
   ) {
-    throw new Error("Journey stage completion did not activate the next stage.");
+    throw new Error("Journey activity did not persist on its active stage.");
   }
 
   const essayStage = journey.stages.find((stage) => stage.type === "essay");
@@ -275,8 +342,28 @@ try {
     throw new Error("Essay autosave or accountable submission failed its runtime check.");
   }
 
+  const freshReview = await requestJson(`${apiUrl}/api/review`);
+  if (freshReview.dueCount !== 0) {
+    throw new Error("Review introduced concepts before the learner answered a lesson question.");
+  }
+  for (const [courseId, lessonId, response] of [
+    ["maths-foundations", "what-a-letter-stands-for", "x + 5 = 12"],
+    ["probability-statistics", "counting-outcomes", "36"],
+  ]) {
+    const introduced = await requestJson(
+      `${apiUrl}/api/courses/${courseId}/lessons/${lessonId}/journey`,
+    );
+    const question = introduced.stages.find((stage) => stage.type === "explainer").steps[0]
+      .question;
+    const attempt = await requestJson(`${apiUrl}/api/attempts`, {
+      method: "POST",
+      body: JSON.stringify({ questionId: question.id, response, mode: "coach" }),
+    });
+    if (!attempt.correct)
+      throw new Error(`${courseId} introductory response was not marked correctly.`);
+  }
   const reviewHome = await requestJson(`${apiUrl}/api/review`);
-  // Two courses are bundled, so the queue must report both rather than one global number.
+  // Only the two introduced production lessons enter the general recall queue.
   const perCourseDue = (reviewHome.courses ?? []).reduce((total, row) => total + row.dueCount, 0);
   if (
     !Array.isArray(reviewHome.courses) ||
@@ -307,10 +394,35 @@ try {
       body: JSON.stringify({ rating: "good", recalled: true }),
     },
   );
-  if (!reviewReveal.back || reviewRating.evidence !== "independent" || !reviewRating.dueAt) {
+  if (!reviewReveal.back || reviewRating.evidence !== "assisted" || !reviewRating.dueAt) {
     throw new Error(
       "Review reveal, evidence classification, or scheduling failed its runtime check.",
     );
+  }
+  const recallSession = await requestJson(`${apiUrl}/api/review/sessions`, {
+    method: "POST",
+    body: JSON.stringify({ lessonId: "what-a-letter-stands-for", mode: "coach" }),
+  });
+  const recalled = await requestJson(
+    `${apiUrl}/api/review/sessions/${recallSession.sessionId}/respond`,
+    {
+      method: "POST",
+      body: JSON.stringify({ response: "-5" }),
+    },
+  );
+  await requestJson(`${apiUrl}/api/review/sessions/${recallSession.sessionId}/reveal`, {
+    method: "POST",
+    body: "{}",
+  });
+  const recallRating = await requestJson(
+    `${apiUrl}/api/review/sessions/${recallSession.sessionId}/rate`,
+    {
+      method: "POST",
+      body: JSON.stringify({ rating: "good", recalled: true }),
+    },
+  );
+  if (recalled.correct !== true || recallRating.evidence !== "independent") {
+    throw new Error("Server-marked recall did not produce independent evidence.");
   }
 
   const circuit = await fetch(
@@ -342,7 +454,7 @@ try {
     body: JSON.stringify({
       operation: "tutor_reply",
       payload: {
-        question: "Explain how resistance affects current.",
+        question: "Explain how inverse operations solve an equation.",
         mode: "direct",
       },
     }),
@@ -362,9 +474,8 @@ try {
     requestId: tutorPacket.requestId,
     generatedAt: new Date().toISOString(),
     payload: {
-      answer:
-        "At 5 V across 100 Ω, current is 0.05 A because current equals voltage divided by resistance.",
-      followUpQuestion: "What current would the same voltage produce through 200 Ω?",
+      answer: "The solution is 6: subtract 1 from both sides, then multiply both sides by 2.",
+      followUpQuestion: "Which inverse operation would undo division by 3?",
       sourceIds: [],
       uncertainty: [],
     },
@@ -374,6 +485,8 @@ try {
     body: JSON.stringify({
       text: JSON.stringify(directTutorEnvelope),
       mode: "direct",
+      lessonId: currentLesson.lesson.id,
+      questionId: currentLesson.question.id,
       expectedRequestId: tutorPacket.requestId,
     }),
   });
@@ -387,7 +500,8 @@ try {
   const guidedTutorEnvelope = {
     ...directTutorEnvelope,
     payload: {
-      answer: "The current is 0.05 A.",
+      // The current lesson's first skill check is 3a + 2 at a = 4, so stating 14 leaks it.
+      answer: "The answer is 14.",
       followUpQuestion: "Can you substitute the values yourself?",
       sourceIds: [],
       uncertainty: [],
@@ -398,6 +512,8 @@ try {
     body: JSON.stringify({
       text: JSON.stringify(guidedTutorEnvelope),
       mode: "coach",
+      lessonId: currentLesson.lesson.id,
+      questionId: currentLesson.question.id,
       expectedRequestId: tutorPacket.requestId,
     }),
   });
@@ -491,7 +607,7 @@ try {
 
   console.log(`Discere smoke test passed at ${webUrl}, and single-origin at ${apiUrl}.`);
   console.log(
-    "Verified every bundled course, safe journey delivery and persistence, retrieved image serving with path containment, the timeline activity, essay submission, FSRS review scheduling with a per-course queue, visuals, writing gate, ChatGPT tutor validation, notebook persistence, workings review through the provider, single-origin serving of the built interface, and assessment.",
+    "Verified all active courses and saved prototype routes, safe journey delivery and persistence, retrieved image serving with path containment, the timeline activity, essay submission, FSRS review scheduling for introduced lessons, visuals, writing gate, ChatGPT tutor validation, notebook persistence, workings review through the provider, single-origin serving of the built interface, and assessment.",
   );
 } catch (error) {
   console.error(error instanceof Error ? error.message : error);

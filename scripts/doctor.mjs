@@ -148,6 +148,20 @@ if (manager && existsSync(resolve("node_modules"))) {
   }
 }
 
+const sqlPython = environment.DISCERE_SQL_PYTHON || (process.platform === "win32" ? "python" : "python3");
+const sqlProbe = spawnSync(sqlPython, ["-I", "-S", "-B", "-c", "import sys,sqlite3; print(sys.version.split()[0] + ' / SQLite ' + sqlite3.sqlite_version); sys.exit(0 if sys.version_info >= (3,12) and sqlite3.sqlite_version_info >= (3,39) else 1)"], { windowsHide: true, encoding: "utf8", timeout: 5000 });
+record(sqlProbe.status === 0 ? "ok" : "warning", "SQL project runtime",
+  sqlProbe.status === 0 ? sqlProbe.stdout.trim() : "SQL projects need Python 3.12+ with SQLite 3.39+. Set DISCERE_SQL_PYTHON; other lessons remain available.");
+
+if (manager && existsSync(resolve("node_modules"))) {
+  try {
+    runPackageManager(manager, ["exec", "tsx", "scripts/check-python-runtime.ts"], { stdio: "pipe", encoding: "utf8", timeout: 8000, env: environment });
+    record("ok", "Python project runtime", "The isolated Python 3.12 / NumPy 2.3.5 / pandas 3.0.1 worker responded.");
+  } catch {
+    record("warning", "Python project runtime", "Python construction needs x86_64 Ubuntu/WSL with Bubblewrap 0.9+, libseccomp2 and pnpm python:setup. Other lessons remain available.");
+  }
+}
+
 console.log("Discere environment check\n");
 for (const result of results) {
   const marker = result.level === "ok" ? "[ok]" : result.level === "warning" ? "[warn]" : "[error]";

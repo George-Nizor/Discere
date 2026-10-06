@@ -1,0 +1,280 @@
+import {
+  beat,
+  numeric as q,
+  choose as c,
+  card,
+  limit,
+  jump,
+  secant,
+  tangent,
+  type TeachingLesson,
+} from "./definition.js";
+export const limitLessons: TeachingLesson[] = [
+  {
+    id: "approaching-a-value",
+    title: "What happens near the gap?",
+    summary: "Separate the value approached near a point from the value assigned at the point.",
+    moduleId: "cal-approach",
+    sourceIds: ["cal-limit"],
+    beats: [
+      beat(
+        "Near, not at",
+        "For f(x) = x + 3, nearby inputs give nearby outputs. As x approaches 2 from either side, f(x) approaches 5. A limit describes this approach.",
+        ["Approach 2", limit([3, 1], 2)],
+        ["Approach −1", limit([3, 1], -1)],
+      ),
+      beat(
+        "A hole in the graph",
+        "For x ≠ 3, (x² − 9)/(x − 3) equals x + 3. Cancelling describes the nearby graph; it does not make the original quotient defined at 3. Its limit there is 6.",
+        ["Hole at 3", limit([3, 1], 3, true)],
+        ["Hole at −2", limit([-2, 1], -2, true)],
+      ),
+      beat(
+        "One changed point",
+        "Assigning a different value at the hole leaves all neighbouring values alone. The limit can exist even when f at the point disagrees with it.",
+        ["Point moved up", limit([1, 1], 2, true, 5)],
+        ["Point on the curve", limit([1, 1], 2, true, 3)],
+      ),
+      beat(
+        "Keep the restriction",
+        "The expression (x² − 16)/(x − 4) reduces to x + 4 only when x ≠ 4. The limit is 8. Substituting into the original quotient gives 0/0, which is not a numerical answer.",
+        ["Approach 4", limit([4, 1], 4, true)],
+        ["Approach 1", limit([1, 1], 1, true)],
+      ),
+    ],
+    questions: [
+      q(
+        "For f(x) = x + 3, what value does f(x) approach as x approaches 2?",
+        5,
+        "Nearby outputs approach 2 + 3 = 5.",
+        "Use inputs close to the stated point from both sides.",
+      ),
+      q(
+        "Find the limit of (x² − 9)/(x − 3) as x approaches 3.",
+        6,
+        "Factor the numerator as (x − 3)(x + 3). Away from 3 the quotient equals x + 3, which approaches 6.",
+        "Factor the difference of squares before considering the limit.",
+      ),
+      c(
+        "The graph has f(x) = x + 1 for x ≠ 2, but f(2) = 5. Which statement is true?",
+        ["The limit at 2 is 3", "The limit at 2 is 5", "The limit cannot exist"],
+        0,
+        "The surrounding line approaches 3. Changing one point to 5 does not change the limit.",
+        "Follow the neighbouring points, not the isolated assigned value.",
+      ),
+      q(
+        "Find the limit of (x² − 16)/(x − 4) as x approaches 4.",
+        8,
+        "For x ≠ 4 the quotient is x + 4, so its limit is 8.",
+        "Retain the excluded input when cancelling the common factor.",
+      ),
+      q(
+        "Find the limit of (x² − 25)/(x − 5) as x approaches 5.",
+        10,
+        "The nearby expression is x + 5, which approaches 10.",
+        "Recognise a difference of squares.",
+      ),
+      c(
+        "Direct substitution in a quotient gives 0/0. What should happen next?",
+        [
+          "Investigate the nearby expression",
+          "Record zero as the limit",
+          "Record one as the limit",
+        ],
+        0,
+        "The form 0/0 is indeterminate. Simplification or another valid method is needed.",
+        "Both numerator and denominator approaching zero does not determine their ratio.",
+      ),
+    ],
+    cards: [
+      card(
+        "Find the limit of (x² − 36)/(x − 6) as x approaches 6.",
+        12,
+        "For x ≠ 6, simplify to x + 6; the limit is 12.",
+      ),
+      card(
+        "For x ≠ −3, f(x) = x + 8, while f(−3) = 20. Find the limit at −3.",
+        5,
+        "Nearby values approach −3 + 8 = 5, independently of the assigned value.",
+      ),
+    ],
+  },
+  {
+    id: "two-sides-and-continuity",
+    title: "Do both sides meet?",
+    summary: "Use one-sided limits and the value at the point to decide continuity.",
+    moduleId: "cal-approach",
+    sourceIds: ["cal-limit", "cal-continuity"],
+    beats: [
+      beat(
+        "Approach from the left",
+        "For a step function, the value approached can depend on direction. A left-hand limit follows inputs smaller than the target.",
+        ["A jump", jump(2, 5)],
+        ["Sides agree", jump(2, 2)],
+      ),
+      beat(
+        "Approach from the right",
+        "A two-sided finite limit exists only when both one-sided limits exist and agree. Unequal limits are not averaged.",
+        ["Right side is 5", jump(2, 5)],
+        ["Right side is −1", jump(2, -1)],
+      ),
+      beat(
+        "Close the gap",
+        "Continuity at a point requires the function to be defined there, a finite two-sided limit there, and equality of that limit with the function value.",
+        ["Wrong assigned value", limit([2, 1], 1, true, 5)],
+        ["Continuous repair", limit([2, 1], 1, true, 3)],
+      ),
+      beat(
+        "Repair one missing value",
+        "If nearby values approach a common number, assigning that number at the gap repairs continuity. A jump cannot be fixed by changing just one point.",
+        ["Removable gap", limit([4, 2], 2, true)],
+        ["Jump remains", jump(3, 7, 2)],
+      ),
+    ],
+    questions: [
+      q(
+        "A function equals 2 for x < 0 and 5 for x ≥ 0. What is its left-hand limit at 0?",
+        2,
+        "Inputs below 0 stay on the horizontal level 2.",
+        "Approach using only inputs smaller than the target.",
+      ),
+      q(
+        "For that same function, what is its right-hand limit at 0?",
+        5,
+        "Inputs above 0 stay on the horizontal level 5.",
+        "Approach using only inputs greater than the target.",
+      ),
+      c(
+        "Near x = 1, f(x) = x + 2, but f(1) = 5. Is the function continuous at 1?",
+        [
+          "No: the assigned value differs from the limit",
+          "Yes: both sides have a limit",
+          "Yes: it is defined at the point",
+        ],
+        0,
+        "Both sides approach 3, while the value is 5. Continuity requires equality too.",
+        "Check all three continuity conditions.",
+      ),
+      q(
+        "For x ≠ 2, f(x) = 2x + 4. What value must be assigned to f(2) for continuity?",
+        8,
+        "The two-sided limit is 2 × 2 + 4 = 8. Assign that value at the hole.",
+        "Use the value approached by the surrounding line.",
+      ),
+      q(
+        "For x ≠ −1, g(x) = 3x + 7. Which numerical value at −1 makes g continuous?",
+        4,
+        "The surrounding line approaches 3(−1) + 7 = 4.",
+        "Match the value at the point to the nearby limit.",
+      ),
+      c(
+        "A function's left-hand limit is 3 and its right-hand limit is 7. What is its two-sided limit?",
+        ["It does not exist", "It equals their average", "It equals the right-hand limit"],
+        0,
+        "The sides disagree, so no single number describes approach from both sides.",
+        "A two-sided limit must match both one-sided limits.",
+      ),
+    ],
+    cards: [
+      card(
+        "A function equals −4 below x = 2 and 6 at or above 2. Find its left-hand limit at 2.",
+        -4,
+        "Approaching from smaller inputs stays at −4.",
+      ),
+      card(
+        "For x ≠ 3, g(x) = 2x − 1. Which value at 3 makes g continuous?",
+        5,
+        "The surrounding graph approaches 2 × 3 − 1 = 5.",
+      ),
+    ],
+  },
+  {
+    id: "from-secant-to-tangent",
+    title: "Zoom in on a rate",
+    summary: "Turn average rates over an interval into a derivative at a point.",
+    moduleId: "cal-approach",
+    sourceIds: ["cal-derivative"],
+    beats: [
+      beat(
+        "Two points, one slope",
+        "For f(x) = x², the average rate from 1 to 3 is (9 − 1)/(3 − 1) = 4. The secant joins the endpoints; its slope belongs to the whole interval.",
+        ["Wide interval", secant([0, 0, 1], 1, 2)],
+        ["Narrow interval", secant([0, 0, 1], 1, 1)],
+      ),
+      beat(
+        "Shrink the interval",
+        "At x = 2, the secant slope to 2 + h is [(2 + h)² − 4]/h = 4 + h for h ≠ 0. As h tends to zero, that slope tends to 4.",
+        ["Start at 2", secant([0, 0, 1], 2)],
+        ["Start at 1", secant([0, 0, 1], 1)],
+      ),
+      beat(
+        "The limiting slope",
+        "A derivative is the limit of the difference quotient when that limit exists. Setting h to zero before simplifying divides by zero; taking a limit avoids that error.",
+        ["Tangent at 2", tangent([0, 0, 1], 2)],
+        ["Tangent at −1", tangent([0, 0, 1], -1)],
+      ),
+      beat(
+        "A point has a rate",
+        "For f(x) = x², the derivative is 2x. At x = 3 the instantaneous rate is 6, even though the average rate over a wider interval can differ.",
+        ["Instantaneous slope", tangent([0, 0, 1], 3)],
+        ["Average over one unit", secant([0, 0, 1], 3)],
+      ),
+    ],
+    questions: [
+      q(
+        "For f(x) = x², find the average rate from x = 1 to x = 3.",
+        4,
+        "The slope is (9 − 1)/(3 − 1) = 4.",
+        "Divide the output change by the input change.",
+      ),
+      q(
+        "At x = 2, the secant slope for f(x) = x² is 4 + h. What does it approach as h approaches 0?",
+        4,
+        "The extra h tends to zero, leaving slope 4.",
+        "Let the nonzero interval become arbitrarily small.",
+      ),
+      c(
+        "How is a derivative at a point obtained from secant slopes?",
+        [
+          "Take their limit as the interval shrinks",
+          "Substitute zero into the unsimplified denominator",
+          "Use the height of the graph",
+        ],
+        0,
+        "The derivative is the limiting slope, provided the limit exists.",
+        "A height and a rate of change describe different things.",
+      ),
+      q(
+        "For f(x) = x², f′(x) = 2x. Find the instantaneous rate at x = 3.",
+        6,
+        "Evaluate the derivative: 2 × 3 = 6.",
+        "Use the rate function, not the original height function.",
+      ),
+      q(
+        "For f(x) = x², find the average rate from x = 2 to x = 5.",
+        7,
+        "The output change is 25 − 4 = 21 over input change 3, so the rate is 7.",
+        "Use the two endpoint values.",
+      ),
+      c(
+        "A function has f(2) = 9 and f′(2) = −3. Which statement describes its instantaneous rate?",
+        [
+          "It is falling at 3 output units per input unit",
+          "Its height is negative three",
+          "It is rising at nine units per input unit",
+        ],
+        0,
+        "The derivative −3 gives the signed local rate; 9 is the height.",
+        "Distinguish the function value from its derivative.",
+      ),
+    ],
+    cards: [
+      card("For f(x) = x², find the average rate from x = 3 to x = 6.", 9, "(36 − 9)/(6 − 3) = 9."),
+      card(
+        "For f(x) = x², the secant slope at x = 4 is 8 + h. Find its limit as h approaches 0.",
+        8,
+        "The limiting slope is 8.",
+      ),
+    ],
+  },
+];

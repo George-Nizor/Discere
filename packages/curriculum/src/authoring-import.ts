@@ -91,7 +91,7 @@ export function lessonPrompt(map: TopicMap, module: string, lesson: TopicMapLess
         kind: "hook | explain | worked_example | check | interact | transfer | teach_back",
         text: "the prose for this step; blank line between paragraphs",
         visualStateId: "",
-        checkQuestionId: "question id for a check or transfer step, otherwise \"\"",
+        checkQuestionId: 'question id for a check or transfer step, otherwise ""',
         activityId: "",
       },
     ],
@@ -114,10 +114,17 @@ export function lessonPrompt(map: TopicMap, module: string, lesson: TopicMapLess
         choices: [{ id: "a", label: "string" }],
       },
     ],
-    flashcards: [
-      { id: "kebab-case-id", front: "string", back: "string", conceptIds: ["…"] },
-    ],
+    flashcards: [{ id: "kebab-case-id", front: "string", back: "string", conceptIds: ["…"] }],
     uncertainty: ["anything the outline did not support"],
+    citations: [
+      {
+        claim: "the exact factual claim supported",
+        sourceId: "a supplied source id",
+        section: "a supplied section",
+        targetKind: "step | question | flashcard",
+        targetId: "the id of the supported item",
+      },
+    ],
   };
 
   return `# Write one Discere lesson: ${lesson.title}
@@ -157,8 +164,21 @@ something. Specifically:
   questions you return, and that question must **not** be repeated as a separate quiz question —
   a check is asked inside the lesson instead of after it.
 - End on a step that consolidates, not a summary added because the lesson is ending.
-- ${lesson.activityKinds.length > 0 ? `This lesson should use: ${lesson.activityKinds.join(", ")}. Leave \`activityId\` as "" — the activity is wired in by hand afterwards — but write an \`interact\` step where it belongs.` : "Leave every `activityId` as \"\"."}
+- ${lesson.activityKinds.length > 0 ? `This lesson should use: ${lesson.activityKinds.join(", ")}. Leave \`activityId\` as "" — the activity is wired in by hand afterwards — but write an \`interact\` step where it belongs.` : 'Leave every `activityId` as "".'}
 - Leave every \`visualStateId\` as "".
+
+## Sources and prerequisites
+
+Prerequisite lessons: ${(lesson.prerequisiteLessonIds ?? []).join(", ") || "none"}.
+Use only these references, with their exact identifiers and sections:
+
+${map.sources.map((source) => `- ${source.id ?? "MISSING ID — complete source metadata before import"}: ${source.title}; ${source.section ?? "MISSING SECTION"}; ${source.url}; ${source.licence ?? "MISSING LICENCE"}; ${source.reuse ?? "reference_only"}`).join("\n")}
+
+Record each supported claim in \`citations\`. Every step, question, and flashcard needs at least
+one citation, scoped to its own id. Do not attach every course source to every item. Never invent
+a source or section. Sources marked \`reference_only\` may check facts; write original prose and
+exercises. Do not copy or adapt their wording, exercises, or media. Do not paste material whose
+terms restrict AI ingestion into an AI prompt. Retain unsupported claims in \`uncertainty\`.
 
 ## How to write
 
@@ -232,8 +252,9 @@ should leave the learner able to do.
   slider and watch a value change). Choose what the subject actually needs; leave it empty if
   prose and questions are genuinely enough.
 - Concept ids are kebab-case and shared across the course where the same idea recurs.
-- \`sources\` must be real, open, checkable references: Khan Academy, OpenStax, Wikiversity,
-  Stanford Encyclopedia of Philosophy, or similar. Do not invent URLs.
+- \`sources\` must be real, checkable references. Give stable ids, publisher, exact edition and
+  section, licence, licenceUrl, attribution, access date and reuse (adaptable or reference_only).
+  Check current terms. Free access does not establish permission to copy or adapt. Do not invent URLs.
 - \`accent\` is a hex colour that is not green (green means "correct" in this product) and is
   distinguishable from #0b8f3c, #a4553a, #3856c4, #7c3aa4 and #0b7f8f.
 
@@ -247,13 +268,13 @@ should leave the learner able to do.
   "audience": "string, who this is for and what they already know",
   "accent": "#rrggbb",
   "coverAsset": "cover.svg",
-  "sources": [{ "title": "string", "url": "https://…" }],
+  "sources": [{ "id": "source-id", "title": "string", "publisher": "string", "url": "https://…", "licence": "exact licence", "licenceUrl": "https://…", "attribution": "string", "accessedAt": "YYYY-MM-DD", "edition": "string", "section": "exact section", "reuse": "adaptable | reference_only" }],
   "modules": [
     {
       "id": "kebab-case",
       "title": "string",
       "summary": "string",
-      "concepts": [{ "id": "kebab-case", "title": "string", "summary": "string" }],
+      "concepts": [{ "id": "kebab-case", "title": "string", "summary": "string", "prerequisiteIds": [] }],
       "lessons": [
         {
           "slug": "kebab-case",
@@ -261,6 +282,7 @@ should leave the learner able to do.
           "outcome": "string",
           "outline": ["beat", "beat", "beat", "beat"],
           "conceptIds": ["kebab-case"],
+          "prerequisiteLessonIds": [],
           "activityKinds": []
         }
       ]
@@ -274,7 +296,6 @@ Save your reply to \`content/_topic-maps/${courseId}.json\`, then run
 `;
 }
 
-
 /**
  * Merges one imported lesson into a course bundle.
  *
@@ -287,10 +308,23 @@ export function mergeLesson(
   entry: { module: string; lesson: TopicMapLesson },
   imported: ImportedLesson,
 ): void {
+  if (imported.slug !== entry.lesson.slug)
+    throw new Error("The inbox slug must match the planned lesson.");
   const lessons = bundle["lessons"] as Array<Record<string, unknown>>;
   const questions = bundle["questions"] as Array<Record<string, unknown>>;
   const flashcards = bundle["flashcards"] as Array<Record<string, unknown>>;
-  const steps = importedToSteps(imported);
+  const previous = lessons.find((item) => item["id"] === imported.slug);
+  const steps = importedToSteps(imported).map((step) => {
+    const wired = (previous?.["steps"] as LessonStep[] | undefined)?.find(
+      (item) => item.id === step.id,
+    );
+    return {
+      ...step,
+      ...(wired?.diagram ? { diagram: wired.diagram } : {}),
+      visualStateId: step.visualStateId || wired?.visualStateId || "",
+      activityId: step.activityId || wired?.activityId || "",
+    };
+  });
 
   // A question a step asks inline is not also a quiz stage, which validation enforces anyway.
   const inlineIds = new Set(steps.map((step) => step.checkQuestionId).filter(Boolean));
@@ -298,15 +332,54 @@ export function mergeLesson(
     .map((question) => question.id)
     .filter((id) => !inlineIds.has(id));
 
-  // Sources, concept links and the discriminated answer authority are the bundle's business,
-  // not the writer's. Asking a model for them would be asking it to invent provenance.
-  const sourceIds = (bundle["course"] as { sourceIds?: string[] }).sourceIds ?? [];
+  const allowedSources = new Set((bundle["course"] as { sourceIds?: string[] }).sourceIds ?? []);
+  const citations = imported.citations ?? [];
+  const targets = new Map([
+    ...imported.steps.map((item) => [`step:${item.id}`, item.id] as const),
+    ...imported.questions.map((item) => [`question:${item.id}`, item.id] as const),
+    ...imported.flashcards.map((item) => [`flashcard:${item.id}`, item.id] as const),
+  ]);
+  for (const citation of citations) {
+    if (!allowedSources.has(citation.sourceId))
+      throw new Error(`Unknown citation source '${citation.sourceId}'.`);
+    if (!targets.has(`${citation.targetKind}:${citation.targetId}`))
+      throw new Error(`Unknown citation target '${citation.targetId}'.`);
+  }
+  for (const target of targets.keys()) {
+    if (!citations.some((item) => `${item.targetKind}:${item.targetId}` === target))
+      throw new Error(`Missing claim citation for '${target}'.`);
+  }
+  const forTarget = (kind: string, id: string) => [
+    ...new Set(
+      citations
+        .filter((item) => item.targetKind === kind && item.targetId === id)
+        .map((item) => item.sourceId),
+    ),
+  ];
+  const sourceIds = [...new Set(citations.map((item) => item.sourceId))];
+  // Reject cross-lesson collisions before mutating any collection.
+  for (const other of lessons.filter((item) => item["id"] !== imported.slug)) {
+    const otherQuestions = [
+      ...((other["questionIds"] as string[]) ?? []),
+      ...((other["steps"] as LessonStep[]) ?? []).map((step) => step.checkQuestionId),
+    ];
+    if (
+      imported.questions.some((item) => otherQuestions.includes(item.id)) ||
+      imported.flashcards.some((item) =>
+        ((other["flashcardIds"] as string[]) ?? []).includes(item.id),
+      )
+    ) {
+      throw new Error(
+        `An imported item belongs to another lesson '${other["id"]}'. Use unique ids.`,
+      );
+    }
+  }
   for (const question of imported.questions) {
     const { answerAuthority, choices, ...rest } = question;
     const merged: Record<string, unknown> = {
       ...rest,
       conceptIds: entry.lesson.conceptIds,
-      sourceIds,
+      sourceIds: forTarget("question", question.id),
       answerAuthority: toAnswerAuthority(answerAuthority),
       // The schema wants at least two options or none at all; one option is not a choice.
       ...(choices.length >= 2 ? { choices } : {}),
@@ -316,7 +389,7 @@ export function mergeLesson(
     else questions[index] = merged;
   }
   for (const card of imported.flashcards) {
-    const merged: Record<string, unknown> = { ...card, sourceIds };
+    const merged: Record<string, unknown> = { ...card, sourceIds: forTarget("flashcard", card.id) };
     const index = flashcards.findIndex((item) => item["id"] === card.id);
     if (index === -1) flashcards.push(merged);
     else flashcards[index] = merged;
@@ -346,4 +419,14 @@ export function mergeLesson(
   };
   if (existing === -1) lessons.push(lesson);
   else lessons[existing] = lesson;
+  const metadata = (bundle["authoringMetadata"] as Array<Record<string, unknown>>) ?? [];
+  bundle["authoringMetadata"] = [
+    ...metadata.filter((item) => item["lessonId"] !== imported.slug),
+    {
+      lessonId: imported.slug,
+      prerequisiteLessonIds: [...(entry.lesson.prerequisiteLessonIds ?? [])],
+      citations,
+      uncertainty: [...imported.uncertainty],
+    },
+  ];
 }

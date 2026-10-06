@@ -1,0 +1,627 @@
+import { readFileSync } from "node:fs";
+import type { CourseBundle } from "../../../packages/contracts/src/index.js";
+import { authors, program } from "../../_authoring/course-checks.js";
+const bundle = JSON.parse(
+  readFileSync(new URL("../bundle.json", import.meta.url), "utf8"),
+) as CourseBundle;
+const author = authors("python-for-data-analysis", bundle.lessons);
+type Spec = {
+  lesson: number;
+  prompt: string;
+  code: string;
+  expression: string;
+  value: number | string | boolean | null;
+  explanation: string;
+  choices?: string[] | undefined;
+  correct?: number | undefined;
+};
+const item = (
+  lesson: number,
+  prompt: string,
+  code: string,
+  expression: string,
+  value: Spec["value"],
+  explanation: string,
+  choices?: string[],
+  correct?: number,
+): Spec => ({ lesson, prompt, code, expression, value, explanation, choices, correct });
+const np = (code: string) => "import numpy as np\n" + code;
+const pd = (code: string) => "import pandas as pd\n" + code;
+
+const placement = [
+  item(
+    0,
+    "What value does saved hold after all three statements?",
+    "stock = 14\nsaved = stock\nstock -= 5",
+    "saved",
+    14,
+    "saved refers to the earlier integer 14. Rebinding stock to 9 does not recalculate saved.",
+  ),
+  item(
+    1,
+    "What quotient does Python store?",
+    "quotient = -17 // 5",
+    "quotient",
+    -4,
+    "Floor division rounds the quotient down. The floor of -3.4 is -4.",
+  ),
+  item(
+    2,
+    "Which text is stored in code?",
+    'label = " coast "\ncode = label.strip().upper()[1:4]',
+    "code",
+    "OAS",
+    "Stripping gives coast, uppercasing gives COAST, and positions 1 through 3 produce OAS.",
+    ["COA", "OAS", "OAST"],
+    1,
+  ),
+  item(
+    3,
+    "How many entries are in first after second is changed?",
+    "first = [4, 7]\nsecond = first\nsecond.append(9)",
+    "len(first)",
+    3,
+    "Both names refer to the same list. Appending through second leaves first with three entries.",
+  ),
+  item(
+    4,
+    "How many distinct labels occur in both sets?",
+    'a = {"oak", "elm", "oak", "ash"}\nb = {"ash", "elm", "fir"}\nshared = a & b',
+    "len(shared)",
+    2,
+    "Duplicate oak contributes one set member. The intersection is ash and elm.",
+  ),
+  item(
+    5,
+    "What total remains after the loop?",
+    "total = 0\nfor value in range(3, 12, 3):\n    total += value",
+    "total",
+    18,
+    "The range contains 3, 6 and 9, stopping before 12. Their sum is 18.",
+  ),
+  item(
+    6,
+    "What value is returned to quote?",
+    "def price(units, rate=4):\n    return units * rate\nquote = price(rate=7, units=3)",
+    "quote",
+    21,
+    "The keyword arguments set rate to 7 and units to 3, giving 21.",
+  ),
+  item(
+    7,
+    "How many inputs are rejected as invalid integer text?",
+    'values = ["12", "bad", "0", "2.5"]\nrejected = 0\nfor value in values:\n    try:\n        int(value)\n    except ValueError:\n        rejected += 1',
+    "rejected",
+    2,
+    "bad and 2.5 cannot be parsed by int from those strings. Both raise ValueError; 12 and 0 parse.",
+  ),
+  item(
+    8,
+    "How many columns does grid have after the reshape?",
+    np("grid = np.arange(18).reshape(3, -1)"),
+    "int(grid.shape[1])",
+    6,
+    "Eighteen elements arranged into three rows require six columns.",
+  ),
+  item(
+    9,
+    "What is the second value in totals?",
+    np("grid = np.array([[2, 5, 1], [4, 3, 7]])\ntotals = grid.sum(axis=0)"),
+    "int(totals[1])",
+    8,
+    "Axis 0 combines the rows. The second column is 5 + 3 = 8.",
+  ),
+  item(
+    10,
+    "How many values does spacing contain?",
+    np("spacing = np.arange(2, 15, 4)"),
+    "int(spacing.size)",
+    4,
+    "The values are 2, 6, 10 and 14. The excluded stop is 15.",
+  ),
+  item(
+    11,
+    "What is the second code after this CSV is read as text?",
+    pd(
+      'from io import StringIO\nsource = StringIO("code,units\\n007,2\\n010,5\\n")\nframe = pd.read_csv(source, dtype={"code": str})',
+    ),
+    'frame.loc[1, "code"]',
+    "010",
+    "The explicit string dtype preserves the leading zero in 010.",
+    ["10", "010", "1"],
+    1,
+  ),
+  item(
+    12,
+    "How many rows are selected by this label slice?",
+    pd(
+      'frame = pd.DataFrame({"units": [3, 6, 9]}, index=[10, 20, 30])\nselected = frame.loc[10:20]',
+    ),
+    "len(selected)",
+    2,
+    "On this sorted index, loc includes both endpoint labels 10 and 20.",
+  ),
+  item(
+    13,
+    "How many rows meet both filter conditions?",
+    pd(
+      'frame = pd.DataFrame({"units": [2, 6, 9, 5],\n                      "paid": [True, True, False, True]})\nkept = frame[(frame["units"] >= 5) & frame["paid"]]',
+    ),
+    "len(kept)",
+    2,
+    "The paid rows with at least five units have 6 and 5 units. The unpaid nine-unit row is excluded.",
+  ),
+  item(
+    14,
+    "What mean does pandas compute from these readings?",
+    pd("readings = pd.Series([0, None, 12, 6])\nmean = readings.mean()"),
+    "float(mean)",
+    6,
+    "The known values are 0, 12 and 6. The zero counts, the missing entry does not, and 18 / 3 = 6.",
+  ),
+  item(
+    15,
+    "How many names become oak after this cleanup?",
+    pd('names = pd.Series([" Oak ", "OAK", "elm"])\nclean = names.str.strip().str.lower()'),
+    'int((clean == "oak").sum())',
+    2,
+    "Trimming and lowercasing turn both first entries into oak.",
+  ),
+  item(
+    16,
+    "How many dates are missing after invalid dates are coerced?",
+    pd(
+      'dates = pd.to_datetime(["2026-02-28", "2026-02-30", "bad"],\n                       format="%Y-%m-%d", errors="coerce")',
+    ),
+    "int(dates.isna().sum())",
+    2,
+    "February 30 and bad are invalid for the given format. They become NaT.",
+  ),
+  item(
+    17,
+    "How many known readings are counted for team A?",
+    pd(
+      'frame = pd.DataFrame({"team": ["A", "A", "B"],\n                      "reading": [4, None, 8]})\nreport = frame.groupby("team")["reading"].count()',
+    ),
+    'int(report.loc["A"])',
+    1,
+    "Team A has two rows but only one known reading. count excludes its missing reading.",
+  ),
+  item(
+    18,
+    "How many rows does this many-to-many merge produce?",
+    pd(
+      'left = pd.DataFrame({"key": ["K", "K"]})\nright = pd.DataFrame({"key": ["K", "K", "K"]})\njoined = left.merge(right, on="key")',
+    ),
+    "len(joined)",
+    6,
+    "Every left K row matches all three right K rows: 2 × 3 = 6.",
+  ),
+  item(
+    19,
+    "How many rows result when both measurement columns are melted?",
+    pd(
+      'wide = pd.DataFrame({"site": ["A", "B", "C"],\n                     "morning": [2, 4, 6], "evening": [3, 5, 7]})\nlong = wide.melt(id_vars="site")',
+    ),
+    "len(long)",
+    6,
+    "Each of the three sites contributes one morning row and one evening row.",
+  ),
+  item(
+    20,
+    "What known revenue remains after selecting paid orders?",
+    pd(
+      'orders = pd.DataFrame({"id": [1, 2, 3, 4],\n                       "paid": [True, False, True, True],\n                       "revenue": [18, 50, None, 12]})\npaid = orders.loc[orders["paid"]]\nknown = paid["revenue"].sum()',
+    ),
+    "float(known)",
+    30,
+    "The paid known revenues are 18 and 12, totaling 30. The paid missing revenue remains a separate uncertainty.",
+  ),
+];
+
+const checkpoint = [
+  item(
+    0,
+    "A notebook runs the update cell twice. What value is displayed?",
+    "visits = 5\n# First run of the update cell\nvisits += 3\n# Second run of the same cell\nvisits += 3",
+    "visits",
+    11,
+    "The kernel keeps state between runs. Both increments apply: 5 + 3 + 3 = 11.",
+  ),
+  item(
+    1,
+    "Which path does the if statement take?",
+    'flag = "False"\nif flag:\n    path = "entered"\nelse:\n    path = "skipped"',
+    "path",
+    "entered",
+    "The nonempty string False is truthy. Its spelling does not make it the Boolean False.",
+    ["The entered path", "The skipped path", "Neither path"],
+    0,
+  ),
+  item(
+    2,
+    "How many characters are in the slice?",
+    'word = "harbour"\ntail = word[4:99]',
+    "len(tail)",
+    3,
+    "The slice starts at o and ends at the string boundary, giving our. A slice tolerates a stop beyond the text.",
+  ),
+  item(
+    3,
+    "After the shallow copy is changed, what is rows[0][0]?",
+    "rows = [[3], [8]]\ncopy = rows.copy()\ncopy[0][0] = 12",
+    "rows[0][0]",
+    12,
+    "Only the outer list was copied. Both outer lists still reference the same first inner list.",
+  ),
+  item(
+    4,
+    "How many keys remain in counts after the reassignment?",
+    'counts = {"east": 2, "west": 5}\ncounts["east"] = 9',
+    "len(counts)",
+    2,
+    "Assigning to the existing east key replaces its value. It does not create another key.",
+  ),
+  item(
+    5,
+    "What value remains when the while loop stops?",
+    "level = 1\nwhile level < 10:\n    level += 4",
+    "level",
+    13,
+    "The values after updates are 5, 9 and 13. Only then is level < 10 false.",
+  ),
+  item(
+    6,
+    "How many entries does the caller's list contain?",
+    "def prepare(values):\n    values.append(6)\n    values = [99]\nitems = [2, 4]\nprepare(items)",
+    "len(items)",
+    3,
+    "append mutates the caller's shared list. Rebinding the local parameter afterward does not replace items.",
+  ),
+  item(
+    7,
+    "Is the in-memory stream closed after leaving the with block?",
+    'from io import StringIO\nwith StringIO("sample") as stream:\n    data = stream.read()',
+    "stream.closed",
+    true,
+    "Leaving the with block closes the StringIO resource. The saved data string remains usable.",
+    ["It remains open", "It is closed", "It was never opened"],
+    1,
+  ),
+  item(
+    8,
+    "How many elements are in the repeated Python list?",
+    "values = [2, 4, 6]\nrepeated = values * 3",
+    "len(repeated)",
+    9,
+    "List multiplication repeats the three entries three times. It does not scale each value.",
+  ),
+  item(
+    9,
+    "What is the first element of original after the view is edited?",
+    np("original = np.array([5, 10, 15, 20])\nview = original[::2]\nview[0] = 40"),
+    "int(original[0])",
+    40,
+    "This basic slice is a view of the original array. Assigning through the view updates original[0].",
+  ),
+  item(
+    10,
+    "What is the last generated value when the endpoint is excluded?",
+    np("values = np.linspace(0, 12, 4, endpoint=False)"),
+    "float(values[-1])",
+    9,
+    "Four evenly spaced values over the half-open interval are 0, 3, 6 and 9.",
+  ),
+  item(
+    11,
+    "How many columns are in the two-dimensional selected object?",
+    pd('frame = pd.DataFrame({"code": ["P", "Q"], "units": [7, 9]})\nselected = frame[["units"]]'),
+    "selected.shape[1]",
+    1,
+    "A list of one column name returns a DataFrame with one column.",
+  ),
+  item(
+    12,
+    "What value is assigned to row a after Series alignment?",
+    pd(
+      'frame = pd.DataFrame({"value": [0, 0]}, index=["a", "b"])\nframe["value"] = pd.Series([8, 3], index=["b", "a"])',
+    ),
+    'int(frame.loc["a", "value"])',
+    3,
+    "Series assignment aligns labels. The value labelled a is 3 even though it is second in the Series.",
+  ),
+  item(
+    13,
+    "What does frame retain under pandas 3.0 Copy-on-Write?",
+    pd('frame = pd.DataFrame({"units": [2, 4]})\nselected = frame["units"]\nselected.iloc[0] = 99'),
+    'int(frame.loc[0, "units"])',
+    2,
+    "Changing the selected Series does not mutate frame under Copy-on-Write. Use frame.loc to intentionally update the DataFrame.",
+  ),
+  item(
+    14,
+    "What mean follows the explicit fill-with-zero policy?",
+    pd("readings = pd.Series([None, 6, 12])\nfilled = readings.fillna(0)\nmean = filled.mean()"),
+    "float(mean)",
+    6,
+    "The policy yields 0, 6 and 12, whose mean is 6. The original known-only mean would be 9.",
+  ),
+  item(
+    15,
+    "What value is computed for the second row?",
+    pd(
+      'frame = pd.DataFrame({"units": [2, 5], "price": [7, 4]})\nrevenue = frame.apply(lambda row: row["units"] * row["price"],\n                      axis=1)',
+    ),
+    "int(revenue.iloc[1])",
+    20,
+    "axis=1 passes each row. The second row multiplies five units by price four.",
+  ),
+  item(
+    16,
+    "What month does the explicit format assign?",
+    pd('date = pd.to_datetime("04/09/2026", format="%d/%m/%Y")'),
+    "date.month",
+    9,
+    "The format says day/month/year, so 04 is the day and 09 is September.",
+  ),
+  item(
+    17,
+    "How many groups remain when missing keys are retained?",
+    pd(
+      'frame = pd.DataFrame({"group": ["A", None, "A", "B"],\n                      "value": [2, 3, 4, 5]})\nreport = frame.groupby("group", dropna=False)["value"].sum()',
+    ),
+    "len(report)",
+    3,
+    "A, B and the missing-key group are retained. dropna=False prevents discarding the missing-key rows.",
+  ),
+  item(
+    18,
+    "Which outcome does the merge validation produce?",
+    pd(
+      'left = pd.DataFrame({"key": ["A", "B"]})\nright = pd.DataFrame({"key": ["A", "A"], "value": [2, 3]})\ntry:\n    left.merge(right, on="key", how="left", validate="many_to_one")\n    outcome = "accepted"\nexcept pd.errors.MergeError:\n    outcome = "rejected"',
+    ),
+    "outcome",
+    "rejected",
+    "many_to_one requires unique keys on the right. Repeated right key A fails that validation.",
+    ["The lookup is accepted", "Duplicate lookup keys are rejected", "Only B is rejected"],
+    1,
+  ),
+  item(
+    19,
+    "What value appears for site A and day Mon?",
+    pd(
+      'frame = pd.DataFrame({"site": ["A", "A", "B"],\n                      "day": ["Mon", "Mon", "Mon"], "value": [2, 6, 9]})\nreport = frame.pivot_table(index="site", columns="day", values="value")',
+    ),
+    'float(report.loc["A", "Mon"])',
+    4,
+    "pivot_table uses mean by default. The duplicate A/Mon values 2 and 6 average to 4.",
+  ),
+  item(
+    20,
+    "How many paid orders still have unknown revenue?",
+    pd(
+      'orders = pd.DataFrame({"id": [10, 11, 12, 13],\n                       "status": ["paid", "open", "paid", "paid"],\n                       "revenue": [8, None, None, 14]})\npaid = orders.loc[orders["status"] == "paid"]\nunknown = paid["revenue"].isna().sum()',
+    ),
+    "int(unknown)",
+    1,
+    "Only paid order 12 has unknown revenue. The open order is outside this paid-order report.",
+  ),
+];
+
+const transfer = [
+  item(
+    0,
+    "A report saves a reading before the live reading changes. What does snapshot hold?",
+    "reading = 27\nsnapshot = reading\nreading = reading + 9",
+    "snapshot",
+    27,
+    "snapshot still references the earlier integer 27. The later reassignment only changes reading.",
+  ),
+  item(
+    1,
+    "Two text counts must be added numerically. What total is produced?",
+    'morning = "14"\nevening = "9"\ntotal = int(morning) + int(evening)',
+    "total",
+    23,
+    "The conversions produce integers 14 and 9, giving 23. Adding the strings directly would concatenate them.",
+  ),
+  item(
+    2,
+    "What is the length of the original tag after strip is called without saving its result?",
+    'tag = " pine "\ntag.strip()',
+    "len(tag)",
+    6,
+    "Strings are immutable. The returned stripped text was not assigned, so tag retains its two spaces.",
+  ),
+  item(
+    3,
+    "What value was saved in result?",
+    "queue = [1, 2]\nresult = queue.append(3)",
+    "result",
+    null,
+    "append changes queue in place and returns None. The queue now has three entries, but result is None.",
+    ["The list [1, 2, 3]", "The value 3", "None"],
+    2,
+  ),
+  item(
+    4,
+    "How many members belong to the first set but not the second?",
+    'scheduled = {"A", "B", "C", "D"}\narrived = {"B", "D", "E"}\nmissing = scheduled - arrived',
+    "len(missing)",
+    2,
+    "A and C were scheduled but do not occur in arrived. E is irrelevant to this left-side difference.",
+  ),
+  item(
+    5,
+    "Which category is selected by this branch order?",
+    'speed = 12\nif speed >= 10:\n    category = "fast"\nelif speed >= 5:\n    category = "steady"\nelse:\n    category = "slow"',
+    "category",
+    "fast",
+    "The first condition is true. An if/elif chain does not also execute the later true condition.",
+    ["steady", "slow", "fast"],
+    2,
+  ),
+  item(
+    6,
+    "What value is stored in measured when the function only prints?",
+    "def display_length():\n    print(18)\nmeasured = display_length()",
+    "measured",
+    null,
+    "The function prints 18 but has no return statement. Its return value, assigned to measured, is None.",
+    ["18", "None", "An empty list"],
+    1,
+  ),
+  item(
+    7,
+    "How many known counts remain after recording invalid inputs?",
+    'known = []\nrejected = []\nfor raw in ["8", "missing", "-2", "11"]:\n    try:\n        known.append(int(raw))\n    except ValueError:\n        rejected.append(raw)',
+    "len(known)",
+    3,
+    "The integer strings 8, -2 and 11 are retained. The rejected string is recorded separately.",
+  ),
+  item(
+    8,
+    "A sensor grid has this shape. How many values does it store?",
+    np("grid = np.zeros((2, 3, 4), dtype=int)"),
+    "int(grid.size)",
+    24,
+    "size is the product of the axis lengths: 2 × 3 × 4 = 24. There are three axes.",
+  ),
+  item(
+    9,
+    "After a per-column adjustment, what is the total in the second row?",
+    np(
+      "values = np.array([[1, 2], [3, 4]])\nadjusted = values + np.array([10, 20])\ntotals = adjusted.sum(axis=1)",
+    ),
+    "int(totals[1])",
+    37,
+    "The adjustment broadcasts across each row. The second row becomes 13 and 24, totaling 37.",
+  ),
+  item(
+    10,
+    "Which integer is outside the requested random interval?",
+    np("rng = np.random.default_rng(42)\ndraws = rng.integers(2, 8, size=5)"),
+    "bool(((draws >= 2) & (draws < 8)).all())",
+    true,
+    "integers includes low=2 and excludes high=8 by default. Eight is outside the interval regardless of this seed.",
+    ["2", "7", "8"],
+    2,
+  ),
+  item(
+    11,
+    "A station table has one row per observation. How many observations were loaded?",
+    pd(
+      'from io import StringIO\nsource = StringIO("station,temp\\nN,12\\nS,18\\nN,15\\n")\nobservations = pd.read_csv(source)',
+    ),
+    "observations.shape[0]",
+    3,
+    "The header supplies column names, while the three following CSV records supply three observation rows.",
+  ),
+  item(
+    12,
+    "How many rows are selected by this positional slice?",
+    pd(
+      'frame = pd.DataFrame({"value": [2, 4, 6, 8]}, index=[10, 20, 30, 40])\nchosen = frame.iloc[1:3]',
+    ),
+    "len(chosen)",
+    2,
+    "iloc selects positions 1 and 2, excluding position 3. The index labels do not change those positions.",
+  ),
+  item(
+    13,
+    "What total remains after the intended rows are updated with loc?",
+    pd(
+      'frame = pd.DataFrame({"units": [2, 5, 7],\n                      "returned": [False, True, False]})\nframe.loc[frame["returned"], "units"] = 0',
+    ),
+    'int(frame["units"].sum())',
+    9,
+    "The returned row becomes zero. The remaining units are 2 + 0 + 7 = 9.",
+  ),
+  item(
+    14,
+    "How many readings remain when missing entries are dropped?",
+    pd("readings = pd.Series([0, None, 7, None, 3])\nknown = readings.dropna()"),
+    "len(known)",
+    3,
+    "Zero is a known observation, so the retained readings are 0, 7 and 3.",
+  ),
+  item(
+    15,
+    "What part is stored after splitting each label once?",
+    pd(
+      'labels = pd.Series(["north-red-small", "south-blue-large"])\nparts = labels.str.split("-", n=1, expand=True)',
+    ),
+    "parts.iloc[1, 1]",
+    "blue-large",
+    "With n=1, only the first delimiter is split. The second field retains blue-large.",
+    ["blue", "large", "blue-large"],
+    2,
+  ),
+  item(
+    16,
+    "How many seconds separate these millisecond timestamps?",
+    pd(
+      'times = pd.to_datetime([0, 9000], unit="ms", utc=True)\nelapsed = (times[1] - times[0]).total_seconds()',
+    ),
+    "elapsed",
+    9,
+    "Nine thousand milliseconds is nine seconds. The explicit unit prevents interpreting the values as seconds.",
+  ),
+  item(
+    17,
+    "What median describes the three recorded wait times?",
+    pd("waits = pd.Series([3, 5, 40])\nmedian = waits.median()"),
+    "float(median)",
+    5,
+    "The ordered values are 3, 5 and 40. The middle value is 5; the high value affects the mean much more.",
+  ),
+  item(
+    18,
+    "How many rows match when both pandas merge keys are missing?",
+    pd(
+      'left = pd.DataFrame({"key": pd.Series([None], dtype="object")})\nright = pd.DataFrame({"key": pd.Series([None], dtype="object"),\n                      "value": [7]})\njoined = left.merge(right, on="key", how="inner")',
+    ),
+    "len(joined)",
+    1,
+    "pandas matches missing merge keys to one another. This differs from an SQL equality join on NULL.",
+  ),
+  item(
+    19,
+    "What total appears for the repeated A/Monday combination?",
+    pd(
+      'frame = pd.DataFrame({"site": ["A", "A", "B"],\n                      "day": ["Monday", "Monday", "Monday"],\n                      "count": [4, 7, 3]})\nreport = frame.pivot_table(index="site", columns="day",\n                           values="count", aggfunc="sum")',
+    ),
+    'int(report.loc["A", "Monday"])',
+    11,
+    "The explicit sum aggregation combines the two A/Monday counts: 4 + 7 = 11.",
+  ),
+  item(
+    20,
+    "Before summing revenue, how many rows violate the intended one-row-per-order grain by repeating an earlier id?",
+    pd(
+      'orders = pd.DataFrame({"id": [21, 22, 22, 23],\n                       "revenue": [10, 15, 15, 8]})\nrepeated = orders["id"].duplicated().sum()',
+    ),
+    "int(repeated)",
+    1,
+    "The second occurrence of id 22 repeats an earlier order. Summing every row would count that order twice.",
+  ),
+];
+export const pythonCheckSpecs = [placement, checkpoint, transfer];
+export const pythonCourseChecks = author.sets(
+  ...(pythonCheckSpecs.map((set) =>
+    set.map((s) =>
+      s.choices
+        ? author.choice(s.lesson, s.prompt, program(s.code), s.choices, s.correct!, s.explanation)
+        : author.numeric(s.lesson, s.prompt, program(s.code), s.value as number, s.explanation),
+    ),
+  ) as [
+    ReturnType<typeof author.numeric>[],
+    ReturnType<typeof author.numeric>[],
+    ReturnType<typeof author.numeric>[],
+  ]),
+  [
+    "Trace short programs and tables to find the ideas you should start with.",
+    "Bring Python, arrays and table analysis together in new cases.",
+    "Apply the ideas to new sensor, station and order data after a week away.",
+  ],
+);

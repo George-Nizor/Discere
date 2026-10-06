@@ -1,0 +1,258 @@
+import {
+  beat,
+  numeric as q,
+  choose as c,
+  card,
+  tangent,
+  secant,
+  type TeachingLesson,
+} from "./definition.js";
+export const derivativeLessons: TeachingLesson[] = [
+  {
+    id: "rules-for-rates",
+    title: "A rule for every power",
+    summary: "Differentiate polynomial terms and distinguish a derivative from a function value.",
+    moduleId: "cal-differentiate",
+    sourceIds: ["cal-rules"],
+    beats: [
+      beat(
+        "Bring down the power",
+        "For a positive integer n, the derivative of xⁿ is n xⁿ⁻¹. Thus x³ has derivative 3x². At x = 2 its tangent slope is 12.",
+        ["Cubic", tangent([0, 0, 0, 1], 2)],
+        ["Quadratic", tangent([0, 0, 1], 2)],
+      ),
+      beat(
+        "Constants stay flat",
+        "Adding a constant moves the graph vertically without changing slopes. A constant function has derivative zero; constant multiples multiply the derivative.",
+        ["With a vertical shift", tangent([5, 0, 2], 1)],
+        ["Without the shift", tangent([0, 0, 2], 1)],
+      ),
+      beat(
+        "Differentiate term by term",
+        "For a polynomial, apply the power rule to each term and add the results. The derivative of 3x² − 2x + 7 is 6x − 2.",
+        ["Quadratic and line", tangent([7, -2, 3], 1)],
+        ["Just the quadratic", tangent([0, 0, 3], 1)],
+      ),
+      beat(
+        "Keep the minus sign",
+        "For f(x) = 4 − x², f′(x) = −2x. At positive x the curve falls, while at negative x it rises. A negative rate does not mean the function itself is negative.",
+        ["Right of the peak", tangent([4, 0, -1], 1)],
+        ["Left of the peak", tangent([4, 0, -1], -1)],
+      ),
+    ],
+    questions: [
+      q(
+        "For f(x) = x³, find f′(2).",
+        12,
+        "The derivative is 3x²; at 2 it is 3 × 4 = 12.",
+        "Differentiate the power before substituting.",
+      ),
+      q(
+        "For g(x) = 2x² + 5, find g′(1).",
+        4,
+        "The derivative is 4x because the constant contributes zero; at 1 it is 4.",
+        "A vertical shift does not change a slope.",
+      ),
+      c(
+        "Which expression is the derivative of 3x² − 2x + 7?",
+        ["6x − 2", "6x + 7", "3x − 2"],
+        0,
+        "Differentiate each term: 6x, −2 and zero.",
+        "The constant term contributes no rate.",
+      ),
+      q(
+        "For f(x) = 4 − x², find f′(1).",
+        -2,
+        "Differentiating gives −2x, so the slope at 1 is −2.",
+        "Retain the negative coefficient.",
+      ),
+      q(
+        "For p(x) = 2x³ − 5x + 9, find p′(2).",
+        19,
+        "p′(x) = 6x² − 5; at 2 this is 24 − 5 = 19.",
+        "The linear term becomes its coefficient.",
+      ),
+      c(
+        "Adding 10 to a differentiable function changes its derivative in which way?",
+        [
+          "It leaves the derivative unchanged",
+          "It adds ten to every slope",
+          "It multiplies every slope by ten",
+        ],
+        0,
+        "A vertical translation leaves all output differences unchanged.",
+        "Compare differences before and after the shift.",
+      ),
+    ],
+    cards: [
+      card("For f(x) = 3x³ + 2x, find f′(1).", 11, "f′(x) = 9x² + 2, giving 11."),
+      card("For f(x) = 7 − 2x², find f′(3).", -12, "f′(x) = −4x, so f′(3) = −12."),
+    ],
+  },
+  {
+    id: "a-rate-inside-a-rate",
+    title: "A function inside a function",
+    summary: "Multiply outer and inner rates when differentiating a composition.",
+    moduleId: "cal-differentiate",
+    sourceIds: ["cal-chain"],
+    beats: [
+      beat(
+        "The input changes too",
+        "For f(x) = (2x + 1)², write u = 2x + 1. The outer square changes at rate 2u; u changes at rate 2. Multiplying gives f′(x) = 4(2x + 1).",
+        ["Twice as fast inside", tangent([1, 4, 4], 1)],
+        ["Unit inner rate", tangent([1, 2, 1], 1)],
+      ),
+      beat(
+        "A decreasing inner function",
+        "For f(x) = (3 − x)², the inner rate is −1. The derivative is −2(3 − x). Forgetting that factor would reverse the direction of change.",
+        ["Before the minimum", tangent([9, -6, 1], 1)],
+        ["After the minimum", tangent([9, -6, 1], 4)],
+      ),
+      beat(
+        "An inner rate of three",
+        "For f(x) = (3x + 1)², differentiate the square at the inner value and multiply by 3. The derivative is 6(3x + 1), not merely 2(3x + 1).",
+        ["Triple inner rate", tangent([1, 6, 9], 0)],
+        ["Unit inner rate", tangent([1, 2, 1], 0)],
+      ),
+      beat(
+        "Check by expansion",
+        "The chain rule and polynomial expansion must agree. Expanding (x + 2)³ gives x³ + 6x² + 12x + 8; differentiating gives 3x² + 12x + 12, the same as 3(x + 2)².",
+        ["At x = 1", tangent([8, 12, 6, 1], 1)],
+        ["At x = −1", tangent([8, 12, 6, 1], -1)],
+      ),
+    ],
+    questions: [
+      q(
+        "For f(x) = (2x + 1)², find f′(1).",
+        12,
+        "The chain rule gives 2(2x + 1) × 2. At 1 the result is 12.",
+        "Multiply the outer rate by the inner rate.",
+      ),
+      q(
+        "For f(x) = (3 − x)², find f′(1).",
+        -4,
+        "The derivative is 2(3 − x) × (−1); at 1 it equals −4.",
+        "The inner expression decreases as x increases.",
+      ),
+      c(
+        "Which is the derivative of (3x + 1)²?",
+        ["6(3x + 1)", "2(3x + 1)", "6x + 1"],
+        0,
+        "The derivative of the square is evaluated at 3x + 1, then multiplied by the inner derivative 3.",
+        "Count both stages of the change.",
+      ),
+      q(
+        "For f(x) = (x + 2)³, find f′(1).",
+        27,
+        "f′(x) = 3(x + 2)²; at 1 this gives 27.",
+        "The inner rate is one.",
+      ),
+      q(
+        "For f(x) = (2x − 1)³, find f′(2).",
+        54,
+        "f′(x) = 6(2x − 1)²; at 2 the rate is 6 × 9 = 54.",
+        "There is an inner factor as well as the cubic power.",
+      ),
+      c(
+        "Why is differentiating only the outer function insufficient for a composition?",
+        [
+          "The inner input may change at a different rate",
+          "Every composition has a constant slope",
+          "The outer derivative must be added to the original function",
+        ],
+        0,
+        "The chain rule accounts for how rapidly the inner input changes with x.",
+        "Follow the change through both functions.",
+      ),
+    ],
+    cards: [
+      card("For f(x) = (4x + 1)², find f′(1).", 40, "2(4x + 1) × 4 gives 40 at x = 1."),
+      card("For f(x) = (5 − 2x)², find f′(1).", -12, "2(5 − 2x) × (−2) gives −12 at x = 1."),
+    ],
+  },
+  {
+    id: "position-velocity-acceleration",
+    title: "Read motion from a curve",
+    summary: "Differentiate position for velocity and velocity for acceleration, with units.",
+    moduleId: "cal-differentiate",
+    sourceIds: ["cal-derivative", "cal-rules"],
+    beats: [
+      beat(
+        "Position becomes velocity",
+        "If position s(t) = t² + 2t metres, velocity is s′(t) = 2t + 2 metres per second. The slope of the position graph gives velocity, not distance travelled.",
+        ["Later instant", tangent([0, 2, 1], 2)],
+        ["Earlier instant", tangent([0, 2, 1], 0)],
+      ),
+      beat(
+        "Velocity becomes acceleration",
+        "For s(t) = t³ metres, velocity is 3t² m/s and acceleration is 6t m/s². Differentiating twice moves from position to change in velocity.",
+        ["Position", tangent([0, 0, 0, 1], 1)],
+        ["Velocity", tangent([0, 0, 3], 1)],
+      ),
+      beat(
+        "Speed has no direction",
+        "Velocity is signed; speed is its magnitude. A position graph with negative slope means motion in the negative direction, even when the position is positive.",
+        ["Moving backwards", tangent([6, -4, 1], 1)],
+        ["Moving forwards", tangent([6, -4, 1], 3)],
+      ),
+      beat(
+        "Average and instant differ",
+        "For s(t) = t² metres, average velocity from 1 s to 3 s is 4 m/s. The instantaneous velocity at 3 s is 6 m/s. Specify the interval or instant before calculating.",
+        ["Whole interval", secant([0, 0, 1], 1, 2)],
+        ["Final instant", tangent([0, 0, 1], 3)],
+      ),
+    ],
+    questions: [
+      q(
+        "Position is s(t) = t² + 2t metres. Find velocity at t = 2 seconds in m/s.",
+        6,
+        "Velocity is 2t + 2, so at 2 seconds it is 6 m/s.",
+        "Take one derivative of position.",
+      ),
+      q(
+        "Position is s(t) = t³ metres. Find acceleration at t = 1 second in m/s².",
+        6,
+        "Velocity is 3t² and acceleration is 6t, giving 6 m/s².",
+        "Acceleration is the second derivative of position.",
+      ),
+      c(
+        "A particle has velocity −2 m/s. What is its speed?",
+        ["2 m/s", "Negative two metres per second", "Zero metres per second"],
+        0,
+        "Speed is the magnitude of velocity, so it is 2 m/s.",
+        "A magnitude is nonnegative.",
+      ),
+      q(
+        "For s(t) = t² metres, find instantaneous velocity at t = 3 seconds in m/s.",
+        6,
+        "s′(t) = 2t, so the velocity is 6 m/s.",
+        "Use a derivative at the instant, not an average over an interval.",
+      ),
+      q(
+        "Position is s(t) = 2t³ − 3t² metres. Find acceleration at t = 2 seconds in m/s².",
+        18,
+        "Velocity is 6t² − 6t; acceleration is 12t − 6, giving 18.",
+        "Differentiate twice and then substitute the time.",
+      ),
+      c(
+        "What units does the second derivative of position in metres with respect to time in seconds have?",
+        ["Metres per second squared", "Metres per second", "Square metres"],
+        0,
+        "Each derivative divides the units by seconds once more.",
+        "Track the units through both derivatives.",
+      ),
+    ],
+    cards: [
+      card(
+        "Position is s(t) = 3t² − 5t metres. Find velocity at t = 2 seconds in m/s.",
+        7,
+        "s′(t) = 6t − 5, giving 7 m/s.",
+      ),
+      card(
+        "Position is s(t) = t³ + 4t metres. Find acceleration at t = 3 seconds in m/s².",
+        18,
+        "The second derivative is 6t, giving 18 m/s².",
+      ),
+    ],
+  },
+];
