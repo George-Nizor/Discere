@@ -9,9 +9,15 @@ import {
 } from "../src/index.js";
 
 describe("tutor provider selection", () => {
-  it("keeps the copy/paste companion as the default", () => {
-    expect(resolveTutorProviderId(undefined)).toBe("companion");
-    expect(resolveTutorProviderId("  ")).toBe("companion");
+  it("auto-detects a driver, falling back to the copy/paste companion", () => {
+    const none = () => ({ claude: false, api: false, codex: false });
+    expect(resolveTutorProviderId(undefined, none)).toBe("companion");
+    expect(resolveTutorProviderId("  ", none)).toBe("companion");
+    expect(resolveTutorProviderId("auto", () => ({ claude: true, api: true, codex: true }))).toBe("claude");
+    expect(resolveTutorProviderId(undefined, () => ({ claude: false, api: true, codex: true }))).toBe(
+      "openai-compatible",
+    );
+    expect(resolveTutorProviderId(undefined, () => ({ claude: false, api: false, codex: true }))).toBe("codex");
     expect(createTutorProvider({ id: "companion" })).toBeInstanceOf(CompanionTutorProvider);
   });
 
