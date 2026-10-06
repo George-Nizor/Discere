@@ -1,5 +1,6 @@
 import type { Capability, CapabilityId, TutorProviderId } from "@discere/contracts";
-import { codexAuthPresent, probeCodexBinary } from "./tutor-status.js";
+import { detectDrivers } from "@discere/tutor-providers";
+import { claudeSignedIn, codexAuthPresent, probeCodexBinary } from "./tutor-status.js";
 
 /**
  * Which generative features this installation can actually perform.
@@ -79,6 +80,21 @@ export function tutorCapability(
   providerId: TutorProviderId,
   readiness: CodexReadiness = codexReadiness(),
 ): Capability {
+  if (providerId === "claude") {
+    const reason = !detectDrivers().claude
+      ? "Claude Code is not installed, so the tutor cannot answer in place."
+      : !claudeSignedIn()
+        ? "Claude Code is installed but not signed in. Run `claude` once and log in."
+        : "";
+    return reason
+      ? {
+          id: "tutor_generation",
+          state: "unavailable",
+          reason,
+          fallback: "Set DISCERE_TUTOR_PROVIDER=companion to tutor by pasting into a chat you already have.",
+        }
+      : { id: "tutor_generation", state: "available", reason: "", fallback: "" };
+  }
   if (providerId !== "codex") {
     return { id: "tutor_generation", state: "available", reason: "", fallback: "" };
   }

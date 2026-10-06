@@ -242,6 +242,14 @@ export async function registerTutorRoutes(
       essayContext = { ...resolved.essayContext, sourceIds: resolved.sourceIds };
     } else {
       ({ lesson, question } = lessonAndQuestion(body.lessonId));
+      ({ lesson, question } = genericTutorContext(
+        content,
+        store,
+        lesson,
+        body.mode,
+        body.questionId,
+        body.attemptId,
+      ));
       focusConceptIds = body.conceptIds;
     }
     const requestId = randomUUID();
@@ -484,3 +492,4 @@ export async function registerTutorRoutes(
     return assessmentResponse(row, null);
   });
 }
+import { genericTutorContext } from "./generic-tutor-context.js";

@@ -1,12 +1,14 @@
 import { z } from "zod";
 import {
-  ActivitySchema,
+  CalculatorPolicySchema,
   ExplainerVisualKindSchema,
+  LearnerActivitySchema,
   LearnerQuestionSchema,
   LessonStepKindSchema,
   RichTextBlockSchema,
   SourceSchema,
 } from "./curriculum.js";
+import { LearningDiagramSchema } from "./learning-diagram.js";
 import { CircuitDiagramSpecSchema, VisualStateSchema } from "./visuals.js";
 
 export const JourneyStageTypeSchema = z.enum([
@@ -15,6 +17,7 @@ export const JourneyStageTypeSchema = z.enum([
   "quiz",
   "essay",
   "review",
+  "recap",
   "completion",
 ]);
 export type JourneyStageType = z.infer<typeof JourneyStageTypeSchema>;
@@ -69,23 +72,72 @@ export type StageImage = z.infer<typeof StageImageSchema>;
  * question itself, already stripped of its answer authority and transfer task exactly as the
  * quiz stages are, so the answer never leaves the server before it is earned.
  */
+/** A worked-example line as the learner receives it: blanks carry their question, keyless. */
+export const LearnerWorkedStepSchema = z
+  .object({
+    text: z.string().min(1),
+    math: z.string().min(1).optional(),
+    blank: LearnerQuestionSchema.optional(),
+    selfExplain: LearnerQuestionSchema.optional(),
+  })
+  .strict();
+export type LearnerWorkedStep = z.infer<typeof LearnerWorkedStepSchema>;
+
 export const LearnerStepSchema = z
   .object({
     id: z.string().min(1),
     kind: LessonStepKindSchema,
-    blocks: z.array(RichTextBlockSchema).min(1),
+    /**
+     * Teaching shown before the learner acts. For a legacy question-led step this is the
+     * authored prose with every sentence that would give the answer away held back for the
+     * reveal; for a v2 step it is the authored `lead`. It may be empty.
+     */
+    blocks: z.array(RichTextBlockSchema),
+    /** A small label above the step, never a headline. */
+    eyebrow: z.string().min(1).optional(),
+    /** v2 `explain`: the key idea, set as the screen's headline. */
+    headline: z.string().min(1).optional(),
+    workedSteps: z.array(LearnerWorkedStepSchema).optional(),
+    answerVisibility: z.enum(["hidden-until-response", "live"]).optional(),
+    calculator: CalculatorPolicySchema.optional(),
     visualStateId: z.string(),
+    diagram: LearningDiagramSchema.optional(),
+    /** Question-first steps fetch their explanation only after a recorded response. */
+    questionLed: z.boolean().optional(),
+    /** True when the step holds back teaching for after the response (shown with the verdict). */
+    hasReveal: z.boolean().optional(),
     /** Present on `check` and `transfer` steps. */
     question: LearnerQuestionSchema.optional(),
     /** Present on `interact` steps. */
-    activity: ActivitySchema.optional(),
+    activity: LearnerActivitySchema.optional(),
   })
   .strict();
 export type LearnerStep = z.infer<typeof LearnerStepSchema>;
 
+/** The v2 opener as the learner receives it. Its question, if any, carries no key. */
+export const LearnerLessonIntroSchema = z
+  .object({
+    hook: z
+      .object({
+        blocks: z.array(RichTextBlockSchema).min(1),
+        diagram: LearningDiagramSchema.optional(),
+        question: LearnerQuestionSchema.optional(),
+      })
+      .strict(),
+    promise: z.string().min(1),
+    whyItMatters: z.string().min(1).optional(),
+    estimatedMinutes: z.number().int().positive(),
+  })
+  .strict();
+export type LearnerLessonIntro = z.infer<typeof LearnerLessonIntroSchema>;
+
 export const ExplainerStageSchema = StageBaseSchema.extend({
   type: z.literal("explainer"),
   steps: z.array(LearnerStepSchema).min(1),
+  /** Present for a v2 lesson: the opener screen shown before the first step. */
+  intro: LearnerLessonIntroSchema.optional(),
+  /** The lesson's calculator policy, which a step may override. Absent means available. */
+  calculator: CalculatorPolicySchema.optional(),
   visual: z
     .object({
       kind: ExplainerVisualKindSchema,
@@ -108,7 +160,7 @@ export type ExplainerStage = z.infer<typeof ExplainerStageSchema>;
 
 export const InteractiveVisualStageSchema = StageBaseSchema.extend({
   type: z.literal("interactive_visual"),
-  activity: ActivitySchema,
+  activity: LearnerActivitySchema,
   prompt: z.string().min(1),
   visualKind: z.enum(["circuit", "graph", "timeline", "map", "diagram"]),
 }).strict();
@@ -118,6 +170,9 @@ export const QuizStageSchema = StageBaseSchema.extend({
   type: z.literal("quiz"),
   questionId: z.string().min(1),
   question: LearnerQuestionSchema,
+  /** v2 skill check: no hints, no tutor, results per item. */
+  skillCheck: z.boolean().optional(),
+  calculator: CalculatorPolicySchema.optional(),
   /** One-based position of this question among the lesson's quiz stages. */
   questionIndex: z.number().int().positive(),
   questionCount: z.number().int().positive(),
@@ -139,8 +194,21 @@ export const ReviewStageSchema = StageBaseSchema.extend({
   reviewLabel: z.string().min(1),
   itemCount: z.number().int().positive(),
   concepts: z.array(z.string().min(1)).min(1),
+  lessonId: z.string().min(1).optional(),
+  cardIds: z.array(z.string().min(1)).optional(),
 }).strict();
 export type ReviewStage = z.infer<typeof ReviewStageSchema>;
+
+/** The v2 close: the key idea stated plainly, then the bridge to the next lesson. */
+export const RecapStageSchema = StageBaseSchema.extend({
+  type: z.literal("recap"),
+  keyIdea: z.string().min(1),
+  blocks: z.array(RichTextBlockSchema),
+  nextHook: z.string().min(1).optional(),
+  /** Fronts of the recall cards this lesson adds to review. Never the backs. */
+  cardFronts: z.array(z.string().min(1)),
+}).strict();
+export type RecapStage = z.infer<typeof RecapStageSchema>;
 
 export const CompletionStageSchema = StageBaseSchema.extend({
   type: z.literal("completion"),
@@ -155,6 +223,7 @@ export const LearnerStageSchema = z.discriminatedUnion("type", [
   QuizStageSchema,
   EssayStageSchema,
   ReviewStageSchema,
+  RecapStageSchema,
   CompletionStageSchema,
 ]);
 export type LearnerStage = z.infer<typeof LearnerStageSchema>;
@@ -216,6 +285,7 @@ export const CourseSummarySchema = z
     /** Same-origin URL for the cover art, or empty when the course has none. */
     coverUrl: z.string(),
     status: z.enum(["available", "coming_soon"]),
+    subjects: z.array(z.string().min(1)).max(5).optional(),
     /** Lessons the learner has finished every stage of, for the catalogue progress ring. */
     completedLessonCount: z.number().int().nonnegative(),
   })

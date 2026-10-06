@@ -21,8 +21,7 @@ function reviewEnvelope(requestId: string, payload: unknown) {
 }
 
 async function lessonId(): Promise<string> {
-  const response = await app.inject({ method: "GET", url: "/api/lessons/current" });
-  return response.json().lesson.id as string;
+  return "current-in-one-loop";
 }
 
 async function saveWorkings(id: string): Promise<void> {

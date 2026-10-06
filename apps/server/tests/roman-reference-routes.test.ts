@@ -59,7 +59,7 @@ describe("Roman recovery reference progress", () => {
     const progress = response.json() as RomanReferenceProgress;
 
     expect(progress).toMatchObject({
-      version: 3,
+      version: 4,
       activeBeat: "opening",
       updatedAt: null,
       opening: {

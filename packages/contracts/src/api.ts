@@ -1,9 +1,10 @@
 import { z } from "zod";
 import {
-  ActivitySchema,
   ConceptSchema,
+  LearnerActivitySchema,
   LearnerQuestionSchema,
   LessonBeatSchema,
+  RichTextBlockSchema,
   SourceSchema,
 } from "./curriculum.js";
 import {
@@ -75,7 +76,7 @@ export type ActivityResponse = z.infer<typeof ActivityResponseSchema>;
 export const LessonResponseSchema = z
   .object({
     lesson: LessonBeatSchema,
-    activity: ActivitySchema,
+    activity: LearnerActivitySchema.optional(),
     question: LearnerQuestionSchema,
     sources: z.array(SourceSchema),
   })
@@ -114,6 +115,21 @@ export const CourseDetailResponseSchema = z
     course: CourseSummarySchema,
     lessons: z.array(CourseLessonSummarySchema).min(1),
     concepts: z.array(CourseConceptSummarySchema).min(1),
+    modules: z
+      .array(
+        z
+          .object({
+            id: z.string().min(1),
+            title: z.string().min(1),
+            description: z.string().min(1),
+            lessonIds: z.array(z.string()),
+          })
+          .strict(),
+      )
+      .optional(),
+    exerciseCount: z.number().int().nonnegative().optional(),
+    /** The saved unfinished lesson, or the next authored lesson after a completion. */
+    resumeLessonId: z.string().min(1).optional(),
   })
   .strict();
 export type CourseDetailResponse = z.infer<typeof CourseDetailResponseSchema>;
@@ -179,6 +195,7 @@ export const ReviewCardFrontSchema = z
     questionId: z.string().min(1),
     front: z.string().min(1),
     conceptIds: z.array(z.string()).min(1),
+    conceptTitles: z.array(z.string().min(1)).default([]),
     revealed: z.literal(false),
   })
   .strict();
@@ -189,9 +206,28 @@ export const ReviewSessionResponseSchema = z
     sessionId: z.string().uuid(),
     card: ReviewCardFrontSchema,
     rated: z.boolean(),
+    mode: TutoringModeSchema.default("coach"),
+    response: z.string().nullable().default(null),
+    correct: z.boolean().nullable().default(null),
   })
   .strict();
 export type ReviewSessionResponse = z.infer<typeof ReviewSessionResponseSchema>;
+
+export const ReviewSessionCreateSchema = z
+  .object({
+    lessonId: z.string().min(1).optional(),
+    cardId: z.string().min(1).optional(),
+    mode: TutoringModeSchema.default("coach"),
+  })
+  .strict();
+export type ReviewSessionCreate = z.input<typeof ReviewSessionCreateSchema>;
+export const ReviewRecallRequestSchema = z
+  .object({ response: z.string().trim().min(1).max(2_000) })
+  .strict();
+export const ReviewRecallResponseSchema = z
+  .object({ response: z.string(), correct: z.boolean().nullable(), feedback: z.string().min(1) })
+  .strict();
+export type ReviewRecallResponse = z.infer<typeof ReviewRecallResponseSchema>;
 
 export const ReviewRevealResponseSchema = z
   .object({
@@ -216,6 +252,7 @@ export const ReviewRateResponseSchema = z
     dueAt: z.string().datetime(),
     intervalDays: z.number().positive(),
     repetition: z.number().int().nonnegative(),
+    xpGained: z.number().int().nonnegative().optional(),
   })
   .strict();
 export type ReviewRateResponse = z.infer<typeof ReviewRateResponseSchema>;
@@ -256,8 +293,13 @@ export const AttemptResponseSchema = z
     correct: z.boolean(),
     feedback: z.string().min(1),
     xpAwarded: z.number().int().nonnegative(),
+    xpGained: z.number().int().nonnegative().optional(),
     mastery: z.number().min(0).max(1),
     independent: z.boolean(),
+    /** False when the response was not in a form that could be marked (no miss is counted). */
+    qualifying: z.boolean().optional(),
+    /** True when `feedback` is an authored misconception message rather than the generic one. */
+    specific: z.boolean().optional(),
   })
   .strict();
 export type AttemptResponse = z.infer<typeof AttemptResponseSchema>;
@@ -355,3 +397,27 @@ export const WritingLintResponseSchema = z
   })
   .strict();
 export type WritingLintResponse = z.infer<typeof WritingLintResponseSchema>;
+
+/** An authored lesson explanation is earned by answering its question. Exam attempts cannot open it. */
+export const LessonFeedbackRequestSchema = z
+  .object({
+    courseId: z.string().min(1).max(200),
+    lessonId: z.string().min(1).max(200),
+    stepId: z.string().min(1).max(240).optional(),
+  })
+  .strict();
+export type LessonFeedbackRequest = z.infer<typeof LessonFeedbackRequestSchema>;
+export const LessonFeedbackResponseSchema = z
+  .object({
+    attemptId: z.string().uuid(),
+    correct: z.boolean(),
+    answer: z.string().min(1),
+    blocks: z.array(RichTextBlockSchema),
+    reviewRequired: z.boolean(),
+    /** The question's authored one-line idea, always shown with a correct verdict. */
+    onCorrect: z.string().min(1).optional(),
+    /** For a choice question, the choice that is right, so the player can mark it. */
+    correctChoiceId: z.string().min(1).optional(),
+  })
+  .strict();
+export type LessonFeedbackResponse = z.infer<typeof LessonFeedbackResponseSchema>;

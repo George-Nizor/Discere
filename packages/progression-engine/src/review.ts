@@ -33,7 +33,7 @@ export interface ReviewState {
   independentReviews: number;
   assistedReviews: number;
   lastReviewedAt: string | null;
-  /** FSRS memory state. Stability is the retrievable half-life in days. */
+  /** FSRS memory state. Stability is the interval in days at which predicted recall falls to 90%. */
   stability: number;
   /** FSRS item difficulty, between 1 and 10. */
   difficulty: number;

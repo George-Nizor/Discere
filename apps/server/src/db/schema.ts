@@ -163,9 +163,122 @@ export const reviewSessions = sqliteTable("review_sessions", {
   revealed: integer("revealed", { mode: "boolean" }).notNull().default(false),
   rated: integer("rated", { mode: "boolean" }).notNull().default(false),
   createdAt: text("created_at").notNull(),
+  mode: text("mode").notNull().default("coach"),
+  response: text("response"),
+  correct: integer("correct", { mode: "boolean" }),
+  scheduledDueAt: text("scheduled_due_at"),
 });
+export const learningEvents = sqliteTable(
+  "learning_events",
+  {
+    userId: text("user_id").notNull(),
+    eventKey: text("event_key").notNull(),
+    kind: text("kind").notNull(),
+    referenceId: text("reference_id").notNull(),
+    occurredAt: text("occurred_at").notNull(),
+    updatedAt: text("updated_at").notNull(),
+    xp: integer("xp").notNull().default(0),
+    correct: integer("correct", { mode: "boolean" }).notNull().default(false),
+    independent: integer("independent", { mode: "boolean" }).notNull().default(false),
+    qualifying: integer("qualifying", { mode: "boolean" }).notNull().default(false),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.eventKey] })],
+);
+export const studyPreferences = sqliteTable("study_preferences", {
+  userId: text("user_id").primaryKey(),
+  timeZone: text("time_zone").notNull(),
+  dailyGoal: integer("daily_goal").notNull().default(5),
+  motion: text("motion").notNull().default("system"),
+  celebrations: integer("celebrations", { mode: "boolean" }).notNull().default(true),
+  sound: integer("sound", { mode: "boolean" }).notNull().default(false),
+});
+export const streakWallet = sqliteTable("streak_wallet", {
+  userId: text("user_id").primaryKey(),
+  charges: integer("charges").notNull().default(0),
+  rewardedDays: integer("rewarded_days").notNull().default(0),
+});
+export const streakProtections = sqliteTable(
+  "streak_protections",
+  {
+    userId: text("user_id").notNull(),
+    date: text("date").notNull(),
+    createdAt: text("created_at").notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.date] })],
+);
 /** Applied-migration ledger owned by `src/db/migrations.ts`. */
 export const schemaMigrations = sqliteTable("schema_migrations", {
   name: text("name").primaryKey(),
   appliedAt: text("applied_at").notNull(),
 });
+
+export const courseCheckSessions = sqliteTable("course_check_sessions", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  courseId: text("course_id").notNull(),
+  checkId: text("check_id").notNull(),
+  checkHash: text("check_hash").notNull(),
+  courseTitle: text("course_title").notNull(),
+  definitionJson: text("definition_json").notNull(),
+  lessonTitlesJson: text("lesson_titles_json").notNull(),
+  responsesJson: text("responses_json").notNull().default("[]"),
+  createdAt: text("created_at").notNull(),
+  completedAt: text("completed_at"),
+  xp: integer("xp").notNull().default(0),
+});
+
+export const sqlProjectSessions = sqliteTable("sql_project_sessions", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  courseId: text("course_id").notNull(),
+  projectId: text("project_id").notNull(),
+  projectHash: text("project_hash").notNull(),
+  definitionJson: text("definition_json").notNull(),
+  mode: text("mode").notNull(),
+  revision: integer("revision").notNull().default(0),
+  currentIndex: integer("current_index").notNull().default(0),
+  statesJson: text("states_json").notNull().default("[]"),
+  createdAt: text("created_at").notNull(),
+  completedAt: text("completed_at"),
+  xp: integer("xp").notNull().default(0),
+});
+export const sqlProjectActions = sqliteTable(
+  "sql_project_actions",
+  {
+    sessionId: text("session_id")
+      .notNull()
+      .references(() => sqlProjectSessions.id),
+    requestId: text("request_id").notNull(),
+    requestJson: text("request_json").notNull(),
+    occurredAt: text("occurred_at").notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.sessionId, table.requestId] })],
+);
+
+export const pythonProjectSessions = sqliteTable("python_project_sessions", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  courseId: text("course_id").notNull(),
+  projectId: text("project_id").notNull(),
+  projectHash: text("project_hash").notNull(),
+  definitionJson: text("definition_json").notNull(),
+  mode: text("mode").notNull(),
+  revision: integer("revision").notNull().default(0),
+  currentIndex: integer("current_index").notNull().default(0),
+  statesJson: text("states_json").notNull().default("[]"),
+  createdAt: text("created_at").notNull(),
+  completedAt: text("completed_at"),
+  xp: integer("xp").notNull().default(0),
+});
+export const pythonProjectActions = sqliteTable(
+  "python_project_actions",
+  {
+    sessionId: text("session_id")
+      .notNull()
+      .references(() => pythonProjectSessions.id),
+    requestId: text("request_id").notNull(),
+    requestJson: text("request_json").notNull(),
+    occurredAt: text("occurred_at").notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.sessionId, table.requestId] })],
+);

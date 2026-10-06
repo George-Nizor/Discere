@@ -161,7 +161,13 @@ export const StyleEditDraftSchema = z
   .strict();
 export type StyleEditDraft = z.infer<typeof StyleEditDraftSchema>;
 
-export const TutorProviderIdSchema = z.enum(["codex", "companion", "mock"]);
+export const TutorProviderIdSchema = z.enum([
+  "claude",
+  "openai-compatible",
+  "codex",
+  "companion",
+  "mock",
+]);
 export type TutorProviderId = z.infer<typeof TutorProviderIdSchema>;
 
 /**
@@ -188,6 +194,30 @@ export const TutorStatusSchema = z
     quotaUsedPercent: z.number(),
     /** Unix seconds at which the current quota window resets; `0` when unknown. */
     quotaResetsAt: z.number().int().min(0),
+    /** Model routing for drivers that choose between a fast and a capable model. */
+    routing: z
+      .object({ mode: z.enum(["auto", "fast", "smart"]), fastModel: z.string(), smartModel: z.string() })
+      .strict()
+      .optional(),
+    /** What the tutor has used since Discere started: calls and, when reported, cost. */
+    usage: z
+      .object({
+        calls: z.number().int().min(0),
+        costUsd: z.number().min(0),
+        byModel: z.array(
+          z
+            .object({
+              model: z.string(),
+              calls: z.number().int().min(0),
+              costUsd: z.number().min(0),
+              inputTokens: z.number().int().min(0),
+              outputTokens: z.number().int().min(0),
+            })
+            .strict(),
+        ),
+      })
+      .strict()
+      .optional(),
   })
   .strict();
 export type TutorStatus = z.infer<typeof TutorStatusSchema>;
@@ -212,6 +242,8 @@ export const TutorAskRequestSchema = z
     sessionId: z.string().min(1).max(200).optional(),
     /** Links the exchange to an open attempt so the assistance is recorded against it. */
     attemptId: z.string().uuid().optional(),
+    /** An inline or quiz question owned by this lesson. Its answer remains private. */
+    questionId: z.string().min(1).max(200).optional(),
     /** Binds the tutor to the server-owned recovery item instead of the lesson's legacy question. */
     referenceQuestionId: RomanReferenceQuestionIdSchema.optional(),
     /** Binds the tutor to the server-owned recovery essay, whose mode and context the server holds. */
@@ -228,6 +260,12 @@ export const TutorAskRequestSchema = z
         path: ["referenceEssayId"],
       });
     }
+    if (request.questionId && (request.referenceQuestionId || request.referenceEssayId))
+      context.addIssue({
+        code: "custom",
+        message: "Choose a generic or reference question context.",
+        path: ["questionId"],
+      });
   });
 export type TutorAskRequest = z.infer<typeof TutorAskRequestSchema>;
 

@@ -1,5 +1,10 @@
 import { z } from "zod";
 import { TutoringModeSchema } from "./modes.js";
+import {
+  RomanReferenceReviewActionSchema,
+  RomanReferenceReviewStateSchema,
+  RomanReferenceReviewViewSchema,
+} from "./reference-review.js";
 
 export const RomanReferenceBeatSchema = z.enum([
   "opening",
@@ -7,6 +12,8 @@ export const RomanReferenceBeatSchema = z.enum([
   "expansion",
   "questions",
   "essay",
+  "recall",
+  "complete",
 ]);
 export type RomanReferenceBeat = z.infer<typeof RomanReferenceBeatSchema>;
 
@@ -517,13 +524,14 @@ const QuestionProgressListSchema = z.array(RomanReferenceQuestionProgressSchema)
 
 const RomanReferenceStateObjectSchema = z
   .object({
-    version: z.literal(3),
+    version: z.literal(4),
     opening: OpeningStateSchema,
     augustus: AugustusStateSchema,
     expansion: ExpansionStateSchema,
     questions: QuestionProgressListSchema,
     assessmentFinished: z.boolean(),
     essay: RomanReferenceEssayStateSchema,
+    review: RomanReferenceReviewStateSchema,
   })
   .strict();
 
@@ -637,18 +645,40 @@ export const RomanReferenceStateSchema = RomanReferenceStateObjectSchema.superRe
   (state, context) => {
     validateOpeningAndExpansion(state, context);
     validateQuestionList(state.questions, state.assessmentFinished, context);
+    if (
+      (state.review.mode !== null || state.review.draft !== "" || state.review.rating !== null) &&
+      (!state.essay.finished ||
+        !state.assessmentFinished ||
+        !state.expansion.completed ||
+        !state.augustus.completed ||
+        state.opening.status === "editing")
+    ) {
+      context.addIssue({
+        code: "custom",
+        message: "Recall must follow the completed lesson.",
+        path: ["review"],
+      });
+    }
   },
 );
 export type RomanReferenceState = z.infer<typeof RomanReferenceStateSchema>;
 
+export const RomanReferenceV3StateSchema = RomanReferenceStateObjectSchema.omit({ review: true })
+  .extend({ version: z.literal(3) })
+  .superRefine((state, context) => {
+    validateOpeningAndExpansion(state, context);
+    validateQuestionList(state.questions, state.assessmentFinished, context);
+  });
+
 export const RomanReferenceProgressSchema = z
   .object({
-    version: z.literal(3),
+    version: z.literal(4),
     opening: OpeningStateSchema,
     augustus: AugustusStateSchema,
     expansion: ExpansionStateSchema,
     questions: z.array(RomanReferenceQuestionViewSchema).length(4),
     essay: RomanReferenceEssayViewSchema,
+    review: RomanReferenceReviewViewSchema,
     assessmentFinished: z.boolean(),
     activeBeat: RomanReferenceBeatSchema,
     activeQuestionId: RomanReferenceQuestionIdSchema.nullable(),
@@ -659,6 +689,13 @@ export const RomanReferenceProgressSchema = z
     validateOpeningAndExpansion(progress, context);
     const questionProgress = progress.questions.map((question) => question.progress);
     validateQuestionList(questionProgress, progress.assessmentFinished, context);
+    if ((progress.review.back !== null) !== progress.review.progress.revealed) {
+      context.addIssue({
+        code: "custom",
+        message: "Only authorised recall reveal may include a card back.",
+        path: ["review", "back"],
+      });
+    }
     const expectedBeat =
       progress.opening.status === "editing"
         ? "opening"
@@ -668,7 +705,11 @@ export const RomanReferenceProgressSchema = z
             ? "expansion"
             : !progress.assessmentFinished
               ? "questions"
-              : "essay";
+              : !progress.essay.progress.finished
+                ? "essay"
+                : progress.review.progress.rating === null
+                  ? "recall"
+                  : "complete";
     if (progress.activeBeat !== expectedBeat) {
       context.addIssue({
         code: "custom",
@@ -824,5 +865,6 @@ export const RomanReferenceActionSchema = z.discriminatedUnion("action", [
   SubmitEssayRevisionSchema,
   StartEssayRevisionSchema,
   FinishEssaySchema,
+  ...RomanReferenceReviewActionSchema.options,
 ]);
 export type RomanReferenceAction = z.infer<typeof RomanReferenceActionSchema>;

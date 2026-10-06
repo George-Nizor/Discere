@@ -30,11 +30,48 @@ async function start(options: Partial<AppOptions> = {}) {
   return { app, store };
 }
 
+/** General recall starts after a learner has encountered an idea in a listed lesson. */
+async function introduceLessons() {
+  for (const [courseId, lessonId, response] of [
+    ["maths-foundations", "what-a-letter-stands-for", "7"],
+    ["probability-statistics", "counting-outcomes", "36"],
+  ]) {
+    const journey = (
+      await app.inject({
+        method: "GET",
+        url: "/api/courses/" + courseId + "/lessons/" + lessonId + "/journey",
+      })
+    ).json();
+    const question = journey.stages.find((stage: { type: string }) => stage.type === "explainer")
+      .steps[0].question;
+    const attempt = await app.inject({
+      method: "POST",
+      url: "/api/attempts",
+      payload: { questionId: question.id, response, mode: "coach" },
+    });
+    expect(attempt.statusCode).toBe(200);
+  }
+}
+
 /** Opens a card, reveals it, and rates it, which is the only path that schedules a review. */
-async function reviewOneCard(rating: "again" | "hard" | "good" | "easy", recalled = true) {
-  const session = await app.inject({ method: "POST", url: "/api/review/sessions", payload: {} });
+async function reviewOneCard(
+  rating: "again" | "hard" | "good" | "easy",
+  recalled = true,
+  scoped = true,
+) {
+  const session = await app.inject({
+    method: "POST",
+    url: "/api/review/sessions",
+    payload: scoped ? { lessonId: "what-a-letter-stands-for" } : {},
+  });
   expect(session.statusCode).toBe(200);
   const { sessionId, card } = session.json();
+  if (recalled && scoped)
+    await app.inject({
+      method: "POST",
+      url: `/api/review/sessions/${sessionId}/respond`,
+      payload: { response: "-5" },
+    });
   await app.inject({
     method: "POST",
     url: `/api/review/sessions/${sessionId}/reveal`,
@@ -55,6 +92,7 @@ async function reviewOneCard(rating: "again" | "hard" | "good" | "easy", recalle
  */
 function rateCardDirectly(cardId: string, rating: "again" | "good", recalled = true) {
   const session = store.createReviewSession(cardId);
+  if (recalled) store.recordReviewRecall(session.id, "-5", true);
   store.revealReviewSession(session.id);
   const rated = store.rateReviewSession(session.id, rating, recalled);
   if (!rated) throw new Error(`Card '${cardId}' could not be rated.`);
@@ -66,19 +104,24 @@ afterEach(async () => {
 });
 
 describe("review scheduling across courses", () => {
-  it("reports the queue per course as well as in total", async () => {
-    await start();
+  it("reports introduced lessons per course as well as in total", async () => {
+    let timestamp = Date.parse("2026-08-19T08:00:00.000Z");
+    await start({ clock: () => new Date(timestamp++) });
+    await introduceLessons();
     const review = await app.inject({ method: "GET", url: "/api/review" });
     expect(review.statusCode).toBe(200);
     const body = review.json();
     expect(body.courses.length).toBeGreaterThan(1);
     // Each row names its course rather than repeating the identifier.
-    const electronics = body.courses.find(
-      (row: { courseId: string }) => row.courseId === "electronics-foundations",
+    const maths = body.courses.find(
+      (row: { courseId: string }) => row.courseId === "maths-foundations",
     );
-    expect(electronics.title).toBe("Electronics Foundations");
-    expect(electronics.cardCount).toBeGreaterThan(0);
-    expect(electronics.dueCount).toBe(electronics.cardCount);
+    expect(maths.title).toBe("Maths Foundations");
+    expect(maths.cardCount).toBe(2);
+    expect(maths.dueCount).toBe(maths.cardCount);
+    expect(body.courses.map((row: { courseId: string }) => row.courseId)).not.toContain(
+      "electronics-foundations",
+    );
     expect(
       body.courses.reduce((total: number, row: { dueCount: number }) => total + row.dueCount, 0),
     ).toBe(body.dueCount);
@@ -87,11 +130,12 @@ describe("review scheduling across courses", () => {
   it("takes turns between courses instead of clearing one first", async () => {
     const clock = testClock("2026-08-19T08:00:00.000Z");
     await start({ clock: clock.now });
+    await introduceLessons();
     const courseOfCard = (cardId: string) => store.getReviewCard(cardId)?.courseId;
 
     const seen: Array<string | undefined> = [];
     for (let index = 0; index < 4; index += 1) {
-      const { cardId } = await reviewOneCard("good");
+      const { cardId } = await reviewOneCard("good", true, false);
       seen.push(courseOfCard(cardId));
       clock.advanceMinutes(1);
     }
@@ -200,10 +244,12 @@ describe("study streak", () => {
     expect(await streak()).toBe(1);
   });
 
-  it("counts a rated review as a day of study", async () => {
+  it("counts three genuine due recall responses as a day of study", async () => {
     const clock = testClock("2026-08-19T08:00:00.000Z");
     await start({ clock: clock.now });
-    await reviewOneCard("good");
+    await app.inject({ method: "GET", url: "/api/review" });
+    const cards = store.dueReviewQueue(clock.now().toISOString()).slice(0, 3);
+    for (const card of cards) rateCardDirectly(card.cardId, "good");
     expect((await app.inject({ method: "GET", url: "/api/home" })).json().streakDays).toBe(1);
   });
 });

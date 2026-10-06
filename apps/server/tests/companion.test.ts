@@ -87,7 +87,7 @@ describe("ChatGPT tutor companion", () => {
         expectedRequestId: "b3428b5b-07b2-4ab4-840f-c1d723c714b2",
         text: JSON.stringify(
           tutorEnvelope({
-            answer: "The current is 0.05 A.",
+            answer: "The final value is 14.",
             followUpQuestion: "Can you substitute the values yourself?",
             sourceIds: [],
             uncertainty: [],

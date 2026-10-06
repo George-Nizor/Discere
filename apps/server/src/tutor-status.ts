@@ -11,7 +11,14 @@ import {
 import os from "node:os";
 import path from "node:path";
 import type { TutorStatus } from "@discere/contracts";
-import { codexRuntimeStatus } from "@discere/tutor-providers";
+import {
+  aiRuntimeStatus,
+  CLAUDE_DEFAULT_FAST_MODEL,
+  CLAUDE_DEFAULT_SMART_MODEL,
+  codexRuntimeStatus,
+  detectDrivers,
+  resolveRoutingMode,
+} from "@discere/tutor-providers";
 import type { TutorRuntime } from "./tutor-provider.js";
 
 /** Spawning the CLI on every poll would be silly; its version does not move during a session. */
@@ -152,7 +159,60 @@ export function readCodexQuota(): CodexQuota | undefined {
   return undefined;
 }
 
+let claudeAuthCache: { loggedIn: boolean; at: number } | undefined;
+/** `claude auth status` prints JSON; probed at most once a minute. */
+export function claudeSignedIn(now = Date.now()): boolean {
+  if (claudeAuthCache && now - claudeAuthCache.at < BINARY_CACHE_MS) return claudeAuthCache.loggedIn;
+  let loggedIn = false;
+  try {
+    const result = spawnSync(process.env["DISCERE_CLAUDE_BIN"]?.trim() || "claude", ["auth", "status"], {
+      encoding: "utf8",
+      timeout: 8_000,
+    });
+    loggedIn = result.status === 0 && /"loggedIn"\s*:\s*true/.test(`${result.stdout}`);
+  } catch {
+    // Unknown counts as signed out; the tutor reports the real error if a call fails.
+  }
+  claudeAuthCache = { loggedIn, at: now };
+  return loggedIn;
+}
+
+function pipelineStatus(runtime: TutorRuntime): TutorStatus {
+  const env = process.env;
+  const claude = runtime.id === "claude";
+  const live = aiRuntimeStatus();
+  const fastModel = claude
+    ? env["DISCERE_CLAUDE_FAST_MODEL"]?.trim() || CLAUDE_DEFAULT_FAST_MODEL
+    : env["DISCERE_AI_FAST_MODEL"]?.trim() || "gpt-4o-mini";
+  const smartModel = claude
+    ? env["DISCERE_CLAUDE_SMART_MODEL"]?.trim() || CLAUDE_DEFAULT_SMART_MODEL
+    : env["DISCERE_AI_SMART_MODEL"]?.trim() || fastModel;
+  const byModel = Object.entries(live.byModel).map(([model, totals]) => ({ model, ...totals }));
+  return {
+    provider: runtime.id,
+    model: `${fastModel} / ${smartModel}`,
+    reasoningEffort: claude ? env["DISCERE_CLAUDE_EFFORT"]?.trim() || "low" : "",
+    binaryFound: claude ? detectDrivers().claude : detectDrivers().api,
+    binaryVersion: "",
+    authPresent: claude ? claudeSignedIn() : Boolean(env["DISCERE_AI_API_KEY"]?.trim() || env["DISCERE_AI_BASE_URL"]?.trim()),
+    queueDepth: live.queueDepth,
+    lastOutcome: live.lastOutcome,
+    lastError: live.lastError,
+    quotaKnown: false,
+    quotaPlanType: "",
+    quotaUsedPercent: 0,
+    quotaResetsAt: 0,
+    routing: { mode: resolveRoutingMode(env["DISCERE_AI_ROUTING"]), fastModel, smartModel },
+    usage: {
+      calls: live.calls,
+      costUsd: byModel.reduce((sum, entry) => sum + entry.costUsd, 0),
+      byModel,
+    },
+  };
+}
+
 export function buildTutorStatus(runtime: TutorRuntime): TutorStatus {
+  if (runtime.id === "claude" || runtime.id === "openai-compatible") return pipelineStatus(runtime);
   const codex = runtime.id === "codex";
   const probe = codex ? probeCodexBinary() : { found: false, version: "" };
   const quota = codex ? readCodexQuota() : undefined;

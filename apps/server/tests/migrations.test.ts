@@ -1,4 +1,5 @@
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, rmSync, readFileSync } from "node:fs";
+import Database from "better-sqlite3";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -18,6 +19,50 @@ afterEach(() => {
 });
 
 describe("database migrations", () => {
+  it("preserves historical XP, backfills genuine study, and remembers tutor assistance", () => {
+    const legacy = new Database(databasePath);
+    legacy.exec("CREATE TABLE schema_migrations (name TEXT PRIMARY KEY, applied_at TEXT NOT NULL)");
+    for (const name of listMigrations().filter((name) => name < "0005")) {
+      legacy.exec(readFileSync(new URL(`../drizzle/${name}`, import.meta.url), "utf8"));
+      legacy
+        .prepare("INSERT INTO schema_migrations VALUES (?, ?)")
+        .run(name, "2026-09-29T00:00:00.000Z");
+    }
+    const at = "2026-09-30T08:00:00.000Z";
+    legacy
+      .prepare(
+        "INSERT INTO user_profiles (id, learner_name, xp, created_at, updated_at) VALUES ('local-user', 'Owner', 120, ?, ?)",
+      )
+      .run(at, at);
+    for (const [id, response] of [
+      ["real", "0.05 A"],
+      ["pending", ""],
+    ]) {
+      legacy
+        .prepare(
+          "INSERT INTO attempts (id,user_id,question_id,response,mode,correct,feedback,created_at,updated_at) VALUES (?, 'local-user', 'q1', ?, 'coach', 1, 'feedback', ?, ?)",
+        )
+        .run(id, response, at, at);
+    }
+    legacy
+      .prepare(
+        "INSERT INTO assistance_events (id,attempt_id,type,created_at) VALUES ('help','real','tutor_reply', ?)",
+      )
+      .run(at);
+    legacy.close();
+    const migrated = new DiscereStore(databasePath, { migrate: true, clock: () => new Date(at) });
+    migrated.study.updatePreferences({ timeZone: "UTC" });
+    expect(migrated.getProfile().xp).toBe(120);
+    expect(migrated.study.summary().totals.answers).toBe(1);
+    expect(migrated.study.summary().totals.independent).toBe(0);
+    expect(migrated.study.summary().streak.days).toBe(1);
+    expect(migrated.study.summary().calendar.at(-1)?.xp).toBe(0);
+    migrated.close();
+    const reopened = new DiscereStore(databasePath, { migrate: true, clock: () => new Date(at) });
+    expect(reopened.getProfile().xp).toBe(120);
+    expect(reopened.study.summary().totals.answers).toBe(1);
+    reopened.close();
+  });
   it("refuses to open an unmigrated database", () => {
     expect(() => new DiscereStore(databasePath)).toThrow(/pnpm db:migrate/);
   });
@@ -49,6 +94,7 @@ describe("database migrations", () => {
       "review_sessions",
       "notebook_pages",
       "transfer_attempts",
+      "course_check_sessions",
       "schema_migrations",
     ]) {
       expect(tables.has(table)).toBe(true);

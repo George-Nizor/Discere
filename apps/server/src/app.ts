@@ -3,6 +3,14 @@ import cors from "@fastify/cors";
 import Fastify, { type FastifyInstance } from "fastify";
 import { ZodError } from "zod";
 import { ContentRepository } from "./content.js";
+import { PythonProjectRepository } from "./python-projects/repository.js";
+import { IsolatedPythonRuntime, type PythonRuntime } from "./python-projects/runtime.js";
+import { PythonProjectService, registerPythonProjectRoutes } from "./python-projects/service.js";
+import { SqlProjectRepository } from "./sql-projects/repository.js";
+import { IsolatedSqlRuntime, type SqlRuntime } from "./sql-projects/runtime.js";
+import { SqlProjectService, registerSqlProjectRoutes } from "./sql-projects/service.js";
+import { registerCourseCheckRoutes } from "./course-checks.js";
+import { registerSearchRoutes } from "./search.js";
 import { DiscereStore } from "./db/store.js";
 import { HttpError } from "./errors.js";
 import { registerRomanReferenceRoutes } from "./roman-reference-routes.js";
@@ -19,6 +27,9 @@ export interface AppOptions {
   /** Root directory holding one sub-directory per course bundle. */
   contentRoot?: string;
   revealDelayMs?: number;
+  /** Optional isolated query runner; tests can control execution without touching user data. */
+  sqlRuntime?: SqlRuntime;
+  pythonRuntime?: PythonRuntime;
   logger?: boolean;
   /** Applies pending migrations before serving. Tests and disposable databases use this;
    * the deployed server refuses to start against an unmigrated database instead. */
@@ -99,6 +110,22 @@ export async function createApp(options: AppOptions = {}): Promise<DiscereApp> {
     topicMaps,
     revealDelayMs: options.revealDelayMs ?? 5000,
   });
+  await registerCourseCheckRoutes(app, { content, store });
+  await registerSearchRoutes(app, { content });
+  const pythonProjects = await PythonProjectRepository.load(contentRoot, content);
+  await registerPythonProjectRoutes(app, new PythonProjectService(
+    store, pythonProjects, options.pythonRuntime ?? new IsolatedPythonRuntime(), options.revealDelayMs ?? 5000,
+  ));
+  const sqlProjects = await SqlProjectRepository.load(contentRoot, content);
+  await registerSqlProjectRoutes(
+    app,
+    new SqlProjectService(
+      store,
+      sqlProjects,
+      options.sqlRuntime ?? new IsolatedSqlRuntime(),
+      options.revealDelayMs ?? 5000,
+    ),
+  );
   await registerRomanReferenceRoutes(app, { store });
   await registerTransferRoutes(app, { content, store });
   await registerWorkingsReviewRoutes(app, { content, store, runtime });

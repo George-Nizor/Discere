@@ -122,7 +122,7 @@ const questionProgress = [
 ] as const;
 
 const validProgress = RomanReferenceProgressSchema.parse({
-  version: 3,
+  version: 4,
   opening: {
     order: openingOrder,
     submittedOrder: null,
@@ -170,6 +170,22 @@ const validProgress = RomanReferenceProgressSchema.parse({
       finished: false,
     },
   },
+  review: {
+    front: "Why does Roman imperial history continue after 476 CE?",
+    back: null,
+    progress: {
+      draft: "",
+      response: null,
+      result: null,
+      feedback: null,
+      mode: null,
+      revealed: false,
+      rating: null,
+      evidence: null,
+      schedule: null,
+      previousSchedule: null,
+    },
+  },
   activeBeat: "opening",
   activeQuestionId: null,
   updatedAt: "2026-08-22T00:00:00.000Z",
@@ -207,7 +223,7 @@ function firstQuestion(progress: ReturnType<typeof atQuestions>) {
 describe("Roman reference recovery contracts", () => {
   it("accepts valid v3 progress with server-owned question and essay views", () => {
     const progress = RomanReferenceProgressSchema.parse(validProgress);
-    expect(progress.version).toBe(3);
+    expect(progress.version).toBe(4);
     expect(progress.activeBeat).toBe("opening");
     expect(progress.questions.map((question) => question.content.id)).toEqual([
       "turning-points",

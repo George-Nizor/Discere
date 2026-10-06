@@ -3,16 +3,11 @@ import type { JourneyStageType } from "@discere/contracts";
 /**
  * XP for finishing a stage, awarded once per stage.
  *
- * Quiz and essay stages are absent on purpose. Answering a question already earns XP through
- * `scoreAttempt`, weighted by mode, hints, and whether the answer was revealed — paying again
- * for reaching the end of the same stage would count one piece of work twice and would reward
- * revealing the answer as much as knowing it. The stages listed here have no attempt behind
- * them, so without this they would be worth nothing at all.
+ * Answers and due recall responses earn their own rewards. Visiting or advancing a screen
+ * earns nothing. Completion adds a small, once-only reward after the server verifies the
+ * lesson's required answers, interactions, and recall cards.
  */
 export const XP_AWARDS: Partial<Record<JourneyStageType, number>> = {
-  explainer: 10,
-  interactive_visual: 10,
-  review: 10,
   completion: 20,
 };
 
@@ -30,7 +25,11 @@ export function levelForXp(xp: number): number {
 }
 
 /** XP still needed for the next level, and how far through the current one the learner is. */
-export function levelProgress(xp: number): { level: number; fraction: number; nextLevelXp: number } {
+export function levelProgress(xp: number): {
+  level: number;
+  fraction: number;
+  nextLevelXp: number;
+} {
   const level = levelForXp(xp);
   const currentFloor = level * level * 100;
   const nextLevelXp = (level + 1) * (level + 1) * 100;
@@ -40,4 +39,13 @@ export function levelProgress(xp: number): { level: number; fraction: number; ne
     fraction: span === 0 ? 0 : Math.max(0, Math.min(1, (Math.max(0, xp) - currentFloor) / span)),
     nextLevelXp,
   };
+}
+
+/**
+ * An XP boost is an item, earned from chests and new levels and switched on by hand. While it
+ * runs, every reward for learning work pays half as much again. Chest XP is never boosted.
+ */
+export const XP_BOOST = { multiplier: 1.5, minutes: 30 } as const;
+export function boostBonus(amount: number): number {
+  return Math.round(amount * (XP_BOOST.multiplier - 1));
 }

@@ -108,12 +108,18 @@ export function saveTransferResponse(input: {
   if (existing?.correct) throw new Error("Transfer challenge is already complete.");
 
   const assessment = feedbackFor(response, question);
-  const timestamp = new Date().toISOString();
+  const timestamp = store.now();
+  const transferId = question.transfer?.id ?? "";
+  const alreadySolved = Boolean(
+    store.database
+      .prepare("SELECT 1 FROM transfer_attempts WHERE transfer_id = ? AND correct = 1 LIMIT 1")
+      .get(transferId),
+  );
   let xpAwarded = 0;
   let mastery = minimumMastery(store, question.conceptIds);
   let conceptMastery: Record<string, number> = {};
 
-  if (assessment.correct) {
+  if (assessment.correct && !alreadySolved) {
     const evidence = scoreAttempt({
       correct: true,
       mode: attempt.mode,
@@ -133,7 +139,6 @@ export function saveTransferResponse(input: {
     mastery = values.length === 0 ? 0 : Math.min(...values);
   }
 
-  const transferId = question.transfer?.id ?? "";
   const transaction = store.database.transaction(() => {
     store.database
       .prepare(`
@@ -161,10 +166,17 @@ export function saveTransferResponse(input: {
         timestamp,
       );
 
-    if (!assessment.correct) return;
-    store.database
-      .prepare("UPDATE user_profiles SET xp = xp + ?, updated_at = ? WHERE id = ?")
-      .run(xpAwarded, timestamp, LOCAL_USER_ID);
+    if (!alreadySolved && response.trim())
+      store.study.record({
+        key: `transfer:${transferId}`,
+        kind: "transfer",
+        referenceId: transferId,
+        correct: assessment.correct,
+        independent: false,
+        qualifying: true,
+      });
+    if (!assessment.correct || alreadySolved) return;
+    store.study.reward(xpAwarded, `transfer:${transferId}`);
     for (const conceptId of question.conceptIds) {
       const nextMastery = conceptMastery[conceptId];
       if (nextMastery === undefined) {

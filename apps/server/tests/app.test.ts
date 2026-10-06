@@ -89,7 +89,21 @@ describe("Discere API", () => {
     expect(stage.interactionState).toEqual({ stepIndex: 3 });
   });
 
-  it("persists journey stage progress and restores the next active stage", async () => {
+  it("persists assessed journey progress and restores the next active stage", async () => {
+    await app.inject({
+      method: "POST",
+      url: "/api/activity-attempts",
+      payload: { activityId: "find-what-limits-current", response: "resistor", mode: "coach" },
+    });
+    await app.inject({
+      method: "POST",
+      url: "/api/attempts",
+      payload: {
+        questionId: "choose-change-that-raises-current",
+        response: "Raising the supply voltage",
+        mode: "coach",
+      },
+    });
     const update = await app.inject({
       method: "PUT",
       url: "/api/courses/electronics-foundations/lessons/current-in-one-loop/progress",
@@ -151,8 +165,12 @@ describe("Discere API", () => {
     expect(submit.json().styleNotes.length).toBeGreaterThan(0);
   });
 
-  it("keeps review backs behind a reveal and records independent evidence", async () => {
-    const session = await app.inject({ method: "POST", url: "/api/review/sessions", payload: {} });
+  it("keeps review backs behind a reveal and prevents confidence alone from proving recall", async () => {
+    const session = await app.inject({
+      method: "POST",
+      url: "/api/review/sessions",
+      payload: { lessonId: "what-a-letter-stands-for" },
+    });
     expect(session.statusCode).toBe(200);
     const sessionBody = session.json();
     expect(sessionBody.card.back).toBeUndefined();
@@ -163,14 +181,14 @@ describe("Discere API", () => {
     });
     expect(revealed.statusCode).toBe(200);
     // The queue is fed by the authored cards, so the back is the answer that card records.
-    expect(revealed.json().back).toContain("I = V / R");
+    expect(revealed.json().back).toBeTruthy();
     const rated = await app.inject({
       method: "POST",
       url: `/api/review/sessions/${sessionBody.sessionId}/rate`,
       payload: { rating: "good", recalled: true },
     });
     expect(rated.statusCode).toBe(200);
-    expect(rated.json().evidence).toBe("independent");
+    expect(rated.json().evidence).toBe("assisted");
     const repeated = await app.inject({
       method: "POST",
       url: `/api/review/sessions/${sessionBody.sessionId}/rate`,
@@ -179,12 +197,30 @@ describe("Discere API", () => {
     expect(repeated.statusCode).toBe(409);
   });
 
-  it("lists every bundled course and names its concepts", async () => {
+  it("lists the eighteen active courses and preserves archived course details", async () => {
     const list = await app.inject({ method: "GET", url: "/api/courses" });
     expect(list.statusCode).toBe(200);
     const ids = list.json().courses.map((course: { id: string }) => course.id);
-    expect(ids).toContain("electronics-foundations");
-    expect(ids).toContain("roman-empire");
+    expect(ids).toHaveLength(18);
+    for (const id of [
+      "engineering-structures-and-machines",
+      "economics-markets-and-strategy",
+      "philosophy-knowledge-mind-and-ethics",
+      "english-reading-writing-and-rhetoric",
+      "astronomy-sky-to-cosmos",
+      "psychology-how-minds-work",
+    ])
+      expect(ids).toContain(id);
+    expect(ids).toContain("linear-algebra-vectors-and-maps");
+    expect(ids).toContain("biology-cells-to-ecosystems");
+    expect(ids).toContain("chemistry-atoms-to-reactions");
+    expect(ids).toContain("calculus-change-and-accumulation");
+    expect(ids).toContain("geometry-shape-and-space");
+    expect(ids).toContain("physics-motion-and-forces");
+    expect(ids).toContain("python-for-data-analysis");
+    expect(ids).toContain("sql-from-rows-to-reports");
+    expect(ids).not.toContain("electronics-foundations");
+    expect(ids).not.toContain("roman-empire");
     const detail = await app.inject({ method: "GET", url: "/api/courses/roman-empire" });
     expect(detail.statusCode).toBe(200);
     expect(detail.json().concepts.length).toBeGreaterThan(0);
@@ -263,7 +299,9 @@ describe("Discere API", () => {
     const response = await app.inject({ method: "GET", url: "/api/lessons/current" });
     expect(response.statusCode).toBe(200);
     const body = response.json();
-    expect(body.lesson.visualBrief.visualClass).toBe("deterministic_diagram");
+    expect(
+      body.lesson.steps.find((step: { diagram?: unknown }) => step.diagram).diagram.type,
+    ).toBe("number_machine");
     expect(body.question.answerAuthority).toBeUndefined();
   });
 

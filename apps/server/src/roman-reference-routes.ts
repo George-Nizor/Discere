@@ -19,6 +19,8 @@ import {
   RomanReferenceQuestionResponseSchema,
   type RomanReferenceState,
   RomanReferenceStateSchema,
+  RomanReferenceV3StateSchema,
+  RomanReferenceReviewActionSchema,
   type RomanReferenceTurningPointId,
   type TutoringMode,
 } from "@discere/contracts";
@@ -44,6 +46,13 @@ import {
   ROMAN_REFERENCE_ESSAY_SOURCE_IDS,
   romanReferenceEssayFeedbackProse,
 } from "./roman-reference-essay.js";
+import {
+  applyRomanReferenceReviewAction,
+  blankRomanReferenceReview,
+  REFERENCE_RECALL_BACK,
+  REFERENCE_RECALL_FRONT,
+  romanReferenceReviewIsConsistent,
+} from "./roman-reference-review.js";
 
 const ROMAN_REFERENCE_PATH =
   "/api/courses/roman-empire/lessons/rise-of-the-roman-empire/reference/progress";
@@ -158,7 +167,7 @@ function blankQuestion(id: RomanReferenceQuestionId): RomanReferenceQuestionProg
 
 function defaultState(): RomanReferenceState {
   return RomanReferenceStateSchema.parse({
-    version: 3,
+    version: 4,
     opening: {
       order: [...DEFAULT_OPENING_ORDER],
       submittedOrder: null,
@@ -176,12 +185,13 @@ function defaultState(): RomanReferenceState {
     questions: QUESTION_ORDER.map(blankQuestion),
     assessmentFinished: false,
     essay: blankRomanReferenceEssay(),
+    review: blankRomanReferenceReview(),
   });
 }
 
 function upgradeV1(state: RomanReferenceV1State): RomanReferenceState {
   return RomanReferenceStateSchema.parse({
-    version: 3,
+    version: 4,
     opening: {
       ...state.opening,
       order: [...state.opening.order],
@@ -193,13 +203,14 @@ function upgradeV1(state: RomanReferenceV1State): RomanReferenceState {
     questions: QUESTION_ORDER.map(blankQuestion),
     assessmentFinished: false,
     essay: blankRomanReferenceEssay(),
+    review: blankRomanReferenceReview(),
   });
 }
 
 function upgradeV2(state: RomanReferenceV2State): RomanReferenceState {
   return RomanReferenceStateSchema.parse({
     ...state,
-    version: 3,
+    version: 4,
     opening: {
       ...state.opening,
       order: [...state.opening.order],
@@ -213,6 +224,7 @@ function upgradeV2(state: RomanReferenceV2State): RomanReferenceState {
       hints: [...question.hints],
     })),
     essay: blankRomanReferenceEssay(),
+    review: blankRomanReferenceReview(),
   });
 }
 
@@ -341,7 +353,8 @@ function stateIsServerConsistent(state: RomanReferenceState): boolean {
   return (
     openingIsServerConsistent(state) &&
     questionsAreServerConsistent(state) &&
-    essayIsServerConsistent(state.essay)
+    essayIsServerConsistent(state.essay) &&
+    romanReferenceReviewIsConsistent(state.review)
   );
 }
 
@@ -364,6 +377,18 @@ function readStoredState(store: DiscereStore): StoredReferenceState {
   const v3 = RomanReferenceStateSchema.safeParse(row.interactionState);
   if (v3.success && stateIsServerConsistent(v3.data)) {
     return { state: v3.data, updatedAt: row.updatedAt, requiresPersistence: false };
+  }
+
+  const legacyV3 = RomanReferenceV3StateSchema.safeParse(row.interactionState);
+  if (legacyV3.success) {
+    const upgraded = RomanReferenceStateSchema.parse({
+      ...legacyV3.data,
+      version: 4,
+      review: blankRomanReferenceReview(),
+    });
+    if (stateIsServerConsistent(upgraded)) {
+      return { state: upgraded, updatedAt: row.updatedAt, requiresPersistence: true };
+    }
   }
 
   const v2 = RomanReferenceV2StateSchema.safeParse(row.interactionState);
@@ -396,7 +421,9 @@ function activeBeat(state: RomanReferenceState): RomanReferenceProgress["activeB
   if (state.opening.status === "editing") return "opening";
   if (!state.augustus.completed) return "augustus";
   if (!state.expansion.completed) return "expansion";
-  return state.assessmentFinished ? "essay" : "questions";
+  if (!state.assessmentFinished) return "questions";
+  if (!state.essay.finished) return "essay";
+  return state.review.rating === null ? "recall" : "complete";
 }
 
 function activeQuestionId(state: RomanReferenceState): RomanReferenceQuestionId | null {
@@ -423,6 +450,11 @@ function responseFor(state: RomanReferenceState, updatedAt: string | null): Roma
             : [],
       },
       progress: state.essay,
+    },
+    review: {
+      front: REFERENCE_RECALL_FRONT,
+      back: state.review.revealed ? REFERENCE_RECALL_BACK : null,
+      progress: state.review,
     },
     activeBeat: beat,
     activeQuestionId: beat === "questions" ? activeQuestionId(state) : null,
@@ -556,6 +588,20 @@ function applyAction(
   action: RomanReferenceAction,
   submittedAt: string,
 ): RomanReferenceState {
+  const recallAction = RomanReferenceReviewActionSchema.safeParse(action);
+  if (recallAction.success) {
+    if (
+      !current.essay.finished ||
+      !current.assessmentFinished ||
+      !current.expansion.completed ||
+      !current.augustus.completed ||
+      current.opening.status === "editing"
+    ) {
+      throw new HttpError(409, "Finish the lesson before recalling it.", "LESSON_INCOMPLETE");
+    }
+    const review = applyRomanReferenceReviewAction(current.review, recallAction.data, submittedAt);
+    return review === current.review ? current : { ...current, review };
+  }
   switch (action.action) {
     case "reorder_opening": {
       if (current.opening.status !== "editing") openingAlreadyResolved();
@@ -941,6 +987,8 @@ function applyAction(
       }
       return { ...current, essay: { ...current.essay, finished: true } };
     }
+    default:
+      throw new HttpError(400, "Unknown reference action.", "INVALID_ACTION");
   }
 }
 

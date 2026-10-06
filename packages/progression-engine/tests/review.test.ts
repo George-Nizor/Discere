@@ -95,8 +95,9 @@ describe("FSRS review scheduling", () => {
     const independentHard = review(state, "2026-08-17T00:10:00.000Z", "hard");
     expect(assistedEasy.dueAt).toBe(independentHard.dueAt);
     expect(assistedEasy).toMatchObject({ assistedReviews: 1, independentReviews: 1 });
-    expect(gradeForResult({ outcome: "correct", evidence: "assisted", rating: "easy", reviewedAt }))
-      .toBe(2);
+    expect(
+      gradeForResult({ outcome: "correct", evidence: "assisted", rating: "easy", reviewedAt }),
+    ).toBe(2);
   });
 
   it("records a lapse and returns the card to relearning when recall fails", () => {
@@ -111,8 +112,16 @@ describe("FSRS review scheduling", () => {
 
   it("queues due cards in deterministic priority order", () => {
     const due = [
-      { ...createReviewState("card-b", reviewedAt), dueAt: "2026-08-16T00:00:00.000Z", repetition: 2 },
-      { ...createReviewState("card-a", reviewedAt), dueAt: "2026-08-16T00:00:00.000Z", repetition: 1 },
+      {
+        ...createReviewState("card-b", reviewedAt),
+        dueAt: "2026-08-16T00:00:00.000Z",
+        repetition: 2,
+      },
+      {
+        ...createReviewState("card-a", reviewedAt),
+        dueAt: "2026-08-16T00:00:00.000Z",
+        repetition: 1,
+      },
       { ...createReviewState("card-c", reviewedAt), dueAt: "2026-08-18T00:00:00.000Z" },
     ];
     expect(queueDueReviews(due, "2026-08-17T00:00:00.000Z").map((state) => state.cardId)).toEqual([

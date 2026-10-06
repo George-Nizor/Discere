@@ -152,7 +152,7 @@ describe("Gate 3 Roman reference assessment authority", () => {
 
     const migrated = await getProgress();
     expect(migrated).toMatchObject({
-      version: 3,
+      version: 4,
       opening: v1.opening,
       augustus: v1.augustus,
       expansion: { ...v1.expansion, completed: false },
@@ -165,12 +165,12 @@ describe("Gate 3 Roman reference assessment authority", () => {
     expect(JSON.parse(beforeAction.state).version).toBe(1);
 
     const persisted = await put({ action: "complete_expansion" });
-    expect(persisted.version).toBe(3);
+    expect(persisted.version).toBe(4);
     expect(persisted.expansion.completed).toBe(true);
     const afterAction = store.database
       .prepare("SELECT interaction_state AS state FROM journey_progress WHERE journey_id = ?")
       .get(ROMAN_REFERENCE_JOURNEY_ID) as { state: string };
-    expect(JSON.parse(afterAction.state).version).toBe(3);
+    expect(JSON.parse(afterAction.state).version).toBe(4);
   });
 
   it("falls back safely from an impossible shape-valid v1 expansion row", async () => {
@@ -201,7 +201,7 @@ describe("Gate 3 Roman reference assessment authority", () => {
       );
 
     const fallback = await getProgress();
-    expect(fallback).toMatchObject({ version: 3, activeBeat: "opening", updatedAt: null });
+    expect(fallback).toMatchObject({ version: 4, activeBeat: "opening", updatedAt: null });
     const repaired = await put({ action: "complete_augustus" });
     expect(repaired.augustus.completed).toBe(true);
     expect(repaired.updatedAt).not.toBeNull();

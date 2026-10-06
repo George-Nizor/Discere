@@ -360,7 +360,7 @@ describe("Gate 4 progress migration", () => {
 
     const migrated = await getProgress();
     expect(migrated).toMatchObject({
-      version: 3,
+      version: 4,
       opening: v2.opening,
       expansion: v2.expansion,
       updatedAt: timestamp,
@@ -393,12 +393,12 @@ describe("Gate 4 progress migration", () => {
     const afterAction = store.database
       .prepare("SELECT interaction_state AS state FROM journey_progress WHERE journey_id = ?")
       .get(ROMAN_REFERENCE_JOURNEY_ID) as { state: string };
-    expect(JSON.parse(afterAction.state).version).toBe(3);
+    expect(JSON.parse(afterAction.state).version).toBe(4);
   });
 
   it("falls back to a clean default when a stored essay contradicts its own history", async () => {
     const impossible = {
-      version: 3,
+      version: 4,
       opening: {
         order: [...CORRECT_Q1],
         submittedOrder: [...CORRECT_Q1],

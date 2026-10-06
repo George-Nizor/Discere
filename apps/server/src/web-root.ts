@@ -75,20 +75,33 @@ export async function registerWebRoot(app: FastifyInstance, root: string): Promi
       if (isApiPath(pathname)) return false;
       return isContainedRealPath(root, path.join(root, pathname));
     },
-    // The hashed asset names make a long cache safe; index.html must not be cached.
     setHeaders(reply, filePath) {
-      const value =
+      // Only build-generated, fingerprinted assets are immutable. Public artwork keeps its
+      // filename between releases and must be revalidated instead of remaining stale.
+      const relative = path.relative(root, filePath).split(path.sep).join("/");
+      const hashed = /^assets\/[^/]+-[a-zA-Z0-9_-]{6,}\.[^/]+$/.test(relative);
+      reply.header(
+        "Cache-Control",
         path.basename(filePath) === "index.html"
           ? "no-store"
-          : "public, max-age=31536000, immutable";
-      reply.header("Cache-Control", value);
+          : hashed
+            ? "public, max-age=31536000, immutable"
+            : "no-cache",
+      );
+      reply.header("X-Content-Type-Options", "nosniff");
     },
   });
 
   app.setNotFoundHandler((request, reply) => {
     // An unknown /api path is a real 404. Anything else is a route the browser router owns,
     // so the application is served and it decides what to show.
-    if (!isApplicationRoute(request.url)) {
+    const pathname = request.url.split("?")[0] ?? request.url;
+    // A missing script/image is a missing resource, never a successful HTML response.
+    if (
+      !isApplicationRoute(request.url) ||
+      pathname.startsWith("/assets/") ||
+      path.extname(pathname)
+    ) {
       return reply
         .status(404)
         .send({ code: "NOT_FOUND", message: "That endpoint does not exist." });

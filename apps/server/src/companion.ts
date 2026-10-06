@@ -368,9 +368,35 @@ export function acceptTutorReply(input: {
     ...(input.referenceEssayId === undefined ? {} : { referenceEssayId: input.referenceEssayId }),
   });
   const accepted = issues.every((issue) => issue.severity !== "hard");
-  if (input.store && input.attemptId) {
+  let attemptId = input.attemptId;
+  if (
+    accepted &&
+    input.store &&
+    !attemptId &&
+    !input.referenceQuestionId &&
+    !input.referenceEssayId
+  ) {
+    const conceptMastery = Object.fromEntries(
+      input.question.conceptIds.map((id) => [id, input.store!.getMastery(id)]),
+    );
+    attemptId =
+      input.store.getOpenAttempt(input.question.id, input.mode)?.id ??
+      input.store.saveAttempt({
+        questionId: input.question.id,
+        mode: input.mode,
+        response: "",
+        correct: false,
+        feedback: "",
+        xpAwarded: 0,
+        mastery: Math.min(...Object.values(conceptMastery)),
+        conceptIds: input.question.conceptIds,
+        conceptMastery,
+        independent: false,
+      }).id;
+  }
+  if (input.store && attemptId) {
     input.store.recordTutorAssistance(
-      input.attemptId,
+      attemptId,
       `${input.mode}:${accepted ? "accepted" : "rejected"}`,
     );
   }

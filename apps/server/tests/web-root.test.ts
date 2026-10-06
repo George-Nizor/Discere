@@ -175,9 +175,8 @@ describe("symlink containment", () => {
     for (const url of ["/escape.txt", "/assets/escape-asset.txt"]) {
       const response = await server.inject({ method: "GET", url });
       expect(response.body).not.toContain("secret");
-      // It falls through to the application shell rather than reading through the link.
-      expect(response.statusCode).toBe(200);
-      expect(response.body).toContain('<div id="root">');
+      expect(response.statusCode).toBe(404);
+      expect(response.body).not.toContain('<div id="root">');
     }
   });
 
@@ -203,5 +202,20 @@ describe("symlink containment", () => {
     );
     // A path that does not exist is left to the file layer to refuse.
     expect(isContainedRealPath(bundle, path.join(bundle, "missing.txt"))).toBe(true);
+  });
+});
+
+describe("release cache and missing resources", () => {
+  it("revalidates unversioned artwork and never substitutes HTML for missing assets", async () => {
+    writeFileSync(path.join(bundle, "mascot.svg"), "<svg></svg>");
+    const server = await start();
+    const artwork = await server.inject("/mascot.svg");
+    expect(artwork.headers["cache-control"]).toBe("no-cache");
+    expect(artwork.headers["x-content-type-options"]).toBe("nosniff");
+    for (const url of ["/assets/missing.js", "/missing.png"]) {
+      const missing = await server.inject(url);
+      expect(missing.statusCode).toBe(404);
+      expect(missing.headers["content-type"]).toContain("application/json");
+    }
   });
 });

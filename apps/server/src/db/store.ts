@@ -13,21 +13,21 @@ import type {
   WritingLintResponse,
 } from "@discere/contracts";
 import {
-  activityDay,
-  computeStreakDays,
-  stageCompletionXp,
   type CourseQueueEntry,
   type Flashcard,
   interleaveByCourse,
+  localStudyDay,
   type ReviewEvidence,
   type ReviewOutcome,
   type ReviewPhase,
   type ReviewRating,
   type ReviewState,
   scheduleReview,
+  stageCompletionXp,
 } from "@discere/progression-engine";
 import Database from "better-sqlite3";
 import { assertSchemaReady, runMigrations } from "./migrations.js";
+import { StudyStore } from "./study-store.js";
 
 const LOCAL_USER_ID = "local-user";
 const REVIEW_PHASES = new Set<ReviewPhase>(["new", "learning", "review", "relearning"]);
@@ -43,6 +43,7 @@ export interface AttemptRow {
   hintCount: number;
   answerRevealed: boolean;
   xpAwarded: number;
+  xpGained?: number;
   mastery: number;
   createdAt: string;
   updatedAt: string;
@@ -59,6 +60,7 @@ export interface AttemptWrite {
   conceptIds: string[];
   conceptMastery: Record<string, number>;
   independent: boolean;
+  qualifying?: boolean;
 }
 export interface RevealRow {
   token: string;
@@ -105,6 +107,9 @@ export interface ReviewSessionRow {
   revealed: boolean;
   rated: boolean;
   createdAt: string;
+  mode: TutoringMode;
+  response: string | null;
+  correct: boolean | null;
 }
 
 function bool(value: unknown): boolean {
@@ -126,6 +131,7 @@ export interface StoreOptions {
 
 export class DiscereStore {
   readonly database: Database.Database;
+  readonly study: StudyStore;
   private readonly clock: () => Date;
   constructor(databasePath: string, options: StoreOptions = {}) {
     if (databasePath !== ":memory:") mkdirSync(path.dirname(databasePath), { recursive: true });
@@ -136,6 +142,7 @@ export class DiscereStore {
     if (options.migrate === true) runMigrations(this.database);
     else assertSchemaReady(this.database, databasePath);
     this.ensureUser();
+    this.study = new StudyStore(this.database, () => this.now());
   }
 
   /** The current instant as an ISO 8601 string, from the injected clock. */
@@ -247,9 +254,10 @@ export class DiscereStore {
    * a day the learner worked.
    */
   todayMinutes(): number {
-    const today = activityDay(this.now());
+    const timeZone = this.study.preferences().timeZone;
+    const today = localStudyDay(this.now(), timeZone);
     const stamps = this.studyTimestamps()
-      .filter((stamp) => stamp && activityDay(stamp) === today)
+      .filter((stamp) => stamp && stamp <= this.now() && localStudyDay(stamp, timeZone) === today)
       .map((stamp) => Date.parse(stamp))
       .filter((value) => Number.isFinite(value))
       .sort((left, right) => left - right);
@@ -271,18 +279,10 @@ export class DiscereStore {
 
   /** Completions per UTC day since `from`, for the streak calendar. */
   activityByDay(fromDay: string): Array<{ date: string; completions: number }> {
-    const rows = this.database
-      .prepare(
-        `SELECT substr(updated_at, 1, 10) AS date, COUNT(*) AS completions
-         FROM journey_progress
-         WHERE user_id = ? AND state IN ('completed', 'skipped_optional') AND updated_at >= ?
-         GROUP BY date ORDER BY date`,
-      )
-      .all(LOCAL_USER_ID, `${fromDay}T00:00:00.000Z`) as Array<{
-      date: string;
-      completions: number;
-    }>;
-    return rows;
+    return this.study
+      .summary()
+      .calendar.filter((day) => day.date >= fromDay && day.answers + day.reviews + day.lessons > 0)
+      .map((day) => ({ date: day.date, completions: day.answers + day.reviews + day.lessons }));
   }
 
   /**
@@ -293,18 +293,16 @@ export class DiscereStore {
   studyTimestamps(): string[] {
     const rows = this.database
       .prepare(
-        `SELECT created_at AS at FROM attempts WHERE user_id = ?
-         UNION ALL SELECT updated_at AS at FROM attempts WHERE user_id = ?
-         UNION ALL SELECT created_at AS at FROM transfer_attempts
-         UNION ALL SELECT last_reviewed_at AS at FROM review_cards WHERE user_id = ? AND last_reviewed_at IS NOT NULL`,
+        `SELECT occurred_at AS at FROM learning_events WHERE user_id = ? AND qualifying = 1
+         UNION ALL SELECT updated_at AS at FROM learning_events WHERE user_id = ? AND qualifying = 1`,
       )
-      .all(LOCAL_USER_ID, LOCAL_USER_ID, LOCAL_USER_ID) as Array<{ at: string }>;
+      .all(LOCAL_USER_ID, LOCAL_USER_ID) as Array<{ at: string }>;
     return rows.map((row) => row.at);
   }
 
   /** Consecutive days of recorded study, recomputed from the activity itself. */
   streakDays(): number {
-    return computeStreakDays(this.studyTimestamps(), this.now());
+    return this.study.summary().streak.days;
   }
 
   getProfile(): { learnerName: string; xp: number; streakDays: number } {
@@ -342,6 +340,45 @@ export class DiscereStore {
       .prepare("SELECT mastery FROM concept_progress WHERE user_id = ? AND concept_id = ?")
       .get(LOCAL_USER_ID, conceptId) as { mastery: number } | undefined;
     return row?.mastery ?? 0;
+  }
+
+  hasQuestionEvidence(questionId: string, requireCorrect = true): boolean {
+    return Boolean(
+      this.database
+        .prepare(
+          `SELECT 1 FROM attempts WHERE user_id = ? AND question_id = ? AND length(trim(response)) > 0 ${requireCorrect ? "AND (correct = 1 OR answer_revealed = 1)" : ""} LIMIT 1`,
+        )
+        .get(LOCAL_USER_ID, questionId),
+    );
+  }
+
+  getOpenAttempt(questionId: string, mode: TutoringMode): AttemptRow | null {
+    const row = this.database
+      .prepare(
+        "SELECT id FROM attempts WHERE user_id = ? AND question_id = ? AND mode = ? AND correct = 0 AND answer_revealed = 0 ORDER BY updated_at DESC LIMIT 1",
+      )
+      .get(LOCAL_USER_ID, questionId, mode) as { id: string } | undefined;
+    return row ? this.getAttempt(row.id) : null;
+  }
+
+  hasTutorAssistance(attemptId: string): boolean {
+    return Boolean(
+      this.database
+        .prepare(
+          "SELECT 1 FROM assistance_events WHERE attempt_id = ? AND type = 'tutor_reply' LIMIT 1",
+        )
+        .get(attemptId),
+    );
+  }
+
+  hasRatedCard(cardId: string): boolean {
+    return Boolean(
+      this.database
+        .prepare(
+          "SELECT 1 FROM review_sessions WHERE user_id = ? AND card_id = ? AND rated = 1 LIMIT 1",
+        )
+        .get(LOCAL_USER_ID, cardId),
+    );
   }
 
   getJourneyProgress(journeyId: string, stageOrder: string[]): JourneyProgress {
@@ -408,6 +445,7 @@ export class DiscereStore {
           .get(LOCAL_USER_ID, journeyId, input.stageId) as { state?: string } | undefined
       )?.state ?? "";
     const transaction = this.database.transaction(() => {
+      const terminal = alreadyComplete === "completed" || alreadyComplete === "skipped_optional";
       this.database
         .prepare(
           "INSERT INTO journey_progress (user_id, journey_id, stage_id, state, interaction_state, updated_at) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT(user_id, journey_id, stage_id) DO UPDATE SET state = excluded.state, interaction_state = excluded.interaction_state, updated_at = excluded.updated_at",
@@ -416,19 +454,26 @@ export class DiscereStore {
           LOCAL_USER_ID,
           journeyId,
           input.stageId,
-          input.state,
+          terminal ? alreadyComplete : input.state,
           JSON.stringify(input.interactionState),
           timestamp,
         );
       if (input.state === "completed" || input.state === "skipped_optional") {
-        const freshlyDone =
-          alreadyComplete !== "completed" && alreadyComplete !== "skipped_optional";
+        const eventKey = `stage:${journeyId}:${input.stageId}`;
+        const freshlyDone = !terminal && !this.study.has(eventKey);
         const award = stageType && input.state === "completed" ? stageCompletionXp(stageType) : 0;
         if (freshlyDone && award > 0) {
-          this.database
-            .prepare("UPDATE user_profiles SET xp = xp + ?, updated_at = ? WHERE id = ?")
-            .run(award, timestamp, LOCAL_USER_ID);
+          this.study.reward(award, eventKey);
         }
+        if (freshlyDone && input.state === "completed")
+          this.study.record({
+            key: eventKey,
+            kind: "stage",
+            referenceId: journeyId,
+            correct: false,
+            independent: false,
+            qualifying: stageType === "completion",
+          });
         const next = stageOrder[stageOrder.indexOf(input.stageId) + 1];
         if (next) {
           this.database
@@ -669,7 +714,7 @@ export class DiscereStore {
       .all(nowTimestamp, LOCAL_USER_ID) as CourseDueCount[];
   }
 
-  createReviewSession(cardId: string): ReviewSessionRow {
+  createReviewSession(cardId: string, mode: TutoringMode = "coach"): ReviewSessionRow {
     if (!this.getReviewCard(cardId)) throw new Error(`Review card '${cardId}' was not found.`);
     const session: ReviewSessionRow = {
       id: randomUUID(),
@@ -677,22 +722,41 @@ export class DiscereStore {
       revealed: false,
       rated: false,
       createdAt: this.now(),
+      mode,
+      response: null,
+      correct: null,
     };
     this.database
       .prepare(
-        "INSERT INTO review_sessions (id, user_id, card_id, revealed, rated, created_at) VALUES (?, ?, ?, 0, 0, ?)",
+        "INSERT INTO review_sessions (id, user_id, card_id, revealed, rated, created_at, mode, scheduled_due_at) VALUES (?, ?, ?, 0, 0, ?, ?, ?)",
       )
-      .run(session.id, LOCAL_USER_ID, session.cardId, session.createdAt);
+      .run(
+        session.id,
+        LOCAL_USER_ID,
+        session.cardId,
+        session.createdAt,
+        mode,
+        this.getReviewCard(cardId)!.state.dueAt,
+      );
     return session;
   }
 
   getReviewSession(sessionId: string): ReviewSessionRow | null {
     const row = this.database
       .prepare(
-        "SELECT id, card_id AS cardId, revealed, rated, created_at AS createdAt FROM review_sessions WHERE user_id = ? AND id = ?",
+        "SELECT id, card_id AS cardId, revealed, rated, created_at AS createdAt, mode, response, correct FROM review_sessions WHERE user_id = ? AND id = ?",
       )
       .get(LOCAL_USER_ID, sessionId) as
-      | { id: string; cardId: string; revealed: number; rated: number; createdAt: string }
+      | {
+          id: string;
+          cardId: string;
+          revealed: number;
+          rated: number;
+          createdAt: string;
+          mode: TutoringMode;
+          response: string | null;
+          correct: number | null;
+        }
       | undefined;
     return row
       ? {
@@ -701,13 +765,26 @@ export class DiscereStore {
           revealed: bool(row.revealed),
           rated: bool(row.rated),
           createdAt: row.createdAt,
+          mode: row.mode,
+          response: row.response,
+          correct: row.correct === null ? null : bool(row.correct),
         }
       : null;
   }
 
+  recordReviewRecall(sessionId: string, response: string, correct: boolean | null): boolean {
+    const result = this.database
+      .prepare(
+        "UPDATE review_sessions SET response = ?, correct = ? WHERE id = ? AND user_id = ? AND response IS NULL AND revealed = 0 AND rated = 0",
+      )
+      .run(response, correct === null ? null : correct ? 1 : 0, sessionId, LOCAL_USER_ID);
+    return result.changes === 1;
+  }
+
   revealReviewSession(sessionId: string): ReviewCardRow | null {
     const session = this.getReviewSession(sessionId);
-    if (!session || session.rated) return null;
+    if (!session || session.rated || (session.mode === "exam" && session.response === null))
+      return null;
     this.database
       .prepare("UPDATE review_sessions SET revealed = 1 WHERE id = ? AND user_id = ?")
       .run(sessionId, LOCAL_USER_ID);
@@ -717,14 +794,23 @@ export class DiscereStore {
   rateReviewSession(
     sessionId: string,
     rating: ReviewRating,
-    recalled: boolean,
-  ): { state: ReviewState; evidence: ReviewEvidence } | null {
+    _recalled: boolean,
+  ): { state: ReviewState; evidence: ReviewEvidence; xpGained: number } | null {
     const session = this.getReviewSession(sessionId);
     if (!session || session.rated || !session.revealed) return null;
     const card = this.getReviewCard(session.cardId);
     if (!card) return null;
-    const outcome: ReviewOutcome = rating === "again" ? "incorrect" : "correct";
-    const evidence: ReviewEvidence = recalled ? "independent" : "assisted";
+    const due = (
+      this.database
+        .prepare("SELECT scheduled_due_at AS due FROM review_sessions WHERE id = ?")
+        .get(sessionId) as { due: string | null }
+    ).due;
+    // Two tabs may open the same due card. A stale session cannot advance its schedule again.
+    if (due !== null && card.state.dueAt !== due) return null;
+    const outcome: ReviewOutcome =
+      session.correct === false || rating === "again" ? "incorrect" : "correct";
+    const evidence: ReviewEvidence =
+      session.correct === true && session.mode !== "direct" ? "independent" : "assisted";
     // The learner's own rating reaches FSRS; assisted recall is capped inside the engine.
     const next = scheduleReview(card.state, {
       outcome,
@@ -733,6 +819,29 @@ export class DiscereStore {
       reviewedAt: this.now(),
     });
     const updated = this.database.transaction(() => {
+      const eventKey = `review:${session.cardId}:${due}`;
+      const qualifying =
+        Boolean(session.response?.trim()) &&
+        due !== null &&
+        due <= this.now() &&
+        card.state.dueAt === due &&
+        !this.study.has(eventKey);
+      const xpGained = qualifying
+        ? evidence === "independent" && outcome === "correct"
+          ? 8
+          : 3
+        : 0;
+      if (qualifying) {
+        this.study.record({
+          key: eventKey,
+          kind: "review",
+          referenceId: session.cardId,
+          correct: outcome === "correct",
+          independent: evidence === "independent",
+          qualifying: true,
+        });
+        this.study.reward(xpGained, eventKey);
+      }
       this.database
         .prepare(
           "UPDATE review_cards SET due_at = ?, interval_days = ?, repetition = ?, last_outcome = ?, last_evidence = ?, independent_reviews = ?, assisted_reviews = ?, last_reviewed_at = ?, stability = ?, difficulty = ?, lapses = ?, phase = ?, learning_step = ?, elapsed_days = ?, scheduled_days = ? WHERE user_id = ? AND card_id = ?",
@@ -759,7 +868,7 @@ export class DiscereStore {
       this.database
         .prepare("UPDATE review_sessions SET rated = 1 WHERE id = ? AND user_id = ?")
         .run(sessionId, LOCAL_USER_ID);
-      return { state: next, evidence };
+      return { state: next, evidence, xpGained };
     });
     return updated();
   }
@@ -807,7 +916,28 @@ export class DiscereStore {
     const id = input.id ?? randomUUID();
     const previous = input.id ? this.getAttempt(input.id) : null;
     const timestamp = this.now();
-    const xpDelta = Math.max(0, input.xpAwarded - (previous?.xpAwarded ?? 0));
+    const qualifying = input.qualifying ?? Boolean(input.response.trim());
+    const spent = (
+      this.database
+        .prepare(
+          "SELECT COALESCE(SUM(xp_awarded), 0) AS xp FROM attempts WHERE user_id = ? AND question_id = ?",
+        )
+        .get(LOCAL_USER_ID, input.questionId) as { xp: number }
+    ).xp;
+    const xpDelta = qualifying ? Math.max(0, input.xpAwarded - spent) : 0;
+    const xpAwarded = (previous?.xpAwarded ?? 0) + xpDelta;
+    const previouslySolved = Boolean(
+      this.database
+        .prepare(
+          "SELECT 1 FROM attempts WHERE user_id = ? AND question_id = ? AND correct = 1 LIMIT 1",
+        )
+        .get(LOCAL_USER_ID, input.questionId),
+    );
+    const newEvidence = input.correct && !previouslySolved;
+    const mastery =
+      previouslySolved && input.conceptIds.length
+        ? Math.min(...input.conceptIds.map((id) => this.getMastery(id)))
+        : input.mastery;
     const transaction = this.database.transaction(() => {
       if (previous) {
         this.database
@@ -819,8 +949,8 @@ export class DiscereStore {
             input.mode,
             input.correct ? 1 : 0,
             input.feedback,
-            Math.max(previous.xpAwarded, input.xpAwarded),
-            input.mastery,
+            xpAwarded,
+            mastery,
             timestamp,
             id,
           );
@@ -837,17 +967,32 @@ export class DiscereStore {
             input.mode,
             input.correct ? 1 : 0,
             input.feedback,
-            input.xpAwarded,
-            input.mastery,
+            xpAwarded,
+            mastery,
             timestamp,
             timestamp,
           );
       }
-      if (xpDelta > 0)
-        this.database
-          .prepare("UPDATE user_profiles SET xp = xp + ?, updated_at = ? WHERE id = ?")
-          .run(xpDelta, timestamp, LOCAL_USER_ID);
-      if (input.correct && !previous?.correct) {
+      this.study.reward(xpDelta, `answer:${id}`);
+      if (qualifying)
+        this.study.record({
+          key: `answer:${id}`,
+          kind: "answer",
+          referenceId: input.questionId,
+          correct: input.correct,
+          independent: input.independent && newEvidence,
+          qualifying: true,
+        });
+      if (newEvidence && previous?.response.trim() && input.independent)
+        this.study.record({
+          key: `recovery:${input.questionId}`,
+          kind: "recovery",
+          referenceId: input.questionId,
+          correct: true,
+          independent: true,
+          qualifying: false,
+        });
+      if (newEvidence) {
         for (const conceptId of input.conceptIds) {
           const mastery = input.conceptMastery[conceptId];
           if (mastery === undefined)
@@ -872,7 +1017,7 @@ export class DiscereStore {
     transaction();
     const saved = this.getAttempt(id);
     if (!saved) throw new Error("Attempt could not be saved.");
-    return saved;
+    return { ...saved, xpGained: xpDelta };
   }
 
   recordHint(attemptId: string, detail: string): number {
@@ -892,6 +1037,30 @@ export class DiscereStore {
     });
     transaction();
     return next;
+  }
+
+  /** A correction closes an unsuccessful lesson attempt without awarding correctness or XP. */
+  recordLessonExplanation(attemptId: string): void {
+    const attempt = this.getAttempt(attemptId);
+    if (!attempt || attempt.userId !== LOCAL_USER_ID || attempt.mode === "exam")
+      throw new Error("This attempt cannot open a lesson explanation.");
+    if (attempt.correct || attempt.answerRevealed) return;
+    const timestamp = this.now();
+    this.database.transaction(() => {
+      this.database
+        .prepare("UPDATE attempts SET answer_revealed = 1, updated_at = ? WHERE id = ?")
+        .run(timestamp, attemptId);
+      this.database
+        .prepare(
+          "INSERT INTO assistance_events (id, attempt_id, type, detail, created_at) VALUES (?, ?, 'worked_example', ?, ?)",
+        )
+        .run(
+          randomUUID(),
+          attemptId,
+          "Lesson correction after a recorded response; revisit in review.",
+          timestamp,
+        );
+    })();
   }
 
   createReveal(attemptId: string, reason: string, availableAt: string): RevealRow {

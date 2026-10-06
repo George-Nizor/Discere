@@ -52,7 +52,7 @@ describe("shared contracts", () => {
             prompt: "What raises the current?",
             responseType: "short_text",
             difficulty: 1,
-            hints: [],
+            hintCount: 0,
             sourceIds: [],
           },
         },

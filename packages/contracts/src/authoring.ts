@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ClaimCitationSchema } from "./curation.js";
 import {
   type AnswerAuthority,
   AnswerAuthoritySchema,
@@ -142,6 +143,7 @@ export const ImportedLessonSchema = z
       .max(6),
     /** Anything the writer could not support from the outline. Never silently dropped. */
     uncertainty: z.array(z.string().trim().max(500)).max(20),
+    citations: z.array(ClaimCitationSchema).optional(),
   })
   .strict();
 export type ImportedLesson = z.infer<typeof ImportedLessonSchema>;
