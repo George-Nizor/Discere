@@ -1,4 +1,3 @@
-import { readFileSync } from "node:fs";
 import type { CourseBundle } from "@discere/contracts";
 import { describe, expect, it } from "vitest";
 import {
@@ -7,13 +6,10 @@ import {
   scaffoldLesson,
 } from "../../../scripts/lesson-migration/scaffold.js";
 import { validateCourseBundle } from "../src/index.js";
+import { historicalBundle } from "./helpers/published-history.js";
 
-const physics = JSON.parse(
-  readFileSync(
-    new URL("../../../content/physics-motion-and-forces/bundle.json", import.meta.url),
-    "utf8",
-  ),
-) as CourseBundle;
+// Physics as it was before its v2 rewrite: the scaffold's input is a legacy course.
+const physics = historicalBundle("physics-motion-and-forces") as CourseBundle;
 
 describe("lesson migration scaffold", () => {
   const draft = scaffoldLesson(physics, physics.lessons[0]!);

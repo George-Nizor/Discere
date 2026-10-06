@@ -3,7 +3,7 @@ import { assessNumericAnswer, assessTextAnswer } from "@discere/assessment-engin
 import { CourseBundleSchema } from "@discere/contracts";
 import { describe, expect, it } from "vitest";
 import { bundleDigest } from "../src/index.js";
-import { publishedBundle } from "./helpers/published-history.js";
+import { historicalBundle, publishedBundle } from "./helpers/published-history.js";
 
 const read = (p: string) =>
   JSON.parse(readFileSync(new URL("../../../" + p, import.meta.url), "utf8"));
@@ -35,7 +35,18 @@ describe("second learner grading repair", () => {
       ...(b.courseChecks ?? []).flatMap((s) => s.items.map((i) => i.question)),
     ].map((q) => q.answerAuthority);
     const named = authorities.filter((a) => a?.kind === "numeric" && a.unit);
-    expect(named).toHaveLength(99);
+    // The repair release declared 99 units; the v2 rewrite added more, each held to the same rule.
+    const repaired = CourseBundleSchema.parse(historicalBundle("chemistry-atoms-to-reactions"));
+    expect(
+      [
+        ...repaired.questions,
+        ...repaired.flashcards,
+        ...(repaired.courseChecks ?? []).flatMap((s) => s.items.map((i) => i.question)),
+      ]
+        .map((q) => q.answerAuthority)
+        .filter((a) => a?.kind === "numeric" && a.unit),
+    ).toHaveLength(99);
+    expect(named.length).toBeGreaterThanOrEqual(99);
     for (const a of named) {
       if (a?.kind !== "numeric") throw Error("Expected numeric");
       expect(assessNumericAnswer(String(a.value) + " " + a.unit, a).correct).toBe(true);

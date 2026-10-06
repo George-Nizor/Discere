@@ -54,6 +54,8 @@ typecheck).
 ## Rules that matter most
 
 - The hook is a puzzle the learner can attempt from what they already know. Never a definition.
+  The opener shows the hook's prose and then its question's prompt, so the prompt asks only the
+  question and never repeats the scene.
 - A `lead` teaches what the question needs and never contains the answer.
 - `explain` comes before any question that uses its term, and ends with its own one-tap check
   question (`checkQuestionId`): every screen asks the learner something.

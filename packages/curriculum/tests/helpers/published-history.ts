@@ -29,6 +29,8 @@ export function publishedBundle(courseId: string, sha256: string): unknown {
 export const SUPERSEDED_PUBLICATIONS: Record<string, string> = {
   "maths-foundations": "46904a6936b9f918e4f2cc875fbd87da7b65ecf0ff7014768a53964d5a12ec85",
   // October 2026 v2 lesson rewrites.
+  "chemistry-atoms-to-reactions": "418df4bea78763ddf8e057b919255bb35b31aedb04dada7893fc665f725fadd9",
+  "physics-motion-and-forces": "5d0acdbaa2207bc7ef4b2185d93dd156dda4bdab33e69b0fac6b52fd237271ab",
   "geometry-shape-and-space": "b7c88b7a79c098cdee85dce2b24bf3fb7b30602337fe027e8613280eae101fc0",
   "calculus-change-and-accumulation": "5e979b48cf82c83686bfdee88dd95b8ba03dd57c5964c761abdf6a3eae70e525",
   "logic-and-reasoning": "ec990e1907ee00d79040b7d0446c9e6d0351f523b1368b2c5e63e7b0bd8b0b84",
