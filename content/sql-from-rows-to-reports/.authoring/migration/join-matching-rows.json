@@ -1,0 +1,1756 @@
+{
+  "lessonId": "join-matching-rows",
+  "courseId": "sql-from-rows-to-reports",
+  "migrationNotes": [
+    "step 'predict': the old title \"Bring the name to the order\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
+    "step 'predict': kind hook → predict; check the order of teaching and asking still fits (style guide §2).",
+    "step 'work': the old title \"The matches set the count\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
+    "step 'work': write workedSteps from the worked answer (one line per move, one self-explanation prompt), a headline naming the problem, and recompute every number.",
+    "step 'check': the old title \"A missing condition multiplies rows\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
+    "step 'check': kind check → try; check the order of teaching and asking still fits (style guide §2).",
+    "step 'check': 1 block(s) moved to reveal because they state the answer; make the reveal refer to the learner's attempt.",
+    "step 'transfer': the old title \"Join first, then select the report\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
+    "intro: write the hook (a puzzle the learner can do from what they bring, never a definition), the promise (≤ 25 words, “By the end you'll …”) and the time.",
+    "recap: write the key idea (the promise, kept), the learner's own results, and the one-line bridge to the next lesson.",
+    "skill check: the lesson has 2 quiz item(s); it needs exactly 3, each on something this lesson taught.",
+    "questions: replace every TODO onCorrect (≤ 25 words, states the idea), tag each skill, add misconceptions for predictable wrong answers (the feedback must not state the key).",
+    "vocabulary: give each explain step introducesTerms; no prompt may use a term before the step that introduces it.",
+    "add an explain step before any question that needs a new word or symbol; add a transfer if the lesson has none.",
+    "citations: retarget the seeded citations to the new step and question ids, and give every step, question and flashcard at least one (same sourceIds; the claim is what that screen asserts)."
+  ],
+  "lesson": {
+    "id": "join-matching-rows",
+    "courseId": "sql-from-rows-to-reports",
+    "conceptIds": [
+      "sql-join-matching-rows"
+    ],
+    "title": "Follow a relationship between tables",
+    "steps": [
+      {
+        "id": "rows-that-match",
+        "kind": "explain",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Orders store a customer_id, and customers store the name. JOIN customers ON customers.id = orders.customer_id pairs each order with the customer whose id matches."
+          },
+          {
+            "kind": "paragraph",
+            "text": "An INNER JOIN keeps only the pairs that match."
+          }
+        ],
+        "reveal": [],
+        "visualStateId": "",
+        "checkQuestionId": "sql-join-matching-rows-8",
+        "activityId": "",
+        "headline": "A join pairs rows whose key values match.",
+        "introducesTerms": [
+          "JOIN",
+          "ON",
+          "INNER JOIN"
+        ]
+      },
+      {
+        "id": "count-the-pairs",
+        "kind": "predict",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Orders refer to customers by number. Join the two tables on that number, and count the pairs that match."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "You counted matching pairs, not names. Each order matched the one customer it refers to, so the rows still stand for orders."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "sql-join-matching-rows-1",
+        "activityId": "",
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "customers",
+              "columns": [
+                "id",
+                "name",
+                "region"
+              ],
+              "rows": [
+                {
+                  "id": "customers-0",
+                  "cells": [
+                    1,
+                    "Ada",
+                    "North"
+                  ]
+                },
+                {
+                  "id": "customers-1",
+                  "cells": [
+                    2,
+                    "Ben",
+                    "South"
+                  ]
+                },
+                {
+                  "id": "customers-2",
+                  "cells": [
+                    3,
+                    "Cy",
+                    "North"
+                  ]
+                },
+                {
+                  "id": "customers-3",
+                  "cells": [
+                    4,
+                    "Dee",
+                    "West"
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "orders",
+              "columns": [
+                "id",
+                "customer_id",
+                "item",
+                "amount",
+                "status",
+                "day"
+              ],
+              "rows": [
+                {
+                  "id": "orders-0",
+                  "cells": [
+                    101,
+                    1,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-01"
+                  ]
+                },
+                {
+                  "id": "orders-1",
+                  "cells": [
+                    102,
+                    1,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-2",
+                  "cells": [
+                    103,
+                    2,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-3",
+                  "cells": [
+                    104,
+                    2,
+                    "Lamp",
+                    40,
+                    "pending",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-4",
+                  "cells": [
+                    105,
+                    3,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-5",
+                  "cells": [
+                    106,
+                    3,
+                    "Lamp",
+                    null,
+                    "pending",
+                    "2026-09-04"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Order references",
+              "sql": "SELECT id, customer_id FROM orders ORDER BY id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "customer_id"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      101,
+                      1
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      102,
+                      1
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      103,
+                      2
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      104,
+                      2
+                    ]
+                  },
+                  {
+                    "id": "result-4",
+                    "cells": [
+                      105,
+                      3
+                    ]
+                  },
+                  {
+                    "id": "result-5",
+                    "cells": [
+                      106,
+                      3
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "Names attached",
+              "sql": "SELECT o.id, c.name, o.amount FROM orders AS o JOIN customers AS c ON c.id = o.customer_id ORDER BY o.id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "name",
+                  "amount"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      101,
+                      "Ada",
+                      80
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      102,
+                      "Ada",
+                      20
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      103,
+                      "Ben",
+                      80
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      104,
+                      "Ben",
+                      40
+                    ]
+                  },
+                  {
+                    "id": "result-4",
+                    "cells": [
+                      105,
+                      "Cy",
+                      20
+                    ]
+                  },
+                  {
+                    "id": "result-5",
+                    "cells": [
+                      106,
+                      "Cy",
+                      null
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      },
+      {
+        "id": "who-has-ordered",
+        "kind": "worked_example",
+        "blocks": [],
+        "lead": [],
+        "reveal": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "headline": "Which customers have placed an order?",
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "customers",
+              "columns": [
+                "id",
+                "name",
+                "region"
+              ],
+              "rows": [
+                {
+                  "id": "customers-0",
+                  "cells": [
+                    1,
+                    "Ada",
+                    "North"
+                  ]
+                },
+                {
+                  "id": "customers-1",
+                  "cells": [
+                    2,
+                    "Ben",
+                    "South"
+                  ]
+                },
+                {
+                  "id": "customers-2",
+                  "cells": [
+                    3,
+                    "Cy",
+                    "North"
+                  ]
+                },
+                {
+                  "id": "customers-3",
+                  "cells": [
+                    4,
+                    "Dee",
+                    "West"
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "orders",
+              "columns": [
+                "id",
+                "customer_id",
+                "item",
+                "amount",
+                "status",
+                "day"
+              ],
+              "rows": [
+                {
+                  "id": "orders-0",
+                  "cells": [
+                    101,
+                    1,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-01"
+                  ]
+                },
+                {
+                  "id": "orders-1",
+                  "cells": [
+                    102,
+                    1,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-2",
+                  "cells": [
+                    103,
+                    2,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-3",
+                  "cells": [
+                    104,
+                    2,
+                    "Lamp",
+                    40,
+                    "pending",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-4",
+                  "cells": [
+                    105,
+                    3,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-5",
+                  "cells": [
+                    106,
+                    3,
+                    "Lamp",
+                    null,
+                    "pending",
+                    "2026-09-04"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "One row per match",
+              "sql": "SELECT c.name, o.id FROM customers AS c JOIN orders AS o ON c.id = o.customer_id ORDER BY o.id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "name",
+                  "id"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      "Ada",
+                      101
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      "Ada",
+                      102
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      "Ben",
+                      103
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      "Ben",
+                      104
+                    ]
+                  },
+                  {
+                    "id": "result-4",
+                    "cells": [
+                      "Cy",
+                      105
+                    ]
+                  },
+                  {
+                    "id": "result-5",
+                    "cells": [
+                      "Cy",
+                      106
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "Customers who ordered",
+              "sql": "SELECT DISTINCT c.name FROM customers AS c JOIN orders AS o ON c.id = o.customer_id ORDER BY c.name;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "name"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      "Ada"
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      "Ben"
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      "Cy"
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-1"
+        },
+        "answerVisibility": "hidden-until-response",
+        "workedSteps": [
+          {
+            "text": "Join customers to orders on c.id = o.customer_id.",
+            "math": "one row for each matching pair"
+          },
+          {
+            "text": "Look for customers with no pair.",
+            "math": "Dee has no order",
+            "selfExplain": {
+              "questionId": "sql-join-matching-rows-2"
+            }
+          },
+          {
+            "text": "SELECT DISTINCT c.name keeps each matched name once.",
+            "math": "Ada, Ben, Cy"
+          }
+        ]
+      },
+      {
+        "id": "every-pair",
+        "kind": "try",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "CROSS JOIN has no condition. It pairs every row of one table with every row of the other."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "You paired each customer with each order. That is not the same as the orders each customer placed."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "sql-join-matching-rows-3",
+        "activityId": "",
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "customers",
+              "columns": [
+                "id",
+                "name",
+                "region"
+              ],
+              "rows": [
+                {
+                  "id": "customers-0",
+                  "cells": [
+                    1,
+                    "Ada",
+                    "North"
+                  ]
+                },
+                {
+                  "id": "customers-1",
+                  "cells": [
+                    2,
+                    "Ben",
+                    "South"
+                  ]
+                },
+                {
+                  "id": "customers-2",
+                  "cells": [
+                    3,
+                    "Cy",
+                    "North"
+                  ]
+                },
+                {
+                  "id": "customers-3",
+                  "cells": [
+                    4,
+                    "Dee",
+                    "West"
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "orders",
+              "columns": [
+                "id",
+                "customer_id",
+                "item",
+                "amount",
+                "status",
+                "day"
+              ],
+              "rows": [
+                {
+                  "id": "orders-0",
+                  "cells": [
+                    101,
+                    1,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-01"
+                  ]
+                },
+                {
+                  "id": "orders-1",
+                  "cells": [
+                    102,
+                    1,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-2",
+                  "cells": [
+                    103,
+                    2,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-3",
+                  "cells": [
+                    104,
+                    2,
+                    "Lamp",
+                    40,
+                    "pending",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-4",
+                  "cells": [
+                    105,
+                    3,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-5",
+                  "cells": [
+                    106,
+                    3,
+                    "Lamp",
+                    null,
+                    "pending",
+                    "2026-09-04"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Match the reference",
+              "sql": "SELECT c.name, o.id FROM customers AS c JOIN orders AS o ON c.id = o.customer_id ORDER BY c.id, o.id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "name",
+                  "id"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      "Ada",
+                      101
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      "Ada",
+                      102
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      "Ben",
+                      103
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      "Ben",
+                      104
+                    ]
+                  },
+                  {
+                    "id": "result-4",
+                    "cells": [
+                      "Cy",
+                      105
+                    ]
+                  },
+                  {
+                    "id": "result-5",
+                    "cells": [
+                      "Cy",
+                      106
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "Every possible pair",
+              "sql": "SELECT c.name, o.id FROM customers AS c CROSS JOIN orders AS o ORDER BY c.id, o.id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "name",
+                  "id"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      "Ada",
+                      101
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      "Ada",
+                      102
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      "Ada",
+                      103
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      "Ada",
+                      104
+                    ]
+                  },
+                  {
+                    "id": "result-4",
+                    "cells": [
+                      "Ada",
+                      105
+                    ]
+                  },
+                  {
+                    "id": "result-5",
+                    "cells": [
+                      "Ada",
+                      106
+                    ]
+                  },
+                  {
+                    "id": "result-6",
+                    "cells": [
+                      "Ben",
+                      101
+                    ]
+                  },
+                  {
+                    "id": "result-7",
+                    "cells": [
+                      "Ben",
+                      102
+                    ]
+                  },
+                  {
+                    "id": "result-8",
+                    "cells": [
+                      "Ben",
+                      103
+                    ]
+                  },
+                  {
+                    "id": "result-9",
+                    "cells": [
+                      "Ben",
+                      104
+                    ]
+                  },
+                  {
+                    "id": "result-10",
+                    "cells": [
+                      "Ben",
+                      105
+                    ]
+                  },
+                  {
+                    "id": "result-11",
+                    "cells": [
+                      "Ben",
+                      106
+                    ]
+                  },
+                  {
+                    "id": "result-12",
+                    "cells": [
+                      "Cy",
+                      101
+                    ]
+                  },
+                  {
+                    "id": "result-13",
+                    "cells": [
+                      "Cy",
+                      102
+                    ]
+                  },
+                  {
+                    "id": "result-14",
+                    "cells": [
+                      "Cy",
+                      103
+                    ]
+                  },
+                  {
+                    "id": "result-15",
+                    "cells": [
+                      "Cy",
+                      104
+                    ]
+                  },
+                  {
+                    "id": "result-16",
+                    "cells": [
+                      "Cy",
+                      105
+                    ]
+                  },
+                  {
+                    "id": "result-17",
+                    "cells": [
+                      "Cy",
+                      106
+                    ]
+                  },
+                  {
+                    "id": "result-18",
+                    "cells": [
+                      "Dee",
+                      101
+                    ]
+                  },
+                  {
+                    "id": "result-19",
+                    "cells": [
+                      "Dee",
+                      102
+                    ]
+                  },
+                  {
+                    "id": "result-20",
+                    "cells": [
+                      "Dee",
+                      103
+                    ]
+                  },
+                  {
+                    "id": "result-21",
+                    "cells": [
+                      "Dee",
+                      104
+                    ]
+                  },
+                  {
+                    "id": "result-22",
+                    "cells": [
+                      "Dee",
+                      105
+                    ]
+                  },
+                  {
+                    "id": "result-23",
+                    "cells": [
+                      "Dee",
+                      106
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      },
+      {
+        "id": "follow-the-relationship",
+        "kind": "transfer",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "A join condition should follow the relationship the tables store. A condition that is not that relationship can match nothing, or the wrong rows."
+          }
+        ],
+        "reveal": [],
+        "visualStateId": "",
+        "checkQuestionId": "sql-join-matching-rows-4",
+        "activityId": "",
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "customers",
+              "columns": [
+                "id",
+                "name",
+                "region"
+              ],
+              "rows": [
+                {
+                  "id": "customers-0",
+                  "cells": [
+                    1,
+                    "Ada",
+                    "North"
+                  ]
+                },
+                {
+                  "id": "customers-1",
+                  "cells": [
+                    2,
+                    "Ben",
+                    "South"
+                  ]
+                },
+                {
+                  "id": "customers-2",
+                  "cells": [
+                    3,
+                    "Cy",
+                    "North"
+                  ]
+                },
+                {
+                  "id": "customers-3",
+                  "cells": [
+                    4,
+                    "Dee",
+                    "West"
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "orders",
+              "columns": [
+                "id",
+                "customer_id",
+                "item",
+                "amount",
+                "status",
+                "day"
+              ],
+              "rows": [
+                {
+                  "id": "orders-0",
+                  "cells": [
+                    101,
+                    1,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-01"
+                  ]
+                },
+                {
+                  "id": "orders-1",
+                  "cells": [
+                    102,
+                    1,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-2",
+                  "cells": [
+                    103,
+                    2,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-3",
+                  "cells": [
+                    104,
+                    2,
+                    "Lamp",
+                    40,
+                    "pending",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-4",
+                  "cells": [
+                    105,
+                    3,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-5",
+                  "cells": [
+                    106,
+                    3,
+                    "Lamp",
+                    null,
+                    "pending",
+                    "2026-09-04"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Paid matched orders",
+              "sql": "SELECT c.name, o.id FROM customers AS c JOIN orders AS o ON c.id = o.customer_id WHERE o.status = 'paid' ORDER BY o.id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "name",
+                  "id"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      "Ada",
+                      101
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      "Ada",
+                      102
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      "Ben",
+                      103
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      "Cy",
+                      105
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "Wrong columns",
+              "sql": "SELECT c.name, o.id FROM customers AS c JOIN orders AS o ON c.id = o.id ORDER BY o.id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "name",
+                  "id"
+                ],
+                "rows": []
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      }
+    ],
+    "orientation": "Join keys deliberately and account for every matching pair.",
+    "visualStates": [],
+    "visualKind": "none",
+    "activityId": "",
+    "questionIds": [
+      "sql-join-matching-rows-5",
+      "sql-join-matching-rows-6",
+      "sql-join-matching-rows-9"
+    ],
+    "flashcardIds": [
+      "sql-join-matching-rows-card-1",
+      "sql-join-matching-rows-card-2"
+    ],
+    "reviewLabel": "Follow a relationship between tables",
+    "nextAction": "Apply the idea to the next query.",
+    "stageTitles": {
+      "quiz": "Skill check",
+      "review": "Recall it later",
+      "completion": "Ready for the next idea"
+    },
+    "sourceIds": [
+      "sqlite-select"
+    ],
+    "assuranceLevel": "source_backed",
+    "intro": {
+      "hook": {
+        "blocks": [
+          {
+            "kind": "paragraph",
+            "text": "Each pupil has a club number: Ann 1, Bo 2, Cy 1 and Di 3. Club 1 is Chess."
+          }
+        ],
+        "questionId": "sql-join-matching-rows-7"
+      },
+      "promise": "By the end you'll join two tables on their key and say how many rows to expect.",
+      "estimatedMinutes": 10
+    },
+    "recap": {
+      "keyIdea": "An INNER JOIN pairs rows whose keys match, so a row with no match disappears and a row with several matches repeats.",
+      "blocks": [
+        {
+          "kind": "paragraph",
+          "text": "You matched 2 pupils to Chess, then counted 6 matching pairs between customers and orders. A cross join of the same tables gives 24."
+        }
+      ],
+      "nextHook": "Next, keep the customers who have no matching order."
+    },
+    "calculator": "off",
+    "taughtSkills": [
+      "match-on-key",
+      "explain-missing-match",
+      "cross-pairs",
+      "join-unit"
+    ]
+  },
+  "questions": [
+    {
+      "id": "sql-join-matching-rows-1",
+      "conceptIds": [
+        "sql-join-matching-rows"
+      ],
+      "prompt": "How many rows does the INNER JOIN of customers and orders on customer_id return?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Count matches, not different names.",
+        "Ada, Ben and Cy each contribute two order matches.",
+        "Ada, Ben and Cy each have two matches; Dee contributes none to an inner join."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 6,
+        "unit": "",
+        "absoluteTolerance": 1e-06,
+        "relativeTolerance": 0,
+        "workedAnswer": "Each of the six orders references one existing customer, so there are six matching pairs."
+      },
+      "sourceIds": [
+        "sqlite-select"
+      ],
+      "onCorrect": "6. Ada, Ben and Cy each have two matching orders. Dee has none, so no pair holds her.",
+      "skill": "match-on-key",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              3
+            ]
+          },
+          "feedback": "That counts the different names. Count matching pairs instead."
+        },
+        {
+          "match": {
+            "numeric": [
+              24
+            ]
+          },
+          "feedback": "That pairs every customer with every order. A join on the key pairs only matches."
+        }
+      ]
+    },
+    {
+      "id": "sql-join-matching-rows-2",
+      "conceptIds": [
+        "sql-join-matching-rows"
+      ],
+      "prompt": "Why is Dee absent from the INNER JOIN result?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "An inner join requires a match."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "She has no matching order"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "An INNER JOIN retains only matching pairs. Dee has no matching order in this dataset, so her customer row contributes no result row."
+      },
+      "sourceIds": [
+        "sqlite-select"
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "Her name is too short"
+        },
+        {
+          "id": "b",
+          "label": "She has no matching order"
+        },
+        {
+          "id": "c",
+          "label": "INNER JOIN keeps only the first customer"
+        }
+      ],
+      "onCorrect": "She has no matching order. An inner join keeps only pairs that match.",
+      "skill": "explain-missing-match",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "Names do not affect matching. The key values do."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "INNER JOIN keeps every pair that matches, not just one customer."
+        }
+      ]
+    },
+    {
+      "id": "sql-join-matching-rows-3",
+      "conceptIds": [
+        "sql-join-matching-rows"
+      ],
+      "prompt": "How many pairs does CROSS JOIN produce for four customers and six orders?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "For each customer, include every order.",
+        "Multiply the table sizes.",
+        "Evaluate 4 × 6 for every possible customer-order pair."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 24,
+        "unit": "",
+        "absoluteTolerance": 1e-06,
+        "relativeTolerance": 0,
+        "workedAnswer": "Every customer pairs with every order: 4 × 6 = 24."
+      },
+      "sourceIds": [
+        "sqlite-select"
+      ],
+      "onCorrect": "24. A cross join pairs every customer with every order: 4 × 6.",
+      "skill": "cross-pairs",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              10
+            ]
+          },
+          "feedback": "That adds the two table sizes. A cross join pairs each row with every row of the other table."
+        },
+        {
+          "match": {
+            "numeric": [
+              6
+            ]
+          },
+          "feedback": "That is the number of matching pairs. A cross join pairs every customer with every order."
+        }
+      ]
+    },
+    {
+      "id": "sql-join-matching-rows-4",
+      "conceptIds": [
+        "sql-join-matching-rows"
+      ],
+      "prompt": "Which predicate follows the stored relationship?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "The order's customer_id refers to the customer's id."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "c.id = o.customer_id"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "c.id = o.customer_id follows the customer reference stored on each order. Matching the two tables' unrelated id columns would connect the wrong records."
+      },
+      "sourceIds": [
+        "sqlite-select"
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "c.id = o.id"
+        },
+        {
+          "id": "b",
+          "label": "c.id = o.customer_id"
+        },
+        {
+          "id": "c",
+          "label": "c.name = o.item"
+        }
+      ],
+      "onCorrect": "c.id = o.customer_id. The order's customer_id holds the customer's key.",
+      "skill": "match-on-key",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "That compares a customer key with an order key. They are different things."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "A name is not a stored reference to an item."
+        }
+      ]
+    },
+    {
+      "id": "sql-join-matching-rows-5",
+      "conceptIds": [
+        "sql-join-matching-rows"
+      ],
+      "prompt": "Customers A, B and C have two, zero and one orders respectively. How many rows does their INNER JOIN return?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "An unmatched customer contributes no inner-join row.",
+        "Add the order matches.",
+        "Evaluate 2 + 0 + 1; each matching order contributes a row."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 3,
+        "unit": "",
+        "absoluteTolerance": 1e-06,
+        "relativeTolerance": 0,
+        "workedAnswer": "The matching pairs total 2 + 0 + 1 = 3."
+      },
+      "sourceIds": [
+        "sqlite-select"
+      ],
+      "onCorrect": "3. Each matching order is one row, and the customer with none adds nothing.",
+      "skill": "join-unit",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              2
+            ]
+          },
+          "feedback": "That counts customers with orders. Each matching order is a row."
+        }
+      ]
+    },
+    {
+      "id": "sql-join-matching-rows-6",
+      "conceptIds": [
+        "sql-join-matching-rows"
+      ],
+      "prompt": "Why can a customer's name repeat in a correctly joined result?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "A one-to-many relationship creates one row for each match."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "A person can match several orders"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Each matching customer-and-order pair produces a result row. A customer with several orders appears several times without the join being wrong."
+      },
+      "sourceIds": [
+        "sqlite-select"
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "A person can match several orders"
+        },
+        {
+          "id": "b",
+          "label": "JOIN always duplicates every row twice"
+        },
+        {
+          "id": "c",
+          "label": "Names cannot be selected in SQL"
+        }
+      ],
+      "onCorrect": "A person can match several orders. Each match gives its own row, so the name repeats.",
+      "skill": "join-unit",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Rows repeat once per match, and that number depends on the data."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Names are columns like any other and can be selected."
+        }
+      ]
+    },
+    {
+      "id": "sql-join-matching-rows-7",
+      "conceptIds": [
+        "sql-join-matching-rows"
+      ],
+      "prompt": "How many pupils would a Chess list show?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Which column connects a pupil to a club?",
+        "Find the pupils whose club number is the Chess number.",
+        "Count those pupils, not the clubs."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 2,
+        "unit": "",
+        "absoluteTolerance": 1e-09,
+        "relativeTolerance": 0,
+        "workedAnswer": "Club 1 is Chess. Ann and Cy both have club number 1, so the list shows two pupils."
+      },
+      "sourceIds": [
+        "sqlite-select"
+      ],
+      "onCorrect": "2. You followed a number from one list to the other. A join pairs rows by following keys like that.",
+      "skill": "match-on-key",
+      "calculator": "off",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              1
+            ]
+          },
+          "feedback": "That counts the club. The list is of pupils."
+        },
+        {
+          "match": {
+            "numeric": [
+              4
+            ]
+          },
+          "feedback": "That counts every pupil. Only those with the Chess number belong."
+        }
+      ]
+    },
+    {
+      "id": "sql-join-matching-rows-8",
+      "conceptIds": [
+        "sql-join-matching-rows"
+      ],
+      "prompt": "A pupil row holds club = 2. The club ids are 1, 2 and 3. How many club rows does that pupil match in a join on the club number?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Which club id equals the pupil's club number?",
+        "Compare the number with each club id in turn.",
+        "How many of the club ids are the same number?"
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 1,
+        "unit": "",
+        "absoluteTolerance": 1e-09,
+        "relativeTolerance": 0,
+        "workedAnswer": "Only the club row whose id is 2 matches, so the pupil pairs with one club row."
+      },
+      "sourceIds": [
+        "sqlite-select"
+      ],
+      "onCorrect": "1. A join pairs a row only with rows whose key value is equal to its own.",
+      "skill": "match-on-key",
+      "calculator": "off",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              3
+            ]
+          },
+          "feedback": "That is every club. The pupil matches only the club with its own number."
+        }
+      ]
+    },
+    {
+      "id": "sql-join-matching-rows-9",
+      "conceptIds": [
+        "sql-join-matching-rows"
+      ],
+      "prompt": "Customers P, Q and R have 3, 1 and 0 orders. How many rows does SELECT DISTINCT name over their INNER JOIN return?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Which customers appear in the joined result at all?",
+        "A customer with no orders has no pair.",
+        "DISTINCT keeps each name once."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 2,
+        "unit": "",
+        "absoluteTolerance": 1e-09,
+        "relativeTolerance": 0,
+        "workedAnswer": "P and Q each have orders, so each appears. R has no pair. DISTINCT leaves two names."
+      },
+      "sourceIds": [
+        "sqlite-select"
+      ],
+      "onCorrect": "2. Only customers with a match appear, and DISTINCT keeps each name once.",
+      "skill": "join-unit",
+      "calculator": "off",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              4
+            ]
+          },
+          "feedback": "That counts the matching pairs. DISTINCT keeps each name once."
+        },
+        {
+          "match": {
+            "numeric": [
+              3
+            ]
+          },
+          "feedback": "A customer with no orders has no pair, so no name appears for them."
+        }
+      ]
+    }
+  ],
+  "citations": [
+    {
+      "claim": "A join pairs rows whose key values match.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.1: matching rows and cross products",
+      "targetKind": "step",
+      "targetId": "rows-that-match"
+    },
+    {
+      "claim": "Orders refer to customers by number. Join the two tables on that number, and count the pairs that match.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.1: matching rows and cross products",
+      "targetKind": "step",
+      "targetId": "count-the-pairs"
+    },
+    {
+      "claim": "Which customers have placed an order?",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.1: matching rows and cross products",
+      "targetKind": "step",
+      "targetId": "who-has-ordered"
+    },
+    {
+      "claim": "CROSS JOIN has no condition. It pairs every row of one table with every row of the other.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.1: matching rows and cross products",
+      "targetKind": "step",
+      "targetId": "every-pair"
+    },
+    {
+      "claim": "A join condition should follow the relationship the tables store. A condition that is not that relationship can match nothing, or the wrong rows.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.1: matching rows and cross products",
+      "targetKind": "step",
+      "targetId": "follow-the-relationship"
+    },
+    {
+      "claim": "Each of the six orders references one existing customer, so there are six matching pairs.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.1: matching rows and cross products",
+      "targetKind": "question",
+      "targetId": "sql-join-matching-rows-1"
+    },
+    {
+      "claim": "An INNER JOIN retains only matching pairs. Dee has no matching order in this dataset, so her customer row contributes no result row.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.1: matching rows and cross products",
+      "targetKind": "question",
+      "targetId": "sql-join-matching-rows-2"
+    },
+    {
+      "claim": "Every customer pairs with every order: 4 × 6 = 24.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.1: matching rows and cross products",
+      "targetKind": "question",
+      "targetId": "sql-join-matching-rows-3"
+    },
+    {
+      "claim": "c.id = o.customer_id follows the customer reference stored on each order. Matching the two tables' unrelated id columns would connect the wrong records.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.1: matching rows and cross products",
+      "targetKind": "question",
+      "targetId": "sql-join-matching-rows-4"
+    },
+    {
+      "claim": "The matching pairs total 2 + 0 + 1 = 3.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.1: matching rows and cross products",
+      "targetKind": "question",
+      "targetId": "sql-join-matching-rows-5"
+    },
+    {
+      "claim": "Each matching customer-and-order pair produces a result row. A customer with several orders appears several times without the join being wrong.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.1: matching rows and cross products",
+      "targetKind": "question",
+      "targetId": "sql-join-matching-rows-6"
+    },
+    {
+      "claim": "Club 1 is Chess. Ann and Cy both have club number 1, so the list shows two pupils.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.1: matching rows and cross products",
+      "targetKind": "question",
+      "targetId": "sql-join-matching-rows-7"
+    },
+    {
+      "claim": "Only the club row whose id is 2 matches, so the pupil pairs with one club row.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.1: matching rows and cross products",
+      "targetKind": "question",
+      "targetId": "sql-join-matching-rows-8"
+    },
+    {
+      "claim": "P and Q each have orders, so each appears. R has no pair. DISTINCT leaves two names.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.1: matching rows and cross products",
+      "targetKind": "question",
+      "targetId": "sql-join-matching-rows-9"
+    },
+    {
+      "claim": "There are eight matching pairs: two customers × four orders.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.1: matching rows and cross products",
+      "targetKind": "flashcard",
+      "targetId": "sql-join-matching-rows-card-1"
+    },
+    {
+      "claim": "INNER JOIN returns matching pairs; unmatched rows are not retained.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.1: matching rows and cross products",
+      "targetKind": "flashcard",
+      "targetId": "sql-join-matching-rows-card-2"
+    }
+  ]
+}

@@ -9,6 +9,7 @@ import {
   pythonCheckSpecs,
 } from "../../../content/python-for-data-analysis/authoring/course-checks.js";
 import { restorePreGuidanceBundle } from "./helpers/guidance-history.js";
+import { historicalBundle } from "./helpers/published-history.js";
 const read = (id: string, file = "bundle.json") =>
   JSON.parse(readFileSync(new URL("../../../content/" + id + "/" + file, import.meta.url), "utf8"));
 describe("SQL and Python independent assessments", () => {
@@ -37,8 +38,11 @@ describe("SQL and Python independent assessments", () => {
       expect(sets[2]!.delayDays).toBe(7);
     });
     it(id + " preserves original teaching content and exact publication review", () => {
+      // Preservation is checked on the bundle that release published (archived once a course is
+      // rewritten to v2); the publication binding and checks on the current one.
       const bundle = CourseBundleSchema.parse(read(id)),
-        preserved = structuredClone(restorePreGuidanceBundle(id, bundle)) as {
+        released = CourseBundleSchema.parse(historicalBundle(id)),
+        preserved = structuredClone(restorePreGuidanceBundle(id, released)) as {
           course: { version?: string };
           courseChecks?: unknown;
         };
@@ -51,7 +55,7 @@ describe("SQL and Python independent assessments", () => {
       expect(bundle.courseChecks).toEqual(sets);
       expect(read(id, "review/publication.json").bundleSha256).toBe(bundleDigest(bundle));
       expect(evidence.publishedBundleSha256).toBe(
-        bundleDigest(restorePreGuidanceBundle(id, bundle)),
+        bundleDigest(restorePreGuidanceBundle(id, released)),
       );
     });
   }

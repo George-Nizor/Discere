@@ -1,0 +1,1672 @@
+{
+  "lessonId": "combine-result-sets",
+  "courseId": "sql-from-rows-to-reports",
+  "migrationNotes": [
+    "step 'predict': the old title \"Stack results with the same shape\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
+    "step 'predict': kind hook → predict; check the order of teaching and asking still fits (style guide §2).",
+    "step 'work': the old title \"Decide whether duplicates matter\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
+    "step 'work': write workedSteps from the worked answer (one line per move, one self-explanation prompt), a headline naming the problem, and recompute every number.",
+    "step 'check': the old title \"Compare the whole result row\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
+    "step 'check': kind check → try; check the order of teaching and asking still fits (style guide §2).",
+    "step 'transfer': the old title \"Order the combined result\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
+    "step 'transfer': 1 block(s) moved to reveal because they state the answer; make the reveal refer to the learner's attempt.",
+    "intro: write the hook (a puzzle the learner can do from what they bring, never a definition), the promise (≤ 25 words, “By the end you'll …”) and the time.",
+    "recap: write the key idea (the promise, kept), the learner's own results, and the one-line bridge to the next lesson.",
+    "skill check: the lesson has 2 quiz item(s); it needs exactly 3, each on something this lesson taught.",
+    "questions: replace every TODO onCorrect (≤ 25 words, states the idea), tag each skill, add misconceptions for predictable wrong answers (the feedback must not state the key).",
+    "vocabulary: give each explain step introducesTerms; no prompt may use a term before the step that introduces it.",
+    "add an explain step before any question that needs a new word or symbol; add a transfer if the lesson has none.",
+    "citations: retarget the seeded citations to the new step and question ids, and give every step, question and flashcard at least one (same sourceIds; the claim is what that screen asserts)."
+  ],
+  "lesson": {
+    "id": "combine-result-sets",
+    "courseId": "sql-from-rows-to-reports",
+    "conceptIds": [
+      "sql-combine-result-sets"
+    ],
+    "title": "Combine reports deliberately",
+    "steps": [
+      {
+        "id": "stack-two-results",
+        "kind": "explain",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "UNION puts one query's rows under another's. Both queries must return the same number of columns."
+          },
+          {
+            "kind": "paragraph",
+            "text": "UNION removes repeated rows from the stack. UNION ALL keeps them."
+          }
+        ],
+        "reveal": [],
+        "visualStateId": "",
+        "checkQuestionId": "sql-combine-result-sets-8",
+        "activityId": "",
+        "headline": "UNION stacks two results of the same shape, and UNION ALL keeps every row.",
+        "introducesTerms": [
+          "UNION",
+          "UNION ALL"
+        ]
+      },
+      {
+        "id": "what-union-does",
+        "kind": "predict",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "One query selects the ids of paid orders. Another selects the ids of orders worth at least 40. Think about what combining two results means."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "You chose how the results are combined: stacked, not matched by a key. A join would attach columns instead."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "sql-combine-result-sets-1",
+        "activityId": "",
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "orders",
+              "columns": [
+                "id",
+                "customer_id",
+                "item",
+                "amount",
+                "status",
+                "day"
+              ],
+              "rows": [
+                {
+                  "id": "orders-0",
+                  "cells": [
+                    101,
+                    1,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-01"
+                  ]
+                },
+                {
+                  "id": "orders-1",
+                  "cells": [
+                    102,
+                    1,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-2",
+                  "cells": [
+                    103,
+                    2,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-3",
+                  "cells": [
+                    104,
+                    2,
+                    "Lamp",
+                    40,
+                    "pending",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-4",
+                  "cells": [
+                    105,
+                    3,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-5",
+                  "cells": [
+                    106,
+                    3,
+                    "Lamp",
+                    null,
+                    "pending",
+                    "2026-09-04"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Paid orders",
+              "sql": "SELECT id FROM orders WHERE status = 'paid' ORDER BY id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      101
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      102
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      103
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      105
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "Paid or at least 40",
+              "sql": "SELECT id FROM orders WHERE status = 'paid' UNION SELECT id FROM orders WHERE amount >= 40 ORDER BY id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      101
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      102
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      103
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      104
+                    ]
+                  },
+                  {
+                    "id": "result-4",
+                    "cells": [
+                      105
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      },
+      {
+        "id": "keep-the-repeats",
+        "kind": "worked_example",
+        "blocks": [],
+        "lead": [],
+        "reveal": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "headline": "Combine paid ids with at-least-40 ids, keeping repeats.",
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "orders",
+              "columns": [
+                "id",
+                "customer_id",
+                "item",
+                "amount",
+                "status",
+                "day"
+              ],
+              "rows": [
+                {
+                  "id": "orders-0",
+                  "cells": [
+                    101,
+                    1,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-01"
+                  ]
+                },
+                {
+                  "id": "orders-1",
+                  "cells": [
+                    102,
+                    1,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-2",
+                  "cells": [
+                    103,
+                    2,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-3",
+                  "cells": [
+                    104,
+                    2,
+                    "Lamp",
+                    40,
+                    "pending",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-4",
+                  "cells": [
+                    105,
+                    3,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-5",
+                  "cells": [
+                    106,
+                    3,
+                    "Lamp",
+                    null,
+                    "pending",
+                    "2026-09-04"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Remove repeated rows",
+              "sql": "SELECT id FROM orders WHERE status = 'paid' UNION SELECT id FROM orders WHERE amount >= 40 ORDER BY id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      101
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      102
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      103
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      104
+                    ]
+                  },
+                  {
+                    "id": "result-4",
+                    "cells": [
+                      105
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "Keep occurrences",
+              "sql": "SELECT id FROM orders WHERE status = 'paid' UNION ALL SELECT id FROM orders WHERE amount >= 40 ORDER BY id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      101
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      101
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      102
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      103
+                    ]
+                  },
+                  {
+                    "id": "result-4",
+                    "cells": [
+                      103
+                    ]
+                  },
+                  {
+                    "id": "result-5",
+                    "cells": [
+                      104
+                    ]
+                  },
+                  {
+                    "id": "result-6",
+                    "cells": [
+                      105
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-1"
+        },
+        "answerVisibility": "hidden-until-response",
+        "workedSteps": [
+          {
+            "text": "List the ids from each query.",
+            "math": "paid: 101, 102, 103, 105; at least 40: 101, 103, 104"
+          },
+          {
+            "text": "UNION ALL keeps every occurrence, so an id in both lists appears twice.",
+            "math": "101 appears twice",
+            "selfExplain": {
+              "questionId": "sql-combine-result-sets-9"
+            }
+          },
+          {
+            "text": "UNION would collapse each repeated id into one row."
+          }
+        ]
+      },
+      {
+        "id": "collapse-the-overlap",
+        "kind": "try",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "UNION removes repeated rows from the combined result."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "You removed the ids that both queries returned. Plain UNION counts each different row once."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "sql-combine-result-sets-2",
+        "activityId": "",
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "orders",
+              "columns": [
+                "id",
+                "customer_id",
+                "item",
+                "amount",
+                "status",
+                "day"
+              ],
+              "rows": [
+                {
+                  "id": "orders-0",
+                  "cells": [
+                    101,
+                    1,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-01"
+                  ]
+                },
+                {
+                  "id": "orders-1",
+                  "cells": [
+                    102,
+                    1,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-2",
+                  "cells": [
+                    103,
+                    2,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-3",
+                  "cells": [
+                    104,
+                    2,
+                    "Lamp",
+                    40,
+                    "pending",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-4",
+                  "cells": [
+                    105,
+                    3,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-5",
+                  "cells": [
+                    106,
+                    3,
+                    "Lamp",
+                    null,
+                    "pending",
+                    "2026-09-04"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Remove repeated rows",
+              "sql": "SELECT id FROM orders WHERE status = 'paid' UNION SELECT id FROM orders WHERE amount >= 40 ORDER BY id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      101
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      102
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      103
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      104
+                    ]
+                  },
+                  {
+                    "id": "result-4",
+                    "cells": [
+                      105
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "Keep occurrences",
+              "sql": "SELECT id FROM orders WHERE status = 'paid' UNION ALL SELECT id FROM orders WHERE amount >= 40 ORDER BY id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      101
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      101
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      102
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      103
+                    ]
+                  },
+                  {
+                    "id": "result-4",
+                    "cells": [
+                      103
+                    ]
+                  },
+                  {
+                    "id": "result-5",
+                    "cells": [
+                      104
+                    ]
+                  },
+                  {
+                    "id": "result-6",
+                    "cells": [
+                      105
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      },
+      {
+        "id": "labels-matter",
+        "kind": "predict",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "UNION compares whole rows. A column that differs makes two rows different, even when the id repeats."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "You compared the id and the label together. A label turns a repeat into a new row."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "sql-combine-result-sets-3",
+        "activityId": "",
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "orders",
+              "columns": [
+                "id",
+                "customer_id",
+                "item",
+                "amount",
+                "status",
+                "day"
+              ],
+              "rows": [
+                {
+                  "id": "orders-0",
+                  "cells": [
+                    101,
+                    1,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-01"
+                  ]
+                },
+                {
+                  "id": "orders-1",
+                  "cells": [
+                    102,
+                    1,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-2",
+                  "cells": [
+                    103,
+                    2,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-3",
+                  "cells": [
+                    104,
+                    2,
+                    "Lamp",
+                    40,
+                    "pending",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-4",
+                  "cells": [
+                    105,
+                    3,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-5",
+                  "cells": [
+                    106,
+                    3,
+                    "Lamp",
+                    null,
+                    "pending",
+                    "2026-09-04"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Id only",
+              "sql": "SELECT id FROM orders WHERE status = 'paid' UNION SELECT id FROM orders WHERE amount >= 40 ORDER BY id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      101
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      102
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      103
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      104
+                    ]
+                  },
+                  {
+                    "id": "result-4",
+                    "cells": [
+                      105
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "Id and selection label",
+              "sql": "SELECT id, 'paid' AS selection FROM orders WHERE status = 'paid' UNION SELECT id, 'large' AS selection FROM orders WHERE amount >= 40 ORDER BY id, selection;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "selection"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      101,
+                      "large"
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      101,
+                      "paid"
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      102,
+                      "paid"
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      103,
+                      "large"
+                    ]
+                  },
+                  {
+                    "id": "result-4",
+                    "cells": [
+                      103,
+                      "paid"
+                    ]
+                  },
+                  {
+                    "id": "result-5",
+                    "cells": [
+                      104,
+                      "large"
+                    ]
+                  },
+                  {
+                    "id": "result-6",
+                    "cells": [
+                      105,
+                      "paid"
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      },
+      {
+        "id": "sort-the-stack",
+        "kind": "transfer",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "ORDER BY at the end sorts the combined result. Remember that UNION has already removed repeats by then."
+          }
+        ],
+        "reveal": [],
+        "visualStateId": "",
+        "checkQuestionId": "sql-combine-result-sets-4",
+        "activityId": "",
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "orders",
+              "columns": [
+                "id",
+                "customer_id",
+                "item",
+                "amount",
+                "status",
+                "day"
+              ],
+              "rows": [
+                {
+                  "id": "orders-0",
+                  "cells": [
+                    101,
+                    1,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-01"
+                  ]
+                },
+                {
+                  "id": "orders-1",
+                  "cells": [
+                    102,
+                    1,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-2",
+                  "cells": [
+                    103,
+                    2,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-3",
+                  "cells": [
+                    104,
+                    2,
+                    "Lamp",
+                    40,
+                    "pending",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-4",
+                  "cells": [
+                    105,
+                    3,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-5",
+                  "cells": [
+                    106,
+                    3,
+                    "Lamp",
+                    null,
+                    "pending",
+                    "2026-09-04"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Combined result",
+              "sql": "SELECT id FROM orders WHERE status = 'paid' UNION SELECT id FROM orders WHERE amount >= 40 ORDER BY id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      101
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      102
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      103
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      104
+                    ]
+                  },
+                  {
+                    "id": "result-4",
+                    "cells": [
+                      105
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "First three combined ids",
+              "sql": "SELECT id FROM orders WHERE status = 'paid' UNION SELECT id FROM orders WHERE amount >= 40 ORDER BY id LIMIT 3;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      101
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      102
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      103
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      }
+    ],
+    "orientation": "Stack compatible results with UNION or UNION ALL and account for overlapping rows.",
+    "visualStates": [],
+    "visualKind": "none",
+    "activityId": "",
+    "questionIds": [
+      "sql-combine-result-sets-5",
+      "sql-combine-result-sets-6",
+      "sql-combine-result-sets-10"
+    ],
+    "flashcardIds": [
+      "sql-combine-result-sets-card-1",
+      "sql-combine-result-sets-card-2"
+    ],
+    "reviewLabel": "Combine reports deliberately",
+    "nextAction": "Apply the idea to the next query.",
+    "stageTitles": {
+      "quiz": "Skill check",
+      "review": "Recall it later",
+      "completion": "Ready for the next idea"
+    },
+    "sourceIds": [
+      "sqlite-select"
+    ],
+    "assuranceLevel": "source_backed",
+    "intro": {
+      "hook": {
+        "blocks": [
+          {
+            "kind": "paragraph",
+            "text": "Chess club has Ann, Bo, Cy and Di. Drama club has Cy, Di, Ed and Flo. The head wants one list of every pupil in either club."
+          }
+        ],
+        "questionId": "sql-combine-result-sets-7"
+      },
+      "promise": "By the end you'll stack two results, and say when repeated rows stay or collapse.",
+      "estimatedMinutes": 10
+    },
+    "recap": {
+      "keyIdea": "UNION stacks results of the same shape and removes repeated rows. UNION ALL keeps every occurrence, and a differing column keeps rows apart.",
+      "blocks": [
+        {
+          "kind": "paragraph",
+          "text": "You wrote 6 names on one list, then found 5 rows under UNION and 7 once the labels differed. The third sorted id was 103."
+        }
+      ],
+      "nextHook": "Next, rank rows with ties."
+    },
+    "calculator": "off",
+    "taughtSkills": [
+      "stack-results",
+      "union-overlap",
+      "whole-row-compare",
+      "order-combined",
+      "shape-match"
+    ]
+  },
+  "questions": [
+    {
+      "id": "sql-combine-result-sets-1",
+      "conceptIds": [
+        "sql-combine-result-sets"
+      ],
+      "prompt": "How does UNION combine its inputs?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "UNION combines results vertically; JOIN matches related rows."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "It stacks compatible result rows"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "UNION stacks compatible rows from its SELECT results and removes duplicates. It combines rows vertically rather than matching columns through a join."
+      },
+      "sourceIds": [
+        "sqlite-select"
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "It stacks compatible result rows"
+        },
+        {
+          "id": "b",
+          "label": "It matches customer keys to order keys"
+        },
+        {
+          "id": "c",
+          "label": "It changes the stored table names"
+        }
+      ],
+      "onCorrect": "It stacks compatible result rows. A join, by contrast, matches related rows.",
+      "skill": "stack-results",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Matching keys is what JOIN does. UNION stacks results."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "UNION only combines results. It never touches stored tables."
+        }
+      ]
+    },
+    {
+      "id": "sql-combine-result-sets-2",
+      "conceptIds": [
+        "sql-combine-result-sets"
+      ],
+      "prompt": "How many rows does the paid-ids query UNION the at-least-40 query return?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "The two result sets overlap on 101 and 103.",
+        "Remove repeated ids from the combined result.",
+        "Take four paid ids and three large ids, then remove the two repeated ids."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 5,
+        "unit": "",
+        "absoluteTolerance": 1e-06,
+        "relativeTolerance": 0,
+        "workedAnswer": "The unique ids are 101, 102, 103, 104 and 105."
+      },
+      "sourceIds": [
+        "sqlite-select"
+      ],
+      "onCorrect": "5. Orders 101 and 103 are in both results and UNION keeps each once.",
+      "skill": "union-overlap",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              7
+            ]
+          },
+          "feedback": "That is what UNION ALL gives. UNION removes the repeated ids."
+        }
+      ]
+    },
+    {
+      "id": "sql-combine-result-sets-3",
+      "conceptIds": [
+        "sql-combine-result-sets"
+      ],
+      "prompt": "How many rows result when the two queries also select the labels 'paid' and 'large' under UNION?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Compare both id and selection label.",
+        "An id with a different label is a different result row.",
+        "The two selections contribute four and three rows. Their labels make even repeated ids distinct."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 7,
+        "unit": "",
+        "absoluteTolerance": 1e-06,
+        "relativeTolerance": 0,
+        "workedAnswer": "The four paid rows and three large rows have different labels, so all seven full rows are distinct."
+      },
+      "sourceIds": [
+        "sqlite-select"
+      ],
+      "onCorrect": "7. A different label makes a repeated id a different row, so nothing collapses.",
+      "skill": "whole-row-compare",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              5
+            ]
+          },
+          "feedback": "The labels make the repeated ids different rows. Compare the whole row."
+        }
+      ]
+    },
+    {
+      "id": "sql-combine-result-sets-4",
+      "conceptIds": [
+        "sql-combine-result-sets"
+      ],
+      "prompt": "What is the third id when the id-only UNION is sorted in increasing order?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Deduplicate before finding the ordered position.",
+        "Use the ORDER BY at the end.",
+        "Compare the increasing unique ids and choose the third position after deduplication."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 103,
+        "unit": "",
+        "absoluteTolerance": 1e-06,
+        "relativeTolerance": 0,
+        "workedAnswer": "The ordered unique ids start 101, 102, 103."
+      },
+      "sourceIds": [
+        "sqlite-select"
+      ],
+      "onCorrect": "103. UNION removes repeats first, then ORDER BY puts the ids in order.",
+      "skill": "order-combined",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              102
+            ]
+          },
+          "feedback": "That would be third only if the repeated first id counted twice. UNION removes it first."
+        }
+      ]
+    },
+    {
+      "id": "sql-combine-result-sets-5",
+      "conceptIds": [
+        "sql-combine-result-sets"
+      ],
+      "prompt": "Query A returns ids 1, 2, 3. Query B returns 2, 4. How many rows does UNION ALL return?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "UNION ALL retains overlap.",
+        "Add the sizes of both results.",
+        "Evaluate 3 + 2; UNION ALL retains the overlapping id's occurrences."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 5,
+        "unit": "",
+        "absoluteTolerance": 1e-06,
+        "relativeTolerance": 0,
+        "workedAnswer": "UNION ALL retains all three rows from A and both rows from B: five."
+      },
+      "sourceIds": [
+        "sqlite-select"
+      ],
+      "onCorrect": "5. UNION ALL keeps the overlapping id, so the sizes simply add.",
+      "skill": "union-overlap",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              4
+            ]
+          },
+          "feedback": "UNION ALL keeps the overlapping id as well, so nothing is removed."
+        }
+      ]
+    },
+    {
+      "id": "sql-combine-result-sets-6",
+      "conceptIds": [
+        "sql-combine-result-sets"
+      ],
+      "prompt": "Which requirement applies to the SELECT results combined by UNION?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Both results must have a compatible shape."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "They must have the same number of result columns"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Each SELECT must return the same number of columns, with corresponding columns representing compatible values. UNION aligns columns by position, not by name."
+      },
+      "sourceIds": [
+        "sqlite-select"
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "They must have the same number of result columns"
+        },
+        {
+          "id": "b",
+          "label": "They must read the same table"
+        },
+        {
+          "id": "c",
+          "label": "They must contain no text"
+        }
+      ],
+      "onCorrect": "They must have the same number of result columns, so the rows line up.",
+      "skill": "shape-match",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "They can read different tables. What matters is the shape of the results."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Text is fine as long as the columns line up."
+        }
+      ]
+    },
+    {
+      "id": "sql-combine-result-sets-7",
+      "conceptIds": [
+        "sql-combine-result-sets"
+      ],
+      "prompt": "How many names are on the single list?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Which pupils are in both clubs?",
+        "Write each pupil once.",
+        "Take one club's list and add the pupils who are only in the other."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 6,
+        "unit": "",
+        "absoluteTolerance": 1e-09,
+        "relativeTolerance": 0,
+        "workedAnswer": "Cy and Di are in both clubs. Ann, Bo, Cy, Di, Ed and Flo make six names."
+      },
+      "sourceIds": [
+        "sqlite-select"
+      ],
+      "onCorrect": "6. You stacked two lists and wrote each pupil once. UNION does the same with two query results.",
+      "skill": "stack-results",
+      "calculator": "off",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              8
+            ]
+          },
+          "feedback": "That counts Cy and Di twice. Each pupil appears once."
+        }
+      ]
+    },
+    {
+      "id": "sql-combine-result-sets-8",
+      "conceptIds": [
+        "sql-combine-result-sets"
+      ],
+      "prompt": "Query A returns ids 1 and 2. Query B returns ids 2 and 3. How many rows does A UNION B return?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Which id is in both results?",
+        "UNION keeps a repeated row once.",
+        "List the different ids and count them."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 3,
+        "unit": "",
+        "absoluteTolerance": 1e-09,
+        "relativeTolerance": 0,
+        "workedAnswer": "The ids are 1, 2 and 3. The id 2 is in both results, but UNION keeps it once."
+      },
+      "sourceIds": [
+        "sqlite-select"
+      ],
+      "onCorrect": "3. UNION stacks the two results and keeps each different row once.",
+      "skill": "union-overlap",
+      "calculator": "off",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              4
+            ]
+          },
+          "feedback": "That adds both results. The id found in both appears once under UNION."
+        }
+      ]
+    },
+    {
+      "id": "sql-combine-result-sets-9",
+      "conceptIds": [
+        "sql-combine-result-sets"
+      ],
+      "prompt": "Why does UNION ALL return order 101 twice?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Which of the two results contains 101?"
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Order 101 is in both results, and UNION ALL keeps both."
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Order 101 is paid and also at least 40, so both queries return it."
+      },
+      "sourceIds": [
+        "sqlite-select"
+      ],
+      "onCorrect": "UNION ALL keeps every occurrence, so a row in both results appears twice.",
+      "skill": "union-overlap",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Order 101 is in both results, and UNION ALL keeps both."
+        },
+        {
+          "id": "b",
+          "label": "Order 101 was paid twice."
+        },
+        {
+          "id": "c",
+          "label": "UNION ALL adds an extra row for every id."
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "The table has one row for order 101. Two queries each returned it."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Only ids returned by both queries repeat."
+        }
+      ]
+    },
+    {
+      "id": "sql-combine-result-sets-10",
+      "conceptIds": [
+        "sql-combine-result-sets"
+      ],
+      "prompt": "A returns (1, 'x') and (2, 'x'). B returns (1, 'y') and (2, 'x'). How many rows does A UNION B return?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "UNION compares the whole row.",
+        "Which row appears in both results?",
+        "Remove the repeated row and count what is left."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 3,
+        "unit": "",
+        "absoluteTolerance": 1e-09,
+        "relativeTolerance": 0,
+        "workedAnswer": "The row (2, 'x') is in both results and is kept once. (1, 'x') and (1, 'y') are different rows."
+      },
+      "sourceIds": [
+        "sqlite-select"
+      ],
+      "onCorrect": "3. A row repeats only when every column matches, so (1, 'y') stays separate from (1, 'x').",
+      "skill": "whole-row-compare",
+      "calculator": "off",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              4
+            ]
+          },
+          "feedback": "The row (2, 'x') is in both results. UNION keeps it only once."
+        }
+      ]
+    }
+  ],
+  "citations": [
+    {
+      "claim": "UNION stacks two results of the same shape, and UNION ALL keeps every row.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 3: compound queries, UNION and UNION ALL; 4: ORDER BY; 5: LIMIT",
+      "targetKind": "step",
+      "targetId": "stack-two-results"
+    },
+    {
+      "claim": "One query selects the ids of paid orders. Another selects the ids of orders worth at least 40. Think about what combining two results means.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 3: compound queries, UNION and UNION ALL; 4: ORDER BY; 5: LIMIT",
+      "targetKind": "step",
+      "targetId": "what-union-does"
+    },
+    {
+      "claim": "Combine paid ids with at-least-40 ids, keeping repeats.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 3: compound queries, UNION and UNION ALL; 4: ORDER BY; 5: LIMIT",
+      "targetKind": "step",
+      "targetId": "keep-the-repeats"
+    },
+    {
+      "claim": "UNION removes repeated rows from the combined result.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 3: compound queries, UNION and UNION ALL; 4: ORDER BY; 5: LIMIT",
+      "targetKind": "step",
+      "targetId": "collapse-the-overlap"
+    },
+    {
+      "claim": "UNION compares whole rows. A column that differs makes two rows different, even when the id repeats.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 3: compound queries, UNION and UNION ALL; 4: ORDER BY; 5: LIMIT",
+      "targetKind": "step",
+      "targetId": "labels-matter"
+    },
+    {
+      "claim": "ORDER BY at the end sorts the combined result. Remember that UNION has already removed repeats by then.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 3: compound queries, UNION and UNION ALL; 4: ORDER BY; 5: LIMIT",
+      "targetKind": "step",
+      "targetId": "sort-the-stack"
+    },
+    {
+      "claim": "UNION stacks compatible rows from its SELECT results and removes duplicates. It combines rows vertically rather than matching columns through a join.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 3: compound queries, UNION and UNION ALL; 4: ORDER BY; 5: LIMIT",
+      "targetKind": "question",
+      "targetId": "sql-combine-result-sets-1"
+    },
+    {
+      "claim": "The unique ids are 101, 102, 103, 104 and 105.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 3: compound queries, UNION and UNION ALL; 4: ORDER BY; 5: LIMIT",
+      "targetKind": "question",
+      "targetId": "sql-combine-result-sets-2"
+    },
+    {
+      "claim": "The four paid rows and three large rows have different labels, so all seven full rows are distinct.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 3: compound queries, UNION and UNION ALL; 4: ORDER BY; 5: LIMIT",
+      "targetKind": "question",
+      "targetId": "sql-combine-result-sets-3"
+    },
+    {
+      "claim": "The ordered unique ids start 101, 102, 103.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 3: compound queries, UNION and UNION ALL; 4: ORDER BY; 5: LIMIT",
+      "targetKind": "question",
+      "targetId": "sql-combine-result-sets-4"
+    },
+    {
+      "claim": "UNION ALL retains all three rows from A and both rows from B: five.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 3: compound queries, UNION and UNION ALL; 4: ORDER BY; 5: LIMIT",
+      "targetKind": "question",
+      "targetId": "sql-combine-result-sets-5"
+    },
+    {
+      "claim": "Each SELECT must return the same number of columns, with corresponding columns representing compatible values. UNION aligns columns by position, not by name.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 3: compound queries, UNION and UNION ALL; 4: ORDER BY; 5: LIMIT",
+      "targetKind": "question",
+      "targetId": "sql-combine-result-sets-6"
+    },
+    {
+      "claim": "Cy and Di are in both clubs. Ann, Bo, Cy, Di, Ed and Flo make six names.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 3: compound queries, UNION and UNION ALL; 4: ORDER BY; 5: LIMIT",
+      "targetKind": "question",
+      "targetId": "sql-combine-result-sets-7"
+    },
+    {
+      "claim": "The ids are 1, 2 and 3. The id 2 is in both results, but UNION keeps it once.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 3: compound queries, UNION and UNION ALL; 4: ORDER BY; 5: LIMIT",
+      "targetKind": "question",
+      "targetId": "sql-combine-result-sets-8"
+    },
+    {
+      "claim": "Order 101 is paid and also at least 40, so both queries return it.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 3: compound queries, UNION and UNION ALL; 4: ORDER BY; 5: LIMIT",
+      "targetKind": "question",
+      "targetId": "sql-combine-result-sets-9"
+    },
+    {
+      "claim": "The row (2, 'x') is in both results and is kept once. (1, 'x') and (1, 'y') are different rows.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 3: compound queries, UNION and UNION ALL; 4: ORDER BY; 5: LIMIT",
+      "targetKind": "question",
+      "targetId": "sql-combine-result-sets-10"
+    },
+    {
+      "claim": "The unique result ids are 2, 4 and 6: three rows.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 3: compound queries, UNION and UNION ALL; 4: ORDER BY; 5: LIMIT",
+      "targetKind": "flashcard",
+      "targetId": "sql-combine-result-sets-card-1"
+    },
+    {
+      "claim": "UNION ALL keeps every occurrence; UNION removes duplicate full result rows.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 3: compound queries, UNION and UNION ALL; 4: ORDER BY; 5: LIMIT",
+      "targetKind": "flashcard",
+      "targetId": "sql-combine-result-sets-card-2"
+    }
+  ]
+}

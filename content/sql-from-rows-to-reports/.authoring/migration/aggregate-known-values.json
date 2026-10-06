@@ -1,0 +1,1455 @@
+{
+  "lessonId": "aggregate-known-values",
+  "courseId": "sql-from-rows-to-reports",
+  "migrationNotes": [
+    "step 'predict': the old title \"Count rows or known values\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
+    "step 'predict': kind hook → predict; check the order of teaching and asking still fits (style guide §2).",
+    "step 'work': the old title \"Average the known amounts\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
+    "step 'work': 1 block(s) moved to reveal because they state the answer; make the reveal refer to the learner's attempt.",
+    "step 'work': write workedSteps from the worked answer (one line per move, one self-explanation prompt), a headline naming the problem, and recompute every number.",
+    "step 'check': the old title \"Minimum and maximum\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
+    "step 'check': kind check → try; check the order of teaching and asking still fits (style guide §2).",
+    "step 'check': 1 block(s) moved to reveal because they state the answer; make the reveal refer to the learner's attempt.",
+    "step 'transfer': the old title \"No matches still has a meaning\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
+    "intro: write the hook (a puzzle the learner can do from what they bring, never a definition), the promise (≤ 25 words, “By the end you'll …”) and the time.",
+    "recap: write the key idea (the promise, kept), the learner's own results, and the one-line bridge to the next lesson.",
+    "skill check: the lesson has 2 quiz item(s); it needs exactly 3, each on something this lesson taught.",
+    "questions: replace every TODO onCorrect (≤ 25 words, states the idea), tag each skill, add misconceptions for predictable wrong answers (the feedback must not state the key).",
+    "vocabulary: give each explain step introducesTerms; no prompt may use a term before the step that introduces it.",
+    "add an explain step before any question that needs a new word or symbol; add a transfer if the lesson has none.",
+    "citations: retarget the seeded citations to the new step and question ids, and give every step, question and flashcard at least one (same sourceIds; the claim is what that screen asserts)."
+  ],
+  "lesson": {
+    "id": "aggregate-known-values",
+    "courseId": "sql-from-rows-to-reports",
+    "conceptIds": [
+      "sql-aggregate-known-values"
+    ],
+    "title": "Choose the right denominator",
+    "steps": [
+      {
+        "id": "what-aggregates-see",
+        "kind": "explain",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "COUNT(*) counts rows. COUNT, SUM, AVG, MIN and MAX on a column use only its known values."
+          },
+          {
+            "kind": "paragraph",
+            "text": "COALESCE(amount, 0) swaps an unknown for 0 before the aggregate sees it. That changes what they see."
+          }
+        ],
+        "reveal": [],
+        "visualStateId": "",
+        "checkQuestionId": "sql-aggregate-known-values-8",
+        "activityId": "",
+        "headline": "An aggregate turns many rows into one value, using only the known values.",
+        "introducesTerms": [
+          "aggregate",
+          "COALESCE"
+        ]
+      },
+      {
+        "id": "count-a-column",
+        "kind": "predict",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "The orders table has six rows, and one amount is unknown. Compare counting rows with counting a column."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "You left out the unknown amount, so the column count came out one short of the row count. That gap is how a missing value shows."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "sql-aggregate-known-values-1",
+        "activityId": "",
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "orders",
+              "columns": [
+                "id",
+                "customer_id",
+                "item",
+                "amount",
+                "status",
+                "day"
+              ],
+              "rows": [
+                {
+                  "id": "orders-0",
+                  "cells": [
+                    101,
+                    1,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-01"
+                  ]
+                },
+                {
+                  "id": "orders-1",
+                  "cells": [
+                    102,
+                    1,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-2",
+                  "cells": [
+                    103,
+                    2,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-3",
+                  "cells": [
+                    104,
+                    2,
+                    "Lamp",
+                    40,
+                    "pending",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-4",
+                  "cells": [
+                    105,
+                    3,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-5",
+                  "cells": [
+                    106,
+                    3,
+                    "Lamp",
+                    null,
+                    "pending",
+                    "2026-09-04"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Count every order",
+              "sql": "SELECT COUNT(*) AS orders FROM orders;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "orders"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      6
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "Count known amounts",
+              "sql": "SELECT COUNT(amount) AS known_amounts FROM orders;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "known_amounts"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      5
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      },
+      {
+        "id": "cys-average",
+        "kind": "worked_example",
+        "blocks": [],
+        "lead": [],
+        "reveal": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "headline": "Find the average amount for customer 3's orders.",
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "orders",
+              "columns": [
+                "id",
+                "customer_id",
+                "item",
+                "amount",
+                "status",
+                "day"
+              ],
+              "rows": [
+                {
+                  "id": "orders-0",
+                  "cells": [
+                    101,
+                    1,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-01"
+                  ]
+                },
+                {
+                  "id": "orders-1",
+                  "cells": [
+                    102,
+                    1,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-2",
+                  "cells": [
+                    103,
+                    2,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-3",
+                  "cells": [
+                    104,
+                    2,
+                    "Lamp",
+                    40,
+                    "pending",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-4",
+                  "cells": [
+                    105,
+                    3,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-5",
+                  "cells": [
+                    106,
+                    3,
+                    "Lamp",
+                    null,
+                    "pending",
+                    "2026-09-04"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Known amounts only",
+              "sql": "SELECT COUNT(*) AS orders, COUNT(amount) AS known, AVG(amount) AS mean FROM orders WHERE customer_id = 3;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "orders",
+                  "known",
+                  "mean"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      2,
+                      1,
+                      20
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "Unknown counted as zero",
+              "sql": "SELECT COUNT(*) AS orders, COUNT(amount) AS known, AVG(COALESCE(amount, 0)) AS mean FROM orders WHERE customer_id = 3;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "orders",
+                  "known",
+                  "mean"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      2,
+                      1,
+                      10
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        },
+        "answerVisibility": "hidden-until-response",
+        "workedSteps": [
+          {
+            "text": "List the amounts for customer 3.",
+            "math": "20 and NULL"
+          },
+          {
+            "text": "AVG uses only the known amounts.",
+            "math": "20 ÷ 1 = 20",
+            "selfExplain": {
+              "questionId": "sql-aggregate-known-values-9"
+            }
+          },
+          {
+            "text": "COALESCE(amount, 0) would count the unknown as 0 instead.",
+            "math": "(20 + 0) ÷ 2 = 10"
+          }
+        ]
+      },
+      {
+        "id": "average-all",
+        "kind": "try",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "SUM adds the known amounts. AVG divides that sum by the number of known amounts."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "You divided by the known amounts only. The unknown amount neither adds to the total nor counts as an order."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "sql-aggregate-known-values-2",
+        "activityId": "",
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "orders",
+              "columns": [
+                "id",
+                "customer_id",
+                "item",
+                "amount",
+                "status",
+                "day"
+              ],
+              "rows": [
+                {
+                  "id": "orders-0",
+                  "cells": [
+                    101,
+                    1,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-01"
+                  ]
+                },
+                {
+                  "id": "orders-1",
+                  "cells": [
+                    102,
+                    1,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-2",
+                  "cells": [
+                    103,
+                    2,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-3",
+                  "cells": [
+                    104,
+                    2,
+                    "Lamp",
+                    40,
+                    "pending",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-4",
+                  "cells": [
+                    105,
+                    3,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-5",
+                  "cells": [
+                    106,
+                    3,
+                    "Lamp",
+                    null,
+                    "pending",
+                    "2026-09-04"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Keep missing separate",
+              "sql": "SELECT SUM(amount) AS total, AVG(amount) AS mean FROM orders;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "total",
+                  "mean"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      240,
+                      48
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "Fill missing with zero",
+              "sql": "SELECT SUM(COALESCE(amount, 0)) AS total, AVG(COALESCE(amount, 0)) AS mean FROM orders;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "total",
+                  "mean"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      240,
+                      40
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      },
+      {
+        "id": "smallest-pending",
+        "kind": "predict",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "MIN and MAX pass over unknown values too. Filter first, then pick from the rows that are left."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "You picked from the known amounts of the filtered rows. An unknown amount never stands in for a smallest value."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "sql-aggregate-known-values-3",
+        "activityId": "",
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "orders",
+              "columns": [
+                "id",
+                "customer_id",
+                "item",
+                "amount",
+                "status",
+                "day"
+              ],
+              "rows": [
+                {
+                  "id": "orders-0",
+                  "cells": [
+                    101,
+                    1,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-01"
+                  ]
+                },
+                {
+                  "id": "orders-1",
+                  "cells": [
+                    102,
+                    1,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-2",
+                  "cells": [
+                    103,
+                    2,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-3",
+                  "cells": [
+                    104,
+                    2,
+                    "Lamp",
+                    40,
+                    "pending",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-4",
+                  "cells": [
+                    105,
+                    3,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-5",
+                  "cells": [
+                    106,
+                    3,
+                    "Lamp",
+                    null,
+                    "pending",
+                    "2026-09-04"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "All orders",
+              "sql": "SELECT MIN(amount) AS minimum, MAX(amount) AS maximum FROM orders;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "minimum",
+                  "maximum"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      20,
+                      80
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "Pending only",
+              "sql": "SELECT MIN(amount) AS minimum, MAX(amount) AS maximum FROM orders WHERE status = 'pending';",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "minimum",
+                  "maximum"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      40,
+                      40
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      },
+      {
+        "id": "nothing-to-add",
+        "kind": "transfer",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Suppose WHERE leaves no rows at all. An aggregate query still returns a single row. Think about what a total of nothing means."
+          }
+        ],
+        "reveal": [],
+        "visualStateId": "",
+        "checkQuestionId": "sql-aggregate-known-values-4",
+        "activityId": "",
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "orders",
+              "columns": [
+                "id",
+                "customer_id",
+                "item",
+                "amount",
+                "status",
+                "day"
+              ],
+              "rows": [
+                {
+                  "id": "orders-0",
+                  "cells": [
+                    101,
+                    1,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-01"
+                  ]
+                },
+                {
+                  "id": "orders-1",
+                  "cells": [
+                    102,
+                    1,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-2",
+                  "cells": [
+                    103,
+                    2,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-3",
+                  "cells": [
+                    104,
+                    2,
+                    "Lamp",
+                    40,
+                    "pending",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-4",
+                  "cells": [
+                    105,
+                    3,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-5",
+                  "cells": [
+                    106,
+                    3,
+                    "Lamp",
+                    null,
+                    "pending",
+                    "2026-09-04"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Known orders",
+              "sql": "SELECT COUNT(*) AS orders, SUM(amount) AS total, AVG(amount) AS mean FROM orders;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "orders",
+                  "total",
+                  "mean"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      6,
+                      240,
+                      48
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "No matches",
+              "sql": "SELECT COUNT(*) AS orders, SUM(amount) AS total, AVG(amount) AS mean FROM orders WHERE amount > 100;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "orders",
+                  "total",
+                  "mean"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      0,
+                      null,
+                      null
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      }
+    ],
+    "orientation": "Use COUNT, SUM, AVG, MIN and MAX while keeping missing values visible.",
+    "visualStates": [],
+    "visualKind": "none",
+    "activityId": "",
+    "questionIds": [
+      "sql-aggregate-known-values-5",
+      "sql-aggregate-known-values-6",
+      "sql-aggregate-known-values-10"
+    ],
+    "flashcardIds": [
+      "sql-aggregate-known-values-card-1",
+      "sql-aggregate-known-values-card-2"
+    ],
+    "reviewLabel": "Choose the right denominator",
+    "nextAction": "Apply the idea to the next query.",
+    "stageTitles": {
+      "quiz": "Skill check",
+      "review": "Recall it later",
+      "completion": "Ready for the next idea"
+    },
+    "sourceIds": [
+      "sqlite-aggregate",
+      "sqlite-expr"
+    ],
+    "assuranceLevel": "source_backed",
+    "intro": {
+      "hook": {
+        "blocks": [
+          {
+            "kind": "paragraph",
+            "text": "Four pupils were asked how many books they read this month. Three answered 4, 6 and 8. The fourth did not answer."
+          }
+        ],
+        "questionId": "sql-aggregate-known-values-7"
+      },
+      "promise": "By the end you'll know which rows each aggregate counts, and what an unknown value does to a total or an average.",
+      "estimatedMinutes": 10
+    },
+    "recap": {
+      "keyIdea": "Aggregates use only known values: the denominator is the count of known amounts. COALESCE changes that by filling the gaps first.",
+      "blocks": [
+        {
+          "kind": "paragraph",
+          "text": "You found an average of 6 from three answers and 48 from five known amounts. With no rows, a SUM came back NULL."
+        }
+      ],
+      "nextHook": "Next, summarise each group of rows separately."
+    },
+    "calculator": "off",
+    "taughtSkills": [
+      "count-known",
+      "average-known",
+      "pick-extremes",
+      "empty-aggregate",
+      "fill-missing"
+    ]
+  },
+  "questions": [
+    {
+      "id": "sql-aggregate-known-values-1",
+      "conceptIds": [
+        "sql-aggregate-known-values"
+      ],
+      "prompt": "What does COUNT(amount) return for the original orders?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Count known values in the column.",
+        "COUNT(amount) excludes the NULL row.",
+        "Order 106 has no known amount; inspect the amounts on all the other orders."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 5,
+        "unit": "",
+        "absoluteTolerance": 1e-06,
+        "relativeTolerance": 0,
+        "workedAnswer": "Five rows have a non-NULL amount; order 106 is missing."
+      },
+      "sourceIds": [
+        "sqlite-aggregate"
+      ],
+      "onCorrect": "5. COUNT(amount) counts the known amounts, so the unknown one is left out.",
+      "skill": "count-known",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              6
+            ]
+          },
+          "feedback": "That is the number of rows, which COUNT(*) gives. COUNT(amount) skips the unknown amount."
+        }
+      ]
+    },
+    {
+      "id": "sql-aggregate-known-values-2",
+      "conceptIds": [
+        "sql-aggregate-known-values"
+      ],
+      "prompt": "What is AVG(amount) for the original orders?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Add only known amounts.",
+        "Use the count of known amounts as the denominator.",
+        "Evaluate 240 ÷ 5; NULL is outside this denominator."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 48,
+        "unit": "",
+        "absoluteTolerance": 1e-06,
+        "relativeTolerance": 0,
+        "workedAnswer": "The known total is 240 across five known amounts: 240 ÷ 5 = 48."
+      },
+      "sourceIds": [
+        "sqlite-aggregate"
+      ],
+      "onCorrect": "48. SUM adds the known amounts, and AVG divides by how many there are.",
+      "skill": "average-known",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              40
+            ]
+          },
+          "feedback": "That divides by all six rows, as if the unknown amount were a zero."
+        },
+        {
+          "match": {
+            "numeric": [
+              240
+            ]
+          },
+          "feedback": "That is the total. AVG divides it by the number of known amounts."
+        }
+      ]
+    },
+    {
+      "id": "sql-aggregate-known-values-3",
+      "conceptIds": [
+        "sql-aggregate-known-values"
+      ],
+      "prompt": "What is MIN(amount) for pending orders?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Filter to pending orders first.",
+        "Ignore the missing amount; do not replace it with zero.",
+        "The pending amounts are a known value on order 104 and NULL on order 106; only the known value participates."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 40,
+        "unit": "",
+        "absoluteTolerance": 1e-06,
+        "relativeTolerance": 0,
+        "workedAnswer": "Order 104 is the only pending order with a known amount; MIN is 40."
+      },
+      "sourceIds": [
+        "sqlite-aggregate"
+      ],
+      "onCorrect": "40. WHERE keeps the pending orders, and MIN ignores the unknown amount.",
+      "skill": "pick-extremes",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              0
+            ]
+          },
+          "feedback": "The unknown amount is not a zero. MIN ignores it."
+        },
+        {
+          "match": {
+            "numeric": [
+              20
+            ]
+          },
+          "feedback": "That is the smallest amount over all orders. Filter to pending orders first."
+        }
+      ]
+    },
+    {
+      "id": "sql-aggregate-known-values-4",
+      "conceptIds": [
+        "sql-aggregate-known-values"
+      ],
+      "prompt": "With no matching rows, type the value SUM(amount) returns in SQLite.",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "No observed sum is different from a known zero sum."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "NULL"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "SQLite SUM(amount) returns NULL when there are no non-NULL input values, including an empty matching set. COUNT instead returns zero for an empty set."
+      },
+      "sourceIds": [
+        "sqlite-aggregate"
+      ],
+      "onCorrect": "NULL. With no rows to add, SUM has no total to report, which is not the same as zero.",
+      "skill": "empty-aggregate",
+      "misconceptions": [
+        {
+          "match": {
+            "textIdeas": [
+              "0"
+            ]
+          },
+          "feedback": "A total of zero would claim that rows were added up. With no rows there is no total."
+        }
+      ]
+    },
+    {
+      "id": "sql-aggregate-known-values-5",
+      "conceptIds": [
+        "sql-aggregate-known-values"
+      ],
+      "prompt": "Known values are 10 and 30, with one NULL. What does AVG(value) return?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "The missing value does not add to the count.",
+        "Divide the known total by two.",
+        "Evaluate (10 + 30) ÷ 2; the missing observation is excluded."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 20,
+        "unit": "",
+        "absoluteTolerance": 1e-06,
+        "relativeTolerance": 0,
+        "workedAnswer": "AVG uses the two known values: (10 + 30) ÷ 2 = 20."
+      },
+      "sourceIds": [
+        "sqlite-aggregate"
+      ],
+      "onCorrect": "20. The unknown value is out of the sum and the count, so it is 40 ÷ 2.",
+      "skill": "average-known",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              13.333333333333334
+            ]
+          },
+          "feedback": "That divides by three, counting the unknown value. AVG leaves it out."
+        },
+        {
+          "match": {
+            "numeric": [
+              40
+            ]
+          },
+          "feedback": "That is the total. AVG divides it by the number of known values."
+        }
+      ]
+    },
+    {
+      "id": "sql-aggregate-known-values-6",
+      "conceptIds": [
+        "sql-aggregate-known-values"
+      ],
+      "prompt": "What changes when you use AVG(COALESCE(amount, 0))?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "The replacement becomes an input value to AVG."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Missing amounts count as zeros"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "COALESCE replaces each missing amount with zero before averaging. Those rows now contribute to the denominator, which can change the average."
+      },
+      "sourceIds": [
+        "sqlite-expr"
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "Missing amounts count as zeros"
+        },
+        {
+          "id": "b",
+          "label": "Missing amounts are still excluded"
+        },
+        {
+          "id": "c",
+          "label": "Only the column heading changes"
+        }
+      ],
+      "onCorrect": "Missing amounts count as zeros. COALESCE replaces NULL before AVG sees it, so the count rises.",
+      "skill": "fill-missing",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "COALESCE fills the gap before AVG runs, so the gaps no longer disappear."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "The values AVG reads change as well, so the average can change."
+        }
+      ]
+    },
+    {
+      "id": "sql-aggregate-known-values-7",
+      "conceptIds": [
+        "sql-aggregate-known-values"
+      ],
+      "prompt": "What is the average number of books among the pupils who answered?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Which pupils should count towards the average?",
+        "Add up the numbers that were reported.",
+        "Divide by the number of answers, not the number of pupils."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 6,
+        "unit": "",
+        "absoluteTolerance": 1e-09,
+        "relativeTolerance": 0,
+        "workedAnswer": "The answers are 4, 6 and 8. They add up to 18, and 18 ÷ 3 = 6."
+      },
+      "sourceIds": [
+        "sqlite-aggregate"
+      ],
+      "onCorrect": "6. The pupil who did not answer adds nothing and is not counted. AVG treats an unknown value the same way.",
+      "skill": "average-known",
+      "calculator": "off",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              4.5
+            ]
+          },
+          "feedback": "That divides by all four pupils. The one who did not answer gave no number to include."
+        }
+      ]
+    },
+    {
+      "id": "sql-aggregate-known-values-8",
+      "conceptIds": [
+        "sql-aggregate-known-values"
+      ],
+      "prompt": "Which one counts every row, including rows with an unknown amount?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Which one does not look at a single column?"
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "COUNT(*)"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "COUNT(*) counts rows. COUNT(amount) counts only rows where amount is known."
+      },
+      "sourceIds": [
+        "sqlite-aggregate"
+      ],
+      "onCorrect": "COUNT(*) counts rows. Counting a column counts only its known values.",
+      "skill": "count-known",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "COUNT(*)"
+        },
+        {
+          "id": "b",
+          "label": "COUNT(amount)"
+        },
+        {
+          "id": "c",
+          "label": "SUM(amount)"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "That counts known amounts only, so a row with an unknown amount is left out."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "SUM adds amounts. It does not count rows."
+        }
+      ]
+    },
+    {
+      "id": "sql-aggregate-known-values-9",
+      "conceptIds": [
+        "sql-aggregate-known-values"
+      ],
+      "prompt": "Why does AVG(amount) divide by one here, not two?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "How many of the two amounts are known?"
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "AVG counts only the known amounts."
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "One of the two amounts is unknown, and AVG leaves it out of both the sum and the count."
+      },
+      "sourceIds": [
+        "sqlite-aggregate"
+      ],
+      "onCorrect": "AVG skips unknown values in the sum and in the count, so it divides by the known amounts only.",
+      "skill": "average-known",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "AVG counts only the known amounts."
+        },
+        {
+          "id": "b",
+          "label": "AVG treats the unknown amount as zero."
+        },
+        {
+          "id": "c",
+          "label": "The unknown order was cancelled."
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Then it would divide by both orders. AVG skips unknown values instead."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Nothing says it was cancelled. Its amount is simply not known."
+        }
+      ]
+    },
+    {
+      "id": "sql-aggregate-known-values-10",
+      "conceptIds": [
+        "sql-aggregate-known-values"
+      ],
+      "prompt": "A column holds 5, NULL, 7 and 8. What does COUNT(column) return?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Does COUNT(column) count the unknown value?",
+        "Count the values that are known.",
+        "Four rows, minus the unknown one."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 3,
+        "unit": "",
+        "absoluteTolerance": 1e-09,
+        "relativeTolerance": 0,
+        "workedAnswer": "Three of the four values are known, so COUNT(column) is three."
+      },
+      "sourceIds": [
+        "sqlite-aggregate"
+      ],
+      "onCorrect": "3. COUNT on a column counts known values, so the NULL is left out.",
+      "skill": "count-known",
+      "calculator": "off",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              4
+            ]
+          },
+          "feedback": "That counts rows. COUNT(column) skips the unknown value."
+        }
+      ]
+    }
+  ],
+  "citations": [
+    {
+      "claim": "An aggregate turns many rows into one value, using only the known values.",
+      "sourceId": "sqlite-aggregate",
+      "section": "Aggregate Functions: avg(X), count(X), count(*), min(X), max(X), sum(X)",
+      "targetKind": "step",
+      "targetId": "what-aggregates-see"
+    },
+    {
+      "claim": "The orders table has six rows, and one amount is unknown. Compare counting rows with counting a column.",
+      "sourceId": "sqlite-aggregate",
+      "section": "Aggregate Functions: avg(X), count(X), count(*), min(X), max(X), sum(X)",
+      "targetKind": "step",
+      "targetId": "count-a-column"
+    },
+    {
+      "claim": "Find the average amount for customer 3's orders.",
+      "sourceId": "sqlite-aggregate",
+      "section": "Aggregate Functions: avg(X), count(X), count(*), min(X), max(X), sum(X)",
+      "targetKind": "step",
+      "targetId": "cys-average"
+    },
+    {
+      "claim": "SUM adds the known amounts. AVG divides that sum by the number of known amounts.",
+      "sourceId": "sqlite-aggregate",
+      "section": "Aggregate Functions: avg(X), count(X), count(*), min(X), max(X), sum(X)",
+      "targetKind": "step",
+      "targetId": "average-all"
+    },
+    {
+      "claim": "MIN and MAX pass over unknown values too. Filter first, then pick from the rows that are left.",
+      "sourceId": "sqlite-aggregate",
+      "section": "Aggregate Functions: avg(X), count(X), count(*), min(X), max(X), sum(X)",
+      "targetKind": "step",
+      "targetId": "smallest-pending"
+    },
+    {
+      "claim": "Suppose WHERE leaves no rows at all. An aggregate query still returns a single row. Think about what a total of nothing means.",
+      "sourceId": "sqlite-aggregate",
+      "section": "Aggregate Functions: avg(X), count(X), count(*), min(X), max(X), sum(X)",
+      "targetKind": "step",
+      "targetId": "nothing-to-add"
+    },
+    {
+      "claim": "Five rows have a non-NULL amount; order 106 is missing.",
+      "sourceId": "sqlite-aggregate",
+      "section": "Aggregate Functions: avg(X), count(X), count(*), min(X), max(X), sum(X)",
+      "targetKind": "question",
+      "targetId": "sql-aggregate-known-values-1"
+    },
+    {
+      "claim": "The known total is 240 across five known amounts: 240 ÷ 5 = 48.",
+      "sourceId": "sqlite-aggregate",
+      "section": "Aggregate Functions: avg(X), count(X), count(*), min(X), max(X), sum(X)",
+      "targetKind": "question",
+      "targetId": "sql-aggregate-known-values-2"
+    },
+    {
+      "claim": "Order 104 is the only pending order with a known amount; MIN is 40.",
+      "sourceId": "sqlite-aggregate",
+      "section": "Aggregate Functions: avg(X), count(X), count(*), min(X), max(X), sum(X)",
+      "targetKind": "question",
+      "targetId": "sql-aggregate-known-values-3"
+    },
+    {
+      "claim": "SQLite SUM(amount) returns NULL when there are no non-NULL input values, including an empty matching set. COUNT instead returns zero for an empty set.",
+      "sourceId": "sqlite-aggregate",
+      "section": "Aggregate Functions: avg(X), count(X), count(*), min(X), max(X), sum(X)",
+      "targetKind": "question",
+      "targetId": "sql-aggregate-known-values-4"
+    },
+    {
+      "claim": "AVG uses the two known values: (10 + 30) ÷ 2 = 20.",
+      "sourceId": "sqlite-aggregate",
+      "section": "Aggregate Functions: avg(X), count(X), count(*), min(X), max(X), sum(X)",
+      "targetKind": "question",
+      "targetId": "sql-aggregate-known-values-5"
+    },
+    {
+      "claim": "COALESCE replaces each missing amount with zero before averaging. Those rows now contribute to the denominator, which can change the average.",
+      "sourceId": "sqlite-expr",
+      "section": "2: Operators; 5 LIKE; 6 BETWEEN; 7 CASE; 8 IN and NOT IN; 10 EXISTS; 11 subqueries",
+      "targetKind": "question",
+      "targetId": "sql-aggregate-known-values-6"
+    },
+    {
+      "claim": "The answers are 4, 6 and 8. They add up to 18, and 18 ÷ 3 = 6.",
+      "sourceId": "sqlite-aggregate",
+      "section": "Aggregate Functions: avg(X), count(X), count(*), min(X), max(X), sum(X)",
+      "targetKind": "question",
+      "targetId": "sql-aggregate-known-values-7"
+    },
+    {
+      "claim": "COUNT(*) counts rows. COUNT(amount) counts only rows where amount is known.",
+      "sourceId": "sqlite-aggregate",
+      "section": "Aggregate Functions: avg(X), count(X), count(*), min(X), max(X), sum(X)",
+      "targetKind": "question",
+      "targetId": "sql-aggregate-known-values-8"
+    },
+    {
+      "claim": "One of the two amounts is unknown, and AVG leaves it out of both the sum and the count.",
+      "sourceId": "sqlite-aggregate",
+      "section": "Aggregate Functions: avg(X), count(X), count(*), min(X), max(X), sum(X)",
+      "targetKind": "question",
+      "targetId": "sql-aggregate-known-values-9"
+    },
+    {
+      "claim": "Three of the four values are known, so COUNT(column) is three.",
+      "sourceId": "sqlite-aggregate",
+      "section": "Aggregate Functions: avg(X), count(X), count(*), min(X), max(X), sum(X)",
+      "targetKind": "question",
+      "targetId": "sql-aggregate-known-values-10"
+    },
+    {
+      "claim": "The two known values average to (5 + 15) ÷ 2 = 10.",
+      "sourceId": "sqlite-aggregate",
+      "section": "Aggregate Functions: avg(X), count(X), count(*), min(X), max(X), sum(X)",
+      "targetKind": "flashcard",
+      "targetId": "sql-aggregate-known-values-card-1"
+    },
+    {
+      "claim": "COUNT(*) counts rows. COUNT(column) counts only non-NULL values in that column.",
+      "sourceId": "sqlite-aggregate",
+      "section": "Aggregate Functions: avg(X), count(X), count(*), min(X), max(X), sum(X)",
+      "targetKind": "flashcard",
+      "targetId": "sql-aggregate-known-values-card-2"
+    }
+  ]
+}

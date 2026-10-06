@@ -1,0 +1,1568 @@
+{
+  "lessonId": "running-totals-and-neighbours",
+  "courseId": "sql-from-rows-to-reports",
+  "migrationNotes": [
+    "step 'predict': the old title \"Extend a running total\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
+    "step 'predict': kind hook → predict; check the order of teaching and asking still fits (style guide §2).",
+    "step 'predict': 1 block(s) moved to reveal because they state the answer; make the reveal refer to the learner's attempt.",
+    "step 'work': the old title \"Peers can enter together\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
+    "step 'work': write workedSteps from the worked answer (one line per move, one self-explanation prompt), a headline naming the problem, and recompute every number.",
+    "step 'check': the old title \"Look at the previous row\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
+    "step 'check': kind check → try; check the order of teaching and asking still fits (style guide §2).",
+    "step 'check': 1 block(s) moved to reveal because they state the answer; make the reveal refer to the learner's attempt.",
+    "step 'transfer': the old title \"Look ahead explicitly\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
+    "step 'transfer': 1 block(s) moved to reveal because they state the answer; make the reveal refer to the learner's attempt.",
+    "intro: write the hook (a puzzle the learner can do from what they bring, never a definition), the promise (≤ 25 words, “By the end you'll …”) and the time.",
+    "recap: write the key idea (the promise, kept), the learner's own results, and the one-line bridge to the next lesson.",
+    "skill check: the lesson has 2 quiz item(s); it needs exactly 3, each on something this lesson taught.",
+    "questions: replace every TODO onCorrect (≤ 25 words, states the idea), tag each skill, add misconceptions for predictable wrong answers (the feedback must not state the key).",
+    "vocabulary: give each explain step introducesTerms; no prompt may use a term before the step that introduces it.",
+    "add an explain step before any question that needs a new word or symbol; add a transfer if the lesson has none.",
+    "citations: retarget the seeded citations to the new step and question ids, and give every step, question and flashcard at least one (same sourceIds; the claim is what that screen asserts)."
+  ],
+  "lesson": {
+    "id": "running-totals-and-neighbours",
+    "courseId": "sql-from-rows-to-reports",
+    "conceptIds": [
+      "sql-running-totals-and-neighbours"
+    ],
+    "title": "Read the rows before and after",
+    "steps": [
+      {
+        "id": "a-frame-of-rows",
+        "kind": "explain",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "A window can sum the rows from the first one up to the current one. That is a running total, and the frame is the range of rows it adds."
+          },
+          {
+            "kind": "callout",
+            "tone": "key",
+            "text": "The order inside OVER decides which row is first, and so which rows come before."
+          }
+        ],
+        "reveal": [],
+        "visualStateId": "",
+        "checkQuestionId": "sql-running-totals-and-neighbours-8",
+        "activityId": "",
+        "headline": "A frame says which rows count toward each row's value.",
+        "introducesTerms": [
+          "frame",
+          "running total"
+        ]
+      },
+      {
+        "id": "total-so-far",
+        "kind": "predict",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "The frame here runs from the first ordered row to the current row. The last amount is unknown, so it adds no known value."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "You added the rows up to and including the current one. The grand total would use every row at once."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "sql-running-totals-and-neighbours-1",
+        "activityId": "",
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "orders",
+              "columns": [
+                "id",
+                "customer_id",
+                "item",
+                "amount",
+                "status",
+                "day"
+              ],
+              "rows": [
+                {
+                  "id": "orders-0",
+                  "cells": [
+                    101,
+                    1,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-01"
+                  ]
+                },
+                {
+                  "id": "orders-1",
+                  "cells": [
+                    102,
+                    1,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-2",
+                  "cells": [
+                    103,
+                    2,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-3",
+                  "cells": [
+                    104,
+                    2,
+                    "Lamp",
+                    40,
+                    "pending",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-4",
+                  "cells": [
+                    105,
+                    3,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-5",
+                  "cells": [
+                    106,
+                    3,
+                    "Lamp",
+                    null,
+                    "pending",
+                    "2026-09-04"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Known grand total",
+              "sql": "SELECT id, amount, SUM(amount) OVER () AS total FROM orders ORDER BY id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "amount",
+                  "total"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      101,
+                      80,
+                      240
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      102,
+                      20,
+                      240
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      103,
+                      80,
+                      240
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      104,
+                      40,
+                      240
+                    ]
+                  },
+                  {
+                    "id": "result-4",
+                    "cells": [
+                      105,
+                      20,
+                      240
+                    ]
+                  },
+                  {
+                    "id": "result-5",
+                    "cells": [
+                      106,
+                      null,
+                      240
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "Running known total",
+              "sql": "SELECT id, amount, SUM(amount) OVER (ORDER BY id ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS total FROM orders ORDER BY id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "amount",
+                  "total"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      101,
+                      80,
+                      80
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      102,
+                      20,
+                      100
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      103,
+                      80,
+                      180
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      104,
+                      40,
+                      220
+                    ]
+                  },
+                  {
+                    "id": "result-4",
+                    "cells": [
+                      105,
+                      20,
+                      240
+                    ]
+                  },
+                  {
+                    "id": "result-5",
+                    "cells": [
+                      106,
+                      null,
+                      240
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      },
+      {
+        "id": "rows-or-range",
+        "kind": "worked_example",
+        "blocks": [],
+        "lead": [],
+        "reveal": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "headline": "Add the amounts up by day, once with ROWS and once with RANGE.",
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "orders",
+              "columns": [
+                "id",
+                "customer_id",
+                "item",
+                "amount",
+                "status",
+                "day"
+              ],
+              "rows": [
+                {
+                  "id": "orders-0",
+                  "cells": [
+                    101,
+                    1,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-01"
+                  ]
+                },
+                {
+                  "id": "orders-1",
+                  "cells": [
+                    102,
+                    1,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-2",
+                  "cells": [
+                    103,
+                    2,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-3",
+                  "cells": [
+                    104,
+                    2,
+                    "Lamp",
+                    40,
+                    "pending",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-4",
+                  "cells": [
+                    105,
+                    3,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-5",
+                  "cells": [
+                    106,
+                    3,
+                    "Lamp",
+                    null,
+                    "pending",
+                    "2026-09-04"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "ROWS frame",
+              "sql": "SELECT id, day, SUM(amount) OVER (ORDER BY day, id ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS total FROM orders ORDER BY day, id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "day",
+                  "total"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      101,
+                      "2026-09-01",
+                      80
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      102,
+                      "2026-09-02",
+                      100
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      103,
+                      "2026-09-02",
+                      180
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      104,
+                      "2026-09-03",
+                      220
+                    ]
+                  },
+                  {
+                    "id": "result-4",
+                    "cells": [
+                      105,
+                      "2026-09-03",
+                      240
+                    ]
+                  },
+                  {
+                    "id": "result-5",
+                    "cells": [
+                      106,
+                      "2026-09-04",
+                      240
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "RANGE frame",
+              "sql": "SELECT id, day, SUM(amount) OVER (ORDER BY day RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS total FROM orders ORDER BY day, id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "day",
+                  "total"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      101,
+                      "2026-09-01",
+                      80
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      102,
+                      "2026-09-02",
+                      180
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      103,
+                      "2026-09-02",
+                      180
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      104,
+                      "2026-09-03",
+                      240
+                    ]
+                  },
+                  {
+                    "id": "result-4",
+                    "cells": [
+                      105,
+                      "2026-09-03",
+                      240
+                    ]
+                  },
+                  {
+                    "id": "result-5",
+                    "cells": [
+                      106,
+                      "2026-09-04",
+                      240
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        },
+        "answerVisibility": "hidden-until-response",
+        "workedSteps": [
+          {
+            "text": "ROWS adds records one at a time in the order given.",
+            "math": "orders 102 then 103 on the same day: 100, then 180"
+          },
+          {
+            "text": "RANGE adds every row that ties on the ordering value together.",
+            "math": "orders 102 and 103 both show 180",
+            "selfExplain": {
+              "questionId": "sql-running-totals-and-neighbours-2"
+            }
+          },
+          {
+            "text": "The frame describes which rows contribute."
+          }
+        ]
+      },
+      {
+        "id": "the-row-before",
+        "kind": "try",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "LAG(amount) returns the amount from the previous row in the window order. The first row has no previous row."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "You read one row back in the stated order. Reversing the order would change which row counts as previous."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "sql-running-totals-and-neighbours-3",
+        "activityId": "",
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "orders",
+              "columns": [
+                "id",
+                "customer_id",
+                "item",
+                "amount",
+                "status",
+                "day"
+              ],
+              "rows": [
+                {
+                  "id": "orders-0",
+                  "cells": [
+                    101,
+                    1,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-01"
+                  ]
+                },
+                {
+                  "id": "orders-1",
+                  "cells": [
+                    102,
+                    1,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-2",
+                  "cells": [
+                    103,
+                    2,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-3",
+                  "cells": [
+                    104,
+                    2,
+                    "Lamp",
+                    40,
+                    "pending",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-4",
+                  "cells": [
+                    105,
+                    3,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-5",
+                  "cells": [
+                    106,
+                    3,
+                    "Lamp",
+                    null,
+                    "pending",
+                    "2026-09-04"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Previous in increasing id",
+              "sql": "SELECT id, amount, LAG(amount) OVER (ORDER BY id ASC) AS previous FROM orders ORDER BY id ASC;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "amount",
+                  "previous"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      101,
+                      80,
+                      null
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      102,
+                      20,
+                      80
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      103,
+                      80,
+                      20
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      104,
+                      40,
+                      80
+                    ]
+                  },
+                  {
+                    "id": "result-4",
+                    "cells": [
+                      105,
+                      20,
+                      40
+                    ]
+                  },
+                  {
+                    "id": "result-5",
+                    "cells": [
+                      106,
+                      null,
+                      20
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "Previous in decreasing id",
+              "sql": "SELECT id, amount, LAG(amount) OVER (ORDER BY id DESC) AS previous FROM orders ORDER BY id DESC;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "amount",
+                  "previous"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      106,
+                      null,
+                      null
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      105,
+                      20,
+                      null
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      104,
+                      40,
+                      20
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      103,
+                      80,
+                      40
+                    ]
+                  },
+                  {
+                    "id": "result-4",
+                    "cells": [
+                      102,
+                      20,
+                      80
+                    ]
+                  },
+                  {
+                    "id": "result-5",
+                    "cells": [
+                      101,
+                      80,
+                      20
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      },
+      {
+        "id": "the-row-after",
+        "kind": "transfer",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "LEAD is the mirror of LAG. It reads the next row in the window order instead of the previous one."
+          }
+        ],
+        "reveal": [],
+        "visualStateId": "",
+        "checkQuestionId": "sql-running-totals-and-neighbours-4",
+        "activityId": "",
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "orders",
+              "columns": [
+                "id",
+                "customer_id",
+                "item",
+                "amount",
+                "status",
+                "day"
+              ],
+              "rows": [
+                {
+                  "id": "orders-0",
+                  "cells": [
+                    101,
+                    1,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-01"
+                  ]
+                },
+                {
+                  "id": "orders-1",
+                  "cells": [
+                    102,
+                    1,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-2",
+                  "cells": [
+                    103,
+                    2,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-3",
+                  "cells": [
+                    104,
+                    2,
+                    "Lamp",
+                    40,
+                    "pending",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-4",
+                  "cells": [
+                    105,
+                    3,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-5",
+                  "cells": [
+                    106,
+                    3,
+                    "Lamp",
+                    null,
+                    "pending",
+                    "2026-09-04"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Next amount",
+              "sql": "SELECT id, amount, LEAD(amount) OVER (ORDER BY id) AS next_amount FROM orders ORDER BY id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "amount",
+                  "next_amount"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      101,
+                      80,
+                      20
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      102,
+                      20,
+                      80
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      103,
+                      80,
+                      40
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      104,
+                      40,
+                      20
+                    ]
+                  },
+                  {
+                    "id": "result-4",
+                    "cells": [
+                      105,
+                      20,
+                      null
+                    ]
+                  },
+                  {
+                    "id": "result-5",
+                    "cells": [
+                      106,
+                      null,
+                      null
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "Next id",
+              "sql": "SELECT id, LEAD(id) OVER (ORDER BY id) AS next_id FROM orders ORDER BY id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "next_id"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      101,
+                      102
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      102,
+                      103
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      103,
+                      104
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      104,
+                      105
+                    ]
+                  },
+                  {
+                    "id": "result-4",
+                    "cells": [
+                      105,
+                      106
+                    ]
+                  },
+                  {
+                    "id": "result-5",
+                    "cells": [
+                      106,
+                      null
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      }
+    ],
+    "orientation": "Specify running frames and use LAG or LEAD with an explicit ordering.",
+    "visualStates": [],
+    "visualKind": "none",
+    "activityId": "",
+    "questionIds": [
+      "sql-running-totals-and-neighbours-5",
+      "sql-running-totals-and-neighbours-6",
+      "sql-running-totals-and-neighbours-9"
+    ],
+    "flashcardIds": [
+      "sql-running-totals-and-neighbours-card-1",
+      "sql-running-totals-and-neighbours-card-2"
+    ],
+    "reviewLabel": "Read the rows before and after",
+    "nextAction": "Apply the idea to the next query.",
+    "stageTitles": {
+      "quiz": "Skill check",
+      "review": "Recall it later",
+      "completion": "Ready for the next idea"
+    },
+    "sourceIds": [
+      "sqlite-window"
+    ],
+    "assuranceLevel": "source_backed",
+    "intro": {
+      "hook": {
+        "blocks": [
+          {
+            "kind": "paragraph",
+            "text": "A bank statement lists deposits of 30, 10 and 50 pounds in order. Each line shows the balance so far."
+          }
+        ],
+        "questionId": "sql-running-totals-and-neighbours-7"
+      },
+      "promise": "By the end you'll build running totals, and read the rows before and after with LAG and LEAD.",
+      "estimatedMinutes": 10
+    },
+    "recap": {
+      "keyIdea": "A frame decides which rows a window value adds, and LAG and LEAD read the neighbours in the stated order. A NULL there can mean no neighbour or no value.",
+      "blocks": [
+        {
+          "kind": "paragraph",
+          "text": "You reached a balance of 90, then a running total of 180 at order 103. LAG gave 80 at order 104 and LEAD gave 40 at order 103."
+        }
+      ],
+      "nextHook": "You have now taken a table from rows to a finished report."
+    },
+    "calculator": "off",
+    "taughtSkills": [
+      "running-total",
+      "frame-peers",
+      "look-back",
+      "look-ahead",
+      "null-cause"
+    ]
+  },
+  "questions": [
+    {
+      "id": "sql-running-totals-and-neighbours-1",
+      "conceptIds": [
+        "sql-running-totals-and-neighbours"
+      ],
+      "prompt": "What is the running known-amount total at order 103 when ids increase?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Include rows through 103, not later rows.",
+        "Add the first three known amounts.",
+        "Evaluate 80 + 20 + 80; later ids are outside this frame."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 180,
+        "unit": "",
+        "absoluteTolerance": 1e-06,
+        "relativeTolerance": 0,
+        "workedAnswer": "Orders 101, 102 and 103 contribute 80 + 20 + 80 = 180."
+      },
+      "sourceIds": [
+        "sqlite-window"
+      ],
+      "onCorrect": "180. The frame runs from the first row to order 103, so it adds three amounts.",
+      "skill": "running-total",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              100
+            ]
+          },
+          "feedback": "That stops at order 102. The frame includes order 103 itself."
+        },
+        {
+          "match": {
+            "numeric": [
+              240
+            ]
+          },
+          "feedback": "That is the grand total. A running total stops at the current row."
+        }
+      ]
+    },
+    {
+      "id": "sql-running-totals-and-neighbours-2",
+      "conceptIds": [
+        "sql-running-totals-and-neighbours"
+      ],
+      "prompt": "Why do both September 2 rows show the same total in the RANGE-by-day example?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Rows with equal window ordering values are peers."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "The frame includes both rows with the same day"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "The RANGE frame includes peers with the same ordering value. Both September 2 rows include the whole day and share its cumulative total of 180."
+      },
+      "sourceIds": [
+        "sqlite-window"
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "The frame includes both rows with the same day"
+        },
+        {
+          "id": "b",
+          "label": "SUM always returns the grand total"
+        },
+        {
+          "id": "c",
+          "label": "SQL changed the order ids"
+        }
+      ],
+      "onCorrect": "The frame includes both rows with the same day. Rows tied in the order are peers under RANGE.",
+      "skill": "frame-peers",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Here SUM covers only the frame, which grows row by row."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "The ids are untouched. The day decides which rows count together."
+        }
+      ]
+    },
+    {
+      "id": "sql-running-totals-and-neighbours-3",
+      "conceptIds": [
+        "sql-running-totals-and-neighbours"
+      ],
+      "prompt": "With increasing ids, what does LAG(amount) return at order 104?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "LAG reads the previous row in the window order.",
+        "Use order 103's amount, not order 104's amount.",
+        "Read the amount on order 103; it precedes 104 in the specified order."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 80,
+        "unit": "",
+        "absoluteTolerance": 1e-06,
+        "relativeTolerance": 0,
+        "workedAnswer": "The preceding row is order 103, whose amount is 80."
+      },
+      "sourceIds": [
+        "sqlite-window"
+      ],
+      "onCorrect": "80. LAG reads the amount on the previous row, order 103.",
+      "skill": "look-back",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              20
+            ]
+          },
+          "feedback": "That is two rows back. LAG reads the previous row."
+        },
+        {
+          "match": {
+            "numeric": [
+              40
+            ]
+          },
+          "feedback": "That is order 104's own amount. LAG reads the row before it."
+        }
+      ]
+    },
+    {
+      "id": "sql-running-totals-and-neighbours-4",
+      "conceptIds": [
+        "sql-running-totals-and-neighbours"
+      ],
+      "prompt": "With increasing ids, what does LEAD(amount) return at order 103?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "LEAD reads the next row in the window order.",
+        "Use order 104's amount.",
+        "Read the amount on order 104; it follows 103 in the specified order."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 40,
+        "unit": "",
+        "absoluteTolerance": 1e-06,
+        "relativeTolerance": 0,
+        "workedAnswer": "The next row is order 104, whose amount is 40."
+      },
+      "sourceIds": [
+        "sqlite-window"
+      ],
+      "onCorrect": "40. LEAD reads the amount on the next row, order 104.",
+      "skill": "look-ahead",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              80
+            ]
+          },
+          "feedback": "That is order 103's own amount. LEAD reads the next row."
+        },
+        {
+          "match": {
+            "numeric": [
+              20
+            ]
+          },
+          "feedback": "That is two rows ahead. LEAD reads only the next row."
+        }
+      ]
+    },
+    {
+      "id": "sql-running-totals-and-neighbours-5",
+      "conceptIds": [
+        "sql-running-totals-and-neighbours"
+      ],
+      "prompt": "Ordered amounts are 10, NULL and 30. What is the running SUM at the third row?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "SUM ignores NULL values.",
+        "Add known amounts from the first row through the third.",
+        "Add the known values 10 and 30; the NULL cell contributes no known value."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 40,
+        "unit": "",
+        "absoluteTolerance": 1e-06,
+        "relativeTolerance": 0,
+        "workedAnswer": "The known contributing amounts are 10 and 30. Their running sum is 40."
+      },
+      "sourceIds": [
+        "sqlite-window"
+      ],
+      "onCorrect": "40. The NULL adds nothing, so the sum is the known 10 and 30.",
+      "skill": "running-total",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              10
+            ]
+          },
+          "feedback": "SUM keeps adding after a NULL. The third row is still in the frame."
+        }
+      ]
+    },
+    {
+      "id": "sql-running-totals-and-neighbours-6",
+      "conceptIds": [
+        "sql-running-totals-and-neighbours"
+      ],
+      "prompt": "A LEAD(amount) value is NULL. What can you conclude from that value alone?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Compare LEAD(id) if you need to distinguish no next row from a missing next amount."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "The next amount may be missing, or there may be no next row"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "With its default, LEAD returns NULL when no next row exists. A next row whose amount is NULL produces the same value, so NULL alone cannot distinguish the cases."
+      },
+      "sourceIds": [
+        "sqlite-window"
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "There is definitely no next row"
+        },
+        {
+          "id": "b",
+          "label": "The next amount may be missing, or there may be no next row"
+        },
+        {
+          "id": "c",
+          "label": "The next amount is zero"
+        }
+      ],
+      "onCorrect": "The next amount may be missing, or there may be no next row. One NULL has two possible causes.",
+      "skill": "null-cause",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "The next amount may be unknown too. NULL alone cannot tell you which."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Zero is a known amount. A NULL is not a zero."
+        }
+      ]
+    },
+    {
+      "id": "sql-running-totals-and-neighbours-7",
+      "conceptIds": [
+        "sql-running-totals-and-neighbours"
+      ],
+      "prompt": "What balance does the statement show after the third deposit?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "What does a balance include?",
+        "It adds every deposit so far.",
+        "Add the first three deposits."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 90,
+        "unit": "",
+        "absoluteTolerance": 1e-09,
+        "relativeTolerance": 0,
+        "workedAnswer": "Deposits of 30, 10 and 50 add up to a balance of 90 after the third."
+      },
+      "sourceIds": [
+        "sqlite-window"
+      ],
+      "onCorrect": "90. A balance adds everything so far, up to the current line. A running total does the same.",
+      "skill": "running-total",
+      "calculator": "off",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              50
+            ]
+          },
+          "feedback": "That is the third deposit alone. The balance adds everything so far."
+        }
+      ]
+    },
+    {
+      "id": "sql-running-totals-and-neighbours-8",
+      "conceptIds": [
+        "sql-running-totals-and-neighbours"
+      ],
+      "prompt": "A running SUM over the amounts 4, 6 and 8, in that order, is shown beside each row. What does it show at the second row?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Which rows does the frame include at the second row?",
+        "It runs from the first row to the current row.",
+        "Add the first two amounts."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 10,
+        "unit": "",
+        "absoluteTolerance": 1e-09,
+        "relativeTolerance": 0,
+        "workedAnswer": "At the second row the frame holds 4 and 6, which add up to 10."
+      },
+      "sourceIds": [
+        "sqlite-window"
+      ],
+      "onCorrect": "10. The frame runs from the first row to the current one, so each row adds one more amount.",
+      "skill": "running-total",
+      "calculator": "off",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              6
+            ]
+          },
+          "feedback": "That is the second amount alone. A running total adds the rows up to this one."
+        }
+      ]
+    },
+    {
+      "id": "sql-running-totals-and-neighbours-9",
+      "conceptIds": [
+        "sql-running-totals-and-neighbours"
+      ],
+      "prompt": "Ordered amounts are 7, 9 and 12. What does LAG(amount) show at the third row?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Which direction does LAG read?",
+        "LAG reads the previous row.",
+        "Which amount sits just before the third row?"
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 9,
+        "unit": "",
+        "absoluteTolerance": 1e-09,
+        "relativeTolerance": 0,
+        "workedAnswer": "The row before the third holds 9, so LAG(amount) shows 9."
+      },
+      "sourceIds": [
+        "sqlite-window"
+      ],
+      "onCorrect": "9. LAG reads the row before the current one in the window order.",
+      "skill": "look-back",
+      "calculator": "off",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              12
+            ]
+          },
+          "feedback": "That is the third row's own amount. LAG reads the row before it."
+        },
+        {
+          "match": {
+            "numeric": [
+              7
+            ]
+          },
+          "feedback": "That is two rows back. LAG reads only the previous row."
+        }
+      ]
+    }
+  ],
+  "citations": [
+    {
+      "claim": "A frame says which rows count toward each row's value.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 2.2: ROWS and RANGE frames; 3: lag(), lead()",
+      "targetKind": "step",
+      "targetId": "a-frame-of-rows"
+    },
+    {
+      "claim": "The frame here runs from the first ordered row to the current row. The last amount is unknown, so it adds no known value.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 2.2: ROWS and RANGE frames; 3: lag(), lead()",
+      "targetKind": "step",
+      "targetId": "total-so-far"
+    },
+    {
+      "claim": "Add the amounts up by day, once with ROWS and once with RANGE.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 2.2: ROWS and RANGE frames; 3: lag(), lead()",
+      "targetKind": "step",
+      "targetId": "rows-or-range"
+    },
+    {
+      "claim": "LAG(amount) returns the amount from the previous row in the window order. The first row has no previous row.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 2.2: ROWS and RANGE frames; 3: lag(), lead()",
+      "targetKind": "step",
+      "targetId": "the-row-before"
+    },
+    {
+      "claim": "LEAD is the mirror of LAG. It reads the next row in the window order instead of the previous one.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 2.2: ROWS and RANGE frames; 3: lag(), lead()",
+      "targetKind": "step",
+      "targetId": "the-row-after"
+    },
+    {
+      "claim": "Orders 101, 102 and 103 contribute 80 + 20 + 80 = 180.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 2.2: ROWS and RANGE frames; 3: lag(), lead()",
+      "targetKind": "question",
+      "targetId": "sql-running-totals-and-neighbours-1"
+    },
+    {
+      "claim": "The RANGE frame includes peers with the same ordering value. Both September 2 rows include the whole day and share its cumulative total of 180.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 2.2: ROWS and RANGE frames; 3: lag(), lead()",
+      "targetKind": "question",
+      "targetId": "sql-running-totals-and-neighbours-2"
+    },
+    {
+      "claim": "The preceding row is order 103, whose amount is 80.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 2.2: ROWS and RANGE frames; 3: lag(), lead()",
+      "targetKind": "question",
+      "targetId": "sql-running-totals-and-neighbours-3"
+    },
+    {
+      "claim": "The next row is order 104, whose amount is 40.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 2.2: ROWS and RANGE frames; 3: lag(), lead()",
+      "targetKind": "question",
+      "targetId": "sql-running-totals-and-neighbours-4"
+    },
+    {
+      "claim": "The known contributing amounts are 10 and 30. Their running sum is 40.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 2.2: ROWS and RANGE frames; 3: lag(), lead()",
+      "targetKind": "question",
+      "targetId": "sql-running-totals-and-neighbours-5"
+    },
+    {
+      "claim": "With its default, LEAD returns NULL when no next row exists. A next row whose amount is NULL produces the same value, so NULL alone cannot distinguish the cases.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 2.2: ROWS and RANGE frames; 3: lag(), lead()",
+      "targetKind": "question",
+      "targetId": "sql-running-totals-and-neighbours-6"
+    },
+    {
+      "claim": "Deposits of 30, 10 and 50 add up to a balance of 90 after the third.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 2.2: ROWS and RANGE frames; 3: lag(), lead()",
+      "targetKind": "question",
+      "targetId": "sql-running-totals-and-neighbours-7"
+    },
+    {
+      "claim": "At the second row the frame holds 4 and 6, which add up to 10.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 2.2: ROWS and RANGE frames; 3: lag(), lead()",
+      "targetKind": "question",
+      "targetId": "sql-running-totals-and-neighbours-8"
+    },
+    {
+      "claim": "The row before the third holds 9, so LAG(amount) shows 9.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 2.2: ROWS and RANGE frames; 3: lag(), lead()",
+      "targetKind": "question",
+      "targetId": "sql-running-totals-and-neighbours-9"
+    },
+    {
+      "claim": "The previous row's value is 9.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 2.2: ROWS and RANGE frames; 3: lag(), lead()",
+      "targetKind": "flashcard",
+      "targetId": "sql-running-totals-and-neighbours-card-1"
+    },
+    {
+      "claim": "LAG reads from a preceding row. LEAD reads from a following row.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 2.2: ROWS and RANGE frames; 3: lag(), lead()",
+      "targetKind": "flashcard",
+      "targetId": "sql-running-totals-and-neighbours-card-2"
+    }
+  ]
+}

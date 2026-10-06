@@ -1,0 +1,1774 @@
+{
+  "lessonId": "partition-the-window",
+  "courseId": "sql-from-rows-to-reports",
+  "migrationNotes": [
+    "step 'predict': the old title \"Start again for each customer\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
+    "step 'predict': kind hook → predict; check the order of teaching and asking still fits (style guide §2).",
+    "step 'predict': 1 block(s) moved to reveal because they state the answer; make the reveal refer to the learner's attempt.",
+    "step 'work': the old title \"Attach a group total\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
+    "step 'work': 1 block(s) moved to reveal because they state the answer; make the reveal refer to the learner's attempt.",
+    "step 'work': write workedSteps from the worked answer (one line per move, one self-explanation prompt), a headline naming the problem, and recompute every number.",
+    "step 'check': the old title \"Divide an ordered set into buckets\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
+    "step 'check': kind check → try; check the order of teaching and asking still fits (style guide §2).",
+    "step 'transfer': the old title \"Filter after the calculation\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
+    "intro: write the hook (a puzzle the learner can do from what they bring, never a definition), the promise (≤ 25 words, “By the end you'll …”) and the time.",
+    "recap: write the key idea (the promise, kept), the learner's own results, and the one-line bridge to the next lesson.",
+    "skill check: the lesson has 2 quiz item(s); it needs exactly 3, each on something this lesson taught.",
+    "questions: replace every TODO onCorrect (≤ 25 words, states the idea), tag each skill, add misconceptions for predictable wrong answers (the feedback must not state the key).",
+    "vocabulary: give each explain step introducesTerms; no prompt may use a term before the step that introduces it.",
+    "add an explain step before any question that needs a new word or symbol; add a transfer if the lesson has none.",
+    "citations: retarget the seeded citations to the new step and question ids, and give every step, question and flashcard at least one (same sourceIds; the claim is what that screen asserts)."
+  ],
+  "lesson": {
+    "id": "partition-the-window",
+    "courseId": "sql-from-rows-to-reports",
+    "conceptIds": [
+      "sql-partition-the-window"
+    ],
+    "title": "Choose which rows a window sees",
+    "steps": [
+      {
+        "id": "a-window-per-group",
+        "kind": "explain",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Without PARTITION BY, all rows share one window. PARTITION BY customer_id makes a separate window for each customer."
+          },
+          {
+            "kind": "paragraph",
+            "text": "ROW_NUMBER restarts in each one. SUM(amount) OVER (PARTITION BY ...) puts the group total beside every row."
+          }
+        ],
+        "reveal": [],
+        "visualStateId": "",
+        "checkQuestionId": "sql-partition-the-window-8",
+        "activityId": "",
+        "headline": "PARTITION BY gives each group its own window, so calculations restart inside it.",
+        "introducesTerms": [
+          "PARTITION BY"
+        ]
+      },
+      {
+        "id": "restart-numbering",
+        "kind": "predict",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "One query numbers all six orders in a single run. The other numbers each customer's orders separately."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "You followed the numbering into one customer's window. It restarts where a new customer begins."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "sql-partition-the-window-1",
+        "activityId": "",
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "orders",
+              "columns": [
+                "id",
+                "customer_id",
+                "item",
+                "amount",
+                "status",
+                "day"
+              ],
+              "rows": [
+                {
+                  "id": "orders-0",
+                  "cells": [
+                    101,
+                    1,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-01"
+                  ]
+                },
+                {
+                  "id": "orders-1",
+                  "cells": [
+                    102,
+                    1,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-2",
+                  "cells": [
+                    103,
+                    2,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-3",
+                  "cells": [
+                    104,
+                    2,
+                    "Lamp",
+                    40,
+                    "pending",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-4",
+                  "cells": [
+                    105,
+                    3,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-5",
+                  "cells": [
+                    106,
+                    3,
+                    "Lamp",
+                    null,
+                    "pending",
+                    "2026-09-04"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "One global window",
+              "sql": "SELECT id, customer_id, ROW_NUMBER() OVER (ORDER BY id) AS position FROM orders ORDER BY id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "customer_id",
+                  "position"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      101,
+                      1,
+                      1
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      102,
+                      1,
+                      2
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      103,
+                      2,
+                      3
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      104,
+                      2,
+                      4
+                    ]
+                  },
+                  {
+                    "id": "result-4",
+                    "cells": [
+                      105,
+                      3,
+                      5
+                    ]
+                  },
+                  {
+                    "id": "result-5",
+                    "cells": [
+                      106,
+                      3,
+                      6
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "One window per customer",
+              "sql": "SELECT id, customer_id, ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY id) AS position FROM orders ORDER BY id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "customer_id",
+                  "position"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      101,
+                      1,
+                      1
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      102,
+                      1,
+                      2
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      103,
+                      2,
+                      1
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      104,
+                      2,
+                      2
+                    ]
+                  },
+                  {
+                    "id": "result-4",
+                    "cells": [
+                      105,
+                      3,
+                      1
+                    ]
+                  },
+                  {
+                    "id": "result-5",
+                    "cells": [
+                      106,
+                      3,
+                      2
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      },
+      {
+        "id": "customer-totals",
+        "kind": "worked_example",
+        "blocks": [],
+        "lead": [],
+        "reveal": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "headline": "Put each customer's total beside every one of their orders.",
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "orders",
+              "columns": [
+                "id",
+                "customer_id",
+                "item",
+                "amount",
+                "status",
+                "day"
+              ],
+              "rows": [
+                {
+                  "id": "orders-0",
+                  "cells": [
+                    101,
+                    1,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-01"
+                  ]
+                },
+                {
+                  "id": "orders-1",
+                  "cells": [
+                    102,
+                    1,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-2",
+                  "cells": [
+                    103,
+                    2,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-3",
+                  "cells": [
+                    104,
+                    2,
+                    "Lamp",
+                    40,
+                    "pending",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-4",
+                  "cells": [
+                    105,
+                    3,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-5",
+                  "cells": [
+                    106,
+                    3,
+                    "Lamp",
+                    null,
+                    "pending",
+                    "2026-09-04"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Customer totals beside orders",
+              "sql": "SELECT id, customer_id, amount, SUM(amount) OVER (PARTITION BY customer_id) AS customer_total FROM orders ORDER BY id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "customer_id",
+                  "amount",
+                  "customer_total"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      101,
+                      1,
+                      80,
+                      100
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      102,
+                      1,
+                      20,
+                      100
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      103,
+                      2,
+                      80,
+                      120
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      104,
+                      2,
+                      40,
+                      120
+                    ]
+                  },
+                  {
+                    "id": "result-4",
+                    "cells": [
+                      105,
+                      3,
+                      20,
+                      20
+                    ]
+                  },
+                  {
+                    "id": "result-5",
+                    "cells": [
+                      106,
+                      3,
+                      null,
+                      20
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "Customer totals as groups",
+              "sql": "SELECT customer_id, SUM(amount) AS customer_total FROM orders GROUP BY customer_id ORDER BY customer_id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "customer_id",
+                  "customer_total"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      1,
+                      100
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      2,
+                      120
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      3,
+                      20
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        },
+        "answerVisibility": "hidden-until-response",
+        "workedSteps": [
+          {
+            "text": "Split the rows into one window per customer.",
+            "math": "customers 1, 2 and 3"
+          },
+          {
+            "text": "Add the known amounts inside each window.",
+            "math": "customer 3: 20 and NULL give 20",
+            "selfExplain": {
+              "questionId": "sql-partition-the-window-9"
+            }
+          },
+          {
+            "text": "GROUP BY would give one row per customer instead.",
+            "math": "the window keeps every order"
+          }
+        ]
+      },
+      {
+        "id": "paid-total",
+        "kind": "try",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "A window total is the sum over the partition. Every row of that partition shows the same value."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "You added inside one partition. The total repeats beside each of its orders."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "sql-partition-the-window-2",
+        "activityId": "",
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "orders",
+              "columns": [
+                "id",
+                "customer_id",
+                "item",
+                "amount",
+                "status",
+                "day"
+              ],
+              "rows": [
+                {
+                  "id": "orders-0",
+                  "cells": [
+                    101,
+                    1,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-01"
+                  ]
+                },
+                {
+                  "id": "orders-1",
+                  "cells": [
+                    102,
+                    1,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-2",
+                  "cells": [
+                    103,
+                    2,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-3",
+                  "cells": [
+                    104,
+                    2,
+                    "Lamp",
+                    40,
+                    "pending",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-4",
+                  "cells": [
+                    105,
+                    3,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-5",
+                  "cells": [
+                    106,
+                    3,
+                    "Lamp",
+                    null,
+                    "pending",
+                    "2026-09-04"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Group the report",
+              "sql": "SELECT status, SUM(amount) AS total FROM orders GROUP BY status ORDER BY status;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "status",
+                  "total"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      "paid",
+                      200
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      "pending",
+                      40
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "Keep rows with status totals",
+              "sql": "SELECT id, status, SUM(amount) OVER (PARTITION BY status) AS total FROM orders ORDER BY id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "status",
+                  "total"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      101,
+                      "paid",
+                      200
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      102,
+                      "paid",
+                      200
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      103,
+                      "paid",
+                      200
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      104,
+                      "pending",
+                      40
+                    ]
+                  },
+                  {
+                    "id": "result-4",
+                    "cells": [
+                      105,
+                      "paid",
+                      200
+                    ]
+                  },
+                  {
+                    "id": "result-5",
+                    "cells": [
+                      106,
+                      "pending",
+                      40
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      },
+      {
+        "id": "equal-buckets",
+        "kind": "try",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "NTILE(n) splits the ordered rows into n buckets as evenly as it can. Bucket sizes differ by at most one, and larger buckets come first."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "You shared rows out by position. Buckets divide rows, not different amounts."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "sql-partition-the-window-3",
+        "activityId": "",
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "orders",
+              "columns": [
+                "id",
+                "customer_id",
+                "item",
+                "amount",
+                "status",
+                "day"
+              ],
+              "rows": [
+                {
+                  "id": "orders-0",
+                  "cells": [
+                    101,
+                    1,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-01"
+                  ]
+                },
+                {
+                  "id": "orders-1",
+                  "cells": [
+                    102,
+                    1,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-2",
+                  "cells": [
+                    103,
+                    2,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-3",
+                  "cells": [
+                    104,
+                    2,
+                    "Lamp",
+                    40,
+                    "pending",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-4",
+                  "cells": [
+                    105,
+                    3,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-5",
+                  "cells": [
+                    106,
+                    3,
+                    "Lamp",
+                    null,
+                    "pending",
+                    "2026-09-04"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Split A",
+              "sql": "SELECT id, amount, NTILE(2) OVER (ORDER BY id) AS bucket FROM orders WHERE amount IS NOT NULL ORDER BY id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "amount",
+                  "bucket"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      101,
+                      80,
+                      1
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      102,
+                      20,
+                      1
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      103,
+                      80,
+                      1
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      104,
+                      40,
+                      2
+                    ]
+                  },
+                  {
+                    "id": "result-4",
+                    "cells": [
+                      105,
+                      20,
+                      2
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "Split B",
+              "sql": "SELECT id, amount, NTILE(3) OVER (ORDER BY id) AS bucket FROM orders WHERE amount IS NOT NULL ORDER BY id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "amount",
+                  "bucket"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      101,
+                      80,
+                      1
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      102,
+                      20,
+                      1
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      103,
+                      80,
+                      2
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      104,
+                      40,
+                      2
+                    ]
+                  },
+                  {
+                    "id": "result-4",
+                    "cells": [
+                      105,
+                      20,
+                      3
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      },
+      {
+        "id": "first-per-customer",
+        "kind": "transfer",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "A calculated position is a column of a result, not of the table. Think about where a filter can see it."
+          }
+        ],
+        "reveal": [],
+        "visualStateId": "",
+        "checkQuestionId": "sql-partition-the-window-4",
+        "activityId": "",
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "orders",
+              "columns": [
+                "id",
+                "customer_id",
+                "item",
+                "amount",
+                "status",
+                "day"
+              ],
+              "rows": [
+                {
+                  "id": "orders-0",
+                  "cells": [
+                    101,
+                    1,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-01"
+                  ]
+                },
+                {
+                  "id": "orders-1",
+                  "cells": [
+                    102,
+                    1,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-2",
+                  "cells": [
+                    103,
+                    2,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-3",
+                  "cells": [
+                    104,
+                    2,
+                    "Lamp",
+                    40,
+                    "pending",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-4",
+                  "cells": [
+                    105,
+                    3,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-5",
+                  "cells": [
+                    106,
+                    3,
+                    "Lamp",
+                    null,
+                    "pending",
+                    "2026-09-04"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Number all customer orders",
+              "sql": "SELECT id, customer_id, ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY id) AS position FROM orders ORDER BY id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "customer_id",
+                  "position"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      101,
+                      1,
+                      1
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      102,
+                      1,
+                      2
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      103,
+                      2,
+                      1
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      104,
+                      2,
+                      2
+                    ]
+                  },
+                  {
+                    "id": "result-4",
+                    "cells": [
+                      105,
+                      3,
+                      1
+                    ]
+                  },
+                  {
+                    "id": "result-5",
+                    "cells": [
+                      106,
+                      3,
+                      2
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "First order per customer",
+              "sql": "SELECT id, customer_id, position FROM (SELECT id, customer_id, ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY id) AS position FROM orders) WHERE position = 1 ORDER BY id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "customer_id",
+                  "position"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      101,
+                      1,
+                      1
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      103,
+                      2,
+                      1
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      105,
+                      3,
+                      1
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      }
+    ],
+    "orientation": "Calculate within each row's group and filter the resulting values.",
+    "visualStates": [],
+    "visualKind": "none",
+    "activityId": "",
+    "questionIds": [
+      "sql-partition-the-window-5",
+      "sql-partition-the-window-6",
+      "sql-partition-the-window-10"
+    ],
+    "flashcardIds": [
+      "sql-partition-the-window-card-1",
+      "sql-partition-the-window-card-2"
+    ],
+    "reviewLabel": "Choose which rows a window sees",
+    "nextAction": "Apply the idea to the next query.",
+    "stageTitles": {
+      "quiz": "Skill check",
+      "review": "Recall it later",
+      "completion": "Ready for the next idea"
+    },
+    "sourceIds": [
+      "sqlite-window"
+    ],
+    "assuranceLevel": "source_backed",
+    "intro": {
+      "hook": {
+        "blocks": [
+          {
+            "kind": "paragraph",
+            "text": "Class A pupils scored 6 and 8. Class B has one pupil, who scored 5. Beside every pupil you write their own class total."
+          }
+        ],
+        "questionId": "sql-partition-the-window-7"
+      },
+      "promise": "By the end you'll restart a window calculation inside each group, and filter on its result.",
+      "estimatedMinutes": 10
+    },
+    "recap": {
+      "keyIdea": "PARTITION BY gives each group its own window. Calculations restart inside it, and filtering on the result needs an outer query.",
+      "blocks": [
+        {
+          "kind": "paragraph",
+          "text": "You wrote a class total of 14, then restarted numbering at 1 for customer 2. A paid total of 200 sat beside each paid order."
+        }
+      ],
+      "nextHook": "Next, add running totals and look at neighbouring rows."
+    },
+    "calculator": "off",
+    "taughtSkills": [
+      "restart-per-partition",
+      "window-total",
+      "ntile-buckets",
+      "filter-window"
+    ]
+  },
+  "questions": [
+    {
+      "id": "sql-partition-the-window-1",
+      "conceptIds": [
+        "sql-partition-the-window"
+      ],
+      "prompt": "With PARTITION BY customer_id ORDER BY id, what ROW_NUMBER does order 103 get?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Look only at customer 2's orders.",
+        "Number them in increasing id order.",
+        "Order 103 starts customer 2's id-ordered partition; numbering restarts there."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 1,
+        "unit": "",
+        "absoluteTolerance": 1e-06,
+        "relativeTolerance": 0,
+        "workedAnswer": "103 is customer 2's first order, so its position in that customer's window is 1."
+      },
+      "sourceIds": [
+        "sqlite-window"
+      ],
+      "onCorrect": "1. Order 103 starts customer 2's window, so numbering restarts at 1.",
+      "skill": "restart-per-partition",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              3
+            ]
+          },
+          "feedback": "That is its position in one run over all orders. Partitioning restarts for each customer."
+        },
+        {
+          "match": {
+            "numeric": [
+              2
+            ]
+          },
+          "feedback": "Look at customer 2's orders only, in id order. Where does order 103 fall?"
+        }
+      ]
+    },
+    {
+      "id": "sql-partition-the-window-2",
+      "conceptIds": [
+        "sql-partition-the-window"
+      ],
+      "prompt": "What total does SUM(amount) OVER (PARTITION BY status) attach to every paid order?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Sum only paid known amounts.",
+        "The window repeats that status total next to each paid order.",
+        "Evaluate 80 + 20 + 80 + 20 for the paid partition."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 200,
+        "unit": "",
+        "absoluteTolerance": 1e-06,
+        "relativeTolerance": 0,
+        "workedAnswer": "The paid amounts are 80, 20, 80 and 20, totalling 200."
+      },
+      "sourceIds": [
+        "sqlite-window"
+      ],
+      "onCorrect": "200. The paid window adds its known amounts once and repeats the total on each paid order.",
+      "skill": "window-total",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              240
+            ]
+          },
+          "feedback": "That adds both statuses. The paid window holds paid orders only."
+        }
+      ]
+    },
+    {
+      "id": "sql-partition-the-window-3",
+      "conceptIds": [
+        "sql-partition-the-window"
+      ],
+      "prompt": "With NTILE(3) over five known-amount orders ordered by id, how many rows are in bucket 1?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Make the three bucket sizes differ by at most one.",
+        "Put larger buckets before smaller ones.",
+        "Distribute five records across three buckets with larger buckets first and size differences at most one."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 2,
+        "unit": "",
+        "absoluteTolerance": 1e-06,
+        "relativeTolerance": 0,
+        "workedAnswer": "Five rows split into buckets of 2, 2 and 1; the first bucket contains two."
+      },
+      "sourceIds": [
+        "sqlite-window"
+      ],
+      "onCorrect": "2. NTILE gives the larger bucket first, so five rows split as two, two and one.",
+      "skill": "ntile-buckets",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              3
+            ]
+          },
+          "feedback": "Bucket sizes differ by at most one, and five rows cannot fill that bucket with this many."
+        },
+        {
+          "match": {
+            "numeric": [
+              1
+            ]
+          },
+          "feedback": "The larger buckets come first, so the first bucket is not the smallest."
+        }
+      ]
+    },
+    {
+      "id": "sql-partition-the-window-4",
+      "conceptIds": [
+        "sql-partition-the-window"
+      ],
+      "prompt": "How do you filter to position = 1 after computing ROW_NUMBER in SQLite?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "The filter must see the calculated column."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Use an outer query over the numbered result"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Compute ROW_NUMBER in an inner query or CTE, then filter position = 1 in the outer query. SQLite cannot use that window result in the same SELECT's WHERE clause."
+      },
+      "sourceIds": [
+        "sqlite-window"
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "Use an outer query over the numbered result"
+        },
+        {
+          "id": "b",
+          "label": "Put the window function directly in the same query's WHERE"
+        },
+        {
+          "id": "c",
+          "label": "Rename every id to 1"
+        }
+      ],
+      "onCorrect": "Use an outer query over the numbered result. Then the filter can see the calculated column.",
+      "skill": "filter-window",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "WHERE runs before the window value exists, so it cannot see it."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Renaming changes names, not the calculation."
+        }
+      ]
+    },
+    {
+      "id": "sql-partition-the-window-5",
+      "conceptIds": [
+        "sql-partition-the-window"
+      ],
+      "prompt": "Seven rows are distributed by NTILE(3). How many rows are in the first bucket?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Distribute rows as evenly as possible.",
+        "The larger bucket appears first.",
+        "Distribute seven records across three buckets, giving the first bucket the extra record."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 3,
+        "unit": "",
+        "absoluteTolerance": 1e-06,
+        "relativeTolerance": 0,
+        "workedAnswer": "The three bucket sizes are 3, 2 and 2; the first bucket holds three."
+      },
+      "sourceIds": [
+        "sqlite-window"
+      ],
+      "onCorrect": "3. Seven rows over three buckets give three, two and two, with the extra row first.",
+      "skill": "ntile-buckets",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              2
+            ]
+          },
+          "feedback": "Sizes can differ by one, and the larger bucket comes first. Where does the extra row go?"
+        }
+      ]
+    },
+    {
+      "id": "sql-partition-the-window-6",
+      "conceptIds": [
+        "sql-partition-the-window"
+      ],
+      "prompt": "What does PARTITION BY change?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "The calculation restarts independently within each partition."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Which rows belong to each calculation window"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "PARTITION BY splits the rows into separate windows for the calculation. It changes which rows are compared or accumulated together without itself collapsing them."
+      },
+      "sourceIds": [
+        "sqlite-window"
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "Which rows belong to each calculation window"
+        },
+        {
+          "id": "b",
+          "label": "The stored order ids"
+        },
+        {
+          "id": "c",
+          "label": "Every input table's primary key"
+        }
+      ],
+      "onCorrect": "Which rows belong to each calculation window. The calculation restarts inside each partition.",
+      "skill": "restart-per-partition",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Stored data never changes because of a query."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Keys belong to the table definition, not to a query."
+        }
+      ]
+    },
+    {
+      "id": "sql-partition-the-window-7",
+      "conceptIds": [
+        "sql-partition-the-window"
+      ],
+      "prompt": "What do you write beside the pupil who scored 6?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Which pupils are in the same class as the one who scored 6?",
+        "Add up that class's scores.",
+        "Do not include the other class."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 14,
+        "unit": "",
+        "absoluteTolerance": 1e-09,
+        "relativeTolerance": 0,
+        "workedAnswer": "Class A scored 6 and 8, which total 14. That total goes beside each Class A pupil."
+      },
+      "sourceIds": [
+        "sqlite-window"
+      ],
+      "onCorrect": "14. Each class has its own total, written beside every pupil in it. A partitioned window does the same.",
+      "skill": "window-total",
+      "calculator": "off",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              19
+            ]
+          },
+          "feedback": "That adds both classes. Each class has its own total."
+        }
+      ]
+    },
+    {
+      "id": "sql-partition-the-window-8",
+      "conceptIds": [
+        "sql-partition-the-window"
+      ],
+      "prompt": "The rows are X, X, Y, Y, Y in id order. With ROW_NUMBER() OVER (PARTITION BY group ORDER BY id), what number does the last Y row get?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Numbering restarts for each group.",
+        "How many Y rows come up to and including the last one?",
+        "Count the Y rows."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 3,
+        "unit": "",
+        "absoluteTolerance": 1e-09,
+        "relativeTolerance": 0,
+        "workedAnswer": "Numbering restarts at the first Y row, so the three Y rows are numbered 1, 2 and 3."
+      },
+      "sourceIds": [
+        "sqlite-window"
+      ],
+      "onCorrect": "3. PARTITION BY gives each group its own window, so numbering restarts inside it.",
+      "skill": "restart-per-partition",
+      "calculator": "off",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              5
+            ]
+          },
+          "feedback": "That numbers all five rows in one run. PARTITION BY restarts for each group."
+        }
+      ]
+    },
+    {
+      "id": "sql-partition-the-window-9",
+      "conceptIds": [
+        "sql-partition-the-window"
+      ],
+      "prompt": "Why does every order of one customer show the same total?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Does the window keep the rows or merge them?"
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "The window total is repeated on each of its rows."
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "A window total is worked out once per customer and shown beside every row of that customer."
+      },
+      "sourceIds": [
+        "sqlite-window"
+      ],
+      "onCorrect": "The window calculates one total for the partition and repeats it on each row, keeping the rows.",
+      "skill": "window-total",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "The window total is repeated on each of its rows."
+        },
+        {
+          "id": "b",
+          "label": "The orders were merged into one row."
+        },
+        {
+          "id": "c",
+          "label": "Every order has the same amount."
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Windows keep every row. Merging is what GROUP BY does."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Amounts differ. The total is the same because it covers the whole partition."
+        }
+      ]
+    },
+    {
+      "id": "sql-partition-the-window-10",
+      "conceptIds": [
+        "sql-partition-the-window"
+      ],
+      "prompt": "Group A has amounts 10 and 30. Group B has amount 5. What does SUM(amount) OVER (PARTITION BY group) show beside the 10?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Which rows share a window with the 10?",
+        "Only rows of the same group are added.",
+        "Add the group's amounts."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 40,
+        "unit": "",
+        "absoluteTolerance": 1e-09,
+        "relativeTolerance": 0,
+        "workedAnswer": "The 10 and the 30 share group A, so the total beside each is 40."
+      },
+      "sourceIds": [
+        "sqlite-window"
+      ],
+      "onCorrect": "40. The window holds the group, so every row of A shows the group total.",
+      "skill": "window-total",
+      "calculator": "off",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              10
+            ]
+          },
+          "feedback": "That is the row's own amount. The window total adds the whole group."
+        },
+        {
+          "match": {
+            "numeric": [
+              45
+            ]
+          },
+          "feedback": "That adds the other group as well. A window holds only its own group."
+        }
+      ]
+    }
+  ],
+  "citations": [
+    {
+      "claim": "PARTITION BY gives each group its own window, so calculations restart inside it.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 2.1: PARTITION BY; 3: row_number(), ntile()",
+      "targetKind": "step",
+      "targetId": "a-window-per-group"
+    },
+    {
+      "claim": "One query numbers all six orders in a single run. The other numbers each customer's orders separately.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 2.1: PARTITION BY; 3: row_number(), ntile()",
+      "targetKind": "step",
+      "targetId": "restart-numbering"
+    },
+    {
+      "claim": "Put each customer's total beside every one of their orders.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 2.1: PARTITION BY; 3: row_number(), ntile()",
+      "targetKind": "step",
+      "targetId": "customer-totals"
+    },
+    {
+      "claim": "A window total is the sum over the partition. Every row of that partition shows the same value.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 2.1: PARTITION BY; 3: row_number(), ntile()",
+      "targetKind": "step",
+      "targetId": "paid-total"
+    },
+    {
+      "claim": "NTILE(n) splits the ordered rows into n buckets as evenly as it can. Bucket sizes differ by at most one, and larger buckets come first.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 2.1: PARTITION BY; 3: row_number(), ntile()",
+      "targetKind": "step",
+      "targetId": "equal-buckets"
+    },
+    {
+      "claim": "A calculated position is a column of a result, not of the table. Think about where a filter can see it.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 2.1: PARTITION BY; 3: row_number(), ntile()",
+      "targetKind": "step",
+      "targetId": "first-per-customer"
+    },
+    {
+      "claim": "103 is customer 2's first order, so its position in that customer's window is 1.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 2.1: PARTITION BY; 3: row_number(), ntile()",
+      "targetKind": "question",
+      "targetId": "sql-partition-the-window-1"
+    },
+    {
+      "claim": "The paid amounts are 80, 20, 80 and 20, totalling 200.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 2.1: PARTITION BY; 3: row_number(), ntile()",
+      "targetKind": "question",
+      "targetId": "sql-partition-the-window-2"
+    },
+    {
+      "claim": "Five rows split into buckets of 2, 2 and 1; the first bucket contains two.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 2.1: PARTITION BY; 3: row_number(), ntile()",
+      "targetKind": "question",
+      "targetId": "sql-partition-the-window-3"
+    },
+    {
+      "claim": "Compute ROW_NUMBER in an inner query or CTE, then filter position = 1 in the outer query. SQLite cannot use that window result in the same SELECT's WHERE clause.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 2.1: PARTITION BY; 3: row_number(), ntile()",
+      "targetKind": "question",
+      "targetId": "sql-partition-the-window-4"
+    },
+    {
+      "claim": "The three bucket sizes are 3, 2 and 2; the first bucket holds three.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 2.1: PARTITION BY; 3: row_number(), ntile()",
+      "targetKind": "question",
+      "targetId": "sql-partition-the-window-5"
+    },
+    {
+      "claim": "PARTITION BY splits the rows into separate windows for the calculation. It changes which rows are compared or accumulated together without itself collapsing them.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 2.1: PARTITION BY; 3: row_number(), ntile()",
+      "targetKind": "question",
+      "targetId": "sql-partition-the-window-6"
+    },
+    {
+      "claim": "Class A scored 6 and 8, which total 14. That total goes beside each Class A pupil.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 2.1: PARTITION BY; 3: row_number(), ntile()",
+      "targetKind": "question",
+      "targetId": "sql-partition-the-window-7"
+    },
+    {
+      "claim": "Numbering restarts at the first Y row, so the three Y rows are numbered 1, 2 and 3.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 2.1: PARTITION BY; 3: row_number(), ntile()",
+      "targetKind": "question",
+      "targetId": "sql-partition-the-window-8"
+    },
+    {
+      "claim": "A window total is worked out once per customer and shown beside every row of that customer.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 2.1: PARTITION BY; 3: row_number(), ntile()",
+      "targetKind": "question",
+      "targetId": "sql-partition-the-window-9"
+    },
+    {
+      "claim": "The 10 and the 30 share group A, so the total beside each is 40.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 2.1: PARTITION BY; 3: row_number(), ntile()",
+      "targetKind": "question",
+      "targetId": "sql-partition-the-window-10"
+    },
+    {
+      "claim": "The partition's five rows are numbered 1 through 5.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 2.1: PARTITION BY; 3: row_number(), ntile()",
+      "targetKind": "flashcard",
+      "targetId": "sql-partition-the-window-card-1"
+    },
+    {
+      "claim": "PARTITION BY defines each window's group of rows while preserving individual result rows.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 2.1: PARTITION BY; 3: row_number(), ntile()",
+      "targetKind": "flashcard",
+      "targetId": "sql-partition-the-window-card-2"
+    }
+  ]
+}

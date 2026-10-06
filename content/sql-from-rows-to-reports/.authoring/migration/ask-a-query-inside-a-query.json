@@ -1,0 +1,1379 @@
+{
+  "lessonId": "ask-a-query-inside-a-query",
+  "courseId": "sql-from-rows-to-reports",
+  "migrationNotes": [
+    "step 'predict': the old title \"Compare with a calculated value\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
+    "step 'predict': kind hook → predict; check the order of teaching and asking still fits (style guide §2).",
+    "step 'work': the old title \"Use a returned set\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
+    "step 'work': write workedSteps from the worked answer (one line per move, one self-explanation prompt), a headline naming the problem, and recompute every number.",
+    "step 'check': the old title \"Ask whether a match exists\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
+    "step 'check': kind check → try; check the order of teaching and asking still fits (style guide §2).",
+    "step 'transfer': the old title \"Compare with the appropriate group\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
+    "intro: write the hook (a puzzle the learner can do from what they bring, never a definition), the promise (≤ 25 words, “By the end you'll …”) and the time.",
+    "recap: write the key idea (the promise, kept), the learner's own results, and the one-line bridge to the next lesson.",
+    "skill check: the lesson has 2 quiz item(s); it needs exactly 3, each on something this lesson taught.",
+    "questions: replace every TODO onCorrect (≤ 25 words, states the idea), tag each skill, add misconceptions for predictable wrong answers (the feedback must not state the key).",
+    "vocabulary: give each explain step introducesTerms; no prompt may use a term before the step that introduces it.",
+    "add an explain step before any question that needs a new word or symbol; add a transfer if the lesson has none.",
+    "citations: retarget the seeded citations to the new step and question ids, and give every step, question and flashcard at least one (same sourceIds; the claim is what that screen asserts)."
+  ],
+  "lesson": {
+    "id": "ask-a-query-inside-a-query",
+    "courseId": "sql-from-rows-to-reports",
+    "conceptIds": [
+      "sql-ask-a-query-inside-a-query"
+    ],
+    "title": "Use one query to define another",
+    "steps": [
+      {
+        "id": "a-query-in-brackets",
+        "kind": "explain",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "The inner query runs first and passes its answer to the outer query. That answer can be a value or a set of ids."
+          },
+          {
+            "kind": "paragraph",
+            "text": "EXISTS asks only whether the inner query returns any row at all."
+          }
+        ],
+        "reveal": [],
+        "visualStateId": "",
+        "checkQuestionId": "sql-ask-a-query-inside-a-query-8",
+        "activityId": "",
+        "headline": "A subquery is a query in brackets that supplies a value or a set to the outer query.",
+        "introducesTerms": [
+          "subquery",
+          "IN",
+          "EXISTS"
+        ]
+      },
+      {
+        "id": "above-the-average",
+        "kind": "predict",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "The outer condition needs a number to compare with, and the subquery works it out first. One amount is unknown."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "You compared each amount with the average the subquery found. An amount equal to it would not pass a strict comparison."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "sql-ask-a-query-inside-a-query-1",
+        "activityId": "",
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "orders",
+              "columns": [
+                "id",
+                "customer_id",
+                "item",
+                "amount",
+                "status",
+                "day"
+              ],
+              "rows": [
+                {
+                  "id": "orders-0",
+                  "cells": [
+                    101,
+                    1,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-01"
+                  ]
+                },
+                {
+                  "id": "orders-1",
+                  "cells": [
+                    102,
+                    1,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-2",
+                  "cells": [
+                    103,
+                    2,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-3",
+                  "cells": [
+                    104,
+                    2,
+                    "Lamp",
+                    40,
+                    "pending",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-4",
+                  "cells": [
+                    105,
+                    3,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-5",
+                  "cells": [
+                    106,
+                    3,
+                    "Lamp",
+                    null,
+                    "pending",
+                    "2026-09-04"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Above the average",
+              "sql": "SELECT id, amount FROM orders WHERE amount > (SELECT AVG(amount) FROM orders) ORDER BY id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "amount"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      101,
+                      80
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      103,
+                      80
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "Strictly above 80",
+              "sql": "SELECT id, amount FROM orders WHERE amount > 80 ORDER BY id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "amount"
+                ],
+                "rows": []
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      },
+      {
+        "id": "north-customers-orders",
+        "kind": "try",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "IN keeps a row when its value is in the set the subquery returns. The outer result still has one row per order."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "You found the customers first and then their orders. An order with an unknown amount still counts: IN looks at the customer."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "sql-ask-a-query-inside-a-query-2",
+        "activityId": "",
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "customers",
+              "columns": [
+                "id",
+                "name",
+                "region"
+              ],
+              "rows": [
+                {
+                  "id": "customers-0",
+                  "cells": [
+                    1,
+                    "Ada",
+                    "North"
+                  ]
+                },
+                {
+                  "id": "customers-1",
+                  "cells": [
+                    2,
+                    "Ben",
+                    "South"
+                  ]
+                },
+                {
+                  "id": "customers-2",
+                  "cells": [
+                    3,
+                    "Cy",
+                    "North"
+                  ]
+                },
+                {
+                  "id": "customers-3",
+                  "cells": [
+                    4,
+                    "Dee",
+                    "West"
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "orders",
+              "columns": [
+                "id",
+                "customer_id",
+                "item",
+                "amount",
+                "status",
+                "day"
+              ],
+              "rows": [
+                {
+                  "id": "orders-0",
+                  "cells": [
+                    101,
+                    1,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-01"
+                  ]
+                },
+                {
+                  "id": "orders-1",
+                  "cells": [
+                    102,
+                    1,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-2",
+                  "cells": [
+                    103,
+                    2,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-3",
+                  "cells": [
+                    104,
+                    2,
+                    "Lamp",
+                    40,
+                    "pending",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-4",
+                  "cells": [
+                    105,
+                    3,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-5",
+                  "cells": [
+                    106,
+                    3,
+                    "Lamp",
+                    null,
+                    "pending",
+                    "2026-09-04"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "North customers' orders",
+              "sql": "SELECT id, customer_id, amount FROM orders WHERE customer_id IN (SELECT id FROM customers WHERE region = 'North') ORDER BY id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "customer_id",
+                  "amount"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      101,
+                      1,
+                      80
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      102,
+                      1,
+                      20
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      105,
+                      3,
+                      20
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      106,
+                      3,
+                      null
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "South customers' orders",
+              "sql": "SELECT id, customer_id, amount FROM orders WHERE customer_id IN (SELECT id FROM customers WHERE region = 'South') ORDER BY id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "customer_id",
+                  "amount"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      103,
+                      2,
+                      80
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      104,
+                      2,
+                      40
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      },
+      {
+        "id": "customers-with-orders",
+        "kind": "worked_example",
+        "blocks": [],
+        "lead": [],
+        "reveal": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "headline": "Which customers have at least one order?",
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "customers",
+              "columns": [
+                "id",
+                "name",
+                "region"
+              ],
+              "rows": [
+                {
+                  "id": "customers-0",
+                  "cells": [
+                    1,
+                    "Ada",
+                    "North"
+                  ]
+                },
+                {
+                  "id": "customers-1",
+                  "cells": [
+                    2,
+                    "Ben",
+                    "South"
+                  ]
+                },
+                {
+                  "id": "customers-2",
+                  "cells": [
+                    3,
+                    "Cy",
+                    "North"
+                  ]
+                },
+                {
+                  "id": "customers-3",
+                  "cells": [
+                    4,
+                    "Dee",
+                    "West"
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "orders",
+              "columns": [
+                "id",
+                "customer_id",
+                "item",
+                "amount",
+                "status",
+                "day"
+              ],
+              "rows": [
+                {
+                  "id": "orders-0",
+                  "cells": [
+                    101,
+                    1,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-01"
+                  ]
+                },
+                {
+                  "id": "orders-1",
+                  "cells": [
+                    102,
+                    1,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-2",
+                  "cells": [
+                    103,
+                    2,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-3",
+                  "cells": [
+                    104,
+                    2,
+                    "Lamp",
+                    40,
+                    "pending",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-4",
+                  "cells": [
+                    105,
+                    3,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-5",
+                  "cells": [
+                    106,
+                    3,
+                    "Lamp",
+                    null,
+                    "pending",
+                    "2026-09-04"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "At least one order",
+              "sql": "SELECT c.id, c.name FROM customers AS c WHERE EXISTS (SELECT 1 FROM orders AS o WHERE o.customer_id = c.id) ORDER BY c.id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "name"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      1,
+                      "Ada"
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      2,
+                      "Ben"
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      3,
+                      "Cy"
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "No orders",
+              "sql": "SELECT c.id, c.name FROM customers AS c WHERE NOT EXISTS (SELECT 1 FROM orders AS o WHERE o.customer_id = c.id) ORDER BY c.id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "name"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      4,
+                      "Dee"
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        },
+        "answerVisibility": "hidden-until-response",
+        "workedSteps": [
+          {
+            "text": "Take one customer at a time.",
+            "math": "Ada, id 1"
+          },
+          {
+            "text": "Ask the inner query whether any order has customer_id = 1.",
+            "math": "EXISTS: yes",
+            "selfExplain": {
+              "questionId": "sql-ask-a-query-inside-a-query-3"
+            }
+          },
+          {
+            "text": "NOT EXISTS keeps the customer whose inner query finds nothing.",
+            "math": "Dee"
+          }
+        ]
+      },
+      {
+        "id": "own-item-average",
+        "kind": "transfer",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "A subquery that refers to a value from the current outer row is called correlated. Its answer can change from one outer row to the next."
+          }
+        ],
+        "reveal": [],
+        "visualStateId": "",
+        "checkQuestionId": "sql-ask-a-query-inside-a-query-4",
+        "activityId": "",
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "orders",
+              "columns": [
+                "id",
+                "customer_id",
+                "item",
+                "amount",
+                "status",
+                "day"
+              ],
+              "rows": [
+                {
+                  "id": "orders-0",
+                  "cells": [
+                    101,
+                    1,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-01"
+                  ]
+                },
+                {
+                  "id": "orders-1",
+                  "cells": [
+                    102,
+                    1,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-2",
+                  "cells": [
+                    103,
+                    2,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-3",
+                  "cells": [
+                    104,
+                    2,
+                    "Lamp",
+                    40,
+                    "pending",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-4",
+                  "cells": [
+                    105,
+                    3,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-5",
+                  "cells": [
+                    106,
+                    3,
+                    "Lamp",
+                    null,
+                    "pending",
+                    "2026-09-04"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Above overall average",
+              "sql": "SELECT id, item, amount FROM orders WHERE amount > (SELECT AVG(amount) FROM orders) ORDER BY id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "item",
+                  "amount"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      101,
+                      "Desk",
+                      80
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      103,
+                      "Desk",
+                      80
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "Above its item average",
+              "sql": "SELECT o.id, o.item, o.amount FROM orders AS o WHERE o.amount > (SELECT AVG(i.amount) FROM orders AS i WHERE i.item = o.item) ORDER BY o.id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "item",
+                  "amount"
+                ],
+                "rows": []
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      }
+    ],
+    "orientation": "Use scalar subqueries, IN and EXISTS without multiplying the outer result.",
+    "visualStates": [],
+    "visualKind": "none",
+    "activityId": "",
+    "questionIds": [
+      "sql-ask-a-query-inside-a-query-5",
+      "sql-ask-a-query-inside-a-query-6",
+      "sql-ask-a-query-inside-a-query-9"
+    ],
+    "flashcardIds": [
+      "sql-ask-a-query-inside-a-query-card-1",
+      "sql-ask-a-query-inside-a-query-card-2"
+    ],
+    "reviewLabel": "Use one query to define another",
+    "nextAction": "Apply the idea to the next query.",
+    "stageTitles": {
+      "quiz": "Skill check",
+      "review": "Recall it later",
+      "completion": "Ready for the next idea"
+    },
+    "sourceIds": [
+      "sqlite-expr"
+    ],
+    "assuranceLevel": "source_backed",
+    "intro": {
+      "hook": {
+        "blocks": [
+          {
+            "kind": "paragraph",
+            "text": "Six pupils score 10, 50, 60, 70, 80 and 90. Everyone above the class average gets a sticker."
+          }
+        ],
+        "questionId": "sql-ask-a-query-inside-a-query-7"
+      },
+      "promise": "By the end you'll use a query inside a query to compare, to test membership and to check existence.",
+      "estimatedMinutes": 10
+    },
+    "recap": {
+      "keyIdea": "A subquery supplies a value or a set to an outer query. EXISTS tests for a match without multiplying the outer rows.",
+      "blocks": [
+        {
+          "kind": "paragraph",
+          "text": "You gave 3 stickers above an average of 60, then counted 4 orders from North customers. No order sits strictly above its own item's average."
+        }
+      ],
+      "nextHook": "Next, stack two results with UNION."
+    },
+    "calculator": "off",
+    "taughtSkills": [
+      "scalar-subquery",
+      "in-subquery",
+      "exists-subquery",
+      "correlated-subquery"
+    ]
+  },
+  "questions": [
+    {
+      "id": "sql-ask-a-query-inside-a-query-1",
+      "conceptIds": [
+        "sql-ask-a-query-inside-a-query"
+      ],
+      "prompt": "How many orders have an amount greater than AVG(amount) over all orders?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Calculate the average of known amounts.",
+        "Use a strict greater-than comparison.",
+        "The threshold is 240 ÷ 5; test each known amount against it."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 2,
+        "unit": "",
+        "absoluteTolerance": 1e-06,
+        "relativeTolerance": 0,
+        "workedAnswer": "The known average is 48; orders 101 and 103 each have amount 80."
+      },
+      "sourceIds": [
+        "sqlite-expr"
+      ],
+      "onCorrect": "2. The subquery gives the average, and only the amounts above it pass.",
+      "skill": "scalar-subquery",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              5
+            ]
+          },
+          "feedback": "That counts every known amount. Only those above the average pass."
+        },
+        {
+          "match": {
+            "numeric": [
+              1
+            ]
+          },
+          "feedback": "Check each known amount against the average. More than one is above it."
+        }
+      ]
+    },
+    {
+      "id": "sql-ask-a-query-inside-a-query-2",
+      "conceptIds": [
+        "sql-ask-a-query-inside-a-query"
+      ],
+      "prompt": "How many orders belong to customers in the North region?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Find customer ids in North first.",
+        "Count their orders even when an amount is missing.",
+        "North's customer ids are 1 and 3; each contributes two orders."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 4,
+        "unit": "",
+        "absoluteTolerance": 1e-06,
+        "relativeTolerance": 0,
+        "workedAnswer": "Customers 1 and 3 are North; each has two orders."
+      },
+      "sourceIds": [
+        "sqlite-expr"
+      ],
+      "onCorrect": "4. The subquery lists the North ids, and IN keeps every order that points at one of them.",
+      "skill": "in-subquery",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              2
+            ]
+          },
+          "feedback": "That counts the customers. Count the orders they placed."
+        },
+        {
+          "match": {
+            "numeric": [
+              6
+            ]
+          },
+          "feedback": "That is every order. Only North customers count."
+        },
+        {
+          "match": {
+            "numeric": [
+              3
+            ]
+          },
+          "feedback": "That drops an order because its amount is unknown. IN looks at the customer, not the amount."
+        }
+      ]
+    },
+    {
+      "id": "sql-ask-a-query-inside-a-query-3",
+      "conceptIds": [
+        "sql-ask-a-query-inside-a-query"
+      ],
+      "prompt": "Why does EXISTS return Ada once even though she has two orders?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "It tests existence without adding each matching subquery row to the outer result."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "The outer query has one row per customer"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "EXISTS asks whether any matching order exists for each outer customer row. It does not create one outer row per match, so Ada appears once."
+      },
+      "sourceIds": [
+        "sqlite-expr"
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "The outer query has one row per customer"
+        },
+        {
+          "id": "b",
+          "label": "EXISTS deletes the extra order"
+        },
+        {
+          "id": "c",
+          "label": "EXISTS ignores every second row"
+        }
+      ],
+      "onCorrect": "The outer query has one row per customer. EXISTS only tests whether a match is there.",
+      "skill": "exists-subquery",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "EXISTS never deletes anything. It only tests."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "It does not skip rows. It only asks whether any row exists."
+        }
+      ]
+    },
+    {
+      "id": "sql-ask-a-query-inside-a-query-4",
+      "conceptIds": [
+        "sql-ask-a-query-inside-a-query"
+      ],
+      "prompt": "How many orders are strictly above the average for their own item?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Compare within each item group.",
+        "Equality does not pass a strict greater-than condition.",
+        "Each known amount equals its item's mean. Test whether equality satisfies a strict > comparison."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 0,
+        "unit": "",
+        "absoluteTolerance": 1e-06,
+        "relativeTolerance": 0,
+        "workedAnswer": "Desk amounts equal 80, Book amounts equal 20 and Lamp's known amount equals 40; each equals its item average."
+      },
+      "sourceIds": [
+        "sqlite-expr"
+      ],
+      "onCorrect": "0. Each known amount equals its item's average, and equal is not above.",
+      "skill": "correlated-subquery",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              2
+            ]
+          },
+          "feedback": "Those are above the overall average. Each is only equal to its own item's average."
+        }
+      ]
+    },
+    {
+      "id": "sql-ask-a-query-inside-a-query-5",
+      "conceptIds": [
+        "sql-ask-a-query-inside-a-query"
+      ],
+      "prompt": "Three customers have zero, one and four orders. How many customers pass EXISTS for an order?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "EXISTS asks whether there is at least one match.",
+        "Count customers with a nonzero number of orders.",
+        "Mark each customer whose order count is positive, then count marked customers once."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 2,
+        "unit": "",
+        "absoluteTolerance": 1e-06,
+        "relativeTolerance": 0,
+        "workedAnswer": "Two customers have at least one order; the number of matches does not duplicate them."
+      },
+      "sourceIds": [
+        "sqlite-expr"
+      ],
+      "onCorrect": "2. EXISTS needs at least one order, and it counts each customer once.",
+      "skill": "exists-subquery",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              3
+            ]
+          },
+          "feedback": "That counts the customer with no orders. EXISTS needs at least one match."
+        },
+        {
+          "match": {
+            "numeric": [
+              5
+            ]
+          },
+          "feedback": "That adds up the orders. EXISTS counts customers, once each."
+        }
+      ]
+    },
+    {
+      "id": "sql-ask-a-query-inside-a-query-6",
+      "conceptIds": [
+        "sql-ask-a-query-inside-a-query"
+      ],
+      "prompt": "What is the term for a subquery that refers to a value from the current outer row?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Its condition depends on which row the outer query is considering."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "correlated"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "A correlated subquery uses a value from the current outer row. Its meaning depends on which outer row is being considered."
+      },
+      "sourceIds": [
+        "sqlite-expr"
+      ],
+      "onCorrect": "correlated. Its condition depends on the outer row, so it is run for each of them.",
+      "skill": "correlated-subquery",
+      "misconceptions": [
+        {
+          "match": {
+            "textIdeas": [
+              "nested",
+              "inner"
+            ]
+          },
+          "feedback": "Nested only says where it sits. The word wanted describes how it uses the outer row."
+        },
+        {
+          "match": {
+            "textIdeas": [
+              "scalar"
+            ]
+          },
+          "feedback": "Scalar describes a single value coming back. The word wanted is about depending on the outer row."
+        }
+      ]
+    },
+    {
+      "id": "sql-ask-a-query-inside-a-query-7",
+      "conceptIds": [
+        "sql-ask-a-query-inside-a-query"
+      ],
+      "prompt": "How many pupils get a sticker?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Find the class average first.",
+        "Add the scores and divide by how many there are.",
+        "Count the scores above that average, not equal to it."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 3,
+        "unit": "",
+        "absoluteTolerance": 1e-09,
+        "relativeTolerance": 0,
+        "workedAnswer": "The scores add up to 360, so the average is 60. The scores above it are 70, 80 and 90."
+      },
+      "sourceIds": [
+        "sqlite-expr"
+      ],
+      "onCorrect": "3. You worked out one value first and then compared every score with it. A subquery does the same inside a query.",
+      "skill": "scalar-subquery",
+      "calculator": "off",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              4
+            ]
+          },
+          "feedback": "A score equal to the average is not above it."
+        }
+      ]
+    },
+    {
+      "id": "sql-ask-a-query-inside-a-query-8",
+      "conceptIds": [
+        "sql-ask-a-query-inside-a-query"
+      ],
+      "prompt": "What does the subquery in WHERE amount > (SELECT AVG(amount) FROM orders) supply?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "How many numbers does AVG return?"
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "One value to compare with"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "AVG returns a single number, and the outer condition compares each amount with it."
+      },
+      "sourceIds": [
+        "sqlite-expr"
+      ],
+      "onCorrect": "A subquery in parentheses can supply a value or a set to the outer query. Here it supplies one number.",
+      "skill": "scalar-subquery",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "One value to compare with"
+        },
+        {
+          "id": "b",
+          "label": "A new table to join"
+        },
+        {
+          "id": "c",
+          "label": "A list of columns"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Here the subquery returns a single number, not rows to join."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "A subquery supplies values, not column names."
+        }
+      ]
+    },
+    {
+      "id": "sql-ask-a-query-inside-a-query-9",
+      "conceptIds": [
+        "sql-ask-a-query-inside-a-query"
+      ],
+      "prompt": "Five customers have 0, 2, 0, 0 and 5 orders. How many customers pass NOT EXISTS for an order?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "NOT EXISTS keeps a customer when the inner query finds no order.",
+        "Which customers have no order at all?",
+        "Count the customers with zero orders."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 3,
+        "unit": "",
+        "absoluteTolerance": 1e-09,
+        "relativeTolerance": 0,
+        "workedAnswer": "Three customers have no order, so NOT EXISTS keeps three."
+      },
+      "sourceIds": [
+        "sqlite-expr"
+      ],
+      "onCorrect": "3. NOT EXISTS keeps a customer exactly when the inner query finds nothing for them.",
+      "skill": "exists-subquery",
+      "calculator": "off",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              2
+            ]
+          },
+          "feedback": "That counts the customers who have orders. NOT EXISTS keeps those with none."
+        }
+      ]
+    }
+  ],
+  "citations": [
+    {
+      "claim": "A subquery is a query in brackets that supplies a value or a set to the outer query.",
+      "sourceId": "sqlite-expr",
+      "section": "SQL Expressions 8: IN; 10: EXISTS; 11: scalar subqueries; 12: correlated subqueries",
+      "targetKind": "step",
+      "targetId": "a-query-in-brackets"
+    },
+    {
+      "claim": "The outer condition needs a number to compare with, and the subquery works it out first. One amount is unknown.",
+      "sourceId": "sqlite-expr",
+      "section": "SQL Expressions 8: IN; 10: EXISTS; 11: scalar subqueries; 12: correlated subqueries",
+      "targetKind": "step",
+      "targetId": "above-the-average"
+    },
+    {
+      "claim": "IN keeps a row when its value is in the set the subquery returns. The outer result still has one row per order.",
+      "sourceId": "sqlite-expr",
+      "section": "SQL Expressions 8: IN; 10: EXISTS; 11: scalar subqueries; 12: correlated subqueries",
+      "targetKind": "step",
+      "targetId": "north-customers-orders"
+    },
+    {
+      "claim": "Which customers have at least one order?",
+      "sourceId": "sqlite-expr",
+      "section": "SQL Expressions 8: IN; 10: EXISTS; 11: scalar subqueries; 12: correlated subqueries",
+      "targetKind": "step",
+      "targetId": "customers-with-orders"
+    },
+    {
+      "claim": "A subquery that refers to a value from the current outer row is called correlated. Its answer can change from one outer row to the next.",
+      "sourceId": "sqlite-expr",
+      "section": "SQL Expressions 8: IN; 10: EXISTS; 11: scalar subqueries; 12: correlated subqueries",
+      "targetKind": "step",
+      "targetId": "own-item-average"
+    },
+    {
+      "claim": "The known average is 48; orders 101 and 103 each have amount 80.",
+      "sourceId": "sqlite-expr",
+      "section": "SQL Expressions 8: IN; 10: EXISTS; 11: scalar subqueries; 12: correlated subqueries",
+      "targetKind": "question",
+      "targetId": "sql-ask-a-query-inside-a-query-1"
+    },
+    {
+      "claim": "Customers 1 and 3 are North; each has two orders.",
+      "sourceId": "sqlite-expr",
+      "section": "SQL Expressions 8: IN; 10: EXISTS; 11: scalar subqueries; 12: correlated subqueries",
+      "targetKind": "question",
+      "targetId": "sql-ask-a-query-inside-a-query-2"
+    },
+    {
+      "claim": "EXISTS asks whether any matching order exists for each outer customer row. It does not create one outer row per match, so Ada appears once.",
+      "sourceId": "sqlite-expr",
+      "section": "SQL Expressions 8: IN; 10: EXISTS; 11: scalar subqueries; 12: correlated subqueries",
+      "targetKind": "question",
+      "targetId": "sql-ask-a-query-inside-a-query-3"
+    },
+    {
+      "claim": "Desk amounts equal 80, Book amounts equal 20 and Lamp's known amount equals 40; each equals its item average.",
+      "sourceId": "sqlite-expr",
+      "section": "SQL Expressions 8: IN; 10: EXISTS; 11: scalar subqueries; 12: correlated subqueries",
+      "targetKind": "question",
+      "targetId": "sql-ask-a-query-inside-a-query-4"
+    },
+    {
+      "claim": "Two customers have at least one order; the number of matches does not duplicate them.",
+      "sourceId": "sqlite-expr",
+      "section": "SQL Expressions 8: IN; 10: EXISTS; 11: scalar subqueries; 12: correlated subqueries",
+      "targetKind": "question",
+      "targetId": "sql-ask-a-query-inside-a-query-5"
+    },
+    {
+      "claim": "A correlated subquery uses a value from the current outer row. Its meaning depends on which outer row is being considered.",
+      "sourceId": "sqlite-expr",
+      "section": "SQL Expressions 8: IN; 10: EXISTS; 11: scalar subqueries; 12: correlated subqueries",
+      "targetKind": "question",
+      "targetId": "sql-ask-a-query-inside-a-query-6"
+    },
+    {
+      "claim": "The scores add up to 360, so the average is 60. The scores above it are 70, 80 and 90.",
+      "sourceId": "sqlite-expr",
+      "section": "SQL Expressions 8: IN; 10: EXISTS; 11: scalar subqueries; 12: correlated subqueries",
+      "targetKind": "question",
+      "targetId": "sql-ask-a-query-inside-a-query-7"
+    },
+    {
+      "claim": "AVG returns a single number, and the outer condition compares each amount with it.",
+      "sourceId": "sqlite-expr",
+      "section": "SQL Expressions 8: IN; 10: EXISTS; 11: scalar subqueries; 12: correlated subqueries",
+      "targetKind": "question",
+      "targetId": "sql-ask-a-query-inside-a-query-8"
+    },
+    {
+      "claim": "Three customers have no order, so NOT EXISTS keeps three.",
+      "sourceId": "sqlite-expr",
+      "section": "SQL Expressions 8: IN; 10: EXISTS; 11: scalar subqueries; 12: correlated subqueries",
+      "targetKind": "question",
+      "targetId": "sql-ask-a-query-inside-a-query-9"
+    },
+    {
+      "claim": "The two customers with at least one order satisfy EXISTS.",
+      "sourceId": "sqlite-expr",
+      "section": "SQL Expressions 8: IN; 10: EXISTS; 11: scalar subqueries; 12: correlated subqueries",
+      "targetKind": "flashcard",
+      "targetId": "sql-ask-a-query-inside-a-query-card-1"
+    },
+    {
+      "claim": "EXISTS asks whether a result exists; it does not count or join every matching row.",
+      "sourceId": "sqlite-expr",
+      "section": "SQL Expressions 8: IN; 10: EXISTS; 11: scalar subqueries; 12: correlated subqueries",
+      "targetKind": "flashcard",
+      "targetId": "sql-ask-a-query-inside-a-query-card-2"
+    }
+  ]
+}

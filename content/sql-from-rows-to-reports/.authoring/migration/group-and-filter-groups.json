@@ -1,0 +1,1538 @@
+{
+  "lessonId": "group-and-filter-groups",
+  "courseId": "sql-from-rows-to-reports",
+  "migrationNotes": [
+    "step 'predict': the old title \"One result per group\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
+    "step 'predict': kind hook → predict; check the order of teaching and asking still fits (style guide §2).",
+    "step 'work': the old title \"Count the data inside a group\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
+    "step 'work': write workedSteps from the worked answer (one line per move, one self-explanation prompt), a headline naming the problem, and recompute every number.",
+    "step 'check': the old title \"Filter totals with HAVING\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
+    "step 'check': kind check → try; check the order of teaching and asking still fits (style guide §2).",
+    "step 'transfer': the old title \"Define the eligible rows first\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
+    "intro: write the hook (a puzzle the learner can do from what they bring, never a definition), the promise (≤ 25 words, “By the end you'll …”) and the time.",
+    "recap: write the key idea (the promise, kept), the learner's own results, and the one-line bridge to the next lesson.",
+    "skill check: the lesson has 2 quiz item(s); it needs exactly 3, each on something this lesson taught.",
+    "questions: replace every TODO onCorrect (≤ 25 words, states the idea), tag each skill, add misconceptions for predictable wrong answers (the feedback must not state the key).",
+    "vocabulary: give each explain step introducesTerms; no prompt may use a term before the step that introduces it.",
+    "add an explain step before any question that needs a new word or symbol; add a transfer if the lesson has none.",
+    "citations: retarget the seeded citations to the new step and question ids, and give every step, question and flashcard at least one (same sourceIds; the claim is what that screen asserts)."
+  ],
+  "lesson": {
+    "id": "group-and-filter-groups",
+    "courseId": "sql-from-rows-to-reports",
+    "conceptIds": [
+      "sql-group-and-filter-groups"
+    ],
+    "title": "Build a grouped report",
+    "steps": [
+      {
+        "id": "one-row-per-group",
+        "kind": "explain",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "GROUP BY item gathers orders with the same item. Each group becomes one result row, and SUM works inside the group."
+          },
+          {
+            "kind": "paragraph",
+            "text": "WHERE filters rows before the groups are made. HAVING filters groups after their totals exist."
+          }
+        ],
+        "reveal": [],
+        "visualStateId": "",
+        "checkQuestionId": "sql-group-and-filter-groups-8",
+        "activityId": "",
+        "headline": "GROUP BY makes each result row stand for a group, and HAVING filters the groups.",
+        "introducesTerms": [
+          "GROUP BY",
+          "HAVING"
+        ]
+      },
+      {
+        "id": "how-many-groups",
+        "kind": "predict",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Several orders share an item. Group them, and the report's rows stand for something new."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "You counted the different items. The report now has one row per item instead of one per order."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "sql-group-and-filter-groups-1",
+        "activityId": "",
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "orders",
+              "columns": [
+                "id",
+                "customer_id",
+                "item",
+                "amount",
+                "status",
+                "day"
+              ],
+              "rows": [
+                {
+                  "id": "orders-0",
+                  "cells": [
+                    101,
+                    1,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-01"
+                  ]
+                },
+                {
+                  "id": "orders-1",
+                  "cells": [
+                    102,
+                    1,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-2",
+                  "cells": [
+                    103,
+                    2,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-3",
+                  "cells": [
+                    104,
+                    2,
+                    "Lamp",
+                    40,
+                    "pending",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-4",
+                  "cells": [
+                    105,
+                    3,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-5",
+                  "cells": [
+                    106,
+                    3,
+                    "Lamp",
+                    null,
+                    "pending",
+                    "2026-09-04"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Group by item",
+              "sql": "SELECT item, SUM(amount) AS total FROM orders GROUP BY item ORDER BY item;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "item",
+                  "total"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      "Book",
+                      40
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      "Desk",
+                      160
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      "Lamp",
+                      40
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "Group by status",
+              "sql": "SELECT status, SUM(amount) AS total FROM orders GROUP BY status ORDER BY status;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "status",
+                  "total"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      "paid",
+                      200
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      "pending",
+                      40
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      },
+      {
+        "id": "status-report",
+        "kind": "worked_example",
+        "blocks": [],
+        "lead": [],
+        "reveal": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "headline": "Report each status with its orders, known amounts and total.",
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "orders",
+              "columns": [
+                "id",
+                "customer_id",
+                "item",
+                "amount",
+                "status",
+                "day"
+              ],
+              "rows": [
+                {
+                  "id": "orders-0",
+                  "cells": [
+                    101,
+                    1,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-01"
+                  ]
+                },
+                {
+                  "id": "orders-1",
+                  "cells": [
+                    102,
+                    1,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-2",
+                  "cells": [
+                    103,
+                    2,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-3",
+                  "cells": [
+                    104,
+                    2,
+                    "Lamp",
+                    40,
+                    "pending",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-4",
+                  "cells": [
+                    105,
+                    3,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-5",
+                  "cells": [
+                    106,
+                    3,
+                    "Lamp",
+                    null,
+                    "pending",
+                    "2026-09-04"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Counts by status",
+              "sql": "SELECT status, COUNT(*) AS orders, COUNT(amount) AS known_amounts FROM orders GROUP BY status ORDER BY status;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "status",
+                  "orders",
+                  "known_amounts"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      "paid",
+                      4,
+                      4
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      "pending",
+                      2,
+                      1
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "With totals",
+              "sql": "SELECT status, COUNT(*) AS orders, COUNT(amount) AS known_amounts, SUM(amount) AS total FROM orders GROUP BY status ORDER BY status;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "status",
+                  "orders",
+                  "known_amounts",
+                  "total"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      "paid",
+                      4,
+                      4,
+                      200
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      "pending",
+                      2,
+                      1,
+                      40
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        },
+        "answerVisibility": "hidden-until-response",
+        "workedSteps": [
+          {
+            "text": "Group the orders by status.",
+            "math": "paid and pending"
+          },
+          {
+            "text": "Count rows and known amounts in each group.",
+            "math": "pending: 2 orders, 1 known amount",
+            "selfExplain": {
+              "questionId": "sql-group-and-filter-groups-9"
+            }
+          },
+          {
+            "text": "Add the known amounts in each group.",
+            "math": "paid 200, pending 40"
+          }
+        ]
+      },
+      {
+        "id": "lamp-group",
+        "kind": "try",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Inside a group, COUNT(amount) counts only that group's known amounts."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "You counted inside one group. A grouped report can show both counts, so incomplete groups stand out."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "sql-group-and-filter-groups-2",
+        "activityId": "",
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "orders",
+              "columns": [
+                "id",
+                "customer_id",
+                "item",
+                "amount",
+                "status",
+                "day"
+              ],
+              "rows": [
+                {
+                  "id": "orders-0",
+                  "cells": [
+                    101,
+                    1,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-01"
+                  ]
+                },
+                {
+                  "id": "orders-1",
+                  "cells": [
+                    102,
+                    1,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-2",
+                  "cells": [
+                    103,
+                    2,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-3",
+                  "cells": [
+                    104,
+                    2,
+                    "Lamp",
+                    40,
+                    "pending",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-4",
+                  "cells": [
+                    105,
+                    3,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-5",
+                  "cells": [
+                    106,
+                    3,
+                    "Lamp",
+                    null,
+                    "pending",
+                    "2026-09-04"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Order counts",
+              "sql": "SELECT item, COUNT(*) AS orders FROM orders GROUP BY item ORDER BY item;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "item",
+                  "orders"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      "Book",
+                      2
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      "Desk",
+                      2
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      "Lamp",
+                      2
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "Known amount counts",
+              "sql": "SELECT item, COUNT(*) AS orders, COUNT(amount) AS known_amounts FROM orders GROUP BY item ORDER BY item;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "item",
+                  "orders",
+                  "known_amounts"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      "Book",
+                      2,
+                      2
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      "Desk",
+                      2,
+                      2
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      "Lamp",
+                      2,
+                      1
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      },
+      {
+        "id": "filter-the-totals",
+        "kind": "try",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "WHERE works on single rows, before any groups exist. A group's total exists only once the groups are made."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "You named the clause that tests finished groups. Keep the row filter and the group filter apart in your head."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "sql-group-and-filter-groups-3",
+        "activityId": "",
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "orders",
+              "columns": [
+                "id",
+                "customer_id",
+                "item",
+                "amount",
+                "status",
+                "day"
+              ],
+              "rows": [
+                {
+                  "id": "orders-0",
+                  "cells": [
+                    101,
+                    1,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-01"
+                  ]
+                },
+                {
+                  "id": "orders-1",
+                  "cells": [
+                    102,
+                    1,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-2",
+                  "cells": [
+                    103,
+                    2,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-3",
+                  "cells": [
+                    104,
+                    2,
+                    "Lamp",
+                    40,
+                    "pending",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-4",
+                  "cells": [
+                    105,
+                    3,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-5",
+                  "cells": [
+                    106,
+                    3,
+                    "Lamp",
+                    null,
+                    "pending",
+                    "2026-09-04"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Total at least 100",
+              "sql": "SELECT item, SUM(amount) AS total FROM orders GROUP BY item HAVING SUM(amount) >= 100 ORDER BY item;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "item",
+                  "total"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      "Desk",
+                      160
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "Total at least 200",
+              "sql": "SELECT item, SUM(amount) AS total FROM orders GROUP BY item HAVING SUM(amount) >= 200 ORDER BY item;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "item",
+                  "total"
+                ],
+                "rows": []
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      },
+      {
+        "id": "paid-desks",
+        "kind": "transfer",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Filter the rows first, then group what is left. Read the row filter and the group filter separately."
+          }
+        ],
+        "reveal": [],
+        "visualStateId": "",
+        "checkQuestionId": "sql-group-and-filter-groups-4",
+        "activityId": "",
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "orders",
+              "columns": [
+                "id",
+                "customer_id",
+                "item",
+                "amount",
+                "status",
+                "day"
+              ],
+              "rows": [
+                {
+                  "id": "orders-0",
+                  "cells": [
+                    101,
+                    1,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-01"
+                  ]
+                },
+                {
+                  "id": "orders-1",
+                  "cells": [
+                    102,
+                    1,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-2",
+                  "cells": [
+                    103,
+                    2,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-3",
+                  "cells": [
+                    104,
+                    2,
+                    "Lamp",
+                    40,
+                    "pending",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-4",
+                  "cells": [
+                    105,
+                    3,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-5",
+                  "cells": [
+                    106,
+                    3,
+                    "Lamp",
+                    null,
+                    "pending",
+                    "2026-09-04"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Every status",
+              "sql": "SELECT item, SUM(amount) AS total FROM orders GROUP BY item ORDER BY item;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "item",
+                  "total"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      "Book",
+                      40
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      "Desk",
+                      160
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      "Lamp",
+                      40
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "Paid total at least 50",
+              "sql": "SELECT item, SUM(amount) AS total FROM orders WHERE status = 'paid' GROUP BY item HAVING SUM(amount) >= 50 ORDER BY item;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "item",
+                  "total"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      "Desk",
+                      160
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      }
+    ],
+    "orientation": "Build a report whose rows represent groups, then filter its calculated totals.",
+    "visualStates": [],
+    "visualKind": "none",
+    "activityId": "",
+    "questionIds": [
+      "sql-group-and-filter-groups-5",
+      "sql-group-and-filter-groups-6",
+      "sql-group-and-filter-groups-10"
+    ],
+    "flashcardIds": [
+      "sql-group-and-filter-groups-card-1",
+      "sql-group-and-filter-groups-card-2"
+    ],
+    "reviewLabel": "Build a grouped report",
+    "nextAction": "Apply the idea to the next query.",
+    "stageTitles": {
+      "quiz": "Skill check",
+      "review": "Recall it later",
+      "completion": "Ready for the next idea"
+    },
+    "sourceIds": [
+      "sqlite-select",
+      "sqlite-aggregate"
+    ],
+    "assuranceLevel": "source_backed",
+    "intro": {
+      "hook": {
+        "blocks": [
+          {
+            "kind": "paragraph",
+            "text": "A café keeps slips: tea £2, coffee £3, tea £4, coffee £1 and tea £1."
+          }
+        ],
+        "questionId": "sql-group-and-filter-groups-7"
+      },
+      "promise": "By the end you'll build a report with one row per group, and filter rows before grouping or groups afterwards.",
+      "estimatedMinutes": 10
+    },
+    "recap": {
+      "keyIdea": "GROUP BY makes each result row a group. WHERE filters rows before grouping, and HAVING filters the totals afterwards.",
+      "blocks": [
+        {
+          "kind": "paragraph",
+          "text": "You grouped orders into 3 items and counted 1 known Lamp amount. A paid Desk total came to 160."
+        }
+      ],
+      "nextHook": "Next, bring two tables together with a join."
+    },
+    "calculator": "off",
+    "taughtSkills": [
+      "group-rows",
+      "count-in-group",
+      "filter-groups",
+      "filter-rows-first"
+    ]
+  },
+  "questions": [
+    {
+      "id": "sql-group-and-filter-groups-1",
+      "conceptIds": [
+        "sql-group-and-filter-groups"
+      ],
+      "prompt": "How many result rows does GROUP BY item produce?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Identify different item names.",
+        "One result row represents one item group.",
+        "The groups are Book, Desk and Lamp; each gets a result row."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 3,
+        "unit": "",
+        "absoluteTolerance": 1e-06,
+        "relativeTolerance": 0,
+        "workedAnswer": "There are three item groups: Book, Desk and Lamp."
+      },
+      "sourceIds": [
+        "sqlite-select"
+      ],
+      "onCorrect": "3. Each different item becomes one result row, so the rows now stand for items.",
+      "skill": "group-rows",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              6
+            ]
+          },
+          "feedback": "That is one row per order. GROUP BY gathers orders that share an item."
+        },
+        {
+          "match": {
+            "numeric": [
+              2
+            ]
+          },
+          "feedback": "That counts the statuses. Count the different item names."
+        }
+      ]
+    },
+    {
+      "id": "sql-group-and-filter-groups-2",
+      "conceptIds": [
+        "sql-group-and-filter-groups"
+      ],
+      "prompt": "Within the Lamp group, what is COUNT(amount)?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "COUNT(column) counts known values.",
+        "Compare the two Lamp amount cells.",
+        "In the Lamp group, order 104 has an amount and order 106 has NULL. Count only the known cell."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 1,
+        "unit": "",
+        "absoluteTolerance": 1e-06,
+        "relativeTolerance": 0,
+        "workedAnswer": "Only order 104 has a known Lamp amount; order 106 is NULL."
+      },
+      "sourceIds": [
+        "sqlite-aggregate"
+      ],
+      "onCorrect": "1. COUNT(amount) counts only the known amounts inside the group.",
+      "skill": "count-in-group",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              2
+            ]
+          },
+          "feedback": "That counts both Lamp rows. COUNT(amount) skips the unknown amount."
+        }
+      ]
+    },
+    {
+      "id": "sql-group-and-filter-groups-3",
+      "conceptIds": [
+        "sql-group-and-filter-groups"
+      ],
+      "prompt": "Name the SQL clause that can filter groups on SUM(amount).",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "The total exists after the rows are grouped."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "HAVING"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "HAVING filters groups after aggregation, so it can test SUM(amount). WHERE filters the input rows before their group totals are computed."
+      },
+      "sourceIds": [
+        "sqlite-select"
+      ],
+      "onCorrect": "HAVING. A group total exists only after grouping, and HAVING tests groups.",
+      "skill": "filter-groups",
+      "misconceptions": [
+        {
+          "match": {
+            "textIdeas": [
+              "WHERE"
+            ]
+          },
+          "feedback": "WHERE sees single rows before they are grouped, so the total does not exist yet."
+        },
+        {
+          "match": {
+            "textIdeas": [
+              "GROUP BY"
+            ]
+          },
+          "feedback": "GROUP BY makes the groups. Something else has to test their totals."
+        }
+      ]
+    },
+    {
+      "id": "sql-group-and-filter-groups-4",
+      "conceptIds": [
+        "sql-group-and-filter-groups"
+      ],
+      "prompt": "After WHERE status = 'paid', what is the Desk group's SUM(amount)?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Keep only paid Desk orders.",
+        "Add the two eligible amounts.",
+        "Evaluate 80 + 80 for the eligible Desk orders."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 160,
+        "unit": "",
+        "absoluteTolerance": 1e-06,
+        "relativeTolerance": 0,
+        "workedAnswer": "Paid Desk orders 101 and 103 have amounts 80 and 80; their total is 160."
+      },
+      "sourceIds": [
+        "sqlite-aggregate"
+      ],
+      "onCorrect": "160. WHERE keeps the paid rows, then the Desk group adds its two amounts.",
+      "skill": "filter-rows-first",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              80
+            ]
+          },
+          "feedback": "Both paid Desk orders count. Add them."
+        },
+        {
+          "match": {
+            "numeric": [
+              200
+            ]
+          },
+          "feedback": "That is the total of all paid orders. The question is about Desk only."
+        }
+      ]
+    },
+    {
+      "id": "sql-group-and-filter-groups-5",
+      "conceptIds": [
+        "sql-group-and-filter-groups"
+      ],
+      "prompt": "How many item groups survive HAVING SUM(amount) >= 40 in the original data?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Compute each group total first.",
+        "The threshold includes totals equal to forty.",
+        "The totals are Book 40, Desk 160 and Lamp 40; test each with >= 40."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 3,
+        "unit": "",
+        "absoluteTolerance": 1e-06,
+        "relativeTolerance": 0,
+        "workedAnswer": "Book is 40, Desk is 160 and Lamp is 40. All three meet the inclusive threshold."
+      },
+      "sourceIds": [
+        "sqlite-select"
+      ],
+      "onCorrect": "3. Each group total is tested, and totals equal to the threshold pass.",
+      "skill": "filter-groups",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              2
+            ]
+          },
+          "feedback": "Totals equal to the threshold pass, because >= keeps them."
+        },
+        {
+          "match": {
+            "numeric": [
+              1
+            ]
+          },
+          "feedback": "Several groups reach the threshold exactly, and >= keeps those."
+        }
+      ]
+    },
+    {
+      "id": "sql-group-and-filter-groups-6",
+      "conceptIds": [
+        "sql-group-and-filter-groups"
+      ],
+      "prompt": "What does WHERE status = 'paid' change in a grouped query?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "WHERE defines the rows supplied to the groups."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "It filters individual rows before grouping"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "WHERE retains only paid input rows before grouping. Group counts and totals are calculated from that filtered set."
+      },
+      "sourceIds": [
+        "sqlite-select"
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "It filters the finished totals"
+        },
+        {
+          "id": "b",
+          "label": "It filters individual rows before grouping"
+        },
+        {
+          "id": "c",
+          "label": "It renames the status column"
+        }
+      ],
+      "onCorrect": "It filters individual rows before grouping. The groups are built from what remains.",
+      "skill": "filter-rows-first",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "That is a job for a later clause. WHERE acts before any totals exist."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "WHERE never renames anything. It keeps or drops rows."
+        }
+      ]
+    },
+    {
+      "id": "sql-group-and-filter-groups-7",
+      "conceptIds": [
+        "sql-group-and-filter-groups"
+      ],
+      "prompt": "How much did tea sell for in total?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Which slips are about tea?",
+        "Put the tea slips together.",
+        "Add only the tea slips."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 7,
+        "unit": "",
+        "absoluteTolerance": 1e-09,
+        "relativeTolerance": 0,
+        "workedAnswer": "The tea slips are £2, £4 and £1, which add up to £7."
+      },
+      "sourceIds": [
+        "sqlite-select"
+      ],
+      "onCorrect": "7. You gathered the slips by drink and added within each pile. GROUP BY and SUM do the same.",
+      "skill": "group-rows",
+      "calculator": "off",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              11
+            ]
+          },
+          "feedback": "That adds every slip. The question is about tea only."
+        }
+      ]
+    },
+    {
+      "id": "sql-group-and-filter-groups-8",
+      "conceptIds": [
+        "sql-group-and-filter-groups"
+      ],
+      "prompt": "In a grouped report, one result row stands for what?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Think about what GROUP BY gathers."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "One group"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "GROUP BY gathers rows that share a value, and each gathered set becomes one result row."
+      },
+      "sourceIds": [
+        "sqlite-select"
+      ],
+      "onCorrect": "Each result row of a grouped report stands for a whole group of input rows.",
+      "skill": "group-rows",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "One group"
+        },
+        {
+          "id": "b",
+          "label": "One original row"
+        },
+        {
+          "id": "c",
+          "label": "One column"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Grouping gathers several rows together, so a result row stands for many."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Columns are the facts shown. Rows are what the report counts."
+        }
+      ]
+    },
+    {
+      "id": "sql-group-and-filter-groups-9",
+      "conceptIds": [
+        "sql-group-and-filter-groups"
+      ],
+      "prompt": "Why does the pending group show fewer known amounts than orders?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Compare COUNT(*) with COUNT(amount) for the group."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "One pending order has no recorded amount."
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "COUNT(*) counts both pending orders. COUNT(amount) skips the one whose amount is unknown."
+      },
+      "sourceIds": [
+        "sqlite-aggregate"
+      ],
+      "onCorrect": "COUNT(*) counts orders and COUNT(amount) counts known amounts, so an unknown amount makes them differ.",
+      "skill": "count-in-group",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "One pending order has no recorded amount."
+        },
+        {
+          "id": "b",
+          "label": "COUNT(*) skips pending rows."
+        },
+        {
+          "id": "c",
+          "label": "Pending orders are not counted at all."
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "COUNT(*) counts every row in the group, whatever its values."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Both pending orders are counted in the orders column."
+        }
+      ]
+    },
+    {
+      "id": "sql-group-and-filter-groups-10",
+      "conceptIds": [
+        "sql-group-and-filter-groups"
+      ],
+      "prompt": "The rows are tea (paid) 3, tea (pending) 5 and coffee (paid) 4. After WHERE status = 'paid' and GROUP BY item, what is tea's SUM?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Which rows does WHERE keep?",
+        "The pending row is dropped before grouping.",
+        "Tea has one paid row left."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 3,
+        "unit": "",
+        "absoluteTolerance": 1e-09,
+        "relativeTolerance": 0,
+        "workedAnswer": "WHERE removes the pending tea row first, so tea's group holds only the paid 3."
+      },
+      "sourceIds": [
+        "sqlite-select"
+      ],
+      "onCorrect": "3. WHERE drops rows before the groups are made, so the dropped row never reaches the total.",
+      "skill": "filter-rows-first",
+      "calculator": "off",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              8
+            ]
+          },
+          "feedback": "That includes the pending row. WHERE removes it before grouping."
+        }
+      ]
+    }
+  ],
+  "citations": [
+    {
+      "claim": "GROUP BY makes each result row stand for a group, and HAVING filters the groups.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.4: grouping, HAVING and result rows",
+      "targetKind": "step",
+      "targetId": "one-row-per-group"
+    },
+    {
+      "claim": "Several orders share an item. Group them, and the report's rows stand for something new.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.4: grouping, HAVING and result rows",
+      "targetKind": "step",
+      "targetId": "how-many-groups"
+    },
+    {
+      "claim": "Report each status with its orders, known amounts and total.",
+      "sourceId": "sqlite-aggregate",
+      "section": "Descriptions of avg(X), count(X), count(*), min(X), max(X) and sum(X)",
+      "targetKind": "step",
+      "targetId": "status-report"
+    },
+    {
+      "claim": "Inside a group, COUNT(amount) counts only that group's known amounts.",
+      "sourceId": "sqlite-aggregate",
+      "section": "Descriptions of avg(X), count(X), count(*), min(X), max(X) and sum(X)",
+      "targetKind": "step",
+      "targetId": "lamp-group"
+    },
+    {
+      "claim": "WHERE works on single rows, before any groups exist. A group's total exists only once the groups are made.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.4: grouping, HAVING and result rows",
+      "targetKind": "step",
+      "targetId": "filter-the-totals"
+    },
+    {
+      "claim": "Filter the rows first, then group what is left. Read the row filter and the group filter separately.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.4: grouping, HAVING and result rows",
+      "targetKind": "step",
+      "targetId": "paid-desks"
+    },
+    {
+      "claim": "There are three item groups: Book, Desk and Lamp.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.4: grouping, HAVING and result rows",
+      "targetKind": "question",
+      "targetId": "sql-group-and-filter-groups-1"
+    },
+    {
+      "claim": "Only order 104 has a known Lamp amount; order 106 is NULL.",
+      "sourceId": "sqlite-aggregate",
+      "section": "Descriptions of avg(X), count(X), count(*), min(X), max(X) and sum(X)",
+      "targetKind": "question",
+      "targetId": "sql-group-and-filter-groups-2"
+    },
+    {
+      "claim": "HAVING filters groups after aggregation, so it can test SUM(amount). WHERE filters the input rows before their group totals are computed.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.4: grouping, HAVING and result rows",
+      "targetKind": "question",
+      "targetId": "sql-group-and-filter-groups-3"
+    },
+    {
+      "claim": "Paid Desk orders 101 and 103 have amounts 80 and 80; their total is 160.",
+      "sourceId": "sqlite-aggregate",
+      "section": "Descriptions of avg(X), count(X), count(*), min(X), max(X) and sum(X)",
+      "targetKind": "question",
+      "targetId": "sql-group-and-filter-groups-4"
+    },
+    {
+      "claim": "Book is 40, Desk is 160 and Lamp is 40. All three meet the inclusive threshold.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.4: grouping, HAVING and result rows",
+      "targetKind": "question",
+      "targetId": "sql-group-and-filter-groups-5"
+    },
+    {
+      "claim": "WHERE retains only paid input rows before grouping. Group counts and totals are calculated from that filtered set.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.4: grouping, HAVING and result rows",
+      "targetKind": "question",
+      "targetId": "sql-group-and-filter-groups-6"
+    },
+    {
+      "claim": "The tea slips are £2, £4 and £1, which add up to £7.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.4: grouping, HAVING and result rows",
+      "targetKind": "question",
+      "targetId": "sql-group-and-filter-groups-7"
+    },
+    {
+      "claim": "GROUP BY gathers rows that share a value, and each gathered set becomes one result row.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.4: grouping, HAVING and result rows",
+      "targetKind": "question",
+      "targetId": "sql-group-and-filter-groups-8"
+    },
+    {
+      "claim": "COUNT(*) counts both pending orders. COUNT(amount) skips the one whose amount is unknown.",
+      "sourceId": "sqlite-aggregate",
+      "section": "Descriptions of avg(X), count(X), count(*), min(X), max(X) and sum(X)",
+      "targetKind": "question",
+      "targetId": "sql-group-and-filter-groups-9"
+    },
+    {
+      "claim": "WHERE removes the pending tea row first, so tea's group holds only the paid 3.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.4: grouping, HAVING and result rows",
+      "targetKind": "question",
+      "targetId": "sql-group-and-filter-groups-10"
+    },
+    {
+      "claim": "Group A contains 10 and 30, whose total is 40.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.4: grouping, HAVING and result rows",
+      "targetKind": "flashcard",
+      "targetId": "sql-group-and-filter-groups-card-1"
+    },
+    {
+      "claim": "HAVING applies to groups. WHERE applies to individual input rows.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.4: grouping, HAVING and result rows",
+      "targetKind": "flashcard",
+      "targetId": "sql-group-and-filter-groups-card-2"
+    }
+  ]
+}

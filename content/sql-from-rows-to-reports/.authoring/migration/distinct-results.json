@@ -1,0 +1,1394 @@
+{
+  "lessonId": "distinct-results",
+  "courseId": "sql-from-rows-to-reports",
+  "migrationNotes": [
+    "step 'predict': the old title \"Remove repeated result values\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
+    "step 'predict': kind hook → predict; check the order of teaching and asking still fits (style guide §2).",
+    "step 'predict': 1 block(s) moved to reveal because they state the answer; make the reveal refer to the learner's attempt.",
+    "step 'work': the old title \"The whole selected row matters\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
+    "step 'work': write workedSteps from the worked answer (one line per move, one self-explanation prompt), a headline naming the problem, and recompute every number.",
+    "step 'check': the old title \"One missing result value\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
+    "step 'check': kind check → try; check the order of teaching and asking still fits (style guide §2).",
+    "step 'transfer': the old title \"A combination can repeat\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
+    "intro: write the hook (a puzzle the learner can do from what they bring, never a definition), the promise (≤ 25 words, “By the end you'll …”) and the time.",
+    "recap: write the key idea (the promise, kept), the learner's own results, and the one-line bridge to the next lesson.",
+    "skill check: the lesson has 2 quiz item(s); it needs exactly 3, each on something this lesson taught.",
+    "questions: replace every TODO onCorrect (≤ 25 words, states the idea), tag each skill, add misconceptions for predictable wrong answers (the feedback must not state the key).",
+    "vocabulary: give each explain step introducesTerms; no prompt may use a term before the step that introduces it.",
+    "add an explain step before any question that needs a new word or symbol; add a transfer if the lesson has none.",
+    "citations: retarget the seeded citations to the new step and question ids, and give every step, question and flashcard at least one (same sourceIds; the claim is what that screen asserts)."
+  ],
+  "lesson": {
+    "id": "distinct-results",
+    "courseId": "sql-from-rows-to-reports",
+    "conceptIds": [
+      "sql-distinct-results"
+    ],
+    "title": "Count distinct things",
+    "steps": [
+      {
+        "id": "same-row-once",
+        "kind": "explain",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "A result can repeat itself. SELECT DISTINCT removes a row only when it matches another row in every selected column."
+          },
+          {
+            "kind": "callout",
+            "tone": "key",
+            "text": "DISTINCT changes the result. The stored table keeps every row."
+          }
+        ],
+        "reveal": [],
+        "visualStateId": "",
+        "checkQuestionId": "sql-distinct-results-8",
+        "activityId": "",
+        "headline": "DISTINCT keeps each different result row once.",
+        "introducesTerms": [
+          "DISTINCT"
+        ]
+      },
+      {
+        "id": "repeated-customers",
+        "kind": "predict",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Several orders point at the same customer. One query lists every reference, and the other removes repeats."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "Each customer id counted once, no matter how many orders repeat it. The table itself still holds every order."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "sql-distinct-results-1",
+        "activityId": "",
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "orders",
+              "columns": [
+                "id",
+                "customer_id",
+                "item",
+                "amount",
+                "status",
+                "day"
+              ],
+              "rows": [
+                {
+                  "id": "orders-0",
+                  "cells": [
+                    101,
+                    1,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-01"
+                  ]
+                },
+                {
+                  "id": "orders-1",
+                  "cells": [
+                    102,
+                    1,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-2",
+                  "cells": [
+                    103,
+                    2,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-3",
+                  "cells": [
+                    104,
+                    2,
+                    "Lamp",
+                    40,
+                    "pending",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-4",
+                  "cells": [
+                    105,
+                    3,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-5",
+                  "cells": [
+                    106,
+                    3,
+                    "Lamp",
+                    null,
+                    "pending",
+                    "2026-09-04"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Every reference",
+              "sql": "SELECT customer_id FROM orders ORDER BY customer_id, id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "customer_id"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      1
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      1
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      2
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      2
+                    ]
+                  },
+                  {
+                    "id": "result-4",
+                    "cells": [
+                      3
+                    ]
+                  },
+                  {
+                    "id": "result-5",
+                    "cells": [
+                      3
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "Distinct customers",
+              "sql": "SELECT DISTINCT customer_id FROM orders ORDER BY customer_id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "customer_id"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      1
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      2
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      3
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      },
+      {
+        "id": "item-and-id",
+        "kind": "worked_example",
+        "blocks": [],
+        "lead": [],
+        "reveal": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "headline": "Does DISTINCT item, id remove any rows?",
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "orders",
+              "columns": [
+                "id",
+                "customer_id",
+                "item",
+                "amount",
+                "status",
+                "day"
+              ],
+              "rows": [
+                {
+                  "id": "orders-0",
+                  "cells": [
+                    101,
+                    1,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-01"
+                  ]
+                },
+                {
+                  "id": "orders-1",
+                  "cells": [
+                    102,
+                    1,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-2",
+                  "cells": [
+                    103,
+                    2,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-3",
+                  "cells": [
+                    104,
+                    2,
+                    "Lamp",
+                    40,
+                    "pending",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-4",
+                  "cells": [
+                    105,
+                    3,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-5",
+                  "cells": [
+                    106,
+                    3,
+                    "Lamp",
+                    null,
+                    "pending",
+                    "2026-09-04"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Distinct items",
+              "sql": "SELECT DISTINCT item FROM orders ORDER BY item;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "item"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      "Book"
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      "Desk"
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      "Lamp"
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "Distinct item and id",
+              "sql": "SELECT DISTINCT item, id FROM orders ORDER BY id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "item",
+                  "id"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      "Desk",
+                      101
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      "Book",
+                      102
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      "Desk",
+                      103
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      "Lamp",
+                      104
+                    ]
+                  },
+                  {
+                    "id": "result-4",
+                    "cells": [
+                      "Book",
+                      105
+                    ]
+                  },
+                  {
+                    "id": "result-5",
+                    "cells": [
+                      "Lamp",
+                      106
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-1"
+        },
+        "answerVisibility": "hidden-until-response",
+        "workedSteps": [
+          {
+            "text": "Read the whole SELECT list as one row.",
+            "math": "(item, id)"
+          },
+          {
+            "text": "Compare pairs, not items alone.",
+            "math": "(Desk, 101) and (Desk, 103)",
+            "selfExplain": {
+              "questionId": "sql-distinct-results-2"
+            }
+          },
+          {
+            "text": "No two pairs match, so every row stays."
+          }
+        ]
+      },
+      {
+        "id": "distinct-amounts",
+        "kind": "try",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "The amount column holds 80, 20, 80, 40, 20 and NULL. COUNT(DISTINCT amount) counts the different known amounts. NULL is not a known amount."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "You counted values rather than orders and skipped the unknown one. Listing distinct values and counting them are different questions."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "sql-distinct-results-3",
+        "activityId": "",
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "orders",
+              "columns": [
+                "id",
+                "customer_id",
+                "item",
+                "amount",
+                "status",
+                "day"
+              ],
+              "rows": [
+                {
+                  "id": "orders-0",
+                  "cells": [
+                    101,
+                    1,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-01"
+                  ]
+                },
+                {
+                  "id": "orders-1",
+                  "cells": [
+                    102,
+                    1,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-2",
+                  "cells": [
+                    103,
+                    2,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-3",
+                  "cells": [
+                    104,
+                    2,
+                    "Lamp",
+                    40,
+                    "pending",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-4",
+                  "cells": [
+                    105,
+                    3,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-5",
+                  "cells": [
+                    106,
+                    3,
+                    "Lamp",
+                    null,
+                    "pending",
+                    "2026-09-04"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Distinct amounts",
+              "sql": "SELECT DISTINCT amount FROM orders ORDER BY amount;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "amount"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      null
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      20
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      40
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      80
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "Count known distinct amounts",
+              "sql": "SELECT COUNT(DISTINCT amount) AS known_amounts FROM orders;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "known_amounts"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      3
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      },
+      {
+        "id": "customer-and-status",
+        "kind": "transfer",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "DISTINCT works on the whole selected row. This time the row is a customer paired with a status."
+          }
+        ],
+        "reveal": [],
+        "visualStateId": "",
+        "checkQuestionId": "sql-distinct-results-4",
+        "activityId": "",
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "orders",
+              "columns": [
+                "id",
+                "customer_id",
+                "item",
+                "amount",
+                "status",
+                "day"
+              ],
+              "rows": [
+                {
+                  "id": "orders-0",
+                  "cells": [
+                    101,
+                    1,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-01"
+                  ]
+                },
+                {
+                  "id": "orders-1",
+                  "cells": [
+                    102,
+                    1,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-2",
+                  "cells": [
+                    103,
+                    2,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-3",
+                  "cells": [
+                    104,
+                    2,
+                    "Lamp",
+                    40,
+                    "pending",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-4",
+                  "cells": [
+                    105,
+                    3,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-5",
+                  "cells": [
+                    106,
+                    3,
+                    "Lamp",
+                    null,
+                    "pending",
+                    "2026-09-04"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Item and status",
+              "sql": "SELECT DISTINCT item, status FROM orders ORDER BY item, status;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "item",
+                  "status"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      "Book",
+                      "paid"
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      "Desk",
+                      "paid"
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      "Lamp",
+                      "pending"
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "Customer and status",
+              "sql": "SELECT DISTINCT customer_id, status FROM orders ORDER BY customer_id, status;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "customer_id",
+                  "status"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      1,
+                      "paid"
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      2,
+                      "paid"
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      2,
+                      "pending"
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      3,
+                      "paid"
+                    ]
+                  },
+                  {
+                    "id": "result-4",
+                    "cells": [
+                      3,
+                      "pending"
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      }
+    ],
+    "orientation": "Distinguish result rows, distinct values and distinct combinations of values.",
+    "visualStates": [],
+    "visualKind": "none",
+    "activityId": "",
+    "questionIds": [
+      "sql-distinct-results-5",
+      "sql-distinct-results-6",
+      "sql-distinct-results-9"
+    ],
+    "flashcardIds": [
+      "sql-distinct-results-card-1",
+      "sql-distinct-results-card-2"
+    ],
+    "reviewLabel": "Count distinct things",
+    "nextAction": "Apply the idea to the next query.",
+    "stageTitles": {
+      "quiz": "Skill check",
+      "review": "Recall it later",
+      "completion": "Ready for the next idea"
+    },
+    "sourceIds": [
+      "sqlite-select",
+      "sqlite-aggregate"
+    ],
+    "assuranceLevel": "source_backed",
+    "intro": {
+      "hook": {
+        "blocks": [
+          {
+            "kind": "paragraph",
+            "text": "A bakery's till log for the day reads: bun, loaf, bun, roll, bun, bagel, loaf."
+          }
+        ],
+        "questionId": "sql-distinct-results-7"
+      },
+      "promise": "By the end you'll count different values and different combinations, and know what DISTINCT leaves alone.",
+      "estimatedMinutes": 10
+    },
+    "recap": {
+      "keyIdea": "DISTINCT collapses result rows that match in every selected column. It changes the result only, so choose the columns you want to compare.",
+      "blocks": [
+        {
+          "kind": "paragraph",
+          "text": "You counted 4 kinds of bread, then 3 customer ids and 5 customer and status pairs. Adding a column made more rows count as different."
+        }
+      ],
+      "nextHook": "Next, boil many rows down to one summary number."
+    },
+    "calculator": "off",
+    "taughtSkills": [
+      "collapse-repeats",
+      "compare-whole-row",
+      "count-known-distinct"
+    ]
+  },
+  "questions": [
+    {
+      "id": "sql-distinct-results-1",
+      "conceptIds": [
+        "sql-distinct-results"
+      ],
+      "prompt": "How many rows does SELECT DISTINCT customer_id FROM orders return?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Collect the different customer ids.",
+        "Repeated references collapse into one result row.",
+        "Collect the set of customer ids before counting it: repeated references do not add new members."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 3,
+        "unit": "",
+        "absoluteTolerance": 1e-06,
+        "relativeTolerance": 0,
+        "workedAnswer": "The distinct ids are 1, 2 and 3."
+      },
+      "sourceIds": [
+        "sqlite-select"
+      ],
+      "onCorrect": "3. DISTINCT keeps each customer id once, so repeated references collapse into one row.",
+      "skill": "collapse-repeats",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              6
+            ]
+          },
+          "feedback": "That is every order. DISTINCT collapses repeated customer ids."
+        }
+      ]
+    },
+    {
+      "id": "sql-distinct-results-2",
+      "conceptIds": [
+        "sql-distinct-results"
+      ],
+      "prompt": "Why does DISTINCT item, id still return every row?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "DISTINCT compares the entire selected row."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Each item-and-id pair is different"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "DISTINCT compares the complete selected row. Even when item repeats, the unique id makes every item-and-id pair different."
+      },
+      "sourceIds": [
+        "sqlite-select"
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "DISTINCT is ignored for text"
+        },
+        {
+          "id": "b",
+          "label": "Each item-and-id pair is different"
+        },
+        {
+          "id": "c",
+          "label": "Every item is different"
+        }
+      ],
+      "onCorrect": "Each item and id pair is different. DISTINCT compares the whole row, and the ids differ.",
+      "skill": "compare-whole-row",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "DISTINCT works on text as on numbers. The columns you list decide the outcome."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Items repeat: Desk and Book appear more than once."
+        }
+      ]
+    },
+    {
+      "id": "sql-distinct-results-3",
+      "conceptIds": [
+        "sql-distinct-results"
+      ],
+      "prompt": "What does COUNT(DISTINCT amount) return for the original orders?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Ignore missing values for this count.",
+        "Count different known amounts, not orders.",
+        "The known amount set is 20, 40 and 80; count those distinct members."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 3,
+        "unit": "",
+        "absoluteTolerance": 1e-06,
+        "relativeTolerance": 0,
+        "workedAnswer": "The known distinct amounts are 20, 40 and 80. COUNT does not include NULL."
+      },
+      "sourceIds": [
+        "sqlite-aggregate"
+      ],
+      "onCorrect": "3. Only the known amounts 20, 40 and 80 count, each once.",
+      "skill": "count-known-distinct",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              4
+            ]
+          },
+          "feedback": "That counts the unknown amount as a value. COUNT(DISTINCT amount) skips it."
+        },
+        {
+          "match": {
+            "numeric": [
+              5
+            ]
+          },
+          "feedback": "That counts every known amount, repeats included."
+        }
+      ]
+    },
+    {
+      "id": "sql-distinct-results-4",
+      "conceptIds": [
+        "sql-distinct-results"
+      ],
+      "prompt": "How many rows does SELECT DISTINCT customer_id, status FROM orders return?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "List the statuses separately for each customer.",
+        "Compare the full two-column row.",
+        "List each customer's statuses separately, then count different full pairs."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 5,
+        "unit": "",
+        "absoluteTolerance": 1e-06,
+        "relativeTolerance": 0,
+        "workedAnswer": "Customer 1 has paid; customer 2 has paid and pending; customer 3 has paid and pending. That makes five pairs."
+      },
+      "sourceIds": [
+        "sqlite-select"
+      ],
+      "onCorrect": "5. DISTINCT compares the full customer and status pair, and customers 2 and 3 have both statuses.",
+      "skill": "compare-whole-row",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              3
+            ]
+          },
+          "feedback": "That counts customers only. Status is part of the row too."
+        },
+        {
+          "match": {
+            "numeric": [
+              6
+            ]
+          },
+          "feedback": "That counts every order. Some customer and status pairs repeat."
+        }
+      ]
+    },
+    {
+      "id": "sql-distinct-results-5",
+      "conceptIds": [
+        "sql-distinct-results"
+      ],
+      "prompt": "A result column contains North, South, North and NULL. How many rows remain after SELECT DISTINCT?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Remove repeated North only.",
+        "One NULL remains as a distinct result value.",
+        "The remaining values are North, South and NULL; count these result rows."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 3,
+        "unit": "",
+        "absoluteTolerance": 1e-06,
+        "relativeTolerance": 0,
+        "workedAnswer": "North, South and NULL form three distinct result rows."
+      },
+      "sourceIds": [
+        "sqlite-select"
+      ],
+      "onCorrect": "3. DISTINCT collapses the repeated North, and NULL stays as one result row.",
+      "skill": "collapse-repeats",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              2
+            ]
+          },
+          "feedback": "NULL is not removed by DISTINCT. It stays as a result row."
+        },
+        {
+          "match": {
+            "numeric": [
+              4
+            ]
+          },
+          "feedback": "North is repeated, so DISTINCT keeps it only once."
+        }
+      ]
+    },
+    {
+      "id": "sql-distinct-results-6",
+      "conceptIds": [
+        "sql-distinct-results"
+      ],
+      "prompt": "What does DISTINCT change?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "SELECT reads; DISTINCT shapes its returned rows."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Only the query result"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "DISTINCT removes duplicate selected rows from the query result. It does not delete rows from the stored table."
+      },
+      "sourceIds": [
+        "sqlite-select"
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "Only the query result"
+        },
+        {
+          "id": "b",
+          "label": "The stored source table"
+        },
+        {
+          "id": "c",
+          "label": "The primary key definition"
+        }
+      ],
+      "onCorrect": "Only the query result. DISTINCT shapes the rows returned and leaves the stored table alone.",
+      "skill": "collapse-repeats",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "DISTINCT reads the table and never alters it."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Keys belong to the table's definition. A query cannot change them."
+        }
+      ]
+    },
+    {
+      "id": "sql-distinct-results-7",
+      "conceptIds": [
+        "sql-distinct-results"
+      ],
+      "prompt": "How many different kinds of bread were sold?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "What counts as a repeat here?",
+        "Cross off a kind each time you meet it again.",
+        "List each kind once, then count that list."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 4,
+        "unit": "",
+        "absoluteTolerance": 1e-09,
+        "relativeTolerance": 0,
+        "workedAnswer": "The kinds are bun, loaf, roll and bagel, so there are four."
+      },
+      "sourceIds": [
+        "sqlite-select"
+      ],
+      "onCorrect": "4. Seven sales, but only four kinds. DISTINCT keeps each different value once.",
+      "skill": "collapse-repeats",
+      "calculator": "off",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              7
+            ]
+          },
+          "feedback": "That counts every sale. The question asks for the different kinds."
+        }
+      ]
+    },
+    {
+      "id": "sql-distinct-results-8",
+      "conceptIds": [
+        "sql-distinct-results"
+      ],
+      "prompt": "DISTINCT colour, size is applied to the rows (red, S), (red, M) and (red, S). Which rows come back?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Which rows are exactly the same in both columns?"
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "(red, S) and (red, M)"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "The two (red, S) rows match completely and collapse into one. (red, M) differs in size and stays."
+      },
+      "sourceIds": [
+        "sqlite-select"
+      ],
+      "onCorrect": "DISTINCT compares the whole selected row, so only rows that match in every column collapse.",
+      "skill": "compare-whole-row",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "(red, S) and (red, M)"
+        },
+        {
+          "id": "b",
+          "label": "(red, S) only"
+        },
+        {
+          "id": "c",
+          "label": "All three rows"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "All three rows share the colour, but DISTINCT compares size as well."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Two rows match in both columns, and DISTINCT collapses exact repeats."
+        }
+      ]
+    },
+    {
+      "id": "sql-distinct-results-9",
+      "conceptIds": [
+        "sql-distinct-results"
+      ],
+      "prompt": "The rows (A, x), (A, y), (B, x), (B, y) and (A, x) are selected. How many rows does SELECT DISTINCT return?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Compare both columns together.",
+        "Which row appears more than once?",
+        "Remove the repeated row and count what is left."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 4,
+        "unit": "",
+        "absoluteTolerance": 1e-09,
+        "relativeTolerance": 0,
+        "workedAnswer": "Only (A, x) repeats. Removing the duplicate leaves four rows."
+      },
+      "sourceIds": [
+        "sqlite-select"
+      ],
+      "onCorrect": "4. DISTINCT drops a row only when every column matches another row.",
+      "skill": "compare-whole-row",
+      "calculator": "off",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              5
+            ]
+          },
+          "feedback": "That keeps every row. One of them is an exact repeat."
+        },
+        {
+          "match": {
+            "numeric": [
+              2
+            ]
+          },
+          "feedback": "That counts the first column only. DISTINCT compares the whole row."
+        }
+      ]
+    }
+  ],
+  "citations": [
+    {
+      "claim": "DISTINCT keeps each different result row once.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.6: duplicate rows and NULL; Aggregate Functions: count(X), count(*) and DISTINCT",
+      "targetKind": "step",
+      "targetId": "same-row-once"
+    },
+    {
+      "claim": "Several orders point at the same customer. One query lists every reference, and the other removes repeats.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.6: duplicate rows and NULL; Aggregate Functions: count(X), count(*) and DISTINCT",
+      "targetKind": "step",
+      "targetId": "repeated-customers"
+    },
+    {
+      "claim": "Does DISTINCT item, id remove any rows?",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.6: duplicate rows and NULL; Aggregate Functions: count(X), count(*) and DISTINCT",
+      "targetKind": "step",
+      "targetId": "item-and-id"
+    },
+    {
+      "claim": "The amount column holds 80, 20, 80, 40, 20 and NULL. COUNT(DISTINCT amount) counts the different known amounts. NULL is not a known amount.",
+      "sourceId": "sqlite-aggregate",
+      "section": "Descriptions of avg(X), count(X), count(*), min(X), max(X) and sum(X)",
+      "targetKind": "step",
+      "targetId": "distinct-amounts"
+    },
+    {
+      "claim": "DISTINCT works on the whole selected row. This time the row is a customer paired with a status.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.6: duplicate rows and NULL; Aggregate Functions: count(X), count(*) and DISTINCT",
+      "targetKind": "step",
+      "targetId": "customer-and-status"
+    },
+    {
+      "claim": "The distinct ids are 1, 2 and 3.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.6: duplicate rows and NULL; Aggregate Functions: count(X), count(*) and DISTINCT",
+      "targetKind": "question",
+      "targetId": "sql-distinct-results-1"
+    },
+    {
+      "claim": "DISTINCT compares the complete selected row. Even when item repeats, the unique id makes every item-and-id pair different.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.6: duplicate rows and NULL; Aggregate Functions: count(X), count(*) and DISTINCT",
+      "targetKind": "question",
+      "targetId": "sql-distinct-results-2"
+    },
+    {
+      "claim": "The known distinct amounts are 20, 40 and 80. COUNT does not include NULL.",
+      "sourceId": "sqlite-aggregate",
+      "section": "Descriptions of avg(X), count(X), count(*), min(X), max(X) and sum(X)",
+      "targetKind": "question",
+      "targetId": "sql-distinct-results-3"
+    },
+    {
+      "claim": "Customer 1 has paid; customer 2 has paid and pending; customer 3 has paid and pending. That makes five pairs.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.6: duplicate rows and NULL; Aggregate Functions: count(X), count(*) and DISTINCT",
+      "targetKind": "question",
+      "targetId": "sql-distinct-results-4"
+    },
+    {
+      "claim": "North, South and NULL form three distinct result rows.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.6: duplicate rows and NULL; Aggregate Functions: count(X), count(*) and DISTINCT",
+      "targetKind": "question",
+      "targetId": "sql-distinct-results-5"
+    },
+    {
+      "claim": "DISTINCT removes duplicate selected rows from the query result. It does not delete rows from the stored table.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.6: duplicate rows and NULL; Aggregate Functions: count(X), count(*) and DISTINCT",
+      "targetKind": "question",
+      "targetId": "sql-distinct-results-6"
+    },
+    {
+      "claim": "The kinds are bun, loaf, roll and bagel, so there are four.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.6: duplicate rows and NULL; Aggregate Functions: count(X), count(*) and DISTINCT",
+      "targetKind": "question",
+      "targetId": "sql-distinct-results-7"
+    },
+    {
+      "claim": "The two (red, S) rows match completely and collapse into one. (red, M) differs in size and stays.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.6: duplicate rows and NULL; Aggregate Functions: count(X), count(*) and DISTINCT",
+      "targetKind": "question",
+      "targetId": "sql-distinct-results-8"
+    },
+    {
+      "claim": "Only (A, x) repeats. Removing the duplicate leaves four rows.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.6: duplicate rows and NULL; Aggregate Functions: count(X), count(*) and DISTINCT",
+      "targetKind": "question",
+      "targetId": "sql-distinct-results-9"
+    },
+    {
+      "claim": "The distinct result values are 7, 9 and NULL: three rows.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.6: duplicate rows and NULL; Aggregate Functions: count(X), count(*) and DISTINCT",
+      "targetKind": "flashcard",
+      "targetId": "sql-distinct-results-card-1"
+    },
+    {
+      "claim": "DISTINCT compares the entire selected row and removes repeated result rows.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.6: duplicate rows and NULL; Aggregate Functions: count(X), count(*) and DISTINCT",
+      "targetKind": "flashcard",
+      "targetId": "sql-distinct-results-card-2"
+    }
+  ]
+}

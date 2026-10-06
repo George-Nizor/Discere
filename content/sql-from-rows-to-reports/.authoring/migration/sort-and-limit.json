@@ -1,0 +1,1704 @@
+{
+  "lessonId": "sort-and-limit",
+  "courseId": "sql-from-rows-to-reports",
+  "migrationNotes": [
+    "step 'predict': the old title \"Order is an instruction\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
+    "step 'predict': kind hook → predict; check the order of teaching and asking still fits (style guide §2).",
+    "step 'predict': 1 block(s) moved to reveal because they state the answer; make the reveal refer to the learner's attempt.",
+    "step 'work': the old title \"Break a tie\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
+    "step 'work': 1 block(s) moved to reveal because they state the answer; make the reveal refer to the learner's attempt.",
+    "step 'work': write workedSteps from the worked answer (one line per move, one self-explanation prompt), a headline naming the problem, and recompute every number.",
+    "step 'check': the old title \"Take the top rows\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
+    "step 'check': kind check → try; check the order of teaching and asking still fits (style guide §2).",
+    "step 'transfer': the old title \"Filter before selecting the top\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
+    "step 'transfer': 1 block(s) moved to reveal because they state the answer; make the reveal refer to the learner's attempt.",
+    "intro: write the hook (a puzzle the learner can do from what they bring, never a definition), the promise (≤ 25 words, “By the end you'll …”) and the time.",
+    "recap: write the key idea (the promise, kept), the learner's own results, and the one-line bridge to the next lesson.",
+    "skill check: the lesson has 2 quiz item(s); it needs exactly 3, each on something this lesson taught.",
+    "questions: replace every TODO onCorrect (≤ 25 words, states the idea), tag each skill, add misconceptions for predictable wrong answers (the feedback must not state the key).",
+    "vocabulary: give each explain step introducesTerms; no prompt may use a term before the step that introduces it.",
+    "add an explain step before any question that needs a new word or symbol; add a transfer if the lesson has none.",
+    "citations: retarget the seeded citations to the new step and question ids, and give every step, question and flashcard at least one (same sourceIds; the claim is what that screen asserts)."
+  ],
+  "lesson": {
+    "id": "sort-and-limit",
+    "courseId": "sql-from-rows-to-reports",
+    "conceptIds": [
+      "sql-sort-and-limit"
+    ],
+    "title": "Make the first row meaningful",
+    "steps": [
+      {
+        "id": "order-then-keep",
+        "kind": "explain",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Rows have no promised order until you ask. ORDER BY amount DESC puts the largest first, and ASC puts the smallest first. LIMIT 3 then keeps the first three rows of that order."
+          },
+          {
+            "kind": "callout",
+            "tone": "key",
+            "text": "Without ORDER BY, 'first' means nothing."
+          }
+        ],
+        "reveal": [],
+        "visualStateId": "",
+        "checkQuestionId": "sql-sort-and-limit-8",
+        "activityId": "",
+        "headline": "ORDER BY puts rows in a stated order, and LIMIT keeps the first few.",
+        "introducesTerms": [
+          "ORDER BY",
+          "LIMIT",
+          "ASC",
+          "DESC"
+        ]
+      },
+      {
+        "id": "what-promises-order",
+        "kind": "predict",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "The same six orders come back in two different orders. Only one part of a query can promise which order you get."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "You picked the part that states an order. Layout and SELECT alone promise nothing, so ask for the order whenever first or last matters."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "sql-sort-and-limit-1",
+        "activityId": "",
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "orders",
+              "columns": [
+                "id",
+                "customer_id",
+                "item",
+                "amount",
+                "status",
+                "day"
+              ],
+              "rows": [
+                {
+                  "id": "orders-0",
+                  "cells": [
+                    101,
+                    1,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-01"
+                  ]
+                },
+                {
+                  "id": "orders-1",
+                  "cells": [
+                    102,
+                    1,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-2",
+                  "cells": [
+                    103,
+                    2,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-3",
+                  "cells": [
+                    104,
+                    2,
+                    "Lamp",
+                    40,
+                    "pending",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-4",
+                  "cells": [
+                    105,
+                    3,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-5",
+                  "cells": [
+                    106,
+                    3,
+                    "Lamp",
+                    null,
+                    "pending",
+                    "2026-09-04"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Order A",
+              "sql": "SELECT id, amount FROM orders ORDER BY id ASC;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "amount"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      101,
+                      80
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      102,
+                      20
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      103,
+                      80
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      104,
+                      40
+                    ]
+                  },
+                  {
+                    "id": "result-4",
+                    "cells": [
+                      105,
+                      20
+                    ]
+                  },
+                  {
+                    "id": "result-5",
+                    "cells": [
+                      106,
+                      null
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "Order B",
+              "sql": "SELECT id, amount FROM orders ORDER BY id DESC;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "amount"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      106,
+                      null
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      105,
+                      20
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      104,
+                      40
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      103,
+                      80
+                    ]
+                  },
+                  {
+                    "id": "result-4",
+                    "cells": [
+                      102,
+                      20
+                    ]
+                  },
+                  {
+                    "id": "result-5",
+                    "cells": [
+                      101,
+                      80
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      },
+      {
+        "id": "ties-go-by-id",
+        "kind": "worked_example",
+        "blocks": [],
+        "lead": [],
+        "reveal": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "headline": "Put the largest known amount first, with higher ids winning ties.",
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "orders",
+              "columns": [
+                "id",
+                "customer_id",
+                "item",
+                "amount",
+                "status",
+                "day"
+              ],
+              "rows": [
+                {
+                  "id": "orders-0",
+                  "cells": [
+                    101,
+                    1,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-01"
+                  ]
+                },
+                {
+                  "id": "orders-1",
+                  "cells": [
+                    102,
+                    1,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-2",
+                  "cells": [
+                    103,
+                    2,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-3",
+                  "cells": [
+                    104,
+                    2,
+                    "Lamp",
+                    40,
+                    "pending",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-4",
+                  "cells": [
+                    105,
+                    3,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-5",
+                  "cells": [
+                    106,
+                    3,
+                    "Lamp",
+                    null,
+                    "pending",
+                    "2026-09-04"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Lower id wins ties",
+              "sql": "SELECT id, amount FROM orders WHERE amount IS NOT NULL ORDER BY amount DESC, id ASC;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "amount"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      101,
+                      80
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      103,
+                      80
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      104,
+                      40
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      102,
+                      20
+                    ]
+                  },
+                  {
+                    "id": "result-4",
+                    "cells": [
+                      105,
+                      20
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "Higher id wins ties",
+              "sql": "SELECT id, amount FROM orders WHERE amount IS NOT NULL ORDER BY amount DESC, id DESC;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "amount"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      103,
+                      80
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      101,
+                      80
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      104,
+                      40
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      105,
+                      20
+                    ]
+                  },
+                  {
+                    "id": "result-4",
+                    "cells": [
+                      102,
+                      20
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-1"
+        },
+        "answerVisibility": "hidden-until-response",
+        "workedSteps": [
+          {
+            "text": "Leave out the unknown amount with WHERE amount IS NOT NULL.",
+            "math": "101, 102, 103, 104, 105"
+          },
+          {
+            "text": "Sort by amount, largest first. The two 80s tie.",
+            "math": "80, 80, 40, 20, 20",
+            "selfExplain": {
+              "questionId": "sql-sort-and-limit-9"
+            }
+          },
+          {
+            "text": "Add id DESC to settle each tie.",
+            "math": "103, 101, 104, 105, 102"
+          }
+        ]
+      },
+      {
+        "id": "first-id",
+        "kind": "try",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Compare amounts first. When two rows tie, the next sort column decides."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "You settled a tie with the second sort column. That is what makes the first row meaningful."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "sql-sort-and-limit-2",
+        "activityId": "",
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "orders",
+              "columns": [
+                "id",
+                "customer_id",
+                "item",
+                "amount",
+                "status",
+                "day"
+              ],
+              "rows": [
+                {
+                  "id": "orders-0",
+                  "cells": [
+                    101,
+                    1,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-01"
+                  ]
+                },
+                {
+                  "id": "orders-1",
+                  "cells": [
+                    102,
+                    1,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-2",
+                  "cells": [
+                    103,
+                    2,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-3",
+                  "cells": [
+                    104,
+                    2,
+                    "Lamp",
+                    40,
+                    "pending",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-4",
+                  "cells": [
+                    105,
+                    3,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-5",
+                  "cells": [
+                    106,
+                    3,
+                    "Lamp",
+                    null,
+                    "pending",
+                    "2026-09-04"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Lower id wins ties",
+              "sql": "SELECT id, amount FROM orders WHERE amount IS NOT NULL ORDER BY amount DESC, id ASC;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "amount"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      101,
+                      80
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      103,
+                      80
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      104,
+                      40
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      102,
+                      20
+                    ]
+                  },
+                  {
+                    "id": "result-4",
+                    "cells": [
+                      105,
+                      20
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "Higher id wins ties",
+              "sql": "SELECT id, amount FROM orders WHERE amount IS NOT NULL ORDER BY amount DESC, id DESC;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "amount"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      103,
+                      80
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      101,
+                      80
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      104,
+                      40
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      105,
+                      20
+                    ]
+                  },
+                  {
+                    "id": "result-4",
+                    "cells": [
+                      102,
+                      20
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      },
+      {
+        "id": "top-three",
+        "kind": "try",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "LIMIT keeps the first rows of the ordered result. It finds the largest only because the order puts them first."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "You ordered first and kept the first rows. A limit with no meaningful order would not find the largest."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "sql-sort-and-limit-3",
+        "activityId": "",
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "orders",
+              "columns": [
+                "id",
+                "customer_id",
+                "item",
+                "amount",
+                "status",
+                "day"
+              ],
+              "rows": [
+                {
+                  "id": "orders-0",
+                  "cells": [
+                    101,
+                    1,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-01"
+                  ]
+                },
+                {
+                  "id": "orders-1",
+                  "cells": [
+                    102,
+                    1,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-2",
+                  "cells": [
+                    103,
+                    2,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-3",
+                  "cells": [
+                    104,
+                    2,
+                    "Lamp",
+                    40,
+                    "pending",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-4",
+                  "cells": [
+                    105,
+                    3,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-5",
+                  "cells": [
+                    106,
+                    3,
+                    "Lamp",
+                    null,
+                    "pending",
+                    "2026-09-04"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Top two",
+              "sql": "SELECT id, amount FROM orders WHERE amount IS NOT NULL ORDER BY amount DESC, id ASC LIMIT 2;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "amount"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      101,
+                      80
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      103,
+                      80
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "Top three",
+              "sql": "SELECT id, amount FROM orders WHERE amount IS NOT NULL ORDER BY amount DESC, id ASC LIMIT 3;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "amount"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      101,
+                      80
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      103,
+                      80
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      104,
+                      40
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      },
+      {
+        "id": "smallest-paid",
+        "kind": "transfer",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "WHERE chooses the eligible rows first. Then the order and the limit pick from them."
+          }
+        ],
+        "reveal": [],
+        "visualStateId": "",
+        "checkQuestionId": "sql-sort-and-limit-4",
+        "activityId": "",
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "orders",
+              "columns": [
+                "id",
+                "customer_id",
+                "item",
+                "amount",
+                "status",
+                "day"
+              ],
+              "rows": [
+                {
+                  "id": "orders-0",
+                  "cells": [
+                    101,
+                    1,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-01"
+                  ]
+                },
+                {
+                  "id": "orders-1",
+                  "cells": [
+                    102,
+                    1,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-2",
+                  "cells": [
+                    103,
+                    2,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-3",
+                  "cells": [
+                    104,
+                    2,
+                    "Lamp",
+                    40,
+                    "pending",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-4",
+                  "cells": [
+                    105,
+                    3,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-5",
+                  "cells": [
+                    106,
+                    3,
+                    "Lamp",
+                    null,
+                    "pending",
+                    "2026-09-04"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Smallest paid",
+              "sql": "SELECT id, amount FROM orders WHERE status = 'paid' ORDER BY amount ASC, id ASC LIMIT 2;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "amount"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      102,
+                      20
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      105,
+                      20
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "Largest paid",
+              "sql": "SELECT id, amount FROM orders WHERE status = 'paid' ORDER BY amount DESC, id ASC LIMIT 2;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "amount"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      101,
+                      80
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      103,
+                      80
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      }
+    ],
+    "orientation": "Use a deterministic order to decide which rows a limited result retains.",
+    "visualStates": [],
+    "visualKind": "none",
+    "activityId": "",
+    "questionIds": [
+      "sql-sort-and-limit-5",
+      "sql-sort-and-limit-6",
+      "sql-sort-and-limit-10"
+    ],
+    "flashcardIds": [
+      "sql-sort-and-limit-card-1",
+      "sql-sort-and-limit-card-2"
+    ],
+    "reviewLabel": "Make the first row meaningful",
+    "nextAction": "Apply the idea to the next query.",
+    "stageTitles": {
+      "quiz": "Skill check",
+      "review": "Recall it later",
+      "completion": "Ready for the next idea"
+    },
+    "sourceIds": [
+      "sqlite-select"
+    ],
+    "assuranceLevel": "source_backed",
+    "intro": {
+      "hook": {
+        "blocks": [
+          {
+            "kind": "paragraph",
+            "text": "Five runners finish a race in 31, 28, 35, 30 and 29 seconds. Medals go to the three fastest."
+          }
+        ],
+        "questionId": "sql-sort-and-limit-7"
+      },
+      "promise": "By the end you'll order rows so the first one means something, and keep just the top few.",
+      "estimatedMinutes": 10
+    },
+    "recap": {
+      "keyIdea": "Only ORDER BY promises an order. Add a unique tie-breaker, and LIMIT keeps the first rows of that order.",
+      "blocks": [
+        {
+          "kind": "paragraph",
+          "text": "You kept the first three of the ordered times and settled a tie between two 80s by id. The top three known amounts added up to 200."
+        }
+      ],
+      "nextHook": "Next, remove repeats so each answer appears once."
+    },
+    "calculator": "off",
+    "taughtSkills": [
+      "order-rows",
+      "break-ties",
+      "limit-after-order",
+      "filter-then-sort"
+    ]
+  },
+  "questions": [
+    {
+      "id": "sql-sort-and-limit-1",
+      "conceptIds": [
+        "sql-sort-and-limit"
+      ],
+      "prompt": "What promises that the result uses increasing order ids?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Ordering must be part of the query."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "ORDER BY id ASC"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "ORDER BY id ASC explicitly requests increasing ids. Without ORDER BY, the query makes no promise about the order of its result rows."
+      },
+      "sourceIds": [
+        "sqlite-select"
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "The physical table layout"
+        },
+        {
+          "id": "b",
+          "label": "ORDER BY id ASC"
+        },
+        {
+          "id": "c",
+          "label": "SELECT * by itself"
+        }
+      ],
+      "onCorrect": "ORDER BY id ASC. A query promises an order only when it asks for one.",
+      "skill": "order-rows",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "How rows are stored is not part of what a query promises."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "SELECT chooses columns. It does not choose a row order."
+        }
+      ]
+    },
+    {
+      "id": "sql-sort-and-limit-2",
+      "conceptIds": [
+        "sql-sort-and-limit"
+      ],
+      "prompt": "With ORDER BY amount DESC, id ASC over known amounts, which id appears first?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Compare amounts before ids.",
+        "Use increasing id to break the 80 tie.",
+        "Among the tied maximum amounts, choose the smaller order id."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 101,
+        "unit": "",
+        "absoluteTolerance": 1e-06,
+        "relativeTolerance": 0,
+        "workedAnswer": "The maximum amount is 80; the lower of its two order ids is 101."
+      },
+      "sourceIds": [
+        "sqlite-select"
+      ],
+      "onCorrect": "101. Amounts compare first. The tie between two 80s goes to the lower id.",
+      "skill": "break-ties",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              103
+            ]
+          },
+          "feedback": "That is the winner when the higher id goes first. Check whether id is ASC or DESC."
+        },
+        {
+          "match": {
+            "numeric": [
+              104
+            ]
+          },
+          "feedback": "That amount is not the largest. Compare amounts before ids."
+        }
+      ]
+    },
+    {
+      "id": "sql-sort-and-limit-3",
+      "conceptIds": [
+        "sql-sort-and-limit"
+      ],
+      "prompt": "What do the first three rows of the descending known amounts add up to?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Take the three largest known amounts.",
+        "Add both 80 amounts and the 40 amount.",
+        "Evaluate 80 + 80 + 40 after selecting the three largest known amounts."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 200,
+        "unit": "",
+        "absoluteTolerance": 1e-06,
+        "relativeTolerance": 0,
+        "workedAnswer": "80 + 80 + 40 = 200."
+      },
+      "sourceIds": [
+        "sqlite-select"
+      ],
+      "onCorrect": "200. LIMIT 3 keeps the first three rows of the order: 80, 80 and 40.",
+      "skill": "limit-after-order",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              160
+            ]
+          },
+          "feedback": "That is the two largest amounts only. The limit keeps one more row."
+        },
+        {
+          "match": {
+            "numeric": [
+              220
+            ]
+          },
+          "feedback": "That takes four rows. The limit stops after the third."
+        }
+      ]
+    },
+    {
+      "id": "sql-sort-and-limit-4",
+      "conceptIds": [
+        "sql-sort-and-limit"
+      ],
+      "prompt": "WHERE status = 'paid' ORDER BY amount ASC, id ASC LIMIT 2 selects which set?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Read the filter, direction and limit together."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "The two smallest paid orders"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "WHERE first keeps paid rows, ORDER BY amount ASC puts the smallest amounts first, and LIMIT 2 keeps the first two. id provides a stable order for ties."
+      },
+      "sourceIds": [
+        "sqlite-select"
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "The two smallest paid orders"
+        },
+        {
+          "id": "b",
+          "label": "The two largest paid orders"
+        },
+        {
+          "id": "c",
+          "label": "The first two rows stored on disk"
+        }
+      ],
+      "onCorrect": "The two smallest paid orders. WHERE chooses the rows, then ASC and LIMIT 2 pick from them.",
+      "skill": "filter-then-sort",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "ASC runs from the smallest upwards, so this takes the other end."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "WHERE and ORDER BY decide the rows, not how they are stored."
+        }
+      ]
+    },
+    {
+      "id": "sql-sort-and-limit-5",
+      "conceptIds": [
+        "sql-sort-and-limit"
+      ],
+      "prompt": "How many rows can LIMIT 10 return when only four rows satisfy WHERE?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "LIMIT is an upper bound.",
+        "There are only four eligible rows.",
+        "Use the smaller of the eligible-row count and the limit; LIMIT adds no rows."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 4,
+        "unit": "",
+        "absoluteTolerance": 1e-06,
+        "relativeTolerance": 0,
+        "workedAnswer": "A limit does not create records; the result contains the four eligible rows."
+      },
+      "sourceIds": [
+        "sqlite-select"
+      ],
+      "onCorrect": "4. LIMIT is a ceiling. It never adds rows that are not there.",
+      "skill": "limit-after-order",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              10
+            ]
+          },
+          "feedback": "LIMIT sets a ceiling, not a target. It cannot invent rows."
+        }
+      ]
+    },
+    {
+      "id": "sql-sort-and-limit-6",
+      "conceptIds": [
+        "sql-sort-and-limit"
+      ],
+      "prompt": "Two rows tie on amount. How do you make their order deterministic?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "A unique secondary sort key separates the tied rows."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Add a unique id as a tie-breaker"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Add a unique id after amount in ORDER BY. It settles ties on amount so the same rows have a defined order."
+      },
+      "sourceIds": [
+        "sqlite-select"
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "Add a unique id as a tie-breaker"
+        },
+        {
+          "id": "b",
+          "label": "Remove ORDER BY"
+        },
+        {
+          "id": "c",
+          "label": "Use LIMIT 1 without sorting"
+        }
+      ],
+      "onCorrect": "Add a unique id as a tie-breaker. A second sort column makes the order fully decided.",
+      "skill": "break-ties",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Without ORDER BY nothing about the order is promised."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "LIMIT cuts a result. It does not sort one."
+        }
+      ]
+    },
+    {
+      "id": "sql-sort-and-limit-7",
+      "conceptIds": [
+        "sql-sort-and-limit"
+      ],
+      "prompt": "What is the slowest time that still wins a medal?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Which order puts the medal winners first?",
+        "Medals go to the first three in that order.",
+        "Find the third time when they are listed fastest first."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 30,
+        "unit": "",
+        "absoluteTolerance": 1e-09,
+        "relativeTolerance": 0,
+        "workedAnswer": "In order the times are 28, 29, 30, 31 and 35. The first three win, and the third is 30."
+      },
+      "sourceIds": [
+        "sqlite-select"
+      ],
+      "onCorrect": "30. You put the times in order first and then kept the first three. ORDER BY and LIMIT do exactly that.",
+      "skill": "limit-after-order",
+      "calculator": "off",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              35
+            ]
+          },
+          "feedback": "That is the slowest runner overall. Medals go to the fastest three."
+        }
+      ]
+    },
+    {
+      "id": "sql-sort-and-limit-8",
+      "conceptIds": [
+        "sql-sort-and-limit"
+      ],
+      "prompt": "Which query returns the three highest amounts?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Which direction puts the highest amount first?"
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "ORDER BY amount DESC LIMIT 3"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "DESC puts the highest amounts first, and LIMIT 3 keeps the first three of them."
+      },
+      "sourceIds": [
+        "sqlite-select"
+      ],
+      "onCorrect": "Order the rows so the highest come first, then LIMIT keeps the first rows of that order.",
+      "skill": "order-rows",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "ORDER BY amount DESC LIMIT 3"
+        },
+        {
+          "id": "b",
+          "label": "ORDER BY amount ASC LIMIT 3"
+        },
+        {
+          "id": "c",
+          "label": "LIMIT 3 without ORDER BY"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "ASC starts at the smallest amount, so this keeps the lowest rows."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "With no ORDER BY the rows have no promised order, so the first rows could be any."
+        }
+      ]
+    },
+    {
+      "id": "sql-sort-and-limit-9",
+      "conceptIds": [
+        "sql-sort-and-limit"
+      ],
+      "prompt": "Why add id to the sort?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "What decides the order of two rows with the same amount?"
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Without it, the order of tied rows is not promised."
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Rows that tie on amount need a second sort column, or their order is left open."
+      },
+      "sourceIds": [
+        "sqlite-select"
+      ],
+      "onCorrect": "A second sort column settles ties. Without it the order of tied rows is not promised.",
+      "skill": "break-ties",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Without it, the order of tied rows is not promised."
+        },
+        {
+          "id": "b",
+          "label": "Because id makes the amounts larger."
+        },
+        {
+          "id": "c",
+          "label": "Because LIMIT needs a second column."
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "The id never changes an amount. It only separates rows that tie."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "LIMIT works with any ordering. The extra column is about ties."
+        }
+      ]
+    },
+    {
+      "id": "sql-sort-and-limit-10",
+      "conceptIds": [
+        "sql-sort-and-limit"
+      ],
+      "prompt": "Four orders have amounts 50, 70, 70 and 90. What is the sum of the amounts returned by ORDER BY amount ASC LIMIT 2?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Which direction does ASC use?",
+        "List the amounts from smallest upward.",
+        "Add the first two in that list."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 120,
+        "unit": "",
+        "absoluteTolerance": 1e-09,
+        "relativeTolerance": 0,
+        "workedAnswer": "Ascending gives 50, 70, 70, 90. The first two are 50 and 70, and they add up to 120."
+      },
+      "sourceIds": [
+        "sqlite-select"
+      ],
+      "onCorrect": "120. ASC puts the smallest first, and LIMIT 2 keeps the first two.",
+      "skill": "order-rows",
+      "calculator": "off",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              160
+            ]
+          },
+          "feedback": "That adds the two largest. ASC starts at the smallest amount."
+        }
+      ]
+    }
+  ],
+  "citations": [
+    {
+      "claim": "ORDER BY puts rows in a stated order, and LIMIT keeps the first few.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 4: ORDER BY and ties; 5: LIMIT",
+      "targetKind": "step",
+      "targetId": "order-then-keep"
+    },
+    {
+      "claim": "The same six orders come back in two different orders. Only one part of a query can promise which order you get.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 4: ORDER BY and ties; 5: LIMIT",
+      "targetKind": "step",
+      "targetId": "what-promises-order"
+    },
+    {
+      "claim": "Put the largest known amount first, with higher ids winning ties.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 4: ORDER BY and ties; 5: LIMIT",
+      "targetKind": "step",
+      "targetId": "ties-go-by-id"
+    },
+    {
+      "claim": "Compare amounts first. When two rows tie, the next sort column decides.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 4: ORDER BY and ties; 5: LIMIT",
+      "targetKind": "step",
+      "targetId": "first-id"
+    },
+    {
+      "claim": "LIMIT keeps the first rows of the ordered result. It finds the largest only because the order puts them first.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 4: ORDER BY and ties; 5: LIMIT",
+      "targetKind": "step",
+      "targetId": "top-three"
+    },
+    {
+      "claim": "WHERE chooses the eligible rows first. Then the order and the limit pick from them.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 4: ORDER BY and ties; 5: LIMIT",
+      "targetKind": "step",
+      "targetId": "smallest-paid"
+    },
+    {
+      "claim": "ORDER BY id ASC explicitly requests increasing ids. Without ORDER BY, the query makes no promise about the order of its result rows.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 4: ORDER BY and ties; 5: LIMIT",
+      "targetKind": "question",
+      "targetId": "sql-sort-and-limit-1"
+    },
+    {
+      "claim": "The maximum amount is 80; the lower of its two order ids is 101.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 4: ORDER BY and ties; 5: LIMIT",
+      "targetKind": "question",
+      "targetId": "sql-sort-and-limit-2"
+    },
+    {
+      "claim": "80 + 80 + 40 = 200.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 4: ORDER BY and ties; 5: LIMIT",
+      "targetKind": "question",
+      "targetId": "sql-sort-and-limit-3"
+    },
+    {
+      "claim": "WHERE first keeps paid rows, ORDER BY amount ASC puts the smallest amounts first, and LIMIT 2 keeps the first two. id provides a stable order for ties.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 4: ORDER BY and ties; 5: LIMIT",
+      "targetKind": "question",
+      "targetId": "sql-sort-and-limit-4"
+    },
+    {
+      "claim": "A limit does not create records; the result contains the four eligible rows.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 4: ORDER BY and ties; 5: LIMIT",
+      "targetKind": "question",
+      "targetId": "sql-sort-and-limit-5"
+    },
+    {
+      "claim": "Add a unique id after amount in ORDER BY. It settles ties on amount so the same rows have a defined order.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 4: ORDER BY and ties; 5: LIMIT",
+      "targetKind": "question",
+      "targetId": "sql-sort-and-limit-6"
+    },
+    {
+      "claim": "In order the times are 28, 29, 30, 31 and 35. The first three win, and the third is 30.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 4: ORDER BY and ties; 5: LIMIT",
+      "targetKind": "question",
+      "targetId": "sql-sort-and-limit-7"
+    },
+    {
+      "claim": "DESC puts the highest amounts first, and LIMIT 3 keeps the first three of them.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 4: ORDER BY and ties; 5: LIMIT",
+      "targetKind": "question",
+      "targetId": "sql-sort-and-limit-8"
+    },
+    {
+      "claim": "Rows that tie on amount need a second sort column, or their order is left open.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 4: ORDER BY and ties; 5: LIMIT",
+      "targetKind": "question",
+      "targetId": "sql-sort-and-limit-9"
+    },
+    {
+      "claim": "Ascending gives 50, 70, 70, 90. The first two are 50 and 70, and they add up to 120.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 4: ORDER BY and ties; 5: LIMIT",
+      "targetKind": "question",
+      "targetId": "sql-sort-and-limit-10"
+    },
+    {
+      "claim": "LIMIT 2 keeps 90 and 40, whose sum is 130.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 4: ORDER BY and ties; 5: LIMIT",
+      "targetKind": "flashcard",
+      "targetId": "sql-sort-and-limit-card-1"
+    },
+    {
+      "claim": "ORDER BY establishes result ordering; add a unique tie-breaker when ties matter.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 4: ORDER BY and ties; 5: LIMIT",
+      "targetKind": "flashcard",
+      "targetId": "sql-sort-and-limit-card-2"
+    }
+  ]
+}
