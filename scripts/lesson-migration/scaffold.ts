@@ -223,6 +223,25 @@ export function scaffoldLesson(bundle: CourseBundle, lesson: LessonBeat): Migrat
   };
 }
 
+/**
+ * Plain-text fields that hold TeX: a caret or a backslash command outside `$…$` is shown to the
+ * learner literally ("4x^3"). Equation blocks (`latex`) and code are exempt.
+ */
+export function untypesetMaths(value: unknown, at = ""): string[] {
+  if (typeof value === "string") {
+    const outside = value.replace(/\$[^$]*\$/gu, "");
+    return /\\[a-zA-Z]+|\w\^|\^[{(\w]/u.test(outside) ? [`${at}: ${value.slice(0, 60)}`] : [];
+  }
+  if (Array.isArray(value)) return value.flatMap((item, i) => untypesetMaths(item, `${at}.${i}`));
+  if (value && typeof value === "object")
+    return Object.entries(value).flatMap(([key, item]) =>
+      ["latex", "code", "migrationNotes", "citations", "answerAuthority"].includes(key)
+        ? []
+        : untypesetMaths(item, at ? `${at}.${key}` : key),
+    );
+  return [];
+}
+
 /** Steps, questions and flashcards of a draft that no citation targets, as "kind:id". */
 export function uncitedTargets(draft: MigrationDraft): string[] {
   const lesson = draft.lesson;
@@ -343,6 +362,13 @@ async function main(): Promise<void> {
       const todos = remainingTodos(draft);
       if (todos.length) {
         console.log(`· ${file}: ${todos.length} TODO(s) left, skipped (first: ${todos[0]})`);
+        continue;
+      }
+      const tex = untypesetMaths({ lesson: draft.lesson, questions: draft.questions });
+      if (tex.length) {
+        console.log(
+          `· ${file}: ${tex.length} field(s) with TeX outside $…$, skipped (${tex.slice(0, 3).join("; ")}). Wrap typeset maths in $…$, or write plain text with Unicode (x², ×, −).`,
+        );
         continue;
       }
       const uncited = uncitedTargets(draft);

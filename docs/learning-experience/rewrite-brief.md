@@ -61,6 +61,9 @@ typecheck).
 - Exactly 3 skill-check items, at least one `transfer`, 5 to 7 steps.
 - British spelling, short sentences, "you". No hype. Unicode − × ÷ in prose, including equation
   lines in a lead (write 10 − 6, never 10 - 6).
+- Every text field is plain text unless wrapped in `$…$`, worked-line `math` included. Write x²,
+  4x³, √2 in plain text, or `$\frac{0}{0}$` when you need typesetting; never a bare `x^2` or
+  `\frac`. `--apply` skips a draft with TeX outside `$…$`.
 
 ## Do not
 
