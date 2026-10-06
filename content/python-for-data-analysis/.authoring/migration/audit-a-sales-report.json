@@ -1,0 +1,1779 @@
+{
+  "lessonId": "audit-a-sales-report",
+  "courseId": "python-for-data-analysis",
+  "migrationNotes": [],
+  "lesson": {
+    "id": "audit-a-sales-report",
+    "courseId": "python-for-data-analysis",
+    "conceptIds": [
+      "python-audit-a-sales-report"
+    ],
+    "title": "Build a report you can defend",
+    "steps": [
+      {
+        "id": "what-is-a-row",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "Before you total anything, check what one row stands for.",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "The grain is what one row represents. Here it is one order, identified by id. If an id repeats, the same order may be counted twice. Repeated shop names are fine, because a shop can receive many orders."
+          },
+          {
+            "kind": "callout",
+            "tone": "key",
+            "text": "Check the grain, then aggregate."
+          }
+        ],
+        "reveal": [],
+        "introducesTerms": [
+          "grain"
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-audit-a-sales-report-grain-check",
+        "activityId": ""
+      },
+      {
+        "id": "repeated-ids",
+        "kind": "predict",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "duplicated() flags a row when its value has already appeared earlier. The first occurrence is not flagged."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "You counted the repeats, not every row that shares an id. Only the later occurrences are flagged, which is the number of orders counted twice."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-audit-a-sales-report-1",
+        "activityId": "",
+        "diagram": {
+          "type": "python_execution",
+          "runtime": "Python 3.12 · pandas 3.0",
+          "cases": [
+            {
+              "id": "case-0",
+              "label": "Case A",
+              "code": "import pandas as pd\norders = pd.DataFrame({'id': [1, 2, 3, 4, 5], 'shop': ['Bay', 'Hill', 'Bay', 'Lake', 'Hill'], 'units': [2, 3, 4, 1, 2], 'price': [5, 8, None, 6, 8], 'paid': [True, True, True, False, True]})\nduplicate_ids = orders['id'].duplicated().sum()\nrows = len(orders)",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 2,
+                  "values": [],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 3,
+                  "lineEnd": 4,
+                  "values": [
+                    {
+                      "name": "duplicate_ids",
+                      "type": "int64",
+                      "display": "np.int64(0)"
+                    },
+                    {
+                      "name": "rows",
+                      "type": "int",
+                      "display": "5"
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            },
+            {
+              "id": "case-1",
+              "label": "Case B",
+              "code": "import pandas as pd\norders = pd.DataFrame({'id': [1, 2, 3, 4, 5], 'shop': ['Bay', 'Hill', 'Bay', 'Lake', 'Hill'], 'units': [2, 3, 4, 1, 2], 'price': [5, 8, None, 6, 8], 'paid': [True, True, True, False, True]})\nrepeated_shops = orders['shop'].duplicated().sum()",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 2,
+                  "values": [],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 3,
+                  "lineEnd": 3,
+                  "values": [
+                    {
+                      "name": "repeated_shops",
+                      "type": "int64",
+                      "display": "np.int64(2)"
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            }
+          ],
+          "initialCaseId": "case-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      },
+      {
+        "id": "known-revenue",
+        "kind": "worked_example",
+        "blocks": [],
+        "headline": "Paid orders are 3 units at £4, 2 units at £9, and 5 units at an unknown price. What is the known revenue, and what must the report say?",
+        "lead": [],
+        "reveal": [],
+        "workedSteps": [
+          {
+            "text": "Each known order gives units times price.",
+            "math": "3 × 4 = 12 and 2 × 9 = 18"
+          },
+          {
+            "text": "The unknown price adds nothing known. The report must label the total as known revenue and say one price is unknown.",
+            "math": "12 + 18 = 30",
+            "selfExplain": {
+              "questionId": "python-audit-a-sales-report-3"
+            }
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "diagram": {
+          "type": "python_execution",
+          "runtime": "Python 3.12 · pandas 3.0",
+          "cases": [
+            {
+              "id": "case-0",
+              "label": "Case A",
+              "code": "import pandas as pd\norders = pd.DataFrame({'id': [1, 2, 3, 4, 5], 'shop': ['Bay', 'Hill', 'Bay', 'Lake', 'Hill'], 'units': [2, 3, 4, 1, 2], 'price': [5, 8, None, 6, 8], 'paid': [True, True, True, False, True]})\npaid = orders[orders['paid']].copy()\nunknown_prices = paid['price'].isna().sum()",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 2,
+                  "values": [],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 3,
+                  "lineEnd": 4,
+                  "values": [
+                    {
+                      "name": "paid",
+                      "type": "DataFrame",
+                      "display": "   id  shop  units  price  paid\n0   1   Bay      2    5.0  True\n1   2  Hill      3    8.0  True\n2   3   Bay      4    NaN  True\n4   5  Hill      2    8.0  True",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "id",
+                          "shop",
+                          "units",
+                          "price",
+                          "paid"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            1,
+                            "Bay",
+                            2,
+                            5,
+                            true
+                          ],
+                          [
+                            1,
+                            2,
+                            "Hill",
+                            3,
+                            8,
+                            true
+                          ],
+                          [
+                            2,
+                            3,
+                            "Bay",
+                            4,
+                            null,
+                            true
+                          ],
+                          [
+                            4,
+                            5,
+                            "Hill",
+                            2,
+                            8,
+                            true
+                          ]
+                        ]
+                      }
+                    },
+                    {
+                      "name": "unknown_prices",
+                      "type": "int64",
+                      "display": "np.int64(1)"
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            },
+            {
+              "id": "case-1",
+              "label": "Case B",
+              "code": "import pandas as pd\norders = pd.DataFrame({'id': [1, 2, 3, 4, 5], 'shop': ['Bay', 'Hill', 'Bay', 'Lake', 'Hill'], 'units': [2, 3, 4, 1, 2], 'price': [5, 8, None, 6, 8], 'paid': [True, True, True, False, True]})\npaid = orders[orders['paid']].copy()\npaid['revenue'] = paid['units'] * paid['price']\nknown_total = paid['revenue'].sum(min_count=1)",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 2,
+                  "values": [],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 3,
+                  "lineEnd": 5,
+                  "values": [
+                    {
+                      "name": "paid",
+                      "type": "DataFrame",
+                      "display": "   id  shop  units  price  paid  revenue\n0   1   Bay      2    5.0  True     10.0\n1   2  Hill      3    8.0  True     24.0\n2   3   Bay      4    NaN  True      NaN\n4   5  Hill      2    8.0  True     16.0",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "id",
+                          "shop",
+                          "units",
+                          "price",
+                          "paid",
+                          "revenue"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            1,
+                            "Bay",
+                            2,
+                            5,
+                            true,
+                            10
+                          ],
+                          [
+                            1,
+                            2,
+                            "Hill",
+                            3,
+                            8,
+                            true,
+                            24
+                          ],
+                          [
+                            2,
+                            3,
+                            "Bay",
+                            4,
+                            null,
+                            true,
+                            null
+                          ],
+                          [
+                            4,
+                            5,
+                            "Hill",
+                            2,
+                            8,
+                            true,
+                            16
+                          ]
+                        ]
+                      }
+                    },
+                    {
+                      "name": "known_total",
+                      "type": "float64",
+                      "display": "np.float64(50.0)"
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            }
+          ],
+          "initialCaseId": "case-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      },
+      {
+        "id": "who-is-in-the-report",
+        "kind": "faded_example",
+        "blocks": [],
+        "headline": "Paid flags are True, False, True and True. How many orders belong in the paid report?",
+        "lead": [],
+        "reveal": [],
+        "workedSteps": [
+          {
+            "text": "The paid flag decides who counts. How many flags are True?",
+            "blank": {
+              "questionId": "python-audit-a-sales-report-2"
+            }
+          },
+          {
+            "text": "The rest are left out. How many orders is that?",
+            "blank": {
+              "questionId": "python-audit-a-sales-report-faded-excluded"
+            }
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
+      },
+      {
+        "id": "one-region-per-shop",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "A lookup join must give each order at most one match, or revenue is inflated.",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Join each order to one shop-region record, then inspect the unmatched rows. validate='many_to_one' stops the merge if the lookup repeats a shop, because a repeated key would copy the orders and inflate the totals."
+          }
+        ],
+        "reveal": [],
+        "introducesTerms": [
+          "lookup"
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-audit-a-sales-report-4",
+        "activityId": "",
+        "diagram": {
+          "type": "python_execution",
+          "runtime": "Python 3.12 · pandas 3.0",
+          "cases": [
+            {
+              "id": "case-0",
+              "label": "Case A",
+              "code": "import pandas as pd\norders = pd.DataFrame({'id': [1, 2, 3, 4, 5], 'shop': ['Bay', 'Hill', 'Bay', 'Lake', 'Hill'], 'units': [2, 3, 4, 1, 2], 'price': [5, 8, None, 6, 8], 'paid': [True, True, True, False, True]})\nlookup = pd.DataFrame({'shop': ['Bay', 'Hill', 'Lake'], 'region': ['East', 'West', 'East']})\nresult = orders.merge(lookup, on='shop', how='left', validate='many_to_one')",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 2,
+                  "values": [],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 3,
+                  "lineEnd": 4,
+                  "values": [
+                    {
+                      "name": "result",
+                      "type": "DataFrame",
+                      "display": "   id  shop  units  price   paid region\n0   1   Bay      2    5.0   True   East\n1   2  Hill      3    8.0   True   West\n2   3   Bay      4    NaN   True   East\n3   4  Lake      1    6.0  False   East\n4   5  Hill      2    8.0   True   West",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "id",
+                          "shop",
+                          "units",
+                          "price",
+                          "paid",
+                          "region"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            1,
+                            "Bay",
+                            2,
+                            5,
+                            true,
+                            "East"
+                          ],
+                          [
+                            1,
+                            2,
+                            "Hill",
+                            3,
+                            8,
+                            true,
+                            "West"
+                          ],
+                          [
+                            2,
+                            3,
+                            "Bay",
+                            4,
+                            null,
+                            true,
+                            "East"
+                          ],
+                          [
+                            3,
+                            4,
+                            "Lake",
+                            1,
+                            6,
+                            false,
+                            "East"
+                          ],
+                          [
+                            4,
+                            5,
+                            "Hill",
+                            2,
+                            8,
+                            true,
+                            "West"
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            },
+            {
+              "id": "case-1",
+              "label": "Case B",
+              "code": "import pandas as pd\norders = pd.DataFrame({'id': [1, 2, 3, 4, 5], 'shop': ['Bay', 'Hill', 'Bay', 'Lake', 'Hill'], 'units': [2, 3, 4, 1, 2], 'price': [5, 8, None, 6, 8], 'paid': [True, True, True, False, True]})\nlookup = pd.DataFrame({'shop': ['Bay', 'Hill'], 'region': ['East', 'West']})\nresult = orders.merge(lookup, on='shop', how='left', validate='many_to_one', indicator=True)",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 2,
+                  "values": [],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 3,
+                  "lineEnd": 4,
+                  "values": [
+                    {
+                      "name": "result",
+                      "type": "DataFrame",
+                      "display": "   id  shop  units  price   paid region     _merge\n0   1   Bay      2    5.0   True   East       both\n1   2  Hill      3    8.0   True   West       both\n2   3   Bay      4    NaN   True   East       both\n3   4  Lake      1    6.0  False    NaN  left_only\n4   5  Hill      2    8.0   True   West       both",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "id",
+                          "shop",
+                          "units",
+                          "price",
+                          "paid",
+                          "region",
+                          "_merge"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            1,
+                            "Bay",
+                            2,
+                            5,
+                            true,
+                            "East",
+                            "both"
+                          ],
+                          [
+                            1,
+                            2,
+                            "Hill",
+                            3,
+                            8,
+                            true,
+                            "West",
+                            "both"
+                          ],
+                          [
+                            2,
+                            3,
+                            "Bay",
+                            4,
+                            null,
+                            true,
+                            "East",
+                            "both"
+                          ],
+                          [
+                            3,
+                            4,
+                            "Lake",
+                            1,
+                            6,
+                            false,
+                            null,
+                            "left_only"
+                          ],
+                          [
+                            4,
+                            5,
+                            "Hill",
+                            2,
+                            8,
+                            true,
+                            "West",
+                            "both"
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            }
+          ],
+          "initialCaseId": "case-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      },
+      {
+        "id": "count-after-the-join",
+        "kind": "try",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "A repeated lookup key copies every matching order once for each lookup record."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "Each Bay order appeared once for every Bay record in the lookup, so the join added rows. Revenue totalled after it would have been inflated."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-audit-a-sales-report-inflated-rows",
+        "activityId": ""
+      },
+      {
+        "id": "fix-the-input",
+        "kind": "transfer",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Lake has two paid orders: 2 units at £5, and 3 units at an unknown price. The unknown price is later confirmed as £6."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "The confirmed price turns the caveat into a number. Until then the honest report was known revenue plus a count of unknown prices."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-audit-a-sales-report-confirmed",
+        "activityId": "",
+        "diagram": {
+          "type": "python_execution",
+          "runtime": "Python 3.12 · pandas 3.0",
+          "cases": [
+            {
+              "id": "case-0",
+              "label": "Case A",
+              "code": "import pandas as pd\norders = pd.DataFrame({'id': [1, 2, 3, 4, 5], 'shop': ['Bay', 'Hill', 'Bay', 'Lake', 'Hill'], 'units': [2, 3, 4, 1, 2], 'price': [5, 8, None, 6, 8], 'paid': [True, True, True, False, True]})\npaid = orders[orders['paid']].copy()\npaid['revenue'] = paid['units'] * paid['price']\npaid['unknown_price'] = paid['price'].isna()\nresult = paid.groupby('shop', as_index=False).agg(known_revenue=('revenue', lambda s: s.sum(min_count=1)), unknown_prices=('unknown_price', 'sum'))",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 2,
+                  "values": [],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 3,
+                  "lineEnd": 5,
+                  "values": [],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 6,
+                  "lineEnd": 6,
+                  "values": [
+                    {
+                      "name": "result",
+                      "type": "DataFrame",
+                      "display": "   shop  known_revenue  unknown_prices\n0   Bay           10.0               1\n1  Hill           40.0               0",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "shop",
+                          "known_revenue",
+                          "unknown_prices"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            "Bay",
+                            10,
+                            1
+                          ],
+                          [
+                            1,
+                            "Hill",
+                            40,
+                            0
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            },
+            {
+              "id": "case-1",
+              "label": "Case B",
+              "code": "import pandas as pd\norders = pd.DataFrame({'id': [1, 2, 3, 4, 5], 'shop': ['Bay', 'Hill', 'Bay', 'Lake', 'Hill'], 'units': [2, 3, 4, 1, 2], 'price': [5, 8, None, 6, 8], 'paid': [True, True, True, False, True]})\norders.loc[orders['id'] == 3, 'price'] = 5\npaid = orders[orders['paid']].copy()\npaid['revenue'] = paid['units'] * paid['price']\nresult = paid.groupby('shop', as_index=False)['revenue'].sum()",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 2,
+                  "values": [],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 3,
+                  "lineEnd": 5,
+                  "values": [],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 6,
+                  "lineEnd": 6,
+                  "values": [
+                    {
+                      "name": "result",
+                      "type": "DataFrame",
+                      "display": "   shop  revenue\n0   Bay     30.0\n1  Hill     40.0",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "shop",
+                          "revenue"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            "Bay",
+                            30
+                          ],
+                          [
+                            1,
+                            "Hill",
+                            40
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            }
+          ],
+          "initialCaseId": "case-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      }
+    ],
+    "orientation": "Audit grain, missing measurements and lookup keys before reporting paid revenue.",
+    "visualStates": [],
+    "visualKind": "none",
+    "activityId": "",
+    "questionIds": [
+      "python-audit-a-sales-report-5",
+      "python-audit-a-sales-report-6",
+      "python-audit-a-sales-report-7"
+    ],
+    "flashcardIds": [
+      "python-audit-a-sales-report-card-1",
+      "python-audit-a-sales-report-card-2"
+    ],
+    "reviewLabel": "Build a report you can defend",
+    "nextAction": "Try the next idea with a new input.",
+    "stageTitles": {
+      "quiz": "Skill check",
+      "review": "Recall it later",
+      "completion": "Ready for the next idea"
+    },
+    "sourceIds": [
+      "pd-group",
+      "pd-merge",
+      "pd-missing"
+    ],
+    "assuranceLevel": "source_backed",
+    "intro": {
+      "hook": {
+        "blocks": [
+          {
+            "kind": "paragraph",
+            "text": "A report counts only paid orders. Order A: 5 units at £4, paid. Order B: 2 units at £3, not paid. Order C: 3 units at £6, paid."
+          }
+        ],
+        "questionId": "python-audit-a-sales-report-hook"
+      },
+      "promise": "By the end you'll audit a sales table before reporting: what a row is, who counts, what is unknown, and what a join can inflate.",
+      "estimatedMinutes": 10
+    },
+    "recap": {
+      "keyIdea": "A defensible report checks the grain, defines who counts, labels known revenue with its unknowns, and validates every lookup before totalling.",
+      "blocks": [
+        {
+          "kind": "paragraph",
+          "text": "You found paid revenue of £38 from the three orders. You flagged 1 repeated id, and Lake's revenue reached £28 once its missing price was confirmed."
+        }
+      ],
+      "nextHook": "You have used the whole toolkit. Next, apply it to a table of your own."
+    },
+    "calculator": "off",
+    "taughtSkills": [
+      "check-the-grain",
+      "define-the-population",
+      "report-known-revenue",
+      "validate-lookups"
+    ]
+  },
+  "questions": [
+    {
+      "id": "python-audit-a-sales-report-1",
+      "conceptIds": [
+        "python-audit-a-sales-report"
+      ],
+      "prompt": "Order IDs are 1, 2, 2 and 3. How many rows does duplicated() flag?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Count the extra occurrences, not every row with the repeated id.",
+        "The first occurrence of each id is not flagged.",
+        "Count only the later repeat."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 1,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "Only the second occurrence of ID 2 is flagged with the default keep='first'."
+      },
+      "sourceIds": [
+        "pd-group",
+        "pd-merge",
+        "pd-missing"
+      ],
+      "onCorrect": "1. The second occurrence of id 2 is flagged, and the first is not.",
+      "skill": "check-the-grain",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              2
+            ]
+          },
+          "feedback": "The first occurrence is kept unflagged by default. Only the later repeat is flagged."
+        }
+      ],
+      "calculator": "off"
+    },
+    {
+      "id": "python-audit-a-sales-report-2",
+      "conceptIds": [
+        "python-audit-a-sales-report"
+      ],
+      "prompt": "Paid flags are True, False, True and True. How many orders belong in the paid report?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Define the population before aggregating.",
+        "The paid flag decides which rows belong.",
+        "Count the True flags."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 3,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "Three rows have a true paid flag."
+      },
+      "sourceIds": [
+        "pd-group",
+        "pd-merge",
+        "pd-missing"
+      ],
+      "onCorrect": "3. The paid flag defines the population, and three rows have it set to True.",
+      "skill": "define-the-population",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              4
+            ]
+          },
+          "feedback": "That counts every order. The unpaid one is excluded."
+        },
+        {
+          "match": {
+            "numeric": [
+              1
+            ]
+          },
+          "feedback": "That counts the False flag. The paid orders are the True ones."
+        }
+      ],
+      "calculator": "off"
+    },
+    {
+      "id": "python-audit-a-sales-report-3",
+      "conceptIds": [
+        "python-audit-a-sales-report"
+      ],
+      "prompt": "A paid order has an unknown price. Which report label preserves that limitation?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Do not turn an unknown measurement into a known zero."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Known revenue, with the unknown-price count"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Known revenue reports the measured amount while the missing-price count states what the total excludes."
+      },
+      "sourceIds": [
+        "pd-group",
+        "pd-merge",
+        "pd-missing"
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "Known revenue, with the unknown-price count"
+        },
+        {
+          "id": "b",
+          "label": "Complete revenue with no caveat"
+        },
+        {
+          "id": "c",
+          "label": "Revenue after silently replacing the price with zero"
+        }
+      ],
+      "onCorrect": "Known revenue, with the unknown-price count. The label says what the total excludes.",
+      "skill": "report-known-revenue",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "The total is not complete while a price is unknown."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "A zero price claims the order earned nothing. The data does not say that."
+        }
+      ],
+      "calculator": "off"
+    },
+    {
+      "id": "python-audit-a-sales-report-4",
+      "conceptIds": [
+        "python-audit-a-sales-report"
+      ],
+      "prompt": "A shop lookup contains two records for the same shop. What should a many-to-one enrichment do?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Check the relationship you expect between orders and lookup keys."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Reject the ambiguous lookup and resolve it"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Validate the lookup before reporting. Resolve the duplicate according to its meaning rather than multiplying orders."
+      },
+      "sourceIds": [
+        "pd-group",
+        "pd-merge",
+        "pd-missing"
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "Reject the ambiguous lookup and resolve it"
+        },
+        {
+          "id": "b",
+          "label": "Duplicate each order and continue silently"
+        },
+        {
+          "id": "c",
+          "label": "Discard every order"
+        }
+      ],
+      "onCorrect": "Reject the ambiguous lookup and resolve it. Duplicate keys would copy orders and inflate revenue.",
+      "skill": "validate-lookups",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Copying orders is how revenue gets inflated, so it must not pass silently."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Throwing away every order is not needed. The lookup needs fixing."
+        }
+      ],
+      "calculator": "off"
+    },
+    {
+      "id": "python-audit-a-sales-report-5",
+      "conceptIds": [
+        "python-audit-a-sales-report"
+      ],
+      "prompt": "Paid orders are 2 units at £7, 3 units at £5, and 4 units at an unknown price. What is the known revenue, in pounds?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Sum only the two known products.",
+        "The unknown-price order adds nothing known.",
+        "Work out 2 × 7 + 3 × 5."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 29,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "The known rows contribute 14 and 15, totalling 29. The unknown row remains a caveat."
+      },
+      "sourceIds": [
+        "pd-group",
+        "pd-merge",
+        "pd-missing"
+      ],
+      "onCorrect": "£29. The known rows give 14 and 15. The unknown row stays a caveat in the report.",
+      "skill": "report-known-revenue",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              43
+            ]
+          },
+          "feedback": "That would price the unknown order, which nobody knows."
+        },
+        {
+          "match": {
+            "numeric": [
+              14
+            ]
+          },
+          "feedback": "That is only the first order. The second is known too."
+        }
+      ],
+      "calculator": "off"
+    },
+    {
+      "id": "python-audit-a-sales-report-6",
+      "conceptIds": [
+        "python-audit-a-sales-report"
+      ],
+      "prompt": "Paid orders are 2 units at £7, 3 units at £5, and 4 units at a newly confirmed £6. What is the complete revenue, in pounds?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Add the newly confirmed order.",
+        "The third order now has a price.",
+        "Work out 2 × 7 + 3 × 5 + 4 × 6."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 53,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "The confirmed order adds 4 × 6 = 24 to the known 29, producing 53."
+      },
+      "sourceIds": [
+        "pd-group",
+        "pd-merge",
+        "pd-missing"
+      ],
+      "onCorrect": "£53. The confirmed order adds 24 to the known 29, and nothing is left unknown.",
+      "skill": "report-known-revenue",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              29
+            ]
+          },
+          "feedback": "That leaves out the order whose price is now confirmed."
+        },
+        {
+          "match": {
+            "numeric": [
+              24
+            ]
+          },
+          "feedback": "That is only the confirmed order. The other two count too."
+        }
+      ],
+      "calculator": "off"
+    },
+    {
+      "id": "python-audit-a-sales-report-7",
+      "conceptIds": [
+        "python-audit-a-sales-report"
+      ],
+      "difficulty": 1,
+      "sourceIds": [
+        "pd-group",
+        "pd-merge",
+        "pd-missing"
+      ],
+      "hints": [
+        "Which orders are paid?",
+        "Which of those have a price?",
+        "Count the orders that satisfy both."
+      ],
+      "prompt": "Paid flags are True, True, False and True, and prices are 5, unknown, 4 and 3. How many paid orders have a known price?",
+      "responseType": "numeric",
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 2,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "The first and fourth orders are paid with known prices."
+      },
+      "onCorrect": "2. The paid orders are the first, second and fourth, and the second has no known price.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              3
+            ]
+          },
+          "feedback": "One of the paid orders has an unknown price."
+        },
+        {
+          "match": {
+            "numeric": [
+              1
+            ]
+          },
+          "feedback": "Two paid orders have a price."
+        }
+      ],
+      "skill": "define-the-population",
+      "calculator": "off"
+    },
+    {
+      "id": "python-audit-a-sales-report-hook",
+      "conceptIds": [
+        "python-audit-a-sales-report"
+      ],
+      "difficulty": 1,
+      "sourceIds": [
+        "pd-group",
+        "pd-merge",
+        "pd-missing"
+      ],
+      "hints": [
+        "Which orders count in the report?",
+        "Order B is not paid, so it is left out.",
+        "Work out 5 × 4 + 3 × 6."
+      ],
+      "prompt": "What is the revenue of the paid orders, in pounds?",
+      "responseType": "numeric",
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 38,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "5 × 4 + 3 × 6 = 20 + 18 = 38."
+      },
+      "onCorrect": "£38. The unpaid order was left out before totalling. Deciding who counts comes before any sum.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              44
+            ]
+          },
+          "feedback": "That includes the unpaid order. Only paid orders count."
+        },
+        {
+          "match": {
+            "numeric": [
+              20
+            ]
+          },
+          "feedback": "That is only the first order. Order C is paid too."
+        }
+      ],
+      "skill": "define-the-population",
+      "calculator": "off"
+    },
+    {
+      "id": "python-audit-a-sales-report-grain-check",
+      "conceptIds": [
+        "python-audit-a-sales-report"
+      ],
+      "difficulty": 1,
+      "sourceIds": [
+        "pd-group",
+        "pd-merge",
+        "pd-missing"
+      ],
+      "hints": [
+        "Which column identifies an order?"
+      ],
+      "prompt": "Which check tells you whether each row is a separate order?",
+      "responseType": "short_text",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Check that the order ids are unique"
+        },
+        {
+          "id": "b",
+          "label": "Check that the shop names are unique"
+        },
+        {
+          "id": "c",
+          "label": "Check that the prices are all different"
+        }
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Check that the order ids are unique"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "The id identifies an order, so it must not repeat."
+      },
+      "onCorrect": "Check that the order ids are unique. A repeated id means one order may sit on two rows.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "A shop can receive many orders, so repeated shop names are expected."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Two orders can have the same price. The id identifies the order."
+        }
+      ],
+      "skill": "check-the-grain",
+      "calculator": "off"
+    },
+    {
+      "id": "python-audit-a-sales-report-faded-excluded",
+      "conceptIds": [
+        "python-audit-a-sales-report"
+      ],
+      "difficulty": 1,
+      "sourceIds": [
+        "pd-group",
+        "pd-merge",
+        "pd-missing"
+      ],
+      "hints": [
+        "How many orders are there in all?",
+        "Four orders, and some are in the report.",
+        "Subtract the paid orders."
+      ],
+      "prompt": "How many orders are left out?",
+      "responseType": "numeric",
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 1,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "4 − 3 = 1 order is left out."
+      },
+      "onCorrect": "1. Only the unpaid order is left out of the paid report.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              3
+            ]
+          },
+          "feedback": "That is the number included. The question asks how many are left out."
+        }
+      ],
+      "skill": "define-the-population",
+      "calculator": "off"
+    },
+    {
+      "id": "python-audit-a-sales-report-inflated-rows",
+      "conceptIds": [
+        "python-audit-a-sales-report"
+      ],
+      "difficulty": 1,
+      "sourceIds": [
+        "pd-group",
+        "pd-merge",
+        "pd-missing"
+      ],
+      "hints": [
+        "Which orders match more than one lookup record?",
+        "Each Bay order matches twice.",
+        "Count three single matches and two doubled ones."
+      ],
+      "prompt": "Five orders, two of them from Bay, are left-merged with a lookup that lists Bay twice and every other shop once. How many rows result?",
+      "responseType": "numeric",
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 7,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "3 single matches + 2 × 2 Bay matches = 7 rows."
+      },
+      "onCorrect": "7. The two Bay orders each appeared twice, adding two rows to the original five.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              5
+            ]
+          },
+          "feedback": "That is the number of orders. The repeated lookup key copies the Bay orders."
+        },
+        {
+          "match": {
+            "numeric": [
+              10
+            ]
+          },
+          "feedback": "Only the Bay orders are copied. The other orders match once."
+        }
+      ],
+      "skill": "validate-lookups",
+      "calculator": "off"
+    },
+    {
+      "id": "python-audit-a-sales-report-confirmed",
+      "conceptIds": [
+        "python-audit-a-sales-report"
+      ],
+      "difficulty": 1,
+      "sourceIds": [
+        "pd-group",
+        "pd-merge",
+        "pd-missing"
+      ],
+      "hints": [
+        "Work out each order's revenue from units and price.",
+        "The unknown price is now 6.",
+        "Add 2 × 5 to 3 × 6."
+      ],
+      "prompt": "With the confirmed price, what is Lake's complete revenue, in pounds?",
+      "responseType": "numeric",
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 28,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "2 × 5 + 3 × 6 = 10 + 18 = 28."
+      },
+      "onCorrect": "£28. The confirmed price lets the second order count, giving 10 and 18.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              10
+            ]
+          },
+          "feedback": "That is only the order whose price was already known."
+        },
+        {
+          "match": {
+            "numeric": [
+              18
+            ]
+          },
+          "feedback": "That is only the order whose price was just confirmed."
+        }
+      ],
+      "skill": "report-known-revenue",
+      "calculator": "off"
+    }
+  ],
+  "citations": [
+    {
+      "claim": "Before you total anything, check what one row stands for.",
+      "sourceId": "pd-group",
+      "section": "Grouped aggregation; pandas merge validation; missing-value policy",
+      "targetKind": "step",
+      "targetId": "what-is-a-row"
+    },
+    {
+      "claim": "Before you total anything, check what one row stands for.",
+      "sourceId": "pd-merge",
+      "section": "concat; database-style joins; merge validation; indicator",
+      "targetKind": "step",
+      "targetId": "what-is-a-row"
+    },
+    {
+      "claim": "Before you total anything, check what one row stands for.",
+      "sourceId": "pd-missing",
+      "section": "isna; calculations with missing data; filling and dropping missing values",
+      "targetKind": "step",
+      "targetId": "what-is-a-row"
+    },
+    {
+      "claim": "duplicated() flags a row when its value has already appeared earlier. The first occurrence is not flagged.",
+      "sourceId": "pd-group",
+      "section": "Grouped aggregation; pandas merge validation; missing-value policy",
+      "targetKind": "step",
+      "targetId": "repeated-ids"
+    },
+    {
+      "claim": "duplicated() flags a row when its value has already appeared earlier. The first occurrence is not flagged.",
+      "sourceId": "pd-merge",
+      "section": "concat; database-style joins; merge validation; indicator",
+      "targetKind": "step",
+      "targetId": "repeated-ids"
+    },
+    {
+      "claim": "duplicated() flags a row when its value has already appeared earlier. The first occurrence is not flagged.",
+      "sourceId": "pd-missing",
+      "section": "isna; calculations with missing data; filling and dropping missing values",
+      "targetKind": "step",
+      "targetId": "repeated-ids"
+    },
+    {
+      "claim": "Paid orders are 3 units at £4, 2 units at £9, and 5 units at an unknown price. What is the known revenue, and what must the report say?",
+      "sourceId": "pd-group",
+      "section": "Grouped aggregation; pandas merge validation; missing-value policy",
+      "targetKind": "step",
+      "targetId": "known-revenue"
+    },
+    {
+      "claim": "Paid orders are 3 units at £4, 2 units at £9, and 5 units at an unknown price. What is the known revenue, and what must the report say?",
+      "sourceId": "pd-merge",
+      "section": "concat; database-style joins; merge validation; indicator",
+      "targetKind": "step",
+      "targetId": "known-revenue"
+    },
+    {
+      "claim": "Paid orders are 3 units at £4, 2 units at £9, and 5 units at an unknown price. What is the known revenue, and what must the report say?",
+      "sourceId": "pd-missing",
+      "section": "isna; calculations with missing data; filling and dropping missing values",
+      "targetKind": "step",
+      "targetId": "known-revenue"
+    },
+    {
+      "claim": "Paid flags are True, False, True and True. How many orders belong in the paid report?",
+      "sourceId": "pd-group",
+      "section": "Grouped aggregation; pandas merge validation; missing-value policy",
+      "targetKind": "step",
+      "targetId": "who-is-in-the-report"
+    },
+    {
+      "claim": "Paid flags are True, False, True and True. How many orders belong in the paid report?",
+      "sourceId": "pd-merge",
+      "section": "concat; database-style joins; merge validation; indicator",
+      "targetKind": "step",
+      "targetId": "who-is-in-the-report"
+    },
+    {
+      "claim": "Paid flags are True, False, True and True. How many orders belong in the paid report?",
+      "sourceId": "pd-missing",
+      "section": "isna; calculations with missing data; filling and dropping missing values",
+      "targetKind": "step",
+      "targetId": "who-is-in-the-report"
+    },
+    {
+      "claim": "A lookup join must give each order at most one match, or revenue is inflated.",
+      "sourceId": "pd-group",
+      "section": "Grouped aggregation; pandas merge validation; missing-value policy",
+      "targetKind": "step",
+      "targetId": "one-region-per-shop"
+    },
+    {
+      "claim": "A lookup join must give each order at most one match, or revenue is inflated.",
+      "sourceId": "pd-merge",
+      "section": "concat; database-style joins; merge validation; indicator",
+      "targetKind": "step",
+      "targetId": "one-region-per-shop"
+    },
+    {
+      "claim": "A lookup join must give each order at most one match, or revenue is inflated.",
+      "sourceId": "pd-missing",
+      "section": "isna; calculations with missing data; filling and dropping missing values",
+      "targetKind": "step",
+      "targetId": "one-region-per-shop"
+    },
+    {
+      "claim": "A repeated lookup key copies every matching order once for each lookup record.",
+      "sourceId": "pd-group",
+      "section": "Grouped aggregation; pandas merge validation; missing-value policy",
+      "targetKind": "step",
+      "targetId": "count-after-the-join"
+    },
+    {
+      "claim": "A repeated lookup key copies every matching order once for each lookup record.",
+      "sourceId": "pd-merge",
+      "section": "concat; database-style joins; merge validation; indicator",
+      "targetKind": "step",
+      "targetId": "count-after-the-join"
+    },
+    {
+      "claim": "A repeated lookup key copies every matching order once for each lookup record.",
+      "sourceId": "pd-missing",
+      "section": "isna; calculations with missing data; filling and dropping missing values",
+      "targetKind": "step",
+      "targetId": "count-after-the-join"
+    },
+    {
+      "claim": "Lake has two paid orders: 2 units at £5, and 3 units at an unknown price. The unknown price is later confirmed as £6.",
+      "sourceId": "pd-group",
+      "section": "Grouped aggregation; pandas merge validation; missing-value policy",
+      "targetKind": "step",
+      "targetId": "fix-the-input"
+    },
+    {
+      "claim": "Lake has two paid orders: 2 units at £5, and 3 units at an unknown price. The unknown price is later confirmed as £6.",
+      "sourceId": "pd-merge",
+      "section": "concat; database-style joins; merge validation; indicator",
+      "targetKind": "step",
+      "targetId": "fix-the-input"
+    },
+    {
+      "claim": "Lake has two paid orders: 2 units at £5, and 3 units at an unknown price. The unknown price is later confirmed as £6.",
+      "sourceId": "pd-missing",
+      "section": "isna; calculations with missing data; filling and dropping missing values",
+      "targetKind": "step",
+      "targetId": "fix-the-input"
+    },
+    {
+      "claim": "1. The second occurrence of id 2 is flagged, and the first is not.",
+      "sourceId": "pd-group",
+      "section": "Grouped aggregation; pandas merge validation; missing-value policy",
+      "targetKind": "question",
+      "targetId": "python-audit-a-sales-report-1"
+    },
+    {
+      "claim": "1. The second occurrence of id 2 is flagged, and the first is not.",
+      "sourceId": "pd-merge",
+      "section": "concat; database-style joins; merge validation; indicator",
+      "targetKind": "question",
+      "targetId": "python-audit-a-sales-report-1"
+    },
+    {
+      "claim": "1. The second occurrence of id 2 is flagged, and the first is not.",
+      "sourceId": "pd-missing",
+      "section": "isna; calculations with missing data; filling and dropping missing values",
+      "targetKind": "question",
+      "targetId": "python-audit-a-sales-report-1"
+    },
+    {
+      "claim": "3. The paid flag defines the population, and three rows have it set to True.",
+      "sourceId": "pd-group",
+      "section": "Grouped aggregation; pandas merge validation; missing-value policy",
+      "targetKind": "question",
+      "targetId": "python-audit-a-sales-report-2"
+    },
+    {
+      "claim": "3. The paid flag defines the population, and three rows have it set to True.",
+      "sourceId": "pd-merge",
+      "section": "concat; database-style joins; merge validation; indicator",
+      "targetKind": "question",
+      "targetId": "python-audit-a-sales-report-2"
+    },
+    {
+      "claim": "3. The paid flag defines the population, and three rows have it set to True.",
+      "sourceId": "pd-missing",
+      "section": "isna; calculations with missing data; filling and dropping missing values",
+      "targetKind": "question",
+      "targetId": "python-audit-a-sales-report-2"
+    },
+    {
+      "claim": "Known revenue, with the unknown-price count. The label says what the total excludes.",
+      "sourceId": "pd-group",
+      "section": "Grouped aggregation; pandas merge validation; missing-value policy",
+      "targetKind": "question",
+      "targetId": "python-audit-a-sales-report-3"
+    },
+    {
+      "claim": "Known revenue, with the unknown-price count. The label says what the total excludes.",
+      "sourceId": "pd-merge",
+      "section": "concat; database-style joins; merge validation; indicator",
+      "targetKind": "question",
+      "targetId": "python-audit-a-sales-report-3"
+    },
+    {
+      "claim": "Known revenue, with the unknown-price count. The label says what the total excludes.",
+      "sourceId": "pd-missing",
+      "section": "isna; calculations with missing data; filling and dropping missing values",
+      "targetKind": "question",
+      "targetId": "python-audit-a-sales-report-3"
+    },
+    {
+      "claim": "Reject the ambiguous lookup and resolve it. Duplicate keys would copy orders and inflate revenue.",
+      "sourceId": "pd-group",
+      "section": "Grouped aggregation; pandas merge validation; missing-value policy",
+      "targetKind": "question",
+      "targetId": "python-audit-a-sales-report-4"
+    },
+    {
+      "claim": "Reject the ambiguous lookup and resolve it. Duplicate keys would copy orders and inflate revenue.",
+      "sourceId": "pd-merge",
+      "section": "concat; database-style joins; merge validation; indicator",
+      "targetKind": "question",
+      "targetId": "python-audit-a-sales-report-4"
+    },
+    {
+      "claim": "Reject the ambiguous lookup and resolve it. Duplicate keys would copy orders and inflate revenue.",
+      "sourceId": "pd-missing",
+      "section": "isna; calculations with missing data; filling and dropping missing values",
+      "targetKind": "question",
+      "targetId": "python-audit-a-sales-report-4"
+    },
+    {
+      "claim": "£29. The known rows give 14 and 15. The unknown row stays a caveat in the report.",
+      "sourceId": "pd-group",
+      "section": "Grouped aggregation; pandas merge validation; missing-value policy",
+      "targetKind": "question",
+      "targetId": "python-audit-a-sales-report-5"
+    },
+    {
+      "claim": "£29. The known rows give 14 and 15. The unknown row stays a caveat in the report.",
+      "sourceId": "pd-merge",
+      "section": "concat; database-style joins; merge validation; indicator",
+      "targetKind": "question",
+      "targetId": "python-audit-a-sales-report-5"
+    },
+    {
+      "claim": "£29. The known rows give 14 and 15. The unknown row stays a caveat in the report.",
+      "sourceId": "pd-missing",
+      "section": "isna; calculations with missing data; filling and dropping missing values",
+      "targetKind": "question",
+      "targetId": "python-audit-a-sales-report-5"
+    },
+    {
+      "claim": "£53. The confirmed order adds 24 to the known 29, and nothing is left unknown.",
+      "sourceId": "pd-group",
+      "section": "Grouped aggregation; pandas merge validation; missing-value policy",
+      "targetKind": "question",
+      "targetId": "python-audit-a-sales-report-6"
+    },
+    {
+      "claim": "£53. The confirmed order adds 24 to the known 29, and nothing is left unknown.",
+      "sourceId": "pd-merge",
+      "section": "concat; database-style joins; merge validation; indicator",
+      "targetKind": "question",
+      "targetId": "python-audit-a-sales-report-6"
+    },
+    {
+      "claim": "£53. The confirmed order adds 24 to the known 29, and nothing is left unknown.",
+      "sourceId": "pd-missing",
+      "section": "isna; calculations with missing data; filling and dropping missing values",
+      "targetKind": "question",
+      "targetId": "python-audit-a-sales-report-6"
+    },
+    {
+      "claim": "2. The paid orders are the first, second and fourth, and the second has no known price.",
+      "sourceId": "pd-group",
+      "section": "Grouped aggregation; pandas merge validation; missing-value policy",
+      "targetKind": "question",
+      "targetId": "python-audit-a-sales-report-7"
+    },
+    {
+      "claim": "2. The paid orders are the first, second and fourth, and the second has no known price.",
+      "sourceId": "pd-merge",
+      "section": "concat; database-style joins; merge validation; indicator",
+      "targetKind": "question",
+      "targetId": "python-audit-a-sales-report-7"
+    },
+    {
+      "claim": "2. The paid orders are the first, second and fourth, and the second has no known price.",
+      "sourceId": "pd-missing",
+      "section": "isna; calculations with missing data; filling and dropping missing values",
+      "targetKind": "question",
+      "targetId": "python-audit-a-sales-report-7"
+    },
+    {
+      "claim": "£38. The unpaid order was left out before totalling. Deciding who counts comes before any sum.",
+      "sourceId": "pd-group",
+      "section": "Grouped aggregation; pandas merge validation; missing-value policy",
+      "targetKind": "question",
+      "targetId": "python-audit-a-sales-report-hook"
+    },
+    {
+      "claim": "£38. The unpaid order was left out before totalling. Deciding who counts comes before any sum.",
+      "sourceId": "pd-merge",
+      "section": "concat; database-style joins; merge validation; indicator",
+      "targetKind": "question",
+      "targetId": "python-audit-a-sales-report-hook"
+    },
+    {
+      "claim": "£38. The unpaid order was left out before totalling. Deciding who counts comes before any sum.",
+      "sourceId": "pd-missing",
+      "section": "isna; calculations with missing data; filling and dropping missing values",
+      "targetKind": "question",
+      "targetId": "python-audit-a-sales-report-hook"
+    },
+    {
+      "claim": "Check that the order ids are unique. A repeated id means one order may sit on two rows.",
+      "sourceId": "pd-group",
+      "section": "Grouped aggregation; pandas merge validation; missing-value policy",
+      "targetKind": "question",
+      "targetId": "python-audit-a-sales-report-grain-check"
+    },
+    {
+      "claim": "Check that the order ids are unique. A repeated id means one order may sit on two rows.",
+      "sourceId": "pd-merge",
+      "section": "concat; database-style joins; merge validation; indicator",
+      "targetKind": "question",
+      "targetId": "python-audit-a-sales-report-grain-check"
+    },
+    {
+      "claim": "Check that the order ids are unique. A repeated id means one order may sit on two rows.",
+      "sourceId": "pd-missing",
+      "section": "isna; calculations with missing data; filling and dropping missing values",
+      "targetKind": "question",
+      "targetId": "python-audit-a-sales-report-grain-check"
+    },
+    {
+      "claim": "1. Only the unpaid order is left out of the paid report.",
+      "sourceId": "pd-group",
+      "section": "Grouped aggregation; pandas merge validation; missing-value policy",
+      "targetKind": "question",
+      "targetId": "python-audit-a-sales-report-faded-excluded"
+    },
+    {
+      "claim": "1. Only the unpaid order is left out of the paid report.",
+      "sourceId": "pd-merge",
+      "section": "concat; database-style joins; merge validation; indicator",
+      "targetKind": "question",
+      "targetId": "python-audit-a-sales-report-faded-excluded"
+    },
+    {
+      "claim": "1. Only the unpaid order is left out of the paid report.",
+      "sourceId": "pd-missing",
+      "section": "isna; calculations with missing data; filling and dropping missing values",
+      "targetKind": "question",
+      "targetId": "python-audit-a-sales-report-faded-excluded"
+    },
+    {
+      "claim": "7. The two Bay orders each appeared twice, adding two rows to the original five.",
+      "sourceId": "pd-group",
+      "section": "Grouped aggregation; pandas merge validation; missing-value policy",
+      "targetKind": "question",
+      "targetId": "python-audit-a-sales-report-inflated-rows"
+    },
+    {
+      "claim": "7. The two Bay orders each appeared twice, adding two rows to the original five.",
+      "sourceId": "pd-merge",
+      "section": "concat; database-style joins; merge validation; indicator",
+      "targetKind": "question",
+      "targetId": "python-audit-a-sales-report-inflated-rows"
+    },
+    {
+      "claim": "7. The two Bay orders each appeared twice, adding two rows to the original five.",
+      "sourceId": "pd-missing",
+      "section": "isna; calculations with missing data; filling and dropping missing values",
+      "targetKind": "question",
+      "targetId": "python-audit-a-sales-report-inflated-rows"
+    },
+    {
+      "claim": "£28. The confirmed price lets the second order count, giving 10 and 18.",
+      "sourceId": "pd-group",
+      "section": "Grouped aggregation; pandas merge validation; missing-value policy",
+      "targetKind": "question",
+      "targetId": "python-audit-a-sales-report-confirmed"
+    },
+    {
+      "claim": "£28. The confirmed price lets the second order count, giving 10 and 18.",
+      "sourceId": "pd-merge",
+      "section": "concat; database-style joins; merge validation; indicator",
+      "targetKind": "question",
+      "targetId": "python-audit-a-sales-report-confirmed"
+    },
+    {
+      "claim": "£28. The confirmed price lets the second order count, giving 10 and 18.",
+      "sourceId": "pd-missing",
+      "section": "isna; calculations with missing data; filling and dropping missing values",
+      "targetKind": "question",
+      "targetId": "python-audit-a-sales-report-confirmed"
+    },
+    {
+      "claim": "The observed contributions are 20 and 18, totalling 38; the unknown contribution must still be reported.",
+      "sourceId": "pd-group",
+      "section": "Grouped aggregation; pandas merge validation; missing-value policy",
+      "targetKind": "flashcard",
+      "targetId": "python-audit-a-sales-report-card-1"
+    },
+    {
+      "claim": "The observed contributions are 20 and 18, totalling 38; the unknown contribution must still be reported.",
+      "sourceId": "pd-merge",
+      "section": "concat; database-style joins; merge validation; indicator",
+      "targetKind": "flashcard",
+      "targetId": "python-audit-a-sales-report-card-1"
+    },
+    {
+      "claim": "The observed contributions are 20 and 18, totalling 38; the unknown contribution must still be reported.",
+      "sourceId": "pd-missing",
+      "section": "isna; calculations with missing data; filling and dropping missing values",
+      "targetKind": "flashcard",
+      "targetId": "python-audit-a-sales-report-card-1"
+    },
+    {
+      "claim": "validate='many_to_one' checks the lookup's key uniqueness.",
+      "sourceId": "pd-group",
+      "section": "Grouped aggregation; pandas merge validation; missing-value policy",
+      "targetKind": "flashcard",
+      "targetId": "python-audit-a-sales-report-card-2"
+    },
+    {
+      "claim": "validate='many_to_one' checks the lookup's key uniqueness.",
+      "sourceId": "pd-merge",
+      "section": "concat; database-style joins; merge validation; indicator",
+      "targetKind": "flashcard",
+      "targetId": "python-audit-a-sales-report-card-2"
+    },
+    {
+      "claim": "validate='many_to_one' checks the lookup's key uniqueness.",
+      "sourceId": "pd-missing",
+      "section": "isna; calculations with missing data; filling and dropping missing values",
+      "targetKind": "flashcard",
+      "targetId": "python-audit-a-sales-report-card-2"
+    }
+  ]
+}

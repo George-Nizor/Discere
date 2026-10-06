@@ -1,0 +1,1733 @@
+{
+  "lessonId": "missing-values",
+  "courseId": "python-for-data-analysis",
+  "migrationNotes": [],
+  "lesson": {
+    "id": "missing-values",
+    "courseId": "python-for-data-analysis",
+    "conceptIds": [
+      "python-missing-values"
+    ],
+    "title": "Keep unknown separate from zero",
+    "steps": [
+      {
+        "id": "unknown-is-not-zero",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "A missing value marks an unknown, and an unknown is not a zero.",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "pandas marks unknown entries with NaN, NaT or pd.NA, depending on the type. isna() finds them. A zero is an observed value: someone measured it and got nothing."
+          },
+          {
+            "kind": "callout",
+            "tone": "key",
+            "text": "Zero means none. Missing means we do not know."
+          }
+        ],
+        "reveal": [],
+        "introducesTerms": [
+          "missing value"
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-missing-values-4",
+        "activityId": ""
+      },
+      {
+        "id": "count-the-unknowns",
+        "kind": "predict",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "isna() marks only the unknown entries. Think about whether a zero is one of them."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "You counted the unknown entries, and the zero was not one of them. A zero is a known observation."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-missing-values-1",
+        "activityId": "",
+        "diagram": {
+          "type": "python_execution",
+          "runtime": "Python 3.12 · pandas 3.0",
+          "cases": [
+            {
+              "id": "case-0",
+              "label": "Case A",
+              "code": "import pandas as pd\ns = pd.Series([0, None, 8], dtype='Float64')\nmissing = s.isna()",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 2,
+                  "values": [
+                    {
+                      "name": "s",
+                      "type": "Series",
+                      "display": "0     0.0\n1    <NA>\n2     8.0\ndtype: Float64",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "value"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            0
+                          ],
+                          [
+                            1,
+                            null
+                          ],
+                          [
+                            2,
+                            8
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 3,
+                  "lineEnd": 3,
+                  "values": [
+                    {
+                      "name": "s",
+                      "type": "Series",
+                      "display": "0     0.0\n1    <NA>\n2     8.0\ndtype: Float64",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "value"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            0
+                          ],
+                          [
+                            1,
+                            null
+                          ],
+                          [
+                            2,
+                            8
+                          ]
+                        ]
+                      }
+                    },
+                    {
+                      "name": "missing",
+                      "type": "Series",
+                      "display": "0    False\n1     True\n2    False\ndtype: bool",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "value"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            false
+                          ],
+                          [
+                            1,
+                            true
+                          ],
+                          [
+                            2,
+                            false
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            },
+            {
+              "id": "case-1",
+              "label": "Case B",
+              "code": "import pandas as pd\ns = pd.Series([None, 4, None], dtype='Float64')\ncount = s.isna().sum()",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 2,
+                  "values": [
+                    {
+                      "name": "s",
+                      "type": "Series",
+                      "display": "0    <NA>\n1     4.0\n2    <NA>\ndtype: Float64",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "value"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            null
+                          ],
+                          [
+                            1,
+                            4
+                          ],
+                          [
+                            2,
+                            null
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 3,
+                  "lineEnd": 3,
+                  "values": [
+                    {
+                      "name": "s",
+                      "type": "Series",
+                      "display": "0    <NA>\n1     4.0\n2    <NA>\ndtype: Float64",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "value"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            null
+                          ],
+                          [
+                            1,
+                            4
+                          ],
+                          [
+                            2,
+                            null
+                          ]
+                        ]
+                      }
+                    },
+                    {
+                      "name": "count",
+                      "type": "int64",
+                      "display": "np.int64(2)"
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            }
+          ],
+          "initialCaseId": "case-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      },
+      {
+        "id": "average-of-the-known",
+        "kind": "worked_example",
+        "blocks": [],
+        "headline": "What are count() and mean() of a Series holding 6, missing, 10 and missing?",
+        "lead": [],
+        "reveal": [],
+        "workedSteps": [
+          {
+            "text": "count() counts the known values only.",
+            "math": "6 and 10: 2 known"
+          },
+          {
+            "text": "mean() skips the missing entries, so it divides by the number of known values.",
+            "math": "(6 + 10) ÷ 2 = 8",
+            "selfExplain": {
+              "questionId": "python-missing-values-why-eight"
+            }
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "diagram": {
+          "type": "python_execution",
+          "runtime": "Python 3.12 · pandas 3.0",
+          "cases": [
+            {
+              "id": "case-0",
+              "label": "Case A",
+              "code": "import pandas as pd\ns = pd.Series([2, None, 8], dtype='Float64')\nknown = s.count()\nmean = s.mean()",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 2,
+                  "values": [
+                    {
+                      "name": "s",
+                      "type": "Series",
+                      "display": "0     2.0\n1    <NA>\n2     8.0\ndtype: Float64",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "value"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            2
+                          ],
+                          [
+                            1,
+                            null
+                          ],
+                          [
+                            2,
+                            8
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 3,
+                  "lineEnd": 4,
+                  "values": [
+                    {
+                      "name": "s",
+                      "type": "Series",
+                      "display": "0     2.0\n1    <NA>\n2     8.0\ndtype: Float64",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "value"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            2
+                          ],
+                          [
+                            1,
+                            null
+                          ],
+                          [
+                            2,
+                            8
+                          ]
+                        ]
+                      }
+                    },
+                    {
+                      "name": "known",
+                      "type": "int64",
+                      "display": "np.int64(2)"
+                    },
+                    {
+                      "name": "mean",
+                      "type": "float64",
+                      "display": "np.float64(5.0)"
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            },
+            {
+              "id": "case-1",
+              "label": "Case B",
+              "code": "import pandas as pd\ns = pd.Series([2, None, 8], dtype='Float64')\nfilled = s.fillna(0)\nmean = filled.mean()",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 2,
+                  "values": [],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 3,
+                  "lineEnd": 4,
+                  "values": [
+                    {
+                      "name": "filled",
+                      "type": "Series",
+                      "display": "0    2.0\n1    0.0\n2    8.0\ndtype: Float64",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "value"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            2
+                          ],
+                          [
+                            1,
+                            0
+                          ],
+                          [
+                            2,
+                            8
+                          ]
+                        ]
+                      }
+                    },
+                    {
+                      "name": "mean",
+                      "type": "float64",
+                      "display": "np.float64(3.3333333333333335)"
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            }
+          ],
+          "initialCaseId": "case-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      },
+      {
+        "id": "mean-by-hand",
+        "kind": "faded_example",
+        "blocks": [],
+        "headline": "What is the default mean of a Series holding 4, missing and 10?",
+        "lead": [],
+        "reveal": [],
+        "workedSteps": [
+          {
+            "text": "How many of the three entries are known?",
+            "blank": {
+              "questionId": "python-missing-values-known"
+            }
+          },
+          {
+            "text": "Add the known values and divide by that count. What is the mean?",
+            "blank": {
+              "questionId": "python-missing-values-2"
+            }
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
+      },
+      {
+        "id": "what-zero-fill-claims",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "fillna(0) tells pandas to treat every unknown as a real zero.",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "fillna(0) replaces each missing value with 0. After that the zeros count as observations, so means and counts change. Filling is a decision about what the unknown should be treated as. It does not recover the real value."
+          }
+        ],
+        "reveal": [],
+        "introducesTerms": [
+          "fillna"
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-missing-values-3",
+        "activityId": "",
+        "diagram": {
+          "type": "python_execution",
+          "runtime": "Python 3.12 · pandas 3.0",
+          "cases": [
+            {
+              "id": "case-0",
+              "label": "Case A",
+              "code": "import pandas as pd\ndf = pd.DataFrame({'shop': ['Bay', 'Hill', 'Lake'], 'units': [2, None, 8]})\nresult = df.dropna(subset=['units'])",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 2,
+                  "values": [],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 3,
+                  "lineEnd": 3,
+                  "values": [
+                    {
+                      "name": "result",
+                      "type": "DataFrame",
+                      "display": "   shop  units\n0   Bay    2.0\n2  Lake    8.0",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "shop",
+                          "units"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            "Bay",
+                            2
+                          ],
+                          [
+                            2,
+                            "Lake",
+                            8
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            },
+            {
+              "id": "case-1",
+              "label": "Case B",
+              "code": "import pandas as pd\ndf = pd.DataFrame({'shop': ['Bay', 'Hill', 'Lake'], 'units': [2, None, 8]})\ndf['unknown_units'] = df['units'].isna()",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 2,
+                  "values": [
+                    {
+                      "name": "df",
+                      "type": "DataFrame",
+                      "display": "   shop  units\n0   Bay    2.0\n1  Hill    NaN\n2  Lake    8.0",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "shop",
+                          "units"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            "Bay",
+                            2
+                          ],
+                          [
+                            1,
+                            "Hill",
+                            null
+                          ],
+                          [
+                            2,
+                            "Lake",
+                            8
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 3,
+                  "lineEnd": 3,
+                  "values": [
+                    {
+                      "name": "df",
+                      "type": "DataFrame",
+                      "display": "   shop  units  unknown_units\n0   Bay    2.0          False\n1  Hill    NaN           True\n2  Lake    8.0          False",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "shop",
+                          "units",
+                          "unknown_units"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            "Bay",
+                            2,
+                            false
+                          ],
+                          [
+                            1,
+                            "Hill",
+                            null,
+                            true
+                          ],
+                          [
+                            2,
+                            "Lake",
+                            8,
+                            false
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            }
+          ],
+          "initialCaseId": "case-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      },
+      {
+        "id": "drop-the-unknowns",
+        "kind": "try",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "dropna removes the missing entries, so a mean taken afterwards uses only the known values."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "Dropping left only the known entries, and the zero stayed because it was observed. Filling with zero would have pulled the mean down."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-missing-values-drop-mean",
+        "activityId": ""
+      },
+      {
+        "id": "keep-the-cleaned-column",
+        "kind": "transfer",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "fillna returns a cleaned copy. Unless you store that result back, the original column is unchanged."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "The cleaned values existed only under the new name, so the original still held its gap. Storing the result back is what makes the change stick."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-missing-values-stays-missing",
+        "activityId": "",
+        "diagram": {
+          "type": "python_execution",
+          "runtime": "Python 3.12 · pandas 3.0",
+          "cases": [
+            {
+              "id": "case-0",
+              "label": "Case A",
+              "code": "import pandas as pd\ndf = pd.DataFrame({'units': [1, None, 5]})\ndf['units'] = df['units'].fillna(0)",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 2,
+                  "values": [
+                    {
+                      "name": "df",
+                      "type": "DataFrame",
+                      "display": "   units\n0    1.0\n1    NaN\n2    5.0",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "units"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            1
+                          ],
+                          [
+                            1,
+                            null
+                          ],
+                          [
+                            2,
+                            5
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 3,
+                  "lineEnd": 3,
+                  "values": [
+                    {
+                      "name": "df",
+                      "type": "DataFrame",
+                      "display": "   units\n0    1.0\n1    0.0\n2    5.0",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "units"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            1
+                          ],
+                          [
+                            1,
+                            0
+                          ],
+                          [
+                            2,
+                            5
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            },
+            {
+              "id": "case-1",
+              "label": "Case B",
+              "code": "import pandas as pd\ndf = pd.DataFrame({'units': [1, None, 5]})\ncleaned = df['units'].fillna(0)",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 2,
+                  "values": [
+                    {
+                      "name": "df",
+                      "type": "DataFrame",
+                      "display": "   units\n0    1.0\n1    NaN\n2    5.0",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "units"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            1
+                          ],
+                          [
+                            1,
+                            null
+                          ],
+                          [
+                            2,
+                            5
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 3,
+                  "lineEnd": 3,
+                  "values": [
+                    {
+                      "name": "df",
+                      "type": "DataFrame",
+                      "display": "   units\n0    1.0\n1    NaN\n2    5.0",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "units"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            1
+                          ],
+                          [
+                            1,
+                            null
+                          ],
+                          [
+                            2,
+                            5
+                          ]
+                        ]
+                      }
+                    },
+                    {
+                      "name": "cleaned",
+                      "type": "Series",
+                      "display": "0    1.0\n1    0.0\n2    5.0\nName: units, dtype: float64",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "units"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            1
+                          ],
+                          [
+                            1,
+                            0
+                          ],
+                          [
+                            2,
+                            5
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            }
+          ],
+          "initialCaseId": "case-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      }
+    ],
+    "orientation": "Detect missing values and understand how cleaning choices affect summaries.",
+    "visualStates": [],
+    "visualKind": "none",
+    "activityId": "",
+    "questionIds": [
+      "python-missing-values-5",
+      "python-missing-values-6",
+      "python-missing-values-7"
+    ],
+    "flashcardIds": [
+      "python-missing-values-card-1",
+      "python-missing-values-card-2"
+    ],
+    "reviewLabel": "Keep unknown separate from zero",
+    "nextAction": "Try the next idea with a new input.",
+    "stageTitles": {
+      "quiz": "Skill check",
+      "review": "Recall it later",
+      "completion": "Ready for the next idea"
+    },
+    "sourceIds": [
+      "pd-missing",
+      "pd-cow"
+    ],
+    "assuranceLevel": "source_backed",
+    "intro": {
+      "hook": {
+        "blocks": [
+          {
+            "kind": "paragraph",
+            "text": "A survey asks four people how many pets they have. The answers are 2, 0, no answer, and 4."
+          }
+        ],
+        "questionId": "python-missing-values-hook"
+      },
+      "promise": "By the end you'll tell a missing value from a zero, and say how a cleaning choice changes a count or a mean.",
+      "estimatedMinutes": 10
+    },
+    "recap": {
+      "keyIdea": "Missing means unknown and zero means measured nothing; summaries skip the unknowns, and filling or dropping is a choice that changes the result.",
+      "blocks": [
+        {
+          "kind": "paragraph",
+          "text": "You counted 3 survey answers, because a zero is an answer. You found the mean of 4 and 10 is 7, and that the unfilled column kept 1 missing value."
+        }
+      ],
+      "nextHook": "Next: turn messy text into clean columns."
+    },
+    "calculator": "off",
+    "taughtSkills": [
+      "detect-missing",
+      "summaries-skip-missing",
+      "fill-policy",
+      "assign-cleaned-result"
+    ]
+  },
+  "questions": [
+    {
+      "id": "python-missing-values-1",
+      "conceptIds": [
+        "python-missing-values"
+      ],
+      "prompt": "How many entries are missing in 0, None, 4 and None?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Do not count the zero as missing.",
+        "Only the missing markers count here.",
+        "Count the None entries."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 2,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "The two None entries are missing. Zero is an observed value."
+      },
+      "sourceIds": [
+        "pd-missing",
+        "pd-cow"
+      ],
+      "onCorrect": "2. The two None entries are unknown. The 0 is a measured value.",
+      "skill": "detect-missing",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              3
+            ]
+          },
+          "feedback": "The zero is known, so it is not missing."
+        },
+        {
+          "match": {
+            "numeric": [
+              1
+            ]
+          },
+          "feedback": "Both None entries are missing."
+        }
+      ],
+      "calculator": "off"
+    },
+    {
+      "id": "python-missing-values-2",
+      "conceptIds": [
+        "python-missing-values"
+      ],
+      "prompt": "What is the default mean?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Leave the missing entry out of the sum and the count.",
+        "Add the known values.",
+        "Divide by the number of known values."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 7,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "The known values 4 and 10 have mean 14 ÷ 2 = 7."
+      },
+      "sourceIds": [
+        "pd-missing",
+        "pd-cow"
+      ],
+      "onCorrect": "7. The known values 4 and 10 add to 14, and 14 ÷ 2 is the mean.",
+      "skill": "summaries-skip-missing",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              4
+            ]
+          },
+          "feedback": "That is the mean when the gap counts as zero. The default skips it."
+        },
+        {
+          "match": {
+            "numeric": [
+              14
+            ]
+          },
+          "feedback": "That is the sum. Divide it by the number of known values."
+        }
+      ],
+      "calculator": "off"
+    },
+    {
+      "id": "python-missing-values-3",
+      "conceptIds": [
+        "python-missing-values"
+      ],
+      "prompt": "What assumption does filling an unknown measurement with zero make?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Separate a chosen replacement from an observation."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "That the unknown should count as an observed zero"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "A zero fill changes the data used in calculations. It does not recover the unknown original value."
+      },
+      "sourceIds": [
+        "pd-missing",
+        "pd-cow"
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "That the unknown should count as an observed zero"
+        },
+        {
+          "id": "b",
+          "label": "That the original value has been recovered"
+        },
+        {
+          "id": "c",
+          "label": "That missingness can no longer affect the analysis"
+        }
+      ],
+      "onCorrect": "That the unknown should count as an observed zero. It changes the data used in calculations.",
+      "skill": "fill-policy",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "The real value stays unknown. Zero is only a stand-in."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "The choice of filling itself affects every later calculation."
+        }
+      ],
+      "calculator": "off"
+    },
+    {
+      "id": "python-missing-values-4",
+      "conceptIds": [
+        "python-missing-values"
+      ],
+      "prompt": "Which expression detects pandas missing values?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Use the pandas operation made for it."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "s.isna()"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "isna detects the dtype's missing-value marker."
+      },
+      "sourceIds": [
+        "pd-missing",
+        "pd-cow"
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "s.isna()"
+        },
+        {
+          "id": "b",
+          "label": "s == 0"
+        },
+        {
+          "id": "c",
+          "label": "s == 'missing'"
+        }
+      ],
+      "onCorrect": "s.isna(). It finds the type's missing marker. A zero and the word missing are ordinary values.",
+      "skill": "detect-missing",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "That finds zeros, which are known values and not missing."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "That finds the text 'missing'. A real missing value is a marker, not that word."
+        }
+      ],
+      "calculator": "off"
+    },
+    {
+      "id": "python-missing-values-5",
+      "conceptIds": [
+        "python-missing-values"
+      ],
+      "prompt": "What is the mean after filling 3, missing and 9 with zero?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "The replacement now takes part in the count.",
+        "After filling, all three positions are known values.",
+        "Work out (3 + 0 + 9) ÷ 3."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 4,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "The filled values are 3, 0 and 9; 12 ÷ 3 = 4."
+      },
+      "sourceIds": [
+        "pd-missing",
+        "pd-cow"
+      ],
+      "onCorrect": "4. The filled zero counts as an observation, so the sum 12 is shared among three entries.",
+      "skill": "fill-policy",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              6
+            ]
+          },
+          "feedback": "That is the mean that skips the gap. After filling, the zero is counted."
+        },
+        {
+          "match": {
+            "numeric": [
+              12
+            ]
+          },
+          "feedback": "That is the sum. Divide it by three entries."
+        }
+      ],
+      "calculator": "off"
+    },
+    {
+      "id": "python-missing-values-6",
+      "conceptIds": [
+        "python-missing-values"
+      ],
+      "prompt": "A Series holds 1, missing, missing, 7 and 0. What does count() return?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "count skips missing values but keeps zeros.",
+        "count includes every known position.",
+        "Cross out the missing entries and count the rest."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 3,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "The known values are 1, 7 and 0, so count returns 3."
+      },
+      "sourceIds": [
+        "pd-missing",
+        "pd-cow"
+      ],
+      "onCorrect": "3. The known values are 1, 7 and 0. The zero counts because it was observed.",
+      "skill": "summaries-skip-missing",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              2
+            ]
+          },
+          "feedback": "The zero is a known value, so it counts."
+        },
+        {
+          "match": {
+            "numeric": [
+              5
+            ]
+          },
+          "feedback": "That is the size, which counts every position."
+        }
+      ],
+      "calculator": "off"
+    },
+    {
+      "id": "python-missing-values-7",
+      "conceptIds": [
+        "python-missing-values"
+      ],
+      "difficulty": 1,
+      "sourceIds": [
+        "pd-missing",
+        "pd-cow"
+      ],
+      "hints": [
+        "size counts every position.",
+        "count counts only the known entries.",
+        "The difference is the number of gaps."
+      ],
+      "prompt": "A Series holds 1, missing, missing, 7 and 0. What is size minus count?",
+      "responseType": "numeric",
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 2,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "5 − 3 = 2 missing entries."
+      },
+      "onCorrect": "2. size counts all five positions and count the three known ones, so the difference is the unknowns.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              3
+            ]
+          },
+          "feedback": "That is count itself. Subtract it from the size."
+        },
+        {
+          "match": {
+            "numeric": [
+              5
+            ]
+          },
+          "feedback": "That is the size on its own."
+        }
+      ],
+      "skill": "detect-missing",
+      "calculator": "off"
+    },
+    {
+      "id": "python-missing-values-hook",
+      "conceptIds": [
+        "python-missing-values"
+      ],
+      "difficulty": 1,
+      "sourceIds": [
+        "pd-missing",
+        "pd-cow"
+      ],
+      "hints": [
+        "Which of the four entries is not an answer?",
+        "A zero is a real answer.",
+        "Count the answers, including the zero."
+      ],
+      "prompt": "How many people gave an answer?",
+      "responseType": "numeric",
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 3,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "Three people answered: 2, 0 and 4."
+      },
+      "onCorrect": "3. The zero is an answer: someone has no pets. Only the missing reply is unknown, and pandas keeps the two apart.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              2
+            ]
+          },
+          "feedback": "The zero is an answer, because one person reported having no pets."
+        },
+        {
+          "match": {
+            "numeric": [
+              4
+            ]
+          },
+          "feedback": "One person gave no answer at all."
+        }
+      ],
+      "skill": "detect-missing",
+      "calculator": "off"
+    },
+    {
+      "id": "python-missing-values-why-eight",
+      "conceptIds": [
+        "python-missing-values"
+      ],
+      "difficulty": 1,
+      "sourceIds": [
+        "pd-missing",
+        "pd-cow"
+      ],
+      "hints": [
+        "What does mean divide by when entries are missing?"
+      ],
+      "prompt": "Why is the mean 8 and not 4?",
+      "responseType": "short_text",
+      "choices": [
+        {
+          "id": "a",
+          "label": "The missing entries are left out of both the sum and the count"
+        },
+        {
+          "id": "b",
+          "label": "The missing entries count as zero"
+        },
+        {
+          "id": "c",
+          "label": "mean only uses the first two entries"
+        }
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "The missing entries are left out of both the sum and the count"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "mean divides the sum of known values by the number of known values."
+      },
+      "onCorrect": "The missing entries are left out of both the sum and the count.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Counting them as zero would divide by four. The default skips them."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "mean uses every known value, wherever it sits."
+        }
+      ],
+      "skill": "summaries-skip-missing",
+      "calculator": "off"
+    },
+    {
+      "id": "python-missing-values-known",
+      "conceptIds": [
+        "python-missing-values"
+      ],
+      "difficulty": 1,
+      "sourceIds": [
+        "pd-missing",
+        "pd-cow"
+      ],
+      "hints": [
+        "Which entry is missing?",
+        "count() counts the known values only.",
+        "Count the entries that are not missing."
+      ],
+      "prompt": "How many of the three entries are known?",
+      "responseType": "numeric",
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 2,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "Two entries are known."
+      },
+      "onCorrect": "2. The values 4 and 10 are known, and the gap is left out.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              3
+            ]
+          },
+          "feedback": "One of the three entries is missing, so it is not known."
+        }
+      ],
+      "skill": "summaries-skip-missing",
+      "calculator": "off"
+    },
+    {
+      "id": "python-missing-values-drop-mean",
+      "conceptIds": [
+        "python-missing-values"
+      ],
+      "difficulty": 1,
+      "sourceIds": [
+        "pd-missing",
+        "pd-cow"
+      ],
+      "hints": [
+        "Which entry does dropna remove?",
+        "The zero stays, because it was observed.",
+        "Add the three remaining values and divide by three."
+      ],
+      "prompt": "Drop the missing entry from 9, missing, 6 and 0. What is the mean of the entries that remain?",
+      "responseType": "numeric",
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 5,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "The remaining values are 9, 6 and 0, and 15 ÷ 3 = 5."
+      },
+      "onCorrect": "5. The zero stayed because it was measured, and the mean of 9, 6 and 0 is 15 ÷ 3.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              7.5
+            ]
+          },
+          "feedback": "That also removes the zero. Only the missing entry is dropped."
+        },
+        {
+          "match": {
+            "numeric": [
+              3.75
+            ]
+          },
+          "feedback": "That fills the gap with zero and divides by four. Dropping removes the entry."
+        }
+      ],
+      "skill": "fill-policy",
+      "calculator": "off"
+    },
+    {
+      "id": "python-missing-values-stays-missing",
+      "conceptIds": [
+        "python-missing-values"
+      ],
+      "difficulty": 1,
+      "sourceIds": [
+        "pd-missing",
+        "pd-cow"
+      ],
+      "hints": [
+        "Where did the filled values go?",
+        "fillna returned a new Series and df was not updated.",
+        "Count the gaps still in df['u']."
+      ],
+      "prompt": "A column holds 1, missing and 5. The line cleaned = df['u'].fillna(0) runs, and nothing is stored back into df. How many missing values does df['u'] still hold?",
+      "responseType": "numeric",
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 1,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "df['u'] is unchanged, so it still has 1 missing value."
+      },
+      "onCorrect": "1. The filled values went to cleaned only. df['u'] kept its gap because nothing stored the result back.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              0
+            ]
+          },
+          "feedback": "That assumes the original column was changed. The result was stored only under cleaned."
+        }
+      ],
+      "skill": "assign-cleaned-result",
+      "calculator": "off"
+    }
+  ],
+  "citations": [
+    {
+      "claim": "A missing value marks an unknown, and an unknown is not a zero.",
+      "sourceId": "pd-missing",
+      "section": "Values considered missing; isna; calculations with missing data; fillna and dropna",
+      "targetKind": "step",
+      "targetId": "unknown-is-not-zero"
+    },
+    {
+      "claim": "A missing value marks an unknown, and an unknown is not a zero.",
+      "sourceId": "pd-cow",
+      "section": "pandas 3.0 migration; chained assignment and inplace operations on selected columns",
+      "targetKind": "step",
+      "targetId": "unknown-is-not-zero"
+    },
+    {
+      "claim": "isna() marks only the unknown entries. Think about whether a zero is one of them.",
+      "sourceId": "pd-missing",
+      "section": "Values considered missing; isna; calculations with missing data; fillna and dropna",
+      "targetKind": "step",
+      "targetId": "count-the-unknowns"
+    },
+    {
+      "claim": "isna() marks only the unknown entries. Think about whether a zero is one of them.",
+      "sourceId": "pd-cow",
+      "section": "pandas 3.0 migration; chained assignment and inplace operations on selected columns",
+      "targetKind": "step",
+      "targetId": "count-the-unknowns"
+    },
+    {
+      "claim": "What are count() and mean() of a Series holding 6, missing, 10 and missing?",
+      "sourceId": "pd-missing",
+      "section": "Values considered missing; isna; calculations with missing data; fillna and dropna",
+      "targetKind": "step",
+      "targetId": "average-of-the-known"
+    },
+    {
+      "claim": "What are count() and mean() of a Series holding 6, missing, 10 and missing?",
+      "sourceId": "pd-cow",
+      "section": "pandas 3.0 migration; chained assignment and inplace operations on selected columns",
+      "targetKind": "step",
+      "targetId": "average-of-the-known"
+    },
+    {
+      "claim": "What is the default mean of a Series holding 4, missing and 10?",
+      "sourceId": "pd-missing",
+      "section": "Values considered missing; isna; calculations with missing data; fillna and dropna",
+      "targetKind": "step",
+      "targetId": "mean-by-hand"
+    },
+    {
+      "claim": "What is the default mean of a Series holding 4, missing and 10?",
+      "sourceId": "pd-cow",
+      "section": "pandas 3.0 migration; chained assignment and inplace operations on selected columns",
+      "targetKind": "step",
+      "targetId": "mean-by-hand"
+    },
+    {
+      "claim": "fillna(0) tells pandas to treat every unknown as a real zero.",
+      "sourceId": "pd-missing",
+      "section": "Values considered missing; isna; calculations with missing data; fillna and dropna",
+      "targetKind": "step",
+      "targetId": "what-zero-fill-claims"
+    },
+    {
+      "claim": "fillna(0) tells pandas to treat every unknown as a real zero.",
+      "sourceId": "pd-cow",
+      "section": "pandas 3.0 migration; chained assignment and inplace operations on selected columns",
+      "targetKind": "step",
+      "targetId": "what-zero-fill-claims"
+    },
+    {
+      "claim": "dropna removes the missing entries, so a mean taken afterwards uses only the known values.",
+      "sourceId": "pd-missing",
+      "section": "Values considered missing; isna; calculations with missing data; fillna and dropna",
+      "targetKind": "step",
+      "targetId": "drop-the-unknowns"
+    },
+    {
+      "claim": "dropna removes the missing entries, so a mean taken afterwards uses only the known values.",
+      "sourceId": "pd-cow",
+      "section": "pandas 3.0 migration; chained assignment and inplace operations on selected columns",
+      "targetKind": "step",
+      "targetId": "drop-the-unknowns"
+    },
+    {
+      "claim": "fillna returns a cleaned copy. Unless you store that result back, the original column is unchanged.",
+      "sourceId": "pd-missing",
+      "section": "Values considered missing; isna; calculations with missing data; fillna and dropna",
+      "targetKind": "step",
+      "targetId": "keep-the-cleaned-column"
+    },
+    {
+      "claim": "fillna returns a cleaned copy. Unless you store that result back, the original column is unchanged.",
+      "sourceId": "pd-cow",
+      "section": "pandas 3.0 migration; chained assignment and inplace operations on selected columns",
+      "targetKind": "step",
+      "targetId": "keep-the-cleaned-column"
+    },
+    {
+      "claim": "2. The two None entries are unknown. The 0 is a measured value.",
+      "sourceId": "pd-missing",
+      "section": "Values considered missing; isna; calculations with missing data; fillna and dropna",
+      "targetKind": "question",
+      "targetId": "python-missing-values-1"
+    },
+    {
+      "claim": "2. The two None entries are unknown. The 0 is a measured value.",
+      "sourceId": "pd-cow",
+      "section": "pandas 3.0 migration; chained assignment and inplace operations on selected columns",
+      "targetKind": "question",
+      "targetId": "python-missing-values-1"
+    },
+    {
+      "claim": "7. The known values 4 and 10 add to 14, and 14 ÷ 2 is the mean.",
+      "sourceId": "pd-missing",
+      "section": "Values considered missing; isna; calculations with missing data; fillna and dropna",
+      "targetKind": "question",
+      "targetId": "python-missing-values-2"
+    },
+    {
+      "claim": "7. The known values 4 and 10 add to 14, and 14 ÷ 2 is the mean.",
+      "sourceId": "pd-cow",
+      "section": "pandas 3.0 migration; chained assignment and inplace operations on selected columns",
+      "targetKind": "question",
+      "targetId": "python-missing-values-2"
+    },
+    {
+      "claim": "That the unknown should count as an observed zero. It changes the data used in calculations.",
+      "sourceId": "pd-missing",
+      "section": "Values considered missing; isna; calculations with missing data; fillna and dropna",
+      "targetKind": "question",
+      "targetId": "python-missing-values-3"
+    },
+    {
+      "claim": "That the unknown should count as an observed zero. It changes the data used in calculations.",
+      "sourceId": "pd-cow",
+      "section": "pandas 3.0 migration; chained assignment and inplace operations on selected columns",
+      "targetKind": "question",
+      "targetId": "python-missing-values-3"
+    },
+    {
+      "claim": "s.isna(). It finds the type's missing marker. A zero and the word missing are ordinary values.",
+      "sourceId": "pd-missing",
+      "section": "Values considered missing; isna; calculations with missing data; fillna and dropna",
+      "targetKind": "question",
+      "targetId": "python-missing-values-4"
+    },
+    {
+      "claim": "s.isna(). It finds the type's missing marker. A zero and the word missing are ordinary values.",
+      "sourceId": "pd-cow",
+      "section": "pandas 3.0 migration; chained assignment and inplace operations on selected columns",
+      "targetKind": "question",
+      "targetId": "python-missing-values-4"
+    },
+    {
+      "claim": "4. The filled zero counts as an observation, so the sum 12 is shared among three entries.",
+      "sourceId": "pd-missing",
+      "section": "Values considered missing; isna; calculations with missing data; fillna and dropna",
+      "targetKind": "question",
+      "targetId": "python-missing-values-5"
+    },
+    {
+      "claim": "4. The filled zero counts as an observation, so the sum 12 is shared among three entries.",
+      "sourceId": "pd-cow",
+      "section": "pandas 3.0 migration; chained assignment and inplace operations on selected columns",
+      "targetKind": "question",
+      "targetId": "python-missing-values-5"
+    },
+    {
+      "claim": "3. The known values are 1, 7 and 0. The zero counts because it was observed.",
+      "sourceId": "pd-missing",
+      "section": "Values considered missing; isna; calculations with missing data; fillna and dropna",
+      "targetKind": "question",
+      "targetId": "python-missing-values-6"
+    },
+    {
+      "claim": "3. The known values are 1, 7 and 0. The zero counts because it was observed.",
+      "sourceId": "pd-cow",
+      "section": "pandas 3.0 migration; chained assignment and inplace operations on selected columns",
+      "targetKind": "question",
+      "targetId": "python-missing-values-6"
+    },
+    {
+      "claim": "2. size counts all five positions and count the three known ones, so the difference is the unknowns.",
+      "sourceId": "pd-missing",
+      "section": "Values considered missing; isna; calculations with missing data; fillna and dropna",
+      "targetKind": "question",
+      "targetId": "python-missing-values-7"
+    },
+    {
+      "claim": "2. size counts all five positions and count the three known ones, so the difference is the unknowns.",
+      "sourceId": "pd-cow",
+      "section": "pandas 3.0 migration; chained assignment and inplace operations on selected columns",
+      "targetKind": "question",
+      "targetId": "python-missing-values-7"
+    },
+    {
+      "claim": "3. The zero is an answer: someone has no pets. Only the missing reply is unknown, and pandas keeps the two apart.",
+      "sourceId": "pd-missing",
+      "section": "Values considered missing; isna; calculations with missing data; fillna and dropna",
+      "targetKind": "question",
+      "targetId": "python-missing-values-hook"
+    },
+    {
+      "claim": "3. The zero is an answer: someone has no pets. Only the missing reply is unknown, and pandas keeps the two apart.",
+      "sourceId": "pd-cow",
+      "section": "pandas 3.0 migration; chained assignment and inplace operations on selected columns",
+      "targetKind": "question",
+      "targetId": "python-missing-values-hook"
+    },
+    {
+      "claim": "The missing entries are left out of both the sum and the count.",
+      "sourceId": "pd-missing",
+      "section": "Values considered missing; isna; calculations with missing data; fillna and dropna",
+      "targetKind": "question",
+      "targetId": "python-missing-values-why-eight"
+    },
+    {
+      "claim": "The missing entries are left out of both the sum and the count.",
+      "sourceId": "pd-cow",
+      "section": "pandas 3.0 migration; chained assignment and inplace operations on selected columns",
+      "targetKind": "question",
+      "targetId": "python-missing-values-why-eight"
+    },
+    {
+      "claim": "2. The values 4 and 10 are known, and the gap is left out.",
+      "sourceId": "pd-missing",
+      "section": "Values considered missing; isna; calculations with missing data; fillna and dropna",
+      "targetKind": "question",
+      "targetId": "python-missing-values-known"
+    },
+    {
+      "claim": "2. The values 4 and 10 are known, and the gap is left out.",
+      "sourceId": "pd-cow",
+      "section": "pandas 3.0 migration; chained assignment and inplace operations on selected columns",
+      "targetKind": "question",
+      "targetId": "python-missing-values-known"
+    },
+    {
+      "claim": "5. The zero stayed because it was measured, and the mean of 9, 6 and 0 is 15 ÷ 3.",
+      "sourceId": "pd-missing",
+      "section": "Values considered missing; isna; calculations with missing data; fillna and dropna",
+      "targetKind": "question",
+      "targetId": "python-missing-values-drop-mean"
+    },
+    {
+      "claim": "5. The zero stayed because it was measured, and the mean of 9, 6 and 0 is 15 ÷ 3.",
+      "sourceId": "pd-cow",
+      "section": "pandas 3.0 migration; chained assignment and inplace operations on selected columns",
+      "targetKind": "question",
+      "targetId": "python-missing-values-drop-mean"
+    },
+    {
+      "claim": "1. The filled values went to cleaned only. df['u'] kept its gap because nothing stored the result back.",
+      "sourceId": "pd-missing",
+      "section": "Values considered missing; isna; calculations with missing data; fillna and dropna",
+      "targetKind": "question",
+      "targetId": "python-missing-values-stays-missing"
+    },
+    {
+      "claim": "1. The filled values went to cleaned only. df['u'] kept its gap because nothing stored the result back.",
+      "sourceId": "pd-cow",
+      "section": "pandas 3.0 migration; chained assignment and inplace operations on selected columns",
+      "targetKind": "question",
+      "targetId": "python-missing-values-stays-missing"
+    },
+    {
+      "claim": "The three known observations sum to 18, giving a mean of 6.",
+      "sourceId": "pd-missing",
+      "section": "Values considered missing; isna; calculations with missing data; fillna and dropna",
+      "targetKind": "flashcard",
+      "targetId": "python-missing-values-card-1"
+    },
+    {
+      "claim": "The three known observations sum to 18, giving a mean of 6.",
+      "sourceId": "pd-cow",
+      "section": "pandas 3.0 migration; chained assignment and inplace operations on selected columns",
+      "targetKind": "flashcard",
+      "targetId": "python-missing-values-card-1"
+    },
+    {
+      "claim": "fillna returns values with missing entries replaced according to an explicit policy.",
+      "sourceId": "pd-missing",
+      "section": "Values considered missing; isna; calculations with missing data; fillna and dropna",
+      "targetKind": "flashcard",
+      "targetId": "python-missing-values-card-2"
+    },
+    {
+      "claim": "fillna returns values with missing entries replaced according to an explicit policy.",
+      "sourceId": "pd-cow",
+      "section": "pandas 3.0 migration; chained assignment and inplace operations on selected columns",
+      "targetKind": "flashcard",
+      "targetId": "python-missing-values-card-2"
+    }
+  ]
+}

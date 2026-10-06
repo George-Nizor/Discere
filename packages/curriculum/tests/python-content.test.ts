@@ -1,12 +1,17 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
-import type { CourseBundle } from "@discere/contracts";
+import { type CourseBundle, CourseBundleSchema } from "@discere/contracts";
 import { assertEditorialApproval, loadCourseBundle, validateCourseBundle } from "../src/index.js";
+import { historicalBundle } from "./helpers/published-history.js";
 const directory = path.resolve(import.meta.dirname, "../../../content/python-for-data-analysis");
+// The bundle these checks were written against: archived once the course was rewritten to v2
+// (helpers/published-history.ts). Approval is checked on the current bundle.
 let bundle: CourseBundle;
+let current: CourseBundle;
 beforeAll(async () => {
-  bundle = await loadCourseBundle(path.join(directory, "bundle.json"));
+  current = await loadCourseBundle(path.join(directory, "bundle.json"));
+  bundle = CourseBundleSchema.parse(historicalBundle("python-for-data-analysis"));
 });
 // Recompute the numeric exercises from their stated observations, outside the authoring runner.
 const sums = (values: number[]) => values.reduce((a, b) => a + b, 0);
@@ -132,7 +137,7 @@ describe("reviewed Python curriculum", () => {
       await readFile(path.join(directory, "review/publication.json"), "utf8"),
     );
     expect(() =>
-      assertEditorialApproval(bundle, review, validateCourseBundle(bundle)),
+      assertEditorialApproval(current, review, validateCourseBundle(current)),
     ).not.toThrow();
     expect(bundle.lessons).toHaveLength(21);
     expect(bundle.questions).toHaveLength(126);

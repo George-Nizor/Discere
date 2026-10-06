@@ -1,0 +1,1434 @@
+{
+  "lessonId": "dates-and-units",
+  "courseId": "python-for-data-analysis",
+  "migrationNotes": [],
+  "lesson": {
+    "id": "dates-and-units",
+    "courseId": "python-for-data-analysis",
+    "conceptIds": [
+      "python-dates-and-units"
+    ],
+    "title": "Read a date without guessing",
+    "steps": [
+      {
+        "id": "same-text-two-dates",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "A date written as text is ambiguous until you state its format.",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "03/04/2026 could be 3 April or 4 March. format='%d/%m/%Y' says the first field is the day (%d), the second the month (%m) and the last the year (%Y)."
+          },
+          {
+            "kind": "callout",
+            "tone": "key",
+            "text": "Say the format. Do not let the software guess."
+          }
+        ],
+        "reveal": [],
+        "introducesTerms": [
+          "format"
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-dates-and-units-format-check",
+        "activityId": ""
+      },
+      {
+        "id": "read-the-month",
+        "kind": "predict",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "The format string decides which field is the month. Read the fields in the order the format lists them."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "You followed the format, not a regional habit. %d came first, so the first field was the day and the middle field the month."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-dates-and-units-1",
+        "activityId": "",
+        "diagram": {
+          "type": "python_execution",
+          "runtime": "Python 3.12 · pandas 3.0",
+          "cases": [
+            {
+              "id": "case-0",
+              "label": "Case A",
+              "code": "import pandas as pd\nraw = pd.Series(['03/04/2026'])\ndates = pd.to_datetime(raw, format='%d/%m/%Y')",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 2,
+                  "values": [
+                    {
+                      "name": "raw",
+                      "type": "Series",
+                      "display": "0    03/04/2026\ndtype: str",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "value"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            "03/04/2026"
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 3,
+                  "lineEnd": 3,
+                  "values": [
+                    {
+                      "name": "raw",
+                      "type": "Series",
+                      "display": "0    03/04/2026\ndtype: str",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "value"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            "03/04/2026"
+                          ]
+                        ]
+                      }
+                    },
+                    {
+                      "name": "dates",
+                      "type": "Series",
+                      "display": "0   2026-04-03\ndtype: datetime64[us]",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "value"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            "2026-04-03 00:00:00"
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            },
+            {
+              "id": "case-1",
+              "label": "Case B",
+              "code": "import pandas as pd\nraw = pd.Series(['03/04/2026'])\ndates = pd.to_datetime(raw, format='%m/%d/%Y')",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 2,
+                  "values": [
+                    {
+                      "name": "raw",
+                      "type": "Series",
+                      "display": "0    03/04/2026\ndtype: str",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "value"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            "03/04/2026"
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 3,
+                  "lineEnd": 3,
+                  "values": [
+                    {
+                      "name": "raw",
+                      "type": "Series",
+                      "display": "0    03/04/2026\ndtype: str",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "value"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            "03/04/2026"
+                          ]
+                        ]
+                      }
+                    },
+                    {
+                      "name": "dates",
+                      "type": "Series",
+                      "display": "0   2026-03-04\ndtype: datetime64[us]",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "value"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            "2026-03-04 00:00:00"
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            }
+          ],
+          "initialCaseId": "case-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      },
+      {
+        "id": "when-a-date-fails",
+        "kind": "worked_example",
+        "blocks": [],
+        "headline": "With format='%Y-%m-%d' and errors='coerce', how many of '2026-06-31', '2026-07-01' and '2026-07-02' fail to parse?",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "errors='coerce' turns anything it cannot read into a missing date, instead of stopping with an error."
+          }
+        ],
+        "reveal": [],
+        "workedSteps": [
+          {
+            "text": "Check each date against the calendar. June has 30 days, so June 31 does not exist.",
+            "math": "2026-06-31: invalid"
+          },
+          {
+            "text": "The coerced result for the invalid date is a missing date.",
+            "math": "NaT",
+            "selfExplain": {
+              "questionId": "python-dates-and-units-4"
+            }
+          },
+          {
+            "text": "The other two are real dates. Count the failures.",
+            "math": "1"
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "diagram": {
+          "type": "python_execution",
+          "runtime": "Python 3.12 · pandas 3.0",
+          "cases": [
+            {
+              "id": "case-0",
+              "label": "Case A",
+              "code": "import pandas as pd\nraw = pd.Series(['2026-02-28', '2026-03-01'])\ndates = pd.to_datetime(raw, format='%Y-%m-%d', errors='coerce')",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 2,
+                  "values": [],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 3,
+                  "lineEnd": 3,
+                  "values": [
+                    {
+                      "name": "dates",
+                      "type": "Series",
+                      "display": "0   2026-02-28\n1   2026-03-01\ndtype: datetime64[us]",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "value"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            "2026-02-28 00:00:00"
+                          ],
+                          [
+                            1,
+                            "2026-03-01 00:00:00"
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            },
+            {
+              "id": "case-1",
+              "label": "Case B",
+              "code": "import pandas as pd\nraw = pd.Series(['2026-02-30', '2026-03-01'])\ndates = pd.to_datetime(raw, format='%Y-%m-%d', errors='coerce')\ninvalid = dates.isna().sum()",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 2,
+                  "values": [],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 3,
+                  "lineEnd": 4,
+                  "values": [
+                    {
+                      "name": "dates",
+                      "type": "Series",
+                      "display": "0          NaT\n1   2026-03-01\ndtype: datetime64[us]",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "value"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            null
+                          ],
+                          [
+                            1,
+                            "2026-03-01 00:00:00"
+                          ]
+                        ]
+                      }
+                    },
+                    {
+                      "name": "invalid",
+                      "type": "int64",
+                      "display": "np.int64(1)"
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            }
+          ],
+          "initialCaseId": "case-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      },
+      {
+        "id": "real-or-impossible",
+        "kind": "faded_example",
+        "blocks": [],
+        "headline": "With format='%Y-%m-%d' and errors='coerce', how many of '2026-02-30', '2026-03-01' and 'bad' fail?",
+        "lead": [],
+        "reveal": [],
+        "workedSteps": [
+          {
+            "text": "February 2026 has 28 days. How many of the first two entries are real dates?",
+            "blank": {
+              "questionId": "python-dates-and-units-faded-real"
+            }
+          },
+          {
+            "text": "'bad' is not a date at all. How many of the three entries fail to parse?",
+            "blank": {
+              "questionId": "python-dates-and-units-2"
+            }
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
+      },
+      {
+        "id": "a-number-with-a-scale",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "An epoch number counts time from 1970-01-01, and unit says what one step means.",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Unix timestamps count from 1970-01-01 UTC. The number alone does not say whether it counts seconds or milliseconds, so pass unit='s' or unit='ms'."
+          }
+        ],
+        "reveal": [],
+        "introducesTerms": [
+          "epoch"
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-dates-and-units-3",
+        "activityId": "",
+        "diagram": {
+          "type": "python_execution",
+          "runtime": "Python 3.12 · pandas 3.0",
+          "cases": [
+            {
+              "id": "case-0",
+              "label": "Case A",
+              "code": "import pandas as pd\ndates = pd.to_datetime(pd.Series([0, 60]), unit='s', utc=True)",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 1,
+                  "values": [],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 2,
+                  "lineEnd": 2,
+                  "values": [
+                    {
+                      "name": "dates",
+                      "type": "Series",
+                      "display": "0   1970-01-01 00:00:00+00:00\n1   1970-01-01 00:01:00+00:00\ndtype: datetime64[s, UTC]",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "value"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            "1970-01-01 00:00:00+00:00"
+                          ],
+                          [
+                            1,
+                            "1970-01-01 00:01:00+00:00"
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            },
+            {
+              "id": "case-1",
+              "label": "Case B",
+              "code": "import pandas as pd\ndates = pd.to_datetime(pd.Series([0, 60]), unit='ms', utc=True)",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 1,
+                  "values": [],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 2,
+                  "lineEnd": 2,
+                  "values": [
+                    {
+                      "name": "dates",
+                      "type": "Series",
+                      "display": "0          1970-01-01 00:00:00+00:00\n1   1970-01-01 00:00:00.060000+00:00\ndtype: datetime64[ms, UTC]",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "value"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            "1970-01-01 00:00:00+00:00"
+                          ],
+                          [
+                            1,
+                            "1970-01-01 00:00:00.060000+00:00"
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            }
+          ],
+          "initialCaseId": "case-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      },
+      {
+        "id": "minutes-between",
+        "kind": "try",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "With unit='s', each epoch step is one second. Subtract two offsets to get the seconds between them."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "Both offsets counted seconds, so their difference was seconds too. You then divided by 60 to get minutes."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-dates-and-units-minutes-apart",
+        "activityId": ""
+      },
+      {
+        "id": "across-a-month-end",
+        "kind": "transfer",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Subtracting two timestamps gives a duration, and .days reads its whole days. The .dt accessor reads calendar fields such as the month from a column of dates."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "The calendar counted the days left in February and then added the days into March. Subtracting dates handles month lengths for you."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-dates-and-units-month-end",
+        "activityId": "",
+        "diagram": {
+          "type": "python_execution",
+          "runtime": "Python 3.12 · pandas 3.0",
+          "cases": [
+            {
+              "id": "case-0",
+              "label": "Case A",
+              "code": "import pandas as pd\ndates = pd.to_datetime(pd.Series(['2026-04-02', '2026-05-03']))\nmonths = dates.dt.month",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 2,
+                  "values": [
+                    {
+                      "name": "dates",
+                      "type": "Series",
+                      "display": "0   2026-04-02\n1   2026-05-03\ndtype: datetime64[us]",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "value"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            "2026-04-02 00:00:00"
+                          ],
+                          [
+                            1,
+                            "2026-05-03 00:00:00"
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 3,
+                  "lineEnd": 3,
+                  "values": [
+                    {
+                      "name": "dates",
+                      "type": "Series",
+                      "display": "0   2026-04-02\n1   2026-05-03\ndtype: datetime64[us]",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "value"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            "2026-04-02 00:00:00"
+                          ],
+                          [
+                            1,
+                            "2026-05-03 00:00:00"
+                          ]
+                        ]
+                      }
+                    },
+                    {
+                      "name": "months",
+                      "type": "Series",
+                      "display": "0    4\n1    5\ndtype: int32",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "value"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            4
+                          ],
+                          [
+                            1,
+                            5
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            },
+            {
+              "id": "case-1",
+              "label": "Case B",
+              "code": "import pandas as pd\ndates = pd.to_datetime(pd.Series(['2026-04-02', '2026-04-05']))\ndays = (dates.iloc[1] - dates.iloc[0]).days",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 2,
+                  "values": [
+                    {
+                      "name": "dates",
+                      "type": "Series",
+                      "display": "0   2026-04-02\n1   2026-04-05\ndtype: datetime64[us]",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "value"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            "2026-04-02 00:00:00"
+                          ],
+                          [
+                            1,
+                            "2026-04-05 00:00:00"
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 3,
+                  "lineEnd": 3,
+                  "values": [
+                    {
+                      "name": "dates",
+                      "type": "Series",
+                      "display": "0   2026-04-02\n1   2026-04-05\ndtype: datetime64[us]",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "value"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            "2026-04-02 00:00:00"
+                          ],
+                          [
+                            1,
+                            "2026-04-05 00:00:00"
+                          ]
+                        ]
+                      }
+                    },
+                    {
+                      "name": "days",
+                      "type": "int",
+                      "display": "3"
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            }
+          ],
+          "initialCaseId": "case-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      }
+    ],
+    "orientation": "Parse known date formats, retain invalid-date evidence and state epoch units.",
+    "visualStates": [],
+    "visualKind": "none",
+    "activityId": "",
+    "questionIds": [
+      "python-dates-and-units-5",
+      "python-dates-and-units-6",
+      "python-dates-and-units-7"
+    ],
+    "flashcardIds": [
+      "python-dates-and-units-card-1",
+      "python-dates-and-units-card-2"
+    ],
+    "reviewLabel": "Read a date without guessing",
+    "nextAction": "Try the next idea with a new input.",
+    "stageTitles": {
+      "quiz": "Skill check",
+      "review": "Recall it later",
+      "completion": "Ready for the next idea"
+    },
+    "sourceIds": [
+      "pd-dates"
+    ],
+    "assuranceLevel": "source_backed",
+    "intro": {
+      "hook": {
+        "blocks": [
+          {
+            "kind": "paragraph",
+            "text": "An invoice is dated 03/04/2026. In the UK the first number is the day. In the US the first number is the month."
+          }
+        ],
+        "questionId": "python-dates-and-units-hook"
+      },
+      "promise": "By the end you'll parse a date with a stated format, count the dates that fail, and convert epoch numbers with the right unit.",
+      "estimatedMinutes": 10
+    },
+    "recap": {
+      "keyIdea": "State the date format, count the dates that fail to parse, and say the unit of an epoch number before you convert it.",
+      "blocks": [
+        {
+          "kind": "paragraph",
+          "text": "You read 03/04/2026 as month 4 under the day-first rule. You found 2 failures among three entries, and 4 days between 26 February and 2 March."
+        }
+      ],
+      "nextHook": "Next: summarise the right observations with means, medians and groups."
+    },
+    "calculator": "off",
+    "taughtSkills": [
+      "parse-with-format",
+      "coerce-and-count-invalid",
+      "epoch-units",
+      "date-differences"
+    ]
+  },
+  "questions": [
+    {
+      "id": "python-dates-and-units-1",
+      "conceptIds": [
+        "python-dates-and-units"
+      ],
+      "prompt": "Parse '05/09/2026' with format='%d/%m/%Y'. What month number results?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Follow the format rather than a regional guess.",
+        "%d is the day and %m is the month.",
+        "Read the middle field as the month."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 9,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "The format reads day 05 and month 09, so the month is 9."
+      },
+      "sourceIds": [
+        "pd-dates"
+      ],
+      "onCorrect": "9. The format reads day 05 and month 09, so the month is September.",
+      "skill": "parse-with-format",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              5
+            ]
+          },
+          "feedback": "That is the day. The format puts the day first and the month second."
+        }
+      ],
+      "calculator": "off"
+    },
+    {
+      "id": "python-dates-and-units-2",
+      "conceptIds": [
+        "python-dates-and-units"
+      ],
+      "prompt": "How many of the three entries fail to parse?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Check calendar validity as well as the layout.",
+        "An impossible day and plain text both fail.",
+        "Count the entries that cannot become dates."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 2,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "February 30 and bad cannot be parsed as valid dates, so both become NaT."
+      },
+      "sourceIds": [
+        "pd-dates"
+      ],
+      "onCorrect": "2. February 30 and 'bad' cannot be dates, so both became missing.",
+      "skill": "coerce-and-count-invalid",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              1
+            ]
+          },
+          "feedback": "Both an impossible date and plain text fail the parse."
+        },
+        {
+          "match": {
+            "numeric": [
+              3
+            ]
+          },
+          "feedback": "March 1 is a real date in the right format."
+        }
+      ],
+      "calculator": "off"
+    },
+    {
+      "id": "python-dates-and-units-3",
+      "conceptIds": [
+        "python-dates-and-units"
+      ],
+      "prompt": "Which parameter distinguishes an epoch count in seconds from one in milliseconds?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "The number alone does not give its scale."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "unit"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "unit tells pandas how to interpret the numeric offset from the epoch."
+      },
+      "sourceIds": [
+        "pd-dates"
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "unit"
+        },
+        {
+          "id": "b",
+          "label": "axis"
+        },
+        {
+          "id": "c",
+          "label": "sheet_name"
+        }
+      ],
+      "onCorrect": "unit. It tells pandas how to read the number: seconds, milliseconds or another step.",
+      "skill": "epoch-units",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "axis chooses rows or columns in array and table methods, not a time scale."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "sheet_name selects a worksheet when reading Excel files."
+        }
+      ],
+      "calculator": "off"
+    },
+    {
+      "id": "python-dates-and-units-4",
+      "conceptIds": [
+        "python-dates-and-units"
+      ],
+      "prompt": "What is the result of coercing an invalid datetime?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Coercion records a failed parse as missing."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "NaT"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "NaT marks the missing datetime. It does not supply a valid replacement date."
+      },
+      "sourceIds": [
+        "pd-dates"
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "NaT"
+        },
+        {
+          "id": "b",
+          "label": "A zero-length duration"
+        },
+        {
+          "id": "c",
+          "label": "Today's date"
+        }
+      ],
+      "onCorrect": "NaT, a missing date. It does not invent a replacement date.",
+      "skill": "coerce-and-count-invalid",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "A duration is a different kind of value. A failed parse is simply missing."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "pandas never substitutes today's date. It marks the entry missing."
+        }
+      ],
+      "calculator": "off"
+    },
+    {
+      "id": "python-dates-and-units-5",
+      "conceptIds": [
+        "python-dates-and-units"
+      ],
+      "prompt": "How many seconds separate epoch offsets 120 and 300 when unit='s'?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Subtract the offsets in the same unit.",
+        "Both offsets use seconds.",
+        "Take the earlier offset from the later one."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 180,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "Both offsets use seconds, so the elapsed time is 300 − 120 = 180 seconds."
+      },
+      "sourceIds": [
+        "pd-dates"
+      ],
+      "onCorrect": "180. Both offsets count seconds, so subtracting gives the gap in seconds.",
+      "skill": "epoch-units",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              420
+            ]
+          },
+          "feedback": "That adds the two offsets. Subtract the earlier from the later."
+        }
+      ],
+      "calculator": "off"
+    },
+    {
+      "id": "python-dates-and-units-6",
+      "conceptIds": [
+        "python-dates-and-units"
+      ],
+      "prompt": "How many days separate 2026-06-02 and 2026-06-07 at the same time of day?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Take the earlier date from the later date.",
+        "The times of day are equal.",
+        "Count the midnights between the two dates."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 5,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "The later date is five days after the earlier one."
+      },
+      "sourceIds": [
+        "pd-dates"
+      ],
+      "onCorrect": "5. The later date is five days after the earlier one, since the times of day match.",
+      "skill": "date-differences",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              6
+            ]
+          },
+          "feedback": "That counts both end dates. A difference counts the gaps between them."
+        }
+      ],
+      "calculator": "off"
+    },
+    {
+      "id": "python-dates-and-units-7",
+      "conceptIds": [
+        "python-dates-and-units"
+      ],
+      "difficulty": 1,
+      "sourceIds": [
+        "pd-dates"
+      ],
+      "hints": [
+        "Which part of the date is the month?",
+        "The date is written year, month, day.",
+        "Read the middle field as a number."
+      ],
+      "prompt": "What does the .dt.month accessor give for the date 2026-11-15?",
+      "responseType": "numeric",
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 11,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "The date is in November, month 11."
+      },
+      "onCorrect": "11. The accessor reads the calendar field directly, so no format guessing is needed once the date is parsed.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              15
+            ]
+          },
+          "feedback": "That is the day of the month."
+        }
+      ],
+      "skill": "date-differences",
+      "calculator": "off"
+    },
+    {
+      "id": "python-dates-and-units-hook",
+      "conceptIds": [
+        "python-dates-and-units"
+      ],
+      "difficulty": 1,
+      "sourceIds": [
+        "pd-dates"
+      ],
+      "hints": [
+        "Which field is the day for a UK reader?",
+        "The other field must be the month.",
+        "Read the middle field."
+      ],
+      "prompt": "As a UK reader, which month number is the invoice date?",
+      "responseType": "numeric",
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 4,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "Day first: 3 April, so the month is 4."
+      },
+      "onCorrect": "4. Day first means the middle field is the month, so it is April. The same text means March in the US.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              3
+            ]
+          },
+          "feedback": "That is the first field, the day under the UK rule."
+        },
+        {
+          "match": {
+            "numeric": [
+              2026
+            ]
+          },
+          "feedback": "That is the year. The month is the middle field."
+        }
+      ],
+      "skill": "parse-with-format",
+      "calculator": "off"
+    },
+    {
+      "id": "python-dates-and-units-format-check",
+      "conceptIds": [
+        "python-dates-and-units"
+      ],
+      "difficulty": 1,
+      "sourceIds": [
+        "pd-dates"
+      ],
+      "hints": [
+        "Which letter comes first in the format, and what does it stand for?"
+      ],
+      "prompt": "In the format '%m/%d/%Y', what is the first field?",
+      "responseType": "short_text",
+      "choices": [
+        {
+          "id": "a",
+          "label": "The month"
+        },
+        {
+          "id": "b",
+          "label": "The day"
+        },
+        {
+          "id": "c",
+          "label": "The year"
+        }
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "The month"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "%m is the month and it comes first."
+      },
+      "onCorrect": "The month. %m comes first in this format, so the first field is the month.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "%d is the day, and it comes second in this format."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "%Y is the year, and it comes last here."
+        }
+      ],
+      "skill": "parse-with-format",
+      "calculator": "off"
+    },
+    {
+      "id": "python-dates-and-units-faded-real",
+      "conceptIds": [
+        "python-dates-and-units"
+      ],
+      "difficulty": 1,
+      "sourceIds": [
+        "pd-dates"
+      ],
+      "hints": [
+        "Does February have a day numbered 30?",
+        "Check the second date too.",
+        "Count the entries that exist on the calendar."
+      ],
+      "prompt": "How many of '2026-02-30' and '2026-03-01' are real dates?",
+      "responseType": "numeric",
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 1,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "February 30 does not exist, and March 1 does."
+      },
+      "onCorrect": "1. February never reaches 30, so only March 1 is a real date.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              2
+            ]
+          },
+          "feedback": "February has only 28 days in 2026, so the first date does not exist."
+        },
+        {
+          "match": {
+            "numeric": [
+              0
+            ]
+          },
+          "feedback": "The second date is a real date."
+        }
+      ],
+      "skill": "coerce-and-count-invalid",
+      "calculator": "off"
+    },
+    {
+      "id": "python-dates-and-units-minutes-apart",
+      "conceptIds": [
+        "python-dates-and-units"
+      ],
+      "difficulty": 1,
+      "sourceIds": [
+        "pd-dates"
+      ],
+      "hints": [
+        "Subtract the offsets in the same unit.",
+        "The difference is a number of seconds.",
+        "Divide it by the seconds in a minute."
+      ],
+      "prompt": "Epoch offsets 1000 and 4600 are read with unit='s'. How many minutes apart are they?",
+      "responseType": "numeric",
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 60,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "(4600 − 1000) ÷ 60 = 60 minutes."
+      },
+      "onCorrect": "60. The offsets are 3600 seconds apart, and an hour holds 60 minutes.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              3600
+            ]
+          },
+          "feedback": "That is the gap in seconds. The question asks for minutes."
+        },
+        {
+          "match": {
+            "numeric": [
+              5600
+            ]
+          },
+          "feedback": "That adds the offsets. Subtract the earlier from the later."
+        }
+      ],
+      "skill": "epoch-units",
+      "calculator": "off"
+    },
+    {
+      "id": "python-dates-and-units-month-end",
+      "conceptIds": [
+        "python-dates-and-units"
+      ],
+      "difficulty": 1,
+      "sourceIds": [
+        "pd-dates"
+      ],
+      "hints": [
+        "How many days of February are left after the 26th?",
+        "Then add the days into March.",
+        "February 2026 has 28 days."
+      ],
+      "prompt": "How many days separate 2026-02-26 and 2026-03-02?",
+      "responseType": "numeric",
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 4,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "26 to 28 February is 2 days, then 2 more reaches 2 March: 4 days."
+      },
+      "onCorrect": "4. Two days carry the date to the end of February, and two more reach March 2.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              6
+            ]
+          },
+          "feedback": "That subtracts the day numbers, 26 and 2, as if they were in the same month."
+        },
+        {
+          "match": {
+            "numeric": [
+              3
+            ]
+          },
+          "feedback": "February 2026 has 28 days, so there is one more day than that."
+        }
+      ],
+      "skill": "date-differences",
+      "calculator": "off"
+    }
+  ],
+  "citations": [
+    {
+      "claim": "A date written as text is ambiguous until you state its format.",
+      "sourceId": "pd-dates",
+      "section": "Converting to timestamps; invalid data; epoch timestamps; datetime properties",
+      "targetKind": "step",
+      "targetId": "same-text-two-dates"
+    },
+    {
+      "claim": "The format string decides which field is the month. Read the fields in the order the format lists them.",
+      "sourceId": "pd-dates",
+      "section": "Converting to timestamps; invalid data; epoch timestamps; datetime properties",
+      "targetKind": "step",
+      "targetId": "read-the-month"
+    },
+    {
+      "claim": "With format='%Y-%m-%d' and errors='coerce', how many of '2026-06-31', '2026-07-01' and '2026-07-02' fail to parse?",
+      "sourceId": "pd-dates",
+      "section": "Converting to timestamps; invalid data; epoch timestamps; datetime properties",
+      "targetKind": "step",
+      "targetId": "when-a-date-fails"
+    },
+    {
+      "claim": "With format='%Y-%m-%d' and errors='coerce', how many of '2026-02-30', '2026-03-01' and 'bad' fail?",
+      "sourceId": "pd-dates",
+      "section": "Converting to timestamps; invalid data; epoch timestamps; datetime properties",
+      "targetKind": "step",
+      "targetId": "real-or-impossible"
+    },
+    {
+      "claim": "An epoch number counts time from 1970-01-01, and unit says what one step means.",
+      "sourceId": "pd-dates",
+      "section": "Converting to timestamps; invalid data; epoch timestamps; datetime properties",
+      "targetKind": "step",
+      "targetId": "a-number-with-a-scale"
+    },
+    {
+      "claim": "With unit='s', each epoch step is one second. Subtract two offsets to get the seconds between them.",
+      "sourceId": "pd-dates",
+      "section": "Converting to timestamps; invalid data; epoch timestamps; datetime properties",
+      "targetKind": "step",
+      "targetId": "minutes-between"
+    },
+    {
+      "claim": "Subtracting two timestamps gives a duration, and .days reads its whole days. The .dt accessor reads calendar fields such as the month from a column of dates.",
+      "sourceId": "pd-dates",
+      "section": "Converting to timestamps; invalid data; epoch timestamps; datetime properties",
+      "targetKind": "step",
+      "targetId": "across-a-month-end"
+    },
+    {
+      "claim": "9. The format reads day 05 and month 09, so the month is September.",
+      "sourceId": "pd-dates",
+      "section": "Converting to timestamps; invalid data; epoch timestamps; datetime properties",
+      "targetKind": "question",
+      "targetId": "python-dates-and-units-1"
+    },
+    {
+      "claim": "2. February 30 and 'bad' cannot be dates, so both became missing.",
+      "sourceId": "pd-dates",
+      "section": "Converting to timestamps; invalid data; epoch timestamps; datetime properties",
+      "targetKind": "question",
+      "targetId": "python-dates-and-units-2"
+    },
+    {
+      "claim": "unit. It tells pandas how to read the number: seconds, milliseconds or another step.",
+      "sourceId": "pd-dates",
+      "section": "Converting to timestamps; invalid data; epoch timestamps; datetime properties",
+      "targetKind": "question",
+      "targetId": "python-dates-and-units-3"
+    },
+    {
+      "claim": "NaT, a missing date. It does not invent a replacement date.",
+      "sourceId": "pd-dates",
+      "section": "Converting to timestamps; invalid data; epoch timestamps; datetime properties",
+      "targetKind": "question",
+      "targetId": "python-dates-and-units-4"
+    },
+    {
+      "claim": "180. Both offsets count seconds, so subtracting gives the gap in seconds.",
+      "sourceId": "pd-dates",
+      "section": "Converting to timestamps; invalid data; epoch timestamps; datetime properties",
+      "targetKind": "question",
+      "targetId": "python-dates-and-units-5"
+    },
+    {
+      "claim": "5. The later date is five days after the earlier one, since the times of day match.",
+      "sourceId": "pd-dates",
+      "section": "Converting to timestamps; invalid data; epoch timestamps; datetime properties",
+      "targetKind": "question",
+      "targetId": "python-dates-and-units-6"
+    },
+    {
+      "claim": "11. The accessor reads the calendar field directly, so no format guessing is needed once the date is parsed.",
+      "sourceId": "pd-dates",
+      "section": "Converting to timestamps; invalid data; epoch timestamps; datetime properties",
+      "targetKind": "question",
+      "targetId": "python-dates-and-units-7"
+    },
+    {
+      "claim": "4. Day first means the middle field is the month, so it is April. The same text means March in the US.",
+      "sourceId": "pd-dates",
+      "section": "Converting to timestamps; invalid data; epoch timestamps; datetime properties",
+      "targetKind": "question",
+      "targetId": "python-dates-and-units-hook"
+    },
+    {
+      "claim": "The month. %m comes first in this format, so the first field is the month.",
+      "sourceId": "pd-dates",
+      "section": "Converting to timestamps; invalid data; epoch timestamps; datetime properties",
+      "targetKind": "question",
+      "targetId": "python-dates-and-units-format-check"
+    },
+    {
+      "claim": "1. February never reaches 30, so only March 1 is a real date.",
+      "sourceId": "pd-dates",
+      "section": "Converting to timestamps; invalid data; epoch timestamps; datetime properties",
+      "targetKind": "question",
+      "targetId": "python-dates-and-units-faded-real"
+    },
+    {
+      "claim": "60. The offsets are 3600 seconds apart, and an hour holds 60 minutes.",
+      "sourceId": "pd-dates",
+      "section": "Converting to timestamps; invalid data; epoch timestamps; datetime properties",
+      "targetKind": "question",
+      "targetId": "python-dates-and-units-minutes-apart"
+    },
+    {
+      "claim": "4. Two days carry the date to the end of February, and two more reach March 2.",
+      "sourceId": "pd-dates",
+      "section": "Converting to timestamps; invalid data; epoch timestamps; datetime properties",
+      "targetKind": "question",
+      "targetId": "python-dates-and-units-month-end"
+    },
+    {
+      "claim": "The format places the month in the middle, giving August, month 8.",
+      "sourceId": "pd-dates",
+      "section": "Converting to timestamps; invalid data; epoch timestamps; datetime properties",
+      "targetKind": "flashcard",
+      "targetId": "python-dates-and-units-card-1"
+    },
+    {
+      "claim": "Use .dt, for example dates.dt.year.",
+      "sourceId": "pd-dates",
+      "section": "Converting to timestamps; invalid data; epoch timestamps; datetime properties",
+      "targetKind": "flashcard",
+      "targetId": "python-dates-and-units-card-2"
+    }
+  ]
+}

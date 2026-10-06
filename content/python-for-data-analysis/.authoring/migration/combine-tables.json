@@ -1,0 +1,1525 @@
+{
+  "lessonId": "combine-tables",
+  "courseId": "python-for-data-analysis",
+  "migrationNotes": [],
+  "lesson": {
+    "id": "combine-tables",
+    "courseId": "python-for-data-analysis",
+    "conceptIds": [
+      "python-combine-tables"
+    ],
+    "title": "Combine data without multiplying the answer",
+    "steps": [
+      {
+        "id": "stack-or-match",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "concat stacks tables on top of each other, and merge matches rows by a key.",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "pd.concat([a, b]) stacks rows and aligns columns by name. It keeps repeated rows, and ignore_index=True renumbers the rows. merge joins two tables on a key column, so each row can pick up data from its match."
+          },
+          {
+            "kind": "callout",
+            "tone": "key",
+            "text": "Stacking adds rows. Matching can add rows too, when keys repeat."
+          }
+        ],
+        "reveal": [],
+        "introducesTerms": [
+          "concat",
+          "merge"
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-combine-tables-dedupe-check",
+        "activityId": ""
+      },
+      {
+        "id": "how-many-rows",
+        "kind": "predict",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "concat keeps every row of both tables. Think about whether anything removes repeats."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "You added the row counts. concat stacks and never deduplicates, which is closer to SQL's UNION ALL than to UNION."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-combine-tables-1",
+        "activityId": "",
+        "diagram": {
+          "type": "python_execution",
+          "runtime": "Python 3.12 · pandas 3.0",
+          "cases": [
+            {
+              "id": "case-0",
+              "label": "Case A",
+              "code": "import pandas as pd\na = pd.DataFrame({'units': [2, 4]})\nb = pd.DataFrame({'units': [4, 6]})\nresult = pd.concat([a, b])",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 3,
+                  "values": [],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 4,
+                  "lineEnd": 4,
+                  "values": [
+                    {
+                      "name": "result",
+                      "type": "DataFrame",
+                      "display": "   units\n0      2\n1      4\n0      4\n1      6",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "units"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            2
+                          ],
+                          [
+                            1,
+                            4
+                          ],
+                          [
+                            0,
+                            4
+                          ],
+                          [
+                            1,
+                            6
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            },
+            {
+              "id": "case-1",
+              "label": "Case B",
+              "code": "import pandas as pd\na = pd.DataFrame({'units': [2, 4]})\nb = pd.DataFrame({'units': [4, 6]})\nresult = pd.concat([a, b], ignore_index=True)",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 3,
+                  "values": [],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 4,
+                  "lineEnd": 4,
+                  "values": [
+                    {
+                      "name": "result",
+                      "type": "DataFrame",
+                      "display": "   units\n0      2\n1      4\n2      4\n3      6",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "units"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            2
+                          ],
+                          [
+                            1,
+                            4
+                          ],
+                          [
+                            2,
+                            4
+                          ],
+                          [
+                            3,
+                            6
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            }
+          ],
+          "initialCaseId": "case-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      },
+      {
+        "id": "inner-or-left",
+        "kind": "worked_example",
+        "blocks": [],
+        "headline": "Left keys are 4, 4, 4, 5 and 6. Unique right keys are 4 and 5. How many rows do an inner merge and a left merge return?",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "An inner merge keeps only rows whose key matches. A left merge keeps every left row, filling in missing right-side values where nothing matches."
+          }
+        ],
+        "reveal": [],
+        "workedSteps": [
+          {
+            "text": "Inner: each left 4 matches the right 4, and the left 5 matches the right 5. The 6 has no match.",
+            "math": "3 + 1 = 4 rows"
+          },
+          {
+            "text": "Left: the same four matches, plus the unmatched 6 with missing right-side values.",
+            "math": "4 + 1 = 5 rows",
+            "selfExplain": {
+              "questionId": "python-combine-tables-why-left"
+            }
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "diagram": {
+          "type": "python_execution",
+          "runtime": "Python 3.12 · pandas 3.0",
+          "cases": [
+            {
+              "id": "case-0",
+              "label": "Case A",
+              "code": "import pandas as pd\norders = pd.DataFrame({'customer': [1, 1, 2, 3], 'amount': [10, 20, 15, 8]})\npeople = pd.DataFrame({'customer': [1, 2, 4], 'region': ['East', 'West', 'East']})\nresult = orders.merge(people, on='customer', how='inner', validate='many_to_one')",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 3,
+                  "values": [],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 4,
+                  "lineEnd": 4,
+                  "values": [
+                    {
+                      "name": "result",
+                      "type": "DataFrame",
+                      "display": "   customer  amount region\n0         1      10   East\n1         1      20   East\n2         2      15   West",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "customer",
+                          "amount",
+                          "region"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            1,
+                            10,
+                            "East"
+                          ],
+                          [
+                            1,
+                            1,
+                            20,
+                            "East"
+                          ],
+                          [
+                            2,
+                            2,
+                            15,
+                            "West"
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            },
+            {
+              "id": "case-1",
+              "label": "Case B",
+              "code": "import pandas as pd\norders = pd.DataFrame({'customer': [1, 1, 2, 3], 'amount': [10, 20, 15, 8]})\npeople = pd.DataFrame({'customer': [1, 2, 4], 'region': ['East', 'West', 'East']})\nresult = orders.merge(people, on='customer', how='left', validate='many_to_one', indicator=True)",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 3,
+                  "values": [],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 4,
+                  "lineEnd": 4,
+                  "values": [
+                    {
+                      "name": "result",
+                      "type": "DataFrame",
+                      "display": "   customer  amount region     _merge\n0         1      10   East       both\n1         1      20   East       both\n2         2      15   West       both\n3         3       8    NaN  left_only",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "customer",
+                          "amount",
+                          "region",
+                          "_merge"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            1,
+                            10,
+                            "East",
+                            "both"
+                          ],
+                          [
+                            1,
+                            1,
+                            20,
+                            "East",
+                            "both"
+                          ],
+                          [
+                            2,
+                            2,
+                            15,
+                            "West",
+                            "both"
+                          ],
+                          [
+                            3,
+                            3,
+                            8,
+                            null,
+                            "left_only"
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            }
+          ],
+          "initialCaseId": "case-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      },
+      {
+        "id": "left-keeps-all",
+        "kind": "faded_example",
+        "blocks": [],
+        "headline": "Left keys are 1, 2 and 3, and the unique right keys are 1 and 2. How many rows does a left merge return?",
+        "lead": [],
+        "reveal": [],
+        "workedSteps": [
+          {
+            "text": "Which left keys have a match on the right? How many?",
+            "blank": {
+              "questionId": "python-combine-tables-faded-matches"
+            }
+          },
+          {
+            "text": "A left merge also keeps the unmatched left row. How many rows does it return in all?",
+            "blank": {
+              "questionId": "python-combine-tables-2"
+            }
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
+      },
+      {
+        "id": "unique-on-the-right",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "A repeated key on the right multiplies the left rows, and validate can catch it.",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "If the right-hand table has one row per key, each left row matches at most once. A repeated right key matches every left row with that key several times. validate='many_to_one' stops the merge when the right keys are not unique."
+          }
+        ],
+        "reveal": [],
+        "introducesTerms": [
+          "many-to-one"
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-combine-tables-3",
+        "activityId": "",
+        "diagram": {
+          "type": "python_execution",
+          "runtime": "Python 3.12 · pandas 3.0",
+          "cases": [
+            {
+              "id": "case-0",
+              "label": "Case A",
+              "code": "import pandas as pd\na = pd.DataFrame({'id': [1, 1], 'amount': [5, 7]})\nb = pd.DataFrame({'id': [1], 'region': ['East']})\nresult = a.merge(b, on='id', validate='many_to_one')",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 3,
+                  "values": [],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 4,
+                  "lineEnd": 4,
+                  "values": [
+                    {
+                      "name": "result",
+                      "type": "DataFrame",
+                      "display": "   id  amount region\n0   1       5   East\n1   1       7   East",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "id",
+                          "amount",
+                          "region"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            1,
+                            5,
+                            "East"
+                          ],
+                          [
+                            1,
+                            1,
+                            7,
+                            "East"
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            },
+            {
+              "id": "case-1",
+              "label": "Case B",
+              "code": "import pandas as pd\na = pd.DataFrame({'id': [1, 1], 'amount': [5, 7]})\nb = pd.DataFrame({'id': [1, 1], 'region': ['East', 'West']})\nresult = a.merge(b, on='id')",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 3,
+                  "values": [],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 4,
+                  "lineEnd": 4,
+                  "values": [
+                    {
+                      "name": "result",
+                      "type": "DataFrame",
+                      "display": "   id  amount region\n0   1       5   East\n1   1       5   West\n2   1       7   East\n3   1       7   West",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "id",
+                          "amount",
+                          "region"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            1,
+                            5,
+                            "East"
+                          ],
+                          [
+                            1,
+                            1,
+                            5,
+                            "West"
+                          ],
+                          [
+                            2,
+                            1,
+                            7,
+                            "East"
+                          ],
+                          [
+                            3,
+                            1,
+                            7,
+                            "West"
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            }
+          ],
+          "initialCaseId": "case-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      },
+      {
+        "id": "multiply-the-matches",
+        "kind": "try",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Every left row with a key pairs with every right row that has the same key."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "Each of the left rows paired with each right row, so the counts multiplied. Totals taken after such a join count amounts several times."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-combine-tables-pairs",
+        "activityId": ""
+      },
+      {
+        "id": "unknown-keys-meet",
+        "kind": "transfer",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Unlike an ordinary SQL equality join, a pandas merge can match two missing keys to each other. Check the key columns for missing values before you trust the result."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "The two missing keys matched, so a row picked up data it should not have. Decide whether missing keys should match, be rejected or stay unmatched."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-combine-tables-4",
+        "activityId": "",
+        "diagram": {
+          "type": "python_execution",
+          "runtime": "Python 3.12 · pandas 3.0",
+          "cases": [
+            {
+              "id": "case-0",
+              "label": "Case A",
+              "code": "import pandas as pd\na = pd.DataFrame({'id': [1, None], 'amount': [5, 9]})\nb = pd.DataFrame({'id': [1, None], 'region': ['East', 'Unknown']})\nresult = a.merge(b, on='id', how='left')",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 3,
+                  "values": [],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 4,
+                  "lineEnd": 4,
+                  "values": [
+                    {
+                      "name": "result",
+                      "type": "DataFrame",
+                      "display": "    id  amount   region\n0  1.0       5     East\n1  NaN       9  Unknown",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "id",
+                          "amount",
+                          "region"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            1,
+                            5,
+                            "East"
+                          ],
+                          [
+                            1,
+                            null,
+                            9,
+                            "Unknown"
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            },
+            {
+              "id": "case-1",
+              "label": "Case B",
+              "code": "import pandas as pd\na = pd.DataFrame({'id': [1, None], 'amount': [5, 9]})\nb = pd.DataFrame({'id': [1, None], 'region': ['East', 'Unknown']})\nresult = a.merge(b.dropna(subset=['id']), on='id', how='left')",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 3,
+                  "values": [],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 4,
+                  "lineEnd": 4,
+                  "values": [
+                    {
+                      "name": "result",
+                      "type": "DataFrame",
+                      "display": "    id  amount region\n0  1.0       5   East\n1  NaN       9    NaN",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "id",
+                          "amount",
+                          "region"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            1,
+                            5,
+                            "East"
+                          ],
+                          [
+                            1,
+                            null,
+                            9,
+                            null
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            }
+          ],
+          "initialCaseId": "case-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      }
+    ],
+    "orientation": "Stack rows, match keys and check join multiplicity before reporting totals.",
+    "visualStates": [],
+    "visualKind": "none",
+    "activityId": "",
+    "questionIds": [
+      "python-combine-tables-5",
+      "python-combine-tables-6",
+      "python-combine-tables-7"
+    ],
+    "flashcardIds": [
+      "python-combine-tables-card-1",
+      "python-combine-tables-card-2"
+    ],
+    "reviewLabel": "Combine data without multiplying the answer",
+    "nextAction": "Try the next idea with a new input.",
+    "stageTitles": {
+      "quiz": "Skill check",
+      "review": "Recall it later",
+      "completion": "Ready for the next idea"
+    },
+    "sourceIds": [
+      "pd-merge",
+      "pd-merge-api"
+    ],
+    "assuranceLevel": "source_backed",
+    "intro": {
+      "hook": {
+        "blocks": [
+          {
+            "kind": "paragraph",
+            "text": "A customer placed 4 orders. The address book lists that customer twice by mistake. A report attaches an address to every order."
+          }
+        ],
+        "questionId": "python-combine-tables-hook"
+      },
+      "promise": "By the end you'll stack tables, match them by key, and predict how many rows a join returns before you total anything.",
+      "estimatedMinutes": 10
+    },
+    "recap": {
+      "keyIdea": "concat stacks rows without deduplicating, merge matches by key, and repeated keys multiply rows, so count the rows a join returns before totalling.",
+      "blocks": [
+        {
+          "kind": "paragraph",
+          "text": "You found the double-listed customer shows 8 order lines. A left merge of keys 1, 2 and 3 kept 3 rows, and two matched null keys filled 2 regions."
+        }
+      ],
+      "nextHook": "Next: reshape a table without losing what it means."
+    },
+    "calculator": "off",
+    "taughtSkills": [
+      "stack-rows",
+      "inner-and-left-merge",
+      "join-multiplicity",
+      "null-keys"
+    ]
+  },
+  "questions": [
+    {
+      "id": "python-combine-tables-1",
+      "conceptIds": [
+        "python-combine-tables"
+      ],
+      "prompt": "Concatenate a three-row table and a four-row table without deduplication. How many rows result?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "concat does not remove repeated rows.",
+        "Nothing is asked to remove rows here.",
+        "Add the row counts of the two tables."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 7,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "Row stacking keeps all 3 + 4 = 7 rows."
+      },
+      "sourceIds": [
+        "pd-merge",
+        "pd-merge-api"
+      ],
+      "onCorrect": "7. Stacking keeps all the rows of both tables.",
+      "skill": "stack-rows",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              4
+            ]
+          },
+          "feedback": "That would be the larger table alone. Stacking keeps both."
+        }
+      ],
+      "calculator": "off"
+    },
+    {
+      "id": "python-combine-tables-2",
+      "conceptIds": [
+        "python-combine-tables"
+      ],
+      "prompt": "How many rows does the left merge return?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "The right keys are unique, so no left row is repeated.",
+        "Every left key has at most one match.",
+        "Count all the left rows, including the unmatched one."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 3,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "All three left rows remain. Key 3 receives missing right-side values."
+      },
+      "sourceIds": [
+        "pd-merge",
+        "pd-merge-api"
+      ],
+      "onCorrect": "3. Unique right keys cannot multiply rows, and a left merge keeps the unmatched row too.",
+      "skill": "inner-and-left-merge",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              2
+            ]
+          },
+          "feedback": "That is an inner merge. A left merge keeps the unmatched row."
+        }
+      ],
+      "calculator": "off"
+    },
+    {
+      "id": "python-combine-tables-3",
+      "conceptIds": [
+        "python-combine-tables"
+      ],
+      "prompt": "Which validation asserts that the lookup table on the right has unique keys?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "The right side is the 'one' in many-to-one."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "validate='many_to_one'"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "many_to_one requires each right key to identify at most one row."
+      },
+      "sourceIds": [
+        "pd-merge",
+        "pd-merge-api"
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "validate='many_to_one'"
+        },
+        {
+          "id": "b",
+          "label": "ignore_index=True"
+        },
+        {
+          "id": "c",
+          "label": "ascending=False"
+        }
+      ],
+      "onCorrect": "validate='many_to_one'. It allows repeated left keys but requires each right key to identify one row.",
+      "skill": "join-multiplicity",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "ignore_index renumbers rows after stacking. It checks nothing about keys."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "ascending=False sets a sort order, not a key rule."
+        }
+      ],
+      "calculator": "off"
+    },
+    {
+      "id": "python-combine-tables-4",
+      "conceptIds": [
+        "python-combine-tables"
+      ],
+      "prompt": "Both tables have the ids 1 and a missing id, and each id has one row. A left merge on id keeps two left rows. How many of those rows receive a region?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Does a pandas merge treat two missing keys as equal?",
+        "It can match them to each other.",
+        "Count the left rows that found a partner."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 2,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "pandas can match null keys, so both left rows find a region."
+      },
+      "sourceIds": [
+        "pd-merge",
+        "pd-merge-api"
+      ],
+      "onCorrect": "2. pandas matched the missing keys to each other, so the second row received a region it should not have.",
+      "skill": "null-keys",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              1
+            ]
+          },
+          "feedback": "pandas can match missing keys, so the second row also found a partner."
+        },
+        {
+          "match": {
+            "numeric": [
+              0
+            ]
+          },
+          "feedback": "The key 1 matches on both sides."
+        }
+      ],
+      "calculator": "off"
+    },
+    {
+      "id": "python-combine-tables-5",
+      "conceptIds": [
+        "python-combine-tables"
+      ],
+      "prompt": "One key occurs three times on the left and twice on the right. How many matched rows does that key produce?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Count all matching pairs.",
+        "Each left occurrence matches every right occurrence.",
+        "Multiply the occurrence counts."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 6,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "Each left row pairs with each right row: 3 × 2 = 6."
+      },
+      "sourceIds": [
+        "pd-merge",
+        "pd-merge-api"
+      ],
+      "onCorrect": "6. Each of the left rows pairs with each right row, so 3 times 2 matches appear.",
+      "skill": "join-multiplicity",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              5
+            ]
+          },
+          "feedback": "That adds the counts. Every left row pairs with every right row."
+        }
+      ],
+      "calculator": "off"
+    },
+    {
+      "id": "python-combine-tables-6",
+      "conceptIds": [
+        "python-combine-tables"
+      ],
+      "prompt": "Left keys are 1, 1, 2 and 3, and the unique right keys are 1 and 2. How many rows does an inner merge return?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Count the matching left rows, repeats included.",
+        "Each left occurrence of a matching key gives one row.",
+        "Cross out the left key that is missing on the right."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 3,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "Both left rows with key 1 and the row with key 2 match. Key 3 is excluded."
+      },
+      "sourceIds": [
+        "pd-merge",
+        "pd-merge-api"
+      ],
+      "onCorrect": "3. Both left rows with key 1 and the row with key 2 match. Key 3 has no partner.",
+      "skill": "inner-and-left-merge",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              2
+            ]
+          },
+          "feedback": "The repeated left key matches once per left row, so both of its rows stay."
+        },
+        {
+          "match": {
+            "numeric": [
+              4
+            ]
+          },
+          "feedback": "The last key has no match, so an inner merge drops it."
+        }
+      ],
+      "calculator": "off"
+    },
+    {
+      "id": "python-combine-tables-7",
+      "conceptIds": [
+        "python-combine-tables"
+      ],
+      "difficulty": 1,
+      "sourceIds": [
+        "pd-merge",
+        "pd-merge-api"
+      ],
+      "hints": [
+        "Without ignore_index the original labels are kept.",
+        "Both tables use the same labels.",
+        "Count each different label once."
+      ],
+      "prompt": "Tables a and b each have three rows with default index labels 0, 1 and 2. After pd.concat([a, b]) without ignore_index, how many different index labels are there?",
+      "responseType": "numeric",
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 3,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "The labels 0, 1 and 2 repeat, so there are 3 different ones."
+      },
+      "onCorrect": "3. The labels 0, 1 and 2 appear twice each, because concat keeps the original index labels.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              6
+            ]
+          },
+          "feedback": "That counts the rows. The labels repeat across the two tables."
+        }
+      ],
+      "skill": "stack-rows",
+      "calculator": "off"
+    },
+    {
+      "id": "python-combine-tables-hook",
+      "conceptIds": [
+        "python-combine-tables"
+      ],
+      "difficulty": 1,
+      "sourceIds": [
+        "pd-merge",
+        "pd-merge-api"
+      ],
+      "hints": [
+        "Each order can pair with each address entry.",
+        "There are two address entries for the customer.",
+        "Work out 4 × 2."
+      ],
+      "prompt": "How many lines does that customer now show in the report?",
+      "responseType": "numeric",
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 8,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "4 orders × 2 address entries = 8 lines."
+      },
+      "onCorrect": "8. Every order paired with both address entries, so the customer's orders were counted twice over. Joins can multiply rows.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              4
+            ]
+          },
+          "feedback": "That is the number of orders. Each order pairs with both address entries."
+        },
+        {
+          "match": {
+            "numeric": [
+              6
+            ]
+          },
+          "feedback": "That adds the two counts. Matching multiplies them."
+        }
+      ],
+      "skill": "join-multiplicity",
+      "calculator": "off"
+    },
+    {
+      "id": "python-combine-tables-dedupe-check",
+      "conceptIds": [
+        "python-combine-tables"
+      ],
+      "difficulty": 1,
+      "sourceIds": [
+        "pd-merge",
+        "pd-merge-api"
+      ],
+      "hints": [
+        "Stacking just places one table under the other."
+      ],
+      "prompt": "Does pd.concat remove repeated rows?",
+      "responseType": "short_text",
+      "choices": [
+        {
+          "id": "a",
+          "label": "No, it keeps every row"
+        },
+        {
+          "id": "b",
+          "label": "Yes, always"
+        },
+        {
+          "id": "c",
+          "label": "Only when ignore_index is set"
+        }
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "No, it keeps every row"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "concat keeps every row."
+      },
+      "onCorrect": "No, it keeps every row. Stacking adds rows and never checks for repeats.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "concat does no deduplication. Use drop_duplicates for that."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "ignore_index only renumbers the rows. It does not remove any."
+        }
+      ],
+      "skill": "stack-rows",
+      "calculator": "off"
+    },
+    {
+      "id": "python-combine-tables-why-left",
+      "conceptIds": [
+        "python-combine-tables"
+      ],
+      "difficulty": 1,
+      "sourceIds": [
+        "pd-merge",
+        "pd-merge-api"
+      ],
+      "hints": [
+        "Which left row did the inner merge discard?"
+      ],
+      "prompt": "Why does the left merge return one more row than the inner merge?",
+      "responseType": "short_text",
+      "choices": [
+        {
+          "id": "a",
+          "label": "It keeps the left row that had no match"
+        },
+        {
+          "id": "b",
+          "label": "It matches the unmatched key twice"
+        },
+        {
+          "id": "c",
+          "label": "It adds a blank row at the end"
+        }
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "It keeps the left row that had no match"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "A left merge keeps every left row."
+      },
+      "onCorrect": "It keeps the left row that had no match, with missing right-side values.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "An unmatched key has nothing to match. It is kept once with gaps."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "No blank row is added. The extra row is a real left row."
+        }
+      ],
+      "skill": "inner-and-left-merge",
+      "calculator": "off"
+    },
+    {
+      "id": "python-combine-tables-faded-matches",
+      "conceptIds": [
+        "python-combine-tables"
+      ],
+      "difficulty": 1,
+      "sourceIds": [
+        "pd-merge",
+        "pd-merge-api"
+      ],
+      "hints": [
+        "Compare each left key with the right keys.",
+        "The right keys are the unique values given.",
+        "Count the left keys that appear on the right."
+      ],
+      "prompt": "How many of the left keys have a match?",
+      "responseType": "numeric",
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 2,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "Keys 1 and 2 match."
+      },
+      "onCorrect": "2. The left keys 1 and 2 appear on the right, and 3 does not.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              3
+            ]
+          },
+          "feedback": "The last key has no match on the right."
+        }
+      ],
+      "skill": "inner-and-left-merge",
+      "calculator": "off"
+    },
+    {
+      "id": "python-combine-tables-pairs",
+      "conceptIds": [
+        "python-combine-tables"
+      ],
+      "difficulty": 1,
+      "sourceIds": [
+        "pd-merge",
+        "pd-merge-api"
+      ],
+      "hints": [
+        "Count the matching pairs.",
+        "Each left occurrence pairs with every right occurrence.",
+        "Multiply the two occurrence counts."
+      ],
+      "prompt": "One key occurs five times on the left and twice on the right. How many matched rows does that key produce?",
+      "responseType": "numeric",
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 10,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "5 × 2 = 10 matched rows."
+      },
+      "onCorrect": "10. Each of the five left rows pairs with both right rows, so the counts multiply.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              7
+            ]
+          },
+          "feedback": "That adds the counts. Every left row pairs with every right row."
+        }
+      ],
+      "skill": "join-multiplicity",
+      "calculator": "off"
+    }
+  ],
+  "citations": [
+    {
+      "claim": "concat stacks tables on top of each other, and merge matches rows by a key.",
+      "sourceId": "pd-merge",
+      "section": "concat; merge join types; duplicate keys; validation; null key warning",
+      "targetKind": "step",
+      "targetId": "stack-or-match"
+    },
+    {
+      "claim": "concat stacks tables on top of each other, and merge matches rows by a key.",
+      "sourceId": "pd-merge-api",
+      "section": "Warning on matching null keys; how, validate and indicator parameters",
+      "targetKind": "step",
+      "targetId": "stack-or-match"
+    },
+    {
+      "claim": "concat keeps every row of both tables. Think about whether anything removes repeats.",
+      "sourceId": "pd-merge",
+      "section": "concat; merge join types; duplicate keys; validation; null key warning",
+      "targetKind": "step",
+      "targetId": "how-many-rows"
+    },
+    {
+      "claim": "concat keeps every row of both tables. Think about whether anything removes repeats.",
+      "sourceId": "pd-merge-api",
+      "section": "Warning on matching null keys; how, validate and indicator parameters",
+      "targetKind": "step",
+      "targetId": "how-many-rows"
+    },
+    {
+      "claim": "Left keys are 4, 4, 4, 5 and 6. Unique right keys are 4 and 5. How many rows do an inner merge and a left merge return?",
+      "sourceId": "pd-merge",
+      "section": "concat; merge join types; duplicate keys; validation; null key warning",
+      "targetKind": "step",
+      "targetId": "inner-or-left"
+    },
+    {
+      "claim": "Left keys are 4, 4, 4, 5 and 6. Unique right keys are 4 and 5. How many rows do an inner merge and a left merge return?",
+      "sourceId": "pd-merge-api",
+      "section": "Warning on matching null keys; how, validate and indicator parameters",
+      "targetKind": "step",
+      "targetId": "inner-or-left"
+    },
+    {
+      "claim": "Left keys are 1, 2 and 3, and the unique right keys are 1 and 2. How many rows does a left merge return?",
+      "sourceId": "pd-merge",
+      "section": "concat; merge join types; duplicate keys; validation; null key warning",
+      "targetKind": "step",
+      "targetId": "left-keeps-all"
+    },
+    {
+      "claim": "Left keys are 1, 2 and 3, and the unique right keys are 1 and 2. How many rows does a left merge return?",
+      "sourceId": "pd-merge-api",
+      "section": "Warning on matching null keys; how, validate and indicator parameters",
+      "targetKind": "step",
+      "targetId": "left-keeps-all"
+    },
+    {
+      "claim": "A repeated key on the right multiplies the left rows, and validate can catch it.",
+      "sourceId": "pd-merge",
+      "section": "concat; merge join types; duplicate keys; validation; null key warning",
+      "targetKind": "step",
+      "targetId": "unique-on-the-right"
+    },
+    {
+      "claim": "A repeated key on the right multiplies the left rows, and validate can catch it.",
+      "sourceId": "pd-merge-api",
+      "section": "Warning on matching null keys; how, validate and indicator parameters",
+      "targetKind": "step",
+      "targetId": "unique-on-the-right"
+    },
+    {
+      "claim": "Every left row with a key pairs with every right row that has the same key.",
+      "sourceId": "pd-merge",
+      "section": "concat; merge join types; duplicate keys; validation; null key warning",
+      "targetKind": "step",
+      "targetId": "multiply-the-matches"
+    },
+    {
+      "claim": "Every left row with a key pairs with every right row that has the same key.",
+      "sourceId": "pd-merge-api",
+      "section": "Warning on matching null keys; how, validate and indicator parameters",
+      "targetKind": "step",
+      "targetId": "multiply-the-matches"
+    },
+    {
+      "claim": "Unlike an ordinary SQL equality join, a pandas merge can match two missing keys to each other. Check the key columns for missing values before you trust the result.",
+      "sourceId": "pd-merge",
+      "section": "concat; merge join types; duplicate keys; validation; null key warning",
+      "targetKind": "step",
+      "targetId": "unknown-keys-meet"
+    },
+    {
+      "claim": "Unlike an ordinary SQL equality join, a pandas merge can match two missing keys to each other. Check the key columns for missing values before you trust the result.",
+      "sourceId": "pd-merge-api",
+      "section": "Warning on matching null keys; how, validate and indicator parameters",
+      "targetKind": "step",
+      "targetId": "unknown-keys-meet"
+    },
+    {
+      "claim": "7. Stacking keeps all the rows of both tables.",
+      "sourceId": "pd-merge",
+      "section": "concat; merge join types; duplicate keys; validation; null key warning",
+      "targetKind": "question",
+      "targetId": "python-combine-tables-1"
+    },
+    {
+      "claim": "7. Stacking keeps all the rows of both tables.",
+      "sourceId": "pd-merge-api",
+      "section": "Warning on matching null keys; how, validate and indicator parameters",
+      "targetKind": "question",
+      "targetId": "python-combine-tables-1"
+    },
+    {
+      "claim": "3. Unique right keys cannot multiply rows, and a left merge keeps the unmatched row too.",
+      "sourceId": "pd-merge",
+      "section": "concat; merge join types; duplicate keys; validation; null key warning",
+      "targetKind": "question",
+      "targetId": "python-combine-tables-2"
+    },
+    {
+      "claim": "3. Unique right keys cannot multiply rows, and a left merge keeps the unmatched row too.",
+      "sourceId": "pd-merge-api",
+      "section": "Warning on matching null keys; how, validate and indicator parameters",
+      "targetKind": "question",
+      "targetId": "python-combine-tables-2"
+    },
+    {
+      "claim": "validate='many_to_one'. It allows repeated left keys but requires each right key to identify one row.",
+      "sourceId": "pd-merge",
+      "section": "concat; merge join types; duplicate keys; validation; null key warning",
+      "targetKind": "question",
+      "targetId": "python-combine-tables-3"
+    },
+    {
+      "claim": "validate='many_to_one'. It allows repeated left keys but requires each right key to identify one row.",
+      "sourceId": "pd-merge-api",
+      "section": "Warning on matching null keys; how, validate and indicator parameters",
+      "targetKind": "question",
+      "targetId": "python-combine-tables-3"
+    },
+    {
+      "claim": "2. pandas matched the missing keys to each other, so the second row received a region it should not have.",
+      "sourceId": "pd-merge",
+      "section": "concat; merge join types; duplicate keys; validation; null key warning",
+      "targetKind": "question",
+      "targetId": "python-combine-tables-4"
+    },
+    {
+      "claim": "2. pandas matched the missing keys to each other, so the second row received a region it should not have.",
+      "sourceId": "pd-merge-api",
+      "section": "Warning on matching null keys; how, validate and indicator parameters",
+      "targetKind": "question",
+      "targetId": "python-combine-tables-4"
+    },
+    {
+      "claim": "6. Each of the left rows pairs with each right row, so 3 times 2 matches appear.",
+      "sourceId": "pd-merge",
+      "section": "concat; merge join types; duplicate keys; validation; null key warning",
+      "targetKind": "question",
+      "targetId": "python-combine-tables-5"
+    },
+    {
+      "claim": "6. Each of the left rows pairs with each right row, so 3 times 2 matches appear.",
+      "sourceId": "pd-merge-api",
+      "section": "Warning on matching null keys; how, validate and indicator parameters",
+      "targetKind": "question",
+      "targetId": "python-combine-tables-5"
+    },
+    {
+      "claim": "3. Both left rows with key 1 and the row with key 2 match. Key 3 has no partner.",
+      "sourceId": "pd-merge",
+      "section": "concat; merge join types; duplicate keys; validation; null key warning",
+      "targetKind": "question",
+      "targetId": "python-combine-tables-6"
+    },
+    {
+      "claim": "3. Both left rows with key 1 and the row with key 2 match. Key 3 has no partner.",
+      "sourceId": "pd-merge-api",
+      "section": "Warning on matching null keys; how, validate and indicator parameters",
+      "targetKind": "question",
+      "targetId": "python-combine-tables-6"
+    },
+    {
+      "claim": "3. The labels 0, 1 and 2 appear twice each, because concat keeps the original index labels.",
+      "sourceId": "pd-merge",
+      "section": "concat; merge join types; duplicate keys; validation; null key warning",
+      "targetKind": "question",
+      "targetId": "python-combine-tables-7"
+    },
+    {
+      "claim": "3. The labels 0, 1 and 2 appear twice each, because concat keeps the original index labels.",
+      "sourceId": "pd-merge-api",
+      "section": "Warning on matching null keys; how, validate and indicator parameters",
+      "targetKind": "question",
+      "targetId": "python-combine-tables-7"
+    },
+    {
+      "claim": "8. Every order paired with both address entries, so the customer's orders were counted twice over. Joins can multiply rows.",
+      "sourceId": "pd-merge",
+      "section": "concat; merge join types; duplicate keys; validation; null key warning",
+      "targetKind": "question",
+      "targetId": "python-combine-tables-hook"
+    },
+    {
+      "claim": "8. Every order paired with both address entries, so the customer's orders were counted twice over. Joins can multiply rows.",
+      "sourceId": "pd-merge-api",
+      "section": "Warning on matching null keys; how, validate and indicator parameters",
+      "targetKind": "question",
+      "targetId": "python-combine-tables-hook"
+    },
+    {
+      "claim": "No, it keeps every row. Stacking adds rows and never checks for repeats.",
+      "sourceId": "pd-merge",
+      "section": "concat; merge join types; duplicate keys; validation; null key warning",
+      "targetKind": "question",
+      "targetId": "python-combine-tables-dedupe-check"
+    },
+    {
+      "claim": "No, it keeps every row. Stacking adds rows and never checks for repeats.",
+      "sourceId": "pd-merge-api",
+      "section": "Warning on matching null keys; how, validate and indicator parameters",
+      "targetKind": "question",
+      "targetId": "python-combine-tables-dedupe-check"
+    },
+    {
+      "claim": "It keeps the left row that had no match, with missing right-side values.",
+      "sourceId": "pd-merge",
+      "section": "concat; merge join types; duplicate keys; validation; null key warning",
+      "targetKind": "question",
+      "targetId": "python-combine-tables-why-left"
+    },
+    {
+      "claim": "It keeps the left row that had no match, with missing right-side values.",
+      "sourceId": "pd-merge-api",
+      "section": "Warning on matching null keys; how, validate and indicator parameters",
+      "targetKind": "question",
+      "targetId": "python-combine-tables-why-left"
+    },
+    {
+      "claim": "2. The left keys 1 and 2 appear on the right, and 3 does not.",
+      "sourceId": "pd-merge",
+      "section": "concat; merge join types; duplicate keys; validation; null key warning",
+      "targetKind": "question",
+      "targetId": "python-combine-tables-faded-matches"
+    },
+    {
+      "claim": "2. The left keys 1 and 2 appear on the right, and 3 does not.",
+      "sourceId": "pd-merge-api",
+      "section": "Warning on matching null keys; how, validate and indicator parameters",
+      "targetKind": "question",
+      "targetId": "python-combine-tables-faded-matches"
+    },
+    {
+      "claim": "10. Each of the five left rows pairs with both right rows, so the counts multiply.",
+      "sourceId": "pd-merge",
+      "section": "concat; merge join types; duplicate keys; validation; null key warning",
+      "targetKind": "question",
+      "targetId": "python-combine-tables-pairs"
+    },
+    {
+      "claim": "10. Each of the five left rows pairs with both right rows, so the counts multiply.",
+      "sourceId": "pd-merge-api",
+      "section": "Warning on matching null keys; how, validate and indicator parameters",
+      "targetKind": "question",
+      "targetId": "python-combine-tables-pairs"
+    },
+    {
+      "claim": "Each of the two left rows pairs with both right rows, giving four.",
+      "sourceId": "pd-merge",
+      "section": "concat; merge join types; duplicate keys; validation; null key warning",
+      "targetKind": "flashcard",
+      "targetId": "python-combine-tables-card-1"
+    },
+    {
+      "claim": "Each of the two left rows pairs with both right rows, giving four.",
+      "sourceId": "pd-merge-api",
+      "section": "Warning on matching null keys; how, validate and indicator parameters",
+      "targetKind": "flashcard",
+      "targetId": "python-combine-tables-card-1"
+    },
+    {
+      "claim": "pd.concat combines objects and retains duplicate rows unless you remove them explicitly.",
+      "sourceId": "pd-merge",
+      "section": "concat; merge join types; duplicate keys; validation; null key warning",
+      "targetKind": "flashcard",
+      "targetId": "python-combine-tables-card-2"
+    },
+    {
+      "claim": "pd.concat combines objects and retains duplicate rows unless you remove them explicitly.",
+      "sourceId": "pd-merge-api",
+      "section": "Warning on matching null keys; how, validate and indicator parameters",
+      "targetKind": "flashcard",
+      "targetId": "python-combine-tables-card-2"
+    }
+  ]
+}

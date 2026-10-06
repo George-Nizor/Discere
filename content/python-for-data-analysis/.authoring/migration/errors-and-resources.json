@@ -1,0 +1,1102 @@
+{
+  "lessonId": "errors-and-resources",
+  "courseId": "python-for-data-analysis",
+  "migrationNotes": [],
+  "lesson": {
+    "id": "errors-and-resources",
+    "courseId": "python-for-data-analysis",
+    "conceptIds": [
+      "python-errors-and-resources"
+    ],
+    "title": "Handle failure without hiding it",
+    "steps": [
+      {
+        "id": "an-error-you-expect",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "try and except catch an error you expect, and nothing else.",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "int('18') gives a number. int('unknown') raises a ValueError, an exception. try runs the risky line. except ValueError runs only if that error happens, so you choose what to do next."
+          },
+          {
+            "kind": "callout",
+            "tone": "key",
+            "text": "Name the error you expect. A bare catch-all can hide real mistakes."
+          }
+        ],
+        "reveal": [],
+        "introducesTerms": [
+          "exception"
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-errors-and-resources-error-check",
+        "activityId": ""
+      },
+      {
+        "id": "valid-or-not",
+        "kind": "predict",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "The except branch runs only if the conversion fails."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "You predicted which branch ran. With valid digits no exception was raised, so the fallback value was never used."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-errors-and-resources-1",
+        "activityId": "",
+        "diagram": {
+          "type": "python_execution",
+          "runtime": "Python 3.12",
+          "cases": [
+            {
+              "id": "case-0",
+              "label": "Case A",
+              "code": "text = '18'\ntry:\n    value = int(text)\nexcept ValueError:\n    value = 0",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 1,
+                  "values": [
+                    {
+                      "name": "text",
+                      "type": "str",
+                      "display": "'18'"
+                    }
+                  ],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 2,
+                  "lineEnd": 5,
+                  "values": [
+                    {
+                      "name": "text",
+                      "type": "str",
+                      "display": "'18'"
+                    },
+                    {
+                      "name": "value",
+                      "type": "int",
+                      "display": "18"
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            },
+            {
+              "id": "case-1",
+              "label": "Case B",
+              "code": "text = 'unknown'\ntry:\n    value = int(text)\nexcept ValueError:\n    value = 0",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 1,
+                  "values": [
+                    {
+                      "name": "text",
+                      "type": "str",
+                      "display": "'unknown'"
+                    }
+                  ],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 2,
+                  "lineEnd": 5,
+                  "values": [
+                    {
+                      "name": "text",
+                      "type": "str",
+                      "display": "'unknown'"
+                    },
+                    {
+                      "name": "value",
+                      "type": "int",
+                      "display": "0"
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            }
+          ],
+          "initialCaseId": "case-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      },
+      {
+        "id": "count-what-you-skip",
+        "kind": "worked_example",
+        "blocks": [],
+        "headline": "Add up ['3', 'x', '9', '?'] as integers, skipping any ValueError.",
+        "lead": [],
+        "reveal": [],
+        "workedSteps": [
+          {
+            "text": "'3' converts, so it joins the total.",
+            "math": "total = 3, rejected = 0"
+          },
+          {
+            "text": "'x' raises ValueError. The except branch counts it instead of stopping.",
+            "math": "total = 3, rejected = 1",
+            "selfExplain": {
+              "questionId": "python-errors-and-resources-why-count"
+            }
+          },
+          {
+            "text": "'9' converts and '?' fails.",
+            "math": "total = 12, rejected = 2"
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "diagram": {
+          "type": "python_execution",
+          "runtime": "Python 3.12",
+          "cases": [
+            {
+              "id": "case-0",
+              "label": "Case A",
+              "code": "texts = ['2', '5']\ntotal = 0\nrejected = 0\nfor text in texts:\n    try:\n        total += int(text)\n    except ValueError:\n        rejected += 1",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 3,
+                  "values": [
+                    {
+                      "name": "total",
+                      "type": "int",
+                      "display": "0"
+                    },
+                    {
+                      "name": "rejected",
+                      "type": "int",
+                      "display": "0"
+                    }
+                  ],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 4,
+                  "lineEnd": 8,
+                  "values": [
+                    {
+                      "name": "total",
+                      "type": "int",
+                      "display": "7"
+                    },
+                    {
+                      "name": "rejected",
+                      "type": "int",
+                      "display": "0"
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            },
+            {
+              "id": "case-1",
+              "label": "Case B",
+              "code": "texts = ['2', 'bad', '5']\ntotal = 0\nrejected = 0\nfor text in texts:\n    try:\n        total += int(text)\n    except ValueError:\n        rejected += 1",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 3,
+                  "values": [
+                    {
+                      "name": "total",
+                      "type": "int",
+                      "display": "0"
+                    },
+                    {
+                      "name": "rejected",
+                      "type": "int",
+                      "display": "0"
+                    }
+                  ],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 4,
+                  "lineEnd": 8,
+                  "values": [
+                    {
+                      "name": "total",
+                      "type": "int",
+                      "display": "7"
+                    },
+                    {
+                      "name": "rejected",
+                      "type": "int",
+                      "display": "1"
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            }
+          ],
+          "initialCaseId": "case-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      },
+      {
+        "id": "skip-and-count",
+        "kind": "faded_example",
+        "blocks": [],
+        "headline": "Parse ['4', 'bad', '6', '?'] as integers, skipping ValueError entries.",
+        "lead": [],
+        "reveal": [],
+        "workedSteps": [
+          {
+            "text": "'bad' and '?' are not integer text. How many entries are rejected?",
+            "blank": {
+              "questionId": "python-errors-and-resources-rejected"
+            }
+          },
+          {
+            "text": "Only '4' and '6' convert. What is the total?",
+            "blank": {
+              "questionId": "python-errors-and-resources-2"
+            }
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
+      },
+      {
+        "id": "close-it-for-you",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "A with block closes a file for you when the block ends.",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "with open('notes.txt') as f: opens the file, runs the indented lines, then closes it, even if one of them fails. The with statement manages the resource. It does not check that the contents make sense."
+          }
+        ],
+        "reveal": [],
+        "introducesTerms": [
+          "context manager"
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-errors-and-resources-3",
+        "activityId": ""
+      },
+      {
+        "id": "how-much-did-you-drop",
+        "kind": "try",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Skipping rows changes which rows you analyse. A rejected count tells a reader how much was dropped."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "The share you worked out is the size of the gap between the data you had and the data you used. Reporting it keeps the skipping visible."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-errors-and-resources-rejected-share",
+        "activityId": ""
+      },
+      {
+        "id": "where-is-the-file",
+        "kind": "transfer",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "A relative path such as data.csv is resolved from the folder Python was launched in, the working directory. It is not resolved from the folder holding the script."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "The same name pointed at a different file each time, because the working directory changed. When a file goes missing, check where Python started before blaming the file."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-errors-and-resources-4",
+        "activityId": ""
+      }
+    ],
+    "orientation": "Catch expected exceptions and manage files with a context manager.",
+    "visualStates": [],
+    "visualKind": "none",
+    "activityId": "",
+    "questionIds": [
+      "python-errors-and-resources-5",
+      "python-errors-and-resources-6",
+      "python-errors-and-resources-7"
+    ],
+    "flashcardIds": [
+      "python-errors-and-resources-card-1",
+      "python-errors-and-resources-card-2"
+    ],
+    "reviewLabel": "Handle failure without hiding it",
+    "nextAction": "Try the next idea with a new input.",
+    "stageTitles": {
+      "quiz": "Skill check",
+      "review": "Recall it later",
+      "completion": "Ready for the next idea"
+    },
+    "sourceIds": [
+      "py-errors"
+    ],
+    "assuranceLevel": "source_backed",
+    "intro": {
+      "hook": {
+        "blocks": [
+          {
+            "kind": "paragraph",
+            "text": "A form asked for age. Three people answered: 24, unknown and 36."
+          }
+        ],
+        "questionId": "python-errors-and-resources-hook"
+      },
+      "promise": "By the end you'll catch an expected error on purpose and read a file inside a with block.",
+      "estimatedMinutes": 10
+    },
+    "recap": {
+      "keyIdea": "Catch the specific error you expect and say what you skipped. A with block closes the file, and relative paths follow the working directory.",
+      "blocks": [
+        {
+          "kind": "paragraph",
+          "text": "You averaged the two valid ages to get 30. You skipped 2 bad entries to reach a total of 10, and found that 3 of 5 entries, 60 per cent, were rejected."
+        }
+      ],
+      "nextHook": "Next: shape numbers into arrays so one operation covers every value."
+    },
+    "calculator": "off",
+    "taughtSkills": [
+      "catch-expected-errors",
+      "report-rejections",
+      "with-blocks",
+      "relative-paths"
+    ]
+  },
+  "questions": [
+    {
+      "id": "python-errors-and-resources-1",
+      "conceptIds": [
+        "python-errors-and-resources"
+      ],
+      "prompt": "Parse '24' with int, using 0 only on ValueError. What value is produced?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "The exception branch runs only if conversion fails.",
+        "The input contains valid integer digits.",
+        "Use the converted value because no exception is raised."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 24,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "The conversion succeeds, so the fallback is never used."
+      },
+      "sourceIds": [
+        "py-errors"
+      ],
+      "onCorrect": "24. The conversion succeeded, so the except branch never ran.",
+      "skill": "catch-expected-errors",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              0
+            ]
+          },
+          "feedback": "That is the fallback. The conversion succeeded, so it is never used."
+        }
+      ],
+      "calculator": "off"
+    },
+    {
+      "id": "python-errors-and-resources-2",
+      "conceptIds": [
+        "python-errors-and-resources"
+      ],
+      "prompt": "What is the total of the entries that convert?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Add only the successful conversions.",
+        "Mark each entry as converted or failed.",
+        "Add the values of the entries that converted."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 10,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "The valid entries are 4 and 6, which sum to 10. Two entries were rejected."
+      },
+      "sourceIds": [
+        "py-errors"
+      ],
+      "onCorrect": "10. Only 4 and 6 converted, so only they joined the total.",
+      "skill": "catch-expected-errors",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              4
+            ]
+          },
+          "feedback": "That counts only the first. The entry '6' converts too."
+        },
+        {
+          "match": {
+            "numeric": [
+              0
+            ]
+          },
+          "feedback": "Two entries convert, so the total is not empty."
+        }
+      ],
+      "calculator": "off"
+    },
+    {
+      "id": "python-errors-and-resources-3",
+      "conceptIds": [
+        "python-errors-and-resources"
+      ],
+      "prompt": "What is the main benefit of with open(...) as f?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Resource handling and data checking are separate jobs."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "It closes the file when the block exits"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "The context manager closes the file when the block ends. Reading and validation can still fail."
+      },
+      "sourceIds": [
+        "py-errors"
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "It closes the file when the block exits"
+        },
+        {
+          "id": "b",
+          "label": "It guarantees all file contents are valid"
+        },
+        {
+          "id": "c",
+          "label": "It silently ignores every error"
+        }
+      ],
+      "onCorrect": "It closes the file when the block exits. Reading and validating the contents are still your job.",
+      "skill": "with-blocks",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "with manages the file, not its contents. Bad text still raises errors."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Errors still happen. with only makes sure the file is closed afterwards."
+        }
+      ],
+      "calculator": "off"
+    },
+    {
+      "id": "python-errors-and-resources-4",
+      "conceptIds": [
+        "python-errors-and-resources"
+      ],
+      "prompt": "A script opens data.csv with no folder in the path. You launch it from three different folders, each holding its own data.csv. How many different files does it read?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Where does Python look for a path with no folder?",
+        "It looks in the folder Python was launched from.",
+        "Each launch folder has its own file."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 3,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "Relative paths resolve from the current working directory, so each launch reads its own file."
+      },
+      "sourceIds": [
+        "py-errors"
+      ],
+      "onCorrect": "3. A relative path follows the working directory, so each launch folder gave a different file.",
+      "skill": "relative-paths",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              1
+            ]
+          },
+          "feedback": "That assumes the path follows the script. A relative path follows the folder Python was launched from."
+        }
+      ],
+      "calculator": "off"
+    },
+    {
+      "id": "python-errors-and-resources-5",
+      "conceptIds": [
+        "python-errors-and-resources"
+      ],
+      "prompt": "How many entries fail int conversion in ['7', '8.5', 'no', '2']?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "int parses an integer string, not any numeric text.",
+        "Does int accept a string with a decimal point?",
+        "Check each entry and count only the failures."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 2,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "'8.5' is not an integer string, and 'no' is not numeric. The other two conversions succeed."
+      },
+      "sourceIds": [
+        "py-errors"
+      ],
+      "onCorrect": "2. '8.5' is not an integer string and 'no' is not numeric. The other two convert.",
+      "skill": "catch-expected-errors",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              1
+            ]
+          },
+          "feedback": "Check '8.5': int does not accept a decimal point in its text."
+        },
+        {
+          "match": {
+            "numeric": [
+              3
+            ]
+          },
+          "feedback": "The first and last entries are plain integer strings, so they convert."
+        }
+      ],
+      "calculator": "off"
+    },
+    {
+      "id": "python-errors-and-resources-6",
+      "conceptIds": [
+        "python-errors-and-resources"
+      ],
+      "prompt": "A file has lines 5, a blank line, and 9. You skip blank lines. What is the sum?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Apply the blank-line policy before converting.",
+        "A line whose stripped content is empty is skipped.",
+        "Convert the remaining two lines and add them."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 14,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "The two retained numbers are 5 and 9, giving 14."
+      },
+      "sourceIds": [
+        "py-errors"
+      ],
+      "onCorrect": "14. The blank line was skipped before conversion, so only 5 and 9 were added.",
+      "skill": "report-rejections",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              5
+            ]
+          },
+          "feedback": "The 9 is a valid line. Only the blank is skipped."
+        }
+      ],
+      "calculator": "off"
+    },
+    {
+      "id": "python-errors-and-resources-7",
+      "conceptIds": [
+        "python-errors-and-resources"
+      ],
+      "difficulty": 1,
+      "sourceIds": [
+        "py-errors"
+      ],
+      "hints": [
+        "Which entries convert, and which raise ValueError?",
+        "The failing entry adds the fallback of 10.",
+        "Add the two converted values and the fallback."
+      ],
+      "prompt": "total = 0; for text in ['1', 'x', '2']: try to add int(text), and on ValueError add 10 instead. What is total?",
+      "responseType": "numeric",
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 13,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "1 + 10 + 2 = 13."
+      },
+      "onCorrect": "13. 1 and 2 converted, and the except branch added 10 for 'x'.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              3
+            ]
+          },
+          "feedback": "That skips the fallback. The except branch adds 10 for the entry that failed."
+        },
+        {
+          "match": {
+            "numeric": [
+              10
+            ]
+          },
+          "feedback": "That is only the fallback. The two valid entries are added too."
+        }
+      ],
+      "skill": "catch-expected-errors",
+      "calculator": "off"
+    },
+    {
+      "id": "python-errors-and-resources-hook",
+      "conceptIds": [
+        "python-errors-and-resources"
+      ],
+      "difficulty": 1,
+      "sourceIds": [
+        "py-errors"
+      ],
+      "hints": [
+        "Which answers are numbers?",
+        "Leave out the answer that is not a number.",
+        "Add the two ages and divide by 2."
+      ],
+      "prompt": "What is the mean age of the people who gave a number?",
+      "responseType": "numeric",
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 30,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "(24 + 36) ÷ 2 = 30."
+      },
+      "onCorrect": "30. You set aside the answer that is not a number and averaged the rest. Code must make the same choice on purpose.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              20
+            ]
+          },
+          "feedback": "That divides by 3. The unknown answer is not part of the average."
+        },
+        {
+          "match": {
+            "numeric": [
+              60
+            ]
+          },
+          "feedback": "That is the sum of the ages. Divide by how many there are."
+        }
+      ],
+      "skill": "report-rejections",
+      "calculator": "off"
+    },
+    {
+      "id": "python-errors-and-resources-error-check",
+      "conceptIds": [
+        "python-errors-and-resources"
+      ],
+      "difficulty": 1,
+      "sourceIds": [
+        "py-errors"
+      ],
+      "hints": [
+        "Can the text seven be read as digits?"
+      ],
+      "prompt": "What does int('seven') do?",
+      "responseType": "short_text",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Raises a ValueError"
+        },
+        {
+          "id": "b",
+          "label": "Returns 0"
+        },
+        {
+          "id": "c",
+          "label": "Returns the text unchanged"
+        }
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Raises a ValueError"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "int raises ValueError when the text is not a valid integer."
+      },
+      "onCorrect": "It raises a ValueError. The text is not integer digits, and int refuses rather than guessing.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "int never invents a fallback. You supply one with except."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "int returns a number or raises an error. It does not hand text back."
+        }
+      ],
+      "skill": "catch-expected-errors",
+      "calculator": "off"
+    },
+    {
+      "id": "python-errors-and-resources-why-count",
+      "conceptIds": [
+        "python-errors-and-resources"
+      ],
+      "difficulty": 1,
+      "sourceIds": [
+        "py-errors"
+      ],
+      "hints": [
+        "What would a reader of your result not know otherwise?"
+      ],
+      "prompt": "Why count the rejected entries instead of silently skipping them?",
+      "responseType": "short_text",
+      "choices": [
+        {
+          "id": "a",
+          "label": "The reader learns how much data was left out"
+        },
+        {
+          "id": "b",
+          "label": "Python requires a counter for except"
+        },
+        {
+          "id": "c",
+          "label": "It makes the total larger"
+        }
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "The reader learns how much data was left out"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "A rejection count makes the policy visible."
+      },
+      "onCorrect": "The reader learns how much data was left out. Skipping silently hides a change to the data.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Python does not require it. It is your choice, made to keep the skipping visible."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "The total only includes entries that converted. The count is a separate fact."
+        }
+      ],
+      "skill": "report-rejections",
+      "calculator": "off"
+    },
+    {
+      "id": "python-errors-and-resources-rejected",
+      "conceptIds": [
+        "python-errors-and-resources"
+      ],
+      "difficulty": 1,
+      "sourceIds": [
+        "py-errors"
+      ],
+      "hints": [
+        "Try to read each entry as an integer.",
+        "'4' and '6' are digits.",
+        "Count the entries that are not."
+      ],
+      "prompt": "How many entries are rejected?",
+      "responseType": "numeric",
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 2,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "'bad' and '?' fail to convert."
+      },
+      "onCorrect": "2. 'bad' and '?' are not integer text, so each raised ValueError.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              4
+            ]
+          },
+          "feedback": "That counts every entry. Only the ones that failed to convert are rejected."
+        }
+      ],
+      "skill": "report-rejections",
+      "calculator": "off"
+    },
+    {
+      "id": "python-errors-and-resources-rejected-share",
+      "conceptIds": [
+        "python-errors-and-resources"
+      ],
+      "difficulty": 1,
+      "sourceIds": [
+        "py-errors"
+      ],
+      "hints": [
+        "Count how many entries fail to convert.",
+        "Divide that count by the number of entries.",
+        "Multiply the fraction by 100."
+      ],
+      "prompt": "Parse ['10', 'x', '20', 'y', 'z'] as integers, skipping ValueError entries. What percentage of entries were rejected?",
+      "responseType": "numeric",
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 60,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "3 of 5 entries were rejected, which is 60 per cent."
+      },
+      "onCorrect": "60. Three of the five entries failed, so a reader should know more than half the rows were dropped.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              40
+            ]
+          },
+          "feedback": "That is the share that converted. The question asks for the share rejected."
+        },
+        {
+          "match": {
+            "numeric": [
+              3
+            ]
+          },
+          "feedback": "That is the count of rejected entries. Turn it into a percentage of all five."
+        }
+      ],
+      "skill": "report-rejections",
+      "calculator": "off"
+    }
+  ],
+  "citations": [
+    {
+      "claim": "try and except catch an error you expect, and nothing else.",
+      "sourceId": "py-errors",
+      "section": "8.3 handling exceptions; 8.8 predefined clean-up actions",
+      "targetKind": "step",
+      "targetId": "an-error-you-expect"
+    },
+    {
+      "claim": "The except branch runs only if the conversion fails.",
+      "sourceId": "py-errors",
+      "section": "8.3 handling exceptions; 8.8 predefined clean-up actions",
+      "targetKind": "step",
+      "targetId": "valid-or-not"
+    },
+    {
+      "claim": "Add up ['3', 'x', '9', '?'] as integers, skipping any ValueError.",
+      "sourceId": "py-errors",
+      "section": "8.3 handling exceptions; 8.8 predefined clean-up actions",
+      "targetKind": "step",
+      "targetId": "count-what-you-skip"
+    },
+    {
+      "claim": "Parse ['4', 'bad', '6', '?'] as integers, skipping ValueError entries.",
+      "sourceId": "py-errors",
+      "section": "8.3 handling exceptions; 8.8 predefined clean-up actions",
+      "targetKind": "step",
+      "targetId": "skip-and-count"
+    },
+    {
+      "claim": "A with block closes a file for you when the block ends.",
+      "sourceId": "py-errors",
+      "section": "8.3 handling exceptions; 8.8 predefined clean-up actions",
+      "targetKind": "step",
+      "targetId": "close-it-for-you"
+    },
+    {
+      "claim": "Skipping rows changes which rows you analyse. A rejected count tells a reader how much was dropped.",
+      "sourceId": "py-errors",
+      "section": "8.3 handling exceptions; 8.8 predefined clean-up actions",
+      "targetKind": "step",
+      "targetId": "how-much-did-you-drop"
+    },
+    {
+      "claim": "A relative path such as data.csv is resolved from the folder Python was launched in, the working directory. It is not resolved from the folder holding the script.",
+      "sourceId": "py-errors",
+      "section": "8.3 handling exceptions; 8.8 predefined clean-up actions",
+      "targetKind": "step",
+      "targetId": "where-is-the-file"
+    },
+    {
+      "claim": "24. The conversion succeeded, so the except branch never ran.",
+      "sourceId": "py-errors",
+      "section": "8.3 handling exceptions; 8.8 predefined clean-up actions",
+      "targetKind": "question",
+      "targetId": "python-errors-and-resources-1"
+    },
+    {
+      "claim": "10. Only 4 and 6 converted, so only they joined the total.",
+      "sourceId": "py-errors",
+      "section": "8.3 handling exceptions; 8.8 predefined clean-up actions",
+      "targetKind": "question",
+      "targetId": "python-errors-and-resources-2"
+    },
+    {
+      "claim": "It closes the file when the block exits. Reading and validating the contents are still your job.",
+      "sourceId": "py-errors",
+      "section": "8.3 handling exceptions; 8.8 predefined clean-up actions",
+      "targetKind": "question",
+      "targetId": "python-errors-and-resources-3"
+    },
+    {
+      "claim": "3. A relative path follows the working directory, so each launch folder gave a different file.",
+      "sourceId": "py-errors",
+      "section": "8.3 handling exceptions; 8.8 predefined clean-up actions",
+      "targetKind": "question",
+      "targetId": "python-errors-and-resources-4"
+    },
+    {
+      "claim": "2. '8.5' is not an integer string and 'no' is not numeric. The other two convert.",
+      "sourceId": "py-errors",
+      "section": "8.3 handling exceptions; 8.8 predefined clean-up actions",
+      "targetKind": "question",
+      "targetId": "python-errors-and-resources-5"
+    },
+    {
+      "claim": "14. The blank line was skipped before conversion, so only 5 and 9 were added.",
+      "sourceId": "py-errors",
+      "section": "8.3 handling exceptions; 8.8 predefined clean-up actions",
+      "targetKind": "question",
+      "targetId": "python-errors-and-resources-6"
+    },
+    {
+      "claim": "13. 1 and 2 converted, and the except branch added 10 for 'x'.",
+      "sourceId": "py-errors",
+      "section": "8.3 handling exceptions; 8.8 predefined clean-up actions",
+      "targetKind": "question",
+      "targetId": "python-errors-and-resources-7"
+    },
+    {
+      "claim": "30. You set aside the answer that is not a number and averaged the rest. Code must make the same choice on purpose.",
+      "sourceId": "py-errors",
+      "section": "8.3 handling exceptions; 8.8 predefined clean-up actions",
+      "targetKind": "question",
+      "targetId": "python-errors-and-resources-hook"
+    },
+    {
+      "claim": "It raises a ValueError. The text is not integer digits, and int refuses rather than guessing.",
+      "sourceId": "py-errors",
+      "section": "8.3 handling exceptions; 8.8 predefined clean-up actions",
+      "targetKind": "question",
+      "targetId": "python-errors-and-resources-error-check"
+    },
+    {
+      "claim": "The reader learns how much data was left out. Skipping silently hides a change to the data.",
+      "sourceId": "py-errors",
+      "section": "8.3 handling exceptions; 8.8 predefined clean-up actions",
+      "targetKind": "question",
+      "targetId": "python-errors-and-resources-why-count"
+    },
+    {
+      "claim": "2. 'bad' and '?' are not integer text, so each raised ValueError.",
+      "sourceId": "py-errors",
+      "section": "8.3 handling exceptions; 8.8 predefined clean-up actions",
+      "targetKind": "question",
+      "targetId": "python-errors-and-resources-rejected"
+    },
+    {
+      "claim": "60. Three of the five entries failed, so a reader should know more than half the rows were dropped.",
+      "sourceId": "py-errors",
+      "section": "8.3 handling exceptions; 8.8 predefined clean-up actions",
+      "targetKind": "question",
+      "targetId": "python-errors-and-resources-rejected-share"
+    },
+    {
+      "claim": "The valid values 3 and 8 sum to 11.",
+      "sourceId": "py-errors",
+      "section": "8.3 handling exceptions; 8.8 predefined clean-up actions",
+      "targetKind": "flashcard",
+      "targetId": "python-errors-and-resources-card-1"
+    },
+    {
+      "claim": "ValueError reports that the supplied string cannot represent the requested integer.",
+      "sourceId": "py-errors",
+      "section": "8.3 handling exceptions; 8.8 predefined clean-up actions",
+      "targetKind": "flashcard",
+      "targetId": "python-errors-and-resources-card-2"
+    }
+  ]
+}

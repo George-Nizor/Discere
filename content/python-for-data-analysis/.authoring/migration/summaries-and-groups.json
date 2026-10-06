@@ -1,0 +1,2111 @@
+{
+  "lessonId": "summaries-and-groups",
+  "courseId": "python-for-data-analysis",
+  "migrationNotes": [],
+  "lesson": {
+    "id": "summaries-and-groups",
+    "courseId": "python-for-data-analysis",
+    "conceptIds": [
+      "python-summaries-and-groups"
+    ],
+    "title": "Summarise the right observations",
+    "steps": [
+      {
+        "id": "two-ways-to-be-typical",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "The mean shares the total equally, and the median is the middle value.",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "The mean is the sum divided by the count. The median is the middle value of the sorted list, or the average of the two middle values when there is an even number. One extreme value drags the mean much more than the median."
+          },
+          {
+            "kind": "callout",
+            "tone": "key",
+            "text": "Choose the summary that answers the question you are asking."
+          }
+        ],
+        "reveal": [],
+        "introducesTerms": [
+          "mean",
+          "median"
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-summaries-and-groups-pull-check",
+        "activityId": ""
+      },
+      {
+        "id": "equal-shares",
+        "kind": "predict",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "The mean uses every value, including an unusually large one. Add the values first, then divide by how many there are."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "You shared the total equally, and one large value pulled the result above the others. That is why the median is also reported."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-summaries-and-groups-1",
+        "activityId": "",
+        "diagram": {
+          "type": "python_execution",
+          "runtime": "Python 3.12 · pandas 3.0",
+          "cases": [
+            {
+              "id": "case-0",
+              "label": "Case A",
+              "code": "import pandas as pd\ns = pd.Series([2, 3, 4, 19])\nmean = s.mean()\nmedian = s.median()",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 2,
+                  "values": [
+                    {
+                      "name": "s",
+                      "type": "Series",
+                      "display": "0     2\n1     3\n2     4\n3    19\ndtype: int64",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "value"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            2
+                          ],
+                          [
+                            1,
+                            3
+                          ],
+                          [
+                            2,
+                            4
+                          ],
+                          [
+                            3,
+                            19
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 3,
+                  "lineEnd": 4,
+                  "values": [
+                    {
+                      "name": "s",
+                      "type": "Series",
+                      "display": "0     2\n1     3\n2     4\n3    19\ndtype: int64",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "value"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            2
+                          ],
+                          [
+                            1,
+                            3
+                          ],
+                          [
+                            2,
+                            4
+                          ],
+                          [
+                            3,
+                            19
+                          ]
+                        ]
+                      }
+                    },
+                    {
+                      "name": "mean",
+                      "type": "float64",
+                      "display": "np.float64(7.0)"
+                    },
+                    {
+                      "name": "median",
+                      "type": "float64",
+                      "display": "np.float64(3.5)"
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            },
+            {
+              "id": "case-1",
+              "label": "Case B",
+              "code": "import pandas as pd\ns = pd.Series([2, 3, 4, 19])\nsummary = s.describe()",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 2,
+                  "values": [],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 3,
+                  "lineEnd": 3,
+                  "values": [
+                    {
+                      "name": "summary",
+                      "type": "Series",
+                      "display": "count     4.000000\nmean      7.000000\nstd       8.041559\nmin       2.000000\n25%       2.750000\n50%       3.500000\n75%       7.750000\nmax      19.000000\ndtype: float64",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "value"
+                        ],
+                        "rows": [
+                          [
+                            "count",
+                            4
+                          ],
+                          [
+                            "mean",
+                            7
+                          ],
+                          [
+                            "std",
+                            8.04155872120988
+                          ],
+                          [
+                            "min",
+                            2
+                          ],
+                          [
+                            "25%",
+                            2.75
+                          ],
+                          [
+                            "50%",
+                            3.5
+                          ],
+                          [
+                            "75%",
+                            7.75
+                          ],
+                          [
+                            "max",
+                            19
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            }
+          ],
+          "initialCaseId": "case-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      },
+      {
+        "id": "one-result-per-group",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "groupby splits the rows by a key, and the summary is worked out inside each group.",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "df.groupby('shop')['units'].sum() puts rows with the same shop together, then adds their units. The result has one row for each shop."
+          }
+        ],
+        "reveal": [],
+        "introducesTerms": [
+          "groupby"
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-summaries-and-groups-group-check",
+        "activityId": "",
+        "diagram": {
+          "type": "python_execution",
+          "runtime": "Python 3.12 · pandas 3.0",
+          "cases": [
+            {
+              "id": "case-0",
+              "label": "Case A",
+              "code": "import pandas as pd\ndf = pd.DataFrame({\n    'shop': ['Bay', 'Hill', 'Bay', 'Hill'],\n    'units': [2, 1, 3, 4],\n    'price': [5, 8, 5, 8]\n})\nresult = df.groupby('shop', as_index=False)['units'].sum()",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 6,
+                  "values": [
+                    {
+                      "name": "df",
+                      "type": "DataFrame",
+                      "display": "   shop  units  price\n0   Bay      2      5\n1  Hill      1      8\n2   Bay      3      5\n3  Hill      4      8",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "shop",
+                          "units",
+                          "price"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            "Bay",
+                            2,
+                            5
+                          ],
+                          [
+                            1,
+                            "Hill",
+                            1,
+                            8
+                          ],
+                          [
+                            2,
+                            "Bay",
+                            3,
+                            5
+                          ],
+                          [
+                            3,
+                            "Hill",
+                            4,
+                            8
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 7,
+                  "lineEnd": 7,
+                  "values": [
+                    {
+                      "name": "df",
+                      "type": "DataFrame",
+                      "display": "   shop  units  price\n0   Bay      2      5\n1  Hill      1      8\n2   Bay      3      5\n3  Hill      4      8",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "shop",
+                          "units",
+                          "price"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            "Bay",
+                            2,
+                            5
+                          ],
+                          [
+                            1,
+                            "Hill",
+                            1,
+                            8
+                          ],
+                          [
+                            2,
+                            "Bay",
+                            3,
+                            5
+                          ],
+                          [
+                            3,
+                            "Hill",
+                            4,
+                            8
+                          ]
+                        ]
+                      }
+                    },
+                    {
+                      "name": "result",
+                      "type": "DataFrame",
+                      "display": "   shop  units\n0   Bay      5\n1  Hill      5",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "shop",
+                          "units"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            "Bay",
+                            5
+                          ],
+                          [
+                            1,
+                            "Hill",
+                            5
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            },
+            {
+              "id": "case-1",
+              "label": "Case B",
+              "code": "import pandas as pd\ndf = pd.DataFrame({\n    'shop': ['Bay', 'Hill', 'Bay', 'Hill'],\n    'units': [2, 1, 3, 4],\n    'price': [5, 8, 5, 8]\n})\nresult = df.groupby('shop', as_index=False)['units'].mean()",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 6,
+                  "values": [
+                    {
+                      "name": "df",
+                      "type": "DataFrame",
+                      "display": "   shop  units  price\n0   Bay      2      5\n1  Hill      1      8\n2   Bay      3      5\n3  Hill      4      8",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "shop",
+                          "units",
+                          "price"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            "Bay",
+                            2,
+                            5
+                          ],
+                          [
+                            1,
+                            "Hill",
+                            1,
+                            8
+                          ],
+                          [
+                            2,
+                            "Bay",
+                            3,
+                            5
+                          ],
+                          [
+                            3,
+                            "Hill",
+                            4,
+                            8
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 7,
+                  "lineEnd": 7,
+                  "values": [
+                    {
+                      "name": "df",
+                      "type": "DataFrame",
+                      "display": "   shop  units  price\n0   Bay      2      5\n1  Hill      1      8\n2   Bay      3      5\n3  Hill      4      8",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "shop",
+                          "units",
+                          "price"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            "Bay",
+                            2,
+                            5
+                          ],
+                          [
+                            1,
+                            "Hill",
+                            1,
+                            8
+                          ],
+                          [
+                            2,
+                            "Bay",
+                            3,
+                            5
+                          ],
+                          [
+                            3,
+                            "Hill",
+                            4,
+                            8
+                          ]
+                        ]
+                      }
+                    },
+                    {
+                      "name": "result",
+                      "type": "DataFrame",
+                      "display": "   shop  units\n0   Bay    2.5\n1  Hill    2.5",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "shop",
+                          "units"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            "Bay",
+                            2.5
+                          ],
+                          [
+                            1,
+                            "Hill",
+                            2.5
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            }
+          ],
+          "initialCaseId": "case-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      },
+      {
+        "id": "sum-each-shop",
+        "kind": "worked_example",
+        "blocks": [],
+        "headline": "Rows are (Lake, 4), (Hill, 1), (Lake, 5), (Hill, 2) and (Lake, 3). What is the total for each shop?",
+        "lead": [],
+        "reveal": [],
+        "workedSteps": [
+          {
+            "text": "Split the rows by shop. Lake has three rows and Hill has two.",
+            "math": "Lake: 4, 5, 3. Hill: 1, 2"
+          },
+          {
+            "text": "Add inside each group.",
+            "math": "Lake: 12. Hill: 3",
+            "selfExplain": {
+              "questionId": "python-summaries-and-groups-why-two-rows"
+            }
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
+      },
+      {
+        "id": "bays-total",
+        "kind": "faded_example",
+        "blocks": [],
+        "headline": "Rows are (Bay, 2), (Hill, 3) and (Bay, 6). What is the grouped sum for Bay?",
+        "lead": [],
+        "reveal": [],
+        "workedSteps": [
+          {
+            "text": "Keep only the Bay rows. How many Bay rows are there?",
+            "blank": {
+              "questionId": "python-summaries-and-groups-faded-bay-rows"
+            }
+          },
+          {
+            "text": "Add the units attached to Bay. What is the total?",
+            "blank": {
+              "questionId": "python-summaries-and-groups-2"
+            }
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
+      },
+      {
+        "id": "rows-or-known-values",
+        "kind": "try",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "size counts the rows in a group. count on a column counts only the known, non-missing values."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "Missing entries are still rows, so size counts them. count leaves them out because they are not known values."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-summaries-and-groups-3",
+        "activityId": "",
+        "diagram": {
+          "type": "python_execution",
+          "runtime": "Python 3.12 · pandas 3.0",
+          "cases": [
+            {
+              "id": "case-0",
+              "label": "Case A",
+              "code": "import pandas as pd\ndf = pd.DataFrame({'shop': ['Bay', 'Bay', 'Hill'], 'units': [2, None, 4]})\nresult = df.groupby('shop').agg(rows=('units', 'size'), known=('units', 'count'))",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 2,
+                  "values": [
+                    {
+                      "name": "df",
+                      "type": "DataFrame",
+                      "display": "   shop  units\n0   Bay    2.0\n1   Bay    NaN\n2  Hill    4.0",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "shop",
+                          "units"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            "Bay",
+                            2
+                          ],
+                          [
+                            1,
+                            "Bay",
+                            null
+                          ],
+                          [
+                            2,
+                            "Hill",
+                            4
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 3,
+                  "lineEnd": 3,
+                  "values": [
+                    {
+                      "name": "df",
+                      "type": "DataFrame",
+                      "display": "   shop  units\n0   Bay    2.0\n1   Bay    NaN\n2  Hill    4.0",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "shop",
+                          "units"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            "Bay",
+                            2
+                          ],
+                          [
+                            1,
+                            "Bay",
+                            null
+                          ],
+                          [
+                            2,
+                            "Hill",
+                            4
+                          ]
+                        ]
+                      }
+                    },
+                    {
+                      "name": "result",
+                      "type": "DataFrame",
+                      "display": "      rows  known\nshop             \nBay      2      1\nHill     1      1",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "rows",
+                          "known"
+                        ],
+                        "rows": [
+                          [
+                            "Bay",
+                            2,
+                            1
+                          ],
+                          [
+                            "Hill",
+                            1,
+                            1
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            },
+            {
+              "id": "case-1",
+              "label": "Case B",
+              "code": "import pandas as pd\ndf = pd.DataFrame({'shop': ['Bay', None, 'Hill'], 'units': [2, 3, 4]})\nresult = df.groupby('shop', dropna=False)['units'].sum()",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 2,
+                  "values": [
+                    {
+                      "name": "df",
+                      "type": "DataFrame",
+                      "display": "   shop  units\n0   Bay      2\n1   NaN      3\n2  Hill      4",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "shop",
+                          "units"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            "Bay",
+                            2
+                          ],
+                          [
+                            1,
+                            null,
+                            3
+                          ],
+                          [
+                            2,
+                            "Hill",
+                            4
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 3,
+                  "lineEnd": 3,
+                  "values": [
+                    {
+                      "name": "df",
+                      "type": "DataFrame",
+                      "display": "   shop  units\n0   Bay      2\n1   NaN      3\n2  Hill      4",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "shop",
+                          "units"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            "Bay",
+                            2
+                          ],
+                          [
+                            1,
+                            null,
+                            3
+                          ],
+                          [
+                            2,
+                            "Hill",
+                            4
+                          ]
+                        ]
+                      }
+                    },
+                    {
+                      "name": "result",
+                      "type": "Series",
+                      "display": "shop\nBay     2\nHill    4\nNaN     3\nName: units, dtype: int64",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "units"
+                        ],
+                        "rows": [
+                          [
+                            "Bay",
+                            2
+                          ],
+                          [
+                            "Hill",
+                            4
+                          ],
+                          [
+                            null,
+                            3
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            }
+          ],
+          "initialCaseId": "case-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      },
+      {
+        "id": "keep-the-unknown-group",
+        "kind": "transfer",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Rows whose group key is missing are dropped by default. groupby(..., dropna=False) keeps them together as a group of their own."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "The missing key became a group of its own instead of vanishing. Dropping them silently would have lost those rows from the report."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-summaries-and-groups-dropna-groups",
+        "activityId": "",
+        "diagram": {
+          "type": "python_execution",
+          "runtime": "Python 3.12 · pandas 3.0",
+          "cases": [
+            {
+              "id": "case-0",
+              "label": "Case A",
+              "code": "import pandas as pd\ndf = pd.DataFrame({'shop': ['Bay', 'Bay', 'Hill'], 'units': [2, None, 4]})\nresult = df.groupby('shop').agg(rows=('units', 'size'), known=('units', 'count'))",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 2,
+                  "values": [
+                    {
+                      "name": "df",
+                      "type": "DataFrame",
+                      "display": "   shop  units\n0   Bay    2.0\n1   Bay    NaN\n2  Hill    4.0",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "shop",
+                          "units"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            "Bay",
+                            2
+                          ],
+                          [
+                            1,
+                            "Bay",
+                            null
+                          ],
+                          [
+                            2,
+                            "Hill",
+                            4
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 3,
+                  "lineEnd": 3,
+                  "values": [
+                    {
+                      "name": "df",
+                      "type": "DataFrame",
+                      "display": "   shop  units\n0   Bay    2.0\n1   Bay    NaN\n2  Hill    4.0",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "shop",
+                          "units"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            "Bay",
+                            2
+                          ],
+                          [
+                            1,
+                            "Bay",
+                            null
+                          ],
+                          [
+                            2,
+                            "Hill",
+                            4
+                          ]
+                        ]
+                      }
+                    },
+                    {
+                      "name": "result",
+                      "type": "DataFrame",
+                      "display": "      rows  known\nshop             \nBay      2      1\nHill     1      1",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "rows",
+                          "known"
+                        ],
+                        "rows": [
+                          [
+                            "Bay",
+                            2,
+                            1
+                          ],
+                          [
+                            "Hill",
+                            1,
+                            1
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            },
+            {
+              "id": "case-1",
+              "label": "Case B",
+              "code": "import pandas as pd\ndf = pd.DataFrame({'shop': ['Bay', None, 'Hill'], 'units': [2, 3, 4]})\nresult = df.groupby('shop', dropna=False)['units'].sum()",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 2,
+                  "values": [
+                    {
+                      "name": "df",
+                      "type": "DataFrame",
+                      "display": "   shop  units\n0   Bay      2\n1   NaN      3\n2  Hill      4",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "shop",
+                          "units"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            "Bay",
+                            2
+                          ],
+                          [
+                            1,
+                            null,
+                            3
+                          ],
+                          [
+                            2,
+                            "Hill",
+                            4
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 3,
+                  "lineEnd": 3,
+                  "values": [
+                    {
+                      "name": "df",
+                      "type": "DataFrame",
+                      "display": "   shop  units\n0   Bay      2\n1   NaN      3\n2  Hill      4",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "shop",
+                          "units"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            "Bay",
+                            2
+                          ],
+                          [
+                            1,
+                            null,
+                            3
+                          ],
+                          [
+                            2,
+                            "Hill",
+                            4
+                          ]
+                        ]
+                      }
+                    },
+                    {
+                      "name": "result",
+                      "type": "Series",
+                      "display": "shop\nBay     2\nHill    4\nNaN     3\nName: units, dtype: int64",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "units"
+                        ],
+                        "rows": [
+                          [
+                            "Bay",
+                            2
+                          ],
+                          [
+                            "Hill",
+                            4
+                          ],
+                          [
+                            null,
+                            3
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            }
+          ],
+          "initialCaseId": "case-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      }
+    ],
+    "orientation": "Describe values, split groups and distinguish row counts from known measurements.",
+    "visualStates": [],
+    "visualKind": "none",
+    "activityId": "",
+    "questionIds": [
+      "python-summaries-and-groups-5",
+      "python-summaries-and-groups-6",
+      "python-summaries-and-groups-7"
+    ],
+    "flashcardIds": [
+      "python-summaries-and-groups-card-1",
+      "python-summaries-and-groups-card-2"
+    ],
+    "reviewLabel": "Summarise the right observations",
+    "nextAction": "Try the next idea with a new input.",
+    "stageTitles": {
+      "quiz": "Skill check",
+      "review": "Recall it later",
+      "completion": "Ready for the next idea"
+    },
+    "sourceIds": [
+      "pd-group",
+      "pd-missing",
+      "pd-basic"
+    ],
+    "assuranceLevel": "source_backed",
+    "intro": {
+      "hook": {
+        "blocks": [
+          {
+            "kind": "paragraph",
+            "text": "Four people in a small firm earn 2, 3, 4 and 19 thousand pounds. The firm shares its total wage bill equally among them."
+          }
+        ],
+        "questionId": "python-summaries-and-groups-hook"
+      },
+      "promise": "By the end you'll choose between mean and median, summarise inside groups, and tell a row count from a count of known values.",
+      "estimatedMinutes": 10
+    },
+    "recap": {
+      "keyIdea": "The mean shares a total and the median finds the middle; groupby summarises inside each group, and count and size answer different questions.",
+      "blocks": [
+        {
+          "kind": "paragraph",
+          "text": "You found the firm's mean pay is 7 thousand while its median is lower. Bay's units total 8, and keeping the missing key made 3 groups."
+        }
+      ],
+      "nextHook": "Next: combine tables without multiplying the answer."
+    },
+    "calculator": "off",
+    "taughtSkills": [
+      "mean-versus-median",
+      "group-and-aggregate",
+      "count-known-values",
+      "keep-missing-groups"
+    ]
+  },
+  "questions": [
+    {
+      "id": "python-summaries-and-groups-1",
+      "conceptIds": [
+        "python-summaries-and-groups"
+      ],
+      "prompt": "What is the mean of 2, 4, 6 and 20?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Use the sum and the number of observations.",
+        "All four values are known.",
+        "Add the values and divide by four."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 8,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "The values sum to 32; dividing by four gives 8."
+      },
+      "sourceIds": [
+        "pd-group",
+        "pd-missing",
+        "pd-basic"
+      ],
+      "onCorrect": "8. The values sum to 32, and four values share it equally.",
+      "skill": "mean-versus-median",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              5
+            ]
+          },
+          "feedback": "That is the median, the middle of the sorted values. The mean shares the total."
+        },
+        {
+          "match": {
+            "numeric": [
+              32
+            ]
+          },
+          "feedback": "That is the sum. Divide it by four."
+        }
+      ],
+      "calculator": "off"
+    },
+    {
+      "id": "python-summaries-and-groups-2",
+      "conceptIds": [
+        "python-summaries-and-groups"
+      ],
+      "prompt": "What is the total units for Bay?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Keep only the Bay group's values.",
+        "The Hill row is in a different group.",
+        "Add the two values attached to Bay."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 8,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "The Bay rows contribute 2 and 6, giving 8."
+      },
+      "sourceIds": [
+        "pd-group",
+        "pd-missing",
+        "pd-basic"
+      ],
+      "onCorrect": "8. The Bay rows hold 2 and 6, and the sum is worked out inside the group.",
+      "skill": "group-and-aggregate",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              11
+            ]
+          },
+          "feedback": "That includes the Hill row. Each group is summed on its own."
+        },
+        {
+          "match": {
+            "numeric": [
+              3
+            ]
+          },
+          "feedback": "That is the Hill value, a different group."
+        }
+      ],
+      "calculator": "off"
+    },
+    {
+      "id": "python-summaries-and-groups-3",
+      "conceptIds": [
+        "python-summaries-and-groups"
+      ],
+      "prompt": "A group has five rows, and two of its units are missing. What does units.count() return?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "count skips missing values.",
+        "size would count every row.",
+        "Subtract the missing entries from the total rows."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 3,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "count excludes missing unit values. size would count all five rows."
+      },
+      "sourceIds": [
+        "pd-group",
+        "pd-missing",
+        "pd-basic"
+      ],
+      "onCorrect": "3. count includes only the known unit values, and size would have said five.",
+      "skill": "count-known-values",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              5
+            ]
+          },
+          "feedback": "That is size, the number of rows. count leaves out the missing entries."
+        },
+        {
+          "match": {
+            "numeric": [
+              2
+            ]
+          },
+          "feedback": "That is the number of missing entries. count reports the known ones."
+        }
+      ],
+      "calculator": "off"
+    },
+    {
+      "id": "python-summaries-and-groups-5",
+      "conceptIds": [
+        "python-summaries-and-groups"
+      ],
+      "prompt": "What is the median of 1, 3, 5 and 21?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Sort the values and find the middle positions.",
+        "There is an even number of values.",
+        "Average the second and third values."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 4,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "The middle values are 3 and 5, so the median is their average, 4."
+      },
+      "sourceIds": [
+        "pd-group",
+        "pd-missing",
+        "pd-basic"
+      ],
+      "onCorrect": "4. With four values the median is the average of the middle pair, 3 and 5.",
+      "skill": "mean-versus-median",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              7.5
+            ]
+          },
+          "feedback": "That is the mean. The median uses only the middle values."
+        },
+        {
+          "match": {
+            "numeric": [
+              3
+            ]
+          },
+          "feedback": "With an even count the median averages the two middle values."
+        }
+      ],
+      "calculator": "off"
+    },
+    {
+      "id": "python-summaries-and-groups-6",
+      "conceptIds": [
+        "python-summaries-and-groups"
+      ],
+      "prompt": "What is nunique() for 'Bay', 'Hill', 'Bay' and 'Lake'?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Repeated labels count once.",
+        "Repeated shop names collapse to one value.",
+        "List each different name once, then count."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 3,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "There are three distinct shop labels."
+      },
+      "sourceIds": [
+        "pd-group",
+        "pd-missing",
+        "pd-basic"
+      ],
+      "onCorrect": "3. Bay appears twice but counts once, leaving Bay, Hill and Lake.",
+      "skill": "count-known-values",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              4
+            ]
+          },
+          "feedback": "That counts every entry. nunique counts each different value once."
+        }
+      ],
+      "calculator": "off"
+    },
+    {
+      "id": "python-summaries-and-groups-7",
+      "conceptIds": [
+        "python-summaries-and-groups"
+      ],
+      "difficulty": 1,
+      "sourceIds": [
+        "pd-group",
+        "pd-missing",
+        "pd-basic"
+      ],
+      "hints": [
+        "Keep only the Hill rows.",
+        "The Bay row belongs to another group.",
+        "Add Hill's two values and divide by two."
+      ],
+      "prompt": "Rows are (Hill, 3), (Bay, 2) and (Hill, 7). What is Hill's group mean?",
+      "responseType": "numeric",
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 5,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "(3 + 7) ÷ 2 = 5."
+      },
+      "onCorrect": "5. Inside the Hill group the values 3 and 7 share their total equally.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              4
+            ]
+          },
+          "feedback": "That includes the Bay row. Each group is summarised on its own."
+        },
+        {
+          "match": {
+            "numeric": [
+              10
+            ]
+          },
+          "feedback": "That is the sum. Divide it by the number of Hill rows."
+        }
+      ],
+      "skill": "group-and-aggregate",
+      "calculator": "off"
+    },
+    {
+      "id": "python-summaries-and-groups-hook",
+      "conceptIds": [
+        "python-summaries-and-groups"
+      ],
+      "difficulty": 1,
+      "sourceIds": [
+        "pd-group",
+        "pd-missing",
+        "pd-basic"
+      ],
+      "hints": [
+        "Add up the whole wage bill first.",
+        "Share it equally among the four people.",
+        "Work out 28 ÷ 4."
+      ],
+      "prompt": "How many thousand pounds does each person receive?",
+      "responseType": "numeric",
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 7,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "(2 + 3 + 4 + 19) ÷ 4 = 7."
+      },
+      "onCorrect": "7. The mean shares the total equally. Three of the four earn less than that, which is why the median is worth reporting too.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              28
+            ]
+          },
+          "feedback": "That is the whole bill. Share it among the four people."
+        },
+        {
+          "match": {
+            "numeric": [
+              3.5
+            ]
+          },
+          "feedback": "That is the middle of the sorted list. Sharing the total equally gives a different number."
+        }
+      ],
+      "skill": "mean-versus-median",
+      "calculator": "off"
+    },
+    {
+      "id": "python-summaries-and-groups-pull-check",
+      "conceptIds": [
+        "python-summaries-and-groups"
+      ],
+      "difficulty": 1,
+      "sourceIds": [
+        "pd-group",
+        "pd-missing",
+        "pd-basic"
+      ],
+      "hints": [
+        "Which summary uses every value's size?"
+      ],
+      "prompt": "Which summary does one very large value pull up the most?",
+      "responseType": "short_text",
+      "choices": [
+        {
+          "id": "a",
+          "label": "The mean"
+        },
+        {
+          "id": "b",
+          "label": "The median"
+        },
+        {
+          "id": "c",
+          "label": "Both equally"
+        }
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "The mean"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "The mean is sensitive to extreme values."
+      },
+      "onCorrect": "The mean. It adds every value, so one large value raises it, while the median only needs the middle.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "The median depends on the order, not the size, of the extreme values."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Only the mean changes much. The median looks at the middle."
+        }
+      ],
+      "skill": "mean-versus-median",
+      "calculator": "off"
+    },
+    {
+      "id": "python-summaries-and-groups-group-check",
+      "conceptIds": [
+        "python-summaries-and-groups"
+      ],
+      "difficulty": 1,
+      "sourceIds": [
+        "pd-group",
+        "pd-missing",
+        "pd-basic"
+      ],
+      "hints": [
+        "What is the result worked out for: each row or each group?"
+      ],
+      "prompt": "How many rows does df.groupby('shop')['units'].sum() return for three shops?",
+      "responseType": "short_text",
+      "choices": [
+        {
+          "id": "a",
+          "label": "One for each shop"
+        },
+        {
+          "id": "b",
+          "label": "One for each original row"
+        },
+        {
+          "id": "c",
+          "label": "Just one"
+        }
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "One for each shop"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "The result has one row per group."
+      },
+      "onCorrect": "One for each shop. groupby summarises each group into a single result.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "The rows are combined within each shop, so there are fewer results than rows."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "There is one result for every group, and three shops make three groups."
+        }
+      ],
+      "skill": "group-and-aggregate",
+      "calculator": "off"
+    },
+    {
+      "id": "python-summaries-and-groups-why-two-rows",
+      "conceptIds": [
+        "python-summaries-and-groups"
+      ],
+      "difficulty": 1,
+      "sourceIds": [
+        "pd-group",
+        "pd-missing",
+        "pd-basic"
+      ],
+      "hints": [
+        "What does groupby produce for each group?"
+      ],
+      "prompt": "Why does the result have only two rows?",
+      "responseType": "short_text",
+      "choices": [
+        {
+          "id": "a",
+          "label": "It has one row for each shop, not for each original row"
+        },
+        {
+          "id": "b",
+          "label": "Only the two largest rows are kept"
+        },
+        {
+          "id": "c",
+          "label": "Rows with fewer than three entries are dropped"
+        }
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "It has one row for each shop, not for each original row"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "groupby returns one summarised row per group."
+      },
+      "onCorrect": "It has one row for each shop, not for each original row.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "No rows are chosen for size. Each group is summarised."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Every shop appears in the result, even one with few rows."
+        }
+      ],
+      "skill": "group-and-aggregate",
+      "calculator": "off"
+    },
+    {
+      "id": "python-summaries-and-groups-faded-bay-rows",
+      "conceptIds": [
+        "python-summaries-and-groups"
+      ],
+      "difficulty": 1,
+      "sourceIds": [
+        "pd-group",
+        "pd-missing",
+        "pd-basic"
+      ],
+      "hints": [
+        "Which rows belong to a different group?",
+        "The Hill row is not part of Bay.",
+        "Count the rows that say Bay."
+      ],
+      "prompt": "How many Bay rows are there?",
+      "responseType": "numeric",
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 2,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "Two rows belong to Bay."
+      },
+      "onCorrect": "2. The first and third rows are Bay, and the Hill row belongs to another group.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              3
+            ]
+          },
+          "feedback": "The Hill row belongs to a different group, so it is not counted."
+        }
+      ],
+      "skill": "group-and-aggregate",
+      "calculator": "off"
+    },
+    {
+      "id": "python-summaries-and-groups-dropna-groups",
+      "conceptIds": [
+        "python-summaries-and-groups"
+      ],
+      "difficulty": 1,
+      "sourceIds": [
+        "pd-group",
+        "pd-missing",
+        "pd-basic"
+      ],
+      "hints": [
+        "How many different known shops are there?",
+        "dropna=False keeps the missing key as a group.",
+        "Add that group to the known shops."
+      ],
+      "prompt": "Shops are Bay, missing, Hill and missing. How many groups does groupby('shop', dropna=False) form?",
+      "responseType": "numeric",
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 3,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "Bay, Hill and the missing key give 3 groups."
+      },
+      "onCorrect": "3. Bay and Hill each form a group, and the two missing keys form one more.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              2
+            ]
+          },
+          "feedback": "That is what the default gives, because missing keys are dropped."
+        },
+        {
+          "match": {
+            "numeric": [
+              4
+            ]
+          },
+          "feedback": "Missing keys are grouped together, so they form one group."
+        }
+      ],
+      "skill": "keep-missing-groups",
+      "calculator": "off"
+    }
+  ],
+  "citations": [
+    {
+      "claim": "The mean shares the total equally, and the median is the middle value.",
+      "sourceId": "pd-group",
+      "section": "Built-in reductions; named aggregation; as_index; missing group keys; essential descriptive statistics",
+      "targetKind": "step",
+      "targetId": "two-ways-to-be-typical"
+    },
+    {
+      "claim": "The mean shares the total equally, and the median is the middle value.",
+      "sourceId": "pd-missing",
+      "section": "isna; calculations with missing data; filling and dropping missing values",
+      "targetKind": "step",
+      "targetId": "two-ways-to-be-typical"
+    },
+    {
+      "claim": "The mean shares the total equally, and the median is the middle value.",
+      "sourceId": "pd-basic",
+      "section": "Descriptive statistics; describe; unique values; sorting",
+      "targetKind": "step",
+      "targetId": "two-ways-to-be-typical"
+    },
+    {
+      "claim": "The mean uses every value, including an unusually large one. Add the values first, then divide by how many there are.",
+      "sourceId": "pd-group",
+      "section": "Built-in reductions; named aggregation; as_index; missing group keys; essential descriptive statistics",
+      "targetKind": "step",
+      "targetId": "equal-shares"
+    },
+    {
+      "claim": "The mean uses every value, including an unusually large one. Add the values first, then divide by how many there are.",
+      "sourceId": "pd-missing",
+      "section": "isna; calculations with missing data; filling and dropping missing values",
+      "targetKind": "step",
+      "targetId": "equal-shares"
+    },
+    {
+      "claim": "The mean uses every value, including an unusually large one. Add the values first, then divide by how many there are.",
+      "sourceId": "pd-basic",
+      "section": "Descriptive statistics; describe; unique values; sorting",
+      "targetKind": "step",
+      "targetId": "equal-shares"
+    },
+    {
+      "claim": "groupby splits the rows by a key, and the summary is worked out inside each group.",
+      "sourceId": "pd-group",
+      "section": "Built-in reductions; named aggregation; as_index; missing group keys; essential descriptive statistics",
+      "targetKind": "step",
+      "targetId": "one-result-per-group"
+    },
+    {
+      "claim": "groupby splits the rows by a key, and the summary is worked out inside each group.",
+      "sourceId": "pd-missing",
+      "section": "isna; calculations with missing data; filling and dropping missing values",
+      "targetKind": "step",
+      "targetId": "one-result-per-group"
+    },
+    {
+      "claim": "groupby splits the rows by a key, and the summary is worked out inside each group.",
+      "sourceId": "pd-basic",
+      "section": "Descriptive statistics; describe; unique values; sorting",
+      "targetKind": "step",
+      "targetId": "one-result-per-group"
+    },
+    {
+      "claim": "Rows are (Lake, 4), (Hill, 1), (Lake, 5), (Hill, 2) and (Lake, 3). What is the total for each shop?",
+      "sourceId": "pd-group",
+      "section": "Built-in reductions; named aggregation; as_index; missing group keys; essential descriptive statistics",
+      "targetKind": "step",
+      "targetId": "sum-each-shop"
+    },
+    {
+      "claim": "Rows are (Lake, 4), (Hill, 1), (Lake, 5), (Hill, 2) and (Lake, 3). What is the total for each shop?",
+      "sourceId": "pd-missing",
+      "section": "isna; calculations with missing data; filling and dropping missing values",
+      "targetKind": "step",
+      "targetId": "sum-each-shop"
+    },
+    {
+      "claim": "Rows are (Lake, 4), (Hill, 1), (Lake, 5), (Hill, 2) and (Lake, 3). What is the total for each shop?",
+      "sourceId": "pd-basic",
+      "section": "Descriptive statistics; describe; unique values; sorting",
+      "targetKind": "step",
+      "targetId": "sum-each-shop"
+    },
+    {
+      "claim": "Rows are (Bay, 2), (Hill, 3) and (Bay, 6). What is the grouped sum for Bay?",
+      "sourceId": "pd-group",
+      "section": "Built-in reductions; named aggregation; as_index; missing group keys; essential descriptive statistics",
+      "targetKind": "step",
+      "targetId": "bays-total"
+    },
+    {
+      "claim": "Rows are (Bay, 2), (Hill, 3) and (Bay, 6). What is the grouped sum for Bay?",
+      "sourceId": "pd-missing",
+      "section": "isna; calculations with missing data; filling and dropping missing values",
+      "targetKind": "step",
+      "targetId": "bays-total"
+    },
+    {
+      "claim": "Rows are (Bay, 2), (Hill, 3) and (Bay, 6). What is the grouped sum for Bay?",
+      "sourceId": "pd-basic",
+      "section": "Descriptive statistics; describe; unique values; sorting",
+      "targetKind": "step",
+      "targetId": "bays-total"
+    },
+    {
+      "claim": "size counts the rows in a group. count on a column counts only the known, non-missing values.",
+      "sourceId": "pd-group",
+      "section": "Built-in reductions; named aggregation; as_index; missing group keys; essential descriptive statistics",
+      "targetKind": "step",
+      "targetId": "rows-or-known-values"
+    },
+    {
+      "claim": "size counts the rows in a group. count on a column counts only the known, non-missing values.",
+      "sourceId": "pd-missing",
+      "section": "isna; calculations with missing data; filling and dropping missing values",
+      "targetKind": "step",
+      "targetId": "rows-or-known-values"
+    },
+    {
+      "claim": "size counts the rows in a group. count on a column counts only the known, non-missing values.",
+      "sourceId": "pd-basic",
+      "section": "Descriptive statistics; describe; unique values; sorting",
+      "targetKind": "step",
+      "targetId": "rows-or-known-values"
+    },
+    {
+      "claim": "Rows whose group key is missing are dropped by default. groupby(..., dropna=False) keeps them together as a group of their own.",
+      "sourceId": "pd-group",
+      "section": "Built-in reductions; named aggregation; as_index; missing group keys; essential descriptive statistics",
+      "targetKind": "step",
+      "targetId": "keep-the-unknown-group"
+    },
+    {
+      "claim": "Rows whose group key is missing are dropped by default. groupby(..., dropna=False) keeps them together as a group of their own.",
+      "sourceId": "pd-missing",
+      "section": "isna; calculations with missing data; filling and dropping missing values",
+      "targetKind": "step",
+      "targetId": "keep-the-unknown-group"
+    },
+    {
+      "claim": "Rows whose group key is missing are dropped by default. groupby(..., dropna=False) keeps them together as a group of their own.",
+      "sourceId": "pd-basic",
+      "section": "Descriptive statistics; describe; unique values; sorting",
+      "targetKind": "step",
+      "targetId": "keep-the-unknown-group"
+    },
+    {
+      "claim": "8. The values sum to 32, and four values share it equally.",
+      "sourceId": "pd-group",
+      "section": "Built-in reductions; named aggregation; as_index; missing group keys; essential descriptive statistics",
+      "targetKind": "question",
+      "targetId": "python-summaries-and-groups-1"
+    },
+    {
+      "claim": "8. The values sum to 32, and four values share it equally.",
+      "sourceId": "pd-missing",
+      "section": "isna; calculations with missing data; filling and dropping missing values",
+      "targetKind": "question",
+      "targetId": "python-summaries-and-groups-1"
+    },
+    {
+      "claim": "8. The values sum to 32, and four values share it equally.",
+      "sourceId": "pd-basic",
+      "section": "Descriptive statistics; describe; unique values; sorting",
+      "targetKind": "question",
+      "targetId": "python-summaries-and-groups-1"
+    },
+    {
+      "claim": "8. The Bay rows hold 2 and 6, and the sum is worked out inside the group.",
+      "sourceId": "pd-group",
+      "section": "Built-in reductions; named aggregation; as_index; missing group keys; essential descriptive statistics",
+      "targetKind": "question",
+      "targetId": "python-summaries-and-groups-2"
+    },
+    {
+      "claim": "8. The Bay rows hold 2 and 6, and the sum is worked out inside the group.",
+      "sourceId": "pd-missing",
+      "section": "isna; calculations with missing data; filling and dropping missing values",
+      "targetKind": "question",
+      "targetId": "python-summaries-and-groups-2"
+    },
+    {
+      "claim": "8. The Bay rows hold 2 and 6, and the sum is worked out inside the group.",
+      "sourceId": "pd-basic",
+      "section": "Descriptive statistics; describe; unique values; sorting",
+      "targetKind": "question",
+      "targetId": "python-summaries-and-groups-2"
+    },
+    {
+      "claim": "3. count includes only the known unit values, and size would have said five.",
+      "sourceId": "pd-group",
+      "section": "Built-in reductions; named aggregation; as_index; missing group keys; essential descriptive statistics",
+      "targetKind": "question",
+      "targetId": "python-summaries-and-groups-3"
+    },
+    {
+      "claim": "3. count includes only the known unit values, and size would have said five.",
+      "sourceId": "pd-missing",
+      "section": "isna; calculations with missing data; filling and dropping missing values",
+      "targetKind": "question",
+      "targetId": "python-summaries-and-groups-3"
+    },
+    {
+      "claim": "3. count includes only the known unit values, and size would have said five.",
+      "sourceId": "pd-basic",
+      "section": "Descriptive statistics; describe; unique values; sorting",
+      "targetKind": "question",
+      "targetId": "python-summaries-and-groups-3"
+    },
+    {
+      "claim": "4. With four values the median is the average of the middle pair, 3 and 5.",
+      "sourceId": "pd-group",
+      "section": "Built-in reductions; named aggregation; as_index; missing group keys; essential descriptive statistics",
+      "targetKind": "question",
+      "targetId": "python-summaries-and-groups-5"
+    },
+    {
+      "claim": "4. With four values the median is the average of the middle pair, 3 and 5.",
+      "sourceId": "pd-missing",
+      "section": "isna; calculations with missing data; filling and dropping missing values",
+      "targetKind": "question",
+      "targetId": "python-summaries-and-groups-5"
+    },
+    {
+      "claim": "4. With four values the median is the average of the middle pair, 3 and 5.",
+      "sourceId": "pd-basic",
+      "section": "Descriptive statistics; describe; unique values; sorting",
+      "targetKind": "question",
+      "targetId": "python-summaries-and-groups-5"
+    },
+    {
+      "claim": "3. Bay appears twice but counts once, leaving Bay, Hill and Lake.",
+      "sourceId": "pd-group",
+      "section": "Built-in reductions; named aggregation; as_index; missing group keys; essential descriptive statistics",
+      "targetKind": "question",
+      "targetId": "python-summaries-and-groups-6"
+    },
+    {
+      "claim": "3. Bay appears twice but counts once, leaving Bay, Hill and Lake.",
+      "sourceId": "pd-missing",
+      "section": "isna; calculations with missing data; filling and dropping missing values",
+      "targetKind": "question",
+      "targetId": "python-summaries-and-groups-6"
+    },
+    {
+      "claim": "3. Bay appears twice but counts once, leaving Bay, Hill and Lake.",
+      "sourceId": "pd-basic",
+      "section": "Descriptive statistics; describe; unique values; sorting",
+      "targetKind": "question",
+      "targetId": "python-summaries-and-groups-6"
+    },
+    {
+      "claim": "5. Inside the Hill group the values 3 and 7 share their total equally.",
+      "sourceId": "pd-group",
+      "section": "Built-in reductions; named aggregation; as_index; missing group keys; essential descriptive statistics",
+      "targetKind": "question",
+      "targetId": "python-summaries-and-groups-7"
+    },
+    {
+      "claim": "5. Inside the Hill group the values 3 and 7 share their total equally.",
+      "sourceId": "pd-missing",
+      "section": "isna; calculations with missing data; filling and dropping missing values",
+      "targetKind": "question",
+      "targetId": "python-summaries-and-groups-7"
+    },
+    {
+      "claim": "5. Inside the Hill group the values 3 and 7 share their total equally.",
+      "sourceId": "pd-basic",
+      "section": "Descriptive statistics; describe; unique values; sorting",
+      "targetKind": "question",
+      "targetId": "python-summaries-and-groups-7"
+    },
+    {
+      "claim": "7. The mean shares the total equally. Three of the four earn less than that, which is why the median is worth reporting too.",
+      "sourceId": "pd-group",
+      "section": "Built-in reductions; named aggregation; as_index; missing group keys; essential descriptive statistics",
+      "targetKind": "question",
+      "targetId": "python-summaries-and-groups-hook"
+    },
+    {
+      "claim": "7. The mean shares the total equally. Three of the four earn less than that, which is why the median is worth reporting too.",
+      "sourceId": "pd-missing",
+      "section": "isna; calculations with missing data; filling and dropping missing values",
+      "targetKind": "question",
+      "targetId": "python-summaries-and-groups-hook"
+    },
+    {
+      "claim": "7. The mean shares the total equally. Three of the four earn less than that, which is why the median is worth reporting too.",
+      "sourceId": "pd-basic",
+      "section": "Descriptive statistics; describe; unique values; sorting",
+      "targetKind": "question",
+      "targetId": "python-summaries-and-groups-hook"
+    },
+    {
+      "claim": "The mean. It adds every value, so one large value raises it, while the median only needs the middle.",
+      "sourceId": "pd-group",
+      "section": "Built-in reductions; named aggregation; as_index; missing group keys; essential descriptive statistics",
+      "targetKind": "question",
+      "targetId": "python-summaries-and-groups-pull-check"
+    },
+    {
+      "claim": "The mean. It adds every value, so one large value raises it, while the median only needs the middle.",
+      "sourceId": "pd-missing",
+      "section": "isna; calculations with missing data; filling and dropping missing values",
+      "targetKind": "question",
+      "targetId": "python-summaries-and-groups-pull-check"
+    },
+    {
+      "claim": "The mean. It adds every value, so one large value raises it, while the median only needs the middle.",
+      "sourceId": "pd-basic",
+      "section": "Descriptive statistics; describe; unique values; sorting",
+      "targetKind": "question",
+      "targetId": "python-summaries-and-groups-pull-check"
+    },
+    {
+      "claim": "One for each shop. groupby summarises each group into a single result.",
+      "sourceId": "pd-group",
+      "section": "Built-in reductions; named aggregation; as_index; missing group keys; essential descriptive statistics",
+      "targetKind": "question",
+      "targetId": "python-summaries-and-groups-group-check"
+    },
+    {
+      "claim": "One for each shop. groupby summarises each group into a single result.",
+      "sourceId": "pd-missing",
+      "section": "isna; calculations with missing data; filling and dropping missing values",
+      "targetKind": "question",
+      "targetId": "python-summaries-and-groups-group-check"
+    },
+    {
+      "claim": "One for each shop. groupby summarises each group into a single result.",
+      "sourceId": "pd-basic",
+      "section": "Descriptive statistics; describe; unique values; sorting",
+      "targetKind": "question",
+      "targetId": "python-summaries-and-groups-group-check"
+    },
+    {
+      "claim": "It has one row for each shop, not for each original row.",
+      "sourceId": "pd-group",
+      "section": "Built-in reductions; named aggregation; as_index; missing group keys; essential descriptive statistics",
+      "targetKind": "question",
+      "targetId": "python-summaries-and-groups-why-two-rows"
+    },
+    {
+      "claim": "It has one row for each shop, not for each original row.",
+      "sourceId": "pd-missing",
+      "section": "isna; calculations with missing data; filling and dropping missing values",
+      "targetKind": "question",
+      "targetId": "python-summaries-and-groups-why-two-rows"
+    },
+    {
+      "claim": "It has one row for each shop, not for each original row.",
+      "sourceId": "pd-basic",
+      "section": "Descriptive statistics; describe; unique values; sorting",
+      "targetKind": "question",
+      "targetId": "python-summaries-and-groups-why-two-rows"
+    },
+    {
+      "claim": "2. The first and third rows are Bay, and the Hill row belongs to another group.",
+      "sourceId": "pd-group",
+      "section": "Built-in reductions; named aggregation; as_index; missing group keys; essential descriptive statistics",
+      "targetKind": "question",
+      "targetId": "python-summaries-and-groups-faded-bay-rows"
+    },
+    {
+      "claim": "2. The first and third rows are Bay, and the Hill row belongs to another group.",
+      "sourceId": "pd-missing",
+      "section": "isna; calculations with missing data; filling and dropping missing values",
+      "targetKind": "question",
+      "targetId": "python-summaries-and-groups-faded-bay-rows"
+    },
+    {
+      "claim": "2. The first and third rows are Bay, and the Hill row belongs to another group.",
+      "sourceId": "pd-basic",
+      "section": "Descriptive statistics; describe; unique values; sorting",
+      "targetKind": "question",
+      "targetId": "python-summaries-and-groups-faded-bay-rows"
+    },
+    {
+      "claim": "3. Bay and Hill each form a group, and the two missing keys form one more.",
+      "sourceId": "pd-group",
+      "section": "Built-in reductions; named aggregation; as_index; missing group keys; essential descriptive statistics",
+      "targetKind": "question",
+      "targetId": "python-summaries-and-groups-dropna-groups"
+    },
+    {
+      "claim": "3. Bay and Hill each form a group, and the two missing keys form one more.",
+      "sourceId": "pd-missing",
+      "section": "isna; calculations with missing data; filling and dropping missing values",
+      "targetKind": "question",
+      "targetId": "python-summaries-and-groups-dropna-groups"
+    },
+    {
+      "claim": "3. Bay and Hill each form a group, and the two missing keys form one more.",
+      "sourceId": "pd-basic",
+      "section": "Descriptive statistics; describe; unique values; sorting",
+      "targetKind": "question",
+      "targetId": "python-summaries-and-groups-dropna-groups"
+    },
+    {
+      "claim": "Only 2 and 5 are known values.",
+      "sourceId": "pd-group",
+      "section": "Built-in reductions; named aggregation; as_index; missing group keys; essential descriptive statistics",
+      "targetKind": "flashcard",
+      "targetId": "python-summaries-and-groups-card-1"
+    },
+    {
+      "claim": "Only 2 and 5 are known values.",
+      "sourceId": "pd-missing",
+      "section": "isna; calculations with missing data; filling and dropping missing values",
+      "targetKind": "flashcard",
+      "targetId": "python-summaries-and-groups-card-1"
+    },
+    {
+      "claim": "Only 2 and 5 are known values.",
+      "sourceId": "pd-basic",
+      "section": "Descriptive statistics; describe; unique values; sorting",
+      "targetKind": "flashcard",
+      "targetId": "python-summaries-and-groups-card-1"
+    },
+    {
+      "claim": "size counts rows; count on a column excludes its missing values.",
+      "sourceId": "pd-group",
+      "section": "Built-in reductions; named aggregation; as_index; missing group keys; essential descriptive statistics",
+      "targetKind": "flashcard",
+      "targetId": "python-summaries-and-groups-card-2"
+    },
+    {
+      "claim": "size counts rows; count on a column excludes its missing values.",
+      "sourceId": "pd-missing",
+      "section": "isna; calculations with missing data; filling and dropping missing values",
+      "targetKind": "flashcard",
+      "targetId": "python-summaries-and-groups-card-2"
+    },
+    {
+      "claim": "size counts rows; count on a column excludes its missing values.",
+      "sourceId": "pd-basic",
+      "section": "Descriptive statistics; describe; unique values; sorting",
+      "targetKind": "flashcard",
+      "targetId": "python-summaries-and-groups-card-2"
+    }
+  ]
+}

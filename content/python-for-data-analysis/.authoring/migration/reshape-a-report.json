@@ -1,0 +1,1313 @@
+{
+  "lessonId": "reshape-a-report",
+  "courseId": "python-for-data-analysis",
+  "migrationNotes": [],
+  "lesson": {
+    "id": "reshape-a-report",
+    "courseId": "python-for-data-analysis",
+    "conceptIds": [
+      "python-reshape-a-report"
+    ],
+    "title": "Change the layout without losing the meaning",
+    "steps": [
+      {
+        "id": "list-to-grid",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "pivot turns a long list into a grid, and each cell needs exactly one record.",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "df.pivot(index='shop', columns='month', values='units') puts shops down the side and months across the top. Each shop and month pair must appear once, because a cell can hold one value."
+          },
+          {
+            "kind": "callout",
+            "tone": "key",
+            "text": "A pivot rearranges the observations. It does not change them."
+          }
+        ],
+        "reveal": [],
+        "introducesTerms": [
+          "pivot"
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-reshape-a-report-3",
+        "activityId": ""
+      },
+      {
+        "id": "size-of-the-grid",
+        "kind": "predict",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Labels are not cells. A grid holds one measurement for each shop and month combination."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "You counted the cells as shops times months. The pivot only rearranges the records into that grid."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-reshape-a-report-1",
+        "activityId": "",
+        "diagram": {
+          "type": "python_execution",
+          "runtime": "Python 3.12 · pandas 3.0",
+          "cases": [
+            {
+              "id": "case-0",
+              "label": "Case A",
+              "code": "import pandas as pd\ndf = pd.DataFrame({'shop': ['Bay', 'Bay', 'Hill', 'Hill'], 'month': ['Jan', 'Feb', 'Jan', 'Feb'], 'units': [2, 5, 3, 7]})\nresult = df.pivot(index='shop', columns='month', values='units')",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 2,
+                  "values": [],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 3,
+                  "lineEnd": 3,
+                  "values": [
+                    {
+                      "name": "result",
+                      "type": "DataFrame",
+                      "display": "month  Feb  Jan\nshop           \nBay      5    2\nHill     7    3",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "Feb",
+                          "Jan"
+                        ],
+                        "rows": [
+                          [
+                            "Bay",
+                            5,
+                            2
+                          ],
+                          [
+                            "Hill",
+                            7,
+                            3
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            },
+            {
+              "id": "case-1",
+              "label": "Case B",
+              "code": "import pandas as pd\ndf = pd.DataFrame({'shop': ['Bay', 'Bay', 'Hill', 'Hill'], 'month': ['Jan', 'Feb', 'Jan', 'Feb'], 'units': [2, 5, 3, 7]})\nresult = df.pivot(index='month', columns='shop', values='units')",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 2,
+                  "values": [],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 3,
+                  "lineEnd": 3,
+                  "values": [
+                    {
+                      "name": "result",
+                      "type": "DataFrame",
+                      "display": "shop   Bay  Hill\nmonth           \nFeb      5     7\nJan      2     3",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "Bay",
+                          "Hill"
+                        ],
+                        "rows": [
+                          [
+                            "Feb",
+                            5,
+                            7
+                          ],
+                          [
+                            "Jan",
+                            2,
+                            3
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            }
+          ],
+          "initialCaseId": "case-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      },
+      {
+        "id": "two-records-one-cell",
+        "kind": "worked_example",
+        "blocks": [],
+        "headline": "Two Bay and Jan records have units 5 and 11. What does pivot_table with aggfunc='sum' put in that cell?",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "pivot_table can combine records that share a cell. You choose the combining rule with aggfunc."
+          }
+        ],
+        "reveal": [],
+        "workedSteps": [
+          {
+            "text": "Both records map to the same Bay and Jan cell, so one value must be made from them.",
+            "math": "5 and 11",
+            "selfExplain": {
+              "questionId": "python-reshape-a-report-why-table"
+            }
+          },
+          {
+            "text": "Apply the chosen rule. With sum the cell is the total.",
+            "math": "5 + 11 = 16"
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "diagram": {
+          "type": "python_execution",
+          "runtime": "Python 3.12 · pandas 3.0",
+          "cases": [
+            {
+              "id": "case-0",
+              "label": "Case A",
+              "code": "import pandas as pd\ndf = pd.DataFrame({'shop': ['Bay', 'Bay', 'Hill'], 'month': ['Jan', 'Jan', 'Jan'], 'units': [2, 6, 3]})\nresult = df.pivot_table(index='shop', columns='month', values='units', aggfunc='sum')",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 2,
+                  "values": [],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 3,
+                  "lineEnd": 3,
+                  "values": [
+                    {
+                      "name": "result",
+                      "type": "DataFrame",
+                      "display": "month  Jan\nshop      \nBay      8\nHill     3",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "Jan"
+                        ],
+                        "rows": [
+                          [
+                            "Bay",
+                            8
+                          ],
+                          [
+                            "Hill",
+                            3
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            },
+            {
+              "id": "case-1",
+              "label": "Case B",
+              "code": "import pandas as pd\ndf = pd.DataFrame({'shop': ['Bay', 'Bay', 'Hill'], 'month': ['Jan', 'Jan', 'Jan'], 'units': [2, 6, 3]})\nresult = df.pivot_table(index='shop', columns='month', values='units', aggfunc='mean')",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 2,
+                  "values": [],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 3,
+                  "lineEnd": 3,
+                  "values": [
+                    {
+                      "name": "result",
+                      "type": "DataFrame",
+                      "display": "month  Jan\nshop      \nBay    4.0\nHill   3.0",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "Jan"
+                        ],
+                        "rows": [
+                          [
+                            "Bay",
+                            4
+                          ],
+                          [
+                            "Hill",
+                            3
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            }
+          ],
+          "initialCaseId": "case-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      },
+      {
+        "id": "add-the-duplicates",
+        "kind": "faded_example",
+        "blocks": [],
+        "headline": "Two Bay and Jan records have units 3 and 9. What does aggfunc='sum' produce?",
+        "lead": [],
+        "reveal": [],
+        "workedSteps": [
+          {
+            "text": "How many records land in the Bay and Jan cell?",
+            "blank": {
+              "questionId": "python-reshape-a-report-faded-records"
+            }
+          },
+          {
+            "text": "Apply sum to those records. What is the cell value?",
+            "blank": {
+              "questionId": "python-reshape-a-report-2"
+            }
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
+      },
+      {
+        "id": "grid-to-list",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "melt turns a grid back into a long list, with one row per measurement.",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "df.melt(id_vars='shop', value_vars=['Jan', 'Feb']) keeps shop beside every value and stacks the month columns into a variable column and a value column. id_vars names the columns that stay attached."
+          }
+        ],
+        "reveal": [],
+        "introducesTerms": [
+          "melt"
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-reshape-a-report-4",
+        "activityId": "",
+        "diagram": {
+          "type": "python_execution",
+          "runtime": "Python 3.12 · pandas 3.0",
+          "cases": [
+            {
+              "id": "case-0",
+              "label": "Case A",
+              "code": "import pandas as pd\ndf = pd.DataFrame({'shop': ['Bay', 'Hill'], 'Jan': [2, 3], 'Feb': [5, 7]})\nresult = df.melt(id_vars='shop', value_vars=['Jan', 'Feb'], var_name='month', value_name='units')",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 2,
+                  "values": [],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 3,
+                  "lineEnd": 3,
+                  "values": [
+                    {
+                      "name": "result",
+                      "type": "DataFrame",
+                      "display": "   shop month  units\n0   Bay   Jan      2\n1  Hill   Jan      3\n2   Bay   Feb      5\n3  Hill   Feb      7",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "shop",
+                          "month",
+                          "units"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            "Bay",
+                            "Jan",
+                            2
+                          ],
+                          [
+                            1,
+                            "Hill",
+                            "Jan",
+                            3
+                          ],
+                          [
+                            2,
+                            "Bay",
+                            "Feb",
+                            5
+                          ],
+                          [
+                            3,
+                            "Hill",
+                            "Feb",
+                            7
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            },
+            {
+              "id": "case-1",
+              "label": "Case B",
+              "code": "import pandas as pd\ndf = pd.DataFrame({'shop': ['Bay', 'Hill'], 'Jan': [2, 3], 'Feb': [5, 7]})\nresult = df.melt(id_vars='shop', value_vars=['Feb'], var_name='month', value_name='units')",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 2,
+                  "values": [],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 3,
+                  "lineEnd": 3,
+                  "values": [
+                    {
+                      "name": "result",
+                      "type": "DataFrame",
+                      "display": "   shop month  units\n0   Bay   Feb      5\n1  Hill   Feb      7",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "shop",
+                          "month",
+                          "units"
+                        ],
+                        "rows": [
+                          [
+                            0,
+                            "Bay",
+                            "Feb",
+                            5
+                          ],
+                          [
+                            1,
+                            "Hill",
+                            "Feb",
+                            7
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            }
+          ],
+          "initialCaseId": "case-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      },
+      {
+        "id": "count-the-long-rows",
+        "kind": "try",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Each original row gives one long row for every value column that is melted."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "Every original row contributed one long row per melted column, so the rows multiplied. No measurement was lost, only moved."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-reshape-a-report-melt-rows",
+        "activityId": ""
+      },
+      {
+        "id": "cells-with-no-record",
+        "kind": "transfer",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "A pivot has a cell for every shop and month. If no record exists for a pair, that cell is missing. fill_value=0 would call it zero, which is only right when no record truly means none."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "The cells without records stayed missing. Filling them with zero would have claimed that nothing was sold, which the data did not say."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-reshape-a-report-missing-cells",
+        "activityId": "",
+        "diagram": {
+          "type": "python_execution",
+          "runtime": "Python 3.12 · pandas 3.0",
+          "cases": [
+            {
+              "id": "case-0",
+              "label": "Case A",
+              "code": "import pandas as pd\ndf = pd.DataFrame({'shop': ['Bay', 'Hill'], 'month': ['Jan', 'Feb'], 'units': [2, 7]})\nresult = df.pivot_table(index='shop', columns='month', values='units', aggfunc='sum')",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 2,
+                  "values": [],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 3,
+                  "lineEnd": 3,
+                  "values": [
+                    {
+                      "name": "result",
+                      "type": "DataFrame",
+                      "display": "month  Feb  Jan\nshop           \nBay    NaN  2.0\nHill   7.0  NaN",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "Feb",
+                          "Jan"
+                        ],
+                        "rows": [
+                          [
+                            "Bay",
+                            null,
+                            2
+                          ],
+                          [
+                            "Hill",
+                            7,
+                            null
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            },
+            {
+              "id": "case-1",
+              "label": "Case B",
+              "code": "import pandas as pd\ndf = pd.DataFrame({'shop': ['Bay', 'Hill'], 'month': ['Jan', 'Feb'], 'units': [2, 7]})\nresult = df.pivot_table(index='shop', columns='month', values='units', aggfunc='sum', fill_value=0)",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 2,
+                  "values": [],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 3,
+                  "lineEnd": 3,
+                  "values": [
+                    {
+                      "name": "result",
+                      "type": "DataFrame",
+                      "display": "month  Feb  Jan\nshop           \nBay      0    2\nHill     7    0",
+                      "table": {
+                        "columns": [
+                          "index",
+                          "Feb",
+                          "Jan"
+                        ],
+                        "rows": [
+                          [
+                            "Bay",
+                            0,
+                            2
+                          ],
+                          [
+                            "Hill",
+                            7,
+                            0
+                          ]
+                        ]
+                      }
+                    }
+                  ],
+                  "stdout": ""
+                }
+              ]
+            }
+          ],
+          "initialCaseId": "case-0"
+        },
+        "answerVisibility": "hidden-until-response"
+      }
+    ],
+    "orientation": "Pivot unique records, aggregate duplicate keys and melt columns back into observations.",
+    "visualStates": [],
+    "visualKind": "none",
+    "activityId": "",
+    "questionIds": [
+      "python-reshape-a-report-5",
+      "python-reshape-a-report-6",
+      "python-reshape-a-report-7"
+    ],
+    "flashcardIds": [
+      "python-reshape-a-report-card-1",
+      "python-reshape-a-report-card-2"
+    ],
+    "reviewLabel": "Change the layout without losing the meaning",
+    "nextAction": "Try the next idea with a new input.",
+    "stageTitles": {
+      "quiz": "Skill check",
+      "review": "Recall it later",
+      "completion": "Ready for the next idea"
+    },
+    "sourceIds": [
+      "pd-reshape"
+    ],
+    "assuranceLevel": "source_backed",
+    "intro": {
+      "hook": {
+        "blocks": [
+          {
+            "kind": "paragraph",
+            "text": "A list has one row for every combination of shop and month. There are 2 shops, and each has a figure for each of 3 months."
+          }
+        ],
+        "questionId": "python-reshape-a-report-hook"
+      },
+      "promise": "By the end you'll turn a long list into a grid and back, and know what to do when two records land in one cell.",
+      "estimatedMinutes": 10
+    },
+    "recap": {
+      "keyIdea": "pivot arranges records in a grid when each cell has one record, pivot_table combines repeats with a chosen rule, and melt returns the grid to a list.",
+      "blocks": [
+        {
+          "kind": "paragraph",
+          "text": "You counted 6 rows for 2 shops and 3 months. You found 12 cells in a 3 by 4 grid, and 2 missing cells where no record existed."
+        }
+      ],
+      "nextHook": "Next: bring the whole toolkit together in one audited sales report."
+    },
+    "calculator": "off",
+    "taughtSkills": [
+      "pivot-long-to-wide",
+      "aggregate-duplicate-cells",
+      "melt-wide-to-long",
+      "missing-cells"
+    ]
+  },
+  "questions": [
+    {
+      "id": "python-reshape-a-report-1",
+      "conceptIds": [
+        "python-reshape-a-report"
+      ],
+      "prompt": "A complete pivot has three shops and four month columns. How many measurement cells does it contain?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Count the grid cells without the labels.",
+        "Labels are not measurement cells.",
+        "Multiply the shops by the month columns."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 12,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "Each of the three shops has four monthly cells, giving 12."
+      },
+      "sourceIds": [
+        "pd-reshape"
+      ],
+      "onCorrect": "12. Each of the three shops has a cell for each of the four months.",
+      "skill": "pivot-long-to-wide",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              7
+            ]
+          },
+          "feedback": "That adds the shops and months. Each combination has its own cell."
+        }
+      ],
+      "calculator": "off"
+    },
+    {
+      "id": "python-reshape-a-report-2",
+      "conceptIds": [
+        "python-reshape-a-report"
+      ],
+      "prompt": "What cell value does pivot_table with aggfunc='sum' produce?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Apply the rule you were given.",
+        "Both records map to the same cell.",
+        "Add the two unit values."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 12,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "The duplicate key pair is aggregated as 3 + 9 = 12."
+      },
+      "sourceIds": [
+        "pd-reshape"
+      ],
+      "onCorrect": "12. Sum combined the two records that share the cell.",
+      "skill": "aggregate-duplicate-cells",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              6
+            ]
+          },
+          "feedback": "That is the mean. The rule here is sum."
+        },
+        {
+          "match": {
+            "numeric": [
+              9
+            ]
+          },
+          "feedback": "That is only one of the records. The cell combines both."
+        }
+      ],
+      "calculator": "off"
+    },
+    {
+      "id": "python-reshape-a-report-3",
+      "conceptIds": [
+        "python-reshape-a-report"
+      ],
+      "prompt": "Why does pivot fail when one shop and month pair has two records?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "One output cell needs a single value."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "The requested cell is not uniquely identified"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "pivot does not choose an aggregation for ambiguous cells."
+      },
+      "sourceIds": [
+        "pd-reshape"
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "The requested cell is not uniquely identified"
+        },
+        {
+          "id": "b",
+          "label": "The table must have at least ten rows"
+        },
+        {
+          "id": "c",
+          "label": "Every value must be text"
+        }
+      ],
+      "onCorrect": "The cell is not uniquely identified. pivot does not choose how to combine two records.",
+      "skill": "pivot-long-to-wide",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "pivot works on tables of any size. The problem is repeated pairs."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Values are usually numbers. Duplicate pairs are the problem."
+        }
+      ],
+      "calculator": "off"
+    },
+    {
+      "id": "python-reshape-a-report-4",
+      "conceptIds": [
+        "python-reshape-a-report"
+      ],
+      "prompt": "Which melt argument names the columns that stay attached to every measurement?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Keep the identifier beside each resulting row."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "id_vars"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "id_vars retains identifier columns while selected value columns are unpivoted."
+      },
+      "sourceIds": [
+        "pd-reshape"
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "id_vars"
+        },
+        {
+          "id": "b",
+          "label": "aggfunc"
+        },
+        {
+          "id": "c",
+          "label": "ascending"
+        }
+      ],
+      "onCorrect": "id_vars. It keeps identifier columns attached while the value columns are stacked.",
+      "skill": "melt-wide-to-long",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "aggfunc belongs to pivot_table and chooses how to combine."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "ascending sets a sort direction."
+        }
+      ],
+      "calculator": "off"
+    },
+    {
+      "id": "python-reshape-a-report-5",
+      "conceptIds": [
+        "python-reshape-a-report"
+      ],
+      "prompt": "A four-row table melts three measurement columns. How many long-form rows result?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Count one row for each melted cell.",
+        "Each original row supplies three measurements.",
+        "Multiply the rows by the melted columns."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 12,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "Each original row contributes three measurements, producing 4 × 3 = 12 rows."
+      },
+      "sourceIds": [
+        "pd-reshape"
+      ],
+      "onCorrect": "12. Each of the four rows gives one long row for each of the three columns.",
+      "skill": "melt-wide-to-long",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              7
+            ]
+          },
+          "feedback": "That adds the counts. Each row gives a long row per column."
+        }
+      ],
+      "calculator": "off"
+    },
+    {
+      "id": "python-reshape-a-report-6",
+      "conceptIds": [
+        "python-reshape-a-report"
+      ],
+      "prompt": "Repeated records have values 4 and 10. What does aggfunc='mean' produce?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "The rule is mean, not sum.",
+        "Add the two values.",
+        "Divide by how many values there are."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 7,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "The mean is (4 + 10) ÷ 2 = 7."
+      },
+      "sourceIds": [
+        "pd-reshape"
+      ],
+      "onCorrect": "7. The mean of the two repeated records is their total shared equally.",
+      "skill": "aggregate-duplicate-cells",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              14
+            ]
+          },
+          "feedback": "That is the sum. The rule here is the mean."
+        }
+      ],
+      "calculator": "off"
+    },
+    {
+      "id": "python-reshape-a-report-7",
+      "conceptIds": [
+        "python-reshape-a-report"
+      ],
+      "difficulty": 1,
+      "sourceIds": [
+        "pd-reshape"
+      ],
+      "hints": [
+        "All three records map to one cell.",
+        "The rule is sum.",
+        "Add the three values."
+      ],
+      "prompt": "Three Bay and Jan records have units 1, 2 and 6. What does pivot_table with aggfunc='sum' put in that cell?",
+      "responseType": "numeric",
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 9,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "1 + 2 + 6 = 9."
+      },
+      "onCorrect": "9. The three records share a cell, and sum combined them.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              3
+            ]
+          },
+          "feedback": "That is the mean. The rule here is sum."
+        }
+      ],
+      "skill": "aggregate-duplicate-cells",
+      "calculator": "off"
+    },
+    {
+      "id": "python-reshape-a-report-hook",
+      "conceptIds": [
+        "python-reshape-a-report"
+      ],
+      "difficulty": 1,
+      "sourceIds": [
+        "pd-reshape"
+      ],
+      "hints": [
+        "There is one row for each shop and month pair.",
+        "Every shop has a figure for every month.",
+        "Multiply the shops by the months."
+      ],
+      "prompt": "How many rows does the list have?",
+      "responseType": "numeric",
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 6,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "2 shops × 3 months = 6 rows."
+      },
+      "onCorrect": "6. One row for each shop and month pair. A pivot would lay those same six figures out as a 2 by 3 grid.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              5
+            ]
+          },
+          "feedback": "That adds the shops and months. There is a row for every pair."
+        }
+      ],
+      "skill": "pivot-long-to-wide",
+      "calculator": "off"
+    },
+    {
+      "id": "python-reshape-a-report-why-table",
+      "conceptIds": [
+        "python-reshape-a-report"
+      ],
+      "difficulty": 1,
+      "sourceIds": [
+        "pd-reshape"
+      ],
+      "hints": [
+        "What does a cell have to hold?"
+      ],
+      "prompt": "Why use pivot_table here rather than pivot?",
+      "responseType": "short_text",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Two records share one cell, so a combining rule is needed"
+        },
+        {
+          "id": "b",
+          "label": "pivot cannot handle numbers"
+        },
+        {
+          "id": "c",
+          "label": "pivot_table sorts the shops"
+        }
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Two records share one cell, so a combining rule is needed"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "pivot_table aggregates records that share a cell."
+      },
+      "onCorrect": "Two records share one cell, so a combining rule is needed. pivot_table lets you name it.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "pivot handles numbers. It cannot combine repeated cells."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Sorting is not the reason. The shared cell is."
+        }
+      ],
+      "skill": "aggregate-duplicate-cells",
+      "calculator": "off"
+    },
+    {
+      "id": "python-reshape-a-report-faded-records",
+      "conceptIds": [
+        "python-reshape-a-report"
+      ],
+      "difficulty": 1,
+      "sourceIds": [
+        "pd-reshape"
+      ],
+      "hints": [
+        "The question gives the records for that cell.",
+        "Both belong to Bay and Jan.",
+        "Count them."
+      ],
+      "prompt": "How many records land in the Bay and Jan cell?",
+      "responseType": "numeric",
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 2,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "Two records share the cell."
+      },
+      "onCorrect": "2. Both records belong to the same cell, which is why a combining rule is needed.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              1
+            ]
+          },
+          "feedback": "There are two records for this one cell."
+        }
+      ],
+      "skill": "aggregate-duplicate-cells",
+      "calculator": "off"
+    },
+    {
+      "id": "python-reshape-a-report-melt-rows",
+      "conceptIds": [
+        "python-reshape-a-report"
+      ],
+      "difficulty": 1,
+      "sourceIds": [
+        "pd-reshape"
+      ],
+      "hints": [
+        "Each melted cell becomes one row.",
+        "Each shop has two month cells.",
+        "Multiply the shops by the month columns."
+      ],
+      "prompt": "A table has 5 shops, each with a Jan and a Feb column. Melting both month columns gives how many long rows?",
+      "responseType": "numeric",
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 10,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "5 shops × 2 months = 10 rows."
+      },
+      "onCorrect": "10. Each of the five shops gives one long row per month column.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              5
+            ]
+          },
+          "feedback": "That is the number of shops. Each month gives its own row."
+        },
+        {
+          "match": {
+            "numeric": [
+              7
+            ]
+          },
+          "feedback": "That adds the counts. Each shop gives a row for each month."
+        }
+      ],
+      "skill": "melt-wide-to-long",
+      "calculator": "off"
+    },
+    {
+      "id": "python-reshape-a-report-missing-cells",
+      "conceptIds": [
+        "python-reshape-a-report"
+      ],
+      "difficulty": 1,
+      "sourceIds": [
+        "pd-reshape"
+      ],
+      "hints": [
+        "How many shops and months are there?",
+        "The grid has one cell for each pair.",
+        "Take away the cells that have a record."
+      ],
+      "prompt": "Rows exist only for (Bay, Jan) and (Hill, Feb). A pivot of shops by months has how many cells with no record?",
+      "responseType": "numeric",
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 2,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "A 2 by 2 grid has four cells, and two are filled."
+      },
+      "onCorrect": "2. The grid has four cells, and only two have records, so two stay missing.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              4
+            ]
+          },
+          "feedback": "That is the whole grid. Two of the cells have records."
+        },
+        {
+          "match": {
+            "numeric": [
+              0
+            ]
+          },
+          "feedback": "Only the combinations that exist get a value. The others stay missing."
+        }
+      ],
+      "skill": "missing-cells",
+      "calculator": "off"
+    }
+  ],
+  "citations": [
+    {
+      "claim": "pivot turns a long list into a grid, and each cell needs exactly one record.",
+      "sourceId": "pd-reshape",
+      "section": "pivot; pivot_table; melt",
+      "targetKind": "step",
+      "targetId": "list-to-grid"
+    },
+    {
+      "claim": "Labels are not cells. A grid holds one measurement for each shop and month combination.",
+      "sourceId": "pd-reshape",
+      "section": "pivot; pivot_table; melt",
+      "targetKind": "step",
+      "targetId": "size-of-the-grid"
+    },
+    {
+      "claim": "Two Bay and Jan records have units 5 and 11. What does pivot_table with aggfunc='sum' put in that cell?",
+      "sourceId": "pd-reshape",
+      "section": "pivot; pivot_table; melt",
+      "targetKind": "step",
+      "targetId": "two-records-one-cell"
+    },
+    {
+      "claim": "Two Bay and Jan records have units 3 and 9. What does aggfunc='sum' produce?",
+      "sourceId": "pd-reshape",
+      "section": "pivot; pivot_table; melt",
+      "targetKind": "step",
+      "targetId": "add-the-duplicates"
+    },
+    {
+      "claim": "melt turns a grid back into a long list, with one row per measurement.",
+      "sourceId": "pd-reshape",
+      "section": "pivot; pivot_table; melt",
+      "targetKind": "step",
+      "targetId": "grid-to-list"
+    },
+    {
+      "claim": "Each original row gives one long row for every value column that is melted.",
+      "sourceId": "pd-reshape",
+      "section": "pivot; pivot_table; melt",
+      "targetKind": "step",
+      "targetId": "count-the-long-rows"
+    },
+    {
+      "claim": "A pivot has a cell for every shop and month. If no record exists for a pair, that cell is missing. fill_value=0 would call it zero, which is only right when no record truly means none.",
+      "sourceId": "pd-reshape",
+      "section": "pivot; pivot_table; melt",
+      "targetKind": "step",
+      "targetId": "cells-with-no-record"
+    },
+    {
+      "claim": "12. Each of the three shops has a cell for each of the four months.",
+      "sourceId": "pd-reshape",
+      "section": "pivot; pivot_table; melt",
+      "targetKind": "question",
+      "targetId": "python-reshape-a-report-1"
+    },
+    {
+      "claim": "12. Sum combined the two records that share the cell.",
+      "sourceId": "pd-reshape",
+      "section": "pivot; pivot_table; melt",
+      "targetKind": "question",
+      "targetId": "python-reshape-a-report-2"
+    },
+    {
+      "claim": "The cell is not uniquely identified. pivot does not choose how to combine two records.",
+      "sourceId": "pd-reshape",
+      "section": "pivot; pivot_table; melt",
+      "targetKind": "question",
+      "targetId": "python-reshape-a-report-3"
+    },
+    {
+      "claim": "id_vars. It keeps identifier columns attached while the value columns are stacked.",
+      "sourceId": "pd-reshape",
+      "section": "pivot; pivot_table; melt",
+      "targetKind": "question",
+      "targetId": "python-reshape-a-report-4"
+    },
+    {
+      "claim": "12. Each of the four rows gives one long row for each of the three columns.",
+      "sourceId": "pd-reshape",
+      "section": "pivot; pivot_table; melt",
+      "targetKind": "question",
+      "targetId": "python-reshape-a-report-5"
+    },
+    {
+      "claim": "7. The mean of the two repeated records is their total shared equally.",
+      "sourceId": "pd-reshape",
+      "section": "pivot; pivot_table; melt",
+      "targetKind": "question",
+      "targetId": "python-reshape-a-report-6"
+    },
+    {
+      "claim": "9. The three records share a cell, and sum combined them.",
+      "sourceId": "pd-reshape",
+      "section": "pivot; pivot_table; melt",
+      "targetKind": "question",
+      "targetId": "python-reshape-a-report-7"
+    },
+    {
+      "claim": "6. One row for each shop and month pair. A pivot would lay those same six figures out as a 2 by 3 grid.",
+      "sourceId": "pd-reshape",
+      "section": "pivot; pivot_table; melt",
+      "targetKind": "question",
+      "targetId": "python-reshape-a-report-hook"
+    },
+    {
+      "claim": "Two records share one cell, so a combining rule is needed. pivot_table lets you name it.",
+      "sourceId": "pd-reshape",
+      "section": "pivot; pivot_table; melt",
+      "targetKind": "question",
+      "targetId": "python-reshape-a-report-why-table"
+    },
+    {
+      "claim": "2. Both records belong to the same cell, which is why a combining rule is needed.",
+      "sourceId": "pd-reshape",
+      "section": "pivot; pivot_table; melt",
+      "targetKind": "question",
+      "targetId": "python-reshape-a-report-faded-records"
+    },
+    {
+      "claim": "10. Each of the five shops gives one long row per month column.",
+      "sourceId": "pd-reshape",
+      "section": "pivot; pivot_table; melt",
+      "targetKind": "question",
+      "targetId": "python-reshape-a-report-melt-rows"
+    },
+    {
+      "claim": "2. The grid has four cells, and only two have records, so two stay missing.",
+      "sourceId": "pd-reshape",
+      "section": "pivot; pivot_table; melt",
+      "targetKind": "question",
+      "targetId": "python-reshape-a-report-missing-cells"
+    },
+    {
+      "claim": "Each source row produces two measurement rows, giving six.",
+      "sourceId": "pd-reshape",
+      "section": "pivot; pivot_table; melt",
+      "targetKind": "flashcard",
+      "targetId": "python-reshape-a-report-card-1"
+    },
+    {
+      "claim": "melt creates long-form observations while keeping the chosen identifier columns.",
+      "sourceId": "pd-reshape",
+      "section": "pivot; pivot_table; melt",
+      "targetKind": "flashcard",
+      "targetId": "python-reshape-a-report-card-2"
+    }
+  ]
+}
