@@ -1,24 +1,25 @@
-import { readFileSync } from "node:fs";
-import type { CourseBundle } from "@discere/contracts";
 import type { FastifyInstance } from "fastify";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { createApp } from "../src/app.js";
 import type { DiscereStore } from "../src/db/store.js";
+import { legacyBundle, legacyContentRoot } from "./helpers/legacy-content.js";
 
-const bundle = JSON.parse(
-  readFileSync(
-    new URL("../../../content/probability-statistics/bundle.json", import.meta.url),
-    "utf8",
-  ),
-) as CourseBundle;
+/**
+ * The legacy (question-first) lesson player, exercised on a pinned pre-rewrite bundle rather
+ * than a live course, which is rewritten to the v2 format in turn (see helpers/legacy-content).
+ * The v2 player has its own tests in lesson-v2-routes.test.ts.
+ */
+const bundle = legacyBundle();
 const lesson = bundle.lessons[0]!;
 const step = lesson.steps[0]!;
 const question = bundle.questions.find((item) => item.id === step.checkQuestionId)!;
 let app: FastifyInstance;
 let store: DiscereStore;
-beforeEach(async () => {
-  ({ app, store } = await createApp({ dbPath: ":memory:", migrate: true, revealDelayMs: 0 }));
+let fixture: ReturnType<typeof legacyContentRoot>;
+beforeAll(() => {
+  fixture = legacyContentRoot();
 });
+afterAll(() => fixture.remove());
 afterEach(async () => {
   await app.close();
 });
@@ -44,7 +45,10 @@ const wrong = () =>
     url: "/api/attempts",
     payload: { questionId: question.id, response: "999", mode: "coach" },
   });
-describe("question-first learning", () => {
+describe("the live catalogue", () => {
+  beforeEach(async () => {
+    ({ app, store } = await createApp({ dbPath: ":memory:", migrate: true, revealDelayMs: 0 }));
+  });
   it("lists reviewed courses and retains archived saved links without recommending prototypes", async () => {
     const courses = (await app.inject({ method: "GET", url: "/api/courses" })).json().courses;
     expect(courses.map((item: { id: string }) => item.id)).toEqual(
@@ -85,6 +89,17 @@ describe("question-first learning", () => {
     expect(
       home.progress.some((item: { conceptId: string }) => item.conceptId === "roman-republic"),
     ).toBe(false);
+  });
+});
+
+describe("question-first learning (legacy player)", () => {
+  beforeEach(async () => {
+    ({ app, store } = await createApp({
+      dbPath: ":memory:",
+      migrate: true,
+      revealDelayMs: 0,
+      contentRoot: fixture.root,
+    }));
   });
   it("shows teaching before the question but withholds the answer and its authority", async () => {
     const response = await app.inject({

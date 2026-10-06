@@ -36,14 +36,31 @@ describe("published SQL learner flow", () => {
       expect(journey.statusCode).toBe(200);
       expect(journey.body).not.toMatch(/answerAuthority|workedAnswer|acceptedIdeas/);
       expect(journey.body).not.toContain('"hints":');
-      const steps = journey.json().stages[0].steps;
-      expect(steps).toHaveLength(4);
-      expect(
-        steps.every(
-          (step: { diagram: { type: string }; question: { hintCount: number } }) =>
-            step.diagram.type === "relational_query" && step.question.hintCount > 0,
-        ),
-      ).toBe(true);
+      expect(journey.body).not.toMatch(/onCorrect|misconceptions/);
+      const stages = journey.json().stages;
+      const steps = stages[0].steps as Array<{
+        diagram?: { type: string };
+        question?: { responseType: string; hintCount: number; hints?: unknown };
+      }>;
+      if (stages[0].intro) {
+        // A lesson rewritten to the v2 format: an opener, steps that compare tables, a recap.
+        expect(stages[0].intro.promise).toBeTruthy();
+        expect(stages.find((stage: { type: string }) => stage.type === "recap").keyIdea).toBeTruthy();
+        expect(steps.some((step) => step.diagram?.type === "relational_query")).toBe(true);
+        for (const step of steps) {
+          if (!step.question) continue;
+          expect(step.question.hints).toBeUndefined();
+          if (step.question.responseType === "numeric")
+            expect(step.question.hintCount).toBeGreaterThan(0);
+        }
+      } else {
+        expect(steps).toHaveLength(4);
+        expect(
+          steps.every(
+            (step) => step.diagram?.type === "relational_query" && step.question!.hintCount > 0,
+          ),
+        ).toBe(true);
+      }
     }
   });
   it("marks typed SQL terms and missing-value distinctions on the server", async () => {

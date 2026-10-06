@@ -184,8 +184,13 @@ describe("independent SQL curriculum review", () => {
   it.each(bundle.lessons)(
     "executes all published query comparisons in $id in a fresh database",
     (lesson) => {
-      for (const step of lesson.steps) {
-        const diagram = step.diagram;
+      // A legacy lesson compares tables at every step; a v2 lesson also has explain and worked
+      // steps without a figure, and may open on one. Every comparison it does show is executed.
+      const diagrams = [lesson.intro?.hook.diagram, ...lesson.steps.map((step) => step.diagram)];
+      const comparisons = diagrams.filter((diagram) => diagram?.type === "relational_query");
+      if (!lesson.intro) expect(comparisons).toHaveLength(lesson.steps.length);
+      expect(comparisons.length).toBeGreaterThan(0);
+      for (const diagram of comparisons) {
         if (diagram?.type !== "relational_query") throw new Error("Expected query comparison");
         const db = new Database(":memory:");
         try {

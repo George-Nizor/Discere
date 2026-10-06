@@ -90,16 +90,17 @@ describe("CS Basics v2 lessons", () => {
 
   it("lesson 2: branches and boundaries", () => {
     const L = "choosing-between-paths";
-    expect(key(L, "hook")).toBe(30 + 2 - (30 > 30 ? 4 : 0));
     const run = (x: number, test: (v: number) => boolean, a: (v: number) => number, b: (v: number) => number) =>
       test(x) ? a(x) : b(x);
+    // £4 off a bill over £30; the bill is exactly £30, then a £2 tip.
+    expect(key(L, "hook")).toBe(run(30, (v) => v > 30, (v) => v - 4, (v) => v) + 2);
     expect(key(L, "1")).toBe(run(5, (v) => v > 5, (v) => v + 10, (v) => v - 1));
     expect(key(L, "2")).toBe(run(5, (v) => v >= 5, (v) => v + 10, (v) => v - 1));
     expect(key(L, "3")).toBe(run(2, (v) => v >= 5, (v) => v + 10, (v) => v - 1) * 2);
     expect(key(L, "4")).toBe(run(3, (v) => v >= 3, (v) => v + 10, (v) => v - 2));
     expect(key(L, "practice-2")).toBe(run(8, (v) => v < 5, (v) => v - 1, (v) => v / 2));
     expect(key(L, "practice-3")).toBe(run(6, (v) => v >= 6, (v) => v - 1, (v) => v + 1) * 2);
-    expect(4 > 4).toBe(false); // practice-1
+    expect(run(4, (v) => v > 4, () => 1, () => 0)).toBe(0); // practice-1: 4 > 4 is false
     expect(run(4, (v) => v >= 4, (v) => v * 3, (v) => v + 1)).toBe(12); // worked example
     expect(marked(L, "why-inclusive")).toEqual(["a"]);
     expect(marked(L, "comparison-check")).toEqual(["a"]);
