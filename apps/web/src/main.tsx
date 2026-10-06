@@ -5,7 +5,8 @@ import { createBrowserRouter } from "react-router";
 import { RouterProvider } from "react-router/dom";
 import { shouldRetryQuery } from "./api/client.js";
 import { CapabilityProvider } from "./capabilities/capability-context.js";
-import { ExperienceProvider } from "./study/experience.js";
+import { ExperienceProvider, applyCachedAppearance } from "./study/experience.js";
+import { WelcomeScreen } from "./shell/WelcomeScreen.js";
 import { routes } from "./routes.js";
 import { installNavigationMotion, withNavigationData } from "./shell/navigation.js";
 // Bundled rather than fetched: the hub enforces script-src/style-src 'self', so a web font
@@ -41,6 +42,7 @@ const queryClient = new QueryClient({
   },
 });
 
+applyCachedAppearance();
 const router = createBrowserRouter(withNavigationData(routes, queryClient));
 installNavigationMotion(router);
 const root = document.getElementById("root");
@@ -52,6 +54,8 @@ createRoot(root).render(
       <ExperienceProvider>
         <CapabilityProvider>
           <RouterProvider router={router} />
+          {/* Above the router: on screen from the first frame, lifting once home has settled. */}
+          <WelcomeScreen />
         </CapabilityProvider>
       </ExperienceProvider>
     </QueryClientProvider>

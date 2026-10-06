@@ -1,10 +1,15 @@
+import { useIsFetching } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { DiscereLogo } from "../ui/DiscereLogo.js";
+import { Bonehead, type BoneheadAction } from "../mascot/Bonehead.js";
 import { useExperience } from "../study/experience.js";
+import { DiscereLogo } from "../ui/DiscereLogo.js";
 
 const SEEN_KEY = "discere:welcomed";
-/** Long enough for the mark to draw and the line to land; short enough not to be in the way. */
-const HOLD_MS = 1_600;
+/** The whole little scene: book lands, Bonehead pops out, the name arrives. */
+const SCENE_MS = 2_400;
+/** Never hold a learner longer than this, however slow the first data is. */
+const CAP_MS = 4_500;
+const LEAVE_MS = 420;
 
 function alreadyWelcomed(): boolean {
   try {
@@ -15,60 +20,56 @@ function alreadyWelcomed(): boolean {
   }
 }
 
-/** When the opening mark first appeared, if the app was still loading at the time. */
-let shownSince: number | null = null;
-
-/**
- * Shown while the app's first data loads. It is the welcome's own artwork, so a learner sees
- * one opening moment that continues into the welcome, not a spinner followed by a splash. Once
- * the learner has been welcomed this launch, it is the ordinary loading line.
- */
-export function OpeningScreen() {
-  const first = !alreadyWelcomed();
-  useEffect(() => {
-    if (first && shownSince === null) shownSince = Date.now();
-  }, [first]);
-  if (!first) {
-    return (
-      <div className="loading-screen" role="status">
-        <p>Opening Discere…</p>
-      </div>
-    );
-  }
-  return (
-    <div className="welcome" role="status">
-      <div className="welcome-inner">
-        <DiscereLogo className="welcome-mark" size={104} />
-        <p className="welcome-wordmark">Discere</p>
-        <p className="welcome-line">Learn something real today</p>
-        <p className="sr-only">Opening Discere…</p>
-      </div>
-    </div>
-  );
-}
-
 function remember(): void {
   try {
     sessionStorage.setItem(SEEN_KEY, "1");
   } catch {
-    // Nothing to do; the overlay has already dismissed itself.
+    // Nothing to do; the intro has already dismissed itself.
   }
 }
 
 /**
- * The opening moment. The hub launches a fresh process each time Discere is opened, so this
- * plays once per launch rather than once ever: the owner asked to be greeted when they arrive,
- * not to be reminded that they have visited before.
+ * Decided once, when the app boots: the intro plays when Discere opens on the home screen and
+ * has not greeted the learner this launch. A deep link into a lesson starts the lesson.
+ */
+const playsThisLaunch =
+  typeof window !== "undefined" && window.location.pathname === "/" && !alreadyWelcomed();
+
+/**
+ * Shown by the router while its first data loads. While the intro is playing it sits on top, so
+ * this draws nothing rather than a second copy of the artwork that would restart underneath.
+ */
+export function OpeningScreen() {
+  if (playsThisLaunch) return null;
+  return (
+    <div className="loading-screen" role="status">
+      <p>Opening Discere…</p>
+    </div>
+  );
+}
+
+/**
+ * The opening moment: the blue book lands, Bonehead pops up out of it, and the name arrives.
  *
- * It is an overlay rather than a route, so a deep link into a lesson is never interrupted by it
- * and the home screen is already rendered and settled underneath when it lifts.
+ * It is mounted above the router, so it is on screen, fully opaque, from the very first frame and
+ * stays the same element while the app loads underneath. It lifts once, when the scene has played
+ * and the first data has arrived (or after a cap), revealing a home screen that is already
+ * settled. Before, the welcome was mounted inside the shell and faded in from nothing, so the home
+ * screen showed through for a moment, then the intro, then home again.
+ *
+ * Plays once per launch: the hub starts a fresh process each time Discere is opened, and the owner
+ * asked to be greeted on arrival rather than reminded of earlier visits. A click, Enter, Space or
+ * Escape skips it.
  */
 export function WelcomeScreen() {
   const { reduced } = useExperience();
-  const [visible, setVisible] = useState(() => !alreadyWelcomed());
+  const [visible, setVisible] = useState(playsThisLaunch);
   const [leaving, setLeaving] = useState(false);
+  const [sceneDone, setSceneDone] = useState(false);
+  const [action, setAction] = useState<{ name: BoneheadAction; key: number } | null>(null);
+  const fetching = useIsFetching();
   const dismissed = useRef(false);
-  const leavingTimer = useRef<number | undefined>(undefined);
+  const timers = useRef<number[]>([]);
 
   const dismiss = useCallback(
     (immediate = false): void => {
@@ -80,31 +81,38 @@ export function WelcomeScreen() {
         return;
       }
       setLeaving(true);
-      leavingTimer.current = window.setTimeout(() => setVisible(false), 320);
+      timers.current.push(window.setTimeout(() => setVisible(false), LEAVE_MS));
     },
     [reduced],
   );
 
+  // The scene's own clock, and Bonehead's little celebration once he is out of the book.
   useEffect(() => {
     if (!visible) return undefined;
-    // Time already spent on the opening screen counts towards the hold.
-    const elapsed = shownSince === null ? 0 : Date.now() - shownSince;
-    const hold = window.setTimeout(() => dismiss(), reduced ? 0 : Math.max(400, HOLD_MS - elapsed));
+    const at = (ms: number, run: () => void) => timers.current.push(window.setTimeout(run, ms));
+    if (reduced) at(900, () => setSceneDone(true));
+    else {
+      at(1_250, () => setAction({ name: "celebrate", key: 1 }));
+      at(SCENE_MS, () => setSceneDone(true));
+    }
+    at(CAP_MS, () => dismiss());
     const onKey = (event: KeyboardEvent): void => {
       if (event.key === "Escape") dismiss(true);
     };
     window.addEventListener("keydown", onKey);
-    return () => {
-      window.clearTimeout(hold);
-      window.removeEventListener("keydown", onKey);
-    };
-  }, [visible, dismiss, reduced]);
-  useEffect(() => () => window.clearTimeout(leavingTimer.current), []);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [visible, reduced, dismiss]);
+
+  // Lift only when the scene has played and the home screen's data is in.
+  useEffect(() => {
+    if (sceneDone && fetching === 0) dismiss();
+  }, [sceneDone, fetching, dismiss]);
+
+  useEffect(() => () => timers.current.forEach((id) => window.clearTimeout(id)), []);
 
   if (!visible) return null;
-
   return (
-    <div className={`welcome${leaving ? " is-leaving" : ""}`}>
+    <div className={`intro${leaving ? " is-leaving" : ""}`} data-intro>
       {/*
         A real button rather than a click handler on the backdrop: it takes focus, answers
         Enter and Space without any key handling of our own, and tells a screen reader that
@@ -112,15 +120,32 @@ export function WelcomeScreen() {
       */}
       <button
         aria-label="Skip the welcome"
-        className="welcome-skip"
+        className="intro-skip"
         onClick={() => dismiss(true)}
         type="button"
       />
-      <div className="welcome-inner">
-        <DiscereLogo className="welcome-mark" size={104} />
-        <p className="welcome-wordmark">Discere</p>
-        <p className="welcome-line">Learn something real today</p>
+      <div className="intro-scene" aria-hidden="true">
+        <div className="intro-stage">
+          <div className="intro-glow" />
+          <div className="intro-pop">
+            <div className="intro-pet">
+              <Bonehead expression="delighted" glow live action={action} size={132} />
+            </div>
+          </div>
+          <span className="intro-spark intro-spark--a">✦</span>
+          <span className="intro-spark intro-spark--b">✦</span>
+          <span className="intro-spark intro-spark--c">✦</span>
+          <div className="intro-book">
+            <DiscereLogo size={128} />
+          </div>
+          <div className="intro-shadow" />
+        </div>
+        <p className="intro-wordmark">Discere</p>
+        <p className="intro-line">Learn something real today</p>
       </div>
+      <p className="sr-only" role="status">
+        Opening Discere…
+      </p>
     </div>
   );
 }

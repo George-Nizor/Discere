@@ -16,7 +16,6 @@ import { ArchivedNotice } from "./ArchivedNotice.js";
 import { EngineBanner } from "./EngineBanner.js";
 import { NavRail } from "./NavRail.js";
 import { savedNavigationScroll } from "./navigation.js";
-import { WelcomeScreen } from "./WelcomeScreen.js";
 
 export function AppShell() {
   const location = useLocation();
@@ -66,8 +65,6 @@ export function AppShell() {
       <a className="skip-link" href="#stage">
         Skip to the main content
       </a>
-      {/* Only over the home screen: arriving straight at a lesson should start the lesson. */}
-      {location.pathname === "/" ? <WelcomeScreen /> : null}
       {recoveredShell ? (
         <RomanReferenceNav {...(lessonPath ? { notebookPath: `${lessonPath}/notebook` } : {})} />
       ) : focusedLesson ? null : (

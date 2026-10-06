@@ -5,36 +5,41 @@
  * a course and never stands in for action or correctness.
  */
 
-/* ---------- Welcome ---------- */
-
-.welcome {
+/* ---------- Intro ---------- */
+/*
+ * The opening moment (shell/WelcomeScreen.tsx). The container is opaque from its first frame: it
+ * must never fade in, or the home screen shows through. Timeline: the book drops in and settles
+ * (0–620 ms), Bonehead climbs out of it (520–1220 ms) and celebrates, sparkles pop, the name
+ * rises (1150 ms), and at about 2.4 s the whole scene lifts away.
+ */
+.intro {
   position: fixed;
   inset: 0;
-  z-index: 60;
+  z-index: 200;
   display: grid;
   place-items: center;
-  background: var(--canvas);
-  animation: welcome-arrive var(--motion-slow) var(--ease-out-expo) both;
+  background:
+    radial-gradient(55% 45% at 50% 42%, color-mix(in srgb, var(--accent) 14%, var(--canvas)), transparent 70%),
+    var(--canvas);
 }
-
-.welcome.is-leaving {
-  animation: welcome-leave var(--motion-page) var(--ease-out-expo) both;
+.intro.is-leaving {
+  animation: intro-leave 420ms var(--ease-out-expo) both;
 }
-
-@keyframes welcome-arrive {
-  from {
-    opacity: 0;
-  }
+.intro.is-leaving .intro-scene {
+  animation: intro-scene-leave 420ms var(--ease-out-expo) both;
 }
-
-@keyframes welcome-leave {
+@keyframes intro-leave {
   to {
     opacity: 0;
-    transform: scale(1.02);
+    visibility: hidden;
   }
 }
-
-.welcome-skip {
+@keyframes intro-scene-leave {
+  to {
+    transform: translateY(-10px) scale(1.04);
+  }
+}
+.intro-skip {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -44,59 +49,200 @@
   background: transparent;
   cursor: pointer;
 }
-
-.welcome-skip:focus-visible {
+.intro-skip:focus-visible {
   outline: 2px solid var(--focus);
   outline-offset: -4px;
 }
-
-.welcome-inner {
+.intro-scene {
   position: relative;
   pointer-events: none;
   display: grid;
   justify-items: center;
-  gap: var(--space-4);
+  gap: 6px;
   text-align: center;
 }
-
-.welcome-mark {
-  display: block;
-  width: 84px;
-  height: 84px;
-  object-fit: contain;
-  animation: welcome-mark-arrive 760ms var(--ease-out-expo) both;
-}
-
-@keyframes welcome-mark-arrive {
-  from {
-    opacity: 0;
-    transform: translateY(8px) scale(0.92);
+/* Larger on roomy screens; `scale` composes with the leaving transform. */
+@media (min-width: 900px) and (min-height: 640px) {
+  .intro-scene {
+    scale: 1.3;
   }
 }
-
-.welcome-wordmark {
-  margin: 0;
-  font-size: 2.25rem;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  color: var(--ink);
-  animation: discere-rise var(--motion-slow) var(--ease-out-expo) 700ms both;
+.intro-stage {
+  position: relative;
+  width: 240px;
+  height: 236px;
 }
-
-.welcome-line {
+/* The book lands with a little squash, then settles. */
+.intro-book {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  bottom: 18px;
+  width: 128px;
+  height: 128px;
+  margin-left: -64px;
+  transform-origin: 50% 100%;
+  filter: drop-shadow(0 10px 18px color-mix(in srgb, var(--accent-deep) 45%, transparent));
+  animation: intro-book-drop 620ms cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+@keyframes intro-book-drop {
+  0% {
+    opacity: 0;
+    transform: translateY(-150px) scale(0.72);
+  }
+  45% {
+    opacity: 1;
+    transform: translateY(0) scale(1.14, 0.84);
+  }
+  68% {
+    transform: translateY(-6px) scale(0.95, 1.06);
+  }
+  100% {
+    transform: none;
+  }
+}
+.intro-shadow {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  width: 112px;
+  height: 14px;
+  margin-left: -56px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--ink) 22%, transparent);
+  filter: blur(4px);
+  animation: intro-shadow 620ms cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+@keyframes intro-shadow {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  45% {
+    opacity: 1;
+    transform: scale(1.15, 1);
+  }
+}
+/* Bonehead climbs out of the book: his window ends at the page, so he rises from inside it. */
+.intro-pop {
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  bottom: 104px;
+  width: 150px;
+  height: 140px;
+  margin-left: -75px;
+  overflow: hidden;
+}
+.intro-pet {
+  display: grid;
+  place-items: end center;
+  height: 100%;
+  animation: intro-pet-rise 700ms cubic-bezier(0.34, 1.56, 0.64, 1) 520ms both;
+}
+@keyframes intro-pet-rise {
+  0% {
+    transform: translateY(100%) rotate(-6deg);
+  }
+  70% {
+    transform: translateY(-4%) rotate(3deg);
+  }
+  100% {
+    transform: none;
+  }
+}
+.intro-glow {
+  position: absolute;
+  left: 50%;
+  bottom: 96px;
+  width: 200px;
+  height: 160px;
+  margin-left: -100px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--accent) 38%, transparent), transparent);
+  animation: intro-fade 900ms ease 650ms both;
+}
+@keyframes intro-fade {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+.intro-spark {
+  position: absolute;
+  z-index: 3;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--gold, #ffd23e);
+  text-shadow: 0 0 10px color-mix(in srgb, var(--gold, #ffd23e) 60%, transparent);
+  animation:
+    intro-spark 620ms cubic-bezier(0.34, 1.56, 0.64, 1) both,
+    intro-twinkle 1.4s ease-in-out infinite;
+}
+.intro-spark--a {
+  left: 26px;
+  top: 34px;
+  animation-delay: 1000ms, 1620ms;
+}
+.intro-spark--b {
+  right: 22px;
+  top: 12px;
+  font-size: 24px;
+  color: var(--accent-light);
+  animation-delay: 1130ms, 1750ms;
+}
+.intro-spark--c {
+  right: 44px;
+  top: 92px;
+  font-size: 13px;
+  animation-delay: 1260ms, 1880ms;
+}
+@keyframes intro-spark {
+  0% {
+    opacity: 0;
+    transform: scale(0) rotate(-90deg);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.35) rotate(10deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes intro-twinkle {
+  50% {
+    opacity: 0.55;
+    transform: scale(0.85);
+  }
+}
+.intro-wordmark {
+  margin: 4px 0 0;
+  font-size: 2.6rem;
+  line-height: 1.05;
+  color: var(--ink);
+  animation: intro-rise 560ms var(--ease-out-expo) 1150ms both;
+}
+.intro-line {
   margin: 0;
   font-size: var(--text-body-large);
   color: var(--muted);
-  animation: discere-rise var(--motion-slow) var(--ease-out-expo) 900ms both;
+  animation: intro-rise 560ms var(--ease-out-expo) 1350ms both;
 }
-
+@keyframes intro-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+html[data-motion="reduced"] :is(.intro, .intro *),
+html[data-motion="reduced"] .intro.is-leaving {
+  animation: none !important;
+}
 @media (prefers-reduced-motion: reduce) {
-  .welcome,
-  .welcome.is-leaving,
-  .welcome-mark,
-  .welcome-wordmark,
-  .welcome-line {
-    animation: none;
+  :is(.intro, .intro *) {
+    animation: none !important;
   }
 }
 

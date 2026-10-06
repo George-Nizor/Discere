@@ -17,6 +17,23 @@ function cachedPreferences(): StudyPreferences {
     return defaults;
   }
 }
+/**
+ * Puts the last known theme and background on the page before React's first paint, so a light
+ * theme never opens on a dark frame (and the intro is drawn in the right colours from the start).
+ * The provider takes over once preferences load.
+ */
+export function applyCachedAppearance(): void {
+  const preferences = cachedPreferences();
+  const light =
+    preferences.theme === "light" ||
+    (preferences.theme === "system" &&
+      typeof matchMedia === "function" &&
+      matchMedia("(prefers-color-scheme: light)").matches);
+  const root = document.documentElement;
+  root.dataset["theme"] = light ? "light" : "dark";
+  root.dataset["backdrop"] = preferences.backdrop ?? "galaxy";
+  root.style.colorScheme = light ? "light" : "dark";
+}
 export function cacheExperience(preferences: StudyPreferences) {
   try {
     localStorage.setItem(EXPERIENCE_KEY, JSON.stringify(preferences));
