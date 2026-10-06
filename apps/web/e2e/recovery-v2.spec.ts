@@ -118,8 +118,8 @@ interface ReferenceEssayView {
 }
 
 interface ReferenceProgress {
-  version: 3;
-  activeBeat: "opening" | "augustus" | "expansion" | "questions" | "essay";
+  version: 4;
+  activeBeat: "opening" | "augustus" | "expansion" | "questions" | "essay" | "recall" | "complete";
   activeQuestionId: ReferenceQuestionId | null;
   assessmentFinished: boolean;
   updatedAt: string | null;
@@ -206,10 +206,13 @@ function adjacentWrongMove(order: readonly TurningPointId[]): {
 }
 
 async function expectNoHorizontalOverflow(page: Page): Promise<void> {
-  const overflow = await page.evaluate(
-    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
-  );
-  expect(overflow).toBeLessThanOrEqual(1);
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      ),
+    )
+    .toBeLessThanOrEqual(1);
 }
 
 async function expectVisibleLessonImagesLoaded(page: Page): Promise<void> {
@@ -548,7 +551,7 @@ test.describe("Recovery v2 Gate 3", () => {
     page,
   }) => {
     const before = await readProgress(page);
-    expect(before.version).toBe(3);
+    expect(before.version).toBe(4);
     expect(before.assessmentFinished).toBe(false);
 
     const ordering = before.questions.find((question) => question.content.id === "turning-points");
@@ -1088,7 +1091,7 @@ async function reachEssayBeat(page: Page, mode = "coach"): Promise<ReferenceProg
   if (!progress.assessmentFinished) {
     progress = await requestReferenceAction(page, { action: "finish_assessment" });
   }
-  expect(progress.activeBeat).toBe("essay");
+  expect(progress.activeBeat).toBe(progress.essay.progress.finished ? "recall" : "essay");
   return progress;
 }
 
@@ -1107,7 +1110,14 @@ async function captureEssayScreen(page: Page, name: string, focus?: Locator): Pr
       await focus.scrollIntoViewIfNeeded();
       await expect(focus).toBeInViewport();
     } else {
-      await page.evaluate(() => window.scrollTo(0, 0));
+      await page.evaluate(async () => {
+        await document.fonts.ready;
+        await new Promise<void>((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+        );
+        document.querySelector("#stage")?.scrollTo(0, 0);
+        window.scrollTo(0, 0);
+      });
       expect(await page.evaluate(() => window.scrollY)).toBe(0);
     }
     await expect(page.locator("#stage")).toBeVisible();
@@ -1271,12 +1281,91 @@ test.describe("Recovery v2 Gate 4", () => {
       await page.getByRole("button", { name: "Finish", exact: true }).click();
     });
     expect(saved.essay.progress.finished).toBe(true);
-    await expect(page).toHaveURL(new RegExp(`${COURSE_PATH}$`));
+    await expect(page).toHaveURL(new RegExp(`${LESSON_ROOT}/recall$`));
 
-    // The finished essay is read-only, and the course no longer offers anything after it.
+    // The finished essay is read-only; recall follows it.
     await page.goto(ESSAY_PATH);
     await expect(page.getByRole("textbox", { name: "Draft" })).toBeDisabled();
     await expect(page.getByRole("button", { name: "Submit" })).toHaveCount(0);
-    await expect(page.getByRole("link", { name: "Course home" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Next", exact: true })).toBeVisible();
+  });
+});
+
+test.describe("Recovery v2 Gate 5", () => {
+  test("assesses recall, conceals the back, restores drafts, and captures completion", async ({
+    page,
+  }) => {
+    test.slow();
+    await reachEssayBeat(page);
+    const state = await readProgress(page);
+    if (!state.essay.progress.finished) {
+      if (state.essay.progress.status !== "submitted") {
+        await requestReferenceAction(page, {
+          action: "submit_essay_revision",
+          mode: state.essay.progress.mode ?? "coach",
+          content:
+            "Political conflicts mattered more because they changed who exercised power. Augustus kept republican offices in 27 BCE while controlling the army and provinces. This concentrated power in one ruler. Under Trajan in 117 CE the empire reached its greatest extent, which made administration harder. The third-century crisis brought civil wars and repeated claimants, because commanders could compete for power. Although size increased pressure on government, political instability affected how that territory was governed. The eastern empire continued after the western emperor was removed in 476 CE.",
+        });
+      }
+      await requestReferenceAction(page, { action: "finish_essay" });
+    }
+    await page.goto(`${LESSON_ROOT}/recall`);
+    await expect(
+      page.getByRole("heading", { name: "Why does Roman imperial history continue after 476 CE?" }),
+    ).toBeVisible();
+    await expect(
+      page.getByText(
+        "The western emperor was removed in 476 CE, while Roman imperial government continued from Constantinople in the east.",
+        { exact: true },
+      ),
+    ).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "View sources" })).toHaveCount(0);
+    await expect(
+      page.getByRole("button", { name: "Open the tutor in the current Roman lesson" }),
+    ).toHaveCount(0);
+    await page
+      .getByRole("textbox", { name: "Your answer" })
+      .fill(
+        "The western emperor was removed in 476 CE. Roman government continued in the east from Constantinople.",
+      );
+    await expect
+      .poll(async () => {
+        const response = await page.request.get(PROGRESS_API);
+        return ((await response.json()) as { review: { progress: { draft: string } } }).review
+          .progress.draft;
+      })
+      .toContain("Roman government continued");
+    await page.reload();
+    await expect(page.getByRole("textbox", { name: "Your answer" })).toHaveValue(
+      /Roman government continued/,
+    );
+    await captureEssayScreen(page, "06a-recall-front");
+    await page.getByRole("button", { name: "Check", exact: true }).click();
+    await expect(
+      page.getByText("You distinguish the western deposition from eastern Roman continuation."),
+    ).toBeVisible();
+    await expect(page.getByRole("group", { name: "Recall confidence" })).toHaveCount(0);
+    await page.getByRole("button", { name: "Reveal", exact: true }).click();
+    await expect(page.getByRole("group", { name: "Recall confidence" })).toBeVisible();
+    await captureEssayScreen(page, "06b-recall-back");
+    for (const viewport of VIEWPORTS) {
+      await page.setViewportSize({ width: viewport.width, height: viewport.height });
+      await expectNoHorizontalOverflow(page);
+      await expectMinimumTarget(page.getByRole("button", { name: "Easy", exact: true }), 40);
+    }
+    await page.getByRole("button", { name: "Easy", exact: true }).click();
+    await expect(page).toHaveURL(new RegExp(`${LESSON_ROOT}/complete$`));
+    await expect(page.getByRole("heading", { name: "What you can explain" })).toBeVisible();
+    await captureEssayScreen(page, "07-completion");
+    await page.goto(COURSE_PATH);
+    await page.getByRole("link", { name: "Continue", exact: true }).click();
+    await expect(page).toHaveURL(new RegExp(`${LESSON_ROOT}/complete$`));
+    const final = await page.request.get(PROGRESS_API);
+    expect(
+      ((await final.json()) as { review: { progress: { evidence: string } } }).review.progress
+        .evidence,
+    ).toBe("independent");
+    await page.goto("/review");
+    await expect(page.getByRole("region", { name: "Roman history recall" })).toHaveCount(0);
   });
 });

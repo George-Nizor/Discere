@@ -7,10 +7,11 @@ const OUTPUT = join(import.meta.dirname, "../../../docs/ui-ux/screenshots");
 
 const VIEWPORTS = [
   { label: "1440", width: 1440, height: 900 },
+  { label: "1024", width: 1024, height: 768 },
   { label: "390", width: 390, height: 844 },
 ];
 
-test.describe("approved reference screens", () => {
+test.describe("learner workspace screens", () => {
   test.beforeAll(() => {
     mkdirSync(OUTPUT, { recursive: true });
   });
@@ -116,7 +117,14 @@ test.describe("approved reference screens", () => {
       await gotoStage(page, journey, "review");
       await capture("lesson-review");
 
-      await gotoStage(page, journey, "completion");
+      // The foundations journey earned completion earlier in this suite. A deep link into an
+      // unfinished legacy lesson correctly returns to its unanswered stage.
+      const completedMaths = await readJourney(request, "maths-foundations");
+      await gotoStage(page, completedMaths, "completion");
+      // Maths lesson 1 is the v2 gold lesson, whose completion stage is titled "Lesson complete";
+      // the saved result shows as the finish stats.
+      await expect(page.getByRole("heading", { level: 1, name: "Lesson complete" })).toBeVisible();
+      await expect(page.locator(".finish-stats")).toBeVisible();
       await capture("completion");
 
       // The working notebook, with a drawn page so the capture shows real handwriting rather
@@ -143,8 +151,8 @@ test.describe("approved reference screens", () => {
       await page.goto("/review");
       await capture("review-home");
 
-      await page.getByRole("button", { name: /Start review|Review the earliest card/ }).click();
-      await expect(page.getByText("Front")).toBeVisible();
+      await page.getByRole("button", { name: /^(Start review|Practise early)$/ }).click();
+      await expect(page.getByLabel("Your answer", { exact: true })).toBeVisible();
       await capture("flashcard");
 
       await page.goto("/progress");
@@ -155,7 +163,12 @@ test.describe("approved reference screens", () => {
       await capture("settings");
 
       await gotoStage(page, journey, "explainer");
-      await page.getByRole("button", { name: "Ask the tutor" }).click();
+      // The tutor is the docked workbench's Tutor tab, opened from the lesson toolbar.
+      await page
+        .getByRole("toolbar", { name: "Lesson tools" })
+        .getByRole("button", { name: "Tutor", exact: true })
+        .click();
+      await expect(page.getByRole("complementary", { name: "Lesson workbench" })).toBeVisible();
       await capture("tutor-panel");
 
       // The second course, which is what proves the interface is not shaped around one subject.

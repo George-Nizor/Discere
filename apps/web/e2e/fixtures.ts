@@ -1,5 +1,5 @@
 import type { APIRequestContext, Locator, Page } from "@playwright/test";
-import { test as base } from "@playwright/test";
+import { test as base, expect } from "@playwright/test";
 
 /**
  * Every browser test runs with reduced motion. Route transitions and entrance animations are
@@ -13,6 +13,15 @@ import { test as base } from "@playwright/test";
 export const test = base.extend({
   page: async ({ page }, run) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
+    // Crossing a level outside a lesson opens a modal celebration (docs/gamification). It is real
+    // behaviour, but it can arrive whenever earned XP lands, so a learner — and every test —
+    // dismisses it the same way, with "Keep going", whenever it blocks the next action.
+    await page.addLocatorHandler(
+      page.getByRole("dialog").filter({ has: page.locator("#level-up-title") }),
+      async (dialog) => {
+        await dialog.getByRole("button", { name: "Keep going", exact: true }).click();
+      },
+    );
     await run(page);
   },
 });
@@ -33,15 +42,20 @@ export interface JourneyMap {
  */
 export async function readJourney(
   request: APIRequestContext,
-  courseId?: string,
+  courseId: string = "electronics-foundations",
 ): Promise<JourneyMap> {
   const courses = await request.get("/api/courses");
   const courseBody = (await courses.json()) as {
     courses: Array<{ id: string; availableLessonIds: string[] }>;
   };
-  const course = courseId
+  let course = courseId
     ? courseBody.courses.find((item) => item.id === courseId)
     : courseBody.courses[0];
+  // An explicit saved legacy course remains reachable after it leaves active discovery.
+  if (!course && courseId) {
+    const detail = await request.get(`/api/courses/${encodeURIComponent(courseId)}`);
+    if (detail.ok()) course = (await detail.json()).course;
+  }
   if (!course) throw new Error(`The course list did not contain ${courseId ?? "any course"}.`);
   const lessonId = course.availableLessonIds[0];
   if (!lessonId) throw new Error("No lesson is available.");

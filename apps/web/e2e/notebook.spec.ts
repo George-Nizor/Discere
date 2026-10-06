@@ -1,5 +1,5 @@
 import type { APIRequestContext } from "@playwright/test";
-import { expect, test, type JourneyMap, notebookPath, readJourney } from "./fixtures.js";
+import { expect, type JourneyMap, notebookPath, readJourney, test } from "./fixtures.js";
 
 /**
  * The suite shares one database, and a notebook page is per lesson rather than per test, so
@@ -92,13 +92,26 @@ test.describe("the working notebook", () => {
 
   test("is reachable from any stage of the lesson", async ({ page, request }) => {
     const journey = await readJourney(request);
-    await page.goto(
-      `/courses/${encodeURIComponent(journey.courseId)}/lessons/${encodeURIComponent(journey.lessonId)}/stages/${encodeURIComponent(journey.stageIdByType["explainer"] ?? "")}`,
-    );
-    await page.getByRole("link", { name: "Notebook" }).click();
-    await expect(page.getByRole("heading", { level: 2, name: "Show your working" })).toBeVisible();
-    // The way back leads to whichever stage the journey is on, so the lesson shell is what is
-    // asserted rather than one particular stage.
+    const tools = page.getByRole("toolbar", { name: "Lesson tools" });
+    const bench = page.getByRole("complementary", { name: "Lesson workbench" });
+    // The working page is the Working tab of the docked workbench, from every stage's toolbar.
+    for (const type of ["explainer", "quiz"]) {
+      const stageId = journey.stageIdByType[type];
+      if (!stageId) continue;
+      await page.goto(
+        `/courses/${encodeURIComponent(journey.courseId)}/lessons/${encodeURIComponent(journey.lessonId)}/stages/${encodeURIComponent(stageId)}`,
+      );
+      await tools.getByRole("button", { name: "Working", exact: true }).click();
+      await expect(
+        bench.getByRole("heading", { level: 2, name: "Show your working" }),
+      ).toBeVisible();
+      // The lesson stays where it was beside the bench, and closing the bench returns to it.
+      await expect(page.getByRole("navigation", { name: "Lesson stages" })).toBeVisible();
+      await bench.getByRole("button", { name: "Close the workbench", exact: true }).click();
+      await expect(bench).toHaveCount(0);
+    }
+    // The full-page notebook still has its way back to the lesson.
+    await page.goto(notebookPath(journey));
     await page.getByRole("link", { name: "Back to the lesson" }).click();
     await expect(page.getByRole("navigation", { name: "Lesson stages" })).toBeVisible();
   });
@@ -112,26 +125,27 @@ test.describe("the review queue", () => {
     await expect(table).toBeVisible();
     await expect(page.getByRole("columnheader", { name: "Due" })).toBeVisible();
     await expect(page.getByRole("columnheader", { name: "Cards" })).toBeVisible();
-    // Two courses ship, so a queue that is fair between them must list both.
-    await expect(table.locator("tbody tr")).toHaveCount(2);
-    await expect(page.getByRole("rowheader", { name: "Electronics Foundations" })).toBeVisible();
-    await expect(
-      page.getByRole("rowheader", { name: "The Rise of the Roman Empire" }),
-    ).toBeVisible();
+    // Only introduced lessons and previously reviewed ideas belong in general recall.
+    const response = await page.request.get("/api/review");
+    const courses = (await response.json()).courses;
+    await expect(table.locator("tbody tr")).toHaveCount(courses.length);
+    for (const course of courses)
+      await expect(page.getByRole("rowheader", { name: course.title, exact: true })).toBeVisible();
+    await expect(page.getByRole("rowheader", { name: /Electronics|Roman/ })).toHaveCount(0);
   });
 
   test("takes turns between courses rather than clearing one first", async ({ page }) => {
     const seen: string[] = [];
     for (let card = 0; card < 4; card += 1) {
       await page.goto("/review");
-      await page.getByRole("button", { name: /Start review|Review the earliest card/ }).click();
-      await expect(page.getByText("Front")).toBeVisible();
+      await page.getByRole("button", { name: /^(Start review|Practise early)$/ }).click();
+      await expect(page.getByLabel("Your answer", { exact: true })).toBeVisible();
       const concepts = await page.locator(".flashcard-concepts").innerText();
       seen.push(concepts);
       await page.getByRole("button", { name: "Reveal answer" }).click();
-      await expect(page.getByText("Back", { exact: true })).toBeVisible();
+
       await page.getByRole("button", { name: /Good/ }).click();
-      await expect(page.getByText(/Recorded as/)).toBeVisible();
+      await expect(page.getByText(/This card comes back /)).toBeVisible();
     }
     // The two courses name different concepts, so a repeated queue would show one set only.
     expect(new Set(seen).size).toBeGreaterThan(1);
