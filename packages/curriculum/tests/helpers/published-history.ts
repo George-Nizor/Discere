@@ -29,6 +29,7 @@ export function publishedBundle(courseId: string, sha256: string): unknown {
 export const SUPERSEDED_PUBLICATIONS: Record<string, string> = {
   "maths-foundations": "46904a6936b9f918e4f2cc875fbd87da7b65ecf0ff7014768a53964d5a12ec85",
   // October 2026 v2 lesson rewrites.
+  "engineering-structures-and-machines": "30059ec395543a930a7ed2a224ab1cea860f368610056c08822b48879474dc84",
   "biology-cells-to-ecosystems": "c68bdbb85cf0d26f08953404fd11cf74237b49fc4fa1828e08dcb758763cac99",
   "economics-markets-and-strategy": "9bc202416e75ae99a761084dc2871a6b726f79d06698f1c61c7715995e05dc29",
   "philosophy-knowledge-mind-and-ethics": "c80019e85860ba1597716148ad8071ba2bb1aa57292d8db379112577248dfb18",
