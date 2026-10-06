@@ -1,12 +1,17 @@
 ![Discere banner](docs/images/discere-banner.png)
 
+<p align="center"><img src="docs/brand/discere-animated.svg" alt="Discere open book" width="96" /></p>
+
 # Discere
 
-Discere is a local learning workspace built around explanation, interaction, assessment, and review.
-It keeps learner state in SQLite, renders deterministic teaching visuals, and can use the local Codex
-CLI or an explicit ChatGPT handoff for tutoring.
+Lessons, review scheduling and a notebook that keep working offline.
 
-Current development version: **0.1.0**.
+Discere is a local learning workspace built around explanation, interaction, assessment, and review.
+It keeps learner state in SQLite, renders deterministic teaching visuals, and can use the learner's
+own Claude Code, an OpenAI-compatible endpoint, the local Codex CLI, or an explicit ChatGPT handoff
+for tutoring.
+
+Current version: **1.0.0**.
 
 ## Run it
 
@@ -40,28 +45,29 @@ The default learner address is `http://127.0.0.1:4318`. Use `pnpm dev` for autom
 previous terminal vanished without stopping its children, `pnpm stop` cleans up Discere's recorded
 processes.
 
-Instrumenta starts the built web service through WSL on its registered loopback port. The product
-manifest handles the service command, health check, and launcher-owned window.
+Instrumenta starts the built web service through WSL on its registered loopback port (`49323`,
+falling back to `45023`). The product manifest handles the service command, health check, and
+launcher-owned window. Discere is a source-run product: the launcher never pulls or builds for you, so
+update a checkout with `git pull` and `pnpm build`.
 
 ## Current courses
 
-The checked-in curriculum contains:
+The checked-in curriculum has twenty courses, 233 lessons, 2,447 questions and 468 recall cards, loaded
+from `content/` rather than hard-coded into the server:
 
-- **Maths Foundations:** six lessons with number machines, equation balances, coordinates,
-  gradients, 36 questions, and 12 recall cards.
-- **Logic and Reasoning:** eight lessons with truth tables, constraint puzzles, inference,
-  validity, fallacies, 48 questions, and 16 recall cards.
-- **How Computers Solve Problems:** six lessons with editable code traces, branching, loops,
-  debugging, searches, 36 questions, and 12 recall cards.
-- **Electronics Foundations:** five lessons, deterministic circuit activities, numeric and written
-  questions, flashcards, and teach-back work.
-- **The Rise of the Roman Empire:** three lessons, sourced images, timeline activities, multiple
-  choice and written questions, flashcards, and essay topics.
+- **Maths and logic:** Maths Foundations, Geometry, Linear Algebra, Calculus, Probability and
+  Statistics, Logic and Reasoning.
+- **Computing:** How Computers Solve Problems, Python for Data Analysis, SQL from Rows to Reports.
+- **Science and engineering:** Physics, Chemistry, Biology, Astronomy, Electronics Foundations,
+  Engineering.
+- **Humanities and social science:** Economics, Psychology, Philosophy, English, and The Rise of the
+  Roman Empire.
 
-Course content is loaded from `content/` rather than hard-coded into the server. Image records include
-source, creator, licence, attribution, retrieval date, and a content hash. The library totals
-28 lessons, 153 questions, and 58 recall cards. See [foundation notes](docs/foundations/README.md)
-for the new sequences, sources, publication reviews, and responsive screenshots.
+Every lesson is a sequence of questions with interactive visuals (number machines, truth tables,
+editable code traces, deterministic circuit, map and timeline activities), plus recall cards,
+teach-back work and, for some courses, an essay. Image records include source, creator, licence,
+attribution, retrieval date, and a content hash. See [foundation notes](docs/foundations/README.md)
+for the first sequences, their sources and publication reviews.
 
 ## The learning flow
 
@@ -259,3 +265,11 @@ database. `mcp/` exposes a learner-safe local stdio surface for compatible agent
 
 Discere is private workspace software at its current stage. The repository's licence and publication
 terms should be checked before redistribution.
+
+## Family
+
+Discere is part of [Instrumenta](https://github.com/George-Nizor/Instrumenta), made by
+[Bonehead Labs](https://boneheadlabs.org), and follows the Instrumenta brand v2: a blue open book,
+drawn as a freestanding object. The interface type (Fraunces, Commissioner, Spline Sans Mono) is SIL
+OFL 1.1, vendored in `apps/web/src/styles/fonts/brand` with its licences. `docs/brand/README.md` records
+what was taken from the brand and what was kept. Licence: none published yet (see above).
