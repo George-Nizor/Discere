@@ -326,8 +326,14 @@ describe("tutor panel", () => {
     );
     await userEvent.type(screen.getByLabelText("Your question"), "Explain resistance");
     await userEvent.click(screen.getByRole("button", { name: "Ask the tutor" }));
-    expect(await screen.findByText("PACKET BODY")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Copy discere-tutor.json/ })).toBeInTheDocument();
+    const packetBody = await screen.findByText("PACKET BODY");
+    expect(packetBody).not.toBeVisible();
+    expect(screen.getByRole("button", { name: "Copy the tutoring request" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /discere-tutor.json/ })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByText("Preview the request"));
+    expect(packetBody).toBeVisible();
+    await userEvent.click(screen.getByText("Preview the request"));
+    expect(packetBody).not.toBeVisible();
     expect(calls.at(-1)?.body).toMatchObject({ referenceQuestionId: "map-117" });
 
     fireEvent.change(screen.getByLabelText("Paste the reply here"), {

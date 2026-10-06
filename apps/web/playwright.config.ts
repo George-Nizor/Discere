@@ -47,7 +47,7 @@ export default defineConfig({
       timeout: 120_000,
     },
     {
-      command: "pnpm --filter @discere/web build && pnpm --filter @discere/web preview",
+      command: "pnpm --filter @discere/web build && pnpm --filter @discere/server start:web",
       url: `http://${HOST}:${WEB_PORT}/`,
       cwd: "../..",
       env: environment,

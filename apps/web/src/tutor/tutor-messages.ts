@@ -11,7 +11,8 @@ const MESSAGES: Record<string, string> = {
   TUTOR_PROVIDER_FAILED: "The tutor provider failed and produced no reply.",
   TUTOR_PROVIDER_BUSY: "The tutor is finishing another task. Try again in a moment.",
   TUTOR_SESSION_INVALID: "The tutor conversation expired. Start a new question.",
-  NETWORK_UNAVAILABLE: "Discere could not reach the local server.",
+  NETWORK_UNAVAILABLE:
+    "Discere’s engine isn’t responding. Reopen Discere from Instrumenta, then try again.",
 };
 
 export function tutorErrorMessage(code: string | null, fallback: string): string {

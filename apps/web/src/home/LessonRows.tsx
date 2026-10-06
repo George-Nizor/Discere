@@ -19,11 +19,14 @@ export function LessonRows({
   if (course.isPending) return <p className="muted">Loading lessons…</p>;
   if (!course.data) return <p className="muted">The lesson list did not load.</p>;
 
+  const currentId =
+    currentLessonId ??
+    course.data.lessons.find((lesson) => lesson.available && !lesson.completed)?.id;
   return (
-    <ol className="lesson-cards">
+    <ol className="lesson-cards lesson-path">
       {course.data.lessons.map((lesson, index) => {
         const done = lesson.completed;
-        const current = lesson.id === currentLessonId;
+        const current = lesson.id === currentId && !done;
         const classes = [
           "lesson-card",
           lesson.available ? "lift" : "is-locked",
@@ -60,9 +63,18 @@ export function LessonRows({
         );
 
         return (
-          <li key={lesson.id} style={{ "--enter-index": index } as React.CSSProperties}>
+          <li
+            key={lesson.id}
+            className={done ? "path-done" : ""}
+            style={{ "--enter-index": Math.min(index, 5) } as React.CSSProperties}
+          >
             {lesson.available ? (
-              <Link className={classes} to={paths.lesson(courseId, lesson.id)} viewTransition>
+              <Link
+                className={classes}
+                aria-current={current ? "step" : undefined}
+                to={paths.lesson(courseId, lesson.id)}
+                viewTransition
+              >
                 {inner}
               </Link>
             ) : (

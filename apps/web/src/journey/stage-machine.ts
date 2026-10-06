@@ -20,6 +20,7 @@ const STAGE_LABELS: Record<JourneyStageType, string> = {
   quiz: "Check understanding",
   essay: "Essay / write & submit",
   review: "Flash cards / spaced review",
+  recap: "The idea",
   completion: "Lesson complete",
 };
 
@@ -81,7 +82,16 @@ export function resolveStageId(
   progress: JourneyProgress | undefined,
   requestedStageId: string | undefined,
 ): string {
-  if (requestedStageId && journey.stageOrder.includes(requestedStageId)) return requestedStageId;
+  if (requestedStageId && journey.stageOrder.includes(requestedStageId)) {
+    const requested = journey.stages.find((stage) => stage.id === requestedStageId);
+    if (
+      requested?.type !== "completion" ||
+      progress?.stages.some(
+        (stage) => stage.stageId === requestedStageId && stage.state === "completed",
+      )
+    )
+      return requestedStageId;
+  }
   const active = progress?.activeStageId;
   if (active && journey.stageOrder.includes(active)) return active;
   return journey.stageOrder[0] ?? "";
@@ -110,13 +120,43 @@ export function completedCount(views: StageView[]): number {
 }
 
 /** Where the learner is inside a stepped lesson, read back from saved interaction state. */
+export const STEP_ID_KEY = "stepId";
+/** The position the player saved before 0011; still read when no step id was recorded. */
 export const STEP_INDEX_KEY = "stepIndex";
+/** The opener screen of a v2 lesson. It is a screen, not an authored step. */
+export const LESSON_OPENER_ID = "opener";
+
+/** The screens of an explainer stage in order: the v2 opener, if any, then each step. */
+export function screenIdsFor(stage: {
+  intro?: unknown;
+  steps: readonly { id: string }[];
+}): string[] {
+  return [...(stage.intro ? [LESSON_OPENER_ID] : []), ...stage.steps.map((step) => step.id)];
+}
 
 /**
- * The step the learner should be on. Progress is stored as an index rather than a step id
- * because a step is a position in a sequence, not an identity — and because an id that no
- * longer exists after an edit would strand the learner, while an index simply clamps.
+ * The screen the learner should be on. Progress is saved by step id, so a step inserted before
+ * the learner's place does not move them (spec §7.4). A saved id the lesson no longer has means
+ * the lesson was rewritten, and it starts again from the top rather than landing somewhere
+ * arbitrary. A row saved before ids existed falls back to its index, clamped.
  */
+export function resumeScreenIndex(
+  screens: readonly string[],
+  steps: readonly { id: string }[],
+  interactionState: Record<string, unknown> | undefined,
+): number {
+  const savedId = interactionState?.[STEP_ID_KEY];
+  if (typeof savedId === "string") {
+    const at = screens.indexOf(savedId);
+    return at >= 0 ? at : 0;
+  }
+  const saved = interactionState?.[STEP_INDEX_KEY];
+  if (typeof saved !== "number" || !Number.isFinite(saved)) return 0;
+  const step = steps[Math.max(0, Math.min(steps.length - 1, Math.trunc(saved)))];
+  return step ? Math.max(0, screens.indexOf(step.id)) : 0;
+}
+
+/** Kept for callers that only know the step list: the index of the saved step. */
 export function resumeStepIndex(
   stepCount: number,
   interactionState: Record<string, unknown> | undefined,
@@ -145,7 +185,7 @@ export function canAdvanceStep(
   answered: { solved: boolean; revealed: boolean },
 ): boolean {
   if (!step) return false;
-  if (step.kind === "check" || step.kind === "transfer") {
+  if (step.question || step.kind === "check" || step.kind === "transfer" || step.kind === "try") {
     return answered.solved || answered.revealed;
   }
   // An interact step waits for its activity, unless none has been wired to it yet — a

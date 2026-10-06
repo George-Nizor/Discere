@@ -1,4 +1,6 @@
 import {
+  type ActivityAttemptRequest,
+  ActivityAttemptResponseSchema,
   type ActivityResponse,
   ActivityResponseSchema,
   type AttemptRequest,
@@ -16,6 +18,7 @@ import {
   type EssaySubmitResponse,
   EssaySubmitResponseSchema,
   type HintResponse,
+  LessonFeedbackResponseSchema,
   type HomeResponse,
   HomeResponseSchema,
   type IllustrationRequest,
@@ -25,6 +28,7 @@ import {
   JourneyProgressResponseSchema,
   type JourneyResponse,
   JourneyResponseSchema,
+  LessonResultSchema,
   type NotebookPage,
   NotebookPageSchema,
   type NotebookSaveRequest,
@@ -35,16 +39,25 @@ import {
   type ReviewRateRequest,
   type ReviewRateResponse,
   ReviewRateResponseSchema,
+  type ReviewRecallResponse,
+  ReviewRecallResponseSchema,
   type ReviewRevealResponse,
   ReviewRevealResponseSchema,
+  type ReviewSessionCreate,
   type ReviewSessionResponse,
   ReviewSessionResponseSchema,
   type RomanReferenceAction,
+  type RomanReferenceEssayId,
   type RomanReferenceProgress,
   RomanReferenceProgressSchema,
-  type RomanReferenceEssayId,
   type RomanReferenceQuestionId,
   type StageProgressUpdate,
+  StudyPreferencesSchema,
+  type StudyPreferencesUpdate,
+  StudySummarySchema,
+  ChestClaimSchema,
+  StudyStatisticsSchema,
+  type StudyStatisticsPeriod,
   type TransferStateResponse,
   TransferStateResponseSchema,
   type TransferSubmitRequest,
@@ -65,6 +78,35 @@ import {
   WorkingsReviewResponseSchema,
 } from "@discere/contracts";
 import { requestJson } from "./client.js";
+
+export async function getStudy() {
+  return StudySummarySchema.parse(await requestJson("/api/study"));
+}
+export async function claimDailyChest() {
+  return ChestClaimSchema.parse(
+    await requestJson("/api/study/chest", { method: "POST", body: "{}" }),
+  );
+}
+export async function getStudyStatistics(period: StudyStatisticsPeriod) {
+  return StudyStatisticsSchema.parse(await requestJson("/api/study/statistics?period=" + period));
+}
+export async function getStudyPreferences() {
+  return StudyPreferencesSchema.parse(await requestJson("/api/study/preferences"));
+}
+export async function updateStudyPreferences(input: StudyPreferencesUpdate) {
+  return StudyPreferencesSchema.parse(
+    await requestJson("/api/study/preferences", { method: "PUT", body: JSON.stringify(input) }),
+  );
+}
+export async function getLessonResult(courseId: string, lessonId: string) {
+  return LessonResultSchema.parse(await requestJson(`${journeyBase(courseId, lessonId)}/result`));
+}
+
+export async function assessActivity(body: ActivityAttemptRequest) {
+  return ActivityAttemptResponseSchema.parse(
+    await requestJson("/api/activity-attempts", { method: "POST", body: JSON.stringify(body) }),
+  );
+}
 
 const encode = encodeURIComponent;
 
@@ -189,9 +231,26 @@ export async function getReviewHome(): Promise<ReviewHomeResponse> {
   return ReviewHomeResponseSchema.parse(await requestJson<unknown>("/api/review"));
 }
 
-export async function createReviewSession(): Promise<ReviewSessionResponse> {
+export async function createReviewSession(
+  input: ReviewSessionCreate = {},
+): Promise<ReviewSessionResponse> {
   return ReviewSessionResponseSchema.parse(
-    await requestJson<unknown>("/api/review/sessions", { method: "POST", body: "{}" }),
+    await requestJson<unknown>("/api/review/sessions", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+  );
+}
+
+export async function submitReviewRecall(
+  sessionId: string,
+  response: string,
+): Promise<ReviewRecallResponse> {
+  return ReviewRecallResponseSchema.parse(
+    await requestJson<unknown>(`/api/review/sessions/${encode(sessionId)}/respond`, {
+      method: "POST",
+      body: JSON.stringify({ response }),
+    }),
   );
 }
 
@@ -301,7 +360,7 @@ export async function getTutorStatus(): Promise<TutorStatus> {
 /** Spends one real generation on purpose: only a round trip proves the link is up. */
 export async function probeTutor(): Promise<TutorProbeResponse> {
   return TutorProbeResponseSchema.parse(
-    await requestJson<unknown>("/api/tutor/probe", { method: "POST" }),
+    await requestJson<unknown>("/api/tutor/probe", { method: "POST", body: "{}" }),
   );
 }
 
@@ -325,6 +384,9 @@ export async function importTutorReply(input: {
   text: string;
   mode: TutoringMode;
   expectedRequestId: string;
+  lessonId?: string;
+  questionId?: string;
+  attemptId?: string;
   referenceQuestionId?: RomanReferenceQuestionId;
   referenceEssayId?: RomanReferenceEssayId;
 }): Promise<TutorImportResult> {
@@ -370,4 +432,32 @@ export async function reviewWorkings(input: {
       body: JSON.stringify(input),
     }),
   );
+}
+
+export async function getLessonFeedback(
+  attemptId: string,
+  input: import("@discere/contracts").LessonFeedbackRequest,
+) {
+  return LessonFeedbackResponseSchema.parse(
+    await requestJson("/api/attempts/" + encode(attemptId) + "/lesson-feedback", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+  );
+}
+
+/** One lesson the library search found, and why. Mirrors `apps/server/src/search.ts`. */
+export interface LessonSearchResult {
+  courseId: string;
+  courseTitle: string;
+  lessonId: string;
+  lessonTitle: string;
+  match: "lesson" | "concept" | "content";
+  snippet: string;
+}
+export async function searchLessons(query: string): Promise<LessonSearchResult[]> {
+  const body = await requestJson<{ lessons?: unknown }>(
+    "/api/search?q=" + encodeURIComponent(query),
+  );
+  return Array.isArray(body.lessons) ? (body.lessons as LessonSearchResult[]) : [];
 }

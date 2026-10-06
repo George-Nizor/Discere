@@ -13,6 +13,8 @@ import {
   stageTypeLabel,
   stepViewsFor,
   visualStateAt,
+  resumeScreenIndex,
+  screenIdsFor,
 } from "./stage-machine.js";
 
 describe("stage machine", () => {
@@ -123,5 +125,24 @@ describe("stepped lessons", () => {
     expect(visualStateAt(steps, 2)).toBe("start");
     expect(visualStateAt(steps, 3)).toBe("end");
     expect(visualStateAt([], 0)).toBe("");
+  });
+});
+
+describe("screen resume by stable id", () => {
+  const steps = [{ id: "a" }, { id: "b" }, { id: "c" }];
+  it("lists the opener before the steps of a v2 lesson", () => {
+    expect(screenIdsFor({ intro: {}, steps })).toEqual(["opener", "a", "b", "c"]);
+    expect(screenIdsFor({ steps })).toEqual(["a", "b", "c"]);
+  });
+  it("resumes by id even when a step is inserted before it", () => {
+    const inserted = ["opener", "new", "a", "b", "c"];
+    expect(resumeScreenIndex(inserted, steps, { stepId: "b", stepIndex: 1 })).toBe(3);
+  });
+  it("starts from the top when the saved id is gone, and falls back to old indices", () => {
+    const screens = ["a", "b", "c"];
+    expect(resumeScreenIndex(screens, steps, { stepId: "gone", stepIndex: 2 })).toBe(0);
+    expect(resumeScreenIndex(screens, steps, { stepIndex: 2 })).toBe(2);
+    expect(resumeScreenIndex(screens, steps, { stepIndex: 99 })).toBe(2);
+    expect(resumeScreenIndex(screens, steps, undefined)).toBe(0);
   });
 });

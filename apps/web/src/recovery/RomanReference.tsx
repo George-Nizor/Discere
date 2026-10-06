@@ -49,9 +49,19 @@ export const romanReferencePaths = {
   notebook: "/courses/roman-empire/lessons/rise-of-the-roman-empire/notebook",
   question: (questionId: RomanReferenceQuestionId) => `${LESSON_ROOT}/questions/${questionId}`,
   essay: `${LESSON_ROOT}/essay`,
+  recall: `${LESSON_ROOT}/recall`,
+  complete: `${LESSON_ROOT}/complete`,
 };
 
-export type ReferenceBeat = "course" | "opening" | "augustus" | "expansion" | "questions" | "essay";
+export type ReferenceBeat =
+  | "course"
+  | "opening"
+  | "augustus"
+  | "expansion"
+  | "questions"
+  | "essay"
+  | "recall"
+  | "complete";
 
 export const AUGUSTUS_SOURCE: ReferenceSource = {
   title: "Augustus and the principate",
@@ -72,6 +82,8 @@ const BEAT_META: Record<ReferenceBeat, { index: number; back: string }> = {
   expansion: { index: 3, back: romanReferencePaths.augustus },
   questions: { index: 7, back: romanReferencePaths.expansion },
   essay: { index: 8, back: romanReferencePaths.question("two-sentence") },
+  recall: { index: 8, back: romanReferencePaths.essay },
+  complete: { index: 8, back: romanReferencePaths.recall },
 };
 
 const LESSON_STEPS = [1, 2, 3, 4, 5, 6, 7, 8] as const;
@@ -81,12 +93,16 @@ export function isRomanReferencePath(pathname: string): boolean {
   return pathname === COURSE_PATH || pathname.startsWith(`${LESSON_ROOT}/`);
 }
 
-export function RomanReferenceNav() {
+export function RomanReferenceNav({
+  notebookPath = romanReferencePaths.notebook,
+}: {
+  notebookPath?: string;
+} = {}) {
   const links = [
     { to: "/", label: "Home", icon: House },
     { to: "/courses", label: "Courses", icon: BookOpen, active: true },
     { to: "/review", label: "Review", icon: RefreshCcw },
-    { to: romanReferencePaths.notebook, label: "Notebook", icon: NotebookPen },
+    { to: notebookPath, label: "Notebook", icon: NotebookPen },
     { to: "/settings", label: "Settings", icon: Settings },
   ];
 
@@ -116,6 +132,7 @@ export function RomanReferenceNav() {
 }
 
 export interface ReferenceFrameProps {
+  hideAssistance?: boolean;
   beat: ReferenceBeat;
   backPath?: string;
   children: ReactNode;
@@ -135,6 +152,7 @@ export interface ReferenceFrameProps {
 }
 
 export function ReferenceFrame({
+  hideAssistance = false,
   beat,
   backPath,
   children,
@@ -286,7 +304,7 @@ export function ReferenceFrame({
           >
             <Volume2 aria-hidden="true" size={19} strokeWidth={1.8} />
           </button>
-          {mode === "exam" ? null : (
+          {mode === "exam" || hideAssistance ? null : (
             <button
               aria-label="View sources"
               aria-busy={utilityBusy === "sources"}
@@ -300,7 +318,7 @@ export function ReferenceFrame({
               <Library aria-hidden="true" size={19} strokeWidth={1.8} />
             </button>
           )}
-          {mode === "exam" ? null : (
+          {mode === "exam" || hideAssistance ? null : (
             <button
               aria-label="Open the tutor in the current Roman lesson"
               aria-busy={utilityBusy === "tutor"}
@@ -365,14 +383,14 @@ export function ReferenceFrame({
         ) : null}
       </footer>
 
-      {sourcesOpen ? (
+      {sourcesOpen && !hideAssistance ? (
         <ReferenceSourceDialog
           onClose={() => setSourcesOpen(false)}
           sources={sources}
           triggerRef={sourceTrigger}
         />
       ) : null}
-      {tutorOpen && mode !== "exam" ? (
+      {tutorOpen && mode !== "exam" && !hideAssistance ? (
         <TutorPanel
           accent="#0b8f3c"
           conceptIds={conceptIds}
@@ -422,6 +440,8 @@ const PATH_BY_BEAT = {
   augustus: romanReferencePaths.augustus,
   expansion: romanReferencePaths.expansion,
   essay: romanReferencePaths.essay,
+  recall: romanReferencePaths.recall,
+  complete: romanReferencePaths.complete,
 } as const;
 
 const ROUTE_INDEX_BY_BEAT = {
@@ -430,6 +450,8 @@ const ROUTE_INDEX_BY_BEAT = {
   expansion: 2,
   questions: 6,
   essay: 7,
+  recall: 7,
+  complete: 7,
 } as const;
 
 function RomanReferenceCourseHomeContent() {

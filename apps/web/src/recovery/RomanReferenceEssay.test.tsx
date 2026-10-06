@@ -17,7 +17,6 @@ const PROGRESS_PATH =
   "/api/courses/roman-empire/lessons/rise-of-the-roman-empire/reference/progress";
 const REFERENCE_ROOT = "/courses/roman-empire/lessons/rise-of-the-roman-empire/reference";
 const ESSAY_PATH = `${REFERENCE_ROOT}/essay`;
-const COURSE_PATH = "/courses/roman-empire";
 
 const DRAFT = [
   "Political conflict mattered more than size, because Rome kept governing a large territory long",
@@ -134,6 +133,7 @@ function installEssayStub(initial = essayReadyProgress(), options: StubOptions =
           break;
         case "finish_essay":
           essay.finished = true;
+          next.activeBeat = "recall";
           break;
         default:
           break;
@@ -302,7 +302,9 @@ describe("Roman recovery reference Gate 4 essay", () => {
     const { router } = renderEssay();
 
     await user.click(await screen.findByRole("button", { name: "Finish" }));
-    await waitFor(() => expect(router.state.location.pathname).toBe(COURSE_PATH));
+    await waitFor(() =>
+      expect(router.state.location.pathname).toBe(`${ESSAY_PATH.replace(/essay$/, "recall")}`),
+    );
     expect(fixture.read().essay.progress.finished).toBe(true);
     expect(fixture.actions.at(-1)).toEqual({ action: "finish_essay" });
   });
@@ -314,12 +316,16 @@ describe("Roman recovery reference Gate 4 essay", () => {
     finished.essay.progress.mode = "coach";
     finished.essay.progress.submissions = [feedbackFor(1, DRAFT)];
     finished.essay.progress.finished = true;
+    finished.activeBeat = "recall";
     installEssayStub(finished);
     renderEssay();
 
     expect(await screen.findByLabelText("Draft")).toBeDisabled();
     expect(screen.queryByRole("button", { name: "Submit" })).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Course home" })).toHaveAttribute("href", COURSE_PATH);
+    expect(screen.getByRole("link", { name: /^Next$/ })).toHaveAttribute(
+      "href",
+      ESSAY_PATH.replace(/essay$/, "recall"),
+    );
   });
 
   it("closes evidence and the assistance controls in Exam mode", async () => {

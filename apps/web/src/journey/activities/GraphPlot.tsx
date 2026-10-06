@@ -1,6 +1,7 @@
-import type { GraphPlotActivity } from "@discere/contracts";
-import { evaluateGraphPlot, type GraphPoint, pointFromFraction } from "@discere/activity-engine";
+import type { LearnerActivity } from "@discere/contracts";
+import { type GraphPoint, pointFromFraction } from "@discere/activity-engine";
 import { useRef, useState } from "react";
+import { useActivityAssessment } from "./use-activity-assessment.js";
 import { Notice } from "../../ui/Feedback.js";
 
 const WIDTH = 420;
@@ -36,13 +37,12 @@ export function GraphPlot({
   activity,
   onAnswered,
 }: {
-  activity: GraphPlotActivity;
+  activity: Extract<LearnerActivity, { type: "graph_plot" }>;
   onAnswered?: (correct: boolean) => void;
 }) {
   const plotRef = useRef<SVGRectElement>(null);
   const [point, setPoint] = useState<GraphPoint | null>(null);
-  const [checked, setChecked] = useState(false);
-  const outcome = checked && point ? evaluateGraphPlot(activity, point) : null;
+  const { outcome, busy, error, check, clear } = useActivityAssessment(activity.id, onAnswered);
 
   const xAt = (value: number): number =>
     PAD.left + ((value - activity.x.min) / (activity.x.max - activity.x.min)) * PLOT.width;
@@ -52,7 +52,7 @@ export function GraphPlot({
     ((value - activity.y.min) / (activity.y.max - activity.y.min)) * PLOT.height;
 
   function place(event: React.MouseEvent<SVGRectElement>): void {
-    if (outcome?.correct) return;
+    if (busy || outcome?.correct) return;
     const box = plotRef.current?.getBoundingClientRect();
     if (!box || box.width === 0) return;
     setPoint(
@@ -62,7 +62,7 @@ export function GraphPlot({
         (event.clientY - box.top) / box.height,
       ),
     );
-    setChecked(false);
+    clear();
   }
 
   const xTicks = ticksFor(activity.x.min, activity.x.max, activity.x.step);
@@ -183,6 +183,7 @@ export function GraphPlot({
         <label>
           <span>{activity.x.label}</span>
           <input
+            disabled={busy || outcome?.correct === true}
             max={activity.x.max}
             min={activity.x.min}
             onChange={(event) => {
@@ -190,7 +191,7 @@ export function GraphPlot({
                 x: Number(event.target.value),
                 y: current?.y ?? activity.y.min,
               }));
-              setChecked(false);
+              clear();
             }}
             step={activity.x.step}
             type="number"
@@ -200,6 +201,7 @@ export function GraphPlot({
         <label>
           <span>{activity.y.label}</span>
           <input
+            disabled={busy || outcome?.correct === true}
             max={activity.y.max}
             min={activity.y.min}
             onChange={(event) => {
@@ -207,7 +209,7 @@ export function GraphPlot({
                 x: current?.x ?? activity.x.min,
                 y: Number(event.target.value),
               }));
-              setChecked(false);
+              clear();
             }}
             step={activity.y.step}
             type="number"
@@ -217,10 +219,9 @@ export function GraphPlot({
         {outcome?.correct ? null : (
           <button
             className="button button-primary"
-            disabled={point === null}
+            disabled={busy || point === null}
             onClick={() => {
-              setChecked(true);
-              if (point) onAnswered?.(evaluateGraphPlot(activity, point).correct);
+              if (point) void check(point);
             }}
             type="button"
           >
@@ -229,6 +230,7 @@ export function GraphPlot({
         )}
       </div>
 
+      {error ? <p role="alert">{error}</p> : null}
       {outcome ? (
         <Notice
           live

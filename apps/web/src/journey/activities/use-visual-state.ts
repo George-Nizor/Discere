@@ -1,12 +1,9 @@
 import { blendVisualParams, type VisualState } from "@discere/contracts";
 import { useEffect, useRef, useState } from "react";
+import { useExperience } from "../../study/experience.js";
 
 /** Long enough to be followed, short enough not to hold up the lesson. */
 const TRANSITION_MS = 480;
-
-function prefersReducedMotion(): boolean {
-  return typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
-}
 
 function easeOutCubic(fraction: number): number {
   return 1 - (1 - fraction) ** 3;
@@ -27,6 +24,7 @@ export function useVisualState(
   activeStateId: string,
 ): { params: Record<string, number>; caption: string } {
   const target = states.find((state) => state.id === activeStateId) ?? states[0] ?? undefined;
+  const { reduced } = useExperience();
   const targetParams = target?.params ?? {};
 
   const [params, setParams] = useState<Record<string, number>>(targetParams);
@@ -37,7 +35,7 @@ export function useVisualState(
 
   useEffect(() => {
     if (!target) return undefined;
-    if (prefersReducedMotion()) {
+    if (reduced) {
       from.current = target.params;
       setParams(target.params);
       return undefined;
@@ -48,6 +46,7 @@ export function useVisualState(
     const step = (now: number): void => {
       const fraction = Math.min(1, (now - start) / TRANSITION_MS);
       const blended = blendVisualParams(origin, target.params, easeOutCubic(fraction));
+      from.current = blended;
       setParams(blended);
       if (fraction < 1) {
         frame.current = requestAnimationFrame(step);
@@ -59,7 +58,7 @@ export function useVisualState(
     };
     frame.current = requestAnimationFrame(step);
     return () => cancelAnimationFrame(frame.current);
-  }, [target]);
+  }, [target, reduced]);
 
   return { params, caption: target?.caption ?? "" };
 }

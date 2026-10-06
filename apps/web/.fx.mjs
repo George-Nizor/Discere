@@ -1,0 +1,14 @@
+import { chromium } from "@playwright/test";
+const out = process.argv[2];
+const b = await chromium.launch({ args: ["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"] });
+const p = await b.newPage({ viewport: { width: 1440, height: 900 } });
+p.on("pageerror", (e) => console.log("PAGEERROR", e.message));
+await p.goto("http://127.0.0.1:4618/courses/physics-motion-and-forces/lessons/measuring-motion", { waitUntil: "networkidle" });
+await p.waitForTimeout(1500);
+await p.getByLabel("Value").fill("7");
+await p.getByRole("button", { name: "Check answer" }).click();
+await p.waitForTimeout(280);
+await p.screenshot({ path: `${out}-a.png` });
+await p.waitForTimeout(900);
+await p.screenshot({ path: `${out}-b.png` });
+await b.close();

@@ -11,8 +11,9 @@ import { RevealFlow } from "../quiz/RevealFlow.js";
 import { TransferChallenge } from "../quiz/TransferChallenge.js";
 import { AttemptResult, HintLadder } from "../quiz-shared/AttemptFeedback.js";
 import { useAttempt } from "../quiz-shared/use-attempt.js";
+import { LessonQuestion } from "./LessonQuestion.js";
 
-export function QuizStageView({
+function LegacyQuizStageView({
   stage,
   onContinue,
   returnLink,
@@ -132,5 +133,19 @@ export function QuizStageView({
         </div>
       ) : null}
     </div>
+  );
+}
+
+export function QuizStageView(props: {
+  stage: QuizStage;
+  onContinue: () => void;
+  returnLink: { label: string; onSelect: () => void } | null;
+  courseId?: string;
+  lessonId?: string;
+}) {
+  return props.courseId && props.lessonId ? (
+    <LessonQuestion {...props} courseId={props.courseId} lessonId={props.lessonId} />
+  ) : (
+    <LegacyQuizStageView {...props} />
   );
 }

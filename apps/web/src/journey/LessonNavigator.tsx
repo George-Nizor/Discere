@@ -34,10 +34,7 @@ export function LessonNavigator({
           <span className="navigator-title">{previous.stage.title}</span>
         </button>
       ) : (
-        <p className="navigator-step navigator-static">
-          <span className="navigator-direction">Lesson start</span>
-          <span className="navigator-title">This is the first stage</span>
-        </p>
+        <span />
       )}
 
       <div className="navigator-track">
@@ -73,7 +70,7 @@ export function LessonNavigator({
             );
           })}
         </ol>
-        <p className="navigator-current">
+        <p className="navigator-current sr-only">
           {current.index + 1}. {current.stage.title}
         </p>
       </div>
@@ -91,12 +88,7 @@ export function LessonNavigator({
           <span className="navigator-title">{next.stage.title}</span>
         </button>
       ) : (
-        <p className="navigator-step navigator-static navigator-next">
-          <span className="navigator-direction">{next ? "Next" : "Lesson end"}</span>
-          <span className="navigator-title">
-            {next ? `Finish this stage to open ${next.stage.title}` : "No further stages"}
-          </span>
-        </p>
+        <span />
       )}
     </nav>
   );

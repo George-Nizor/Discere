@@ -10,7 +10,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { errorMessage } from "../api/client.js";
 import { ModeProvider, useTutoringMode } from "../journey/mode-context.js";
-import { COURSE_PATH, ReferenceFrame, romanReferencePaths } from "./RomanReference.js";
+import { ReferenceFrame, romanReferencePaths } from "./RomanReference.js";
 import type { ReferenceSource } from "./ReferenceSourceDialog.js";
 import { ROMAN_REFERENCE_LESSON_ID, useReferenceProgress } from "./reference-progress.js";
 
@@ -334,7 +334,7 @@ function EssayStudio({
 
   async function finish() {
     await save({ action: "finish_essay" });
-    navigate(COURSE_PATH);
+    navigate(romanReferencePaths.recall);
   }
 
   const readText = [
@@ -350,11 +350,11 @@ function EssayStudio({
       conceptIds={["augustus-principate", "roman-expansion", "fall-and-legacy"]}
       effectiveMode={effectiveMode}
       nextDisabled={busy}
-      nextLabel={essay.finished ? "Course home" : "Finish"}
+      nextLabel={essay.finished ? "Next" : "Finish"}
       {...(essay.status === "submitted" && !essay.finished
         ? { onNext: finish }
         : essay.finished
-          ? { nextPath: COURSE_PATH }
+          ? { nextPath: romanReferencePaths.recall }
           : { nextPath: null })}
       onBeforeOpenSources={openEvidence}
       onBeforeOpenTutor={authoriseTutor}

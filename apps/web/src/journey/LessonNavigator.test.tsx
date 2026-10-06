@@ -24,7 +24,7 @@ describe("lesson navigator", () => {
     for (const button of screen.getAllByRole("button")) {
       expect(button).not.toBeDisabled();
     }
-    expect(screen.getByText(/Finish this stage to open/)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Next/ })).not.toBeInTheDocument();
   });
 
   it("opens the next stage once the current one allows it", async () => {
@@ -41,7 +41,7 @@ describe("lesson navigator", () => {
     expect(onNavigate).toHaveBeenCalledWith(journey.stageOrder[2]);
   });
 
-  it("says the first stage has nothing behind it", () => {
+  it("omits unavailable previous navigation at the first stage", () => {
     renderWithProviders(
       <LessonNavigator
         canAdvance
@@ -50,7 +50,7 @@ describe("lesson navigator", () => {
         views={views}
       />,
     );
-    expect(screen.getByText("This is the first stage")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Previous/ })).not.toBeInTheDocument();
   });
 
   it("marks the current stage in the progress track", () => {

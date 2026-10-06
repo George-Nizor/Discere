@@ -1,18 +1,19 @@
-import type { OrderSequenceActivity } from "@discere/contracts";
-import { evaluateOrderSequence, moveInOrder } from "@discere/activity-engine";
+import type { LearnerActivity } from "@discere/contracts";
+import { moveInOrder } from "@discere/activity-engine";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
+import { useActivityAssessment } from "./use-activity-assessment.js";
 import { Notice } from "../../ui/Feedback.js";
 
 /**
- * Rotates the authored order so the learner never opens on the answer. Deterministic, because a
+ * Rotates the public item list without consulting the private answer. Deterministic, because a
  * random start would make the activity a different task on every render and untestable.
  */
-function openingOrder(activity: OrderSequenceActivity): string[] {
-  const order = [...activity.correctOrder];
+function openingOrder(activity: Extract<LearnerActivity, { type: "order_sequence" }>): string[] {
+  const order = activity.items.map((item) => item.id).sort((a, b) => a.localeCompare(b));
   if (order.length < 2) return order;
   const rotated = [...order.slice(1), order[0] as string];
-  // A rotation of two items is just a swap, which is fine; of three or more it is never correct.
+  // The public item list does not establish the correct sequence.
   return rotated;
 }
 
@@ -28,17 +29,16 @@ export function OrderSequence({
   activity,
   onAnswered,
 }: {
-  activity: OrderSequenceActivity;
+  activity: Extract<LearnerActivity, { type: "order_sequence" }>;
   onAnswered?: (correct: boolean) => void;
 }) {
   const [order, setOrder] = useState<string[]>(() => openingOrder(activity));
-  const [checked, setChecked] = useState(false);
-  const outcome = checked ? evaluateOrderSequence(activity, order) : null;
+  const { outcome, busy, error, check, clear } = useActivityAssessment(activity.id, onAnswered);
 
   function move(itemId: string, delta: number): void {
-    if (outcome?.correct) return;
+    if (busy || outcome?.correct) return;
     setOrder((current) => moveInOrder(current, itemId, delta));
-    setChecked(false);
+    clear();
   }
 
   return (
@@ -57,7 +57,7 @@ export function OrderSequence({
                 <button
                   aria-label={`Move "${item.label}" earlier`}
                   className="button button-quiet order-move"
-                  disabled={index === 0 || outcome?.correct === true}
+                  disabled={busy || index === 0 || outcome?.correct === true}
                   onClick={() => move(itemId, -1)}
                   onKeyDown={(event) => {
                     // The arrow keys move the item the learner is already on, so reordering
@@ -74,7 +74,7 @@ export function OrderSequence({
                 <button
                   aria-label={`Move "${item.label}" later`}
                   className="button button-quiet order-move"
-                  disabled={index === order.length - 1 || outcome?.correct === true}
+                  disabled={busy || index === order.length - 1 || outcome?.correct === true}
                   onClick={() => move(itemId, 1)}
                   onKeyDown={(event) => {
                     if (event.key === "ArrowUp") {
@@ -95,16 +95,15 @@ export function OrderSequence({
         <div className="button-row">
           <button
             className="button button-primary"
-            onClick={() => {
-              setChecked(true);
-              onAnswered?.(evaluateOrderSequence(activity, order).correct);
-            }}
+            disabled={busy}
+            onClick={() => void check(order)}
             type="button"
           >
             Check the order
           </button>
         </div>
       )}
+      {error ? <p role="alert">{error}</p> : null}
       {outcome ? (
         <Notice
           live

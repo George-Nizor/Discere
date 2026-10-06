@@ -114,7 +114,23 @@ export function referenceQuestionViews(): RomanReferenceProgress["questions"] {
 
 export function defaultRomanReferenceProgress(): RomanReferenceProgress {
   return {
-    version: 3,
+    review: {
+      front: "Why does Roman imperial history continue after 476 CE?",
+      back: null,
+      progress: {
+        draft: "",
+        response: null,
+        result: null,
+        feedback: null,
+        mode: null,
+        revealed: false,
+        rating: null,
+        evidence: null,
+        schedule: null,
+        previousSchedule: null,
+      },
+    },
+    version: 4,
     activeBeat: "opening",
     activeQuestionId: null,
     assessmentFinished: false,

@@ -1,6 +1,8 @@
 import type { CourseSummary } from "@discere/contracts";
 import { Link } from "react-router";
+import { ArrowRight, Check } from "lucide-react";
 import { paths } from "../lib/paths.js";
+import { tiltHandlers } from "../fx/tilt.js";
 
 /**
  * One course on the catalogue. The whole card is the target, so there is never a small link to
@@ -20,7 +22,7 @@ export function CourseCard({
   const comingSoon = course.status === "coming_soon";
   const style = {
     "--course-accent": course.accent,
-    "--enter-index": index,
+    "--enter-index": Math.min(index, 7),
   } as React.CSSProperties;
 
   const body = (
@@ -34,7 +36,7 @@ export function CourseCard({
           <span aria-hidden="true" className="course-card-cover course-card-cover-blank" />
         )}
         {comingSoon ? <span className="course-card-tag">In production</span> : null}
-        {comingSoon || course.lessonCount === 0 ? null : (
+        {comingSoon || course.completedLessonCount === 0 ? null : (
           <span aria-hidden="true" className="course-card-bar">
             <span
               style={{
@@ -45,15 +47,23 @@ export function CourseCard({
         )}
       </span>
       <span className="course-card-body">
+        {course.subjects?.[0] ? (
+          <span className="course-card-subject">{course.subjects[0]}</span>
+        ) : null}
         <span className="course-card-heading">
           <strong className="course-card-title">{course.title}</strong>
         </span>
         <span className="course-card-description">{course.description}</span>
         <span className="course-card-foot">
           <span className="course-card-meta">
-            {course.completedLessonCount} of {course.lessonCount}{" "}
-            {course.lessonCount === 1 ? "lesson" : "lessons"}
+            {course.completedLessonCount ? course.completedLessonCount + " of " : ""}
+            {course.lessonCount} {course.lessonCount === 1 ? "lesson" : "lessons"}
           </span>
+          {comingSoon ? null : course.completedLessonCount === course.lessonCount ? (
+            <Check size={18} aria-hidden="true" />
+          ) : (
+            <ArrowRight size={18} aria-hidden="true" />
+          )}
         </span>
       </span>
     </>
@@ -68,7 +78,13 @@ export function CourseCard({
     );
   }
   return (
-    <Link className={`${className} lift`} style={style} to={paths.course(course.id)} viewTransition>
+    <Link
+      className={`${className} lift tilt-card`}
+      style={style}
+      to={paths.course(course.id)}
+      viewTransition
+      {...tiltHandlers}
+    >
       {body}
     </Link>
   );

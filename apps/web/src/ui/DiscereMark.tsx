@@ -1,4 +1,9 @@
-/** The approved Discere mark, shared by navigation, welcome, and favicon surfaces. */
+import { Bonehead } from "../mascot/Bonehead.js";
+
+/**
+ * The face of the app in navigation and other small places: Bonehead, the companion. The
+ * Discere book logo appears on the title card only (`DiscereLogo`).
+ */
 export function DiscereMark({
   size = 24,
   className,
@@ -10,13 +15,12 @@ export function DiscereMark({
   title?: string;
 }) {
   return (
-    <img
-      alt={title ?? ""}
-      aria-hidden={title ? undefined : true}
-      className={className}
-      height={size}
-      src="/discere-mark.png"
-      width={size}
+    <Bonehead
+      mark={size <= 48}
+      size={size}
+      quiet
+      {...(className ? { className } : {})}
+      {...(title ? { title } : {})}
     />
   );
 }

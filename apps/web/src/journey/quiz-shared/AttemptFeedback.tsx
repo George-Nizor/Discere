@@ -1,5 +1,6 @@
 import type { AttemptResponse, HintResponse } from "@discere/contracts";
-import { Notice } from "../../ui/Feedback.js";
+import { Check, RotateCcw } from "lucide-react";
+import { Sparkles } from "../../brand/icon-set.js";
 
 /**
  * The hints the learner has spent, kept on screen. A ladder that disappeared as soon as the
@@ -18,9 +19,6 @@ export function HintLadder({ hints }: { hints: readonly HintResponse[] }) {
           <p>{hint.hint}</p>
         </li>
       ))}
-      <li className="hint-cost muted">
-        Each hint records assisted evidence for this attempt rather than independent evidence.
-      </li>
     </ol>
   );
 }
@@ -32,16 +30,27 @@ export function HintLadder({ hints }: { hints: readonly HintResponse[] }) {
 export function AttemptResult({ result }: { result: AttemptResponse | null }) {
   if (!result) return null;
   return (
-    <Notice
-      live
-      tone={result.correct ? "correct" : "info"}
-      title={result.correct ? "Correct" : "Not correct yet"}
+    <div
+      role="status"
+      className={`answer-feedback ${result.correct ? "is-correct" : "is-retry"}`}
+      key={`${result.attemptId}:${result.correct}:${result.feedback}`}
     >
-      <p>{result.feedback}</p>
-      <p className="muted feedback-meta">
-        {result.xpAwarded} XP · {result.independent ? "independent" : "assisted"} evidence · mastery{" "}
-        {Math.round(result.mastery * 100)}%
-      </p>
-    </Notice>
+      <span className="feedback-icon" aria-hidden="true">
+        {result.correct ? <Check size={22} strokeWidth={2.5} /> : <RotateCcw size={20} />}
+      </span>
+      <div>
+        <p>{result.feedback}</p>
+        <p className="feedback-meta">
+          {(result.xpGained ?? 0) > 0 ? (
+            <span className="xp-gain">
+              <Sparkles size={13} aria-hidden="true" /> +{result.xpGained} XP
+            </span>
+          ) : null}
+          {result.correct ? (
+            <span>{result.independent ? "Without hints" : "With help"}</span>
+          ) : null}
+        </p>
+      </div>
+    </div>
   );
 }

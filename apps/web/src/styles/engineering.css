@@ -1,0 +1,693 @@
+/* Engineering explorer: a dark drafting-table simulator in the course accent. */
+.engineering-diagram,
+.engineering-check {
+  --engr-accent: #ff8a3d;
+  --engr-accent-soft: #ffb37a;
+  --engr-reaction: #4fd8c8;
+  --engr-tension: #ff6b6b;
+  --engr-compression: #5aa9ff;
+  --engr-ink: #eef2f5;
+  --engr-muted: #9aa7b3;
+}
+.engineering-diagram {
+  display: grid;
+  gap: 12px;
+}
+.engr-cases,
+.engr-controls,
+.engr-joints {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+.engr-cases button,
+.engr-controls button,
+.engr-joints button {
+  font: inherit;
+  font-size: 13px;
+  min-height: 42px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: #1b2026;
+  border: 1px solid #2c343d;
+  color: #c9d2da;
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    box-shadow 200ms ease;
+}
+.engr-cases button:hover,
+.engr-joints button:hover {
+  border-color: #4a5560;
+  color: var(--engr-ink);
+}
+.engr-cases button[aria-pressed="true"],
+.engr-joints button[aria-pressed="true"] {
+  color: #fff3ea;
+  background: linear-gradient(180deg, #4a2a14, #34200f);
+  border-color: var(--engr-accent);
+  box-shadow:
+    0 0 0 1px rgb(255 138 61 / 0.25),
+    0 6px 18px rgb(255 138 61 / 0.18);
+}
+.engr-controls button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border-color: transparent;
+  white-space: nowrap;
+}
+.engr-controls button:hover {
+  background: #1b2026;
+  color: var(--engr-ink);
+}
+.engr-controls svg {
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
+.engr-joints {
+  align-items: center;
+  color: var(--engr-muted);
+  font-size: 12px;
+}
+.engr-joints button {
+  min-width: 42px;
+  padding: 8px 10px;
+  font-weight: 600;
+}
+.engr-cases button:focus-visible,
+.engr-controls button:focus-visible,
+.engr-joints button:focus-visible,
+.engr-description summary:focus-visible,
+.engr-slider input:focus-visible {
+  outline: 2px solid var(--engr-accent);
+  outline-offset: 2px;
+}
+.engr-stage {
+  border-radius: 18px;
+  box-shadow:
+    0 0 0 1px #262d35,
+    0 18px 40px rgb(0 0 0 / 0.35);
+  overflow: hidden;
+  background: #11151a;
+}
+div.learning-diagram.engineering-diagram {
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.learning-diagram.engineering-diagram svg.engineering-drawing,
+.engineering-check svg.engineering-drawing {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: none;
+  overflow: hidden;
+}
+.engr-playback {
+  display: grid;
+  gap: 4px;
+}
+.engr-slider {
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  gap: 12px;
+  align-items: center;
+  margin: 0 auto;
+  width: min(100%, 520px);
+  color: var(--engr-muted);
+  font-size: 12px;
+}
+.engr-slider output {
+  margin-left: 5px;
+  color: var(--engr-accent-soft);
+  font-variant-numeric: tabular-nums;
+}
+.engr-slider input {
+  width: 100%;
+  min-height: 32px;
+  accent-color: var(--engr-accent);
+}
+.engr-probe-readout {
+  margin: 0;
+  text-align: center;
+  color: var(--engr-ink);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.engr-description {
+  color: var(--engr-muted);
+  font-size: 12px;
+}
+.engr-description summary {
+  cursor: pointer;
+  width: max-content;
+  margin: 0 auto;
+}
+.engr-givens {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 2px;
+}
+.engr-measures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+.engr-measures div {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #1f1a16, #18150f);
+  border: 1px solid #4a3220;
+}
+.engr-measures dt {
+  color: var(--engr-muted);
+  font-size: 11px;
+}
+.engr-measures dd {
+  margin: 2px 0 0;
+  color: #ffe3cc;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.engineering-check {
+  display: grid;
+  gap: 10px;
+}
+.engineering-check .engineering-drawing {
+  border-radius: 16px;
+  box-shadow: 0 0 0 1px #262d35;
+}
+.engineering-check .engr-givens {
+  color: var(--ink-soft, #c9d2da);
+  font-size: 13px;
+}
+
+/* SVG text */
+.engineering-drawing text {
+  paint-order: stroke;
+  stroke: #12161b;
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+.engineering-drawing .engr-label {
+  font:
+    600 18px Inter,
+    sans-serif;
+  fill: #f3f6f8;
+}
+.engineering-drawing .engr-small {
+  font:
+    15px Inter,
+    sans-serif;
+  fill: #b8c4ce;
+}
+.engineering-drawing .engr-faint {
+  fill: #7f8c98;
+}
+.engineering-drawing .engr-value-inline,
+.engineering-drawing .engr-gear-speed {
+  fill: #ffd2ad;
+  font-weight: 600;
+}
+.engineering-drawing .engr-on-crate {
+  fill: #2a1405;
+  stroke: none;
+}
+.engineering-drawing .engr-node-label {
+  font-size: 18px;
+  fill: #ffe9d9;
+}
+
+/* Lines and parts */
+.engr-axis,
+.engr-axis-strong,
+.engr-guide,
+.engr-zero,
+.engr-projection,
+.engr-line-of-action,
+.engr-tick {
+  fill: none;
+  stroke-linecap: round;
+}
+.engr-axis {
+  stroke: #36404a;
+  stroke-width: 1.5;
+}
+.engr-axis-strong {
+  stroke: #6b7885;
+  stroke-width: 2;
+}
+.engr-guide {
+  stroke: #56636f;
+  stroke-width: 1.2;
+  stroke-dasharray: 5 6;
+}
+.engr-zero {
+  stroke: #56636f;
+  stroke-width: 1.5;
+}
+.engr-projection {
+  stroke: #8fa0af;
+  stroke-width: 1.4;
+  stroke-dasharray: 4 5;
+}
+.engr-component {
+  fill: none;
+  stroke: var(--engr-reaction);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-opacity: 0.85;
+}
+.engineering-drawing .engr-component-label {
+  fill: #9becdf;
+}
+.engr-angle-arc {
+  fill: none;
+  stroke: #ffd166;
+  stroke-width: 2;
+}
+.engr-line-of-action {
+  stroke: #ff8a3d;
+  stroke-opacity: 0.25;
+  stroke-width: 1.3;
+  stroke-dasharray: 2 6;
+}
+.engr-tick {
+  stroke: #6b7885;
+  stroke-width: 2;
+}
+.engr-highlight {
+  fill: none;
+  stroke: #ffffff;
+  stroke-opacity: 0.35;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.engr-wall {
+  fill: none;
+  stroke: #9aa7b3;
+  stroke-width: 3;
+}
+.engr-joint-dot {
+  fill: #1a1f25;
+  stroke: #e6edf3;
+  stroke-width: 2;
+}
+.engr-origin {
+  fill: #ffd2ad;
+}
+.engr-arrow path {
+  fill: none;
+  stroke-linecap: round;
+}
+.engr-arrow .engr-head {
+  stroke: none;
+}
+.engr-tone-load,
+.engr-tone-effort {
+  filter: drop-shadow(0 0 5px rgb(255 138 61 / 0.55));
+}
+.engr-tone-reaction {
+  filter: drop-shadow(0 0 5px rgb(79 216 200 / 0.5));
+}
+.engr-tone-tension {
+  filter: drop-shadow(0 0 4px rgb(255 107 107 / 0.55));
+}
+.engr-tone-compression {
+  filter: drop-shadow(0 0 4px rgb(90 169 255 / 0.55));
+}
+.engr-tone-load path:first-child {
+  stroke: var(--engr-accent);
+}
+.engr-tone-load .engr-head {
+  fill: var(--engr-accent);
+}
+.engr-tone-effort path:first-child {
+  stroke: #ffd166;
+}
+.engr-tone-effort .engr-head {
+  fill: #ffd166;
+}
+.engr-tone-reaction path:first-child {
+  stroke: var(--engr-reaction);
+}
+.engr-tone-reaction .engr-head {
+  fill: var(--engr-reaction);
+}
+.engr-tone-tension path:first-child {
+  stroke: var(--engr-tension);
+}
+.engr-tone-tension .engr-head {
+  fill: var(--engr-tension);
+}
+.engr-tone-compression path:first-child {
+  stroke: var(--engr-compression);
+}
+.engr-tone-compression .engr-head {
+  fill: var(--engr-compression);
+}
+.engr-tone-neutral path:first-child {
+  stroke: #c4ced8;
+}
+.engr-tone-neutral .engr-head {
+  fill: #c4ced8;
+}
+.engr-tone-result path:first-child {
+  stroke: #e8f1f8;
+}
+.engr-tone-result .engr-head {
+  fill: #e8f1f8;
+}
+.engr-closure {
+  fill: none;
+  stroke: var(--engr-reaction);
+  stroke-width: 3;
+}
+.engr-slope path {
+  fill: none;
+  stroke: #9fb0be;
+  stroke-width: 1.5;
+}
+.engr-arm path {
+  fill: none;
+  stroke: var(--engr-reaction);
+  stroke-width: 2;
+  stroke-dasharray: 5 4;
+}
+.engr-moment-arc {
+  fill: none;
+  stroke: var(--engr-accent-soft);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+.engr-tilt,
+.engr-gear > g,
+.engr-specimen-half {
+  transition: transform 120ms linear;
+}
+.engr-dimension path {
+  fill: none;
+  stroke: #5d6a76;
+  stroke-width: 1.4;
+}
+
+/* Beams */
+.engr-beam-under {
+  fill: none;
+  stroke: #3d4752;
+  stroke-width: 6;
+  stroke-linecap: round;
+}
+.engr-beam-body {
+  fill: none;
+  stroke: #9fadbb;
+  stroke-width: 16;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.engr-ghost-beam {
+  fill: none;
+  stroke: #ffffff;
+  stroke-opacity: 0.07;
+  stroke-linecap: round;
+}
+.engr-udl-top {
+  fill: none;
+  stroke: var(--engr-accent);
+  stroke-width: 2.5;
+}
+.engr-diagram-fill {
+  stroke: none;
+}
+.engr-diagram-line {
+  fill: none;
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+}
+.engr-diagram-shear {
+  stroke: var(--engr-reaction);
+}
+.engr-diagram-moment {
+  stroke: var(--engr-accent);
+}
+.engr-probe path {
+  stroke: #e8f1f8;
+  stroke-opacity: 0.5;
+  stroke-width: 1.4;
+  stroke-dasharray: 3 5;
+}
+.engr-probe circle {
+  fill: #ffffff;
+}
+
+/* Trusses */
+.engr-member path {
+  fill: none;
+  stroke-linecap: round;
+}
+.engr-member-neutral .engr-member-body {
+  stroke: #a9b6c3;
+}
+.engr-member-shadow {
+  stroke: #000;
+  stroke-opacity: 0.35;
+}
+.engr-member-tension .engr-member-body {
+  stroke: var(--engr-tension);
+}
+.engr-member-compression .engr-member-body {
+  stroke: var(--engr-compression);
+}
+.engr-member-zero .engr-member-body {
+  stroke: #5d6a76;
+  stroke-dasharray: 8 8;
+}
+.engr-member-body {
+  transition:
+    stroke-width 300ms ease,
+    opacity 300ms ease;
+}
+.engr-flow {
+  stroke: #ffffff;
+  stroke-opacity: 0.55;
+  stroke-width: 2;
+  stroke-dasharray: 2 14;
+  animation: engr-flow 1.4s linear infinite;
+}
+@keyframes engr-flow {
+  to {
+    stroke-dashoffset: -32;
+  }
+}
+.engr-member-label {
+  fill: #f3f6f8;
+}
+.engr-node circle {
+  fill: #1a1f25;
+  stroke: #e6edf3;
+  stroke-width: 2.5;
+}
+.engr-node-active circle {
+  fill: var(--engr-accent);
+  stroke: #fff3ea;
+}
+.engr-cut {
+  fill: rgb(255 138 61 / 0.08);
+  stroke: var(--engr-accent);
+  stroke-width: 1.5;
+  stroke-dasharray: 6 5;
+}
+.engr-key-tension {
+  fill: var(--engr-tension);
+}
+.engr-key-compression {
+  fill: var(--engr-compression);
+}
+
+/* Stress–strain */
+.engr-elastic-zone {
+  fill: var(--engr-reaction);
+  fill-opacity: 0.06;
+}
+.engr-curve,
+.engr-curve-ghost,
+.engr-curve-live {
+  fill: none;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.engr-curve {
+  stroke: #56636f;
+  stroke-width: 3;
+}
+.engr-curve-ghost {
+  stroke: #5aa9ff;
+  stroke-opacity: 0.35;
+  stroke-width: 2;
+  stroke-dasharray: 6 6;
+}
+.engr-curve-live {
+  stroke: var(--engr-accent);
+  stroke-width: 4;
+}
+.engr-marker {
+  fill: #fff3ea;
+}
+.engr-operating path {
+  fill: none;
+  stroke: var(--engr-reaction);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 4;
+}
+.engr-operating circle {
+  fill: var(--engr-reaction);
+}
+
+/* Sections */
+.engr-section-face,
+.engr-extrude {
+  stroke: #232a31;
+  stroke-width: 1;
+}
+.engr-zone-compression {
+  fill: var(--engr-compression);
+}
+.engr-zone-tension {
+  fill: var(--engr-tension);
+}
+.engr-neutral-axis {
+  fill: none;
+  stroke: #ffd166;
+  stroke-width: 1.6;
+  stroke-dasharray: 10 5 2 5;
+}
+.engr-profile {
+  stroke: none;
+}
+.engr-deflection path {
+  fill: none;
+  stroke: var(--engr-reaction);
+  stroke-width: 1.6;
+}
+
+/* Machines */
+.engr-crate-line {
+  fill: none;
+  stroke: #2a1405;
+  stroke-opacity: 0.35;
+  stroke-width: 2;
+}
+.engr-block {
+  fill: #2b333c;
+  stroke: #56636f;
+  stroke-width: 1.5;
+}
+.engr-sheave-groove {
+  fill: none;
+  stroke: #2b333c;
+  stroke-width: 2;
+}
+.engr-spoke {
+  fill: none;
+  stroke: #2b333c;
+  stroke-width: 3;
+}
+.engr-strand path,
+.engr-free-rope {
+  fill: none;
+  stroke: #e9d6b5;
+  stroke-width: 3;
+  stroke-dasharray: 10 3;
+}
+.engr-strand path {
+  stroke: #ffd2ad;
+}
+.engr-strand-number {
+  fill: var(--engr-accent-soft);
+}
+.engr-hook {
+  fill: none;
+  stroke: #9aa7b3;
+  stroke-width: 4;
+}
+.engr-gear-body {
+  stroke: #1d232a;
+  stroke-width: 1.2;
+}
+.engr-gear-back > g {
+  opacity: 0.55;
+}
+.engr-gear-web {
+  fill: #000;
+  fill-opacity: 0.16;
+}
+.engr-gear-hole {
+  fill: #151a1f;
+}
+.engr-gear-mark {
+  stroke: #ffffff;
+  stroke-opacity: 0.5;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+.engr-hub {
+  fill: #1a1f25;
+  stroke: #e6edf3;
+  stroke-width: 2;
+}
+.engineering-drawing .engr-gear-teeth {
+  fill: #fff;
+  font-weight: 600;
+}
+
+@media (max-width: 600px) {
+  .engineering-drawing .engr-label {
+    font-size: 22px;
+  }
+  .engineering-drawing .engr-small {
+    font-size: 19px;
+  }
+  .engr-slider {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+  .engr-cases button {
+    font-size: 12px;
+    padding: 8px 10px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .engr-flow {
+    animation: none;
+  }
+  .engr-tilt,
+  .engr-gear > g,
+  .engr-specimen-half,
+  .engr-member-body,
+  .engr-cases button {
+    transition: none;
+  }
+}
+[data-motion="reduced"] .engr-flow {
+  animation: none;
+}
+[data-motion="reduced"] .engr-tilt,
+[data-motion="reduced"] .engr-gear > g,
+[data-motion="reduced"] .engr-specimen-half,
+[data-motion="reduced"] .engr-member-body,
+[data-motion="reduced"] .engr-cases button {
+  transition: none;
+}
+
+/* Specular highlight at the top of steel members; labels never sit on the member. */
+:root {
+  --engr-steel-highlight: #dfe7ef;
+}

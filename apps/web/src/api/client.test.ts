@@ -1,7 +1,18 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ApiError, errorCode, errorMessage, requestJson } from "./client.js";
+import {
+  ApiError,
+  errorCode,
+  errorMessage,
+  isEngineUnavailable,
+  requestJson,
+  shouldRetryQuery,
+} from "./client.js";
+import { resetEngineStatus } from "./engine-status.js";
 
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  vi.unstubAllGlobals();
+  resetEngineStatus();
+});
 
 function reply(status: number, body: unknown) {
   return {
@@ -54,6 +65,26 @@ describe("api client", () => {
     );
     const failure = await requestJson("/api/home").catch((error: unknown) => error);
     expect(errorCode(failure)).toBe("REQUEST_FAILED");
-    expect(errorMessage(failure, "fallback")).toBe("The request failed with status 500.");
+    expect(errorMessage(failure, "fallback")).toBe(
+      "Discere’s engine could not finish that request. Try again in a moment.",
+    );
+  });
+
+  it("names a gateway failure with no Discere body as the engine not responding", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => reply(502, null)),
+    );
+    const failure = await requestJson("/api/home").catch((error: unknown) => error);
+    expect(isEngineUnavailable(failure)).toBe(true);
+    expect(errorMessage(failure, "fallback")).toMatch(/engine isn’t responding/);
+    expect(errorMessage(failure, "fallback")).not.toMatch(/502/);
+  });
+
+  it("does not retry what will fail the same way again", () => {
+    expect(shouldRetryQuery(0, new ApiError("x", 0, "NETWORK_UNAVAILABLE"))).toBe(false);
+    expect(shouldRetryQuery(0, new ApiError("x", 404, "NOT_FOUND"))).toBe(false);
+    expect(shouldRetryQuery(0, new ApiError("x", 500, "REQUEST_FAILED"))).toBe(true);
+    expect(shouldRetryQuery(1, new ApiError("x", 500, "REQUEST_FAILED"))).toBe(false);
   });
 });

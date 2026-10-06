@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from "react";
 import { errorCode, errorDetail, errorMessage } from "../api/client.js";
 import { askTutor, importTutorReply } from "../api/endpoints.js";
 import { CopyButton } from "../ui/CopyButton.js";
+import { humaniseId } from "../lib/format.js";
 import { Notice } from "../ui/Feedback.js";
 import { Illustration } from "../ui/Illustration.js";
 import { InlineRichText } from "../ui/RichText.js";
@@ -31,9 +32,12 @@ interface TutorPanelProps {
   conceptIds: string[];
   mode: TutoringMode;
   attemptId?: string;
+  questionId?: string;
   /** The course's colour, so an illustration matches the lesson it was drawn for. */
   accent?: string;
   onClose: () => void;
+  /** Docked in the lesson workbench: a side pane beside the lesson, not a modal drawer. */
+  docked?: boolean;
   referenceQuestionId?: RomanReferenceQuestionId;
   /** Set on the essay beat, where the server holds the mode and the draft the tutor answers about. */
   referenceEssayId?: RomanReferenceEssayId;
@@ -76,7 +80,7 @@ function ReplyView({ exchange, accent }: { exchange: TutorExchange; accent: stri
           </div>
         ) : null}
         {exchange.reply.sourceIds.length > 0 ? (
-          <p className="muted">Sources: {exchange.reply.sourceIds.join(", ")}</p>
+          <p className="muted">Sources: {exchange.reply.sourceIds.map(humaniseId).join(", ")}</p>
         ) : null}
         {/*
           The tutor can show as well as tell. The subject is the tutor's own answer rather than
@@ -111,14 +115,16 @@ function TutorPanelConversation({
   conceptIds,
   mode,
   attemptId,
+  questionId,
   accent = "#16a34a",
   onClose,
+  docked = false,
   referenceQuestionId,
   referenceEssayId,
 }: TutorPanelProps) {
   // A conversation about a question and one about the essay are different threads, so a resumed
   // provider session must not carry across the boundary between them.
-  const providerSessionContext = `${referenceQuestionId ?? (referenceEssayId ? `essay:${referenceEssayId}` : "lesson")}:${mode}`;
+  const providerSessionContext = `${referenceQuestionId ?? (referenceEssayId ? `essay:${referenceEssayId}` : (questionId ?? "lesson"))}:${mode}`;
   const [question, setQuestion] = useState("");
   const [conversation, setConversation] = useState(() => {
     const loaded = loadTutorConversation(lessonId);
@@ -150,6 +156,7 @@ function TutorPanelConversation({
   }, [conversation, lessonId]);
 
   useEffect(() => {
+    if (docked) return;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     input.current?.focus();
@@ -187,7 +194,7 @@ function TutorPanelConversation({
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = previousOverflow;
     };
-  }, [onClose]);
+  }, [onClose, docked]);
 
   async function ask(): Promise<void> {
     const asked = question.trim();
@@ -204,6 +211,7 @@ function TutorPanelConversation({
         conceptIds,
         ...(resumableSessionId === null ? {} : { sessionId: resumableSessionId }),
         ...(attemptId === undefined ? {} : { attemptId }),
+        ...(questionId === undefined ? {} : { questionId }),
         ...(referenceQuestionId === undefined ? {} : { referenceQuestionId }),
         ...(referenceEssayId === undefined ? {} : { referenceEssayId }),
       });
@@ -256,6 +264,9 @@ function TutorPanelConversation({
         text: pasted,
         mode,
         expectedRequestId: packet.requestId,
+        lessonId,
+        ...(questionId === undefined ? {} : { questionId }),
+        ...(attemptId === undefined ? {} : { attemptId }),
         ...(referenceQuestionId === undefined ? {} : { referenceQuestionId }),
         ...(referenceEssayId === undefined ? {} : { referenceEssayId }),
       });
@@ -284,21 +295,24 @@ function TutorPanelConversation({
 
   return (
     <>
-      <button
-        aria-label="Close the tutor backdrop"
-        className="tutor-scrim"
-        onClick={onClose}
-        tabIndex={-1}
-        type="button"
-      />
+      {docked ? null : (
+        <button
+          aria-label="Close the tutor backdrop"
+          className="tutor-scrim"
+          onClick={onClose}
+          tabIndex={-1}
+          type="button"
+        />
+      )}
       <aside
         aria-label="Ask the tutor"
-        aria-modal="true"
-        className="tutor-panel"
+        aria-modal={docked ? undefined : "true"}
+        className={docked ? "tutor-panel tutor-panel--docked" : "tutor-panel"}
         ref={panel}
-        role="dialog"
+        role={docked ? "region" : "dialog"}
         tabIndex={-1}
       >
+        {docked ? null : (
         <header className="tutor-header">
           <h2>Ask the tutor</h2>
           <button
@@ -310,6 +324,7 @@ function TutorPanelConversation({
             <X aria-hidden="true" size={18} strokeWidth={1.6} />
           </button>
         </header>
+        )}
 
         <div className="tutor-body">
           {thread.length === 0 && !packet ? (
@@ -338,11 +353,14 @@ function TutorPanelConversation({
 
           {packet ? (
             <div className="packet">
-              <Notice tone="info" title="This provider answers outside Discere">
-                <p>{packet.message}</p>
+              <Notice tone="info" title="Continue in ChatGPT">
+                <p>Copy the request into ChatGPT, then paste its reply below.</p>
               </Notice>
-              <CopyButton label={`Copy ${packet.filename}`} text={packet.text} />
-              <pre className="packet-text">{packet.text}</pre>
+              <CopyButton label="Copy the tutoring request" text={packet.text} />
+              <details className="tutor-request-preview">
+                <summary>Preview the request</summary>
+                <pre className="packet-text">{packet.text}</pre>
+              </details>
               <label className="field-label" htmlFor="tutor-import">
                 Paste the reply here
               </label>

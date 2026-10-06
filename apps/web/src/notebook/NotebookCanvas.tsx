@@ -113,6 +113,9 @@ export function NotebookCanvas({
 
   function onPointerDown(event: ReactPointerEvent<SVGSVGElement>): void {
     if (event.button !== 0 && event.pointerType === "mouse") return;
+    // Without this a press on an earlier stroke starts the browser's own drag of the drawing,
+    // shown as a no-entry cursor, and the new stroke never begins.
+    event.preventDefault();
     const point = pointOf(event);
     if (!point) return;
     event.currentTarget.setPointerCapture?.(event.pointerId);
@@ -172,7 +175,10 @@ export function NotebookCanvas({
     setStrokes([]);
   }
 
-  async function save(): Promise<void> {
+  const saveInFlight = useRef(false);
+  async function save(quiet = false): Promise<void> {
+    if (saveInFlight.current) return;
+    saveInFlight.current = true;
     setFailure(null);
     try {
       const saved = await onSave({ pageType, strokes, note });
@@ -180,11 +186,23 @@ export function NotebookCanvas({
         pageSnapshot({ pageType: saved.pageType, strokes: saved.strokes, note: saved.note }),
       );
       setSavedAt(saved.updatedAt);
-      setMessage("Workings saved on this machine.");
+      if (!quiet) setMessage("Workings saved on this machine.");
     } catch (error) {
       setFailure(errorMessage(error, "The notebook page could not be saved."));
+    } finally {
+      saveInFlight.current = false;
     }
   }
+
+  // Typed and drawn working saves itself a moment after the learner stops (audit m2): a reload
+  // or a closed bench must never lose it. The button stays for an explicit save.
+  const latestSave = useRef(save);
+  latestSave.current = save;
+  useEffect(() => {
+    if (!dirty) return;
+    const timer = window.setTimeout(() => void latestSave.current(true), 1200);
+    return () => window.clearTimeout(timer);
+  }, [dirty, pageType, strokes, note]);
 
   async function download(): Promise<void> {
     setFailure(null);
@@ -279,6 +297,7 @@ export function NotebookCanvas({
             height={NOTEBOOK_HEIGHT}
             onPointerCancel={endPointer}
             onPointerDown={onPointerDown}
+            onDragStart={(event) => event.preventDefault()}
             onPointerMove={onPointerMove}
             onPointerUp={endPointer}
             ref={svgRef}
@@ -354,7 +373,9 @@ export function NotebookCanvas({
               setNote(event.currentTarget.value);
               setMessage(null);
             }}
-            placeholder={"Set the problem out in steps.\n\nI = V / R\nI = 5 / 100"}
+            placeholder={
+              "Set the problem out one step per line.\nWrite what you know, then what you work out from it."
+            }
             value={note}
           />
           <p className="notebook-typed-count muted">

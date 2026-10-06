@@ -45,7 +45,7 @@ const stage: ExplainerStage = {
         prompt: "Which change raises the current?",
         responseType: "short_text",
         difficulty: 1,
-        hints: ["Look at the denominator."],
+        hintCount: 1,
         sourceIds: [],
         choices: [
           { id: "a", label: "Raising the supply voltage" },
@@ -95,7 +95,7 @@ describe("story stage view", () => {
     expect(screen.getByText("Charge has one route.")).toBeInTheDocument();
     // The earlier step stays readable rather than being replaced.
     expect(screen.getByText("Two points on one loop.")).toBeInTheDocument();
-    expect(onStepChange).toHaveBeenCalledWith(1);
+    expect(onStepChange).toHaveBeenCalledWith("idea", 1);
   });
 
   it("renders definitions and callouts rather than flattening them to paragraphs", async () => {

@@ -91,7 +91,9 @@ export type ExplorerActivity = Extract<
 >;
 
 /** Narrows to the activities this explorer drives, which is what `isSupportedActivity` tests. */
-export function asExplorerActivity(activity: Activity): ExplorerActivity | null {
+export function asExplorerActivity(
+  activity: import("@discere/contracts").LearnerActivity,
+): ExplorerActivity | null {
   return SUPPORTED_TYPES.has(activity.type) ? (activity as ExplorerActivity) : null;
 }
 

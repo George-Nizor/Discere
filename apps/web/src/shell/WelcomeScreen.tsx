@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { DiscereMark } from "../ui/DiscereMark.js";
+import { DiscereLogo } from "../ui/DiscereLogo.js";
+import { useExperience } from "../study/experience.js";
 
 const SEEN_KEY = "discere:welcomed";
 /** Long enough for the mark to draw and the line to land; short enough not to be in the way. */
@@ -14,16 +15,44 @@ function alreadyWelcomed(): boolean {
   }
 }
 
+/** When the opening mark first appeared, if the app was still loading at the time. */
+let shownSince: number | null = null;
+
+/**
+ * Shown while the app's first data loads. It is the welcome's own artwork, so a learner sees
+ * one opening moment that continues into the welcome, not a spinner followed by a splash. Once
+ * the learner has been welcomed this launch, it is the ordinary loading line.
+ */
+export function OpeningScreen() {
+  const first = !alreadyWelcomed();
+  useEffect(() => {
+    if (first && shownSince === null) shownSince = Date.now();
+  }, [first]);
+  if (!first) {
+    return (
+      <div className="loading-screen" role="status">
+        <p>Opening Discere…</p>
+      </div>
+    );
+  }
+  return (
+    <div className="welcome" role="status">
+      <div className="welcome-inner">
+        <DiscereLogo className="welcome-mark" size={104} />
+        <p className="welcome-wordmark">Discere</p>
+        <p className="welcome-line">Learn something real today</p>
+        <p className="sr-only">Opening Discere…</p>
+      </div>
+    </div>
+  );
+}
+
 function remember(): void {
   try {
     sessionStorage.setItem(SEEN_KEY, "1");
   } catch {
     // Nothing to do; the overlay has already dismissed itself.
   }
-}
-
-function prefersReducedMotion(): boolean {
-  return typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
 /**
@@ -35,25 +64,32 @@ function prefersReducedMotion(): boolean {
  * and the home screen is already rendered and settled underneath when it lifts.
  */
 export function WelcomeScreen() {
+  const { reduced } = useExperience();
   const [visible, setVisible] = useState(() => !alreadyWelcomed());
   const [leaving, setLeaving] = useState(false);
   const dismissed = useRef(false);
+  const leavingTimer = useRef<number | undefined>(undefined);
 
-  const dismiss = useCallback((immediate = false): void => {
-    if (dismissed.current) return;
-    dismissed.current = true;
-    remember();
-    if (immediate || prefersReducedMotion()) {
-      setVisible(false);
-      return;
-    }
-    setLeaving(true);
-    window.setTimeout(() => setVisible(false), 320);
-  }, []);
+  const dismiss = useCallback(
+    (immediate = false): void => {
+      if (dismissed.current) return;
+      dismissed.current = true;
+      remember();
+      if (immediate || reduced) {
+        setVisible(false);
+        return;
+      }
+      setLeaving(true);
+      leavingTimer.current = window.setTimeout(() => setVisible(false), 320);
+    },
+    [reduced],
+  );
 
   useEffect(() => {
     if (!visible) return undefined;
-    const hold = window.setTimeout(() => dismiss(), prefersReducedMotion() ? 0 : HOLD_MS);
+    // Time already spent on the opening screen counts towards the hold.
+    const elapsed = shownSince === null ? 0 : Date.now() - shownSince;
+    const hold = window.setTimeout(() => dismiss(), reduced ? 0 : Math.max(400, HOLD_MS - elapsed));
     const onKey = (event: KeyboardEvent): void => {
       if (event.key === "Escape") dismiss(true);
     };
@@ -62,7 +98,8 @@ export function WelcomeScreen() {
       window.clearTimeout(hold);
       window.removeEventListener("keydown", onKey);
     };
-  }, [visible, dismiss]);
+  }, [visible, dismiss, reduced]);
+  useEffect(() => () => window.clearTimeout(leavingTimer.current), []);
 
   if (!visible) return null;
 
@@ -80,7 +117,7 @@ export function WelcomeScreen() {
         type="button"
       />
       <div className="welcome-inner">
-        <DiscereMark className="welcome-mark" size={84} />
+        <DiscereLogo className="welcome-mark" size={104} />
         <p className="welcome-wordmark">Discere</p>
         <p className="welcome-line">Learn something real today</p>
       </div>

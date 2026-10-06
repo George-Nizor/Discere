@@ -13,5 +13,6 @@ export const paths = {
   review: "/review",
   reviewSession: (sessionId: string) => `/review/session/${encode(sessionId)}`,
   progress: "/progress",
+  you: "/you",
   settings: "/settings",
 };

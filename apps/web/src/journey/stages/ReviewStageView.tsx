@@ -3,7 +3,7 @@ import { ArrowRight, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { errorMessage } from "../../api/client.js";
 import { createReviewSession } from "../../api/endpoints.js";
-import { humaniseId } from "../../lib/format.js";
+import { useTutoringMode } from "../mode-context.js";
 import { Flashcard } from "../../review/Flashcard.js";
 import { Notice } from "../../ui/Feedback.js";
 
@@ -18,12 +18,23 @@ export function ReviewStageView({
   const [rated, setRated] = useState(false);
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState<string | null>(null);
+  const [index, setIndex] = useState(0);
+  const { mode } = useTutoringMode();
+  const cardIds = stage.cardIds ?? [];
 
-  async function start(): Promise<void> {
+  async function start(nextIndex = index): Promise<void> {
     setBusy(true);
     setFailure(null);
     try {
-      setSession(await createReviewSession());
+      setSession(
+        await createReviewSession({
+          lessonId: stage.lessonId ?? stage.id.replace(/:review$/, ""),
+          mode,
+          ...(cardIds[nextIndex] ? { cardId: cardIds[nextIndex] } : {}),
+        }),
+      );
+      setIndex(nextIndex);
+      setRated(false);
     } catch (error) {
       setFailure(errorMessage(error, "A review card could not be opened."));
     } finally {
@@ -32,16 +43,11 @@ export function ReviewStageView({
   }
 
   return (
-    <div className="stage-column">
+    <div className="stage-column lesson-recall">
       <h1>{stage.title}</h1>
       <p className="deck">
         {stage.reviewLabel} · {stage.itemCount} {stage.itemCount === 1 ? "card" : "cards"}
       </p>
-      <ul className="concept-chips">
-        {stage.concepts.map((concept) => (
-          <li key={concept}>{humaniseId(concept)}</li>
-        ))}
-      </ul>
 
       {!session ? (
         <button
@@ -55,19 +61,27 @@ export function ReviewStageView({
         </button>
       ) : (
         <Flashcard
-          conceptIds={session.card.conceptIds}
+          key={session.sessionId}
           front={session.card.front}
           onRated={() => setRated(true)}
-          position={1}
+          position={index + 1}
           sessionId={session.sessionId}
           total={stage.itemCount}
+          mode={session.mode}
+          initialResponse={session.response}
+          initialCorrect={session.correct}
         />
       )}
 
       {rated ? (
         <div className="button-row">
-          <button className="button button-primary" onClick={onContinue} type="button">
-            Continue
+          <button
+            className="button button-primary"
+            disabled={busy}
+            onClick={index + 1 < stage.itemCount ? () => void start(index + 1) : onContinue}
+            type="button"
+          >
+            {index + 1 < stage.itemCount ? "Next card" : "Continue"}
             <ArrowRight aria-hidden="true" size={16} strokeWidth={1.8} />
           </button>
         </div>

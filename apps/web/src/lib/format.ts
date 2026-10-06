@@ -50,6 +50,43 @@ export function formatDueDate(isoTimestamp: string): string {
 }
 
 /**
+ * When a card comes back, phrased at the precision that matters: minutes for a learning step,
+ * the day name within a week, and a date beyond that. Never a bare date for something due in
+ * a few minutes. Reads after "comes back": "in 10 minutes", "tomorrow", "on 14 October".
+ */
+export function formatReturn(isoTimestamp: string, now: number = Date.now()): string {
+  const due = new Date(isoTimestamp);
+  if (Number.isNaN(due.getTime())) return "at an unknown time";
+  const ms = due.getTime() - now;
+  if (ms <= 30_000) return "now";
+  if (ms < HOUR) {
+    const minutes = Math.max(1, Math.round(ms / MINUTE));
+    return `in ${minutes} ${minutes === 1 ? "minute" : "minutes"}`;
+  }
+  const today = new Date(now);
+  const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+  const startOfDue = new Date(due.getFullYear(), due.getMonth(), due.getDate()).getTime();
+  const dayGap = Math.round((startOfDue - startOfToday) / DAY);
+  if (dayGap === 0) {
+    const hours = Math.round(ms / HOUR);
+    return `in ${hours} ${hours === 1 ? "hour" : "hours"}`;
+  }
+  if (dayGap === 1) return "tomorrow";
+  if (dayGap < 7) return `on ${due.toLocaleDateString(undefined, { weekday: "long" })}`;
+  return `on ${due.toLocaleDateString(undefined, {
+    day: "numeric",
+    month: "long",
+    ...(due.getFullYear() === today.getFullYear() ? {} : { year: "numeric" }),
+  })}`;
+}
+
+/** The same moment as a table cell: "In 10 minutes", "Tomorrow", "14 October". */
+export function formatDueCell(isoTimestamp: string, now: number = Date.now()): string {
+  const phrase = formatReturn(isoTimestamp, now).replace(/^on /, "");
+  return phrase.charAt(0).toLocaleUpperCase() + phrase.slice(1);
+}
+
+/**
  * An FSRS learning step is measured in minutes, not days, so the shortest intervals are named
  * in the unit they were actually scheduled in rather than rounded up to an hour.
  */

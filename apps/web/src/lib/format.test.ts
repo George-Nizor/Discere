@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   countWords,
   formatCurrent,
+  formatDueCell,
+  formatReturn,
   formatInterval,
   formatSavedAt,
   humaniseId,
@@ -48,5 +50,19 @@ describe("format helpers", () => {
   it("builds initials from a learner name", () => {
     expect(initialsOf("George Nizoridis")).toBe("GN");
     expect(initialsOf("Ada")).toBe("A");
+  });
+
+  it("names a near return in minutes rather than as a date", () => {
+    const now = new Date(2026, 9, 6, 10, 0).getTime();
+    const at = (minutes: number) => new Date(now + minutes * 60_000).toISOString();
+    expect(formatReturn(at(1), now)).toBe("in 1 minute");
+    expect(formatReturn(at(6), now)).toBe("in 6 minutes");
+    expect(formatReturn(at(180), now)).toBe("in 3 hours");
+    expect(formatReturn(at(24 * 60), now)).toBe("tomorrow");
+    expect(formatReturn(new Date(2026, 9, 20, 9).toISOString(), now)).toMatch(
+      /^on 20 October$|^on October 20$/,
+    );
+    expect(formatDueCell(at(6), now)).toBe("In 6 minutes");
+    expect(formatReturn(at(0), now)).toBe("now");
   });
 });

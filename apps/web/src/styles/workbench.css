@@ -1,0 +1,545 @@
+/* Lesson toolbar and the docked workbench (working page, calculator, tutor). */
+:root {
+  --bench-width: clamp(360px, 34vw, 520px);
+}
+
+.lesson-tools {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
+}
+.lesson-tools .lesson-sound-control {
+  margin: 0;
+  display: contents;
+}
+.lesson-tool {
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.lesson-tool:hover {
+  background: #ffffff10;
+  color: var(--ink);
+}
+.lesson-tool[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  color: var(--accent-light);
+}
+.lesson-tool:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.lesson-tools-divider {
+  width: 1px;
+  height: 22px;
+  margin: 0 4px;
+  background: var(--line);
+}
+@media (max-width: 1360px) {
+  .lesson-tool-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  .lesson-tool {
+    padding: 0 9px;
+  }
+}
+
+/* Docked pane --------------------------------------------------------------------------------- */
+.workbench {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  width: var(--bench-width);
+  background: color-mix(in srgb, #141717 94%, transparent);
+  border-left: 1px solid var(--glass-line, #ffffff17);
+  box-shadow: -24px 0 60px -30px #000;
+  backdrop-filter: blur(18px);
+  animation: bench-in 0.32s var(--ease-out-expo, ease-out);
+}
+@keyframes bench-in {
+  from {
+    transform: translateX(40px);
+    opacity: 0;
+  }
+}
+.lesson-screen.has-workbench {
+  padding-right: var(--bench-width);
+}
+.lesson-screen.has-workbench .learning-player::after,
+.learning-player.has-workbench::after {
+  right: calc(var(--bench-width) + 15px);
+}
+.workbench-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 64px;
+  padding: 0 12px 0 14px;
+  border-bottom: 1px solid var(--line);
+  flex: none;
+}
+.workbench-tabs {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+.workbench-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.workbench-tab[aria-selected="true"] {
+  background: #ffffff12;
+  color: var(--ink);
+  box-shadow: inset 0 -2px 0 var(--accent);
+}
+.workbench-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+.workbench-panel {
+  padding: 16px;
+}
+.workbench-panel[hidden] {
+  display: none;
+}
+.workbench-note {
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.workbench-working .notebook-canvas,
+.workbench-working canvas,
+.workbench-working svg {
+  max-width: 100%;
+}
+.workbench-tutor {
+  padding: 0;
+  height: 100%;
+}
+.tutor-panel.tutor-panel--docked {
+  position: static;
+  width: auto;
+  height: 100%;
+  box-shadow: none;
+  animation: none;
+  background: transparent;
+}
+
+/* Calculator ---------------------------------------------------------------------------------- */
+.calc {
+  display: grid;
+  gap: 12px;
+}
+.calc-display {
+  padding: 12px 14px 10px;
+  border-radius: 16px;
+  background: #0b0d0d;
+  border: 1px solid var(--line);
+  box-shadow: inset 0 2px 12px #0008;
+}
+.calc-modes {
+  display: flex;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #4a524c;
+}
+.calc-modes .is-on {
+  color: var(--accent-light);
+}
+.calc-input {
+  width: 100%;
+  margin-top: 6px;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: 600 26px/1.3 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  text-align: right;
+  outline: none;
+}
+.calc-input::placeholder {
+  color: #3b423d;
+}
+.calc-preview {
+  display: block;
+  min-height: 1.4em;
+  text-align: right;
+  color: var(--accent-light);
+  font: 500 15px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.calc-preview.is-error {
+  color: var(--error);
+  font-family: inherit;
+  font-size: 13px;
+}
+.calc-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+.calc-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: transparent;
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.calc-chip--primary {
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  color: var(--accent-light);
+}
+.calc-chip:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.calc-keys {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 7px;
+}
+.calc-key {
+  height: 46px;
+  border: 0;
+  border-radius: 12px;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 650;
+  cursor: pointer;
+  color: var(--ink);
+  background: #262a28;
+  box-shadow: inset 0 -2px 0 #0006;
+  transition: transform 0.06s, filter 0.15s;
+}
+.calc-key:hover {
+  filter: brightness(1.2);
+}
+.calc-key:active {
+  transform: translateY(1px) scale(0.98);
+}
+.calc-key--num {
+  background: #2f3431;
+  font-size: 18px;
+}
+.calc-key--fn {
+  background: #1e2230;
+  color: #b9c6ff;
+  font-size: 14px;
+}
+.calc-key--op {
+  background: #1d2b42;
+  color: var(--accent-light);
+  font-size: 19px;
+}
+.calc-key--util {
+  background: #2b2522;
+  color: #ffc9a8;
+  font-size: 13px;
+}
+.calc-key--util.is-active {
+  background: #ffb020;
+  color: #2b1a00;
+}
+.calc-key--eq {
+  background: linear-gradient(180deg, #7cb2ff, #4a8cf0);
+  color: var(--accent-ink);
+  font-size: 20px;
+}
+.calc-history {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+  max-height: 180px;
+  overflow: auto;
+}
+.calc-history button {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: #ffffff08;
+  color: var(--muted);
+  font: 13px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+  text-align: left;
+  cursor: pointer;
+}
+.calc-history strong {
+  color: var(--ink);
+  white-space: nowrap;
+}
+.calc-hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+/* Phones and narrow windows: the workbench is a bottom sheet over the lower part of the lesson. */
+@media (max-width: 900px) {
+  :root {
+    --bench-width: 100vw;
+  }
+  .workbench {
+    top: auto;
+    height: min(72vh, 640px);
+    border-left: 0;
+    border-top: 1px solid var(--line);
+    border-radius: 20px 20px 0 0;
+    animation-name: sheet-in;
+  }
+  @keyframes sheet-in {
+    from {
+      transform: translateY(40px);
+      opacity: 0;
+    }
+  }
+  .lesson-screen.has-workbench {
+    padding-right: 0;
+    padding-bottom: min(72vh, 640px);
+  }
+  .workbench-head {
+    height: 52px;
+  }
+  .workbench-tab {
+    padding: 7px 10px;
+    font-size: 13px;
+  }
+  .calc-key {
+    height: 42px;
+  }
+  .lesson-tools {
+    gap: 0;
+  }
+  .lesson-tool {
+    padding: 0 7px;
+  }
+  .lesson-tools-divider {
+    display: none;
+  }
+}
+html[data-motion="reduced"] .workbench {
+  animation: none;
+}
+
+/* In the pane the sketch and typed halves stack, and the sketch gets real drawing room. */
+.workbench-working .notebook-split {
+  grid-template-columns: 1fr;
+}
+.workbench-working .notebook-heading h2 {
+  font-size: 18px;
+}
+.workbench-working .notebook-toolbar {
+  gap: 8px 14px;
+}
+/* With the pane open the header is narrow: tools keep their icons and lose their words. */
+.has-workbench .lesson-tool-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.has-workbench .lesson-tool {
+  padding: 0 8px;
+}
+.learning-player.has-workbench .stage-header {
+  grid-template-columns: minmax(120px, 1fr) minmax(200px, 420px) auto;
+}
+
+@media (max-width: 700px) {
+  /* Phone header: exit, progress and XP on the first row, the five tools across the second. */
+  .learning-player .stage-header {
+    height: auto;
+    grid-template-columns: 40px 1fr;
+    grid-template-rows: 52px 44px;
+    row-gap: 0;
+    padding: 0 12px;
+  }
+  .learning-player .stage-header-left {
+    display: none;
+  }
+  .learning-player .stage-exit {
+    position: static;
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .learning-player .stage-progress {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .lesson-tools {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-self: stretch;
+    justify-content: space-between;
+    border-top: 1px solid var(--line);
+  }
+  .lesson-tool {
+    height: 40px;
+  }
+  .learning-player::after {
+    inset: 112px 8px 8px;
+  }
+  .workbench {
+    height: 52vh;
+  }
+  .lesson-screen.has-workbench {
+    padding-bottom: 52vh;
+  }
+  .calc-key {
+    height: 36px;
+    font-size: 14px;
+  }
+  .calc-keys {
+    gap: 5px;
+  }
+  .calc-input {
+    font-size: 21px;
+  }
+  .calc-display {
+    padding: 8px 12px 6px;
+  }
+  .calc-hint {
+    display: none;
+  }
+}
+
+/* The notebook page is paper: dark ink on white, whatever the app theme. */
+.notebook-typed-field {
+  color: #1d2421;
+  caret-color: #14843c;
+}
+.notebook-typed-field::placeholder {
+  color: #8a948e;
+}
+
+/* Phone sheet (audit M8): the question is repeated at the top of the sheet, and the sheet folds
+   down to its tabs so the lesson behind it can be read in full. Wider screens dock the bench
+   beside the lesson, where neither is needed. */
+.workbench-fold,
+.workbench-question {
+  display: none;
+}
+@media (max-width: 900px) {
+  .workbench-fold {
+    display: inline-flex;
+  }
+  .workbench-question {
+    display: block;
+    margin: 0;
+    padding: 8px 16px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .workbench.workbench--folded {
+    height: auto;
+  }
+  .lesson-screen.has-workbench:has(.workbench--folded) {
+    padding-bottom: 96px;
+  }
+}
+@media (max-width: 700px) {
+  .workbench {
+    height: 46vh;
+  }
+  .lesson-screen.has-workbench {
+    padding-bottom: 46vh;
+  }
+  /* The lesson's name stays in the header on a phone; the breadcrumb gives way instead. */
+  .learning-player .stage-header {
+    grid-template-rows: 44px 22px 44px;
+  }
+  .learning-player .stage-header-left {
+    display: block;
+    grid-column: 2;
+    grid-row: 1;
+    align-self: center;
+    min-width: 0;
+    padding-left: 0;
+  }
+  .learning-player .stage-header-left .stage-breadcrumb {
+    display: none;
+  }
+  .learning-player .stage-lesson {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0;
+  }
+  .learning-player .stage-progress {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+  .lesson-tools {
+    grid-row: 3;
+  }
+  .learning-player::after {
+    inset: 118px 8px 8px;
+  }
+}
+
+/* The sketch pad is a drawing surface, never something to select or drag. */
+.notebook-canvas,
+.notebook-canvas * {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
+}

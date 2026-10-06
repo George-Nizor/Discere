@@ -1,0 +1,282 @@
+/* Navigation choreography. Keep the frame still; move only the content that changed. */
+:root {
+  --motion-page: 480ms;
+  --ease-travel: cubic-bezier(0.22, 1, 0.36, 1);
+}
+::view-transition {
+  pointer-events: none;
+}
+::view-transition-group(*) {
+  animation-timing-function: var(--ease-travel);
+  animation-duration: var(--motion-page);
+}
+::view-transition-old(root) {
+  animation: none;
+  display: none;
+}
+::view-transition-new(root) {
+  animation: none;
+}
+.app-body[data-route-transition="true"] {
+  view-transition-name: page-content;
+}
+.site-nav {
+  view-transition-name: site-navigation;
+}
+::view-transition-group(site-navigation) {
+  animation: none;
+}
+::view-transition-old(site-navigation) {
+  display: none;
+}
+::view-transition-new(site-navigation) {
+  animation: none;
+}
+::view-transition-group(page-content),
+::view-transition-group(course-panel),
+::view-transition-group(activity-period),
+::view-transition-group(library-results) {
+  animation: none;
+}
+::view-transition-old(page-content),
+::view-transition-old(course-panel),
+::view-transition-old(activity-period),
+::view-transition-old(library-results) {
+  height: auto;
+  animation: navigation-leave 150ms var(--ease-travel) both;
+}
+::view-transition-new(page-content),
+::view-transition-new(course-panel),
+::view-transition-new(activity-period),
+::view-transition-new(library-results) {
+  height: auto;
+  animation: navigation-arrive var(--motion-page) var(--ease-travel) 35ms both;
+}
+@keyframes navigation-leave {
+  to {
+    opacity: 0;
+    translate: 0 -7px;
+  }
+}
+@keyframes navigation-arrive {
+  from {
+    opacity: 0;
+    translate: 0 18px;
+  }
+}
+:root:is([data-navigation="course"], [data-navigation="period"], [data-navigation="filter"])
+  .app-body {
+  view-transition-name: none;
+}
+:root[data-navigation="course"] .app-body[data-route-transition="true"] .home-course-panel {
+  view-transition-name: course-panel;
+}
+:root[data-navigation="period"] .app-body[data-route-transition="true"] .you-statistics {
+  view-transition-name: activity-period;
+}
+:root[data-navigation="filter"]
+  .app-body[data-route-transition="true"]
+  :is(.learning-paths, .library-empty) {
+  view-transition-name: library-results;
+}
+/* Shared geometry lets the underline travel between tabs instead of blinking between them. */
+.site-nav .nav-rail-link {
+  position: relative;
+  border-bottom-color: transparent;
+}
+.site-nav .nav-rail-link.active {
+  border-bottom-color: transparent;
+}
+.nav-active-marker {
+  position: absolute;
+  bottom: -1px;
+  height: 3px;
+  inset-inline: 0;
+  border-radius: 3px;
+  background: var(--accent);
+  box-shadow: 0 0 13px #38ce651c;
+  view-transition-name: navigation-marker;
+}
+::view-transition-old(navigation-marker) {
+  display: none;
+}
+::view-transition-new(navigation-marker) {
+  animation: none;
+}
+.site-nav :is(.nav-rail-link, .site-settings, .site-review, .site-stat-pill) {
+  transition:
+    color 180ms ease,
+    background-color 180ms ease;
+}
+.site-nav :is(.nav-rail-link, .site-settings, .site-review) > svg {
+  transition: transform 360ms var(--ease-travel);
+}
+.site-nav .nav-rail-link:is(:hover, :focus-visible) > svg {
+  transform: translateY(-2px);
+}
+.site-settings:is(:hover, :focus-visible) > svg {
+  transform: rotate(35deg);
+}
+.site-review:is(:hover, :focus-visible) > svg {
+  transform: translateY(-2px) rotate(-6deg);
+}
+.navigation-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 70;
+  height: 2px;
+  background: var(--accent);
+  opacity: 0;
+  transform: scaleX(0);
+  transform-origin: left;
+  pointer-events: none;
+}
+.navigation-progress[data-pending="true"] {
+  opacity: 1;
+  transform: scaleX(0.86);
+  transition:
+    transform 3s var(--ease-travel) 180ms,
+    opacity 180ms ease 180ms;
+}
+/* Content settles in small groups; the artwork has a little more weight than the copy. */
+@keyframes content-settle {
+  from {
+    opacity: 0;
+    translate: 0 12px;
+  }
+}
+@keyframes art-settle {
+  0% {
+    opacity: 0;
+    translate: 0 18px;
+    scale: 0.93;
+    rotate: -4deg;
+  }
+  75% {
+    opacity: 1;
+    translate: 0 -2px;
+    scale: 1.015;
+    rotate: 1deg;
+  }
+  100% {
+    opacity: 1;
+    translate: 0 0;
+    scale: 1;
+    rotate: 0deg;
+  }
+}
+.home-welcome,
+.library-head,
+.you-heading {
+  animation: content-settle 500ms var(--ease-travel) both;
+}
+.home-practice,
+.home-discover,
+.you-weekly,
+.settings-section {
+  animation: content-settle 560ms var(--ease-travel) 60ms both;
+}
+.home-course-art,
+.course-overview-art {
+  animation: art-settle 720ms var(--ease-travel) both;
+}
+.home-course-intro,
+.home-lesson-preview,
+.home-resume {
+  animation: content-settle 540ms var(--ease-travel) 70ms both;
+}
+.home-lesson-preview {
+  animation-delay: 110ms;
+}
+.home-resume {
+  animation-delay: 150ms;
+}
+.home-course-switcher button img {
+  transition:
+    opacity 240ms ease,
+    filter 240ms ease,
+    transform 420ms var(--ease-travel);
+}
+.home-course-switcher button:is(:hover, :focus-visible) img {
+  transform: translateY(-3px) rotate(-5deg);
+}
+.home-course-switcher button[aria-pressed="true"] img {
+  transform: translateY(-2px) scale(1.09);
+}
+.home-suggestion {
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    translate 300ms var(--ease-travel);
+}
+.home-suggestion:is(:hover, :focus-visible) {
+  translate: 0 -3px;
+}
+.home-suggestion img,
+.course-card-cover {
+  transition: transform 460ms var(--ease-travel);
+}
+.home-suggestion:is(:hover, :focus-visible) img {
+  transform: rotate(-4deg) scale(1.06);
+}
+.course-card:is(:hover, :focus-visible) .course-card-cover {
+  transform: translateY(-4px) rotate(-4deg) scale(1.05);
+}
+.learning-path-head {
+  animation: content-settle 520ms var(--ease-travel) both;
+}
+.learning-path-courses .rise-in {
+  animation-duration: 560ms;
+  animation-delay: calc(min(var(--enter-index, 0), 5) * 45ms);
+}
+.you-statistics {
+  animation: content-settle 460ms var(--ease-travel) both;
+}
+.you-periods button,
+.library-subjects button {
+  transition:
+    color 180ms ease,
+    background-color 220ms ease,
+    box-shadow 220ms ease;
+}
+.roadmap-stop .lesson-pedestal {
+  transition:
+    transform 420ms var(--ease-travel),
+    filter 420ms ease;
+}
+.roadmap-stop:is(:hover, :focus-visible) .lesson-pedestal {
+  transform: translateY(-4px);
+}
+.roadmap-launch-copy {
+  animation: content-settle 340ms var(--ease-travel) both;
+}
+:root[data-view-transitions="fallback"] .home-course-panel {
+  animation: content-settle 460ms var(--ease-travel) both;
+}
+@media (max-width: 700px) {
+  .nav-active-marker {
+    bottom: 0;
+    height: 3px;
+    inset-inline: 10px;
+  }
+}
+:root[data-motion="reduced"]::view-transition-group(*),
+:root[data-motion="reduced"]::view-transition-old(*),
+:root[data-motion="reduced"]::view-transition-new(*) {
+  animation: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
+/* Filter results enter locally, so a native snapshot can never replay over a newer keystroke. */
+.learning-paths,
+.library-empty {
+  animation: content-settle 360ms var(--ease-travel) both;
+}

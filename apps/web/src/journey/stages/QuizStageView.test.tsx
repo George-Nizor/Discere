@@ -38,6 +38,7 @@ describe("quiz stage", () => {
             correct: attempts > 1,
             feedback: attempts > 1 ? "Your value and unit are correct." : "Check the division.",
             xpAwarded: attempts > 1 ? 12 : 0,
+            xpGained: attempts > 1 ? 12 : 0,
             mastery: attempts > 1 ? 0.6 : 0.1,
             independent: false,
           },

@@ -1,5 +1,5 @@
-import type { DiagramChoiceActivity } from "@discere/contracts";
-import { evaluateDiagramChoice } from "@discere/activity-engine";
+import type { LearnerActivity } from "@discere/contracts";
+import { useActivityAssessment } from "./use-activity-assessment.js";
 import { useState } from "react";
 import { Notice } from "../../ui/Feedback.js";
 import { CircuitVisual } from "./CircuitVisual.js";
@@ -17,17 +17,17 @@ export function DiagramChoice({
   courseId,
   onAnswered,
 }: {
-  activity: DiagramChoiceActivity;
+  activity: Extract<LearnerActivity, { type: "diagram_choice" }>;
   courseId: string;
   onAnswered?: (correct: boolean) => void;
 }) {
   const [chosenId, setChosenId] = useState<string | null>(null);
-  const outcome = chosenId ? evaluateDiagramChoice(activity, chosenId) : null;
+  const { outcome, busy, error, check } = useActivityAssessment(activity.id, onAnswered);
 
   function choose(targetId: string): void {
-    if (outcome?.correct) return;
+    if (busy || outcome?.correct) return;
     setChosenId(targetId);
-    onAnswered?.(evaluateDiagramChoice(activity, targetId).correct);
+    void check(targetId);
   }
 
   return (
@@ -49,6 +49,7 @@ export function DiagramChoice({
               aria-label={target.label}
               aria-pressed={picked}
               className={`diagram-target${state}`}
+              disabled={busy || outcome?.correct === true}
               key={target.id}
               onClick={() => choose(target.id)}
               style={{
@@ -64,6 +65,7 @@ export function DiagramChoice({
           );
         })}
       </div>
+      {error ? <p role="alert">{error}</p> : null}
       {outcome ? (
         <Notice
           live

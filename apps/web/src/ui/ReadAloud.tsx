@@ -1,4 +1,5 @@
-import { Volume2 } from "lucide-react";
+import { emitMascot } from "../mascot/bus.js";
+import { AudioLines } from "../brand/icon-set.js";
 import { useEffect, useState } from "react";
 
 /**
@@ -47,6 +48,9 @@ export function useReadAloud(text: string): {
     setSpeaking(true);
   }
 
+  useEffect(() => {
+    emitMascot({ type: "listening", on: speaking });
+  }, [speaking]);
   return { supported, speaking, toggle };
 }
 
@@ -62,9 +66,17 @@ export function ReadAloudButton({
   const { supported, speaking, toggle } = useReadAloud(text);
   if (!supported) return null;
   return (
-    <button className={className} onClick={toggle} type="button">
-      <Volume2 aria-hidden="true" size={16} strokeWidth={1.8} />
+    <button
+      className={className}
+      onClick={toggle}
+      type="button"
+      aria-pressed={speaking}
+      title={speaking ? "Stop reading" : label}
+    >
+      <AudioLines aria-hidden="true" size={22} />
+      <span className="lesson-tool-label">
       {speaking ? "Stop reading" : label}
+      </span>
     </button>
   );
 }

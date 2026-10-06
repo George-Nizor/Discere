@@ -1,0 +1,688 @@
+/* Economics explorer: a dark market terminal with the course's gold accent. */
+.economics-diagram,
+.economics-check {
+  --econ-gold: #f5c542;
+  --econ-blue: #5ec8ff;
+  --econ-rose: #ff5c7a;
+  --econ-violet: #b69cff;
+  --econ-green: #5fe0a0;
+  --econ-orange: #ff9f43;
+  --econ-teal: #3fd6c8;
+  --econ-pink: #ff7ac6;
+  --econ-text: #ece9df;
+  --econ-muted: #8d93a1;
+}
+.economics-diagram {
+  display: grid;
+  gap: 12px;
+}
+.econ-cases,
+.econ-fix,
+.econ-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+.economics-diagram .econ-cases button,
+.economics-diagram .econ-fix button,
+.economics-diagram .econ-controls button {
+  font: inherit;
+  font-size: 13px;
+  min-height: 42px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 4%);
+  border: 1px solid rgb(255 255 255 / 12%);
+  color: var(--econ-text);
+  cursor: pointer;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+.econ-cases button:hover,
+.econ-fix button:hover,
+.econ-controls button:hover {
+  border-color: rgb(245 197 66 / 55%);
+}
+.economics-diagram .econ-cases button[aria-pressed="true"],
+.economics-diagram .econ-fix button[aria-pressed="true"] {
+  color: #1b1607;
+  background: linear-gradient(180deg, #ffd96a, #e9b42c);
+  border-color: #ffd96a;
+  box-shadow:
+    0 0 0 3px rgb(245 197 66 / 18%),
+    0 6px 18px rgb(245 197 66 / 22%);
+}
+.econ-fix button {
+  font-size: 12px;
+  min-height: 38px;
+}
+.economics-diagram .econ-controls button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border-color: transparent;
+  white-space: nowrap;
+}
+.economics-diagram .econ-controls svg {
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
+.econ-cases button:focus-visible,
+.econ-fix button:focus-visible,
+.econ-controls button:focus-visible,
+.econ-description summary:focus-visible,
+.econ-slider input:focus-visible {
+  outline: 2px solid var(--econ-gold);
+  outline-offset: 3px;
+}
+.econ-stage {
+  margin: 0;
+  border-radius: 20px;
+  box-shadow:
+    0 0 0 1px rgb(255 255 255 / 7%),
+    0 18px 50px rgb(0 0 0 / 45%),
+    0 0 60px rgb(245 197 66 / 6%);
+  overflow: hidden;
+  background: #0e1117;
+}
+.economics-diagram svg.econ-drawing,
+.economics-check svg.econ-drawing {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 440px;
+  overflow: hidden;
+  font-family: var(--font-sans);
+}
+
+/* Axes and type */
+.econ-grid {
+  stroke: rgb(255 255 255 / 6%);
+  stroke-width: 1;
+}
+.econ-axis {
+  stroke: rgb(255 255 255 / 38%);
+  stroke-width: 1.5;
+  fill: none;
+}
+:is(.economics-diagram, .economics-check) .econ-tick {
+  fill: var(--econ-muted);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+:is(.economics-diagram, .economics-check) .econ-axis-label {
+  fill: #c9ccd4;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+:is(.economics-diagram, .economics-check) .econ-tag {
+  font-size: 15px;
+  font-weight: 600;
+  fill: var(--econ-text);
+  paint-order: stroke;
+  stroke: #10131a;
+  stroke-width: 4px;
+  stroke-linejoin: round;
+  font-variant-numeric: tabular-nums;
+}
+:is(.economics-diagram, .economics-check) .econ-tag-blue {
+  fill: var(--econ-blue);
+}
+:is(.economics-diagram, .economics-check) .econ-tag-gold {
+  fill: var(--econ-gold);
+}
+:is(.economics-diagram, .economics-check) .econ-tag-rose {
+  fill: var(--econ-rose);
+}
+:is(.economics-diagram, .economics-check) .econ-tag-violet {
+  fill: var(--econ-violet);
+}
+:is(.economics-diagram, .economics-check) .econ-tag-green {
+  fill: var(--econ-green);
+}
+:is(.economics-diagram, .economics-check) .econ-tag-orange {
+  fill: var(--econ-orange);
+}
+:is(.economics-diagram, .economics-check) .econ-tag-teal {
+  fill: var(--econ-teal);
+}
+:is(.economics-diagram, .economics-check) .econ-tag-pink {
+  fill: var(--econ-pink);
+}
+:is(.economics-diagram, .economics-check) .econ-tag-muted {
+  fill: var(--econ-muted);
+}
+:is(.economics-diagram, .economics-check) .econ-tag-light {
+  fill: #fff7dc;
+}
+
+/* Curves */
+.econ-curve {
+  fill: none;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  animation: econ-draw 900ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  stroke-dasharray: 1600;
+}
+.econ-demand {
+  stroke: var(--econ-blue);
+  filter: drop-shadow(0 0 6px rgb(94 200 255 / 45%));
+}
+.econ-supply {
+  stroke: var(--econ-gold);
+  filter: drop-shadow(0 0 6px rgb(245 197 66 / 45%));
+}
+.econ-dashed {
+  stroke-dasharray: 10 8;
+  stroke-width: 3;
+  opacity: 0.85;
+  animation: econ-fade 700ms ease both;
+}
+.econ-social {
+  stroke: var(--econ-rose);
+  stroke-dasharray: 10 8;
+  stroke-width: 3;
+  animation: econ-fade 700ms ease both;
+}
+.econ-mr {
+  stroke: var(--econ-pink);
+  stroke-dasharray: 9 7;
+  animation: econ-fade 700ms ease both;
+}
+.econ-mc {
+  stroke: var(--econ-orange);
+  filter: drop-shadow(0 0 6px rgb(255 159 67 / 40%));
+}
+.econ-atc {
+  stroke: var(--econ-teal);
+  filter: drop-shadow(0 0 6px rgb(63 214 200 / 40%));
+}
+.econ-avc {
+  stroke: rgb(63 214 200 / 45%);
+  stroke-width: 2.5;
+  stroke-dasharray: 6 6;
+  animation: econ-fade 700ms ease both;
+}
+.econ-frontier {
+  stroke: var(--econ-gold);
+  stroke-width: 4.5;
+}
+.econ-step {
+  stroke-width: 2.5;
+  opacity: 0.8;
+}
+.econ-ghost path {
+  fill: none;
+  stroke: rgb(255 255 255 / 30%);
+  stroke-width: 2.5;
+  stroke-dasharray: 5 7;
+}
+.econ-guide {
+  fill: none;
+  stroke: rgb(255 255 255 / 35%);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 5;
+}
+
+/* Areas */
+.econ-fill {
+  animation: econ-fade 650ms ease both;
+}
+.econ-fill-dwl {
+  stroke: var(--econ-rose);
+  stroke-width: 1.5;
+}
+.econ-fill-rev {
+  stroke: rgb(182 156 255 / 70%);
+  stroke-width: 1.5;
+}
+.econ-fill-kept {
+  stroke: rgb(95 224 160 / 50%);
+}
+.econ-fill-profit {
+  fill: rgb(95 224 160 / 26%);
+  stroke: rgb(95 224 160 / 70%);
+  stroke-width: 1.5;
+}
+.econ-fill-loss {
+  fill: rgb(255 92 122 / 22%);
+  stroke: rgb(255 92 122 / 70%);
+  stroke-width: 1.5;
+}
+.econ-attainable {
+  opacity: 0.55;
+}
+.econ-live {
+  animation: none;
+}
+.econ-ghost-rect {
+  fill: none;
+  stroke: rgb(255 255 255 / 28%);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 5;
+}
+.econ-ghost-rect-b {
+  stroke: rgb(245 197 66 / 40%);
+}
+.econ-strip-lost {
+  fill: rgb(255 92 122 / 40%);
+  animation: econ-fade 500ms ease both;
+}
+.econ-strip-gained {
+  fill: rgb(95 224 160 / 40%);
+  animation: econ-fade 500ms ease both;
+}
+
+/* Points, probes and policy lines */
+.econ-point {
+  fill: #fff6d5;
+  stroke: var(--econ-gold);
+  stroke-width: 3;
+}
+.econ-point-social {
+  fill: #ffe0e6;
+  stroke: var(--econ-rose);
+}
+.econ-point-marker {
+  fill: #12161e;
+  stroke: #fff6d5;
+  stroke-width: 3.5;
+}
+.econ-point-live {
+  fill: var(--econ-gold);
+  stroke: #fff6d5;
+}
+.econ-node {
+  fill: #12161e;
+  stroke: var(--econ-gold);
+  stroke-width: 2.5;
+}
+.econ-probe path {
+  stroke: rgb(255 255 255 / 55%);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 4;
+}
+.econ-probe circle {
+  stroke: #10131a;
+  stroke-width: 2;
+}
+.econ-probe-d {
+  fill: var(--econ-blue);
+}
+.econ-probe-s {
+  fill: var(--econ-gold);
+}
+.econ-probe-mc {
+  fill: var(--econ-orange);
+}
+.econ-probe-atc {
+  fill: var(--econ-teal);
+}
+.econ-probe-mr {
+  fill: var(--econ-pink);
+}
+.econ-control path,
+.econ-cap {
+  stroke: var(--econ-rose);
+  stroke-width: 2.5;
+  fill: none;
+}
+.econ-marker path {
+  stroke: rgb(255 255 255 / 55%);
+  stroke-width: 2;
+  stroke-dasharray: 6 5;
+}
+.econ-gap path {
+  stroke-width: 3;
+  stroke-dasharray: none;
+}
+.econ-gap-short path {
+  stroke: var(--econ-rose);
+}
+.econ-gap-excess path {
+  stroke: var(--econ-violet);
+}
+.econ-wedge {
+  stroke: var(--econ-gold);
+  stroke-width: 2.5;
+  fill: none;
+}
+.econ-price-line path {
+  stroke: var(--econ-green);
+  stroke-width: 2.5;
+  stroke-dasharray: 8 6;
+}
+.econ-trade-line path {
+  stroke: var(--econ-green);
+  stroke-width: 3;
+  stroke-dasharray: 10 7;
+  fill: none;
+  animation: econ-draw 1100ms ease both;
+}
+.econ-producer-area {
+  opacity: 0.16;
+}
+.econ-producer-blue .econ-curve {
+  stroke: var(--econ-blue);
+}
+.econ-producer-blue .econ-producer-area {
+  fill: var(--econ-blue);
+}
+.econ-producer-gold .econ-curve {
+  stroke: var(--econ-gold);
+}
+.econ-producer-gold .econ-producer-area {
+  fill: var(--econ-gold);
+}
+.econ-producer-blue .econ-legend-dot {
+  fill: var(--econ-blue);
+}
+.econ-producer-gold .econ-legend-dot {
+  fill: var(--econ-gold);
+}
+.econ-producer-blue .econ-point {
+  stroke: var(--econ-blue);
+}
+.econ-slope path {
+  fill: none;
+  stroke: var(--econ-green);
+  stroke-width: 2;
+  stroke-dasharray: 5 4;
+}
+.econ-hit {
+  fill: transparent;
+  cursor: ns-resize;
+  touch-action: none;
+}
+.econ-kind-costs .econ-hit,
+.econ-kind-monopoly .econ-hit {
+  cursor: ew-resize;
+}
+
+/* Marginal bars */
+.econ-bar-benefit {
+  fill: var(--econ-blue);
+  opacity: 0.85;
+}
+.econ-bar-cost {
+  fill: var(--econ-gold);
+  opacity: 0.85;
+}
+.econ-bar {
+  transform-box: fill-box;
+  transform-origin: bottom;
+  animation: econ-rise 700ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.econ-net-gain {
+  fill: rgb(95 224 160 / 28%);
+  stroke: rgb(95 224 160 / 70%);
+}
+.econ-net-loss {
+  fill: rgb(255 92 122 / 26%);
+  stroke: rgb(255 92 122 / 70%);
+}
+.econ-best {
+  stroke: var(--econ-green);
+  stroke-width: 3;
+}
+
+/* Payoff matrix */
+:is(.economics-diagram, .economics-check) .econ-strategy {
+  fill: #dfe3ea;
+  font-size: 16px;
+  font-weight: 600;
+}
+.econ-cell rect {
+  fill: rgb(255 255 255 / 4%);
+  stroke: rgb(255 255 255 / 14%);
+  stroke-width: 1.5;
+  transition:
+    fill 220ms ease,
+    opacity 220ms ease;
+}
+.econ-cell-lit rect {
+  fill: rgb(245 197 66 / 10%);
+  stroke: rgb(245 197 66 / 55%);
+}
+.econ-cell-dim {
+  opacity: 0.38;
+}
+.econ-cell-split {
+  stroke: rgb(255 255 255 / 12%);
+  stroke-width: 1.5;
+}
+:is(.economics-diagram, .economics-check) .econ-payoff {
+  font-size: 30px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+:is(.economics-diagram, .economics-check) .econ-payoff-row {
+  fill: var(--econ-blue);
+}
+:is(.economics-diagram, .economics-check) .econ-payoff-col {
+  fill: var(--econ-gold);
+}
+:is(.economics-diagram, .economics-check) .econ-payoff-focus {
+  font-size: 36px;
+}
+.econ-cell-nash rect {
+  fill: rgb(245 197 66 / 14%);
+}
+.econ-nash-ring {
+  fill: none !important;
+  stroke: var(--econ-gold) !important;
+  stroke-width: 3.5 !important;
+  animation: econ-pulse 1800ms ease-in-out 900ms infinite;
+}
+.econ-br {
+  stroke: var(--econ-gold);
+  stroke-width: 3;
+  fill: none;
+  stroke-dasharray: 30;
+  animation: econ-sweep 600ms ease both;
+}
+.econ-br-row {
+  stroke: var(--econ-blue);
+}
+
+/* Repeated game */
+.econ-lane {
+  stroke: rgb(255 255 255 / 12%);
+  stroke-width: 2;
+}
+.econ-chip-c {
+  fill: #2f9d6b;
+  stroke: var(--econ-green);
+  stroke-width: 2;
+}
+.econ-chip-d {
+  fill: #a8344b;
+  stroke: var(--econ-rose);
+  stroke-width: 2;
+}
+.econ-chip-empty {
+  fill: rgb(255 255 255 / 3%);
+  stroke: rgb(255 255 255 / 14%);
+  stroke-dasharray: 4 4;
+}
+.econ-round-on circle {
+  animation: econ-pop 380ms cubic-bezier(0.2, 1.4, 0.4, 1) both;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+:is(.economics-diagram, .economics-check) .econ-chip-text {
+  fill: #fff;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+/* Controls, givens and results */
+.econ-playback {
+  display: grid;
+  gap: 8px;
+}
+.econ-slider {
+  display: grid;
+  gap: 6px;
+  max-width: 460px;
+  width: 100%;
+  margin: 0 auto;
+  color: var(--econ-text);
+  font-size: 14px;
+}
+.econ-slider span {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.econ-slider output {
+  color: var(--econ-gold);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.econ-slider input {
+  width: 100%;
+  accent-color: var(--econ-gold);
+  min-height: 28px;
+}
+.econ-description {
+  color: var(--econ-text);
+  font-size: 14px;
+  max-width: 560px;
+  width: 100%;
+  margin: 0 auto;
+}
+.econ-description summary {
+  cursor: pointer;
+  color: var(--econ-muted);
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+}
+.econ-givens {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 4px;
+  font-variant-numeric: tabular-nums;
+}
+.economics-check .econ-givens {
+  color: var(--econ-text);
+  font-size: 14px;
+  max-width: 560px;
+  margin: 10px auto 0;
+}
+.econ-measures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+  margin: 0;
+  animation: econ-fade 500ms ease both;
+}
+.econ-measures div {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgb(245 197 66 / 10%), rgb(245 197 66 / 3%));
+  border: 1px solid rgb(245 197 66 / 25%);
+}
+.econ-measures dt {
+  color: var(--econ-muted);
+  font-size: 12px;
+  letter-spacing: 0.03em;
+}
+.econ-measures dd {
+  margin: 2px 0 0;
+  color: #fff3c4;
+  font-size: 17px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.economics-check .econ-drawing {
+  border-radius: 18px;
+  max-height: 300px;
+  margin: auto;
+}
+
+@keyframes econ-draw {
+  from {
+    stroke-dashoffset: 1600;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes econ-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes econ-rise {
+  from {
+    transform: scaleY(0);
+  }
+}
+@keyframes econ-sweep {
+  from {
+    stroke-dashoffset: 30;
+    opacity: 0;
+  }
+  to {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+@keyframes econ-pulse {
+  50% {
+    stroke-opacity: 0.35;
+  }
+}
+@keyframes econ-pop {
+  from {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .economics-diagram .econ-cases button {
+    font-size: 12px;
+    padding: 7px 11px;
+  }
+  .economics-diagram svg.econ-drawing {
+    max-height: 300px;
+  }
+  :is(.economics-diagram, .economics-check) .econ-tag {
+    font-size: 20px;
+  }
+  :is(.economics-diagram, .economics-check) .econ-tick {
+    font-size: 18px;
+  }
+  :is(.economics-diagram, .economics-check) .econ-axis-label {
+    font-size: 16px;
+  }
+  :is(.economics-diagram, .economics-check) .econ-strategy {
+    font-size: 21px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .economics-diagram *,
+  .economics-check * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+:root[data-motion="reduced"] .economics-diagram *,
+:root[data-motion="reduced"] .economics-check * {
+  animation: none !important;
+  transition: none !important;
+}

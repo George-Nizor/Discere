@@ -10,6 +10,7 @@ import type {
   ReviewHomeResponse,
   RomanReferenceProgress,
   TutorStatus,
+  StudyStatisticsPeriod,
 } from "@discere/contracts";
 import { type UseQueryResult, useQuery } from "@tanstack/react-query";
 import {
@@ -24,6 +25,9 @@ import {
   getReviewHome,
   getRomanReferenceProgress,
   getTutorStatus,
+  getStudy,
+  getStudyStatistics,
+  getStudyPreferences,
 } from "./endpoints.js";
 
 export const queryKeys = {
@@ -43,7 +47,36 @@ export const queryKeys = {
   capabilities: ["capabilities"] as const,
   tutorStatus: ["tutor-status"] as const,
   activity: ["progress-activity"] as const,
+  study: ["study"] as const,
+  studyStatistics: (period: StudyStatisticsPeriod) => ["study-statistics", period] as const,
+  studyPreferences: ["study-preferences"] as const,
+  lessonResult: (courseId: string, lessonId: string) =>
+    ["lesson-result", courseId, lessonId] as const,
 };
+
+export function useStudy() {
+  return useQuery({
+    queryKey: queryKeys.study,
+    queryFn: getStudy,
+    refetchInterval: 60_000,
+    refetchOnWindowFocus: true,
+  });
+}
+export function useStudyStatistics(period: StudyStatisticsPeriod) {
+  return useQuery({
+    queryKey: queryKeys.studyStatistics(period),
+    queryFn: () => getStudyStatistics(period),
+    staleTime: 0,
+    refetchOnWindowFocus: true,
+  });
+}
+export function useStudyPreferences() {
+  return useQuery({
+    queryKey: queryKeys.studyPreferences,
+    queryFn: getStudyPreferences,
+    staleTime: 60_000,
+  });
+}
 
 export function useHome(): UseQueryResult<HomeResponse> {
   return useQuery({ queryKey: queryKeys.home, queryFn: getHome });

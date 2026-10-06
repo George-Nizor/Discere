@@ -87,7 +87,7 @@ export const numericQuestion: LearnerQuestion = {
   prompt: "A 5 V battery is connected across a 100 Ω resistor. Calculate the current in amperes.",
   responseType: "numeric",
   difficulty: 1,
-  hints: ["Write Ohm's law as I = V / R.", "Substitute the values."],
+  hintCount: 2,
   sourceIds: [],
 };
 

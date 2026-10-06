@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { renderWithProviders } from "../test/harness.js";
 import { RichText, splitMath, splitParagraphs } from "./RichText.js";
@@ -22,11 +22,11 @@ describe("rich learning text", () => {
     expect(splitParagraphs("One.\n\n\nTwo.\n\n  ")).toEqual(["One.", "Two."]);
   });
 
-  it("keeps the equation source available to assistive technology", () => {
+  it("keeps the equation source available to assistive technology", async () => {
     renderWithProviders(<RichText text={"A loop.\n\nUse $I = V/R$ here."} />);
     expect(screen.getByText("A loop.")).toBeInTheDocument();
     const math = screen.getByLabelText("I = V/R");
     expect(math).toHaveAttribute("role", "math");
-    expect(math.querySelector(".katex")).not.toBeNull();
+    await waitFor(() => expect(math.querySelector(".katex")).not.toBeNull());
   });
 });

@@ -1,0 +1,239 @@
+/*
+ * Instrumenta brand v2 in Discere (approved 6 October 2026; Instrumenta brand/ALIGNMENT.md).
+ * Fraunces for titles and moments, Commissioner for the interface and for questions, Spline Sans
+ * Mono for numbers that count and for notation. Buttons take the icons' depth: an ink outline and
+ * an extruded edge down and to the right. Loaded last.
+ */
+:root {
+  --display-settings: "SOFT" 100, "WONK" 1;
+  --ui-settings: "FLAR" 40;
+}
+body {
+  font-family: var(--font-sans);
+  font-variation-settings: var(--ui-settings);
+}
+button,
+input,
+select,
+textarea {
+  font-variation-settings: var(--ui-settings);
+}
+
+/* Display: page titles and section titles outside lessons, plus the moments inside them. -------- */
+.app-shell--learning:not(.app-shell--lesson) :is(h1, h2),
+.lesson-finish h1,
+.recap-stage h1,
+.lesson-opener h1,
+.level-up-card h2,
+.welcome-wordmark,
+.nav-rail-mark span,
+.course-card-title,
+.quest-board h2,
+.league-card h2,
+.game-toast strong,
+.error-screen h1 {
+  font-family: var(--font-display);
+  font-variation-settings: var(--display-settings);
+  font-optical-sizing: auto;
+  font-weight: 700;
+  letter-spacing: -0.012em;
+}
+.app-shell--learning:not(.app-shell--lesson) h2,
+.course-card-title,
+.quest-board h2,
+.league-card h2 {
+  font-weight: 650;
+}
+.game-toast strong {
+  letter-spacing: 0;
+  text-transform: none;
+  font-size: 0.95rem;
+}
+
+/* Numbers that count, and notation, in mono. -------------------------------------------------- */
+.hud-xp-value,
+.site-stat-pill span,
+.quest-count,
+.quest-board-count,
+.combo-meter-count,
+.finish-stats dd,
+.stage-progress-count,
+.xp-gain,
+.fx-float,
+.calc-input,
+.choice-label--notation,
+.answer-input input[inputmode="decimal"],
+.badge-count {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.fx-float {
+  font-weight: 700;
+}
+
+/* Buttons: pressable depth. ------------------------------------------------------------------- */
+.button-primary,
+.player-footer .button-primary {
+  --btn-fill: var(--accent);
+  --btn-ink: var(--accent-ink);
+  --btn-deep: var(--accent-deep);
+  color: var(--btn-ink);
+  background: var(--btn-fill);
+  border: 2px solid var(--btn-ink);
+  border-radius: 13px;
+  box-shadow: 3px 4px 0 var(--btn-deep);
+  font-weight: 750;
+  transition:
+    transform 0.08s ease,
+    box-shadow 0.08s ease,
+    filter 0.15s ease;
+}
+.button-primary:not(:disabled):hover {
+  background: var(--btn-fill);
+  color: var(--btn-ink);
+  filter: brightness(1.07);
+  box-shadow: 3px 4px 0 var(--btn-deep);
+}
+.button-primary:not(:disabled):active {
+  transform: translate(3px, 4px);
+  box-shadow: 0 0 0 var(--btn-deep);
+}
+.button-primary:disabled {
+  opacity: 0.45;
+  box-shadow: 3px 4px 0 var(--btn-deep);
+}
+.button-primary:focus-visible {
+  outline: 3px solid var(--accent-light);
+  outline-offset: 3px;
+}
+/* Green only for moving on from a correct answer. */
+.player-footer:has(.answer-feedback.is-correct) .button-primary,
+.lesson-question:has(.answer-feedback.is-correct) .button-primary {
+  --btn-fill: var(--correct);
+  --btn-ink: #08240f;
+  --btn-deep: var(--correct-deep);
+}
+.button-quiet:not(.stage-utility) {
+  border-radius: 12px;
+}
+
+/* Answer choices are raised like buttons; the chosen one presses in. --------------------------- */
+.choice-card {
+  border: 2px solid #33404f;
+  border-radius: 14px;
+  background: #182029;
+  box-shadow: 3px 4px 0 #0a0d12;
+  transition:
+    transform 0.08s ease,
+    box-shadow 0.08s ease,
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+.choice-card:not(:disabled):hover {
+  border-color: #4d6584;
+}
+.choice-card:not(:disabled):active,
+.choice-card-selected {
+  transform: translate(2px, 3px);
+  box-shadow: 1px 1px 0 #0a0d12;
+}
+.choice-card-selected {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, #182029);
+}
+.choice-card-correct {
+  border-color: var(--correct);
+  background: color-mix(in srgb, var(--correct) 14%, #182029);
+  box-shadow: 3px 4px 0 var(--correct-deep);
+  transform: none;
+}
+.choice-card-incorrect {
+  border-color: var(--error);
+}
+.choice-letter {
+  font-weight: 750;
+}
+
+/* Brand icons ---------------------------------------------------------------------------------- */
+.di-icon {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  line-height: 0;
+}
+.di-icon svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.di-icon .di-body {
+  transform-box: fill-box;
+  transform-origin: 50% 90%;
+}
+/* A small lift on hover or focus of whatever holds the icon. */
+:is(a, button):is(:hover, :focus-visible) > .di-icon .di-body,
+:is(a, button):is(:hover, :focus-visible) .di-icon:first-child .di-body {
+  animation: di-hop 0.55s ease;
+}
+@keyframes di-hop {
+  40% {
+    transform: translateY(-2.5px) rotate(-3deg);
+  }
+}
+/* Quest and toast icons stand free: no tile behind an icon. */
+.quest-icon,
+.game-toast-icon {
+  background: none !important;
+  box-shadow: none !important;
+  width: auto !important;
+  height: auto !important;
+  border-radius: 0 !important;
+}
+.quest.is-complete .quest-icon .di-body {
+  animation: di-tick 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes di-tick {
+  0% {
+    transform: scale(0.6) rotate(-14deg);
+  }
+}
+/* Stars not yet earned sit in shadow. */
+.finish-stars .di-icon:not(.is-earned) {
+  filter: grayscale(1) brightness(0.45);
+}
+.finish-stars.is-animating .is-earned {
+  animation: star-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+/* Sound off: the same icon, dimmed. */
+.lesson-sound-control .lesson-tool[aria-pressed="false"] .di-icon {
+  filter: grayscale(1);
+  opacity: 0.55;
+}
+.nav-rail-link .di-icon,
+.site-stat-pill .di-icon {
+  margin-block: -2px;
+}
+.combo-meter .di-icon {
+  margin-right: 2px;
+}
+
+html[data-motion="reduced"] .di-icon .di-body,
+html[data-motion="reduced"] .finish-stars .is-earned {
+  animation: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .di-icon .di-body {
+    animation: none !important;
+  }
+}
+.discere-logo svg {
+  width: 100%;
+  height: 100%;
+}
+/* Commissioner's spaces are narrow; small bold labels get a little air between words. */
+.home-course-level,
+.eyebrow,
+.stage-step-label,
+.unit-label {
+  word-spacing: 0.12em;
+}

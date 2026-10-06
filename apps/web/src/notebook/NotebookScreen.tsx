@@ -8,7 +8,7 @@ import { getNotebookPage, saveNotebookPage } from "../api/endpoints.js";
 import { queryKeys, useJourney } from "../api/queries.js";
 import { ModeProvider, useTutoringMode } from "../journey/mode-context.js";
 import { paths } from "../lib/paths.js";
-import { ErrorScreen, LoadingScreen } from "../ui/Feedback.js";
+import { ErrorScreen } from "../ui/Feedback.js";
 import { NotebookCanvas } from "./NotebookCanvas.js";
 import { type NotebookDraft, hasWorkings, pageSnapshot } from "./notebook-page.js";
 import { WorkingsReviewPanel } from "./WorkingsReviewPanel.js";
@@ -31,9 +31,25 @@ export function NotebookScreen() {
  * machine unless the learner asks for a review.
  */
 function Notebook({ courseId, lessonId }: { courseId: string; lessonId: string }) {
+  const journey = useJourney(courseId, lessonId);
+  return (
+    <main className="page notebook-page" id="stage">
+      <h1>{journey.data?.title ?? "Working notebook"}</h1>
+      <NotebookPanel lessonId={lessonId} />
+      <div className="button-row">
+        <Link className="button button-quiet" to={paths.lesson(courseId, lessonId)}>
+          <ArrowLeft aria-hidden="true" size={16} strokeWidth={1.8} />
+          Back to the lesson
+        </Link>
+      </div>
+    </main>
+  );
+}
+
+/** The working page and its review, usable on its own screen or docked beside a lesson. */
+export function NotebookPanel({ lessonId }: { lessonId: string }) {
   const queryClient = useQueryClient();
   const { mode } = useTutoringMode();
-  const journey = useJourney(courseId, lessonId);
   const [draft, setDraft] = useState<NotebookDraft | null>(null);
   const [svg, setSvg] = useState<SVGSVGElement | null>(null);
 
@@ -49,13 +65,15 @@ function Notebook({ courseId, lessonId }: { courseId: string; lessonId: string }
   const onDraftChange = useCallback((next: NotebookDraft) => setDraft(next), []);
   const onSvgReady = useCallback((element: SVGSVGElement | null) => setSvg(element), []);
 
-  if (page.isPending) return <LoadingScreen message="Opening the working page…" />;
+  if (page.isPending)
+    return (
+      <p className="muted" role="status">
+        Opening the working page…
+      </p>
+    );
   if (page.error || !page.data) {
     return (
-      <ErrorScreen
-        message={errorMessage(page.error, "The working page did not load.")}
-        title="Notebook unavailable"
-      />
+      <p role="alert">{errorMessage(page.error, "The working page did not load.")}</p>
     );
   }
 
@@ -70,9 +88,7 @@ function Notebook({ courseId, lessonId }: { courseId: string; lessonId: string }
     pageSnapshot({ pageType: stored.pageType, strokes: stored.strokes, note: stored.note });
 
   return (
-    <main className="page notebook-page" id="stage">
-      <h1>{journey.data?.title ?? "Working notebook"}</h1>
-
+    <>
       <NotebookCanvas
         onDraftChange={onDraftChange}
         onSave={(input) => save.mutateAsync(input)}
@@ -88,13 +104,6 @@ function Notebook({ courseId, lessonId }: { courseId: string; lessonId: string }
         saved={savedOnServer && hasWorkings(current)}
         svg={svg}
       />
-
-      <div className="button-row">
-        <Link className="button button-quiet" to={paths.lesson(courseId, lessonId)}>
-          <ArrowLeft aria-hidden="true" size={16} strokeWidth={1.8} />
-          Back to the lesson
-        </Link>
-      </div>
-    </main>
+    </>
   );
 }

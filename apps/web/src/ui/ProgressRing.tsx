@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 /**
  * A ring that reads as a fraction at a glance and still states the number in words for anyone
  * who cannot see it. The stroke is drawn once on mount so the eye follows it round; after that
@@ -20,10 +21,11 @@ export function ProgressRing({
    * caller either passes something self-describing ("2/6", "40%") or leaves the ring wordless
    * and states the fraction in adjacent text.
    */
-  caption?: string;
+  caption?: ReactNode;
 }) {
-  const safeTotal = Math.max(1, total);
-  const fraction = Math.max(0, Math.min(1, completed / safeTotal));
+  const safeTotal = Number.isFinite(total) ? Math.max(1, total) : 1;
+  const safeCompleted = Number.isFinite(completed) ? Math.max(0, completed) : 0;
+  const fraction = Math.max(0, Math.min(1, safeCompleted / safeTotal));
   const stroke = size <= 32 ? 3 : 4;
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
@@ -51,8 +53,9 @@ export function ProgressRing({
             cy={size / 2}
             fill="none"
             r={radius}
-            stroke="var(--course-accent, var(--green))"
-            strokeDasharray={`${circumference * fraction} ${circumference}`}
+            stroke="var(--course-accent, var(--accent))"
+            strokeDasharray={`${circumference} ${circumference}`}
+            strokeDashoffset={circumference * (1 - fraction)}
             strokeLinecap="round"
             strokeWidth={stroke}
             // Starts at twelve o'clock rather than three, which is where a reader expects zero.

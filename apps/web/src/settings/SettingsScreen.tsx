@@ -1,231 +1,374 @@
 import type { CapabilityId, TutorStatus } from "@discere/contracts";
-import { useMutation } from "@tanstack/react-query";
-import { CheckCircle2, Loader2, XCircle } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { CheckCircle2, Info, Loader2, XCircle } from "lucide-react";
 import { errorMessage } from "../api/client.js";
 import { probeTutor } from "../api/endpoints.js";
-import { useCapabilities, useTutorStatus } from "../api/queries.js";
-import { ErrorScreen, LoadingScreen, Notice } from "../ui/Feedback.js";
+import { queryKeys, useCapabilities, useTutorStatus } from "../api/queries.js";
+import { Notice } from "../ui/Feedback.js";
+import { StudyPreferences } from "../study/StudyPreferences.js";
 
 const PROVIDER_LABELS: Record<TutorStatus["provider"], string> = {
+  claude: "Claude Code",
+  "openai-compatible": "Your own AI endpoint",
   codex: "Local Codex CLI",
   companion: "Copy and paste into ChatGPT",
-  mock: "Offline mock",
+  mock: "Offline practice tutor",
 };
-
 const OUTCOME_LABELS: Record<TutorStatus["lastOutcome"], string> = {
-  none: "Nothing asked yet this session",
+  none: "No request this session",
   ok: "The last request succeeded",
   error: "The last request failed",
 };
-
-function formatResetTime(unixSeconds: number): string {
-  if (unixSeconds <= 0) return "an unknown time";
-  return new Date(unixSeconds * 1_000).toLocaleString(undefined, {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
-}
-
-/** Remediation is spelled out, because a red light the owner cannot act on is just bad news. */
-function linkRemedy(status: TutorStatus): string {
-  if (status.provider !== "codex") {
-    return `Discere is set to the ${PROVIDER_LABELS[status.provider].toLowerCase()} provider. Set DISCERE_TUTOR_PROVIDER=codex to answer in place.`;
-  }
-  if (!status.binaryFound) {
-    return "Install the Codex CLI in WSL, or point DISCERE_CODEX_BIN at it, then restart Discere.";
-  }
-  return "Run `codex login` in WSL to sign the CLI in to your OpenAI account, then restart Discere.";
-}
-
-function QuotaPanel({ status }: { status: TutorStatus }) {
-  if (!status.quotaKnown) {
-    return (
-      <p className="settings-note">
-        No quota reading yet. It appears after the first request of a session.
-      </p>
-    );
-  }
-  const used = Math.min(100, Math.max(0, Math.round(status.quotaUsedPercent)));
-  const tone = used >= 90 ? "spent" : used >= 60 ? "high" : "fine";
-  return (
-    <div className="settings-quota">
-      <div className="settings-quota-head">
-        <span>{status.quotaPlanType || "Unnamed plan"}</span>
-        <strong>{used}% used</strong>
-      </div>
-      {/* The reading is already stated in words above, so the bar is decoration. */}
-      <div aria-hidden="true" className="settings-quota-track">
-        <span className={`settings-quota-fill is-${tone}`} style={{ width: `${used}%` }} />
-      </div>
-      <p className="settings-note">
-        This window resets at {formatResetTime(status.quotaResetsAt)}.
-      </p>
-    </div>
-  );
-}
-
-/**
- * Proof that the OpenAI link is live, on one screen. Discere spends the owner's subscription,
- * so the state of that subscription belongs in the interface rather than in a log file.
- */
 const CAPABILITY_LABELS: Record<CapabilityId, string> = {
   tutor_generation: "Tutor answers",
   illustrations: "Drawn illustrations",
   authoring: "Course authoring",
 };
-
-/**
- * The one place the interface says what it cannot do.
- *
- * Everywhere else, an absent capability simply removes its control — a button that fails after two
- * minutes teaches a learner nothing. That leaves one obligation: somewhere has to explain the
- * absence, and this is a settings screen about exactly this subscription.
- */
+function linkRemedy(status: TutorStatus): string {
+  if (!status.binaryFound)
+    return "Install the Codex CLI in WSL, or point DISCERE_CODEX_BIN at it, then restart Discere.";
+  return "Run `codex login` in WSL to sign the CLI in, then restart Discere.";
+}
+function QuotaPanel({ status }: { status: TutorStatus }) {
+  if (!status.quotaKnown)
+    return (
+      <p className="settings-note">No quota reading is available. A live request may update it.</p>
+    );
+  const used = Math.min(100, Math.max(0, Math.round(status.quotaUsedPercent)));
+  const reset =
+    status.quotaResetsAt > 0
+      ? new Date(status.quotaResetsAt * 1000).toLocaleString(undefined, {
+          dateStyle: "medium",
+          timeStyle: "short",
+        })
+      : null;
+  const tone = used >= 90 ? "spent" : used >= 60 ? "high" : "fine";
+  return (
+    <div className="settings-quota">
+      <div className="settings-quota-head">
+        <span>{status.quotaPlanType || "Reported usage window"}</span>
+        <strong>{used}% used</strong>
+      </div>
+      <div aria-hidden="true" className="settings-quota-track">
+        <span className={"settings-quota-fill is-" + tone} style={{ width: used + "%" }} />
+      </div>
+      <p className="settings-note">
+        Last reported by the local CLI.
+        {reset ? " This window resets at " + reset + "." : " Reset time is unavailable."}
+      </p>
+    </div>
+  );
+}
 function CapabilityPanel() {
   const capabilities = useCapabilities();
-  const unavailable =
-    capabilities.data?.capabilities.filter((entry) => entry.state === "unavailable") ?? [];
-
-  if (capabilities.isPending) return <p className="muted">Checking what is available…</p>;
-  if (unavailable.length === 0) {
-    return <p>Tutoring, illustrations, and authoring are all available.</p>;
-  }
+  if (capabilities.isPending)
+    return (
+      <p className="muted" role="status">
+        Checking what is available…
+      </p>
+    );
+  if (capabilities.error || !capabilities.data)
+    return (
+      <Notice tone="error" title="Availability could not be checked">
+        <p>{errorMessage(capabilities.error, "The capability status did not load.")}</p>
+        <button
+          type="button"
+          className="button button-secondary"
+          disabled={capabilities.isFetching}
+          onClick={() => void capabilities.refetch()}
+        >
+          Check availability again
+        </button>
+      </Notice>
+    );
+  // Course authoring is the owner's tool for writing courses, not something a learner uses.
+  const learnerFacing = capabilities.data.capabilities.filter((entry) => entry.id !== "authoring");
   return (
-    <dl className="settings-facts">
-      {unavailable.map((entry) => (
-        <div key={entry.id}>
-          <dt>{CAPABILITY_LABELS[entry.id]}</dt>
-          <dd>
-            {entry.reason}
-            {entry.fallback ? <span className="settings-remedy">{entry.fallback}</span> : null}
-          </dd>
-        </div>
+    <ul className="settings-capabilities">
+      {learnerFacing.map((entry) => (
+        <li key={entry.id} className={entry.state === "available" ? "is-available" : "is-off"}>
+          <h3>{CAPABILITY_LABELS[entry.id]}</h3>
+          <p className="settings-capability-state">
+            {entry.state === "available" ? "Available" : "Not available right now"}
+          </p>
+          {entry.state !== "available" && entry.reason ? (
+            <p className="settings-capability-reason">{entry.reason}</p>
+          ) : null}
+          {entry.state !== "available" && entry.fallback ? (
+            <p className="settings-capability-fallback">
+              <strong>Still works:</strong> {entry.fallback}
+            </p>
+          ) : null}
+        </li>
       ))}
-    </dl>
+    </ul>
+  );
+}
+const ROUTING_LABELS = {
+  auto: "Chooses per question",
+  fast: "Always the fast model",
+  smart: "Always the capable model",
+} as const;
+
+/** Which models the tutor routes between, and what it has used since Discere started. */
+function TutorRoutingAndUsage({ status }: { status: TutorStatus }) {
+  const { routing, usage } = status;
+  if (!routing && !usage) return null;
+  const money = (value: number) =>
+    value.toLocaleString(undefined, {
+      style: "currency",
+      currency: "USD",
+      maximumFractionDigits: 4,
+    });
+  return (
+    <div className="settings-tutor-usage">
+      {routing ? (
+        <dl className="settings-facts">
+          <div>
+            <dt>Model choice</dt>
+            <dd>{ROUTING_LABELS[routing.mode]}</dd>
+          </div>
+          <div>
+            <dt>Fast model</dt>
+            <dd>{routing.fastModel || "Provider default"}</dd>
+          </div>
+          <div>
+            <dt>Capable model</dt>
+            <dd>{routing.smartModel || "Provider default"}</dd>
+          </div>
+        </dl>
+      ) : null}
+      {usage ? (
+        <>
+          <h3 className="settings-subtitle">Since Discere started</h3>
+          <p className="settings-note">
+            {usage.calls === 0
+              ? "No tutor requests yet."
+              : `${usage.calls} ${usage.calls === 1 ? "request" : "requests"}${usage.costUsd > 0 ? `, about ${money(usage.costUsd)} reported` : ""}.`}
+          </p>
+          {usage.byModel.length ? (
+            <table className="settings-usage-table">
+              <thead>
+                <tr>
+                  <th scope="col">Model</th>
+                  <th scope="col">Requests</th>
+                  <th scope="col">Tokens in / out</th>
+                  <th scope="col">Cost</th>
+                </tr>
+              </thead>
+              <tbody>
+                {usage.byModel.map((row) => (
+                  <tr key={row.model}>
+                    <th scope="row">{row.model}</th>
+                    <td>{row.calls}</td>
+                    <td>
+                      {row.inputTokens.toLocaleString()} / {row.outputTokens.toLocaleString()}
+                    </td>
+                    <td>{row.costUsd > 0 ? money(row.costUsd) : "Not reported"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : null}
+        </>
+      ) : null}
+    </div>
   );
 }
 
-export function SettingsScreen() {
-  const status = useTutorStatus();
-  const probe = useMutation({ mutationFn: probeTutor });
-
-  if (status.isPending) return <LoadingScreen message="Reading the tutor status…" />;
-  if (status.error || !status.data) {
+function TutorSettings() {
+  const status = useTutorStatus(),
+    client = useQueryClient();
+  const probe = useMutation({
+    mutationFn: probeTutor,
+    onSettled: async () => {
+      await Promise.all([
+        client.invalidateQueries({ queryKey: queryKeys.tutorStatus }),
+        client.invalidateQueries({ queryKey: queryKeys.capabilities }),
+      ]);
+    },
+  });
+  if (status.isPending)
     return (
-      <ErrorScreen
-        message={errorMessage(status.error, "The tutor status did not load.")}
-        title="Settings unavailable"
-      />
+      <section className="settings-card" aria-label="Tutor connection">
+        <p role="status">Reading the tutor status…</p>
+      </section>
     );
-  }
-
-  const data = status.data;
-  const linked = data.provider === "codex" && data.binaryFound && data.authPresent;
-
+  if (status.error || !status.data)
+    return (
+      <section className="settings-card" aria-label="Tutor connection">
+        <Notice tone="error" title="Tutor status unavailable">
+          <p>{errorMessage(status.error, "The tutor status did not load.")}</p>
+          <button
+            type="button"
+            className="button button-secondary"
+            disabled={status.isFetching}
+            onClick={() => void status.refetch()}
+          >
+            Retry tutor status
+          </button>
+        </Notice>
+      </section>
+    );
+  const data = status.data,
+    codex = data.provider === "codex";
+  const configured = codex && data.binaryFound && data.authPresent;
+  const verified = configured && data.lastOutcome === "ok";
+  const state =
+    data.provider === "mock"
+      ? "Offline practice"
+      : data.provider === "companion"
+        ? "Copy and paste"
+        : !configured
+          ? "Setup needed"
+          : data.lastOutcome === "error"
+            ? "Connection needs attention"
+            : verified
+              ? "Connection verified"
+              : "Ready to test";
+  const icon = verified ? (
+    <CheckCircle2 aria-hidden="true" size={22} />
+  ) : codex && (!configured || data.lastOutcome === "error") ? (
+    <XCircle aria-hidden="true" size={22} />
+  ) : (
+    <Info aria-hidden="true" size={22} />
+  );
   return (
-    <main className="page" id="stage">
-      <h1>Settings</h1>
-
+    <>
       <section aria-labelledby="link-heading" className="settings-card">
         <h2 className="settings-card-title" id="link-heading">
-          OpenAI link
+          Tutor connection
         </h2>
-        <p className={`settings-link-state ${linked ? "is-live" : "is-down"}`}>
-          {linked ? (
-            <CheckCircle2 aria-hidden="true" size={22} />
-          ) : (
-            <XCircle aria-hidden="true" size={22} />
-          )}
-          <span>{linked ? "Connected" : "Not connected"}</span>
+        <p className={"settings-link-state " + (verified ? "is-live" : "is-neutral")}>
+          {icon}
+          <span>{state}</span>
         </p>
-        {linked ? null : <p className="settings-remedy">{linkRemedy(data)}</p>}
-
+        {codex && !configured && <p className="settings-remedy">{linkRemedy(data)}</p>}
+        {configured && data.lastOutcome === "none" && (
+          <p className="settings-note">
+            The CLI and sign-in are present. Send a test to check whether it can answer.
+          </p>
+        )}
+        {data.provider === "mock" && (
+          <p className="settings-note">
+            Responses use local examples. This mode makes no model requests.
+          </p>
+        )}
+        {data.provider === "companion" && (
+          <p className="settings-note">
+            Use the tutor inside a lesson to copy its prompt into ChatGPT and paste the response
+            back.
+          </p>
+        )}
         <dl className="settings-facts">
           <div>
             <dt>Provider</dt>
             <dd>{PROVIDER_LABELS[data.provider]}</dd>
           </div>
-          <div>
-            <dt>Model</dt>
-            <dd>{data.model || "Account default"}</dd>
-          </div>
-          <div>
-            <dt>Reasoning effort</dt>
-            <dd>{data.reasoningEffort || "Not applicable"}</dd>
-          </div>
-          <div>
-            <dt>CLI</dt>
-            <dd>{data.binaryVersion || "Not found"}</dd>
-          </div>
-          <div>
-            <dt>Sign-in</dt>
-            <dd>{data.authPresent ? "Present" : "Missing"}</dd>
-          </div>
-          <div>
-            <dt>Queued requests</dt>
-            <dd>{data.queueDepth}</dd>
-          </div>
-          <div>
-            <dt>Last request</dt>
-            <dd>{OUTCOME_LABELS[data.lastOutcome]}</dd>
-          </div>
+          {codex && (
+            <>
+              <div>
+                <dt>Model</dt>
+                <dd>{data.model || "Account default"}</dd>
+              </div>
+              <div>
+                <dt>Reasoning effort</dt>
+                <dd>{data.reasoningEffort || "Account default"}</dd>
+              </div>
+              <div>
+                <dt>CLI</dt>
+                <dd>{data.binaryVersion || "Not found"}</dd>
+              </div>
+              <div>
+                <dt>Sign-in</dt>
+                <dd>{data.authPresent ? "Present" : "Missing"}</dd>
+              </div>
+              <div>
+                <dt>Queued requests</dt>
+                <dd>{data.queueDepth}</dd>
+              </div>
+              <div>
+                <dt>Last request</dt>
+                <dd>{OUTCOME_LABELS[data.lastOutcome]}</dd>
+              </div>
+            </>
+          )}
         </dl>
-        {data.lastError ? <p className="settings-remedy">{data.lastError}</p> : null}
+        {codex && data.lastError && <p className="settings-remedy">{data.lastError}</p>}
+        <TutorRoutingAndUsage status={data} />
       </section>
-
+      {codex && (
+        <section aria-labelledby="quota-heading" className="settings-card">
+          <h2 className="settings-card-title" id="quota-heading">
+            Reported subscription usage
+          </h2>
+          <QuotaPanel status={data} />
+        </section>
+      )}
+      {data.provider !== "companion" && data.provider !== "mock" && (
+        <section aria-labelledby="test-heading" className="settings-card">
+          <h2 className="settings-card-title" id="test-heading">
+            Test the connection
+          </h2>
+          <p className="settings-note">
+            {codex
+              ? "This sends one question through the local Codex CLI and uses your account allowance."
+              : "This sends one short question to the tutor, which counts as one request."}
+          </p>
+          <button
+            className="button button-primary"
+            disabled={probe.isPending}
+            onClick={() => probe.mutate()}
+            type="button"
+          >
+            {probe.isPending ? (
+              <>
+                <Loader2 aria-hidden="true" className="spin" size={16} /> Testing…
+              </>
+            ) : codex ? (
+              "Send a live test request"
+            ) : (
+              "Send a test question"
+            )}
+          </button>
+          {probe.error && (
+            <Notice live tone="error" title="The test did not complete">
+              <p>{errorMessage(probe.error, "The test request failed.")}</p>
+            </Notice>
+          )}
+          {probe.data && (
+            <Notice
+              live
+              tone={probe.data.ok ? "correct" : "error"}
+              title={
+                probe.data.ok
+                  ? codex
+                    ? "The connection answered"
+                    : "The tutor answered"
+                  : "The test did not answer"
+              }
+            >
+              <p>
+                {probe.data.message} Round trip {(probe.data.durationMs / 1000).toFixed(1)}s.
+              </p>
+            </Notice>
+          )}
+        </section>
+      )}
+    </>
+  );
+}
+export function SettingsScreen() {
+  return (
+    <main className="page" id="stage">
+      <h1>Settings</h1>
+      <StudyPreferences />
+      <TutorSettings />
       <section aria-labelledby="capability-heading" className="settings-card">
         <h2 className="settings-card-title" id="capability-heading">
-          What this installation can generate
+          Available tools
         </h2>
         <CapabilityPanel />
-      </section>
-
-      <section aria-labelledby="quota-heading" className="settings-card">
-        <h2 className="settings-card-title" id="quota-heading">
-          Subscription quota
-        </h2>
-        <QuotaPanel status={data} />
-      </section>
-
-      <section aria-labelledby="test-heading" className="settings-card">
-        <h2 className="settings-card-title" id="test-heading">
-          Test the link
-        </h2>
-        <p className="settings-note">
-          This sends one real question to OpenAI and counts against the quota above.
-        </p>
-        <button
-          className="button button-primary"
-          disabled={probe.isPending}
-          onClick={() => {
-            probe.mutate();
-          }}
-          type="button"
-        >
-          {probe.isPending ? (
-            <>
-              <Loader2 aria-hidden="true" className="spin" size={16} /> Asking OpenAI…
-            </>
-          ) : (
-            "Send a live test request"
-          )}
-        </button>
-        {probe.error ? (
-          <Notice live tone="error" title="The test did not complete">
-            <p>{errorMessage(probe.error, "The test request failed.")}</p>
-          </Notice>
-        ) : null}
-        {probe.data ? (
-          <Notice
-            live
-            tone={probe.data.ok ? "correct" : "error"}
-            title={probe.data.ok ? "The link is live" : "The link did not answer"}
-          >
-            <p>
-              {probe.data.message} Round trip {(probe.data.durationMs / 1000).toFixed(1)}s.
-            </p>
-          </Notice>
-        ) : null}
       </section>
     </main>
   );

@@ -1,4 +1,3 @@
-import katex from "katex";
 import { useEffect, useRef } from "react";
 
 export interface TextSegment {
@@ -46,9 +45,21 @@ export function InlineMath({ expression }: { expression: string }) {
   useEffect(() => {
     const element = host.current;
     if (!element) return;
-    katex.render(expression, element, { throwOnError: false, displayMode: false });
+    let active = true;
+    // Plain prose does not download the equation renderer. Keep the equation readable while
+    // loading, and never let a late import replace a newer expression or an unmounted node.
+    element.textContent = expression;
+    void import("katex")
+      .then(({ default: katex }) => {
+        if (active) katex.render(expression, element, { throwOnError: false, displayMode: false });
+      })
+      .catch(() => {
+        /* The readable source remains available if the renderer cannot load. */
+      });
+    return () => {
+      active = false;
+    };
   }, [expression]);
-  // The plain source stays in the accessibility tree; KaTeX replaces the visual layer.
   return <span className="math" ref={host} role="math" aria-label={expression} />;
 }
 

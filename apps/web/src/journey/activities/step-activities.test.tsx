@@ -3,12 +3,34 @@ import type {
   GraphPlotActivity,
   OrderSequenceActivity,
 } from "@discere/contracts";
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
+import { renderWithProviders } from "../../test/harness.js";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { DiagramChoice } from "./DiagramChoice.js";
 import { GraphPlot } from "./GraphPlot.js";
 import { OrderSequence } from "./OrderSequence.js";
+import { ModeProvider } from "../mode-context.js";
+import { learnerActivity } from "@discere/contracts";
+import {
+  evaluateDiagramChoice,
+  evaluateOrderSequence,
+  evaluateGraphPlot,
+} from "@discere/activity-engine";
+import type { ReactElement } from "react";
+const render = (element: ReactElement) =>
+  renderWithProviders(<ModeProvider lessonId="fixture">{element}</ModeProvider>);
+vi.mock("../../api/endpoints.js", () => ({
+  assessActivity: vi.fn(async ({ activityId, response }) => {
+    const outcome =
+      activityId === diagram.id
+        ? evaluateDiagramChoice(diagram, response)
+        : activityId === ordering.id
+          ? evaluateOrderSequence(ordering, response)
+          : evaluateGraphPlot(graph, response);
+    return { attemptId: "activity-attempt", ...outcome };
+  }),
+}));
 
 const diagram: DiagramChoiceActivity = {
   id: "find-the-resistor",
@@ -71,7 +93,18 @@ const graph: GraphPlotActivity = {
 describe("diagram choice", () => {
   it("names every target for a screen reader and marks the right one", async () => {
     const onAnswered = vi.fn();
-    render(<DiagramChoice activity={diagram} courseId="c" onAnswered={onAnswered} />);
+    render(
+      <DiagramChoice
+        activity={
+          learnerActivity(diagram) as Extract<
+            ReturnType<typeof learnerActivity>,
+            { type: "diagram_choice" }
+          >
+        }
+        courseId="c"
+        onAnswered={onAnswered}
+      />,
+    );
 
     // Each target is a real button, so the figure is answerable without a pointer at all.
     expect(screen.getByRole("button", { name: "The battery" })).toBeInTheDocument();
@@ -85,7 +118,18 @@ describe("diagram choice", () => {
 
   it("reports a wrong tap without ending the attempt", async () => {
     const onAnswered = vi.fn();
-    render(<DiagramChoice activity={diagram} courseId="c" onAnswered={onAnswered} />);
+    render(
+      <DiagramChoice
+        activity={
+          learnerActivity(diagram) as Extract<
+            ReturnType<typeof learnerActivity>,
+            { type: "diagram_choice" }
+          >
+        }
+        courseId="c"
+        onAnswered={onAnswered}
+      />,
+    );
 
     await userEvent.click(screen.getByRole("button", { name: "The battery" }));
     expect(screen.getByText("The battery only pushes.")).toBeInTheDocument();
@@ -98,18 +142,38 @@ describe("diagram choice", () => {
 
 describe("order sequence", () => {
   it("does not open on the answer", () => {
-    render(<OrderSequence activity={ordering} />);
+    render(
+      <OrderSequence
+        activity={
+          learnerActivity(ordering) as Extract<
+            ReturnType<typeof learnerActivity>,
+            { type: "order_sequence" }
+          >
+        }
+      />,
+    );
     const labels = screen.getAllByText(/event$/).map((node) => node.textContent);
     expect(labels).not.toEqual(["First event", "Second event", "Third event"]);
   });
 
   it("is reorderable from the keyboard alone", async () => {
     const onAnswered = vi.fn();
-    render(<OrderSequence activity={ordering} onAnswered={onAnswered} />);
+    render(
+      <OrderSequence
+        activity={
+          learnerActivity(ordering) as Extract<
+            ReturnType<typeof learnerActivity>,
+            { type: "order_sequence" }
+          >
+        }
+        onAnswered={onAnswered}
+      />,
+    );
 
-    // Opens rotated to ["two", "three", "one"], so moving "one" to the front twice sorts it.
+    // The opening order comes from public identifiers; the answer is held by the server.
     await userEvent.click(screen.getByRole("button", { name: 'Move "First event" earlier' }));
     await userEvent.click(screen.getByRole("button", { name: 'Move "First event" earlier' }));
+    await userEvent.click(screen.getByRole("button", { name: 'Move "Second event" earlier' }));
     await userEvent.click(screen.getByRole("button", { name: "Check the order" }));
 
     expect(screen.getByText("That is the sequence.")).toBeInTheDocument();
@@ -117,16 +181,34 @@ describe("order sequence", () => {
   });
 
   it("points at the first item out of place", async () => {
-    render(<OrderSequence activity={ordering} />);
+    render(
+      <OrderSequence
+        activity={
+          learnerActivity(ordering) as Extract<
+            ReturnType<typeof learnerActivity>,
+            { type: "order_sequence" }
+          >
+        }
+      />,
+    );
     await userEvent.click(screen.getByRole("button", { name: "Check the order" }));
     // The feedback names one place to look rather than marking everything that shifted.
     expect(
-      screen.getByText('Something is out of place. Start by looking at "Second event".'),
+      screen.getByText('Something is out of place. Start by looking at "Third event".'),
     ).toBeInTheDocument();
   });
 
   it("moves an item with the arrow keys while focus stays on it", async () => {
-    render(<OrderSequence activity={ordering} />);
+    render(
+      <OrderSequence
+        activity={
+          learnerActivity(ordering) as Extract<
+            ReturnType<typeof learnerActivity>,
+            { type: "order_sequence" }
+          >
+        }
+      />,
+    );
     const earlier = screen.getByRole("button", { name: 'Move "First event" earlier' });
     earlier.focus();
     // ArrowUp on the "later" control and ArrowDown on the "earlier" one both reorder, so the
@@ -139,7 +221,17 @@ describe("order sequence", () => {
 describe("graph plot", () => {
   it("accepts the answer typed as coordinates, not only clicked", async () => {
     const onAnswered = vi.fn();
-    render(<GraphPlot activity={graph} onAnswered={onAnswered} />);
+    render(
+      <GraphPlot
+        activity={
+          learnerActivity(graph) as Extract<
+            ReturnType<typeof learnerActivity>,
+            { type: "graph_plot" }
+          >
+        }
+        onAnswered={onAnswered}
+      />,
+    );
 
     await userEvent.clear(screen.getByLabelText("Voltage"));
     await userEvent.type(screen.getByLabelText("Voltage"), "6");
@@ -152,7 +244,17 @@ describe("graph plot", () => {
   });
 
   it("rejects a point outside the tolerance", async () => {
-    render(<GraphPlot activity={graph} onAnswered={vi.fn()} />);
+    render(
+      <GraphPlot
+        activity={
+          learnerActivity(graph) as Extract<
+            ReturnType<typeof learnerActivity>,
+            { type: "graph_plot" }
+          >
+        }
+        onAnswered={vi.fn()}
+      />,
+    );
     await userEvent.type(screen.getByLabelText("Voltage"), "9");
     await userEvent.type(screen.getByLabelText("Current"), "0.09");
     await userEvent.click(screen.getByRole("button", { name: "Check the point" }));
@@ -160,7 +262,16 @@ describe("graph plot", () => {
   });
 
   it("cannot be checked before a point exists", () => {
-    render(<GraphPlot activity={graph} />);
+    render(
+      <GraphPlot
+        activity={
+          learnerActivity(graph) as Extract<
+            ReturnType<typeof learnerActivity>,
+            { type: "graph_plot" }
+          >
+        }
+      />,
+    );
     expect(screen.getByRole("button", { name: "Check the point" })).toBeDisabled();
   });
 });
