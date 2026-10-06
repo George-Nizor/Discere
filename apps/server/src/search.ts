@@ -88,9 +88,20 @@ export function buildSearchIndex(bundles: CourseBundle[]): IndexedLesson[] {
             ]
           : [];
       }),
+      // Teaching text only: a v2 lesson's prose is in its opener, headlines, leads, worked lines
+      // and key idea. Reveals and feedback state answers, so an excerpt must never draw on them.
       passages: [
         lesson.orientation ?? "",
-        ...lesson.steps.flatMap((step) => step.blocks.map(blockText)),
+        ...(lesson.intro
+          ? [...lesson.intro.hook.blocks.map(blockText), lesson.intro.promise]
+          : []),
+        ...lesson.steps.flatMap((step) => [
+          ...step.blocks.map(blockText),
+          step.headline ?? "",
+          ...(step.lead ?? []).map(blockText),
+          ...(step.workedSteps ?? []).filter((line) => !line.blank).map((line) => line.text),
+        ]),
+        lesson.recap?.keyIdea ?? "",
       ]
         .map(plain)
         .filter(Boolean),

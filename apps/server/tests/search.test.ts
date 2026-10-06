@@ -37,6 +37,22 @@ describe("library search", () => {
     expect((await search("entropy")).lessons).toEqual([]);
   });
 
+  it("searches a v2 lesson's headlines and leads, never its reveals", () => {
+    const index = buildSearchIndex(service.content.listedBundles);
+    const bundle = service.content.listedBundles.find((item) =>
+      item.lessons.some((lesson) => lesson.intro),
+    )!;
+    const lesson = bundle.lessons.find((item) => item.intro)!;
+    const headline = lesson.steps.find((step) => step.headline)!.headline!;
+    const found = searchLessons(index, headline.split(/\s+/).slice(0, 4).join(" "));
+    expect(found.some((hit) => hit.lessonId === lesson.id)).toBe(true);
+    const reveals = lesson.steps.flatMap((step) => step.reveal ?? []);
+    const passages = index.find((item) => item.lessonId === lesson.id)!.passages.join(" ");
+    for (const block of reveals)
+      if ("text" in block && block.text && block.text.length > 40)
+        expect(passages).not.toContain(block.text.slice(0, 40));
+  });
+
   it("requires every term and ignores case, accents and punctuation", async () => {
     const index = buildSearchIndex(service.content.listedBundles);
     expect(searchLessons(index, "BAYES")).toEqual(searchLessons(index, "bayes"));
