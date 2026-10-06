@@ -39,11 +39,21 @@ describe("reviewed publication", () => {
       if (change === "uncertainty")
         bundle.authoringMetadata[0].uncertainty.push("Confirm this mathematical claim.");
       if (change === "warnings") review.acceptedWarnings = [];
-      if (change === "transfer") bundle.lessons[0].steps[3].kind = "check";
+      if (change === "transfer")
+        for (const step of bundle.lessons[0].steps) if (step.kind === "transfer") step.kind = "try";
       if (change === "citations") bundle.authoringMetadata[0].citations = [];
       if (change === "visual") for (const step of bundle.lessons[0].steps) delete step.diagram;
       review.bundleSha256 = bundleDigest(bundle);
-      expect(() => assertEditorialApproval(bundle, review, validateCourseBundle(bundle))).toThrow();
+      const validation = validateCourseBundle(bundle);
+      // The shipped course has no warnings left, so the case brings one of its own.
+      if (change === "warnings")
+        validation.issues.push({
+          severity: "warning",
+          code: "REP001_REPEATED_TRANSITION",
+          path: "lessons.0.steps.0.lead.0.text",
+          message: "A repeated transition.",
+        });
+      expect(() => assertEditorialApproval(bundle, review, validation), change).toThrow();
     }
   });
   it("checks source terms before scaffolding, instead of inventing a licence", async () => {

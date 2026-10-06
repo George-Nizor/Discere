@@ -3,6 +3,8 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { runTeachingProgram, traceSearch } from "@discere/activity-engine";
 import { assertEditorialApproval, loadCourseBundle, validateCourseBundle } from "../src/index.js";
+import { CourseBundleSchema } from "@discere/contracts";
+import { historicalBundle } from "./helpers/published-history.js";
 const root = path.resolve(import.meta.dirname, "../../../content");
 const load = (id: string) => loadCourseBundle(path.join(root, id, "bundle.json"));
 
@@ -89,16 +91,17 @@ describe("published foundation curriculum", () => {
         expect(authority?.kind, id).toBe("numeric");
         if (authority?.kind === "numeric") expect(authority.value, id).toBeCloseTo(value, 10);
       }
-    expect(
-      bundle.questions
-        .filter((question) => question.answerAuthority.kind === "numeric")
-        .map((question) => question.id)
-        .sort(),
-    ).toEqual([...ids].sort());
+    // The v2 rewrites added numeric items (hooks, checks, faded blanks); those are recomputed in
+    // maths-gold-lesson.test.ts and maths-foundations-v2.test.ts. Every original item stays here.
+    const numeric = bundle.questions
+      .filter((question) => question.answerAuthority.kind === "numeric")
+      .map((question) => question.id);
+    expect(numeric).toEqual(expect.arrayContaining([...ids]));
   });
 
   it("checks program, repair and search questions against executable teaching cases", async () => {
-    const bundle = await load("cs-basics");
+    // The legacy steps these cases name; the v2 lessons are recomputed in cs-basics-v2.test.ts.
+    const bundle = CourseBundleSchema.parse(historicalBundle("cs-basics"));
     for (const lesson of bundle.lessons)
       for (const step of lesson.steps) {
         const authority = bundle.questions.find(

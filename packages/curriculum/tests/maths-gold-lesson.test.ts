@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { assessTextAnswer } from "@discere/assessment-engine";
 import type { CourseBundle, Question } from "@discere/contracts";
 import { describe, expect, it } from "vitest";
-import { validateCourseBundle } from "../src/index.js";
+import { lessonQuestionRefs, validateCourseBundle } from "../src/index.js";
 
 /**
  * Maths Foundations 1.2.0, lesson 1: the gold v2 lesson. Every key is recomputed here from the
@@ -48,7 +48,8 @@ describe("Maths Foundations lesson 1 (v2 gold lesson)", () => {
     ]);
     expect(lesson.questionIds).toHaveLength(3);
     expect(lesson.calculator).toBe("off");
-    expect(bundle.course.version).toBe("1.2.0");
+    // 1.2.0 shipped this lesson; later releases rewrote lessons 2–6 around it.
+    expect(bundle.course.version).toMatch(/^1\.([2-9]|\d{2,})\./);
   });
 
   it("has keys that match the arithmetic each item describes", () => {
@@ -91,14 +92,16 @@ describe("Maths Foundations lesson 1 (v2 gold lesson)", () => {
 
   it("grades only what it teaches: solving by inverse operations moved to lesson 3", () => {
     const lesson3 = bundle.lessons.find((item) => item.id === "undoing-in-the-right-order")!;
-    expect(lesson3.questionIds).toEqual(
+    // Asked somewhere in lesson 3: as a step's question or in its skill check.
+    expect(lessonQuestionRefs(lesson3)).toEqual(
       expect.arrayContaining([
         "maths-what-a-letter-stands-for-4",
         "maths-what-a-letter-stands-for-practice-1",
       ]),
     );
+    const asked = new Set(lessonQuestionRefs(lesson));
     const prompts = bundle.questions
-      .filter((q) => q.id.startsWith("maths-what-a-letter") && q.skill)
+      .filter((q) => asked.has(q.id) && q.skill)
       .map((q) => q.skill);
     expect(new Set(prompts)).toEqual(new Set(lesson.taughtSkills));
   });

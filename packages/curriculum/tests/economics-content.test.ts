@@ -6,6 +6,8 @@ import { describe, expect, it } from "vitest";
 import { economicsChecks } from "../../../content/economics-markets-and-strategy/authoring/course-checks.js";
 import { economicsLessons } from "../../../content/economics-markets-and-strategy/authoring/lessons.js";
 import { assertEditorialApproval, loadCourseBundle, validateCourseBundle } from "../src/index.js";
+import { historicalBundle } from "./helpers/published-history.js";
+import { CourseBundleSchema } from "@discere/contracts";
 
 /*
  * Every key below is derived again from the problem statement, without the activity engine.
@@ -178,10 +180,13 @@ describe("independent Economics content review", () => {
       import.meta.dirname,
       "../../../content/economics-markets-and-strategy",
     );
-    const bundle = await loadCourseBundle(path.join(root, "bundle.json"));
+    // The authoring source describes the lessons as first published. A course rewritten to v2
+    // keeps that bundle in review/history (helpers/published-history.ts); approval is on the current one.
+    const current = await loadCourseBundle(path.join(root, "bundle.json"));
+    const bundle = CourseBundleSchema.parse(historicalBundle("economics-markets-and-strategy"));
     const review = JSON.parse(await readFile(path.join(root, "review/publication.json"), "utf8"));
     expect(() =>
-      assertEditorialApproval(bundle, review, validateCourseBundle(bundle)),
+      assertEditorialApproval(current, review, validateCourseBundle(current)),
     ).not.toThrow();
     const provenance = JSON.parse(
       await readFile(path.join(root, "assets/provenance.json"), "utf8"),

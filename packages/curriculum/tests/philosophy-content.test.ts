@@ -7,6 +7,8 @@ import { assessTextAnswer } from "@discere/assessment-engine";
 import { assertEditorialApproval, loadCourseBundle, validateCourseBundle } from "../src/index.js";
 import { philosophyLessons } from "../../../content/philosophy-knowledge-mind-and-ethics/authoring/lessons.js";
 import { philosophyChecks } from "../../../content/philosophy-knowledge-mind-and-ethics/authoring/course-checks.js";
+import { historicalBundle } from "./helpers/published-history.js";
+import { CourseBundleSchema } from "@discere/contracts";
 
 /*
  * Every key below is derived here from the problem statement, without the activity engine:
@@ -309,10 +311,13 @@ describe("independent Philosophy content review", () => {
       import.meta.dirname,
       "../../../content/philosophy-knowledge-mind-and-ethics",
     );
-    const bundle = await loadCourseBundle(path.join(root, "bundle.json"));
+    // The authoring source describes the lessons as first published. A course rewritten to v2
+    // keeps that bundle in review/history (helpers/published-history.ts); approval is on the current one.
+    const current = await loadCourseBundle(path.join(root, "bundle.json"));
+    const bundle = CourseBundleSchema.parse(historicalBundle("philosophy-knowledge-mind-and-ethics"));
     const review = JSON.parse(await readFile(path.join(root, "review/publication.json"), "utf8"));
     expect(() =>
-      assertEditorialApproval(bundle, review, validateCourseBundle(bundle)),
+      assertEditorialApproval(current, review, validateCourseBundle(current)),
     ).not.toThrow();
     for (const lesson of philosophyLessons) {
       lesson.questions.forEach((q, i) =>

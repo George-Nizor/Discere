@@ -36,6 +36,21 @@ recomputes the numeric keys you wrote (pattern: the gold lesson test), and run i
 `pnpm --filter @discere/curriculum typecheck` and fix any error in your test (vitest does not
 typecheck).
 
+## Practicalities
+
+- Keep helper scripts in your own folder, `/tmp/claude-1000/rewrite-<course>/`. The shared
+  scratchpad is used by other agents at the same time.
+- Run the scaffold for a lesson once. Re-running it after `--apply` rebuilds the draft from
+  `.authoring/candidate.json`, not from the legacy lesson; edit the draft in place instead, and read
+  legacy diagrams from `bundle.json`.
+- Multiple choice may be at most 35% of the course, counted across every lesson, converted or not.
+  Prefer numeric or short-answer items when the idea is quantitative.
+- `calculator` follows the course default in `scripts/lesson-migration/scaffold.ts`
+  (`CALCULATOR_DEFAULTS`); change it on a step only for a reason.
+- The writing gate's ANS005 flags a hint or misconception that contains the key, even as part of
+  a larger number or expression. Reword rather than argue.
+- Run vitest from `packages/curriculum` (`pnpm exec vitest run tests/<file>`).
+
 ## Rules that matter most
 
 - The hook is a puzzle the learner can attempt from what they already know. Never a definition.

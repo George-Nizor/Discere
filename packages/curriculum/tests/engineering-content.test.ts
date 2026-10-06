@@ -6,6 +6,8 @@ import { loadCourseBundle, assertEditorialApproval, validateCourseBundle } from 
 import { engineeringLessons } from "../../../content/engineering-structures-and-machines/authoring/lessons.js";
 import { engineeringChecks } from "../../../content/engineering-structures-and-machines/authoring/course-checks.js";
 import { EngineeringDiagramSchema } from "@discere/contracts";
+import { historicalBundle } from "./helpers/published-history.js";
+import { CourseBundleSchema } from "@discere/contracts";
 
 // Every key is recomputed here from the problem statement, by hand-written formulas that do not
 // call the explorer engine. Unit conversions are spelled out: kN → N (×1000), GPa → MPa (×1000),
@@ -167,10 +169,13 @@ describe("independent Engineering content review", () => {
       import.meta.dirname,
       "../../../content/engineering-structures-and-machines",
     );
-    const bundle = await loadCourseBundle(path.join(root, "bundle.json"));
+    // The authoring source describes the lessons as first published. A course rewritten to v2
+    // keeps that bundle in review/history (helpers/published-history.ts); approval is on the current one.
+    const current = await loadCourseBundle(path.join(root, "bundle.json"));
+    const bundle = CourseBundleSchema.parse(historicalBundle("engineering-structures-and-machines"));
     const review = JSON.parse(await readFile(path.join(root, "review/publication.json"), "utf8"));
     expect(() =>
-      assertEditorialApproval(bundle, review, validateCourseBundle(bundle)),
+      assertEditorialApproval(current, review, validateCourseBundle(current)),
     ).not.toThrow();
     for (const lesson of engineeringLessons) {
       lesson.questions.forEach((q, i) =>

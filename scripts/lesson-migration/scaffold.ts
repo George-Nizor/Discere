@@ -262,7 +262,22 @@ export function applyDrafts(bundle: CourseBundle, drafts: MigrationDraft[]): Cou
     drafts.flatMap((draft) => draft.questions.map((q) => [q.id, q] as const)),
   );
   const known = new Set(bundle.questions.map((question) => question.id));
-  const authoringMetadata = bundle.authoringMetadata?.map((metadata) => {
+  // A course published before metadata was required has none: each draft brings its own entry,
+  // with the previous lesson as its prerequisite.
+  const existing = bundle.authoringMetadata ?? [];
+  const missing = bundle.lessons.flatMap((lesson, index) =>
+    byLesson.has(lesson.id) && !existing.some((item) => item.lessonId === lesson.id)
+      ? [
+          {
+            lessonId: lesson.id,
+            prerequisiteLessonIds: index > 0 ? [bundle.lessons[index - 1]!.id] : [],
+            citations: [] as ClaimCitation[],
+            uncertainty: [] as string[],
+          },
+        ]
+      : [],
+  );
+  const authoringMetadata = [...existing, ...missing].map((metadata) => {
     const draft = byLesson.get(metadata.lessonId);
     if (!draft) return metadata;
     if (draft.citations) return { ...metadata, citations: draft.citations };
@@ -278,10 +293,22 @@ export function applyDrafts(bundle: CourseBundle, drafts: MigrationDraft[]): Cou
       citations: metadata.citations.filter((c) => live.has(`${c.targetKind}:${c.targetId}`)),
     };
   });
+  const lessons = bundle.lessons.map((lesson) => byLesson.get(lesson.id)?.lesson ?? lesson);
+  // Activities only the replaced legacy steps used would be unreachable: drop them.
+  const stillUsed = new Set(lessons.flatMap((lesson) => lesson.steps.map((step) => step.activityId)));
+  const orphaned = new Set(
+    bundle.lessons
+      .filter((lesson) => byLesson.has(lesson.id))
+      .flatMap((lesson) => lesson.steps.map((step) => step.activityId))
+      .filter((id): id is string => Boolean(id) && !stillUsed.has(id)),
+  );
   return {
     ...bundle,
-    ...(authoringMetadata ? { authoringMetadata } : {}),
-    lessons: bundle.lessons.map((lesson) => byLesson.get(lesson.id)?.lesson ?? lesson),
+    ...(authoringMetadata.length ? { authoringMetadata } : {}),
+    ...(bundle.activities
+      ? { activities: bundle.activities.filter((activity) => !orphaned.has(activity.id)) }
+      : {}),
+    lessons,
     questions: [
       ...bundle.questions.map((question) => replaced.get(question.id) ?? question),
       ...[...replaced.values()].filter((question) => !known.has(question.id)),

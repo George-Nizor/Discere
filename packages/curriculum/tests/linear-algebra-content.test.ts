@@ -1,7 +1,12 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { LinearAlgebraDiagramSchema, LinearAlgebraModelSchema } from "@discere/contracts";
+import {
+  CourseBundleSchema,
+  LinearAlgebraDiagramSchema,
+  LinearAlgebraModelSchema,
+} from "@discere/contracts";
+import { historicalBundle } from "./helpers/published-history.js";
 import { linearLessons as lessons } from "../../../content/linear-algebra-vectors-and-maps/authoring/lessons.js";
 import { linearChecks as checks } from "../../../content/linear-algebra-vectors-and-maps/authoring/course-checks.js";
 import {
@@ -12,7 +17,10 @@ import {
 } from "../src/index.js";
 
 const root = path.resolve(import.meta.dirname, "../../../content/linear-algebra-vectors-and-maps");
-const bundle = await loadCourseBundle(path.join(root, "bundle.json"));
+// The authoring source describes the lessons as first published. A course rewritten to v2
+// keeps that bundle in review/history (helpers/published-history.ts); approval is on the current one.
+const current = await loadCourseBundle(path.join(root, "bundle.json"));
+const bundle = CourseBundleSchema.parse(historicalBundle("linear-algebra-vectors-and-maps"));
 const audit = JSON.parse(
   await readFile(
     path.resolve(root, "../../docs/library-expansion/linear-algebra-numeric-audit.json"),
@@ -31,7 +39,7 @@ describe("reviewed linear algebra curriculum", () => {
     const validation = validateCourseBundle(bundle);
     expect(validation.passed).toBe(true);
     expect(validation.issues.every((issue) => issue.severity === "warning")).toBe(true);
-    expect(() => assertEditorialApproval(bundle, review, validation)).not.toThrow();
+    expect(() => assertEditorialApproval(current, review, validateCourseBundle(current))).not.toThrow();
     expect(audit.passed).toBe(true);
     expect(audit.bundleSha256).toBe(bundleDigest(bundle));
   });

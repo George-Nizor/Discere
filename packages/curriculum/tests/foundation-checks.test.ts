@@ -8,6 +8,7 @@ import { bundleDigest } from "../src/index.js";
 import { logicCourseChecks } from "../../../content/logic-and-reasoning/authoring/course-checks.js";
 import { csCourseChecks } from "../../../content/cs-basics/authoring/course-checks.js";
 import { statisticsCourseChecks } from "../../../content/probability-statistics/authoring/course-checks.js";
+import { historicalBundle } from "./helpers/published-history.js";
 import { restorePreGuidanceBundle } from "./helpers/guidance-history.js";
 const definitions = {
   "logic-and-reasoning": logicCourseChecks,
@@ -135,7 +136,7 @@ describe("Independent foundation course checks", () => {
       },
     );
     it(id + " preserves the exact original teaching-content fingerprint", () => {
-      const base = CourseBundleSchema.parse(read(id));
+      const base = CourseBundleSchema.parse(historicalBundle(id));
       const stable = structuredClone(restorePreGuidanceBundle(id, base)) as {
         course: { version?: string };
         courseChecks?: unknown;
@@ -151,7 +152,7 @@ describe("Independent foundation course checks", () => {
       expect(base.courseChecks).toEqual(sets);
       expect(read(id, "review/publication.json").bundleSha256).toBe(bundleDigest(base));
       expect(read(id, "review/check-extension.json").publishedBundleSha256).toBe(
-        bundleDigest(restorePreGuidanceBundle(id, base)),
+        bundleDigest(restorePreGuidanceBundle(id, CourseBundleSchema.parse(historicalBundle(id)))),
       );
     });
   }

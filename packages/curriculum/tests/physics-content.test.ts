@@ -5,6 +5,8 @@ import { loadCourseBundle, assertEditorialApproval, validateCourseBundle } from 
 import { physicsLessons } from "../../../content/physics-motion-and-forces/authoring/lessons.js";
 import { physicsChecks } from "../../../content/physics-motion-and-forces/authoring/course-checks.js";
 import { MechanicsDiagramSchema } from "@discere/contracts";
+import { historicalBundle } from "./helpers/published-history.js";
+import { CourseBundleSchema } from "@discere/contracts";
 // These calculations come from the problem statements, independently of the simulation engine.
 const expected: Record<string, Array<number | null>> = {
   "measuring-motion": [9 - 2, (7 - 1) * 2, null, 8 + (8 - 3), -4 - 5, null],
@@ -160,10 +162,13 @@ const checkValues: Record<string, number[]> = {
 describe("independent Physics content review", () => {
   it("ships the reviewed candidate, exact cover and independently checked authoring", async () => {
     const root = path.resolve(import.meta.dirname, "../../../content/physics-motion-and-forces");
-    const bundle = await loadCourseBundle(path.join(root, "bundle.json"));
+    // The authoring source describes the lessons as first published. A course rewritten to v2
+    // keeps that bundle in review/history (helpers/published-history.ts); approval is on the current one.
+    const current = await loadCourseBundle(path.join(root, "bundle.json"));
+    const bundle = CourseBundleSchema.parse(historicalBundle("physics-motion-and-forces"));
     const review = JSON.parse(await readFile(path.join(root, "review/publication.json"), "utf8"));
     expect(() =>
-      assertEditorialApproval(bundle, review, validateCourseBundle(bundle)),
+      assertEditorialApproval(current, review, validateCourseBundle(current)),
     ).not.toThrow();
     for (const lesson of physicsLessons) {
       lesson.questions.forEach((q, i) =>

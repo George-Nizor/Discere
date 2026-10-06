@@ -7,6 +7,8 @@ import { PsychologyDiagramSchema, PsychologyModelSchema } from "@discere/contrac
 import { loadCourseBundle, assertEditorialApproval, validateCourseBundle } from "../src/index.js";
 import { psychologyLessons } from "../../../content/psychology-how-minds-work/authoring/lessons.js";
 import { psychologyChecks } from "../../../content/psychology-how-minds-work/authoring/course-checks.js";
+import { historicalBundle } from "./helpers/published-history.js";
+import { CourseBundleSchema } from "@discere/contracts";
 
 /*
  * Every numeric key is recomputed here from the problem statement, without the activity engine.
@@ -166,10 +168,13 @@ const root = path.resolve(import.meta.dirname, "../../../content/psychology-how-
 
 describe("independent Psychology content review", () => {
   it("ships the reviewed candidate, exact cover and the authoring it was built from", async () => {
-    const bundle = await loadCourseBundle(path.join(root, "bundle.json"));
+    // The authoring source describes the lessons as first published. A course rewritten to v2
+    // keeps that bundle in review/history (helpers/published-history.ts); approval is on the current one.
+    const current = await loadCourseBundle(path.join(root, "bundle.json"));
+    const bundle = CourseBundleSchema.parse(historicalBundle("psychology-how-minds-work"));
     const review = JSON.parse(await readFile(path.join(root, "review/publication.json"), "utf8"));
     expect(() =>
-      assertEditorialApproval(bundle, review, validateCourseBundle(bundle)),
+      assertEditorialApproval(current, review, validateCourseBundle(current)),
     ).not.toThrow();
     for (const lesson of psychologyLessons) {
       lesson.questions.forEach((q, i) =>

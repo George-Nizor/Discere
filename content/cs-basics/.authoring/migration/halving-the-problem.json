@@ -1,0 +1,894 @@
+{
+  "lessonId": "halving-the-problem",
+  "courseId": "cs-basics",
+  "migrationNotes": [
+    "step 'predict': the old title \"Discard a sorted half\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
+    "step 'predict': kind hook → predict; check the order of teaching and asking still fits (style guide §2).",
+    "step 'work': the old title \"The middle can finish immediately\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
+    "step 'work': write workedSteps from the worked answer (one line per move, one self-explanation prompt), a headline naming the problem, and recompute every number.",
+    "step 'check': the old title \"Search for an absent target\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
+    "step 'check': kind check → try; check the order of teaching and asking still fits (style guide §2).",
+    "step 'transfer': the old title \"A prerequisite buys the shortcut\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
+    "intro: write the hook (a puzzle the learner can do from what they bring, never a definition), the promise (≤ 25 words, “By the end you'll …”) and the time.",
+    "recap: write the key idea (the promise, kept), the learner's own results, and the one-line bridge to the next lesson.",
+    "skill check: the lesson has 2 quiz item(s); it needs exactly 3, each on something this lesson taught.",
+    "questions: replace every TODO onCorrect (≤ 25 words, states the idea), tag each skill, add misconceptions for predictable wrong answers (the feedback must not state the key).",
+    "vocabulary: give each explain step introducesTerms; no prompt may use a term before the step that introduces it.",
+    "add an explain step before any question that needs a new word or symbol; add a transfer if the lesson has none.",
+    "citations: retarget the seeded citations to the new step and question ids, and give every step, question and flashcard at least one (same sourceIds; the claim is what that screen asserts)."
+  ],
+  "lesson": {
+    "id": "halving-the-problem",
+    "courseId": "cs-basics",
+    "conceptIds": [
+      "binary-search",
+      "linear-search"
+    ],
+    "title": "Halving the problem",
+    "steps": [
+      {
+        "id": "sorted-lets-you-skip",
+        "kind": "explain",
+        "blocks": [],
+        "eyebrow": "New idea",
+        "headline": "In a sorted list, one comparison with the middle item can rule out half the items.",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Binary search needs a sorted list. It compares the target with the middle item. If that item is too small, it discards it and everything to its left. If too large, everything to its right. Then it repeats on what is left."
+          },
+          {
+            "kind": "paragraph",
+            "text": "With an even number of items, this runner takes the lower middle."
+          }
+        ],
+        "reveal": [],
+        "introducesTerms": [
+          "binary search",
+          "sorted"
+        ],
+        "visualStateId": "",
+        "activityId": "",
+        "checkQuestionId": "cs-basics-halving-the-problem-sorted-check"
+      },
+      {
+        "id": "halve-and-repeat",
+        "kind": "predict",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Compare with the middle of the whole list first. Then keep only the half that could hold the target."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "The middle is 11, which is too small, so only 14, 17 and 20 remain. Their middle is 17. Linear search would need six checks."
+          }
+        ],
+        "diagram": {
+          "type": "search_array",
+          "values": [
+            2,
+            5,
+            8,
+            11,
+            14,
+            17,
+            20
+          ],
+          "target": 17,
+          "strategy": "binary"
+        },
+        "answerVisibility": "hidden-until-response",
+        "visualStateId": "",
+        "checkQuestionId": "cs-basics-halving-the-problem-1",
+        "activityId": ""
+      },
+      {
+        "id": "three-comparisons",
+        "kind": "worked_example",
+        "blocks": [],
+        "lead": [],
+        "reveal": [],
+        "headline": "Search the sorted list [3, 6, 9, 12, 15] for the target 15.",
+        "workedSteps": [
+          {
+            "text": "Compare 15 with the middle item of five.",
+            "math": "9 is too small: keep 12, 15",
+            "selfExplain": {
+              "questionId": "cs-basics-halving-the-problem-why-ignored"
+            }
+          },
+          {
+            "text": "Two items remain. Compare with the lower middle.",
+            "math": "12 is too small: keep 15"
+          },
+          {
+            "text": "One item remains. Compare it.",
+            "math": "15 is the target: found"
+          },
+          {
+            "text": "Each comparison halved the range.",
+            "math": "3 comparisons"
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
+      },
+      {
+        "id": "hit-the-middle",
+        "kind": "faded_example",
+        "blocks": [],
+        "eyebrow": "Your turn, with help",
+        "headline": "Search the sorted list [2, 5, 8, 11, 14, 17, 20] for the target 11.",
+        "lead": [],
+        "reveal": [],
+        "workedSteps": [
+          {
+            "text": "Seven items: the middle one is the fourth, at index 3."
+          },
+          {
+            "text": "Compare the target with the middle item. How many comparisons does it take?",
+            "blank": {
+              "questionId": "cs-basics-halving-the-problem-2"
+            }
+          }
+        ],
+        "answerVisibility": "hidden-until-response",
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "diagram": {
+          "type": "search_array",
+          "values": [
+            2,
+            5,
+            8,
+            11,
+            14,
+            17,
+            20
+          ],
+          "target": 11,
+          "strategy": "binary"
+        }
+      },
+      {
+        "id": "when-nothing-is-left",
+        "kind": "try",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "When the target is missing, the range keeps shrinking until nothing is left. Use the figure to see which items remain after each comparison."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "The middles checked were 11, 5 and 8, then nothing remained. Three comparisons showed 10 is missing; linear search needs seven."
+          }
+        ],
+        "diagram": {
+          "type": "search_array",
+          "values": [
+            2,
+            5,
+            8,
+            11,
+            14,
+            17,
+            20
+          ],
+          "target": 10,
+          "strategy": "binary"
+        },
+        "answerVisibility": "hidden-until-response",
+        "visualStateId": "",
+        "checkQuestionId": "cs-basics-halving-the-problem-3",
+        "activityId": ""
+      },
+      {
+        "id": "an-even-list",
+        "kind": "transfer",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Binary search only works if the list is sorted. Here is a longer sorted list, with an even number of items, so use the lower middle."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "Even in last place, the target took far fewer comparisons than linear search, which needs a check for every item. Each comparison halves what is left."
+          }
+        ],
+        "diagram": {
+          "type": "search_array",
+          "values": [
+            1,
+            4,
+            7,
+            10,
+            13,
+            16,
+            19,
+            22
+          ],
+          "target": 22,
+          "strategy": "binary"
+        },
+        "answerVisibility": "hidden-until-response",
+        "visualStateId": "",
+        "checkQuestionId": "cs-basics-halving-the-problem-4",
+        "activityId": ""
+      }
+    ],
+    "orientation": "Explain why binary search needs a sorted list, and count the comparisons it makes.",
+    "visualStates": [],
+    "visualKind": "none",
+    "activityId": "",
+    "questionIds": [
+      "cs-basics-halving-the-problem-practice-1",
+      "cs-basics-halving-the-problem-practice-2",
+      "cs-basics-halving-the-problem-practice-3"
+    ],
+    "flashcardIds": [
+      "cs-basics-halving-the-problem-card-1",
+      "cs-basics-halving-the-problem-card-2"
+    ],
+    "reviewLabel": "Halving the problem",
+    "nextAction": "Compare how two procedures behave as the input gets large, rather than at one size.",
+    "stageTitles": {
+      "quiz": "Skill check",
+      "review": "Recall it later",
+      "completion": "Ready for the next idea"
+    },
+    "sourceIds": [
+      "openstax-cs-search"
+    ],
+    "assuranceLevel": "source_backed",
+    "intro": {
+      "hook": {
+        "blocks": [
+          {
+            "kind": "paragraph",
+            "text": "I am thinking of a whole number from 1 to 100. You guess 60, and I say “higher”."
+          }
+        ],
+        "questionId": "cs-basics-halving-the-problem-hook"
+      },
+      "promise": "By the end you'll count the comparisons binary search makes on a sorted list, and say why it needs the list sorted.",
+      "estimatedMinutes": 10
+    },
+    "recap": {
+      "keyIdea": "Binary search needs a sorted list. Each comparison with the middle item rules out half of what is left, so it needs far fewer checks than linear search.",
+      "blocks": [
+        {
+          "kind": "paragraph",
+          "text": "You found 17 in 2 comparisons and showed that 10 is missing in 3. In the eight-item list, the last item took 4, against 8 for linear search."
+        }
+      ],
+      "nextHook": "You have seen both searches at a few sizes. Next: what happens to each as the list grows large."
+    },
+    "calculator": "off",
+    "taughtSkills": [
+      "why-sorted",
+      "halve-the-range",
+      "count-comparisons"
+    ]
+  },
+  "questions": [
+    {
+      "id": "cs-basics-halving-the-problem-1",
+      "conceptIds": [
+        "binary-search",
+        "linear-search"
+      ],
+      "prompt": "Search for 17. How many comparisons does binary search make?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Start with the middle of the seven sorted items.",
+        "Compare 17 with the middle value 11, then keep the appropriate half.",
+        "Count the successful comparison with the new middle too."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 2,
+        "unit": "",
+        "absoluteTolerance": 1e-09,
+        "relativeTolerance": 0,
+        "workedAnswer": "First compare 11 at index 3, then 17 at index 5: two comparisons."
+      },
+      "sourceIds": [
+        "openstax-cs-search"
+      ],
+      "onCorrect": "2. The first middle rules out half the list, so the second comparison lands on the target.",
+      "skill": "count-comparisons",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              1
+            ]
+          },
+          "feedback": "The first middle is 11, not 17. The search needs another comparison."
+        },
+        {
+          "match": {
+            "numeric": [
+              6
+            ]
+          },
+          "feedback": "That is how many checks linear search would need. Binary search discards half after each one."
+        }
+      ]
+    },
+    {
+      "id": "cs-basics-halving-the-problem-2",
+      "conceptIds": [
+        "binary-search",
+        "linear-search"
+      ],
+      "prompt": "How many comparisons does it take?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Find the initial middle element before discarding any range.",
+        "The target is 11.",
+        "If the first middle matches, no further comparison is needed."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 1,
+        "unit": "",
+        "absoluteTolerance": 1e-09,
+        "relativeTolerance": 0,
+        "workedAnswer": "The initial middle value is 11, so the first comparison succeeds."
+      },
+      "sourceIds": [
+        "openstax-cs-search"
+      ],
+      "onCorrect": "1. If the first middle is the target, no halving is needed. That is the best case.",
+      "skill": "count-comparisons",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              2
+            ]
+          },
+          "feedback": "Halving only follows a mismatch. Does the first middle match the target?"
+        },
+        {
+          "match": {
+            "numeric": [
+              3
+            ]
+          },
+          "feedback": "The search stops at the first match, so later halves are never needed."
+        }
+      ]
+    },
+    {
+      "id": "cs-basics-halving-the-problem-3",
+      "conceptIds": [
+        "binary-search",
+        "linear-search"
+      ],
+      "prompt": "Search for 10. How many comparisons does it take to show it is missing?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Keep only the half that could still contain 10.",
+        "The inspected middle values are 11, then 5, then 8.",
+        "Count these checks; stop when no candidate index remains."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 3,
+        "unit": "",
+        "absoluteTolerance": 1e-09,
+        "relativeTolerance": 0,
+        "workedAnswer": "The checked values are 11, 5 and 8: three comparisons."
+      },
+      "sourceIds": [
+        "openstax-cs-search"
+      ],
+      "onCorrect": "3. Each comparison halved the range until it was empty, so absence needed only a few checks.",
+      "skill": "count-comparisons",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              7
+            ]
+          },
+          "feedback": "That is linear search, which checks every item. Binary search discards half each time."
+        },
+        {
+          "match": {
+            "numeric": [
+              2
+            ]
+          },
+          "feedback": "After that many comparisons one candidate still remains, and it has to be checked."
+        }
+      ]
+    },
+    {
+      "id": "cs-basics-halving-the-problem-4",
+      "conceptIds": [
+        "binary-search",
+        "linear-search"
+      ],
+      "prompt": "Search for 22, taking the lower middle each time. How many comparisons does it take?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Use the lower middle whenever the remaining range has even length.",
+        "Follow the middle values 10, 16, 19, then 22.",
+        "Count each comparison, including the successful one."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 4,
+        "unit": "",
+        "absoluteTolerance": 1e-09,
+        "relativeTolerance": 0,
+        "workedAnswer": "The search checks 10, 16, 19 and 22: four comparisons."
+      },
+      "sourceIds": [
+        "openstax-cs-search"
+      ],
+      "onCorrect": "4. Each comparison halves the range, so even a last-place target needs far fewer checks than the list is long.",
+      "skill": "count-comparisons",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              8
+            ]
+          },
+          "feedback": "That is linear search. Binary search discards half after each comparison."
+        },
+        {
+          "match": {
+            "numeric": [
+              3
+            ]
+          },
+          "feedback": "The search still has to compare the last remaining item. Count that one too."
+        }
+      ]
+    },
+    {
+      "id": "cs-basics-halving-the-problem-practice-1",
+      "conceptIds": [
+        "binary-search",
+        "linear-search"
+      ],
+      "prompt": "Must the list be sorted for this binary search to be correct? Answer yes or no.",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Discarding a half assumes the remaining values follow the same order.",
+        "Without sorting, a skipped half might still contain the target."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "yes"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Order justifies discarding a whole half."
+      },
+      "sourceIds": [
+        "openstax-cs-search"
+      ],
+      "onCorrect": "Yes. Order is what lets one comparison discard a whole half.",
+      "skill": "why-sorted",
+      "misconceptions": [
+        {
+          "match": {
+            "textIdeas": [
+              "no"
+            ]
+          },
+          "feedback": "Without order, a small middle value says nothing about the half you would throw away."
+        }
+      ]
+    },
+    {
+      "id": "cs-basics-halving-the-problem-practice-2",
+      "conceptIds": [
+        "binary-search",
+        "linear-search"
+      ],
+      "prompt": "For seven sorted items, what is the worst-case number of value comparisons in this binary search?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Count the largest possible remaining ranges.",
+        "Halve the remaining range after excluding the middle; keep the larger half for the worst case.",
+        "Each nonempty range requires one middle-value comparison."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 3,
+        "unit": "",
+        "absoluteTolerance": 1e-09,
+        "relativeTolerance": 0,
+        "workedAnswer": "The remaining sizes shrink from 7 to at most 3 to at most 1: three comparisons."
+      },
+      "sourceIds": [
+        "openstax-cs-search"
+      ],
+      "onCorrect": "3. The largest remaining range shrinks 7, 3, 1, with one comparison for each.",
+      "skill": "count-comparisons",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              2
+            ]
+          },
+          "feedback": "That counts too few ranges. The last remaining item still needs a comparison."
+        },
+        {
+          "match": {
+            "numeric": [
+              7
+            ]
+          },
+          "feedback": "That is linear search. Binary search discards half after each comparison."
+        }
+      ]
+    },
+    {
+      "id": "cs-basics-halving-the-problem-hook",
+      "conceptIds": [
+        "binary-search",
+        "linear-search"
+      ],
+      "prompt": "How many numbers could it still be?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Which numbers does “higher” rule out?",
+        "Is the guess itself still possible?",
+        "Count the numbers above the guess, up to the top."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 40,
+        "unit": "",
+        "absoluteTolerance": 1e-09,
+        "relativeTolerance": 0,
+        "workedAnswer": "Numbers 1 to 60 are ruled out, so 61 to 100 remain: forty numbers."
+      },
+      "sourceIds": [
+        "openstax-cs-search"
+      ],
+      "onCorrect": "40. One guess ruled out more than half the numbers. A search that uses order can discard whole blocks at once.",
+      "skill": "halve-the-range",
+      "calculator": "off",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              41
+            ]
+          },
+          "feedback": "I said higher, not “right”, so the guess itself is ruled out too."
+        },
+        {
+          "match": {
+            "numeric": [
+              60
+            ]
+          },
+          "feedback": "That counts the numbers ruled out. How many are left?"
+        }
+      ]
+    },
+    {
+      "id": "cs-basics-halving-the-problem-why-ignored",
+      "conceptIds": [
+        "binary-search",
+        "linear-search"
+      ],
+      "prompt": "Why can the search ignore 3 and 6 after the first comparison?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "What do you know about every item to the left of 9?"
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "The list is sorted, so they are smaller than 9, which is already too small."
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "The list is sorted, so they are smaller than 9, which is already too small."
+      },
+      "sourceIds": [
+        "openstax-cs-search"
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "The list is sorted, so they are smaller than 9, which is already too small."
+        },
+        {
+          "id": "b",
+          "label": "They were checked earlier."
+        },
+        {
+          "id": "c",
+          "label": "Binary search always ignores the left half."
+        }
+      ],
+      "onCorrect": "Order is what justifies skipping. Everything left of a too-small middle is smaller still.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "They were never checked. The order of the list is what rules them out."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "It ignores whichever half cannot hold the target. A larger middle would rule out the right half."
+        }
+      ],
+      "skill": "why-sorted",
+      "calculator": "off"
+    },
+    {
+      "id": "cs-basics-halving-the-problem-sorted-check",
+      "conceptIds": [
+        "binary-search",
+        "linear-search"
+      ],
+      "prompt": "The middle item of a sorted list is too small. Which items can be discarded?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "What do you know about the items left of the middle?"
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "The middle item and everything to its left."
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "The middle item and everything to its left."
+      },
+      "sourceIds": [
+        "openstax-cs-search"
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "The middle item and everything to its left."
+        },
+        {
+          "id": "b",
+          "label": "Only the middle item."
+        },
+        {
+          "id": "c",
+          "label": "Everything to its right."
+        }
+      ],
+      "onCorrect": "In a sorted list, too small means everything to the left is smaller still.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Being sorted means every item left of the middle is smaller still, so they go too."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Those items are larger than the middle, so one of them could be the target."
+        }
+      ],
+      "skill": "why-sorted",
+      "calculator": "off"
+    },
+    {
+      "id": "cs-basics-halving-the-problem-practice-3",
+      "conceptIds": [
+        "binary-search",
+        "linear-search"
+      ],
+      "prompt": "A sorted list holds 15 items. After one comparison with the middle item, at most how many items can remain?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "How many items are on each side of the middle?",
+        "The middle item itself is discarded as well.",
+        "Keep the larger side."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 7,
+        "unit": "",
+        "absoluteTolerance": 1e-09,
+        "relativeTolerance": 0,
+        "workedAnswer": "The middle item has 7 items on each side. After the comparison, one side is discarded with the middle."
+      },
+      "sourceIds": [
+        "openstax-cs-search"
+      ],
+      "onCorrect": "7. The middle item and one whole side go, leaving at most half of the rest.",
+      "skill": "halve-the-range",
+      "calculator": "off",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              14
+            ]
+          },
+          "feedback": "That removes only the middle item. A whole side goes too."
+        },
+        {
+          "match": {
+            "numeric": [
+              8
+            ]
+          },
+          "feedback": "That counts the middle item with a side. The middle is discarded as well."
+        }
+      ]
+    }
+  ],
+  "citations": [
+    {
+      "claim": "Binary search compares the target with the middle of a sorted range and discards the half that cannot contain it.",
+      "sourceId": "openstax-cs-search",
+      "section": "3.2 Algorithm Design and Discovery: sequential search, binary search and algorithm complexity",
+      "targetKind": "step",
+      "targetId": "sorted-lets-you-skip"
+    },
+    {
+      "claim": "Binary search repeats on the remaining half until it finds the target or the range is empty.",
+      "sourceId": "openstax-cs-search",
+      "section": "3.2 Algorithm Design and Discovery: sequential search, binary search and algorithm complexity",
+      "targetKind": "step",
+      "targetId": "halve-and-repeat"
+    },
+    {
+      "claim": "Each comparison in a sorted list discards a half, so the range shrinks quickly.",
+      "sourceId": "openstax-cs-search",
+      "section": "3.2 Algorithm Design and Discovery: sequential search, binary search and algorithm complexity",
+      "targetKind": "step",
+      "targetId": "three-comparisons"
+    },
+    {
+      "claim": "If the middle item is the target, binary search finishes in one comparison.",
+      "sourceId": "openstax-cs-search",
+      "section": "3.2 Algorithm Design and Discovery: sequential search, binary search and algorithm complexity",
+      "targetKind": "step",
+      "targetId": "hit-the-middle"
+    },
+    {
+      "claim": "An absent target leaves an empty range, so binary search stops without checking every item.",
+      "sourceId": "openstax-cs-search",
+      "section": "3.2 Algorithm Design and Discovery: sequential search, binary search and algorithm complexity",
+      "targetKind": "step",
+      "targetId": "when-nothing-is-left"
+    },
+    {
+      "claim": "Binary search is correct only when the list is sorted in the order used by the comparison.",
+      "sourceId": "openstax-cs-search",
+      "section": "3.2 Algorithm Design and Discovery: sequential search, binary search and algorithm complexity",
+      "targetKind": "step",
+      "targetId": "an-even-list"
+    },
+    {
+      "claim": "One guess against the middle of a range can rule out more than half the possibilities.",
+      "sourceId": "openstax-cs-search",
+      "section": "3.2 Algorithm Design and Discovery: sequential search, binary search and algorithm complexity",
+      "targetKind": "question",
+      "targetId": "cs-basics-halving-the-problem-hook"
+    },
+    {
+      "claim": "Searching for 17 compares 11, then 17: two comparisons.",
+      "sourceId": "openstax-cs-search",
+      "section": "3.2 Algorithm Design and Discovery: sequential search, binary search and algorithm complexity",
+      "targetKind": "question",
+      "targetId": "cs-basics-halving-the-problem-1"
+    },
+    {
+      "claim": "In a sorted list, items left of a too-small middle are smaller still, so they can be discarded.",
+      "sourceId": "openstax-cs-search",
+      "section": "3.2 Algorithm Design and Discovery: sequential search, binary search and algorithm complexity",
+      "targetKind": "question",
+      "targetId": "cs-basics-halving-the-problem-why-ignored"
+    },
+    {
+      "claim": "The first middle value is 11, so searching for 11 takes one comparison.",
+      "sourceId": "openstax-cs-search",
+      "section": "3.2 Algorithm Design and Discovery: sequential search, binary search and algorithm complexity",
+      "targetKind": "question",
+      "targetId": "cs-basics-halving-the-problem-2"
+    },
+    {
+      "claim": "Searching for 10 compares 11, 5 and 8, so it takes three comparisons.",
+      "sourceId": "openstax-cs-search",
+      "section": "3.2 Algorithm Design and Discovery: sequential search, binary search and algorithm complexity",
+      "targetKind": "question",
+      "targetId": "cs-basics-halving-the-problem-3"
+    },
+    {
+      "claim": "Searching for 22 compares 10, 16, 19 and 22: four comparisons.",
+      "sourceId": "openstax-cs-search",
+      "section": "3.2 Algorithm Design and Discovery: sequential search, binary search and algorithm complexity",
+      "targetKind": "question",
+      "targetId": "cs-basics-halving-the-problem-4"
+    },
+    {
+      "claim": "Discarding a half is only justified if the list is sorted.",
+      "sourceId": "openstax-cs-search",
+      "section": "3.2 Algorithm Design and Discovery: sequential search, binary search and algorithm complexity",
+      "targetKind": "question",
+      "targetId": "cs-basics-halving-the-problem-practice-1"
+    },
+    {
+      "claim": "A sorted list of seven items needs at most three comparisons.",
+      "sourceId": "openstax-cs-search",
+      "section": "3.2 Algorithm Design and Discovery: sequential search, binary search and algorithm complexity",
+      "targetKind": "question",
+      "targetId": "cs-basics-halving-the-problem-practice-2"
+    },
+    {
+      "claim": "Fifteen items leave at most seven after the middle comparison.",
+      "sourceId": "openstax-cs-search",
+      "section": "3.2 Algorithm Design and Discovery: sequential search, binary search and algorithm complexity",
+      "targetKind": "question",
+      "targetId": "cs-basics-halving-the-problem-practice-3"
+    },
+    {
+      "claim": "In a sorted list, items left of a too-small middle are smaller still, so they can be discarded.",
+      "sourceId": "openstax-cs-search",
+      "section": "3.2 Algorithm Design and Discovery: sequential search, binary search and algorithm complexity",
+      "targetKind": "question",
+      "targetId": "cs-basics-halving-the-problem-sorted-check"
+    },
+    {
+      "claim": "Checked rule: The worst case is four comparisons.",
+      "sourceId": "openstax-cs-search",
+      "section": "3.2 Algorithm Design and Discovery: sequential search, binary search and algorithm complexity",
+      "targetKind": "flashcard",
+      "targetId": "cs-basics-halving-the-problem-card-1"
+    },
+    {
+      "claim": "Checked rule: The list must be sorted.",
+      "sourceId": "openstax-cs-search",
+      "section": "3.2 Algorithm Design and Discovery: sequential search, binary search and algorithm complexity",
+      "targetKind": "flashcard",
+      "targetId": "cs-basics-halving-the-problem-card-2"
+    }
+  ]
+}

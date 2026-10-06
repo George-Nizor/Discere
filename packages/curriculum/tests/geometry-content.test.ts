@@ -5,6 +5,8 @@ import { loadCourseBundle, assertEditorialApproval, validateCourseBundle } from 
 import { geometryLessons } from "../../../content/geometry-shape-and-space/authoring/lessons.js";
 import { geometryChecks } from "../../../content/geometry-shape-and-space/authoring/course-checks.js";
 import { GeometryDiagramSchema } from "@discere/contracts";
+import { historicalBundle } from "./helpers/published-history.js";
+import { CourseBundleSchema } from "@discere/contracts";
 // Recompute authored answers from the stated problems, without calling the drawing engine.
 const hyp = (a: number, b: number) => Math.sqrt(a * a + b * b);
 const surface = (l: number, w: number, h: number) => l * w + l * w + l * h + l * h + w * h + w * h;
@@ -111,10 +113,13 @@ const checkValues: Record<string, number[]> = {
 describe("independent Geometry content review", () => {
   it("ships the reviewed candidate, exact cover and independently checked authoring", async () => {
     const root = path.resolve(import.meta.dirname, "../../../content/geometry-shape-and-space");
-    const bundle = await loadCourseBundle(path.join(root, "bundle.json"));
+    // The authoring source describes the lessons as first published. A course rewritten to v2
+    // keeps that bundle in review/history (helpers/published-history.ts); approval is on the current one.
+    const current = await loadCourseBundle(path.join(root, "bundle.json"));
+    const bundle = CourseBundleSchema.parse(historicalBundle("geometry-shape-and-space"));
     const review = JSON.parse(await readFile(path.join(root, "review/publication.json"), "utf8"));
     expect(() =>
-      assertEditorialApproval(bundle, review, validateCourseBundle(bundle)),
+      assertEditorialApproval(current, review, validateCourseBundle(current)),
     ).not.toThrow();
     for (const lesson of geometryLessons) {
       lesson.questions.forEach((q, i) =>
