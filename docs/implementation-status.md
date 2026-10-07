@@ -28,7 +28,7 @@ build, 53 affected-route browser scenarios and read-only checks of the served ap
 owner rows and preferences are unchanged. [Motion evidence](motion-polish/README.md) records exact
 run results, recordings and validation limits.
 
-Discere now has twelve active courses in Maths, Geometry, Linear Algebra, Calculus, Physics, Chemistry, Biology, Logic, Computer Science, introductory Probability and Statistics, SQL reporting, and Python data analysis. George's latest 2 October direction closes new-material work for this release. The existing library is the quality and verification scope; wider Notion topics and technical curricula remain a documented future backlog.
+As of 2026-10-07 the checked-in library has 20 courses (233 lessons, 2,447 questions, 468 recall cards in `content/`). The figures below describe the original twelve, in Maths, Geometry, Linear Algebra, Calculus, Physics, Chemistry, Biology, Logic, Computer Science, introductory Probability and Statistics, SQL reporting, and Python data analysis. Later additions are Astronomy, Economics, Electronics Foundations, Engineering, English, Philosophy, Psychology and the Roman Empire. George's latest 2 October direction closes new-material work for this release. The existing library is the quality and verification scope; wider Notion topics and technical curricula remain a documented future backlog.
 The full product target remains in [the roadmap](product-goal-and-library-roadmap.md).
 
 The current-library quality release is complete and running locally. It improves 120 hint sets,
@@ -52,8 +52,9 @@ screenshots, public reference study, original artwork, and question-first teachi
 The earlier Roman recovery remains an archived compatibility flow.
 
 All work is inside Discere. Instrumenta and Claude's wrapper work were not edited. The learning
-core remains independent of the wrapper and model vendor. No OpenAI API integration or paid
-dependency was added.
+core remains independent of the wrapper and model vendor. That release added no OpenAI API
+integration or paid dependency; an `openai-compatible` tutor provider has been added since (see
+[the setup guide](setup.md)).
 
 ## Runtime
 

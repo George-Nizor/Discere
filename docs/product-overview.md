@@ -8,6 +8,6 @@ The product uses generated intelligence for adaptive explanations, questions, fe
 
 Visuals are treated as learning objects. The system selects among retrieved real images, deterministic diagrams, interactive visualisations, and reviewed generated illustrations according to the subject and the factual precision required.
 
-Discere keeps its curriculum, progress, assessment, gamification, visual records, and writing validation in a host-independent local core. ChatGPT is the preferred tutor provider when the required integration surface is available. Companion mode remains functional when it is not.
+Discere keeps its curriculum, progress, assessment, gamification, visual records, and writing validation in a host-independent local core. Tutoring can use the learner's own Claude Code, an OpenAI-compatible endpoint or the local Codex CLI, chosen automatically in that order. Companion mode, a copy-and-paste handoff to ChatGPT, remains functional when none is available.
 
-The prototype begins with **Foundations of Electronics and Circuits** because that course exercises visual explanation, exact diagrams, calculations, simulations, practical work, open responses, and assessment of handwritten workings.
+The prototype began with **Foundations of Electronics and Circuits** because that course exercised visual explanation, exact diagrams, calculations, simulations, practical work, open responses, and assessment of handwritten workings.

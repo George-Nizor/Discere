@@ -133,10 +133,19 @@ The first setup creates `.env`. Supported fields are:
 | `DISCERE_WEB_PORT` | `4318` | Web interface port. |
 | `DISCERE_DATABASE_PATH` | `./data/discere.sqlite` | SQLite database location. A relative value resolves from the repository root, not from the working directory, so every command reads the same file. An absolute path is used as given. |
 | `DISCERE_LEARNER_NAME` | `Learner` | Name displayed in the local profile. |
-| `DISCERE_TUTOR_PROVIDER` | `companion` | How a tutor reply is produced. `companion` writes a packet you paste into ChatGPT, `codex` spawns the local Codex CLI and generates in place, and `mock` returns fixed offline text. |
+| `DISCERE_TUTOR_PROVIDER` | `auto` | What drives the tutor, workings review and authoring. `auto` (also what an unset value means) takes the first driver the machine has, in order: `claude`, `openai-compatible`, `codex`, then `companion`. `claude` runs the local Claude Code CLI, `openai-compatible` calls an OpenAI-style endpoint, `codex` spawns the local Codex CLI, `companion` writes a packet you paste into a chat, and `mock` returns fixed offline text. An unknown value is a startup error. |
+| `DISCERE_AI_ROUTING` | `auto` | `auto`, `fast` or `smart`. Picks the fast or the capable model by rule, without a model call. |
+| `DISCERE_CLAUDE_BIN` | `claude` | Executable used by the `claude` provider. |
+| `DISCERE_CLAUDE_FAST_MODEL` | `claude-haiku-4-5-20251001` | Model for short tutoring turns and style repairs. |
+| `DISCERE_CLAUDE_SMART_MODEL` | `claude-sonnet-5-5` | Model for workings review, assessment, authoring, proofs, long context and retries. |
+| `DISCERE_CLAUDE_EFFORT` | `low` | Reasoning effort passed to the `claude` provider. |
+| `DISCERE_AI_BASE_URL` | `https://api.openai.com/v1` | Endpoint used by the `openai-compatible` provider. Setting it, or the key, makes `auto` consider this driver available. |
+| `DISCERE_AI_API_KEY` | unset | Key for the `openai-compatible` provider. Optional for a local server such as Ollama or LM Studio. |
+| `DISCERE_AI_FAST_MODEL` | `gpt-4o-mini` | Fast model for the `openai-compatible` provider. |
+| `DISCERE_AI_SMART_MODEL` | the fast model | Capable model for the `openai-compatible` provider. |
 | `DISCERE_CODEX_BIN` | `codex` | Executable used by the `codex` provider. |
-| `DISCERE_CODEX_MODEL` | account default | Model passed to the CLI. Leave unset to use the account default. |
-| `DISCERE_CODEX_EFFORT` | `low` | Reasoning effort passed to the CLI. |
+| `DISCERE_CODEX_MODEL` | account default | Model passed to the CLI. Leave unset to use the account default; `instrumenta/product.json` pins `gpt-5.6-luna`. |
+| `DISCERE_CODEX_EFFORT` | `xhigh` | Reasoning effort passed to the CLI. |
 | `DISCERE_CODEX_SCRATCH` | `~/.local/share/discere/codex-scratch` | Working root handed to the CLI. It is created on demand and sits outside the checkout so the CLI never ingests the repository's `AGENTS.md`. |
 | `DISCERE_TUTOR_ASK_TIMEOUT_MS` | `45000` | Wall-clock budget for one tutor question. |
 | `DISCERE_TUTOR_ASSESS_TIMEOUT_MS` | `120000` | Wall-clock budget for one essay assessment or workings review. |
@@ -156,7 +165,7 @@ The CLI runs read-only inside `~/.local/share/discere/codex-scratch`, with a JSO
 codex --version   # confirm the CLI is installed and signed in
 ```
 
-Leaving `DISCERE_TUTOR_PROVIDER` unset keeps the copy-and-paste workflow described in [`chatgpt-companion.md`](chatgpt-companion.md).
+With `DISCERE_TUTOR_PROVIDER` unset or `auto`, Discere uses Claude Code, an OpenAI-compatible API or Codex if the machine has one. Only when none is found does it fall back to the copy-and-paste workflow described in [`chatgpt-companion.md`](chatgpt-companion.md), which `DISCERE_TUTOR_PROVIDER=companion` also selects directly.
 
 ## Database schema
 
@@ -312,7 +321,10 @@ picked, `HOST=127.0.0.1`, and the manifest's own environment:
 {
   "DISCERE_WEB_ROOT": "apps/web/dist",
   "DISCERE_AUTO_MIGRATE": "1",
-  "DISCERE_TUTOR_PROVIDER": "codex"
+  "DISCERE_TUTOR_PROVIDER": "auto",
+  "DISCERE_AI_ROUTING": "auto",
+  "DISCERE_CODEX_MODEL": "gpt-5.6-luna",
+  "DISCERE_CODEX_EFFORT": "xhigh"
 }
 ```
 
@@ -349,6 +361,6 @@ The agent skill that documents these tools lives in `ai/skills/learn-with-discer
 
 ## ChatGPT companion workflow
 
-The prototype does not use paid OpenAI API calls. The current companion workflow prepares structured text that can be copied into a ChatGPT conversation. Returned structured content is validated before it can enter the learning system.
+The companion provider makes no API calls of its own; paid API use only happens if you choose the `openai-compatible` provider. The companion workflow prepares structured text that can be copied into a ChatGPT conversation. Returned structured content is validated before it can enter the learning system.
 
 The full ChatGPT-native MCP interface remains isolated behind an adapter until the required host capabilities are confirmed on the target account.
