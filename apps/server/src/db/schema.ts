@@ -282,3 +282,31 @@ export const pythonProjectActions = sqliteTable(
   },
   (table) => [primaryKey({ columns: [table.sessionId, table.requestId] })],
 );
+
+export const rustProjectSessions = sqliteTable("rust_project_sessions", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  courseId: text("course_id").notNull(),
+  projectId: text("project_id").notNull(),
+  projectHash: text("project_hash").notNull(),
+  definitionJson: text("definition_json").notNull(),
+  mode: text("mode").notNull(),
+  revision: integer("revision").notNull().default(0),
+  currentIndex: integer("current_index").notNull().default(0),
+  statesJson: text("states_json").notNull().default("[]"),
+  createdAt: text("created_at").notNull(),
+  completedAt: text("completed_at"),
+  xp: integer("xp").notNull().default(0),
+});
+export const rustProjectActions = sqliteTable(
+  "rust_project_actions",
+  {
+    sessionId: text("session_id")
+      .notNull()
+      .references(() => rustProjectSessions.id),
+    requestId: text("request_id").notNull(),
+    requestJson: text("request_json").notNull(),
+    occurredAt: text("occurred_at").notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.sessionId, table.requestId] })],
+);

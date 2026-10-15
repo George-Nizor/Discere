@@ -1,0 +1,1856 @@
+{
+  "course": {
+    "id": "rust-foundations",
+    "version": "0.1.0",
+    "title": "Rust Foundations",
+    "description": "Read, run and write small Rust programs, with the real compiler checking your work.",
+    "audience": "Someone new to Rust. Some programming in another language helps but isn't needed.",
+    "assuranceLevel": "source_backed",
+    "moduleIds": [
+      "rust-first-programs"
+    ],
+    "sourceIds": [
+      "book-hello",
+      "book-variables",
+      "book-types",
+      "book-functions",
+      "rbe-print",
+      "rbe-bindings",
+      "rbe-cast",
+      "rustlings"
+    ],
+    "accent": "#c2410c",
+    "coverAsset": "cover.svg",
+    "status": "available",
+    "subjects": [
+      "Computer science",
+      "Programming"
+    ]
+  },
+  "modules": [
+    {
+      "id": "rust-first-programs",
+      "title": "First programs",
+      "description": "Printing, variables, number types and functions.",
+      "conceptIds": [
+        "rust-bindings",
+        "rust-functions"
+      ]
+    }
+  ],
+  "concepts": [
+    {
+      "id": "rust-bindings",
+      "moduleId": "rust-first-programs",
+      "title": "Variables and printing",
+      "summary": "let names a value and println! prints it. Add mut when the value has to change.",
+      "prerequisiteIds": [],
+      "misconceptionIds": [],
+      "assuranceLevel": "source_backed"
+    },
+    {
+      "id": "rust-functions",
+      "moduleId": "rust-first-programs",
+      "title": "Types and functions",
+      "summary": "Whole and decimal number types, and functions that return their last expression.",
+      "prerequisiteIds": [
+        "rust-bindings"
+      ],
+      "misconceptionIds": [],
+      "assuranceLevel": "source_backed"
+    }
+  ],
+  "lessons": [
+    {
+      "id": "print-and-bind",
+      "courseId": "rust-foundations",
+      "conceptIds": [
+        "rust-bindings"
+      ],
+      "title": "Print a value, then change it",
+      "steps": [
+        {
+          "id": "main-and-println",
+          "kind": "explain",
+          "blocks": [],
+          "headline": "A Rust program starts at fn main and runs its lines from top to bottom.",
+          "lead": [
+            {
+              "kind": "paragraph",
+              "text": "The code inside fn main() { } runs first. println! prints one line. Each {} in its text is replaced by the next value after the comma."
+            },
+            {
+              "kind": "callout",
+              "tone": "key",
+              "text": "The ! marks println! as a macro. You call it like a function, but its name always ends in !."
+            }
+          ],
+          "reveal": [],
+          "introducesTerms": [
+            "fn main",
+            "println!"
+          ],
+          "visualStateId": "",
+          "checkQuestionId": "print-and-bind-swap",
+          "activityId": ""
+        },
+        {
+          "id": "first-program",
+          "kind": "try",
+          "blocks": [],
+          "lead": [
+            {
+              "kind": "paragraph",
+              "text": "Now write a whole program yourself. Run it as often as you like before you check it."
+            }
+          ],
+          "reveal": [],
+          "visualStateId": "",
+          "checkQuestionId": "print-and-bind-first-program",
+          "activityId": ""
+        },
+        {
+          "id": "let-names-a-value",
+          "kind": "predict",
+          "blocks": [],
+          "lead": [
+            {
+              "kind": "paragraph",
+              "text": "let gives a value a name. Writing a name inside the braces, as in {area}, prints that variable."
+            }
+          ],
+          "reveal": [
+            {
+              "kind": "paragraph",
+              "text": "Each let named a value, and later lines used the names. Rust worked out from 6 and 4 that these are whole numbers."
+            }
+          ],
+          "answerVisibility": "hidden-until-response",
+          "visualStateId": "",
+          "checkQuestionId": "print-and-bind-area",
+          "activityId": "",
+          "diagram": {
+            "type": "rust_program",
+            "runtime": "Rust 1.93.1",
+            "code": "fn main() {\n    let width = 6;\n    let height = 4;\n    let area = width * height;\n    println!(\"area = {area}\");\n}",
+            "outcome": {
+              "kind": "output",
+              "stdout": "area = 24"
+            }
+          }
+        },
+        {
+          "id": "immutable-by-default",
+          "kind": "try",
+          "blocks": [],
+          "lead": [
+            {
+              "kind": "paragraph",
+              "text": "This program tries to add 5 to score after creating it. Decide whether rustc accepts it, then run it to see what the compiler says."
+            }
+          ],
+          "reveal": [
+            {
+              "kind": "paragraph",
+              "text": "A variable made with plain let keeps its first value. Rust makes you say up front which values will change, so a reader knows where to look."
+            }
+          ],
+          "answerVisibility": "hidden-until-response",
+          "visualStateId": "",
+          "checkQuestionId": "print-and-bind-reassign",
+          "activityId": "",
+          "diagram": {
+            "type": "rust_program",
+            "runtime": "Rust 1.93.1",
+            "code": "fn main() {\n    let score = 10;\n    score = score + 5;\n    println!(\"{score}\");\n}",
+            "outcome": {
+              "kind": "compile_error",
+              "diagnostics": "error[E0384]: cannot assign twice to immutable variable `score`\n --> main.rs:3:5\n  |\n2 |     let score = 10;\n  |         ----- first assignment to `score`\n3 |     score = score + 5;\n  |     ^^^^^^^^^^^^^^^^^ cannot assign twice to immutable variable\n  |\nhelp: consider making this binding mutable\n  |\n2 |     let mut score = 10;\n  |         +++\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0384`."
+            }
+          }
+        },
+        {
+          "id": "fix-it",
+          "kind": "try",
+          "blocks": [],
+          "lead": [
+            {
+              "kind": "paragraph",
+              "text": "Here is the same program. Make it compile. Run it first and read what rustc suggests."
+            }
+          ],
+          "reveal": [
+            {
+              "kind": "paragraph",
+              "text": "rustc often tells you the fix. Here it pointed at line 2 and suggested let mut score."
+            }
+          ],
+          "visualStateId": "",
+          "checkQuestionId": "print-and-bind-fix-score",
+          "activityId": ""
+        },
+        {
+          "id": "shadowing",
+          "kind": "transfer",
+          "blocks": [],
+          "lead": [
+            {
+              "kind": "paragraph",
+              "text": "A second let with the same name makes a new variable that hides the first. This is called shadowing, and it needs no mut."
+            }
+          ],
+          "reveal": [
+            {
+              "kind": "paragraph",
+              "text": "Shadowing makes a new variable each time. mut changes the same one. Shadowing also lets the new variable have a different type."
+            }
+          ],
+          "visualStateId": "",
+          "checkQuestionId": "print-and-bind-shadow",
+          "activityId": ""
+        }
+      ],
+      "orientation": "Write a program that prints values, and choose which of its variables may change.",
+      "visualStates": [],
+      "visualKind": "none",
+      "activityId": "",
+      "questionIds": [
+        "print-and-bind-practice-1",
+        "print-and-bind-practice-2",
+        "print-and-bind-practice-3"
+      ],
+      "flashcardIds": [
+        "print-and-bind-card-1",
+        "print-and-bind-card-2"
+      ],
+      "reviewLabel": "Print a value, then change it",
+      "nextAction": "Give your values types and put a calculation in a function.",
+      "stageTitles": {
+        "quiz": "Skill check",
+        "review": "Recall it later",
+        "completion": "Ready for the next idea"
+      },
+      "sourceIds": [
+        "book-hello",
+        "book-variables",
+        "rbe-print",
+        "rbe-bindings",
+        "rustlings"
+      ],
+      "assuranceLevel": "source_backed",
+      "intro": {
+        "hook": {
+          "blocks": [
+            {
+              "kind": "paragraph",
+              "text": "Here is a complete Rust program. You haven't learned any Rust yet, but try reading it anyway."
+            }
+          ],
+          "diagram": {
+            "type": "rust_program",
+            "runtime": "Rust 1.93.1",
+            "code": "fn main() {\n    let apples = 3;\n    let pears = 4;\n    println!(\"{}\", apples + pears);\n}",
+            "outcome": {
+              "kind": "output",
+              "stdout": "7"
+            }
+          },
+          "questionId": "print-and-bind-hook"
+        },
+        "promise": "By the end you'll write Rust that prints values, and you'll decide which variables may change.",
+        "estimatedMinutes": 10
+      },
+      "recap": {
+        "keyIdea": "let names a value, and that value stays fixed unless you write let mut. A second let makes a new variable instead.",
+        "blocks": [
+          {
+            "kind": "paragraph",
+            "text": "You wrote your first two programs and fixed rustc's E0384 error twice: once with mut, once with shadowing."
+          }
+        ],
+        "nextHook": "So far Rust guessed every type. Next you'll write the types yourself and put a calculation in a function."
+      },
+      "calculator": "off",
+      "taughtSkills": [
+        "read-program",
+        "use-println",
+        "use-let",
+        "spot-immutable",
+        "use-mut",
+        "use-shadowing"
+      ]
+    },
+    {
+      "id": "types-and-functions",
+      "courseId": "rust-foundations",
+      "conceptIds": [
+        "rust-functions"
+      ],
+      "title": "Types and functions",
+      "steps": [
+        {
+          "id": "integers-and-floats",
+          "kind": "explain",
+          "blocks": [],
+          "headline": "Every value has a type: i32 for whole numbers, f64 for numbers with a decimal point.",
+          "lead": [
+            {
+              "kind": "paragraph",
+              "text": "Rust works out the type from the value. 7 is an i32, a 32-bit integer, and 7.0 is an f64. Dividing two i32 values drops the remainder. Dividing two f64 values keeps it."
+            }
+          ],
+          "reveal": [],
+          "answerVisibility": "hidden-until-response",
+          "introducesTerms": [
+            "i32",
+            "f64"
+          ],
+          "visualStateId": "",
+          "checkQuestionId": "types-and-functions-exact",
+          "activityId": "",
+          "diagram": {
+            "type": "rust_program",
+            "runtime": "Rust 1.93.1",
+            "code": "fn main() {\n    let whole = 9 / 4;\n    let exact = 9.0 / 4.0;\n    println!(\"{whole} and {exact}\");\n}",
+            "outcome": {
+              "kind": "output",
+              "stdout": "2 and 2.25"
+            }
+          }
+        },
+        {
+          "id": "no-mixing",
+          "kind": "try",
+          "blocks": [],
+          "lead": [
+            {
+              "kind": "paragraph",
+              "text": "You can write a type yourself after a colon, as in let price: f64 = 2.5. Rust never converts between number types on its own. Does this compile?"
+            }
+          ],
+          "reveal": [
+            {
+              "kind": "paragraph",
+              "text": "Write price * count as f64 to convert count first. as converts one number type into another, and you choose where it happens."
+            }
+          ],
+          "answerVisibility": "hidden-until-response",
+          "visualStateId": "",
+          "checkQuestionId": "types-and-functions-mixing",
+          "activityId": "",
+          "diagram": {
+            "type": "rust_program",
+            "runtime": "Rust 1.93.1",
+            "code": "fn main() {\n    let price: f64 = 2.5;\n    let count: i32 = 4;\n    println!(\"{}\", price * count);\n}",
+            "outcome": {
+              "kind": "compile_error",
+              "diagnostics": "error[E0277]: cannot multiply `f64` by `i32`\n --> main.rs:4:26\n  |\n4 |     println!(\"{}\", price * count);\n  |                          ^ no implementation for `f64 * i32`\n  |\n  = help: the trait `Mul<i32>` is not implemented for `f64`\nhelp: the following other types implement trait `Mul<Rhs>`\n --> /rustc/01f6ddf7588f42ae2d7eb0a2f21d44e8e96674cf/library/core/src/ops/arith.rs:361:1\n  |\n  = note: `&f64` implements `Mul<f64>`\n  |\n  = note: `&f64` implements `Mul`\n  |\n  = note: `f64` implements `Mul<&f64>`\n  |\n  = note: `f64` implements `Mul`\n  = note: this error originates in the macro `mul_impl` (in Nightly builds, run with -Z macro-backtrace for more info)\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0277`."
+            }
+          }
+        },
+        {
+          "id": "convert-with-as",
+          "kind": "try",
+          "blocks": [],
+          "lead": [
+            {
+              "kind": "paragraph",
+              "text": "as converts one number type into another, as in count as f64. Use it to fix the program you just saw."
+            }
+          ],
+          "reveal": [],
+          "introducesTerms": [
+            "as"
+          ],
+          "visualStateId": "",
+          "checkQuestionId": "types-and-functions-fix-as",
+          "activityId": ""
+        },
+        {
+          "id": "functions",
+          "kind": "explain",
+          "blocks": [],
+          "headline": "A function names a calculation. Its parameters and its return value all have types.",
+          "lead": [
+            {
+              "kind": "paragraph",
+              "text": "fn double(n: i32) -> i32 takes an i32 called n and returns an i32. The type after -> is the return type. The last line of the body, written without a semicolon, is the value the function returns."
+            }
+          ],
+          "reveal": [],
+          "answerVisibility": "hidden-until-response",
+          "introducesTerms": [
+            "parameter",
+            "return type"
+          ],
+          "visualStateId": "",
+          "checkQuestionId": "types-and-functions-return-type",
+          "activityId": "",
+          "diagram": {
+            "type": "rust_program",
+            "runtime": "Rust 1.93.1",
+            "code": "fn double(n: i32) -> i32 {\n    n * 2\n}\n\nfn main() {\n    let result = double(21);\n    println!(\"{result}\");\n}",
+            "outcome": {
+              "kind": "output",
+              "stdout": "42"
+            }
+          }
+        },
+        {
+          "id": "write-triple",
+          "kind": "try",
+          "blocks": [],
+          "lead": [
+            {
+              "kind": "paragraph",
+              "text": "Write a function of your own. The checker calls it with several numbers, so it has to work for any i32."
+            }
+          ],
+          "reveal": [],
+          "visualStateId": "",
+          "checkQuestionId": "types-and-functions-triple",
+          "activityId": ""
+        },
+        {
+          "id": "call-a-function",
+          "kind": "predict",
+          "blocks": [],
+          "lead": [
+            {
+              "kind": "paragraph",
+              "text": "add_tax adds a tenth of the price. main calls it twice and adds the results."
+            }
+          ],
+          "reveal": [
+            {
+              "kind": "paragraph",
+              "text": "Each call gets its own price. price / 10 is integer division, so add_tax(20) adds 2, not 2.0."
+            }
+          ],
+          "answerVisibility": "hidden-until-response",
+          "visualStateId": "",
+          "checkQuestionId": "types-and-functions-tax",
+          "activityId": "",
+          "diagram": {
+            "type": "rust_program",
+            "runtime": "Rust 1.93.1",
+            "code": "fn add_tax(price: i32) -> i32 {\n    price + price / 10\n}\n\nfn main() {\n    let total = add_tax(50) + add_tax(20);\n    println!(\"{total}\");\n}",
+            "outcome": {
+              "kind": "output",
+              "stdout": "77"
+            }
+          }
+        },
+        {
+          "id": "the-semicolon",
+          "kind": "try",
+          "blocks": [],
+          "lead": [
+            {
+              "kind": "paragraph",
+              "text": "This is double again, with one change: a semicolon after n * 2."
+            }
+          ],
+          "reveal": [
+            {
+              "kind": "paragraph",
+              "text": "A line ending in a semicolon is a statement and produces no value. The body now ends without a value, but the signature promised an i32."
+            }
+          ],
+          "answerVisibility": "hidden-until-response",
+          "visualStateId": "",
+          "checkQuestionId": "types-and-functions-semicolon",
+          "activityId": "",
+          "diagram": {
+            "type": "rust_program",
+            "runtime": "Rust 1.93.1",
+            "code": "fn double(n: i32) -> i32 {\n    n * 2;\n}\n\nfn main() {\n    println!(\"{}\", double(21));\n}",
+            "outcome": {
+              "kind": "compile_error",
+              "diagnostics": "error[E0308]: mismatched types\n --> main.rs:1:22\n  |\n1 | fn double(n: i32) -> i32 {\n  |    ------            ^^^ expected `i32`, found `()`\n  |    |\n  |    implicitly returns `()` as its body has no tail or `return` expression\n2 |     n * 2;\n  |          - help: remove this semicolon to return this value\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0308`."
+            }
+          }
+        },
+        {
+          "id": "average",
+          "kind": "transfer",
+          "blocks": [],
+          "lead": [
+            {
+              "kind": "paragraph",
+              "text": "Now the parameters are f64 values. Write the function from its signature and the example."
+            }
+          ],
+          "reveal": [
+            {
+              "kind": "paragraph",
+              "text": "The brackets add first, then the sum is divided by 2.0. With i32 parameters the same calculation would drop the .5."
+            }
+          ],
+          "visualStateId": "",
+          "checkQuestionId": "types-and-functions-average",
+          "activityId": ""
+        }
+      ],
+      "orientation": "Choose between whole and decimal numbers, and write functions that take and return typed values.",
+      "visualStates": [],
+      "visualKind": "none",
+      "activityId": "",
+      "questionIds": [
+        "types-and-functions-practice-1",
+        "types-and-functions-practice-2",
+        "types-and-functions-practice-3"
+      ],
+      "flashcardIds": [
+        "types-and-functions-card-1",
+        "types-and-functions-card-2"
+      ],
+      "reviewLabel": "Types and functions",
+      "nextAction": "Write your own programs in the Rust projects.",
+      "stageTitles": {
+        "quiz": "Skill check",
+        "review": "Recall it later",
+        "completion": "Ready to write programs"
+      },
+      "sourceIds": [
+        "book-types",
+        "book-functions",
+        "rbe-cast",
+        "rustlings"
+      ],
+      "assuranceLevel": "source_backed",
+      "intro": {
+        "hook": {
+          "blocks": [
+            {
+              "kind": "paragraph",
+              "text": "Seven cookies shared between two people is three and a half each. Here is the same sum in Rust."
+            }
+          ],
+          "diagram": {
+            "type": "rust_program",
+            "runtime": "Rust 1.93.1",
+            "code": "fn main() {\n    let cookies = 7;\n    let people = 2;\n    println!(\"{}\", cookies / people);\n}",
+            "outcome": {
+              "kind": "output",
+              "stdout": "3"
+            }
+          },
+          "questionId": "types-and-functions-hook"
+        },
+        "promise": "By the end you'll write functions with typed parameters and return values, and know when division drops a remainder.",
+        "estimatedMinutes": 12
+      },
+      "recap": {
+        "keyIdea": "Every value has a type that Rust won't change for you, and a function returns its last expression.",
+        "blocks": [
+          {
+            "kind": "paragraph",
+            "text": "You made 7 / 2 print 3.5, fixed E0277 with as, and wrote functions that the checker called with numbers you never saw."
+          }
+        ],
+        "nextHook": "You can now read and fix small programs. The projects ask you to write them."
+      },
+      "calculator": "off",
+      "taughtSkills": [
+        "integer-division",
+        "choose-number-type",
+        "spot-type-mismatch",
+        "read-signature",
+        "call-function",
+        "spot-semicolon",
+        "write-function"
+      ]
+    }
+  ],
+  "activities": [],
+  "questions": [
+    {
+      "id": "print-and-bind-hook",
+      "conceptIds": [
+        "rust-bindings"
+      ],
+      "prompt": "What number does this program print?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "apples holds 3 and pears holds 4.",
+        "The program prints apples + pears.",
+        "Add the two values."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 7,
+        "unit": "",
+        "absoluteTolerance": 1e-9,
+        "relativeTolerance": 0,
+        "workedAnswer": "3 + 4 is 7, and println! prints it."
+      },
+      "sourceIds": [
+        "book-hello",
+        "book-variables",
+        "rbe-print",
+        "rbe-bindings",
+        "rustlings"
+      ],
+      "onCorrect": "7. You read a Rust program without being told any of its rules.",
+      "skill": "read-program",
+      "calculator": "off"
+    },
+    {
+      "id": "print-and-bind-swap",
+      "conceptIds": [
+        "rust-bindings"
+      ],
+      "prompt": "Change the program so that it prints 5 and 2.",
+      "responseType": "code",
+      "difficulty": 1,
+      "hints": [
+        "The braces fill in the order of the values after the text.",
+        "Swap the 2 and the 5 after the comma."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Passes every test when run"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "fn main() {\n    println!(\"{} and {}\", 5, 2);\n}\n"
+      },
+      "sourceIds": [
+        "book-hello",
+        "book-variables",
+        "rbe-print",
+        "rbe-bindings",
+        "rustlings"
+      ],
+      "code": {
+        "language": "rust",
+        "kind": "program",
+        "starter": "fn main() {\n    println!(\"{} and {}\", 2, 5);\n}\n",
+        "example": {
+          "expected": "5 and 2"
+        }
+      },
+      "codeCases": [
+        {
+          "expected": "5 and 2"
+        }
+      ],
+      "onCorrect": "The braces take the values in order, so swapping the values swaps the output.",
+      "skill": "use-println"
+    },
+    {
+      "id": "print-and-bind-first-program",
+      "conceptIds": [
+        "rust-bindings"
+      ],
+      "prompt": "Write a program that prints two lines: Hello, Rust! and then 3 + 4 = 7. Let Rust work out the 7 by putting 3 + 4 after the text.",
+      "responseType": "code",
+      "difficulty": 1,
+      "hints": [
+        "Each println! prints one line, so you need two of them.",
+        "The second one is println!(\"3 + 4 = {}\", 3 + 4);"
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Passes every test when run"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "fn main() {\n    println!(\"Hello, Rust!\");\n    println!(\"3 + 4 = {}\", 3 + 4);\n}\n"
+      },
+      "sourceIds": [
+        "book-hello",
+        "book-variables",
+        "rbe-print",
+        "rbe-bindings",
+        "rustlings"
+      ],
+      "code": {
+        "language": "rust",
+        "kind": "program",
+        "starter": "fn main() {\n    // Print the two lines here.\n}\n",
+        "example": {
+          "expected": "Hello, Rust!\n3 + 4 = 7"
+        }
+      },
+      "codeCases": [
+        {
+          "expected": "Hello, Rust!\n3 + 4 = 7"
+        }
+      ],
+      "onCorrect": "Two println! calls, two lines. The {} took the value of 3 + 4.",
+      "skill": "use-println"
+    },
+    {
+      "id": "print-and-bind-area",
+      "conceptIds": [
+        "rust-bindings"
+      ],
+      "prompt": "What number does the program print after area =?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Find width and height first.",
+        "area is width * height.",
+        "Multiply 6 by 4."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 24,
+        "unit": "",
+        "absoluteTolerance": 1e-9,
+        "relativeTolerance": 0,
+        "workedAnswer": "area is width * height, which is 6 * 4 = 24."
+      },
+      "sourceIds": [
+        "book-hello",
+        "book-variables",
+        "rbe-print",
+        "rbe-bindings",
+        "rustlings"
+      ],
+      "onCorrect": "24. Each let gave a value a name the later lines could use.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              10
+            ]
+          },
+          "feedback": "That adds the two sides. area multiplies them."
+        }
+      ],
+      "skill": "use-let",
+      "calculator": "off"
+    },
+    {
+      "id": "print-and-bind-reassign",
+      "conceptIds": [
+        "rust-bindings"
+      ],
+      "prompt": "Does this program compile?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Look at how score was created, then at line 3."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "No. score was made without mut, so it cannot get a new value."
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "No. score was made without mut, so it cannot get a new value."
+      },
+      "sourceIds": [
+        "book-hello",
+        "book-variables",
+        "rbe-print",
+        "rbe-bindings",
+        "rustlings"
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "No. score was made without mut, so it cannot get a new value."
+        },
+        {
+          "id": "b",
+          "label": "Yes, and it prints 15."
+        },
+        {
+          "id": "c",
+          "label": "No. Every let needs a type such as i32."
+        }
+      ],
+      "onCorrect": "rustc stops with error E0384 and suggests the fix itself: let mut score.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "It would print 15 if Rust allowed the change. Line 3 gives score a second value, and score never asked for that."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Rust works out the type from 10, so no type is needed here. The problem is on line 3."
+        }
+      ],
+      "skill": "spot-immutable"
+    },
+    {
+      "id": "print-and-bind-fix-score",
+      "conceptIds": [
+        "rust-bindings"
+      ],
+      "prompt": "Fix this program so that it compiles and prints 15. You only need to change one line.",
+      "responseType": "code",
+      "difficulty": 1,
+      "hints": [
+        "Run it first. rustc's message ends with a suggested fix.",
+        "score needs to be allowed to change, which is decided where it is created.",
+        "Line 2 becomes let mut score = 10;"
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Passes every test when run"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "fn main() {\n    let mut score = 10;\n    score = score + 5;\n    println!(\"{score}\");\n}\n"
+      },
+      "sourceIds": [
+        "book-hello",
+        "book-variables",
+        "rbe-print",
+        "rbe-bindings",
+        "rustlings"
+      ],
+      "code": {
+        "language": "rust",
+        "kind": "program",
+        "starter": "fn main() {\n    let score = 10;\n    score = score + 5;\n    println!(\"{score}\");\n}\n",
+        "example": {
+          "expected": "15"
+        }
+      },
+      "codeCases": [
+        {
+          "expected": "15"
+        }
+      ],
+      "onCorrect": "let mut score said up front that score will change, so line 3 is allowed.",
+      "skill": "use-mut"
+    },
+    {
+      "id": "print-and-bind-shadow",
+      "conceptIds": [
+        "rust-bindings"
+      ],
+      "prompt": "Fix this program without using mut: turn each line that changes level into a new let. It should print 7.",
+      "responseType": "code",
+      "difficulty": 1,
+      "hints": [
+        "Lines 3 and 4 give level a new value, which plain let doesn't allow.",
+        "Start each of those two lines with let.",
+        "Line 3 becomes let level = level * 3;"
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Passes every test when run"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "fn main() {\n    let level = 2;\n    let level = level * 3;\n    let level = level + 1;\n    println!(\"{level}\");\n}\n"
+      },
+      "sourceIds": [
+        "book-hello",
+        "book-variables",
+        "rbe-print",
+        "rbe-bindings",
+        "rustlings"
+      ],
+      "code": {
+        "language": "rust",
+        "kind": "program",
+        "starter": "fn main() {\n    let level = 2;\n    level = level * 3;\n    level = level + 1;\n    println!(\"{level}\");\n}\n",
+        "example": {
+          "expected": "7"
+        }
+      },
+      "codeCases": [
+        {
+          "expected": "7"
+        }
+      ],
+      "onCorrect": "Each let made a new level from the one before, without any mut.",
+      "skill": "use-shadowing"
+    },
+    {
+      "id": "print-and-bind-practice-1",
+      "conceptIds": [
+        "rust-bindings"
+      ],
+      "prompt": "Write a program where count starts at 1 and is doubled three times with count = count * 2. Then print count = 8.",
+      "responseType": "code",
+      "difficulty": 1,
+      "hints": [
+        "count changes after it is created, so it needs mut.",
+        "Print it with println!(\"count = {count}\");"
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Passes every test when run"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "fn main() {\n    let mut count = 1;\n    count = count * 2;\n    count = count * 2;\n    count = count * 2;\n    println!(\"count = {count}\");\n}\n"
+      },
+      "sourceIds": [
+        "book-hello",
+        "book-variables",
+        "rbe-print",
+        "rbe-bindings",
+        "rustlings"
+      ],
+      "code": {
+        "language": "rust",
+        "kind": "program",
+        "starter": "fn main() {\n    // Create count, double it three times, then print it.\n}\n",
+        "example": {
+          "expected": "count = 8"
+        }
+      },
+      "codeCases": [
+        {
+          "expected": "count = 8"
+        }
+      ],
+      "skill": "use-mut"
+    },
+    {
+      "id": "print-and-bind-practice-2",
+      "conceptIds": [
+        "rust-bindings"
+      ],
+      "prompt": "Which word do you write after let so that a variable can be given a new value later?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "It is short for mutable."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "mut"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "mut: let mut count = 0;"
+      },
+      "sourceIds": [
+        "book-hello",
+        "book-variables",
+        "rbe-print",
+        "rbe-bindings",
+        "rustlings"
+      ],
+      "skill": "use-mut"
+    },
+    {
+      "id": "print-and-bind-practice-3",
+      "conceptIds": [
+        "rust-bindings"
+      ],
+      "prompt": "Does let x = 5; followed by let x = \"five\"; compile?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Is the second line changing x, or making a new one?"
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Yes. The second let makes a new x, and a new variable can have a new type."
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Yes. The second let makes a new x, and a new variable can have a new type."
+      },
+      "sourceIds": [
+        "book-hello",
+        "book-variables",
+        "rbe-print",
+        "rbe-bindings",
+        "rustlings"
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "Yes. The second let makes a new x, and a new variable can have a new type."
+        },
+        {
+          "id": "b",
+          "label": "No. x is an integer, so it can never hold text."
+        },
+        {
+          "id": "c",
+          "label": "No. You need let mut x for the second line."
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "That would be true if line 2 assigned to the same x. A second let makes a new variable."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "mut is for assigning to the same variable. A second let does not need it."
+        }
+      ],
+      "skill": "use-shadowing"
+    },
+    {
+      "id": "types-and-functions-hook",
+      "conceptIds": [
+        "rust-functions"
+      ],
+      "prompt": "What does this program print?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "cookies and people are both whole numbers.",
+        "Dividing two whole numbers in Rust gives a whole number.",
+        "How many whole times does 2 go into 7?"
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 3,
+        "unit": "",
+        "absoluteTolerance": 1e-9,
+        "relativeTolerance": 0,
+        "workedAnswer": "7 / 2 with two whole numbers gives 3. The remainder of 1 is dropped."
+      },
+      "sourceIds": [
+        "book-types",
+        "book-functions",
+        "rbe-cast",
+        "rustlings"
+      ],
+      "onCorrect": "3. Rust divided two whole numbers and dropped the remainder.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              3.5
+            ]
+          },
+          "feedback": "That is the exact answer, but these are whole numbers. Rust keeps the result whole."
+        }
+      ],
+      "skill": "integer-division",
+      "calculator": "off"
+    },
+    {
+      "id": "types-and-functions-exact",
+      "conceptIds": [
+        "rust-functions"
+      ],
+      "prompt": "This program prints 3. Change it so that it prints 3.5.",
+      "responseType": "code",
+      "difficulty": 1,
+      "hints": [
+        "7 and 2 are i32 values, so the remainder is dropped.",
+        "Write both numbers with a decimal point."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Passes every test when run"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "fn main() {\n    let share = 7.0 / 2.0;\n    println!(\"{share}\");\n}\n"
+      },
+      "sourceIds": [
+        "book-types",
+        "book-functions",
+        "rbe-cast",
+        "rustlings"
+      ],
+      "code": {
+        "language": "rust",
+        "kind": "program",
+        "starter": "fn main() {\n    let share = 7 / 2;\n    println!(\"{share}\");\n}\n",
+        "example": {
+          "expected": "3.5"
+        }
+      },
+      "codeCases": [
+        {
+          "expected": "3.5"
+        }
+      ],
+      "onCorrect": "7.0 / 2.0 divides two f64 values, so the .5 is kept.",
+      "skill": "choose-number-type"
+    },
+    {
+      "id": "types-and-functions-mixing",
+      "conceptIds": [
+        "rust-functions"
+      ],
+      "prompt": "Does this program compile?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Look at the two types written after price and count."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "No. Rust will not multiply an f64 by an i32 until you convert one of them."
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "No. Rust will not multiply an f64 by an i32 until you convert one of them."
+      },
+      "sourceIds": [
+        "book-types",
+        "book-functions",
+        "rbe-cast",
+        "rustlings"
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "No. Rust will not multiply an f64 by an i32 until you convert one of them."
+        },
+        {
+          "id": "b",
+          "label": "Yes, and it prints 10."
+        },
+        {
+          "id": "c",
+          "label": "Yes, and it prints 10.0."
+        }
+      ],
+      "onCorrect": "rustc reports E0277: cannot multiply f64 by i32. Writing count as f64 fixes it.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Many languages would do that conversion for you. Rust stops and asks you to choose."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "It would, if count were an f64. Rust does not convert it on its own."
+        }
+      ],
+      "skill": "spot-type-mismatch"
+    },
+    {
+      "id": "types-and-functions-fix-as",
+      "conceptIds": [
+        "rust-functions"
+      ],
+      "prompt": "Make this program compile by converting count with as f64. It should print 10.",
+      "responseType": "code",
+      "difficulty": 1,
+      "hints": [
+        "Only the multiplication needs to change.",
+        "Write count as f64 where count is used."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Passes every test when run"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "fn main() {\n    let price: f64 = 2.5;\n    let count: i32 = 4;\n    println!(\"{}\", price * count as f64);\n}\n"
+      },
+      "sourceIds": [
+        "book-types",
+        "book-functions",
+        "rbe-cast",
+        "rustlings"
+      ],
+      "code": {
+        "language": "rust",
+        "kind": "program",
+        "starter": "fn main() {\n    let price: f64 = 2.5;\n    let count: i32 = 4;\n    println!(\"{}\", price * count);\n}\n",
+        "example": {
+          "expected": "10"
+        }
+      },
+      "codeCases": [
+        {
+          "expected": "10"
+        }
+      ],
+      "onCorrect": "count as f64 turned 4 into 4.0, so both sides of * are f64.",
+      "skill": "spot-type-mismatch"
+    },
+    {
+      "id": "types-and-functions-return-type",
+      "conceptIds": [
+        "rust-functions"
+      ],
+      "prompt": "In fn area(w: i32, h: i32) -> i32, what type does area return?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "The return type comes after the arrow."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "i32"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "i32, the type after the arrow."
+      },
+      "sourceIds": [
+        "book-types",
+        "book-functions",
+        "rbe-cast",
+        "rustlings"
+      ],
+      "onCorrect": "i32. The type after -> is what the function hands back.",
+      "skill": "read-signature"
+    },
+    {
+      "id": "types-and-functions-triple",
+      "conceptIds": [
+        "rust-functions"
+      ],
+      "prompt": "Write a function triple that takes an i32 and returns three times it, also as an i32.",
+      "responseType": "code",
+      "difficulty": 1,
+      "hints": [
+        "The body's last line is the value the function returns.",
+        "Write n * 3 with no semicolon after it."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Passes every test when run"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "fn triple(n: i32) -> i32 {\n    n * 3\n}\n"
+      },
+      "sourceIds": [
+        "book-types",
+        "book-functions",
+        "rbe-cast",
+        "rustlings"
+      ],
+      "code": {
+        "language": "rust",
+        "kind": "function",
+        "starter": "fn triple(n: i32) -> i32 {\n    // Return three times n.\n}\n",
+        "call": {
+          "name": "triple",
+          "parameters": [
+            {
+              "name": "n",
+              "type": "i32"
+            }
+          ],
+          "returns": "i32"
+        },
+        "example": {
+          "arguments": [
+            "4"
+          ],
+          "expected": "12"
+        }
+      },
+      "codeCases": [
+        {
+          "arguments": [
+            "4"
+          ],
+          "expected": "12"
+        },
+        {
+          "arguments": [
+            "0"
+          ],
+          "expected": "0"
+        },
+        {
+          "arguments": [
+            "-5"
+          ],
+          "expected": "-15"
+        }
+      ],
+      "onCorrect": "n * 3 with no semicolon is the value triple returns.",
+      "skill": "write-function"
+    },
+    {
+      "id": "types-and-functions-tax",
+      "conceptIds": [
+        "rust-functions"
+      ],
+      "prompt": "What does this program print?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Work out add_tax(50) and add_tax(20) separately.",
+        "price / 10 is integer division: 50 / 10 is 5.",
+        "Add 55 and 22."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 77,
+        "unit": "",
+        "absoluteTolerance": 1e-9,
+        "relativeTolerance": 0,
+        "workedAnswer": "add_tax(50) is 50 + 5 = 55 and add_tax(20) is 20 + 2 = 22. 55 + 22 = 77."
+      },
+      "sourceIds": [
+        "book-types",
+        "book-functions",
+        "rbe-cast",
+        "rustlings"
+      ],
+      "onCorrect": "77. Each call ran the body with its own price and handed back the last expression.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              70
+            ]
+          },
+          "feedback": "That is 50 + 20 without the tax. Each call adds a tenth of its price."
+        }
+      ],
+      "skill": "call-function",
+      "calculator": "off"
+    },
+    {
+      "id": "types-and-functions-semicolon",
+      "conceptIds": [
+        "rust-functions"
+      ],
+      "prompt": "Does this version compile?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "What does a semicolon do to the last line of a function body?"
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "No. The semicolon turns n * 2 into a statement, so the function returns nothing."
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "No. The semicolon turns n * 2 into a statement, so the function returns nothing."
+      },
+      "sourceIds": [
+        "book-types",
+        "book-functions",
+        "rbe-cast",
+        "rustlings"
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "No. The semicolon turns n * 2 into a statement, so the function returns nothing."
+        },
+        {
+          "id": "b",
+          "label": "Yes, and it prints 42."
+        },
+        {
+          "id": "c",
+          "label": "No. A function body must use the word return."
+        }
+      ],
+      "onCorrect": "rustc reports E0308 (mismatched types) and suggests removing the semicolon.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Without the semicolon it would. With it, n * 2 is calculated and thrown away."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "return is allowed but not required. The last expression, with no semicolon, is the return value."
+        }
+      ],
+      "skill": "spot-semicolon"
+    },
+    {
+      "id": "types-and-functions-average",
+      "conceptIds": [
+        "rust-functions"
+      ],
+      "prompt": "Write a function average that takes two f64 values and returns their average as an f64.",
+      "responseType": "code",
+      "difficulty": 1,
+      "hints": [
+        "Add the two values, then divide by 2.0.",
+        "Brackets make the addition happen first: (a + b) / 2.0"
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Passes every test when run"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "fn average(a: f64, b: f64) -> f64 {\n    (a + b) / 2.0\n}\n"
+      },
+      "sourceIds": [
+        "book-types",
+        "book-functions",
+        "rbe-cast",
+        "rustlings"
+      ],
+      "code": {
+        "language": "rust",
+        "kind": "function",
+        "starter": "fn average(a: f64, b: f64) -> f64 {\n    // Return the average of a and b.\n}\n",
+        "call": {
+          "name": "average",
+          "parameters": [
+            {
+              "name": "a",
+              "type": "f64"
+            },
+            {
+              "name": "b",
+              "type": "f64"
+            }
+          ],
+          "returns": "f64"
+        },
+        "example": {
+          "arguments": [
+            "3.0",
+            "4.0"
+          ],
+          "expected": "3.5"
+        }
+      },
+      "codeCases": [
+        {
+          "arguments": [
+            "3.0",
+            "4.0"
+          ],
+          "expected": "3.5"
+        },
+        {
+          "arguments": [
+            "10.0",
+            "0.0"
+          ],
+          "expected": "5.0"
+        },
+        {
+          "arguments": [
+            "-1.0",
+            "2.0"
+          ],
+          "expected": "0.5"
+        }
+      ],
+      "onCorrect": "The brackets add before the division, and f64 keeps the fraction.",
+      "skill": "write-function"
+    },
+    {
+      "id": "types-and-functions-practice-1",
+      "conceptIds": [
+        "rust-functions"
+      ],
+      "prompt": "Write total_price, which takes a price as an f64 and a count as an i32, and returns price times count as an f64.",
+      "responseType": "code",
+      "difficulty": 1,
+      "hints": [
+        "count is an i32, so convert it before multiplying."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Passes every test when run"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "fn total_price(price: f64, count: i32) -> f64 {\n    price * count as f64\n}\n"
+      },
+      "sourceIds": [
+        "book-types",
+        "book-functions",
+        "rbe-cast",
+        "rustlings"
+      ],
+      "code": {
+        "language": "rust",
+        "kind": "function",
+        "starter": "fn total_price(price: f64, count: i32) -> f64 {\n    // Return price times count.\n}\n",
+        "call": {
+          "name": "total_price",
+          "parameters": [
+            {
+              "name": "price",
+              "type": "f64"
+            },
+            {
+              "name": "count",
+              "type": "i32"
+            }
+          ],
+          "returns": "f64"
+        },
+        "example": {
+          "arguments": [
+            "2.5",
+            "4"
+          ],
+          "expected": "10.0"
+        }
+      },
+      "codeCases": [
+        {
+          "arguments": [
+            "2.5",
+            "4"
+          ],
+          "expected": "10.0"
+        },
+        {
+          "arguments": [
+            "0.99",
+            "3"
+          ],
+          "expected": "2.97"
+        },
+        {
+          "arguments": [
+            "10.0",
+            "0"
+          ],
+          "expected": "0.0"
+        }
+      ],
+      "skill": "write-function"
+    },
+    {
+      "id": "types-and-functions-practice-2",
+      "conceptIds": [
+        "rust-functions"
+      ],
+      "prompt": "Write share, which splits a whole number of sweets between people and returns how many each person gets. Leftover sweets are not shared out.",
+      "responseType": "code",
+      "difficulty": 1,
+      "hints": [
+        "Dividing two i32 values already drops the remainder."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Passes every test when run"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "fn share(total: i32, people: i32) -> i32 {\n    total / people\n}\n"
+      },
+      "sourceIds": [
+        "book-types",
+        "book-functions",
+        "rbe-cast",
+        "rustlings"
+      ],
+      "code": {
+        "language": "rust",
+        "kind": "function",
+        "starter": "fn share(total: i32, people: i32) -> i32 {\n    // Return how many whole sweets each person gets.\n}\n",
+        "call": {
+          "name": "share",
+          "parameters": [
+            {
+              "name": "total",
+              "type": "i32"
+            },
+            {
+              "name": "people",
+              "type": "i32"
+            }
+          ],
+          "returns": "i32"
+        },
+        "example": {
+          "arguments": [
+            "7",
+            "2"
+          ],
+          "expected": "3"
+        }
+      },
+      "codeCases": [
+        {
+          "arguments": [
+            "7",
+            "2"
+          ],
+          "expected": "3"
+        },
+        {
+          "arguments": [
+            "10",
+            "5"
+          ],
+          "expected": "2"
+        },
+        {
+          "arguments": [
+            "17",
+            "5"
+          ],
+          "expected": "3"
+        }
+      ],
+      "skill": "integer-division"
+    },
+    {
+      "id": "types-and-functions-practice-3",
+      "conceptIds": [
+        "rust-functions"
+      ],
+      "prompt": "Which type does Rust give 2.5 when nothing else in the program says otherwise?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "It is a 64-bit floating-point type."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "f64"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "f64, Rust's default for numbers with a decimal point."
+      },
+      "sourceIds": [
+        "book-types",
+        "book-functions",
+        "rbe-cast",
+        "rustlings"
+      ],
+      "skill": "choose-number-type"
+    }
+  ],
+  "flashcards": [
+    {
+      "id": "print-and-bind-card-1",
+      "conceptIds": [
+        "rust-bindings"
+      ],
+      "front": "In Rust, what must you write to give an existing variable a new value with =?",
+      "back": "Create it with let mut, for example let mut count = 0;",
+      "sourceIds": [
+        "book-hello",
+        "book-variables",
+        "rbe-print",
+        "rbe-bindings",
+        "rustlings"
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "mut"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "let mut"
+      }
+    },
+    {
+      "id": "print-and-bind-card-2",
+      "conceptIds": [
+        "rust-bindings"
+      ],
+      "front": "What is it called when a second let reuses a variable's name?",
+      "back": "Shadowing. The new variable hides the old one and may have a different type.",
+      "sourceIds": [
+        "book-hello",
+        "book-variables",
+        "rbe-print",
+        "rbe-bindings",
+        "rustlings"
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "shadow"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Shadowing"
+      }
+    },
+    {
+      "id": "types-and-functions-card-1",
+      "conceptIds": [
+        "rust-functions"
+      ],
+      "front": "In Rust, what does 9 / 2 evaluate to?",
+      "back": "4. Dividing two integers drops the remainder.",
+      "sourceIds": [
+        "book-types",
+        "book-functions",
+        "rbe-cast",
+        "rustlings"
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 4,
+        "unit": "",
+        "absoluteTolerance": 1e-9,
+        "relativeTolerance": 0,
+        "workedAnswer": "9 / 2 is 4 with remainder 1, which is dropped."
+      }
+    },
+    {
+      "id": "types-and-functions-card-2",
+      "conceptIds": [
+        "rust-functions"
+      ],
+      "front": "A Rust function's last line is x + 1; with a semicolon. Why does the function not return x + 1?",
+      "back": "The semicolon makes it a statement. Only a final expression without a semicolon is returned.",
+      "sourceIds": [
+        "book-types",
+        "book-functions",
+        "rbe-cast",
+        "rustlings"
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "semicolon"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "The semicolon turns it into a statement."
+      }
+    }
+  ],
+  "essays": [],
+  "sources": [
+    {
+      "id": "book-hello",
+      "title": "The Rust Book: Hello, World!",
+      "publisher": "The Rust Project",
+      "url": "https://doc.rust-lang.org/book/ch01-02-hello-world.html",
+      "licence": "MIT OR Apache-2.0",
+      "accessedAt": "2026-10-15",
+      "notes": "Facts checked against this chapter. All programs and exercises are original.",
+      "licenceUrl": "https://github.com/rust-lang/book/blob/main/LICENSE-MIT",
+      "attribution": "Steve Klabnik, Carol Nichols and Chris Krycho, The Rust Programming Language.",
+      "section": "1.2 Anatomy of a Rust program",
+      "edition": "The Rust Programming Language, Rust 2024 edition",
+      "reuse": "reference_only"
+    },
+    {
+      "id": "book-variables",
+      "title": "The Rust Book: variables and mutability",
+      "publisher": "The Rust Project",
+      "url": "https://doc.rust-lang.org/book/ch03-01-variables-and-mutability.html",
+      "licence": "MIT OR Apache-2.0",
+      "accessedAt": "2026-10-15",
+      "notes": "Facts checked against this chapter. All programs and exercises are original.",
+      "licenceUrl": "https://github.com/rust-lang/book/blob/main/LICENSE-MIT",
+      "attribution": "Steve Klabnik, Carol Nichols and Chris Krycho, The Rust Programming Language.",
+      "section": "3.1 Variables and mutability; shadowing",
+      "edition": "The Rust Programming Language, Rust 2024 edition",
+      "reuse": "reference_only"
+    },
+    {
+      "id": "book-types",
+      "title": "The Rust Book: data types",
+      "publisher": "The Rust Project",
+      "url": "https://doc.rust-lang.org/book/ch03-02-data-types.html",
+      "licence": "MIT OR Apache-2.0",
+      "accessedAt": "2026-10-15",
+      "notes": "Facts checked against this chapter. All programs and exercises are original.",
+      "licenceUrl": "https://github.com/rust-lang/book/blob/main/LICENSE-MIT",
+      "attribution": "Steve Klabnik, Carol Nichols and Chris Krycho, The Rust Programming Language.",
+      "section": "3.2 Scalar types; numeric operations",
+      "edition": "The Rust Programming Language, Rust 2024 edition",
+      "reuse": "reference_only"
+    },
+    {
+      "id": "book-functions",
+      "title": "The Rust Book: functions",
+      "publisher": "The Rust Project",
+      "url": "https://doc.rust-lang.org/book/ch03-03-how-functions-work.html",
+      "licence": "MIT OR Apache-2.0",
+      "accessedAt": "2026-10-15",
+      "notes": "Facts checked against this chapter. All programs and exercises are original.",
+      "licenceUrl": "https://github.com/rust-lang/book/blob/main/LICENSE-MIT",
+      "attribution": "Steve Klabnik, Carol Nichols and Chris Krycho, The Rust Programming Language.",
+      "section": "3.3 Parameters; statements and expressions; return values",
+      "edition": "The Rust Programming Language, Rust 2024 edition",
+      "reuse": "reference_only"
+    },
+    {
+      "id": "rbe-print",
+      "title": "Rust by Example: formatted print",
+      "publisher": "The Rust Project",
+      "url": "https://doc.rust-lang.org/rust-by-example/hello/print.html",
+      "licence": "MIT OR Apache-2.0",
+      "accessedAt": "2026-10-15",
+      "notes": "Used as a second reference for syntax. All programs are original.",
+      "licenceUrl": "https://github.com/rust-lang/rust-by-example/blob/master/LICENSE-MIT",
+      "attribution": "The Rust Project, Rust by Example.",
+      "section": "1.2 Formatted print",
+      "edition": "Rust by Example, accessed October 2026",
+      "reuse": "reference_only"
+    },
+    {
+      "id": "rbe-bindings",
+      "title": "Rust by Example: variable bindings",
+      "publisher": "The Rust Project",
+      "url": "https://doc.rust-lang.org/rust-by-example/variable_bindings.html",
+      "licence": "MIT OR Apache-2.0",
+      "accessedAt": "2026-10-15",
+      "notes": "Used as a second reference for syntax. All programs are original.",
+      "licenceUrl": "https://github.com/rust-lang/rust-by-example/blob/master/LICENSE-MIT",
+      "attribution": "The Rust Project, Rust by Example.",
+      "section": "4 Variable bindings; 4.1 mutability; 4.3 shadowing",
+      "edition": "Rust by Example, accessed October 2026",
+      "reuse": "reference_only"
+    },
+    {
+      "id": "rbe-cast",
+      "title": "Rust by Example: casting",
+      "publisher": "The Rust Project",
+      "url": "https://doc.rust-lang.org/rust-by-example/types/cast.html",
+      "licence": "MIT OR Apache-2.0",
+      "accessedAt": "2026-10-15",
+      "notes": "Used as a second reference for syntax. All programs are original.",
+      "licenceUrl": "https://github.com/rust-lang/rust-by-example/blob/master/LICENSE-MIT",
+      "attribution": "The Rust Project, Rust by Example.",
+      "section": "5.1 Casting with as",
+      "edition": "Rust by Example, accessed October 2026",
+      "reuse": "reference_only"
+    },
+    {
+      "id": "rustlings",
+      "title": "Rustlings: variables and functions exercises",
+      "publisher": "The Rustlings contributors",
+      "url": "https://github.com/rust-lang/rustlings",
+      "licence": "MIT",
+      "accessedAt": "2026-10-15",
+      "notes": "The project's fix-the-compiler-error style informed the try steps. No exercise is copied.",
+      "licenceUrl": "https://github.com/rust-lang/rustlings/blob/main/LICENSE",
+      "attribution": "The Rustlings contributors, Rustlings.",
+      "section": "exercises/01_variables; exercises/02_functions",
+      "edition": "Rustlings 6",
+      "reuse": "reference_only"
+    }
+  ]
+}

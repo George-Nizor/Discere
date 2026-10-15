@@ -1663,12 +1663,14 @@ describe("Python for Data Analysis (v2 lessons)", () => {
     }
   });
 
+  // Spawns one interpreter per snippet, so it needs more than the default 5s when other
+  // packages' tests share the CPU.
   it("runs the pure-Python snippets and reproduces every key", () => {
     if (!hasPython) return;
     for (const row of ROWS.filter((item) => item.code && !/numpy|pandas|pd\.|np\./.test(item.code))) {
       expect(evaluate(row.code!), row.id).toEqual(row.expect);
     }
-  });
+  }, 30_000);
 
   it.skipIf(!hasLibraries)("runs the NumPy and pandas snippets and reproduces every key", () => {
     for (const row of ROWS.filter((item) => item.code && /numpy|pandas|pd\.|np\./.test(item.code))) {

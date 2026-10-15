@@ -3,9 +3,10 @@ import type { LearnerQuestion } from "@discere/contracts";
 export type AnswerDraft =
   | { kind: "numeric"; value: string; unit: string }
   | { kind: "text"; text: string }
-  | { kind: "choice"; choiceId: string | null };
+  | { kind: "choice"; choiceId: string | null }
+  | { kind: "code"; code: string };
 
-export type AnswerSurface = "choice" | "numeric" | "text" | "unsupported";
+export type AnswerSurface = "choice" | "numeric" | "text" | "code" | "unsupported";
 
 /**
  * Chooses the answer surface from the question itself. Selection wins when the question
@@ -13,6 +14,7 @@ export type AnswerSurface = "choice" | "numeric" | "text" | "unsupported";
  */
 export function answerSurface(question: LearnerQuestion): AnswerSurface {
   if (question.choices && question.choices.length > 0) return "choice";
+  if (question.responseType === "code" && question.code) return "code";
   if (question.responseType === "numeric") return "numeric";
   if (question.responseType === "short_text" || question.responseType === "long_text")
     return "text";
@@ -23,6 +25,7 @@ export function initialAnswerDraft(question: LearnerQuestion): AnswerDraft {
   const surface = answerSurface(question);
   if (surface === "choice") return { kind: "choice", choiceId: null };
   if (surface === "numeric") return { kind: "numeric", value: "", unit: "" };
+  if (surface === "code") return { kind: "code", code: question.code?.starter ?? "" };
   return { kind: "text", text: "" };
 }
 
@@ -35,6 +38,7 @@ export function answerResponse(question: LearnerQuestion, draft: AnswerDraft): s
     return unit ? `${value} ${unit}` : value;
   }
   if (draft.kind === "text") return draft.text.trim();
+  if (draft.kind === "code") return draft.code.trim() ? draft.code : "";
   const choice = question.choices?.find((option) => option.id === draft.choiceId);
   return choice ? choice.label : "";
 }

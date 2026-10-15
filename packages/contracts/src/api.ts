@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { RustTaskRunSchema } from "./rust.js";
 import {
   ConceptSchema,
   LearnerActivitySchema,
@@ -300,6 +301,8 @@ export const AttemptResponseSchema = z
     qualifying: z.boolean().optional(),
     /** True when `feedback` is an authored misconception message rather than the generic one. */
     specific: z.boolean().optional(),
+    /** A code answer's run on the visible example, with how many of the tests it passed. */
+    codeRun: RustTaskRunSchema.optional(),
   })
   .strict();
 export type AttemptResponse = z.infer<typeof AttemptResponseSchema>;

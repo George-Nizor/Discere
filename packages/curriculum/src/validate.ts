@@ -5,6 +5,7 @@ import {
   orderSequenceIssues,
 } from "@discere/activity-engine";
 import {
+  CODE_ANSWER_IDEA,
   type CourseBundle,
   CourseBundleSchema,
   REDISTRIBUTABLE_LICENCE_PATTERN,
@@ -199,6 +200,43 @@ function acceptedIdeaIssues(question: CourseBundle["questions"][number]): Conten
       severity: "error" as const,
       message: `'${idea.slice(0, 48)}…' is a sentence rather than a phrase a learner's answer would contain.`,
     }));
+}
+
+/**
+ * A question answered by writing code carries its public exercise, its hidden cases and the
+ * fixed text authority described on `Question.code`, all together or not at all.
+ */
+function codeQuestionIssues(question: CourseBundle["questions"][number]): ContentIssue[] {
+  const path = `questions.${question.id}`;
+  const issue = (message: string): ContentIssue => ({
+    path,
+    code: "CODE_QUESTION_SHAPE",
+    severity: "error",
+    message,
+  });
+  const isCode = question.responseType === "code";
+  if (!isCode) return question.code || question.codeCases ? [issue("Only a code question has code or codeCases.")] : [];
+  const { code, codeCases, answerAuthority } = question;
+  if (!code || !codeCases) return [issue("A code question needs code and codeCases.")];
+  const issues: ContentIssue[] = [];
+  if (question.choices?.length) issues.push(issue("A code question has no choices."));
+  if (
+    answerAuthority.kind !== "text" ||
+    answerAuthority.acceptedIdeas.length !== 1 ||
+    answerAuthority.acceptedIdeas[0] !== CODE_ANSWER_IDEA
+  )
+    issues.push(issue(`Its answer authority is text accepting only "${CODE_ANSWER_IDEA}".`));
+  if (JSON.stringify(code.example) !== JSON.stringify(codeCases[0]))
+    issues.push(issue("The visible example must be the first case."));
+  if (new Set(codeCases.map((c) => JSON.stringify([c.stdin, c.arguments]))).size !== codeCases.length)
+    issues.push(issue("Each case needs different input."));
+  if (code.kind === "function") {
+    if (!code.call) issues.push(issue("A function exercise names its function."));
+    else if (codeCases.some((c) => c.arguments?.length !== code.call!.parameters.length))
+      issues.push(issue("Every case supplies each parameter."));
+  } else if (code.call || codeCases.some((c) => c.arguments))
+    issues.push(issue("A program exercise reads stdin, not arguments."));
+  return issues;
 }
 
 /** Spec v0.2 section 18.4: at most 35% of a course's questions may be multiple choice. */
@@ -845,6 +883,7 @@ export function validateCourseBundle(input: unknown): ContentValidation {
     }
     issues.push(...choiceIssues(question));
     issues.push(...acceptedIdeaIssues(question));
+    issues.push(...codeQuestionIssues(question));
   }
 
   issues.push(...multipleChoiceShareIssues(bundle));

@@ -81,6 +81,27 @@ export const routes: RouteObject[] = [
           })),
       },
       {
+        path: "courses/:courseId/rust-projects/:projectId",
+        lazy: () =>
+          import("./rust/RustProjectScreen.js").then((m) => ({
+            Component: m.RustProjectStartScreen,
+          })),
+      },
+      {
+        path: "rust-projects/:sessionId",
+        lazy: () =>
+          import("./rust/RustProjectScreen.js").then((m) => ({
+            Component: m.RustProjectSessionScreen,
+          })),
+      },
+      {
+        path: "rust/playground",
+        lazy: () =>
+          import("./rust/RustPlayground.js").then((m) => ({
+            Component: m.RustPlaygroundScreen,
+          })),
+      },
+      {
         path: "courses/:courseId/lessons/:lessonId",
         lazy: () =>
           import("./journey/LessonJourneyScreen.js").then((m) => ({

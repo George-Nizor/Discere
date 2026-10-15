@@ -432,6 +432,31 @@ session was removed and every prior row was verified unchanged. The test now ass
 database. The cleanup backup is
 `data/backups/discere-before-python-test-cleanup-20261002T005155Z.sqlite`.
 
+## Rust proof of concept
+
+Added 15 October 2026 at George's request. Rust Foundations (`content/rust-foundations`) has two
+lessons, "Print a value, then change it" and "Types and functions", with 22 questions and four
+review cards. Half the questions (11) are answered by writing Rust in the lesson: changing a
+program, fixing a compiler error, or writing a function from its signature. The server marks them by
+running them against the visible example and hidden tests. The other half are numeric, typed and
+multiple-choice questions about programs whose real rustc output appears after the answer. One
+project, First Rust programs, adds four longer tasks, and the Rust playground at `/rust/playground`
+runs any program with nothing graded.
+
+A code question is an ordinary `Question` with `responseType: "code"`, a public `code` exercise
+(starter and example) and hidden `codeCases`; `POST /api/attempts` runs it, and
+`POST /api/questions/:id/run` runs the example without marking. The server compiles and runs learner
+code in two Bubblewrap sandboxes with no network and no access to home or the workspace
+([ADR 0006](adr/0006-sandboxed-rust.md)). `pnpm rust:setup` installs the pinned toolchain;
+`pnpm rust:check` tests the sandbox. `pnpm rust:prepare` rebuilds the course: it compiles every lesson
+program against its declared output and checks that every worked program passes and every starter
+fails. Migration 0014 adds two empty project tables. Thirteen server tests cover the runner, the
+playground, code questions and the project flow. Desktop and phone screenshots were checked during
+development; there is no Playwright scenario for Rust yet.
+
+Not built yet: more lessons (ownership and borrowing are the obvious next ones), GDScript, and a
+seccomp filter on compiled programs.
+
 ## Linear Algebra release
 
 Before loading the course, SQLite's online backup created

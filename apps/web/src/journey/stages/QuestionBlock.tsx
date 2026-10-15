@@ -121,6 +121,7 @@ export function QuestionBlock({
             onChange={attempt.setDraft}
             question={question}
             idPrefix={`answer-${question.id}`}
+            codeRun={attempt.result?.codeRun}
             {...(label ? { label } : {})}
             correctChoiceId={
               attempt.phase === "revealed" ? attempt.lessonFeedback?.correctChoiceId : undefined

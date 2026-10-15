@@ -34,6 +34,7 @@ import "./styles/geometry.css";
 import "./styles/mechanics.css";
 import "./styles/sql-projects.css";
 import "./styles/python-projects.css";
+import "./styles/rust.css";
 
 const queryClient = new QueryClient({
   defaultOptions: {

@@ -1,7 +1,8 @@
-import type { LearnerQuestion } from "@discere/contracts";
+import type { LearnerQuestion, RustTaskRun } from "@discere/contracts";
 import { Check, X } from "lucide-react";
 import type { KeyboardEvent } from "react";
 import { InlineRichText } from "../../ui/RichText.js";
+import { CodeAnswer } from "../../rust/CodeAnswer.js";
 import { Notice } from "../../ui/Feedback.js";
 import { type AnswerDraft, answerSurface, choiceLetter } from "./answer-draft.js";
 
@@ -40,6 +41,7 @@ export function AnswerInput({
   correctChoiceId,
   idPrefix = "answer",
   label,
+  codeRun,
 }: {
   question: LearnerQuestion;
   draft: AnswerDraft;
@@ -54,8 +56,24 @@ export function AnswerInput({
   idPrefix?: string;
   /** A visible label for the input ("Output", "Left side"); defaults to "Value" or "Your answer". */
   label?: string;
+  /** A code answer's last check, shown in its console while that code is still on screen. */
+  codeRun?: RustTaskRun | undefined;
 }) {
   const surface = answerSurface(question);
+
+  if (surface === "code" && draft.kind === "code" && question.code) {
+    return (
+      <CodeAnswer
+        questionId={question.id}
+        exercise={question.code}
+        code={draft.code}
+        onChange={(code) => onChange({ kind: "code", code })}
+        readOnly={correct || readOnly}
+        checked={answered ? codeRun : undefined}
+        idPrefix={idPrefix}
+      />
+    );
+  }
 
   if (surface === "choice" && draft.kind === "choice") {
     return (

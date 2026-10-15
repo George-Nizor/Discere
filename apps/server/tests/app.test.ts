@@ -197,11 +197,11 @@ describe("Discere API", () => {
     expect(repeated.statusCode).toBe(409);
   });
 
-  it("lists the eighteen active courses and preserves archived course details", async () => {
+  it("lists the nineteen active courses and preserves archived course details", async () => {
     const list = await app.inject({ method: "GET", url: "/api/courses" });
     expect(list.statusCode).toBe(200);
     const ids = list.json().courses.map((course: { id: string }) => course.id);
-    expect(ids).toHaveLength(18);
+    expect(ids).toHaveLength(19);
     for (const id of [
       "engineering-structures-and-machines",
       "economics-markets-and-strategy",
@@ -219,6 +219,7 @@ describe("Discere API", () => {
     expect(ids).toContain("physics-motion-and-forces");
     expect(ids).toContain("python-for-data-analysis");
     expect(ids).toContain("sql-from-rows-to-reports");
+    expect(ids).toContain("rust-foundations");
     expect(ids).not.toContain("electronics-foundations");
     expect(ids).not.toContain("roman-empire");
     const detail = await app.inject({ method: "GET", url: "/api/courses/roman-empire" });

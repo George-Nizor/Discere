@@ -50,6 +50,8 @@ import { lintText, type WritingContext } from "@discere/writing-engine";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { assessResponse } from "./assessment.js";
+import { assessCode, codeTask } from "./rust/questions.js";
+import type { RustRuntime } from "./rust/runtime.js";
 import { illustrationsCapability } from "./capabilities.js";
 import { acceptTutorReply, buildTutorReplyPayload } from "./companion.js";
 import type { ContentRepository } from "./content.js";
@@ -85,6 +87,8 @@ export interface RouteDependencies {
   /** Curated outlines for courses that are planned but have no lessons yet. */
   topicMaps: TopicMapRepository;
   revealDelayMs: number;
+  /** Marks lesson questions answered with Rust. Without it a code answer is refused. */
+  rustRuntime?: RustRuntime;
 }
 const IllustrationParamsSchema = z.object({ key: z.string().regex(/^[0-9a-f]{32}$/) }).strict();
 const AttemptBodySchema = AttemptRequestSchema.extend({ attemptId: z.string().uuid().optional() });
@@ -148,7 +152,7 @@ export async function registerRoutes(
   app: FastifyInstance,
   dependencies: RouteDependencies,
 ): Promise<void> {
-  const { content, store, topicMaps, revealDelayMs } = dependencies;
+  const { content, store, topicMaps, revealDelayMs, rustRuntime } = dependencies;
 
   /** Concept mastery, named the way the course names each concept. */
   function conceptProgressWithTitles() {
@@ -1006,7 +1010,12 @@ export async function registerRoutes(
         "ANSWER_ALREADY_REVEALED",
       );
     }
-    const assessment = assessResponse(question, body.response);
+    // A code answer is marked by running it; everything else by the authored authority.
+    const task = codeTask(question);
+    if (task && !rustRuntime)
+      throw new HttpError(503, "Code answers need the Rust runtime.", "RUST_UNAVAILABLE");
+    const coded = task ? await assessCode(rustRuntime!, task, body.response) : undefined;
+    const assessment = coded ?? assessResponse(question, body.response);
     const qualifying =
       question.answerAuthority.kind === "numeric"
         ? parseNumericAnswer(body.response) !== null
@@ -1055,7 +1064,8 @@ export async function registerRoutes(
       mastery: saved.mastery,
       independent: evidence.independent,
       qualifying,
-      ...(assessment.specific ? { specific: true } : {}),
+      ...("specific" in assessment && assessment.specific ? { specific: true } : {}),
+      ...(coded ? { codeRun: coded.run } : {}),
     };
   });
 

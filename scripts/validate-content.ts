@@ -6,6 +6,7 @@ import {
   loadCourseBundle,
   loadSqlProjects,
   loadPythonProjects,
+  loadRustProjects,
   validateCourseBundle,
 } from "../packages/curriculum/src/index.ts";
 
@@ -29,6 +30,8 @@ for (const directory of directories) {
     if (projects) console.log(`Validated ${projects.projects.length} reviewed SQL projects.`);
     const pythonProjects = await loadPythonProjects(path.dirname(bundlePath), bundle);
     if (pythonProjects) console.log(`Validated ${pythonProjects.projects.length} reviewed Python projects.`);
+    const rustProjects = await loadRustProjects(path.dirname(bundlePath), bundle);
+    if (rustProjects) console.log(`Validated ${rustProjects.projects.length} reviewed Rust projects.`);
     console.log(
       `Validated ${bundle.course.title}: ${bundle.lessons.length} lesson(s), ${bundle.questions.length} question(s).`,
     );

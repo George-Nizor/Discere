@@ -14,9 +14,16 @@ function WorkedAnswer({ feedback }: { feedback: LessonFeedbackResponse }) {
   return (
     <div className="beat-explanation">
       <p className="eyebrow">Worked answer</p>
-      <p className="beat-worked-answer">
-        <InlineRichText text={feedback.answer} />
-      </p>
+      {/* A code question's worked answer is a whole program, so it keeps its lines. */}
+      {feedback.answer.includes("\n") ? (
+        <pre className="beat-worked-code">
+          <code>{feedback.answer}</code>
+        </pre>
+      ) : (
+        <p className="beat-worked-answer">
+          <InlineRichText text={feedback.answer} />
+        </p>
+      )}
       {feedback.blocks.length ? <RichBlocks blocks={feedback.blocks} /> : null}
     </div>
   );

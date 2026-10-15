@@ -52,7 +52,9 @@ export function AppShell() {
     (Boolean(lessonPath) && !location.pathname.endsWith("/notebook")) ||
     location.pathname.startsWith("/course-checks/") ||
     location.pathname.startsWith("/sql-projects/") ||
-    location.pathname.startsWith("/python-projects/");
+    location.pathname.startsWith("/python-projects/") ||
+    location.pathname.startsWith("/rust-projects/") ||
+    location.pathname.startsWith("/rust/");
   return (
     <div
       className={
@@ -83,6 +85,8 @@ export function AppShell() {
       <GameWatcher />
       {recoveredShell ||
       location.pathname === "/" ||
+      // The Rust workspace fills the screen; a mascot there would sit on the task or the code.
+      /^\/rust(?:-projects)?\//.test(location.pathname) ||
       /completion$/.test(decodeURIComponent(location.pathname)) ? null : (
         <MascotPet inLesson={focusedLesson} />
       )}

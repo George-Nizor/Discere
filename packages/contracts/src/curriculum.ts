@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { CodeExerciseSchema, RustCaseSchema } from "./rust.js";
 import { CourseCheckVisualSchema } from "./course-check-visual.js";
 import { LessonAuthoringMetadataSchema } from "./curation.js";
 import { LearningDiagramSchema } from "./learning-diagram.js";
@@ -467,6 +468,16 @@ export const QuestionSchema = z
     hints: z.array(z.string().min(1)),
     answerAuthority: AnswerAuthoritySchema,
     sourceIds: z.array(z.string()),
+    /**
+     * A question answered by writing a program (`responseType: "code"`). `code` is what the
+     * learner sees: the starter and one example. `codeCases` are every case the program must
+     * pass, the first being that example; they are answer-bearing and never reach the browser.
+     * The server marks the program by running it (ADR 0006). Its `answerAuthority` is text whose
+     * `exampleAnswer` is the worked program and whose only accepted idea is CODE_ANSWER_IDEA,
+     * so any path that marks it as text marks it wrong rather than right.
+     */
+    code: CodeExerciseSchema.optional(),
+    codeCases: z.array(RustCaseSchema).min(1).max(5).optional(),
     /** Present when the question is answered by selection rather than free response. */
     choices: z.array(QuestionChoiceSchema).min(2).max(8).optional(),
     /**
@@ -540,8 +551,12 @@ export const CourseCheckDefinitionSchema = z
   );
 export type CourseCheckDefinition = z.infer<typeof CourseCheckDefinitionSchema>;
 
+/** The accepted idea every code question carries; see `Question.code`. */
+export const CODE_ANSWER_IDEA = "Passes every test when run";
+
 export const LearnerQuestionSchema = QuestionSchema.omit({
   answerAuthority: true,
+  codeCases: true,
   transfer: true,
   hints: true,
   onCorrect: true,
@@ -555,6 +570,7 @@ export type LearnerQuestion = z.infer<typeof LearnerQuestionSchema>;
 export function learnerQuestion(question: Question): LearnerQuestion {
   const {
     answerAuthority,
+    codeCases: _codeCases,
     transfer: _transfer,
     hints,
     onCorrect: _onCorrect,

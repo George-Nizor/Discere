@@ -1,13 +1,13 @@
 import { type KeyboardEvent, type ReactNode, useRef } from "react";
 
 /**
- * A plain textarea with line numbers and light syntax colouring, for the SQL and Python
- * projects. The textarea stays the real control, so typing, selection, undo, screen readers
+ * A plain textarea with line numbers and light syntax colouring, for the SQL, Python and Rust
+ * workspaces. The textarea stays the real control, so typing, selection, undo, screen readers
  * and mobile keyboards behave natively; the coloured copy underneath is decoration only.
  * Lines do not wrap, so a line number always sits beside the line it counts.
  */
 
-export type CodeLanguage = "sql" | "python";
+export type CodeLanguage = "sql" | "python" | "rust";
 
 const KEYWORDS: Record<CodeLanguage, Set<string>> = {
   sql: new Set(
@@ -20,12 +20,19 @@ const KEYWORDS: Record<CodeLanguage, Set<string>> = {
       " ",
     ),
   ),
+  rust: new Set(
+    "as break const continue crate else enum false fn for if impl in let loop match mod move mut pub ref return self Self static struct super trait true type unsafe use where while i8 i16 i32 i64 i128 isize u8 u16 u32 u64 u128 usize f32 f64 bool char str String Vec Option Some None Result Ok Err println print eprintln format vec panic assert assert_eq".split(
+      " ",
+    ),
+  ),
 };
 
 const PATTERNS: Record<CodeLanguage, RegExp> = {
   sql: /(--[^\n]*)|('(?:[^']|'')*'?)|("(?:[^"])*"?)|(\b\d+(?:\.\d+)?\b)|([A-Za-z_][A-Za-z0-9_]*)/g,
   python:
     /(#[^\n]*)|("""[\s\S]*?(?:"""|$)|'''[\s\S]*?(?:'''|$)|"(?:\\.|[^"\\\n])*"?|'(?:\\.|[^'\\\n])*'?)|(\b\d+(?:\.\d+)?\b)|([A-Za-z_][A-Za-z0-9_]*)/g,
+  // A quote followed by one character and a quote is a char; a lone quote starts a lifetime.
+  rust: /(\/\/[^\n]*)|("(?:\\.|[^"\\])*"?|'(?:\\.|[^'\\\n])')|(\b\d[\d_]*(?:\.\d+)?(?:[iuf]\d+|usize|isize)?\b)|([A-Za-z_][A-Za-z0-9_]*)/g,
 };
 
 /** Split code into coloured spans. Exported for tests. */

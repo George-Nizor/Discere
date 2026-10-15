@@ -4,6 +4,7 @@ import { LinearAlgebraDiagramSchema } from "./linear-algebra-diagram.js";
 import { InferenceDiagramSchema } from "./inference-diagram.js";
 import { ChemistryDiagramSchema } from "./chemistry-diagram.js";
 import { PythonDiagramSchema } from "./python-diagram.js";
+import { RustDiagramSchema } from "./rust.js";
 import { GeometryDiagramSchema } from "./geometry-diagram.js";
 import { CalculusDiagramSchema } from "./calculus-diagram.js";
 import { MechanicsDiagramSchema } from "./mechanics-diagram.js";
@@ -65,6 +66,7 @@ const QueryTableSchema = z
 /** Teaching cases and controls; these contain no assessment authority. */
 export const LearningDiagramSchema = z.discriminatedUnion("type", [
   PythonDiagramSchema,
+  RustDiagramSchema,
   GeometryDiagramSchema,
   MechanicsDiagramSchema,
   CalculusDiagramSchema,

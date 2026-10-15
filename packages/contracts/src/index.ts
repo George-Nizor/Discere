@@ -37,6 +37,8 @@ export * from "./sql-project.js";
 
 export * from "./python-project.js";
 
+export * from "./rust.js";
+
 export * from "./linear-algebra-diagram.js";
 
 export * from "./inference-diagram.js";

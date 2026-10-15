@@ -6,6 +6,10 @@ import { ContentRepository } from "./content.js";
 import { PythonProjectRepository } from "./python-projects/repository.js";
 import { IsolatedPythonRuntime, type PythonRuntime } from "./python-projects/runtime.js";
 import { PythonProjectService, registerPythonProjectRoutes } from "./python-projects/service.js";
+import { RustProjectRepository, RustProjectService, registerRustProjectRoutes } from "./rust/projects.js";
+import { registerRustPlaygroundRoutes } from "./rust/playground.js";
+import { registerCodeQuestionRoutes } from "./rust/questions.js";
+import { IsolatedRustRuntime, type RustRuntime } from "./rust/runtime.js";
 import { SqlProjectRepository } from "./sql-projects/repository.js";
 import { IsolatedSqlRuntime, type SqlRuntime } from "./sql-projects/runtime.js";
 import { SqlProjectService, registerSqlProjectRoutes } from "./sql-projects/service.js";
@@ -30,6 +34,7 @@ export interface AppOptions {
   /** Optional isolated query runner; tests can control execution without touching user data. */
   sqlRuntime?: SqlRuntime;
   pythonRuntime?: PythonRuntime;
+  rustRuntime?: RustRuntime;
   logger?: boolean;
   /** Applies pending migrations before serving. Tests and disposable databases use this;
    * the deployed server refuses to start against an unmigrated database instead. */
@@ -104,18 +109,31 @@ export async function createApp(options: AppOptions = {}): Promise<DiscereApp> {
   // One runtime for every tutor path, so the tutor drawer, the essay assessment, and the
   // workings review all speak to the same provider under the same limits.
   const runtime = createTutorRuntime(options.tutor);
+  const rustRuntime = options.rustRuntime ?? new IsolatedRustRuntime();
   await registerRoutes(app, {
     content,
     store,
     topicMaps,
     revealDelayMs: options.revealDelayMs ?? 5000,
+    rustRuntime,
   });
+  await registerCodeQuestionRoutes(app, { content, runtime: rustRuntime });
   await registerCourseCheckRoutes(app, { content, store });
   await registerSearchRoutes(app, { content });
   const pythonProjects = await PythonProjectRepository.load(contentRoot, content);
   await registerPythonProjectRoutes(app, new PythonProjectService(
     store, pythonProjects, options.pythonRuntime ?? new IsolatedPythonRuntime(), options.revealDelayMs ?? 5000,
   ));
+  await registerRustPlaygroundRoutes(app, rustRuntime);
+  await registerRustProjectRoutes(
+    app,
+    new RustProjectService(
+      store,
+      await RustProjectRepository.load(contentRoot, content),
+      rustRuntime,
+      options.revealDelayMs ?? 5000,
+    ),
+  );
   const sqlProjects = await SqlProjectRepository.load(contentRoot, content);
   await registerSqlProjectRoutes(
     app,

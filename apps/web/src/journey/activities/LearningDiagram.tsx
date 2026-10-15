@@ -21,6 +21,7 @@ import { AstronomyDiagram } from "./AstronomyDiagram.js";
 import { PsychologyDiagram } from "./PsychologyDiagram.js";
 import { PythonDiagram } from "./PythonDiagram.js";
 import { QueryDiagram } from "./QueryDiagram.js";
+import { RustDiagram } from "./RustDiagram.js";
 import { StatisticsDiagram } from "./StatisticsDiagram.js";
 
 function format(value: number): string {
@@ -419,6 +420,8 @@ export function LearningDiagram({
       return <GeometryDiagram spec={spec} showResults={showResults} />;
     case "python_execution":
       return <PythonDiagram spec={spec} showResults={showResults} />;
+    case "rust_program":
+      return <RustDiagram spec={spec} showResults={showResults} />;
     case "relational_query":
       return <QueryDiagram spec={spec} showResults={showResults} />;
     case "number_machine":

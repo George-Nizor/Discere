@@ -18,6 +18,7 @@ export {
 export * from "./sql-projects.js";
 
 export * from "./python-projects.js";
+export * from "./rust-projects.js";
 export * from "./lesson-v2.js";
 export * from "./lesson-projection.js";
 /** Contract types the authoring scripts need, re-exported so scripts depend on one package. */
