@@ -33,6 +33,9 @@ describe("finding a command-line tool", () => {
       binary,
     );
     expect(resolveCliCommand("claude", { PATH: npm }, "win32", exists)).toBe("claude");
+    const current = `${npm}\\node_modules\\@openai\\codex\\node_modules\\@openai\\codex-win32-x64\\vendor\\x86_64-pc-windows-msvc\\bin\\codex.exe`;
+    files.add(current);
+    expect(resolveCliCommand("codex", { PATH: npm }, "win32", exists)).toBe(current);
     files.add(`${npm}\\claude.exe`);
     expect(resolveCliCommand("claude", { PATH: npm }, "win32", exists)).toBe(`${npm}\\claude.exe`);
   });

@@ -106,6 +106,30 @@ export function resolveCodexScratchDirectory(configured?: string | undefined): s
 
 /** Where npm's Codex package keeps its Windows binary, newest layout first. */
 const CODEX_WINDOWS_BINARIES = [
+  // 0.16x: the platform package nested in, or hoisted beside, @openai/codex.
+  [
+    "node_modules",
+    "@openai",
+    "codex",
+    "node_modules",
+    "@openai",
+    "codex-win32-x64",
+    "vendor",
+    "x86_64-pc-windows-msvc",
+    "bin",
+    "codex.exe",
+  ],
+  [
+    "node_modules",
+    "@openai",
+    "codex-win32-x64",
+    "vendor",
+    "x86_64-pc-windows-msvc",
+    "bin",
+    "codex.exe",
+  ],
+  ["node_modules", "@openai", "codex", "vendor", "x86_64-pc-windows-msvc", "bin", "codex.exe"],
+  // Earlier layouts.
   [
     "node_modules",
     "@openai",
