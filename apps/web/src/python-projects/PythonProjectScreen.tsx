@@ -18,6 +18,7 @@ import {
 } from "./api.js";
 import { PythonInputData, PythonResultData } from "./PythonData.js";
 import { CodeEditor } from "../sql-projects/CodeEditor.js";
+import { RuntimeSetup } from "../code-runtimes/RuntimeSetup.js";
 const modes = [
   {
     id: "coach",
@@ -263,6 +264,7 @@ function PythonTaskScreen({
           {session.completed + 1} / {session.total}
         </span>
       </header>
+      <RuntimeSetup runtime="python" />
       <div className="python-task-heading">
         <span className="python-eyebrow">{session.mode} · Python 3.12</span>
         {session.mode === "exam" ? (

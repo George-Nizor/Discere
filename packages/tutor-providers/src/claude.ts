@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { resolveCliCommand } from "@discere/paths";
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -67,7 +68,7 @@ export class ClaudeTutorProvider extends PipelineTutorProvider {
   constructor(options: ClaudeProviderOptions = {}) {
     super();
     const env = process.env;
-    this.binary = options.binary ?? env["DISCERE_CLAUDE_BIN"]?.trim() ?? "claude";
+    this.binary = options.binary ?? (env["DISCERE_CLAUDE_BIN"]?.trim() || resolveCliCommand("claude", env));
     this.fastModel = options.fastModel ?? (env["DISCERE_CLAUDE_FAST_MODEL"]?.trim() || CLAUDE_DEFAULT_FAST_MODEL);
     this.smartModel = options.smartModel ?? (env["DISCERE_CLAUDE_SMART_MODEL"]?.trim() || CLAUDE_DEFAULT_SMART_MODEL);
     this.effort = options.effort ?? (env["DISCERE_CLAUDE_EFFORT"]?.trim() || "low");

@@ -8,6 +8,7 @@ import {
   type SqlTable,
 } from "@discere/contracts";
 import { z } from "zod";
+import { resolveFromRepoRoot } from "@discere/paths";
 
 const OutputSchema = z.union([
   z.object({ result: SqlResultSchema }).strict(),
@@ -25,13 +26,26 @@ const runtimeFailure = (): SqlExecution => ({
 /** One bounded child process per query. It receives only reviewed input tables and learner SQL. */
 export class IsolatedSqlRuntime implements SqlRuntime {
   private active = 0;
+  /**
+   * The interpreter, or a function that finds it when a query arrives: an installed Windows
+   * release uses the Python it downloads, which may appear while the server is running.
+   */
   constructor(
-    private readonly executable = process.env["DISCERE_SQL_PYTHON"] ??
-      (process.platform === "win32" ? "python" : "python3"),
+    private readonly executable: string | (() => Promise<string | undefined>) = process.env[
+      "DISCERE_SQL_PYTHON"
+    ] ?? (process.platform === "win32" ? "python" : "python3"),
   ) {}
-  execute(query: string, tables: SqlTable[]): Promise<SqlExecution> {
+  async execute(query: string, tables: SqlTable[]): Promise<SqlExecution> {
     SqlQuerySchema.parse(query);
     SqlTablesSchema.parse(tables);
+    const executable =
+      typeof this.executable === "string" ? this.executable : await this.executable();
+    if (!executable)
+      return {
+        error: "runtime",
+        message:
+          "SQL practice runs on Python, which needs a one-time download. Set it up from this page.",
+      };
     if (this.active >= 4)
       return Promise.resolve({
         error: "runtime",
@@ -43,8 +57,8 @@ export class IsolatedSqlRuntime implements SqlRuntime {
       for (const key of ["PATH", "SystemRoot", "WINDIR", "SYSTEMDRIVE"])
         if (process.env[key]) env[key] = process.env[key];
       const child = spawn(
-        this.executable,
-        ["-I", "-S", "-B", path.join(import.meta.dirname, "runner.py")],
+        executable,
+        ["-I", "-S", "-B", resolveFromRepoRoot("apps/server/src/sql-projects/runner.py")],
         {
           shell: false,
           windowsHide: true,

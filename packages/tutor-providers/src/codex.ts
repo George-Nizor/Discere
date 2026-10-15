@@ -4,7 +4,7 @@ import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import type { StyleViolation } from "@discere/contracts";
 import { StyleEditDraftSchema } from "@discere/contracts";
-import { resolveCodexScratchDirectory } from "@discere/paths";
+import { resolveCliCommand, resolveCodexScratchDirectory } from "@discere/paths";
 import { lintText } from "@discere/writing-engine";
 import { z } from "zod";
 import { TutorProviderError } from "./errors.js";
@@ -211,7 +211,8 @@ export class CodexTutorProvider implements TutorProvider {
   private readonly killGraceMs: number;
 
   constructor(options: CodexProviderOptions = {}) {
-    this.binary = options.binary ?? process.env["DISCERE_CODEX_BIN"]?.trim() ?? "codex";
+    this.binary =
+      options.binary ?? (process.env["DISCERE_CODEX_BIN"]?.trim() || resolveCliCommand("codex"));
     const model = options.model ?? process.env["DISCERE_CODEX_MODEL"]?.trim();
     this.model = model ? model : undefined;
     this.reasoningEffort =

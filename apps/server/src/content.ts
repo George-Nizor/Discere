@@ -20,6 +20,7 @@ import type {
 import { learnerActivity, learnerQuestion as questionForLearner } from "@discere/contracts";
 import { courseAssetDirectory, courseDirectories, loadCourseBundle } from "@discere/curriculum";
 import { isV2Step, projectStep } from "./lesson-projection.js";
+import { resolveFromRepoRoot } from "@discere/paths";
 
 /** The interactive canvas each activity type asks for. */
 const ACTIVITY_VISUAL_KIND = {
@@ -152,7 +153,7 @@ export class ContentRepository {
   }
 
   static defaultContentRoot(): string {
-    return path.resolve(import.meta.dirname, "../../../content");
+    return resolveFromRepoRoot("content");
   }
 
   get bundles(): CourseBundle[] {

@@ -8,6 +8,7 @@ import {
   type RustStatus,
   RustStdinSchema,
 } from "@discere/contracts";
+import { dataDirectory } from "@discere/paths";
 
 /**
  * Compiles and runs learner Rust in two Bubblewrap sandboxes (ADR 0006). rustc runs with the
@@ -41,7 +42,7 @@ const RuntimeFileSchema = (input: unknown) => {
 
 const UNAVAILABLE =
   "Rust practice needs its sandboxed toolchain. Run pnpm rust:setup in WSL, then restart Discere.";
-const unavailable = (message = UNAVAILABLE): RustRunResult => ({
+export const unavailable = (message = UNAVAILABLE): RustRunResult => ({
   status: "unavailable",
   diagnostics: "",
   stdout: "",
@@ -50,11 +51,12 @@ const unavailable = (message = UNAVAILABLE): RustRunResult => ({
   message,
 });
 
-const MAIN_DECLARATION = /\bfn\s+main\s*\(/g;
-const HARNESS_TAIL = '\n#[path = "discere_check.rs"]\nmod discere_check;\nfn main() {\n    discere_check::run();\n}\n';
+export const MAIN_DECLARATION = /\bfn\s+main\s*\(/g;
+export const HARNESS_TAIL = '\n#[path = "discere_check.rs"]\nmod discere_check;\nfn main() {\n    discere_check::run();\n}\n';
 
 /** Trims rustc's output so a learner never sees a host path. */
-function cleanDiagnostics(text: string): string {
+export function cleanDiagnostics(text: string, hostPaths: string[] = []): string {
+  for (const hostPath of hostPaths) text = text.replaceAll(hostPath, "");
   return text
     .replaceAll("/work/", "")
     .replaceAll("/opt/rust/", "")
@@ -146,7 +148,7 @@ export class IsolatedRustRuntime implements RustRuntime {
     this.directory =
       options.directory ??
       process.env["DISCERE_RUST_RUNTIME_DIR"] ??
-      path.resolve(import.meta.dirname, "../../../../data/rust-runtime");
+      path.join(dataDirectory(), "rust-runtime");
     this.bubblewrap = options.bubblewrap ?? "/usr/bin/bwrap";
   }
 

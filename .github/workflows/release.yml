@@ -1,0 +1,122 @@
+name: release
+
+# Tag v<version> to publish the Windows release Instrumenta installs and keeps up to date
+# (managed-service): discere-<version>.zip and the instrumenta-release.json that describes it.
+# Run by hand, it builds, smoke-tests and checks everything but publishes nothing.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+jobs:
+  release:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    permissions:
+      contents: write
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Release tooling
+        uses: actions/checkout@v4
+        with:
+          repository: George-Nizor/Instrumenta
+          ref: main
+          path: .instrumenta
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.17.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Version
+        id: version
+        run: |
+          version=$(node -p "require('./package.json').version")
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if [ "$GITHUB_REF_TYPE" = "tag" ] && [ "$GITHUB_REF_NAME" != "v$version" ]; then
+            echo "The tag $GITHUB_REF_NAME does not match package.json's version $version." >&2
+            exit 1
+          fi
+
+      # The sandbox practice code runs in: an AppContainer inside a Job Object.
+      - name: Sandbox helper
+        working-directory: tools/windows-sandbox
+        run: |
+          cargo build --release --locked
+          mkdir -p dist
+          cp target/release/discere-sandbox.exe dist/
+          ./dist/discere-sandbox.exe check
+
+      - name: Build
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm build
+
+      - name: Package
+        run: node scripts/package-release.mjs
+
+      # The bundle has to start on Windows from its own node.exe, migrate a new database outside
+      # the version folder, and serve both the API and the interface.
+      - name: Smoke test
+        shell: pwsh
+        run: |
+          $data = Join-Path $env:RUNNER_TEMP 'discere-data'
+          $env:DISCERE_PACKAGED = '1'
+          $env:DISCERE_DATA_DIR = $data
+          $env:DISCERE_AUTO_MIGRATE = '1'
+          $env:DISCERE_WEB_ROOT = 'apps/web/dist'
+          $env:PORT = '49399'
+          $env:HOST = '127.0.0.1'
+          $server = Start-Process -FilePath 'dist/release/stage/runtime/node.exe' -ArgumentList 'apps/server/dist/index.mjs' `
+            -WorkingDirectory 'dist/release/stage' -PassThru -NoNewWindow
+          try {
+            $ok = $false
+            for ($i = 0; $i -lt 60 -and -not $ok; $i++) {
+              Start-Sleep -Milliseconds 500
+              try { $health = Invoke-RestMethod http://127.0.0.1:49399/api/health; $ok = $health.status -eq 'ok' } catch {}
+            }
+            if (-not $ok) { throw 'The bundled server did not answer /api/health.' }
+            $page = Invoke-WebRequest http://127.0.0.1:49399/ -UseBasicParsing
+            if ($page.Content -notmatch '<div id="root">') { throw 'The interface was not served.' }
+            $runtimes = Invoke-RestMethod http://127.0.0.1:49399/api/code-runtimes
+            if (($runtimes.runtimes | Where-Object { $_.state -ne 'missing' }).Count -gt 0) { throw 'The code runtimes did not report as installable.' }
+            if (-not (Test-Path (Join-Path $data 'discere.sqlite'))) { throw 'The database was not created in the data folder.' }
+            Write-Output "Discere $($health.courses) courses, health ok"
+          } finally {
+            Stop-Process -Id $server.Id -Force
+          }
+
+      - name: Release manifest
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          node .instrumenta/scripts/instrumenta-release.cjs --product discere --version "$VERSION" \
+            --strategy managed-service --bundle "dist/release/discere-$VERSION.zip" \
+            --service-root dist/release/stage --minimum 0.15.0 --out dist/release/instrumenta-release.json
+
+      - name: Publish
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" "dist/release/discere-$VERSION.zip" dist/release/instrumenta-release.json \
+            --title "Discere $VERSION" --generate-notes --verify-tag
+
+      - name: Keep the build
+        if: github.ref_type != 'tag'
+        uses: actions/upload-artifact@v4
+        with:
+          name: discere-${{ steps.version.outputs.version }}
+          path: |
+            dist/release/discere-*.zip
+            dist/release/instrumenta-release.json

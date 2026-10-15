@@ -6,14 +6,22 @@ import io
 import json
 import math
 import os
-import resource
 import sys
 
-sys.path.insert(0, "/opt/packages")
+# Linux mounts the packages at /opt/packages. Windows passes the unpacked wheels' folder.
+sys.path.insert(0, sys.argv[1] if len(sys.argv) > 1 else "/opt/packages")
+WINDOWS = sys.platform == "win32"
 READY = "DISCERE_PYTHON_READY\n"
 
 
 def restrict():
+    if WINDOWS:
+        # The Job Object discere-sandbox.exe runs this in already caps memory, CPU time and
+        # processes, and the AppContainer has no network and none of the user's files.
+        if sys.version_info[:2] != (3, 12):
+            raise RuntimeError("The unprivileged Python runtime is unavailable.")
+        return
+    import resource
     if sys.version_info[:2] != (3, 12) or os.geteuid() == 0:
         raise RuntimeError("The unprivileged Python runtime is unavailable.")
     for kind, maximum in (
@@ -28,6 +36,9 @@ def restrict():
 
 
 def prevent_children():
+    if WINDOWS:
+        return  # The job allows one process, so a child cannot start.
+    import resource
     # Hard limits and seccomp remain in force even if learner code replaces Python objects.
     resource.setrlimit(resource.RLIMIT_NPROC, (0, 0))
     lib = ctypes.CDLL("libseccomp.so.2", use_errno=True)

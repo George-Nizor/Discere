@@ -1,6 +1,7 @@
 import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import type Database from "better-sqlite3";
+import { resolveFromRepoRoot } from "@discere/paths";
 
 /**
  * Every table Discere uses is declared in `src/db/schema.ts` and created by an ordered SQL
@@ -8,7 +9,7 @@ import type Database from "better-sqlite3";
  * has not been migrated is a setup fault, and the server reports it instead of quietly
  * inventing an empty schema.
  */
-const MIGRATIONS_DIRECTORY = path.resolve(import.meta.dirname, "../../drizzle");
+const MIGRATIONS_DIRECTORY = resolveFromRepoRoot("apps/server/drizzle");
 const LEDGER_TABLE = "schema_migrations";
 
 export function listMigrations(): string[] {

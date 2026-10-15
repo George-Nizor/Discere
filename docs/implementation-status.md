@@ -457,6 +457,22 @@ development; there is no Playwright scenario for Rust yet.
 Not built yet: more lessons (ownership and borrowing are the obvious next ones), GDScript, and a
 seccomp filter on compiled programs.
 
+## Windows release
+
+From 1.1.0 Discere ships as a Windows release that Instrumenta 0.15.0 installs and updates as a
+`managed-service` product ([ADR 0007](adr/0007-windows-release.md)). The bundle starts from its own
+`node.exe`, keeps learner data in `%LOCALAPPDATA%\Discere`, and runs Rust, Python and SQL practice
+through `discere-sandbox.exe`, an AppContainer inside a Job Object. The Rust and Python toolchains
+are a one-time download from inside the app, pinned by SHA-256.
+
+Checked on Windows 11 from the packaged bundle with a throwaway data folder: both toolchains
+installed through `/api/code-runtimes`; a Rust program read stdin and could not list the user's
+profile; an endless loop stopped at the limit; the lesson question `types-and-functions-triple`
+marked a hard-coded answer wrong (1 of 3 tests), the correct one right, and showed rustc's E0308
+for a stray semicolon; a Python project task with pandas and an SQL project task both passed. The
+sandbox helper's own tests (`tools/windows-sandbox/test.sh`) cover blocked network, blocked user
+folders, and the memory, CPU, wall-clock and process limits.
+
 ## Linear Algebra release
 
 Before loading the course, SQLite's online backup created

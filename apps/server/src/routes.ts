@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { readFileSync } from "node:fs";
 import { readFile, realpath } from "node:fs/promises";
 import path from "node:path";
 import {
@@ -38,6 +39,7 @@ import {
   TutorReplyRequestSchema,
   WritingLintRequestSchema,
 } from "@discere/contracts";
+import { resolveFromRepoRoot } from "@discere/paths";
 import { createReviewState, scoreAttempt, updateMastery } from "@discere/progression-engine";
 import { buildCompanionPacket } from "@discere/tutor-providers";
 import {
@@ -50,16 +52,14 @@ import { lintText, type WritingContext } from "@discere/writing-engine";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { assessResponse } from "./assessment.js";
-import { assessCode, codeTask } from "./rust/questions.js";
-import type { RustRuntime } from "./rust/runtime.js";
 import { illustrationsCapability } from "./capabilities.js";
 import { acceptTutorReply, buildTutorReplyPayload } from "./companion.js";
 import type { ContentRepository } from "./content.js";
 import type { DiscereStore } from "./db/store.js";
 import { HttpError } from "./errors.js";
-import { buildLearningStatistics } from "./learning-statistics.js";
 import { genericTutorContext } from "./generic-tutor-context.js";
 import { illustrationImagePath, readIllustration, requestIllustration } from "./illustrations.js";
+import { buildLearningStatistics } from "./learning-statistics.js";
 import { getNotebookPage, saveNotebookPage } from "./notebook.js";
 import { coerceQueryBoolean } from "./query-coercion.js";
 import { privateEssayQuestionForRomanReference } from "./roman-reference-essay.js";
@@ -69,7 +69,14 @@ import {
   resolveRomanReferenceTutorEssay,
   resolveRomanReferenceTutorQuestion,
 } from "./roman-reference-routes.js";
+import { assessCode, codeTask } from "./rust/questions.js";
+import type { RustRuntime } from "./rust/runtime.js";
 import type { TopicMapRepository } from "./topic-maps.js";
+
+/** The product version Instrumenta shows, from the root package.json of a checkout or a bundle. */
+const DISCERE_VERSION = (
+  JSON.parse(readFileSync(resolveFromRepoRoot("package.json"), "utf8")) as { version: string }
+).version;
 
 /** The IANA spelling of a time zone typed in any case, or null when there is no such zone. */
 export function canonicalTimeZone(value: string): string | null {
@@ -186,7 +193,7 @@ export async function registerRoutes(
   app.get("/api/health", async () => ({
     status: "ok",
     service: "discere",
-    version: "0.1.0",
+    version: DISCERE_VERSION,
     // The library's count. Archived courses still load (old links keep working) but are not
     // offered, so they are reported apart rather than inflating the number.
     courses: content.listedBundles.length,
@@ -250,9 +257,16 @@ export async function registerRoutes(
     return store.study.swapQuest(questId);
   });
   app.get("/api/study/statistics", async (request) => {
-    const { period } = z.object({ period: StudyStatisticsPeriodSchema.default("all") })
-      .strict().parse(request.query);
-    return buildLearningStatistics(store.study.events(), store.now(), store.study.preferences().timeZone, period);
+    const { period } = z
+      .object({ period: StudyStatisticsPeriodSchema.default("all") })
+      .strict()
+      .parse(request.query);
+    return buildLearningStatistics(
+      store.study.events(),
+      store.now(),
+      store.study.preferences().timeZone,
+      period,
+    );
   });
   app.get("/api/study/preferences", async () => store.study.preferences());
   app.put("/api/study/preferences", async (request) => {
@@ -413,11 +427,15 @@ export async function registerRoutes(
     );
     if (!detail) throw new HttpError(404, "Course not found.", "COURSE_NOT_FOUND");
     const recent = store.courseActivity().get(courseId)?.lessonId;
-    const available = detail.lessons.filter(lesson => lesson.available);
-    const saved = available.find(lesson => lesson.id === recent);
-    const index = available.findIndex(lesson => lesson.id === recent);
-    const ordered = index < 0 ? available : [...available.slice(index + 1), ...available.slice(0, index)];
-    const next = saved && !saved.completed ? saved : ordered.find(lesson => !lesson.completed) ?? available[0];
+    const available = detail.lessons.filter((lesson) => lesson.available);
+    const saved = available.find((lesson) => lesson.id === recent);
+    const index = available.findIndex((lesson) => lesson.id === recent);
+    const ordered =
+      index < 0 ? available : [...available.slice(index + 1), ...available.slice(0, index)];
+    const next =
+      saved && !saved.completed
+        ? saved
+        : (ordered.find((lesson) => !lesson.completed) ?? available[0]);
     return { ...detail, ...(next ? { resumeLessonId: next.id } : {}) };
   });
   app.get("/api/content/:courseId/assets/*", async (request, reply) => {

@@ -1,5 +1,6 @@
 import { spawnSync } from "node:child_process";
 import type { TutorProviderId } from "@discere/contracts";
+import { resolveCliCommand } from "@discere/paths";
 import { TutorProviderIdSchema } from "@discere/contracts";
 import { ClaudeTutorProvider, type ClaudeProviderOptions } from "./claude.js";
 import { CodexTutorProvider, type CodexProviderOptions } from "./codex.js";
@@ -29,9 +30,9 @@ let detected: AvailableDrivers | undefined;
 /** What this machine can drive. Probed once per process; a CLI does not appear mid-session. */
 export function detectDrivers(env: NodeJS.ProcessEnv = process.env): AvailableDrivers {
   detected ??= {
-    claude: onPath(env["DISCERE_CLAUDE_BIN"]?.trim() || "claude"),
+    claude: onPath(env["DISCERE_CLAUDE_BIN"]?.trim() || resolveCliCommand("claude", env)),
     api: Boolean(env["DISCERE_AI_API_KEY"]?.trim() || env["DISCERE_AI_BASE_URL"]?.trim()),
-    codex: onPath(env["DISCERE_CODEX_BIN"]?.trim() || "codex"),
+    codex: onPath(env["DISCERE_CODEX_BIN"]?.trim() || resolveCliCommand("codex", env)),
   };
   return detected;
 }

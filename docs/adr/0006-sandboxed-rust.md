@@ -47,5 +47,5 @@ output in the bundle and fails if a program does something other than what its a
 
 Namespaces and resource limits reduce exposure. They do not remove kernel, rustc or linker
 vulnerabilities, and there is no seccomp filter on the compiled program. This is a boundary for a
-single local learner, not a multi-tenant service. Native Windows has no runtime; Discere already runs
-its server in WSL there.
+single local learner, not a multi-tenant service. On Windows the same two steps run in
+discere-sandbox.exe instead ([ADR 0007](0007-windows-release.md)).

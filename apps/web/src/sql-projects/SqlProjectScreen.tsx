@@ -18,6 +18,7 @@ import {
 } from "./api.js";
 import { SqlDataTable, SqlResultTable } from "./SqlTable.js";
 import { CodeEditor } from "./CodeEditor.js";
+import { RuntimeSetup } from "../code-runtimes/RuntimeSetup.js";
 const modes = [
   {
     id: "coach",
@@ -263,6 +264,7 @@ function SqlTaskScreen({
           {session.completed + 1} / {session.total}
         </span>
       </header>
+      <RuntimeSetup runtime="python" />
       <div className="sql-task-heading">
         <span className="sql-eyebrow">{session.mode} · SQLite</span>
         {session.mode === "exam" ? (

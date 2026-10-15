@@ -1,3 +1,4 @@
+import { resolveCliCommand } from "@discere/paths";
 import { spawnSync } from "node:child_process";
 import {
   closeSync,
@@ -39,7 +40,7 @@ function codexHome(): string {
 }
 
 function codexBinary(): string {
-  return process.env["DISCERE_CODEX_BIN"]?.trim() ?? "codex";
+  return process.env["DISCERE_CODEX_BIN"]?.trim() || resolveCliCommand("codex");
 }
 
 export function probeCodexBinary(now = Date.now()): BinaryProbe {
@@ -165,7 +166,7 @@ export function claudeSignedIn(now = Date.now()): boolean {
   if (claudeAuthCache && now - claudeAuthCache.at < BINARY_CACHE_MS) return claudeAuthCache.loggedIn;
   let loggedIn = false;
   try {
-    const result = spawnSync(process.env["DISCERE_CLAUDE_BIN"]?.trim() || "claude", ["auth", "status"], {
+    const result = spawnSync(process.env["DISCERE_CLAUDE_BIN"]?.trim() || resolveCliCommand("claude"), ["auth", "status"], {
       encoding: "utf8",
       timeout: 8_000,
     });

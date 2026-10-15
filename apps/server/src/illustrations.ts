@@ -1,3 +1,4 @@
+import { resolveCliCommand } from "@discere/paths";
 import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
@@ -104,7 +105,7 @@ async function generate(key: string, prompt: string): Promise<void> {
   const directory = illustrationCacheDirectory();
   await mkdir(directory, { recursive: true });
   const scratch = path.join(directory, `${key}.partial.png`);
-  const binary = process.env["DISCERE_CODEX_BIN"]?.trim() ?? "codex";
+  const binary = process.env["DISCERE_CODEX_BIN"]?.trim() || resolveCliCommand("codex");
   const model = process.env["DISCERE_CODEX_MODEL"]?.trim();
   const args = [
     "exec",

@@ -1,5 +1,6 @@
 import type { RustRunResult } from "@discere/contracts";
 import { useQuery } from "@tanstack/react-query";
+import { RuntimeSetup } from "../code-runtimes/RuntimeSetup.js";
 import { Play, RotateCcw, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router";
@@ -71,11 +72,7 @@ export function RustPlaygroundScreen() {
           {status.data?.ready ? status.data.version : status.isPending ? "" : "Rust unavailable"}
         </span>
       </header>
-      {status.data && !status.data.ready ? (
-        <p className="rust-ide-unavailable" role="alert">
-          {status.data.message}
-        </p>
-      ) : null}
+      <RuntimeSetup runtime="rust" />
       <div className="rust-ide-split">
         <section className="rust-ide-code" aria-label="Code">
           <RustEditor id="rust-playground-code" label="Rust code" value={code} onChange={setCode} onRun={() => void run()} />

@@ -11,9 +11,20 @@ It keeps learner state in SQLite and renders its teaching visuals deterministica
 the learner's own Claude Code, an OpenAI-compatible endpoint, the local Codex CLI, or an explicit
 ChatGPT handoff.
 
-Version 1.0.0 (from `package.json`).
+Version 1.1.0 (from `package.json`).
 
-## Run it
+## Install it
+
+On Windows, install Discere from Instrumenta (0.15.0 or later): open Add apps and choose Discere.
+Instrumenta downloads the latest release, checks it, keeps it up to date and can roll it back. Your
+learning data lives in `%LOCALAPPDATA%\Discere`, so updates and uninstalls leave it alone.
+
+Rust, Python and SQL practice need a toolchain the release does not carry. The first lesson or
+project that runs code offers a one-time download (about 131 MB for Rust, 34 MB for Python), kept in
+the same data folder. The tutor and drawn illustrations use the Codex CLI or Claude Code installed on
+Windows, if you have one.
+
+## Run it from source
 
 Requirements: Git, Node.js 22.16.0 or newer (`.nvmrc` pins 24), and pnpm 11.17.0.
 
@@ -24,20 +35,23 @@ pnpm run setup
 pnpm start
 ```
 
-If Corepack needs Administrator access on Windows, use `npm install --global pnpm@11.17.0` instead.
-
 The learner app is at `http://127.0.0.1:4318` and the API at `http://127.0.0.1:4317`. Both bind to
 loopback. `pnpm dev` reloads on change. `pnpm stop` cleans up Discere's recorded processes if a
 terminal vanished without stopping its children.
 
-Instrumenta starts the built service on its registered loopback port (`49323`, falling back to
-`45023`); `instrumenta/product.json` holds the command, health check and environment. Discere is a
-source-run product, so the launcher never pulls or builds for you: update a checkout with `git pull`
-and `pnpm build`.
+A checkout keeps learner state in `data/discere.sqlite`. Code practice from a checkout runs on Linux
+(WSL on Windows): `pnpm rust:setup` and `pnpm python:setup` install its toolchains. When no release
+is installed, Instrumenta runs a workspace checkout instead, on its registered loopback port
+(`49323`, falling back to `45023`); `instrumenta/product.json` holds the command, health check and
+environment. `.env`, databases, builds, uploads and process records are ignored by Git.
+Configuration, backup, reset and troubleshooting are in [the setup guide](docs/setup.md).
 
-Durable learner state is `data/discere.sqlite`. `.env`, databases, builds, uploads and process records
-are ignored by Git. Configuration, backup, reset and troubleshooting are in
-[the setup guide](docs/setup.md).
+## Release it
+
+Bump `version` in `package.json`, commit, and push a matching `v<version>` tag. The release workflow
+builds the Windows sandbox helper, packages the bundle (`pnpm package:release`), starts it as a smoke
+test and publishes it for Instrumenta. [ADR 0007](docs/adr/0007-windows-release.md) explains the
+bundle.
 
 ## Courses
 

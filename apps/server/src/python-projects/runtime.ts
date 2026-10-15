@@ -11,6 +11,7 @@ import {
   type PythonInputs,
   type PythonValue,
 } from "@discere/contracts";
+import { dataDirectory, resolveFromRepoRoot } from "@discere/paths";
 
 export interface PythonRuntime {
   execute(code: string, inputs: PythonInputs, call?: PythonCall): Promise<PythonExecution>;
@@ -34,21 +35,13 @@ export class IsolatedPythonRuntime implements PythonRuntime {
     this.directory =
       options.directory ??
       process.env["DISCERE_PYTHON_RUNTIME_DIR"] ??
-      path.resolve(import.meta.dirname, "../../../../data/python-runtime");
+      path.join(dataDirectory(), "python-runtime");
     this.bubblewrap = options.bubblewrap ?? "/usr/bin/bwrap";
   }
-  async execute(code: string, inputs: PythonInputs, call?: PythonCall): Promise<PythonExecution> {
-    PythonCodeSchema.parse(code);
-    PythonInputsSchema.parse(inputs);
-    if (call) {
-      PythonCallSchema.parse(call);
-      if (call.arguments.some((name) => !(name in inputs)))
-        throw new Error("A function call needs its supplied arguments.");
-    }
+  /** True when the sandbox, the interpreter and the reviewed packages are all in place. */
+  async available(): Promise<boolean> {
     if (process.platform !== "linux" || process.arch !== "x64" || !path.isAbsolute(this.directory))
-      return unavailable();
-    if (this.active >= 2)
-      return { error: "runtime", message: "Python practice is busy. Try again in a moment." };
+      return false;
     const packages = path.join(this.directory, "lib/python3.12/site-packages");
     try {
       await Promise.all([
@@ -58,9 +51,23 @@ export class IsolatedPythonRuntime implements PythonRuntime {
         access(path.join(packages, "numpy")),
         access(path.join(packages, "pandas")),
       ]);
+      return true;
     } catch {
-      return unavailable();
+      return false;
     }
+  }
+  async execute(code: string, inputs: PythonInputs, call?: PythonCall): Promise<PythonExecution> {
+    PythonCodeSchema.parse(code);
+    PythonInputsSchema.parse(inputs);
+    if (call) {
+      PythonCallSchema.parse(call);
+      if (call.arguments.some((name) => !(name in inputs)))
+        throw new Error("A function call needs its supplied arguments.");
+    }
+    if (this.active >= 2)
+      return { error: "runtime", message: "Python practice is busy. Try again in a moment." };
+    const packages = path.join(this.directory, "lib/python3.12/site-packages");
+    if (!(await this.available())) return unavailable();
     // Recheck after asynchronous readiness reads so competing calls cannot exceed the cap.
     if (this.active >= 2)
       return { error: "runtime", message: "Python practice is busy. Try again in a moment." };
@@ -103,7 +110,7 @@ export class IsolatedPythonRuntime implements PythonRuntime {
         packages,
         "/opt/packages",
         "--ro-bind",
-        path.join(import.meta.dirname, "bootstrap.py"),
+        resolveFromRepoRoot("apps/server/src/python-projects/bootstrap.py"),
         "/app/bootstrap.py",
         "--proc",
         "/proc",

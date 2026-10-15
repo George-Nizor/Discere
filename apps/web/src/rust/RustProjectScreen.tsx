@@ -17,6 +17,7 @@ import {
   startRustProject,
 } from "./api.js";
 import { RustConsole, RustEditor, TaskText } from "./RustIde.js";
+import { RuntimeSetup } from "../code-runtimes/RuntimeSetup.js";
 
 const modes = [
   { id: "coach", label: "Coach", description: "Work from the task, with hints when you need them." },
@@ -295,6 +296,7 @@ function RustTaskScreen({
           {session.completed + 1} / {session.total}
         </span>
       </header>
+      <RuntimeSetup runtime="rust" />
       <div className="rust-ide-split">
         <section className="rust-ide-brief" aria-label="Task">
           <h1>{task.title}</h1>

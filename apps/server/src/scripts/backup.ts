@@ -1,4 +1,5 @@
-import { resolveDatabasePath, resolveFromRepoRoot } from "@discere/paths";
+import path from "node:path";
+import { dataDirectory, resolveDatabasePath, resolveFromRepoRoot } from "@discere/paths";
 import { snapshotDatabase } from "../db/backup.js";
 
 const [operation, sourceArg, targetArg] = process.argv.slice(2);
@@ -7,8 +8,9 @@ try {
     const source = resolveDatabasePath(process.env["DISCERE_DATABASE_PATH"]);
     const target = sourceArg
       ? resolveFromRepoRoot(sourceArg)
-      : resolveFromRepoRoot(
-          "data/backups",
+      : path.join(
+          dataDirectory(),
+          "backups",
           "discere-" + new Date().toISOString().replace(/[:.]/g, "-") + ".sqlite",
         );
     console.log("Verified backup: " + (await snapshotDatabase(source, target)));

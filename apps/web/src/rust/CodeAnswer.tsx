@@ -2,6 +2,7 @@ import type { CodeExercise, RustTaskRun } from "@discere/contracts";
 import { Play, RotateCcw } from "lucide-react";
 import { useState } from "react";
 import { errorMessage } from "../api/client.js";
+import { RuntimeSetup } from "../code-runtimes/RuntimeSetup.js";
 import { runQuestionCode } from "./api.js";
 import { RustConsole, RustEditor } from "./RustIde.js";
 
@@ -85,6 +86,7 @@ export function CodeAnswer({
   const shown = checked ?? (ran?.code === code ? ran.run : undefined);
   return (
     <div className="code-answer">
+      <RuntimeSetup runtime="rust" />
       <Example exercise={exercise} />
       <RustEditor
         id={`${idPrefix}-code`}

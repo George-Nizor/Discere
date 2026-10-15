@@ -4,14 +4,15 @@ import Fastify, { type FastifyInstance } from "fastify";
 import { ZodError } from "zod";
 import { ContentRepository } from "./content.js";
 import { PythonProjectRepository } from "./python-projects/repository.js";
-import { IsolatedPythonRuntime, type PythonRuntime } from "./python-projects/runtime.js";
+import type { PythonRuntime } from "./python-projects/runtime.js";
 import { PythonProjectService, registerPythonProjectRoutes } from "./python-projects/service.js";
 import { RustProjectRepository, RustProjectService, registerRustProjectRoutes } from "./rust/projects.js";
 import { registerRustPlaygroundRoutes } from "./rust/playground.js";
 import { registerCodeQuestionRoutes } from "./rust/questions.js";
-import { IsolatedRustRuntime, type RustRuntime } from "./rust/runtime.js";
+import type { RustRuntime } from "./rust/runtime.js";
 import { SqlProjectRepository } from "./sql-projects/repository.js";
-import { IsolatedSqlRuntime, type SqlRuntime } from "./sql-projects/runtime.js";
+import type { SqlRuntime } from "./sql-projects/runtime.js";
+import { createCodeRunners, registerCodeRuntimeRoutes } from "./code-runtimes/index.js";
 import { SqlProjectService, registerSqlProjectRoutes } from "./sql-projects/service.js";
 import { registerCourseCheckRoutes } from "./course-checks.js";
 import { registerSearchRoutes } from "./search.js";
@@ -109,7 +110,9 @@ export async function createApp(options: AppOptions = {}): Promise<DiscereApp> {
   // One runtime for every tutor path, so the tutor drawer, the essay assessment, and the
   // workings review all speak to the same provider under the same limits.
   const runtime = createTutorRuntime(options.tutor);
-  const rustRuntime = options.rustRuntime ?? new IsolatedRustRuntime();
+  const runners = createCodeRunners();
+  const rustRuntime = options.rustRuntime ?? runners.rust;
+  await registerCodeRuntimeRoutes(app, runners.runtimes);
   await registerRoutes(app, {
     content,
     store,
@@ -122,7 +125,7 @@ export async function createApp(options: AppOptions = {}): Promise<DiscereApp> {
   await registerSearchRoutes(app, { content });
   const pythonProjects = await PythonProjectRepository.load(contentRoot, content);
   await registerPythonProjectRoutes(app, new PythonProjectService(
-    store, pythonProjects, options.pythonRuntime ?? new IsolatedPythonRuntime(), options.revealDelayMs ?? 5000,
+    store, pythonProjects, options.pythonRuntime ?? runners.python, options.revealDelayMs ?? 5000,
   ));
   await registerRustPlaygroundRoutes(app, rustRuntime);
   await registerRustProjectRoutes(
@@ -140,7 +143,7 @@ export async function createApp(options: AppOptions = {}): Promise<DiscereApp> {
     new SqlProjectService(
       store,
       sqlProjects,
-      options.sqlRuntime ?? new IsolatedSqlRuntime(),
+      options.sqlRuntime ?? runners.sql,
       options.revealDelayMs ?? 5000,
     ),
   );
