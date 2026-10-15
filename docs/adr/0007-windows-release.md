@@ -38,7 +38,9 @@ rolls back as a `managed-service` product.
   SHA-256 in `apps/server/src/code-runtimes/artifacts.ts` and checked before it is unpacked.
 - **Tutoring.** The Codex and Claude Code CLIs are found on the Windows PATH. Node cannot start
   npm's `.cmd` shims without a shell, so `resolveCliCommand` starts the native `codex.exe` behind
-  the shim instead.
+  the shim instead. From 1.1.2 the release runs the tutor on Claude Code with Haiku for every
+  turn (`DISCERE_CLAUDE_SMART_MODEL`) and turns drawn illustrations off, since those need a Codex
+  subscription.
 - **Publishing.** A `v<version>` tag runs `.github/workflows/release.yml` on `windows-latest`. It
   builds the sandbox helper, packages, starts the bundle from its own `node.exe` as a smoke test, and
   publishes the zip with an `instrumenta-release.json` written by Instrumenta's

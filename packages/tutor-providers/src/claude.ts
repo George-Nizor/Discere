@@ -108,7 +108,8 @@ export class ClaudeTutorProvider extends PipelineTutorProvider {
       "--strict-mcp-config",
     ];
     // Haiku has no effort control; the capable model runs at the configured (low) effort.
-    if (input.tier === "smart" && this.effort) args.push("--effort", this.effort);
+    if (input.tier === "smart" && this.effort && !/haiku/i.test(this.smartModel))
+      args.push("--effort", this.effort);
     if (input.imageDirectory) args.push("--tools", "Read", "--allowedTools", "Read", "--add-dir", input.imageDirectory);
     else args.push("--tools", "");
     if (input.schema !== undefined) args.push("--json-schema", JSON.stringify(withoutDialect(input.schema)));
