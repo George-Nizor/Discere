@@ -511,7 +511,8 @@ export async function registerRoutes(
               throw new HttpError(
                 409,
                 "Answer the remaining lesson question before continuing.",
-                "STAGE_NEEDS_RESPONSE",
+                // The client reads this to take the learner back to the step they skipped.
+                { code: "STAGE_NEEDS_RESPONSE", detail: `step:${step.id}` },
               );
             if (
               step.activity &&

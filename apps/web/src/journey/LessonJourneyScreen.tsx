@@ -3,7 +3,7 @@ import { useAmbientAccent } from "../fx/ambient-accent.js";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useRef, useState } from "react";
 import { Link, Navigate, useLocation, useNavigate, useParams } from "react-router";
-import { errorMessage } from "../api/client.js";
+import { errorCode, errorDetail, errorMessage } from "../api/client.js";
 import { saveJourneyProgress } from "../api/endpoints.js";
 import { queryKeys, useCourse, useJourney, useJourneyProgress } from "../api/queries.js";
 import { paths } from "../lib/paths.js";
@@ -80,6 +80,8 @@ function LessonJourney({
   };
   const [activeStep, setActiveStep] = useState<{ stageId: string; stepId: string } | null>(null);
   const completing = useRef(false);
+  // Bumped to rebuild the stage at a step the learner skipped, so it reads the saved position again.
+  const [rewind, setRewind] = useState(0);
   const [saveFailure, setSaveFailure] = useState<string | null>(null);
 
   // A jump made from inside a stage records where it came from, so returning is a property of
@@ -156,6 +158,25 @@ function LessonJourney({
           });
         else goToStage(followingStageId ?? saved.activeStageId);
       } catch (error) {
+        const skipped = errorDetail(error)?.match(/^step:(.+)$/)?.[1];
+        if (errorCode(error) === "STAGE_NEEDS_RESPONSE" && skipped) {
+          // A question was left unanswered, for instance when the lesson was reworded after an
+          // earlier visit. Go back to it rather than leaving Finish with nothing to do.
+          try {
+            await saveJourneyProgress(courseId, lessonId, {
+              stageId: view.stage.id,
+              state: "active",
+              interactionState: { stepId: skipped, stepIndex: 0 },
+            });
+            await queryClient.invalidateQueries({
+              queryKey: queryKeys.journeyProgress(courseId, lessonId),
+            });
+            setRewind((count) => count + 1);
+            return;
+          } catch {
+            // Fall through to the plain message below.
+          }
+        }
         setSaveFailure(
           errorMessage(error, "Your progress could not be saved. Try continuing again."),
         );
@@ -371,7 +392,7 @@ function LessonJourney({
             // Each stage owns its own working state. Keying by stage id means moving between two
             // stages of the same type starts the second one clean, rather than showing the first
             // stage's answer, hints, and result.
-            key={current.stage.id}
+            key={`${current.stage.id}:${rewind}`}
             courseId={courseId}
             lessonId={lessonId}
             questionLed={questionLed}

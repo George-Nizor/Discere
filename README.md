@@ -11,7 +11,7 @@ It keeps learner state in SQLite and renders its teaching visuals deterministica
 the learner's own Claude Code, an OpenAI-compatible endpoint, the local Codex CLI, or an explicit
 ChatGPT handoff.
 
-Version 1.1.2 (from `package.json`).
+Version 1.1.3 (from `package.json`).
 
 ## Install it
 
