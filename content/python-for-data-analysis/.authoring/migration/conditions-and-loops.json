@@ -1,7 +1,11 @@
 {
   "lessonId": "conditions-and-loops",
   "courseId": "python-for-data-analysis",
-  "migrationNotes": [],
+  "migrationNotes": [
+    "Spine: a car park barrier program grows. It first chooses a fee (if chain), then totals a day's fees (for, range, accumulator), then admits cars until it is full (while), then combines tests (and, or, not, and & on bits), and the last screen assembles the whole program.",
+    "Left out of the lesson (still in the course): python-conditions-and-loops-hook (the 2-hour stay, covered by the opener's fee bands and the first screen) and python-conditions-and-loops-why-zero stays as the self-explanation on the worked example.",
+    "Figures: the fee chain, the accumulator and the while loop figures moved from the practice screens onto the teaching screens that explain them."
+  ],
   "lesson": {
     "id": "conditions-and-loops",
     "courseId": "python-for-data-analysis",
@@ -11,48 +15,32 @@
     "title": "Control which work happens",
     "steps": [
       {
-        "id": "first-true-branch",
+        "id": "choosing-between-fees",
         "kind": "explain",
         "blocks": [],
-        "headline": "An if chain runs the first branch whose condition is true, and skips the rest.",
+        "headline": "Choosing between fees",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "if, elif and else are branches. Python tests each condition in order and runs only the first one that is true. == compares two values; a single = stores a value."
+            "text": "Start with one car. The car park rewards regulars, and the program keeps a driver's visits this month in a name called units. A driver with 10 or more visits pays a fee of 0. A driver with 5 or more pays £2, and everyone else pays £4. To pick between those, the program asks questions with a yes-or-no answer. In Python such a question is called a condition. The condition units >= 10 is True when units is 10 or more and False otherwise."
           },
           {
-            "kind": "callout",
-            "tone": "key",
-            "text": "Put the narrow condition first when ranges overlap."
+            "kind": "paragraph",
+            "text": "Python writes a comparison with two equals signs. A single equals sign stores a value, so units = 5 sets units to 5, while units == 5 asks whether it already is 5. The conditions go into an if chain. Its first line is if units >= 10:, the middle line is elif units >= 5: (short for 'else if'), and the last is else:, which has no condition and takes whatever is left. Each of these, with the indented lines under it, is a branch. Python tests from the top, runs the first branch whose condition is True and skips the rest. Step through two drivers."
           }
         ],
-        "reveal": [],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "With units = 3 both tests fail, so else runs and the fee is 4. With units = 12 the first test passes, the fee is 0 and the other tests are never looked at. The order matters whenever ranges overlap. A driver with 12 visits also satisfies units >= 5, so the test for 10 has to come first. Put the narrowest condition at the top, or it never gets its turn."
+          }
+        ],
         "introducesTerms": [
           "condition",
           "branch"
         ],
         "visualStateId": "",
-        "checkQuestionId": "python-conditions-and-loops-equals-check",
-        "activityId": ""
-      },
-      {
-        "id": "which-fee",
-        "kind": "predict",
-        "blocks": [],
-        "lead": [
-          {
-            "kind": "paragraph",
-            "text": "The conditions are tested from the top. Only one fee is ever assigned."
-          }
-        ],
-        "reveal": [
-          {
-            "kind": "paragraph",
-            "text": "You followed the chain down. The first condition failed and the second held, so the third branch never ran."
-          }
-        ],
-        "visualStateId": "",
-        "checkQuestionId": "python-conditions-and-loops-1",
+        "checkQuestionId": "",
         "activityId": "",
         "diagram": {
           "type": "python_execution",
@@ -132,52 +120,60 @@
             }
           ],
           "initialCaseId": "case-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        }
       },
       {
-        "id": "range-and-total",
-        "kind": "explain",
+        "id": "what-equals-does",
+        "kind": "predict",
         "blocks": [],
-        "headline": "A for loop takes each item in turn, and range stops before its stop value.",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "for item in range(1, 6) gives item the values 1, 2, 3, 4 and 5. The start is included and the stop is not. A running total, called an accumulator, starts before the loop and grows inside it."
+            "text": "Two lines in the chain can look alike and do different jobs. Read the line units = 5 the way Python reads it."
           }
         ],
-        "reveal": [],
-        "introducesTerms": [
-          "loop",
-          "accumulator"
-        ],
         "visualStateId": "",
-        "checkQuestionId": "python-conditions-and-loops-range-check",
+        "checkQuestionId": "python-conditions-and-loops-equals-check",
         "activityId": ""
       },
       {
-        "id": "add-up-the-loop",
-        "kind": "worked_example",
+        "id": "which-fee",
+        "kind": "predict",
         "blocks": [],
-        "headline": "Find total after total = 0 and for item in range(1, 6): total += item.",
-        "lead": [],
-        "reveal": [],
-        "workedSteps": [
+        "lead": [
           {
-            "text": "range(1, 6) gives 1, 2, 3, 4, 5. The stop, 6, is excluded.",
-            "math": "1, 2, 3, 4, 5"
-          },
-          {
-            "text": "total starts at 0, then grows by each item.",
-            "math": "0 + 1 + 2 + 3 + 4 + 5",
-            "selfExplain": {
-              "questionId": "python-conditions-and-loops-why-zero"
-            }
-          },
-          {
-            "text": "Add them.",
-            "math": "15"
+            "kind": "paragraph",
+            "text": "Follow the chain from the top for a driver with 7 visits. Stop at the first condition that holds."
           }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-conditions-and-loops-1",
+        "activityId": ""
+      },
+      {
+        "id": "repeating-for-every-car",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "Repeating work for every car",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "That settles one car. At closing time the program has a list of the day's fees and needs their total. A for loop does the repeating. It takes a collection of items and runs its indented lines once for each, giving each item in turn a name, so for fee in fees: runs once with fee set to the first fee and again with the second, until the items run out. Often the items are just a run of numbers, and range makes those. range(1, 6) hands out 1, 2, 3, 4 and 5. It includes its start and stops before its stop value, the rule slices follow, so 6 is never given out. A third number sets the step: range(3, 12, 3) gives 3, 6 and 9."
+          },
+          {
+            "kind": "paragraph",
+            "text": "To add things up, the loop needs somewhere to keep the running figure. A name that starts at 0 before the loop and grows inside it is called an accumulator. With total = 0 above the loop and total += item inside it, each pass adds one more item to whatever total already holds. Starting at 0 means the first item is added to nothing, so after the first pass the total is exactly that item. Step through two totals."
+          }
+        ],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "In the first case the items are 0, 1, 2 and 3, and total finishes at 6. In the second, range(1, 8, 2) gives 1, 3, 5 and 7, and total finishes at 16. When all you need is the total, Python's built-in sum does the whole job in one call: sum(range(1, 5)) gives 10."
+          }
+        ],
+        "introducesTerms": [
+          "loop",
+          "accumulator"
         ],
         "visualStateId": "",
         "checkQuestionId": "",
@@ -270,15 +266,66 @@
             }
           ],
           "initialCaseId": "case-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        }
+      },
+      {
+        "id": "does-range-stop-at-6",
+        "kind": "predict",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Before adding anything up, make sure you know which values range hands out."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-conditions-and-loops-range-check",
+        "activityId": ""
+      },
+      {
+        "id": "add-up-the-loop",
+        "kind": "worked_example",
+        "blocks": [],
+        "headline": "Find total after total = 0 and for item in range(1, 6): total += item.",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Work through one complete total, from the first pass to the last."
+          }
+        ],
+        "reveal": [],
+        "workedSteps": [
+          {
+            "text": "range(1, 6) gives 1, 2, 3, 4, 5. The stop, 6, is excluded.",
+            "math": "1, 2, 3, 4, 5"
+          },
+          {
+            "text": "total starts at 0, then grows by each item.",
+            "math": "0 + 1 + 2 + 3 + 4 + 5",
+            "selfExplain": {
+              "questionId": "python-conditions-and-loops-why-zero"
+            }
+          },
+          {
+            "text": "Add them.",
+            "math": "15"
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
       },
       {
         "id": "step-by-three",
         "kind": "faded_example",
         "blocks": [],
         "headline": "Find total after total = 0 and for item in range(3, 12, 3): total += item.",
-        "lead": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "This time you fill in two of the lines yourself."
+          }
+        ],
         "reveal": [],
         "workedSteps": [
           {
@@ -299,23 +346,31 @@
         "activityId": ""
       },
       {
-        "id": "loop-until-false",
-        "kind": "try",
+        "id": "repeating-until-a-test-fails",
+        "kind": "explain",
         "blocks": [],
+        "headline": "Repeating until a test fails",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "A while loop tests its condition before every pass. The body must eventually make the condition false, or the loop never finishes."
-          }
-        ],
-        "reveal": [
+            "text": "A for loop knows how many passes it has, because its items are counted out in advance. Sometimes the program cannot know. The car park keeps letting cars in until it is full, and nobody can say beforehand how many that will take. For that Python has the while loop. It is written as while followed by a condition, and it tests the condition before every pass. If the test gives True, the indented lines run and the test is made again. When it gives False, the loop ends and the program carries on below it."
+          },
           {
             "kind": "paragraph",
-            "text": "You counted the passes by testing the condition each time. The last value crosses the limit, because the test only happens before a pass."
+            "text": "The lines inside have to change something the condition looks at. Otherwise the test gives the same answer for ever and the loop never finishes. In the picture, count starts at 1 and the loop runs while count < 6. Each pass adds to count and adds 1 to turns, which counts the passes. Step through both cases and compare."
           }
         ],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "With count += 2 the values are 3, 5 and 7, so turns finishes at 3. With count += 3 they are 4 and 7, so turns finishes at 2. In the first case the test still gave True at 5, so one more pass ran and carried count past the limit. The test happens only before a pass, never during one."
+          }
+        ],
+        "introducesTerms": [
+          "while loop"
+        ],
         "visualStateId": "",
-        "checkQuestionId": "python-conditions-and-loops-3",
+        "checkQuestionId": "",
         "activityId": "",
         "diagram": {
           "type": "python_execution",
@@ -405,8 +460,43 @@
             }
           ],
           "initialCaseId": "case-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        }
+      },
+      {
+        "id": "loop-until-false",
+        "kind": "try",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Test the condition before each pass and write down the value count takes. Stop when a test gives False."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-conditions-and-loops-3",
+        "activityId": ""
+      },
+      {
+        "id": "combining-tests",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "Combining tests",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Real fee rules seldom hang on one test. A night rate might apply only to a car that arrived after 18:00 and left before 06:00. Python joins tests with three words. and gives True only when both sides are True. or gives True when at least one side is. not turns True into False and False into True. Each side is worked out first and gives True or False. The word then combines those two answers. With x = 6, the test x > 3 and x < 9 asks whether x lies between 3 and 9, and the answer is True."
+          },
+          {
+            "kind": "paragraph",
+            "text": "The symbols & and | look like and and or. On whole numbers they work on binary digits instead. Binary writes a number using only 1 and 0, in columns worth 4, 2 and 1. The number 6 is one 4 and one 2, so it is 110. The number 3 is one 2 and one 1, so it is 011. The operator & compares the columns and keeps a 1 only where both numbers have one. Here only the middle column has two 1s, which leaves 010, the number 2. Use the words for conditions and keep the symbols for work on bits."
+          }
+        ],
+        "introducesTerms": [
+          "binary"
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
       },
       {
         "id": "and-or-not",
@@ -415,13 +505,7 @@
         "lead": [
           {
             "kind": "paragraph",
-            "text": "and, or and not combine true-or-false tests. On whole numbers, & works on binary digits instead: it keeps a bit only if both numbers have it set."
-          }
-        ],
-        "reveal": [
-          {
-            "kind": "paragraph",
-            "text": "Each test came out True or False before the words and, or and not combined them. & and | on integers work bit by bit, which is a different job."
+            "text": "Work out each of the three tests for x = 6 on its own before you count how many are True."
           }
         ],
         "visualStateId": "",
@@ -517,6 +601,26 @@
           "initialCaseId": "case-0"
         },
         "answerVisibility": "hidden-until-response"
+      },
+      {
+        "id": "the-whole-barrier-program",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "The whole barrier program",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "The barrier program can now be written out as it was first described. It sets total = 0 and runs a for loop over the day's stays. Inside the loop an if chain picks the fee for that stay, and total += fee adds it to the day's takings. When the stays run out, total holds the answer. A loop with a chain inside it is the shape of most data work, since data arrives as a long list of rows and the question to ask of each row usually depends on a test."
+          },
+          {
+            "kind": "paragraph",
+            "text": "Each tool answers a different need. An if chain picks one path. A for loop repeats over items you already have. A while loop repeats until a test gives False, and the words and, or and not let one test hold several requirements. The program is complete, but the fee rule now sits in the middle of the sum. A till and a website would need the same rule, and copying it into each invites two different mistakes."
+          }
+        ],
+        "introducesTerms": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
       }
     ],
     "orientation": "Trace branches, ranges, loop updates and Boolean conditions.",
@@ -549,23 +653,30 @@
         "blocks": [
           {
             "kind": "paragraph",
-            "text": "A car park charges £2 for a stay under 1 hour and £5 for a stay under 3 hours. Longer stays cost £9."
+            "text": "A car park barrier has no attendant to ask how long you stayed. A small program reads the ticket, works out the fee and lifts the barrier. A stay under an hour costs £2 and a stay under three hours costs £5. Anything longer costs £9. Whoever wrote the program had to say what happens for each kind of stay, and the answer is different every time."
+          },
+          {
+            "kind": "paragraph",
+            "text": "At closing time the same program has a second job. It must add up the fee from every car that came in that day, which means doing one small calculation once per car. Nobody wants to write the sum out three hundred times, so the program needs a way to say 'do this for every car' and another way to say 'keep going until the car park is full'."
+          },
+          {
+            "kind": "paragraph",
+            "text": "This lesson follows the barrier program as it grows. It starts by choosing between fees. After that it learns to repeat work, and it ends by combining several yes-or-no tests into one decision."
           }
-        ],
-        "questionId": "python-conditions-and-loops-hook"
+        ]
       },
-      "promise": "By the end you'll trace which branch of an if chain runs and how many times a loop repeats.",
-      "estimatedMinutes": 10
+      "promise": "By the end you'll trace which fee an if chain picks and how many times a loop repeats.",
+      "estimatedMinutes": 12
     },
     "recap": {
       "keyIdea": "A chain runs the first true branch, a for loop visits each item once, and a while loop tests its condition before every pass.",
       "blocks": [
         {
           "kind": "paragraph",
-          "text": "You priced the car park stay at £5 and followed a fee chain to £2. The loop over range(3, 12, 3) ran 3 times and totalled 18."
+          "text": "You followed the fee chain for a driver with 7 visits and found that it stops at the second branch, a fee of 2. The loop over range(3, 12, 3) ran 3 times and totalled 18. You also saw that 5 & 3 is 1, because the two numbers share only their last binary digit."
         }
       ],
-      "nextHook": "Next: package a calculation as a function you can call again."
+      "nextHook": "The fee rule now sits in the middle of the end-of-day program. A till, a report and a website all need the same rule, and a copy in each place is one more thing to forget when the prices change. The next lesson shows how to give a rule a name, so it is written once and called wherever it is needed."
     },
     "calculator": "off",
     "taughtSkills": [
@@ -593,7 +704,7 @@
         "kind": "numeric",
         "value": 2,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The first condition is false and the second true, so the fee is 2."
       },
@@ -640,7 +751,7 @@
         "kind": "numeric",
         "value": 20,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The range contains 2, 4, 6 and 8; their sum is 20."
       },
@@ -687,7 +798,7 @@
         "kind": "numeric",
         "value": 4,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "count reaches 2, 4, 6 and 8, so the body ran 4 times."
       },
@@ -734,7 +845,7 @@
         "kind": "numeric",
         "value": 1,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The first is True; the second and third are False."
       },
@@ -789,7 +900,7 @@
         "kind": "numeric",
         "value": 11,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The updates produce 5, 8 and 11. At 11 the condition is false."
       },
@@ -836,7 +947,7 @@
         "kind": "numeric",
         "value": 1,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "In binary, 5 is 101 and 3 is 011. Their shared set bit is 001, which is 1."
       },
@@ -887,7 +998,7 @@
         "kind": "numeric",
         "value": 5,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "2 hours is not under 1 but is under 3, so the charge is £5."
       },
@@ -1111,7 +1222,7 @@
         "kind": "numeric",
         "value": 3,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The range holds 3, 6 and 9."
       },
@@ -1150,7 +1261,7 @@
         "kind": "numeric",
         "value": 18,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "3 + 6 + 9 = 18."
       },
@@ -1179,102 +1290,172 @@
   ],
   "citations": [
     {
-      "claim": "An if chain runs the first branch whose condition is true, and skips the rest.",
+      "claim": "An if chain tests its conditions in order, runs only the first branch whose condition is True, and == compares while = stores.",
       "sourceId": "py-flow",
       "section": "4.1 if; 4.2 for; 4.3 range; Python numeric truth testing",
       "targetKind": "step",
-      "targetId": "first-true-branch"
+      "targetId": "choosing-between-fees"
     },
     {
-      "claim": "An if chain runs the first branch whose condition is true, and skips the rest.",
+      "claim": "An if chain tests its conditions in order, runs only the first branch whose condition is True, and == compares while = stores.",
       "sourceId": "py-types",
       "section": "Numeric types; sequence types; set types; mapping types",
       "targetKind": "step",
-      "targetId": "first-true-branch"
+      "targetId": "choosing-between-fees"
     },
     {
-      "claim": "The conditions are tested from the top. Only one fee is ever assigned.",
+      "claim": "A single equals sign assigns a value; comparison uses ==.",
+      "sourceId": "py-flow",
+      "section": "4.1 if; 4.2 for; 4.3 range; Python numeric truth testing",
+      "targetKind": "step",
+      "targetId": "what-equals-does"
+    },
+    {
+      "claim": "A single equals sign assigns a value; comparison uses ==.",
+      "sourceId": "py-types",
+      "section": "Numeric types; sequence types; set types; mapping types",
+      "targetKind": "step",
+      "targetId": "what-equals-does"
+    },
+    {
+      "claim": "The first true condition in an if chain decides the branch that runs.",
       "sourceId": "py-flow",
       "section": "4.1 if; 4.2 for; 4.3 range; Python numeric truth testing",
       "targetKind": "step",
       "targetId": "which-fee"
     },
     {
-      "claim": "The conditions are tested from the top. Only one fee is ever assigned.",
+      "claim": "The first true condition in an if chain decides the branch that runs.",
       "sourceId": "py-types",
       "section": "Numeric types; sequence types; set types; mapping types",
       "targetKind": "step",
       "targetId": "which-fee"
     },
     {
-      "claim": "A for loop takes each item in turn, and range stops before its stop value.",
+      "claim": "A for loop runs its body once per item; range includes its start and excludes its stop; an accumulator starts at 0 and grows inside the loop.",
       "sourceId": "py-flow",
       "section": "4.1 if; 4.2 for; 4.3 range; Python numeric truth testing",
       "targetKind": "step",
-      "targetId": "range-and-total"
+      "targetId": "repeating-for-every-car"
     },
     {
-      "claim": "A for loop takes each item in turn, and range stops before its stop value.",
+      "claim": "A for loop runs its body once per item; range includes its start and excludes its stop; an accumulator starts at 0 and grows inside the loop.",
       "sourceId": "py-types",
       "section": "Numeric types; sequence types; set types; mapping types",
       "targetKind": "step",
-      "targetId": "range-and-total"
+      "targetId": "repeating-for-every-car"
     },
     {
-      "claim": "Find total after total = 0 and for item in range(1, 6): total += item.",
+      "claim": "range excludes its stop value.",
+      "sourceId": "py-flow",
+      "section": "4.1 if; 4.2 for; 4.3 range; Python numeric truth testing",
+      "targetKind": "step",
+      "targetId": "does-range-stop-at-6"
+    },
+    {
+      "claim": "range excludes its stop value.",
+      "sourceId": "py-types",
+      "section": "Numeric types; sequence types; set types; mapping types",
+      "targetKind": "step",
+      "targetId": "does-range-stop-at-6"
+    },
+    {
+      "claim": "Summing range(1, 6) in a loop with an accumulator gives 15.",
       "sourceId": "py-flow",
       "section": "4.1 if; 4.2 for; 4.3 range; Python numeric truth testing",
       "targetKind": "step",
       "targetId": "add-up-the-loop"
     },
     {
-      "claim": "Find total after total = 0 and for item in range(1, 6): total += item.",
+      "claim": "Summing range(1, 6) in a loop with an accumulator gives 15.",
       "sourceId": "py-types",
       "section": "Numeric types; sequence types; set types; mapping types",
       "targetKind": "step",
       "targetId": "add-up-the-loop"
     },
     {
-      "claim": "Find total after total = 0 and for item in range(3, 12, 3): total += item.",
+      "claim": "range(3, 12, 3) yields 3, 6 and 9; their running total is 18.",
       "sourceId": "py-flow",
       "section": "4.1 if; 4.2 for; 4.3 range; Python numeric truth testing",
       "targetKind": "step",
       "targetId": "step-by-three"
     },
     {
-      "claim": "Find total after total = 0 and for item in range(3, 12, 3): total += item.",
+      "claim": "range(3, 12, 3) yields 3, 6 and 9; their running total is 18.",
       "sourceId": "py-types",
       "section": "Numeric types; sequence types; set types; mapping types",
       "targetKind": "step",
       "targetId": "step-by-three"
     },
     {
-      "claim": "A while loop tests its condition before every pass. The body must eventually make the condition false, or the loop never finishes.",
+      "claim": "A while loop tests its condition before every pass and ends when it first gives False.",
+      "sourceId": "py-flow",
+      "section": "4.1 if; 4.2 for; 4.3 range; Python numeric truth testing",
+      "targetKind": "step",
+      "targetId": "repeating-until-a-test-fails"
+    },
+    {
+      "claim": "A while loop tests its condition before every pass and ends when it first gives False.",
+      "sourceId": "py-types",
+      "section": "Numeric types; sequence types; set types; mapping types",
+      "targetKind": "step",
+      "targetId": "repeating-until-a-test-fails"
+    },
+    {
+      "claim": "Counting passes of a while loop by testing the condition before each pass.",
       "sourceId": "py-flow",
       "section": "4.1 if; 4.2 for; 4.3 range; Python numeric truth testing",
       "targetKind": "step",
       "targetId": "loop-until-false"
     },
     {
-      "claim": "A while loop tests its condition before every pass. The body must eventually make the condition false, or the loop never finishes.",
+      "claim": "Counting passes of a while loop by testing the condition before each pass.",
       "sourceId": "py-types",
       "section": "Numeric types; sequence types; set types; mapping types",
       "targetKind": "step",
       "targetId": "loop-until-false"
     },
     {
-      "claim": "and, or and not combine true-or-false tests. On whole numbers, & works on binary digits instead: it keeps a bit only if both numbers have it set.",
+      "claim": "and, or and not combine True/False tests; & on integers keeps binary digits set in both numbers.",
+      "sourceId": "py-flow",
+      "section": "4.1 if; 4.2 for; 4.3 range; Python numeric truth testing",
+      "targetKind": "step",
+      "targetId": "combining-tests"
+    },
+    {
+      "claim": "and, or and not combine True/False tests; & on integers keeps binary digits set in both numbers.",
+      "sourceId": "py-types",
+      "section": "Numeric types; sequence types; set types; mapping types",
+      "targetKind": "step",
+      "targetId": "combining-tests"
+    },
+    {
+      "claim": "and, or and not each combine the True/False results of their sides.",
       "sourceId": "py-flow",
       "section": "4.1 if; 4.2 for; 4.3 range; Python numeric truth testing",
       "targetKind": "step",
       "targetId": "and-or-not"
     },
     {
-      "claim": "and, or and not combine true-or-false tests. On whole numbers, & works on binary digits instead: it keeps a bit only if both numbers have it set.",
+      "claim": "and, or and not each combine the True/False results of their sides.",
       "sourceId": "py-types",
       "section": "Numeric types; sequence types; set types; mapping types",
       "targetKind": "step",
       "targetId": "and-or-not"
+    },
+    {
+      "claim": "An if chain inside a for loop with an accumulator totals a list of fees; each construct answers a different need.",
+      "sourceId": "py-flow",
+      "section": "4.1 if; 4.2 for; 4.3 range; Python numeric truth testing",
+      "targetKind": "step",
+      "targetId": "the-whole-barrier-program"
+    },
+    {
+      "claim": "An if chain inside a for loop with an accumulator totals a list of fees; each construct answers a different need.",
+      "sourceId": "py-types",
+      "section": "Numeric types; sequence types; set types; mapping types",
+      "targetKind": "step",
+      "targetId": "the-whole-barrier-program"
     },
     {
       "claim": "2. The first condition fails for 7 and the second holds, so the chain stops there.",
@@ -1359,20 +1540,6 @@
       "section": "Numeric types; sequence types; set types; mapping types",
       "targetKind": "question",
       "targetId": "python-conditions-and-loops-6"
-    },
-    {
-      "claim": "£5. Two hours is not under 1 hour but is under 3, so the second charge applies. An if chain checks in that order.",
-      "sourceId": "py-flow",
-      "section": "4.1 if; 4.2 for; 4.3 range; Python numeric truth testing",
-      "targetKind": "question",
-      "targetId": "python-conditions-and-loops-hook"
-    },
-    {
-      "claim": "£5. Two hours is not under 1 hour but is under 3, so the second charge applies. An if chain checks in that order.",
-      "sourceId": "py-types",
-      "section": "Numeric types; sequence types; set types; mapping types",
-      "targetKind": "question",
-      "targetId": "python-conditions-and-loops-hook"
     },
     {
       "claim": "It stores 5 under the name units. Comparing two values takes a double equals sign.",

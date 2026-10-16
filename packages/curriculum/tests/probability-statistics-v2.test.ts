@@ -131,6 +131,10 @@ describe("Probability and Statistics v2", () => {
     expect(key(p + "9")).toBe(median([180, 190, 200, 210, 720]));
     expect(key(p + "10")).toBe(median([1, 3, 3, 5, 18]));
     expect(key(p + "11")).toBe(median([1, 2, 9]));
+    // Added for the story lesson: sorted first, 2, 3, 4, 8, 9 has median 4 (the written middle is 9).
+    expect(key(p + "12")).toBe(median([8, 2, 9, 4, 3]));
+    expect(key(p + "12")).toBe(4);
+    expect([8, 2, 9, 4, 3][2]).toBe(9);
     // Predict: swapping a 5 for 25 raises the mean (4 to 8) and leaves the median at 4.
     expect(mean([2, 4, 4, 5, 25])).toBe(8);
     expect(median([2, 4, 4, 5, 25])).toBe(median([2, 4, 4, 5, 5]));
@@ -162,20 +166,141 @@ describe("Probability and Statistics v2", () => {
   it("samples-and-populations: population and sample means", () => {
     const p = "stats-samples-and-populations-";
     const pop = (a: number, b: number) => [...Array(6).fill(a), ...Array(6).fill(b)] as number[];
+    const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0);
+    // The opener's question is gone from the lesson; its key is still right for the bundle.
     expect(key(p + "hook")).toBe(mean(Array(6).fill(2)));
     expect(key(p + "1")).toBe(pop(2, 8).length);
     expect(key(p + "2")).toBe(mean(pop(2, 8)));
     expect(key(p + "4")).toBe(mean(pop(4, 10)));
     expect(key(p + "7")).toBe(200);
-    expect(key(p + "9")).toBe(pop(2, 8).reduce((a, b) => a + b, 0));
+    expect(key(p + "9")).toBe(sum(pop(2, 8)));
     expect(key(p + "10")).toBe(mean([2, 2, 2, 8, 8, 8]));
     expect(key(p + "11")).toBe(mean([3, 3, 3, 3, 9, 9, 9, 9]));
     // Worked example: five 2s and five 6s.
     expect(mean([...Array(5).fill(2), ...Array(5).fill(6)])).toBe(4);
+    expect(sum([...Array(5).fill(2), ...Array(5).fill(6)])).toBe(40);
+    // Teaching screen: a stall with three customers at 1 and one at 5.
+    expect(sum([1, 1, 1, 5])).toBe(8);
+    expect(mean([1, 1, 1, 5])).toBe(2);
+    expect(3 * 1 + 1 * 5).toBe(8);
+    // Why the survey missed: morning-only sample says 2, population says 5, balanced sample says 5.
+    expect(mean(pop(2, 2))).toBe(2);
+    expect(mean(pop(2, 8))).toBe(5);
+    expect(key(p + "10")).toBe(key(p + "2"));
     expect(acceptedChoice(p + "3")).toEqual(["b"]);
     expect(acceptedChoice(p + "5")).toEqual(["b"]);
     expect(acceptedChoice(p + "6")).toEqual(["b"]);
     expect(acceptedChoice(p + "8")).toEqual(["a"]);
+  });
+
+  it("samples-and-populations: story shape, and the opener follows the previous lesson's hook", () => {
+    const lesson = bundle.lessons.find((l) => l.id === "samples-and-populations")!;
+    expect(lesson.intro?.hook.questionId).toBeUndefined();
+    expect(lesson.steps[0]!.kind).toBe("explain");
+    expect(lesson.steps.length).toBeGreaterThanOrEqual(8);
+    expect(lesson.steps.length).toBeLessThanOrEqual(14);
+    const teaching = lesson.steps.filter((s) => s.kind === "explain");
+    expect(teaching.length / lesson.steps.length).toBeGreaterThanOrEqual(0.4);
+    expect(teaching.every((s) => !s.checkQuestionId)).toBe(true);
+    expect(lesson.steps.some((s) => s.kind === "transfer")).toBe(true);
+    expect(lesson.steps.some((s) => s.diagram)).toBe(true);
+    expect(lesson.questionIds).toHaveLength(3);
+    const opener = (lesson.intro?.hook.blocks ?? []).map((b) => ("text" in b ? b.text : "")).join(" ");
+    expect(opener).toContain("morning");
+    // Every question the lesson asks, in a step or a worked step, exists and is unique.
+    const asked = lesson.steps.flatMap((s) => [
+      s.checkQuestionId,
+      ...(s.workedSteps ?? []).flatMap((w) => [w.blank?.questionId, w.selfExplain?.questionId]),
+    ]).filter(Boolean);
+    expect(new Set(asked).size).toBe(asked.length);
+    for (const id of asked) question(id as string);
+  });
+
+  it("story lessons: every number stated in the teaching screens is recomputed", () => {
+    const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0);
+    const cells = (f: (a: number, b: number) => boolean) => six.filter(([a, b]) => f(a, b)).length;
+    // counting-outcomes
+    const coins = ["HH", "HT", "TH", "TT"];
+    expect(coins.filter((r) => r.includes("H")).length).toBe(3);
+    expect(cells((a, b) => a + b === 7)).toBe(6);
+    expect(cells((a, b) => a + b === 2)).toBe(1);
+    expect(cells((a, b) => a + b >= 11)).toBe(3);
+    expect(36 - cells((a, b) => a + b >= 11)).toBe(33);
+    expect(cells((a, b) => a + b === 8)).toBe(5);
+    expect(cells((a, b) => a + b >= 10)).toBe(6);
+    expect(grid(4).filter(([a, b]) => a + b === 5).length).toBe(4);
+    // when-the-condition-changes: the clue keeps rows 1 and 2
+    const kept = six.filter(([a]) => a <= 2);
+    expect([1, 2, 3, 4, 5, 6].filter((x) => x % 2 === 0).length).toBe(3);
+    expect(kept.length).toBe(12);
+    expect(six.length - kept.length).toBe(24);
+    expect(kept.filter(([, b]) => b <= 4).length).toBe(8);
+    near(8 / 12, 2 / 3);
+    expect(kept.filter(([a, b]) => a + b >= 8).length).toBe(1);
+    expect(kept.filter(([a, b]) => a + b >= 7).length).toBe(3);
+    expect(six.filter(([a]) => a === 1).length).toBe(6);
+    expect(six.filter(([a, b]) => a === 1 && b <= 3).length / 6).toBe(0.5);
+    expect(six.filter(([a]) => a >= 5).length).toBe(12);
+    // independent-repetitions
+    near((1 / 2) * (1 / 6), 1 / 12);
+    expect(2 * 6).toBe(12);
+    expect(cells((a, b) => a <= 4 && b <= 4)).toBe(16);
+    near(cells((a, b) => a <= 4 && b <= 4) / 36, (4 / 6) * (4 / 6));
+    near(cells((a, b) => a <= 4 && b <= 4) / 36, 4 / 9);
+    near(0.5 ** 4, 1 / 16);
+    near(1 - 4 / 9, 5 / 9);
+    near(cells((a, b) => a > 4 || b > 4) / 36, 5 / 9);
+    near(cells((a, b) => a <= 3 && b <= 3), 9);
+    // centre-and-outliers
+    expect(mean([3, 5, 10])).toBe(6);
+    expect(sum([3, 5, 10])).toBe(18);
+    expect(median([7, 2, 9, 4, 5])).toBe(5);
+    expect(median([3, 9, 5, 7])).toBe(6);
+    expect(mean([1, 2, 3, 4, 5])).toBe(3);
+    expect(median([1, 2, 3, 4, 5])).toBe(3);
+    expect(mean([1, 2, 3, 4, 50])).toBe(12);
+    expect(median([1, 2, 3, 4, 50])).toBe(3);
+    expect(mean([20, 22, 25, 26, 107])).toBe(40);
+    expect(median([20, 22, 25, 26, 107])).toBe(25);
+    expect([20, 22, 25, 26].every((x) => x < 40)).toBe(true);
+    expect(key("stats-centre-and-outliers-8")).toBe(4 + 6);
+    // same-centre-different-spread
+    expect(mean([0, 10, 10, 10, 20])).toBe(10);
+    expect(mean([0, 0, 10, 20, 20])).toBe(10);
+    expect(spread([0, 10, 10, 10, 20])).toBe(20);
+    expect(spread([0, 0, 10, 20, 20])).toBe(20);
+    expect(variance([0, 10, 10, 10, 20])).not.toBe(variance([0, 0, 10, 20, 20]));
+    expect(mean([1, 1, 1, 9])).toBe(3);
+    expect([1, 1, 1, 9].map((x) => x - 3)).toEqual([-2, -2, -2, 6]);
+    expect(sum([1, 1, 1, 9].map((x) => x - 3))).toBe(0);
+    expect([1, 1, 1, 9].map((x) => (x - 3) ** 2)).toEqual([4, 4, 4, 36]);
+    expect(variance([1, 1, 1, 9])).toBe(12);
+    expect(Math.round(sd([1, 1, 1, 9]) * 10) / 10).toBe(3.5);
+    expect(48 / 3).toBe(16);
+    expect(spread([0, 0, 20, 20])).toBe(20);
+    expect(sd([10, 10, 10, 10])).toBe(0);
+    expect(mean([1, 1, 1, 9]) * 4).toBe(12);
+  });
+
+  it("story lessons: openers ask nothing and the first five lessons teach before they ask", () => {
+    const firstFive = bundle.lessons.slice(0, 5);
+    expect(firstFive.map((l) => l.id)).toEqual([
+      "counting-outcomes",
+      "when-the-condition-changes",
+      "independent-repetitions",
+      "centre-and-outliers",
+      "same-centre-different-spread",
+    ]);
+    for (const lesson of firstFive) {
+      expect(lesson.intro?.hook.questionId, lesson.id).toBeUndefined();
+      expect(lesson.steps[0]!.kind, lesson.id).toBe("explain");
+      const teaching = lesson.steps.filter((s) => s.kind === "explain");
+      expect(teaching.length / lesson.steps.length, lesson.id).toBeGreaterThanOrEqual(0.4);
+      expect(teaching.every((s) => !s.checkQuestionId), lesson.id).toBe(true);
+      expect(lesson.steps.some((s) => s.diagram), lesson.id).toBe(true);
+      expect(lesson.steps.length, lesson.id).toBeGreaterThanOrEqual(8);
+      expect(lesson.steps.length, lesson.id).toBeLessThanOrEqual(14);
+    }
   });
 
   it("never lets a misconception match the key", () => {

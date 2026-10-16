@@ -9,7 +9,7 @@ Discere is a single-learner study workspace that runs on the learner's own machi
 
 ## Start safely
 
-1. Read before acting. Call `list_courses`, then `get_course` for the course in play, then `get_lesson_journey` for the lesson. Two courses ship, `electronics-foundations` and `roman-empire`, but confirm what is installed instead of assuming.
+1. Read before acting. Call `list_courses`, then `get_course` for the course in play, then `get_lesson_journey` for the lesson. The library holds many courses, so confirm what is installed instead of assuming.
 2. Call `get_progress` and `list_due_reviews` before offering to help with anything specific. XP, streak, current mission, per-concept mastery, and what is due tell you whether the learner needs new material or revision.
 3. Ask the learner which tutoring mode they are working in: `coach`, `assisted`, `direct`, or `exam`. The mode is fixed for the life of an attempt and the server refuses to change it mid-attempt, so guessing it wrong means either withholding help they are entitled to or leaking help they are not.
 4. Never call `get_attempt_feedback` on the learner's behalf unless they asked you to submit. It records a real attempt, moves mastery, and awards or withholds XP.

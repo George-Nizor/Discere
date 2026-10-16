@@ -2,6 +2,7 @@ import type { FastifyInstance } from "fastify";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { createApp } from "../src/app.js";
 import type { DiscereStore } from "../src/db/store.js";
+import { archivedContentRoot } from "./helpers/archived-content.js";
 import { legacyBundle, legacyContentRoot } from "./helpers/legacy-content.js";
 
 /**
@@ -74,21 +75,44 @@ describe("the live catalogue", () => {
     );
     expect(courses.map((item: { id: string }) => item.id)).toContain("geometry-shape-and-space");
     expect(courses.map((item: { id: string }) => item.id)).toContain("physics-motion-and-forces");
-    expect(courses.map((item: { id: string }) => item.id)).not.toContain("roman-empire");
-    expect(courses.map((item: { id: string }) => item.id)).not.toContain("electronics-foundations");
-    expect((await app.inject({ method: "GET", url: "/api/courses/roman-empire" })).statusCode).toBe(
-      200,
-    );
-    await app.inject({
-      method: "PUT",
-      url: "/api/courses/roman-empire/lessons/republic-to-empire/progress",
-      payload: { stageId: "republic-to-empire:explainer", state: "active", interactionState: {} },
-    });
-    const home = (await app.inject({ method: "GET", url: "/api/home" })).json();
-    expect(home.currentMission.courseId).toBe("maths-foundations");
-    expect(
-      home.progress.some((item: { conceptId: string }) => item.conceptId === "roman-republic"),
-    ).toBe(false);
+    expect(courses.map((item: { id: string }) => item.id)).toContain("electronics-foundations");
+  });
+
+  it("retains archived saved links without recommending them", async () => {
+    const archivedFixture = archivedContentRoot("electronics-foundations", ["maths-foundations"]);
+    await app.close();
+    ({ app, store } = await createApp({
+      dbPath: ":memory:",
+      migrate: true,
+      revealDelayMs: 0,
+      contentRoot: archivedFixture.root,
+    }));
+    try {
+      const courses = (await app.inject({ method: "GET", url: "/api/courses" })).json().courses;
+      expect(courses.map((item: { id: string }) => item.id)).not.toContain(
+        "electronics-foundations",
+      );
+      expect(
+        (await app.inject({ method: "GET", url: "/api/courses/electronics-foundations" }))
+          .statusCode,
+      ).toBe(200);
+      await app.inject({
+        method: "PUT",
+        url: "/api/courses/electronics-foundations/lessons/current-in-one-loop/progress",
+        payload: {
+          stageId: "current-in-one-loop:explainer",
+          state: "active",
+          interactionState: {},
+        },
+      });
+      const home = (await app.inject({ method: "GET", url: "/api/home" })).json();
+      expect(home.currentMission.courseId).toBe("maths-foundations");
+      expect(
+        home.progress.some((item: { conceptId: string }) => item.conceptId === "current"),
+      ).toBe(false);
+    } finally {
+      archivedFixture.remove();
+    }
   });
 });
 

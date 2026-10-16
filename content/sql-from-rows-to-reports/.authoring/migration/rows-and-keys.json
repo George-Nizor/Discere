@@ -2,20 +2,8 @@
   "lessonId": "rows-and-keys",
   "courseId": "sql-from-rows-to-reports",
   "migrationNotes": [
-    "step 'predict': the old title \"One row, one thing\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
-    "step 'predict': kind hook → predict; check the order of teaching and asking still fits (style guide §2).",
-    "step 'work': the old title \"Use the identifier\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
-    "step 'work': write workedSteps from the worked answer (one line per move, one self-explanation prompt), a headline naming the problem, and recompute every number.",
-    "step 'check': the old title \"Missing is a separate state\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
-    "step 'check': kind check → try; check the order of teaching and asking still fits (style guide §2).",
-    "step 'transfer': the old title \"A customer can have no order\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
-    "intro: write the hook (a puzzle the learner can do from what they bring, never a definition), the promise (≤ 25 words, “By the end you'll …”) and the time.",
-    "recap: write the key idea (the promise, kept), the learner's own results, and the one-line bridge to the next lesson.",
-    "skill check: the lesson has 2 quiz item(s); it needs exactly 3, each on something this lesson taught.",
-    "questions: replace every TODO onCorrect (≤ 25 words, states the idea), tag each skill, add misconceptions for predictable wrong answers (the feedback must not state the key).",
-    "vocabulary: give each explain step introducesTerms; no prompt may use a term before the step that introduces it.",
-    "add an explain step before any question that needs a new word or symbol; add a transfer if the lesson has none.",
-    "citations: retarget the seeded citations to the new step and question ids, and give every step, question and flashcard at least one (same sourceIds; the claim is what that screen asserts)."
+    "Spine: one small shop's records grow from a café notebook to two linked tables, and at each stop we ask what a line stands for, what names it, and what to write when a fact is missing.",
+    "Left out of the lesson (still in the course): sql-rows-and-keys-9 (the old self-explanation). Its meaning is covered by the customer_id screen and by the skill check."
   ],
   "lesson": {
     "id": "rows-and-keys",
@@ -26,53 +14,515 @@
     "title": "Know what a row represents",
     "steps": [
       {
-        "id": "what-a-row-is",
+        "id": "one-line-for-each-cup",
         "kind": "explain",
         "blocks": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "headline": "One line for each thing",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "A table is a grid. Each row is one thing, such as one order. Each column is one fact about it."
+            "text": "Back to the notebook by the till. It works because every line means the same kind of thing: a line is a cup, and each line records the same facts about it, which are the day, the customer and the price. If the barista wrote a line for each cup on Monday and a line for each customer on Tuesday, nobody could add the pages up."
           },
           {
             "kind": "paragraph",
-            "text": "A primary key is a column that differs in every row, so it names the row. In these tables it is id."
-          },
-          {
-            "kind": "callout",
-            "tone": "key",
-            "text": "A column that holds another table's key, like customer_id, can repeat."
+            "text": "A database keeps its information in tables, and a table is the notebook page laid out as a grid. Each line becomes a row, and each fact becomes a column. A small shop might record its customers like this."
           }
         ],
-        "reveal": [],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "Each row in the grid is one customer. Ada, Ben, Cy and Dee have a row apiece, and every row carries the same three facts, which are the columns id, name and region. The code above the grid is a request to see those columns. Later lessons explain how to write requests like that, and for now it only matters what comes back."
+          },
+          {
+            "kind": "paragraph",
+            "text": "Counting rows means counting the thing the table is about. If the café's notebook has one row per cup, a day's page holds as many rows as cups were sold, and the number of customers is a separate count. Every row also needs a name of its own, which is where we go next."
+          }
+        ],
+        "introducesTerms": [
+          "table",
+          "row",
+          "column"
+        ],
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "customers",
+              "columns": [
+                "id",
+                "name",
+                "region"
+              ],
+              "rows": [
+                {
+                  "id": "customers-0",
+                  "cells": [
+                    1,
+                    "Ada",
+                    "North"
+                  ]
+                },
+                {
+                  "id": "customers-1",
+                  "cells": [
+                    2,
+                    "Ben",
+                    "South"
+                  ]
+                },
+                {
+                  "id": "customers-2",
+                  "cells": [
+                    3,
+                    "Cy",
+                    "North"
+                  ]
+                },
+                {
+                  "id": "customers-3",
+                  "cells": [
+                    4,
+                    "Dee",
+                    "West"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Customers",
+              "sql": "SELECT id, name, region FROM customers ORDER BY id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "name",
+                  "region"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      1,
+                      "Ada",
+                      "North"
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      2,
+                      "Ben",
+                      "South"
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      3,
+                      "Cy",
+                      "North"
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      4,
+                      "Dee",
+                      "West"
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "Names only",
+              "sql": "SELECT name FROM customers ORDER BY id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "name"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      "Ada"
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      "Ben"
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      "Cy"
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      "Dee"
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        }
+      },
+      {
+        "id": "count-the-cups",
+        "kind": "try",
+        "blocks": [],
+        "visualStateId": "",
+        "checkQuestionId": "sql-rows-and-keys-7",
+        "activityId": "",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "The café notebook has one line for every cup sold."
+          }
+        ]
+      },
+      {
+        "id": "telling-rows-apart",
+        "kind": "explain",
+        "blocks": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "headline": "Telling two rows apart",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "A row needs a name, because two rows can hold the same facts. Suppose a school keeps a list of its students, and two of them are both called Sam. If the only way to refer to a student were by name, nobody could say which Sam they meant."
+          },
+          {
+            "kind": "paragraph",
+            "text": "The fix is a column that holds a different value in every row. A school would give each student a number and record it in a column called id. A column like that is called a primary key, because it names each row exactly once. In the shop's tables the primary key is always the column called id, so Ada is customer 1 and Ben is customer 2 whatever else about them changes."
+          },
+          {
+            "kind": "paragraph",
+            "text": "Most columns are allowed to repeat. Two customers can live in the same region and the table is no worse for it. Only the key has to differ from row to row, and that matters in a moment, when a second table needs a way to point at a row of the first."
+          }
+        ],
+        "introducesTerms": [
+          "primary key"
+        ]
+      },
+      {
+        "id": "the-two-sams",
+        "kind": "try",
+        "blocks": [],
         "visualStateId": "",
         "checkQuestionId": "sql-rows-and-keys-8",
         "activityId": "",
-        "headline": "A row is one thing, and its primary key is its name.",
-        "introducesTerms": [
-          "row",
-          "primary key"
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Names can repeat, so a table needs something else to tell its rows apart."
+          }
         ]
+      },
+      {
+        "id": "a-table-of-orders",
+        "kind": "explain",
+        "blocks": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "headline": "A second table for orders",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "The shop now sells things, and a customer can place any number of orders. Writing every order into the customers table would repeat Ada's name and region each time, and the table would stop being about customers. So the shop starts a second table with one row for each order."
+          },
+          {
+            "kind": "paragraph",
+            "text": "Here it is, with the customers beside it. Each order has an id of its own, from 101 to 106, and that id is the primary key of the orders table. The table also has to say whose order it was, and it does that with a column called customer_id, which holds the id of a row in customers."
+          }
+        ],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "Because one customer can place several orders, the same customer_id can turn up in more than one row of orders. Ada is customer 1, and her number can sit on any order she placed. That is allowed, because customer_id doesn't name the order. The order's own id does that."
+          },
+          {
+            "kind": "paragraph",
+            "text": "So a column that holds another table's key can repeat, while a primary key can't. Following a customer through the shop means reading customer_id, and counting orders means counting rows of the orders table."
+          }
+        ],
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "customers",
+              "columns": [
+                "id",
+                "name",
+                "region"
+              ],
+              "rows": [
+                {
+                  "id": "customers-0",
+                  "cells": [
+                    1,
+                    "Ada",
+                    "North"
+                  ]
+                },
+                {
+                  "id": "customers-1",
+                  "cells": [
+                    2,
+                    "Ben",
+                    "South"
+                  ]
+                },
+                {
+                  "id": "customers-2",
+                  "cells": [
+                    3,
+                    "Cy",
+                    "North"
+                  ]
+                },
+                {
+                  "id": "customers-3",
+                  "cells": [
+                    4,
+                    "Dee",
+                    "West"
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "orders",
+              "columns": [
+                "id",
+                "customer_id",
+                "item",
+                "amount",
+                "status",
+                "day"
+              ],
+              "rows": [
+                {
+                  "id": "orders-0",
+                  "cells": [
+                    101,
+                    1,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-01"
+                  ]
+                },
+                {
+                  "id": "orders-1",
+                  "cells": [
+                    102,
+                    1,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-2",
+                  "cells": [
+                    103,
+                    2,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-3",
+                  "cells": [
+                    104,
+                    2,
+                    "Lamp",
+                    40,
+                    "pending",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-4",
+                  "cells": [
+                    105,
+                    3,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-5",
+                  "cells": [
+                    106,
+                    3,
+                    "Lamp",
+                    null,
+                    "pending",
+                    "2026-09-04"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Orders",
+              "sql": "SELECT id, customer_id, item, amount FROM orders ORDER BY id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "customer_id",
+                  "item",
+                  "amount"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      101,
+                      1,
+                      "Desk",
+                      80
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      102,
+                      1,
+                      "Book",
+                      20
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      103,
+                      2,
+                      "Desk",
+                      80
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      104,
+                      2,
+                      "Lamp",
+                      40
+                    ]
+                  },
+                  {
+                    "id": "result-4",
+                    "cells": [
+                      105,
+                      3,
+                      "Book",
+                      20
+                    ]
+                  },
+                  {
+                    "id": "result-5",
+                    "cells": [
+                      106,
+                      3,
+                      "Lamp",
+                      null
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "Customers",
+              "sql": "SELECT id, name, region FROM customers ORDER BY id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "name",
+                  "region"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      1,
+                      "Ada",
+                      "North"
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      2,
+                      "Ben",
+                      "South"
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      3,
+                      "Cy",
+                      "North"
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      4,
+                      "Dee",
+                      "West"
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        }
       },
       {
         "id": "which-table",
         "kind": "predict",
         "blocks": [],
-        "lead": [
-          {
-            "kind": "paragraph",
-            "text": "Two tables sit side by side. Each row of each table stands for one thing, and the id column names that thing."
-          }
-        ],
-        "reveal": [
-          {
-            "kind": "paragraph",
-            "text": "You can read it from the ids: 101 to 106 are order numbers. Ada has one row in customers and two in orders, so a row in orders is an order, not a person."
-          }
-        ],
         "visualStateId": "",
         "checkQuestionId": "sql-rows-and-keys-1",
         "activityId": "",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Each row of each table stands for one thing, and the id column names it."
+          }
+        ],
         "diagram": {
           "type": "relational_query",
           "inputs": [
@@ -303,196 +753,18 @@
         "answerVisibility": "hidden-until-response"
       },
       {
-        "id": "ben-example",
-        "kind": "worked_example",
-        "blocks": [],
-        "lead": [],
-        "reveal": [],
-        "visualStateId": "",
-        "checkQuestionId": "",
-        "activityId": "",
-        "headline": "Which items did Ben order?",
-        "diagram": {
-          "type": "relational_query",
-          "inputs": [
-            {
-              "name": "orders",
-              "columns": [
-                "id",
-                "customer_id",
-                "item",
-                "amount",
-                "status",
-                "day"
-              ],
-              "rows": [
-                {
-                  "id": "orders-0",
-                  "cells": [
-                    101,
-                    1,
-                    "Desk",
-                    80,
-                    "paid",
-                    "2026-09-01"
-                  ]
-                },
-                {
-                  "id": "orders-1",
-                  "cells": [
-                    102,
-                    1,
-                    "Book",
-                    20,
-                    "paid",
-                    "2026-09-02"
-                  ]
-                },
-                {
-                  "id": "orders-2",
-                  "cells": [
-                    103,
-                    2,
-                    "Desk",
-                    80,
-                    "paid",
-                    "2026-09-02"
-                  ]
-                },
-                {
-                  "id": "orders-3",
-                  "cells": [
-                    104,
-                    2,
-                    "Lamp",
-                    40,
-                    "pending",
-                    "2026-09-03"
-                  ]
-                },
-                {
-                  "id": "orders-4",
-                  "cells": [
-                    105,
-                    3,
-                    "Book",
-                    20,
-                    "paid",
-                    "2026-09-03"
-                  ]
-                },
-                {
-                  "id": "orders-5",
-                  "cells": [
-                    106,
-                    3,
-                    "Lamp",
-                    null,
-                    "pending",
-                    "2026-09-04"
-                  ]
-                }
-              ]
-            }
-          ],
-          "queries": [
-            {
-              "id": "query-0",
-              "label": "Ada's orders",
-              "sql": "SELECT id, item FROM orders WHERE customer_id = 1 ORDER BY id;",
-              "result": {
-                "name": "Result",
-                "columns": [
-                  "id",
-                  "item"
-                ],
-                "rows": [
-                  {
-                    "id": "result-0",
-                    "cells": [
-                      101,
-                      "Desk"
-                    ]
-                  },
-                  {
-                    "id": "result-1",
-                    "cells": [
-                      102,
-                      "Book"
-                    ]
-                  }
-                ]
-              }
-            },
-            {
-              "id": "query-1",
-              "label": "Ben's orders",
-              "sql": "SELECT id, item FROM orders WHERE customer_id = 2 ORDER BY id;",
-              "result": {
-                "name": "Result",
-                "columns": [
-                  "id",
-                  "item"
-                ],
-                "rows": [
-                  {
-                    "id": "result-0",
-                    "cells": [
-                      103,
-                      "Desk"
-                    ]
-                  },
-                  {
-                    "id": "result-1",
-                    "cells": [
-                      104,
-                      "Lamp"
-                    ]
-                  }
-                ]
-              }
-            }
-          ],
-          "initialQueryId": "query-1"
-        },
-        "answerVisibility": "hidden-until-response",
-        "workedSteps": [
-          {
-            "text": "Find Ben in customers.",
-            "math": "Ben has id 2"
-          },
-          {
-            "text": "Pick the rows of orders whose customer_id is 2.",
-            "math": "orders 103 and 104",
-            "selfExplain": {
-              "questionId": "sql-rows-and-keys-9"
-            }
-          },
-          {
-            "text": "Read the item column of those rows.",
-            "math": "Desk and Lamp"
-          }
-        ]
-      },
-      {
         "id": "count-ada",
         "kind": "try",
         "blocks": [],
-        "lead": [
-          {
-            "kind": "paragraph",
-            "text": "orders.customer_id stores the id of the customer who placed each order. To follow a customer, read that column."
-          }
-        ],
-        "reveal": [
-          {
-            "kind": "paragraph",
-            "text": "You counted by the column's value, not by names. That is how a row in one table points at a row in another."
-          }
-        ],
         "visualStateId": "",
         "checkQuestionId": "sql-rows-and-keys-2",
         "activityId": "",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "The orders.customer_id column stores the id of the customer who placed each order."
+          }
+        ],
         "diagram": {
           "type": "relational_query",
           "inputs": [
@@ -639,24 +911,32 @@
         "answerVisibility": "hidden-until-response"
       },
       {
-        "id": "missing-amount",
-        "kind": "predict",
+        "id": "when-a-value-is-unknown",
+        "kind": "explain",
         "blocks": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "headline": "When a value is not known",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "Order 106 was taken by phone and nobody has confirmed its price. The amount cell still has to hold something."
-          }
-        ],
-        "reveal": [
+            "text": "Order 106 was taken by phone. The customer confirmed the item, but nobody has agreed the price yet. The amount cell still has to hold something, and the obvious choice is 0. That would claim the order cost nothing, and every total of the amounts would then be wrong without anyone noticing."
+          },
           {
             "kind": "paragraph",
-            "text": "Whichever you chose, the question was what the cell claims. NULL claims nothing about the amount; 0 would claim the order was free."
+            "text": "Databases have a marker for exactly this situation. It is called NULL, and it means that there is no value in this cell because the value isn't known. NULL stands for the absence of a fact, which makes it a different thing from zero and from an empty piece of text. The picture shows where it sits in the orders table."
           }
         ],
-        "visualStateId": "",
-        "checkQuestionId": "sql-rows-and-keys-3",
-        "activityId": "",
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "The difference matters most when you count or add. A total over the amounts should skip order 106, because no amount is recorded for it, instead of treating it as a free order. A later lesson shows exactly how a total deals with NULL. For now the point is that the table says honestly what it doesn't know."
+          }
+        ],
+        "introducesTerms": [
+          "NULL"
+        ],
         "diagram": {
           "type": "relational_query",
           "inputs": [
@@ -813,199 +1093,58 @@
             }
           ],
           "initialQueryId": "query-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        }
+      },
+      {
+        "id": "missing-amount",
+        "kind": "predict",
+        "blocks": [],
+        "visualStateId": "",
+        "checkQuestionId": "sql-rows-and-keys-3",
+        "activityId": "",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Order 106 has no agreed price yet, so its amount cell has to say so."
+          }
+        ]
+      },
+      {
+        "id": "a-new-customer",
+        "kind": "explain",
+        "blocks": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "headline": "A customer with no orders",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Last, the shop gets another customer. Elm signs up today and hasn't ordered anything yet."
+          },
+          {
+            "kind": "paragraph",
+            "text": "Think about which tables change. Elm is a new customer, so customers gains a row with the next free id. Elm has bought nothing, so orders is left exactly as it was. The two tables count different things, and each count follows the rows of its own table."
+          },
+          {
+            "kind": "paragraph",
+            "text": "That is why a shop can have a different number of customers and orders, and why neither number says anything about the other. Whenever you count rows, first ask what one row of that table stands for, and count that."
+          }
+        ]
       },
       {
         "id": "elm-joins",
         "kind": "transfer",
         "blocks": [],
-        "lead": [
-          {
-            "kind": "paragraph",
-            "text": "Elm signs up today and has not ordered anything yet. Elm gets a row in one table only."
-          }
-        ],
-        "reveal": [],
         "visualStateId": "",
         "checkQuestionId": "sql-rows-and-keys-4",
         "activityId": "",
-        "diagram": {
-          "type": "relational_query",
-          "inputs": [
-            {
-              "name": "customers",
-              "columns": [
-                "id",
-                "name",
-                "region"
-              ],
-              "rows": [
-                {
-                  "id": "customers-0",
-                  "cells": [
-                    1,
-                    "Ada",
-                    "North"
-                  ]
-                },
-                {
-                  "id": "customers-1",
-                  "cells": [
-                    2,
-                    "Ben",
-                    "South"
-                  ]
-                },
-                {
-                  "id": "customers-2",
-                  "cells": [
-                    3,
-                    "Cy",
-                    "North"
-                  ]
-                },
-                {
-                  "id": "customers-3",
-                  "cells": [
-                    4,
-                    "Dee",
-                    "West"
-                  ]
-                },
-                {
-                  "id": "customers-4",
-                  "cells": [
-                    5,
-                    "Elm",
-                    "North"
-                  ]
-                }
-              ]
-            },
-            {
-              "name": "orders",
-              "columns": [
-                "id",
-                "customer_id",
-                "item",
-                "amount",
-                "status",
-                "day"
-              ],
-              "rows": [
-                {
-                  "id": "orders-0",
-                  "cells": [
-                    101,
-                    1,
-                    "Desk",
-                    80,
-                    "paid",
-                    "2026-09-01"
-                  ]
-                },
-                {
-                  "id": "orders-1",
-                  "cells": [
-                    102,
-                    1,
-                    "Book",
-                    20,
-                    "paid",
-                    "2026-09-02"
-                  ]
-                },
-                {
-                  "id": "orders-2",
-                  "cells": [
-                    103,
-                    2,
-                    "Desk",
-                    80,
-                    "paid",
-                    "2026-09-02"
-                  ]
-                },
-                {
-                  "id": "orders-3",
-                  "cells": [
-                    104,
-                    2,
-                    "Lamp",
-                    40,
-                    "pending",
-                    "2026-09-03"
-                  ]
-                },
-                {
-                  "id": "orders-4",
-                  "cells": [
-                    105,
-                    3,
-                    "Book",
-                    20,
-                    "paid",
-                    "2026-09-03"
-                  ]
-                },
-                {
-                  "id": "orders-5",
-                  "cells": [
-                    106,
-                    3,
-                    "Lamp",
-                    null,
-                    "pending",
-                    "2026-09-04"
-                  ]
-                }
-              ]
-            }
-          ],
-          "queries": [
-            {
-              "id": "query-0",
-              "label": "Count customers",
-              "sql": "SELECT COUNT(*) AS customer_count FROM customers;",
-              "result": {
-                "name": "Result",
-                "columns": [
-                  "customer_count"
-                ],
-                "rows": [
-                  {
-                    "id": "result-0",
-                    "cells": [
-                      5
-                    ]
-                  }
-                ]
-              }
-            },
-            {
-              "id": "query-1",
-              "label": "Count orders",
-              "sql": "SELECT COUNT(*) AS order_count FROM orders;",
-              "result": {
-                "name": "Result",
-                "columns": [
-                  "order_count"
-                ],
-                "rows": [
-                  {
-                    "id": "result-0",
-                    "cells": [
-                      6
-                    ]
-                  }
-                ]
-              }
-            }
-          ],
-          "initialQueryId": "query-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "The shop's customers table holds Ada, Ben, Cy and Dee."
+          }
+        ]
       }
     ],
     "orientation": "Identify the thing each table row represents and keep missing values distinct from zero.",
@@ -1040,23 +1179,30 @@
         "blocks": [
           {
             "kind": "paragraph",
-            "text": "A café notebook has one line for each cup sold. On Monday Mia bought 3 cups and Sam bought 2 cups."
+            "text": "A café keeps a notebook by the till. Every time someone buys a cup, the barista writes one line: the day, who bought it and what it cost. By Monday evening the page is full of short lines, and nobody has counted anything yet."
+          },
+          {
+            "kind": "paragraph",
+            "text": "On Monday Mia bought three cups and Sam bought two. The owner wants to know how much was sold, and a few days later wants to know who comes in most often. Both answers are on the page, yet they come from counting different things. One counts cups and the other counts people."
+          },
+          {
+            "kind": "paragraph",
+            "text": "Databases face the same choice all the time, and they store their information in much the same way as the notebook. This lesson follows a small shop's records as they grow. It starts with what one line stands for and how each line gets a name of its own, then asks what to write down when a fact isn't known."
           }
-        ],
-        "questionId": "sql-rows-and-keys-7"
+        ]
       },
       "promise": "By the end you'll say what one row stands for, and keep an unknown value apart from zero.",
-      "estimatedMinutes": 10
+      "estimatedMinutes": 12
     },
     "recap": {
       "keyIdea": "A row stands for one thing and its primary key names it, so count rows by that thing, and record a missing value as NULL, never as 0.",
       "blocks": [
         {
           "kind": "paragraph",
-          "text": "You counted 5 lines for Monday's cups, 2 order rows for customer 1, and 5 customers once Elm joined, and each count followed the thing a row stands for."
+          "text": "Back at the notebook, the count followed the thing a line stands for. You counted 5 lines for Monday's cups, 2 order rows for customer 1 and 5 customers once Elm joined, and you gave an unknown price a marker of its own instead of writing 0."
         }
       ],
-      "nextHook": "Now ask a table for only the columns you need."
+      "nextHook": "The shop's orders table has six columns, and most questions need only two or three of them. The next lesson starts with a colleague who asks for exactly that: a short version of the table, with nothing deleted from the original."
     },
     "calculator": "off",
     "taughtSkills": [
@@ -1071,11 +1217,11 @@
       "conceptIds": [
         "sql-rows-and-keys"
       ],
-      "prompt": "Which table has one row per order?",
+      "prompt": "A shop keeps two tables, customers and orders. Which of them has one row for each order?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Follow the thing each id identifies."
+        "Each table's id column names the thing its rows stand for. What do the ids in each table name?"
       ],
       "answerAuthority": {
         "kind": "text",
@@ -1111,9 +1257,9 @@
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
-        "Read customer_id, not the order's id.",
-        "Count the rows with customer_id = 1.",
-        "Follow customer_id in the order table; orders 101 and 102 belong to Ada."
+        "Read customer_id, not the order's own id.",
+        "Look down the customer_id column for the value 1.",
+        "Count every row of orders that holds 1 in that column, and remember that one customer can have several."
       ],
       "answerAuthority": {
         "kind": "numeric",
@@ -1144,7 +1290,7 @@
       "conceptIds": [
         "sql-rows-and-keys"
       ],
-      "prompt": "The amount for order 106 is unknown. Which value records that?",
+      "prompt": "The amount for order 106 is unknown. Which value records that in the table?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -1201,13 +1347,13 @@
       "conceptIds": [
         "sql-rows-and-keys"
       ],
-      "prompt": "After Elm joins, how many rows does customers hold?",
+      "prompt": "A shop's customers table holds Ada, Ben, Cy and Dee. Elm signs up and hasn't ordered anything yet. How many rows does customers hold now?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
-        "Elm adds one customer row.",
-        "Start with four customers and add the new person.",
-        "Add Elm to Ada, Ben, Cy and Dee; count the resulting people."
+        "Which table gets a row when a customer signs up?",
+        "Start from the customers already in the table.",
+        "Add the new customer to the four already there."
       ],
       "answerAuthority": {
         "kind": "numeric",
@@ -1340,7 +1486,7 @@
       "conceptIds": [
         "sql-rows-and-keys"
       ],
-      "prompt": "How many lines does Monday add to the notebook?",
+      "prompt": "A café notebook has one line for each cup sold. On Monday Mia bought 3 cups and Sam bought 2 cups. How many lines does Monday add to the notebook?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -1378,7 +1524,7 @@
       "conceptIds": [
         "sql-rows-and-keys"
       ],
-      "prompt": "Two students are both called Sam. Which column of the students table tells their rows apart?",
+      "prompt": "A students table has two columns, id and name. Two students are both called Sam. Which column tells their rows apart?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -1522,48 +1668,6 @@
   ],
   "citations": [
     {
-      "claim": "A row is one thing, and its primary key is its name.",
-      "sourceId": "sqlite-tables",
-      "section": "3: Column Definitions; 3.5 PRIMARY KEY constraints; 3.7 FOREIGN KEY constraints",
-      "targetKind": "step",
-      "targetId": "what-a-row-is"
-    },
-    {
-      "claim": "Two tables sit side by side. Each row of each table stands for one thing, and the id column names that thing.",
-      "sourceId": "sqlite-select",
-      "section": "2: Simple Select Processing; 2.1 FROM and joins; 2.3 WHERE; 2.4 grouping; 2.6 DISTINCT; 3 compound queries; 4 ORDER BY; 5 LIMIT",
-      "targetKind": "step",
-      "targetId": "which-table"
-    },
-    {
-      "claim": "Which items did Ben order?",
-      "sourceId": "sqlite-tables",
-      "section": "3: Column Definitions; 3.5 PRIMARY KEY constraints; 3.7 FOREIGN KEY constraints",
-      "targetKind": "step",
-      "targetId": "ben-example"
-    },
-    {
-      "claim": "orders.customer_id stores the id of the customer who placed each order. To follow a customer, read that column.",
-      "sourceId": "sqlite-select",
-      "section": "2: Simple Select Processing; 2.1 FROM and joins; 2.3 WHERE; 2.4 grouping; 2.6 DISTINCT; 3 compound queries; 4 ORDER BY; 5 LIMIT",
-      "targetKind": "step",
-      "targetId": "count-ada"
-    },
-    {
-      "claim": "Order 106 was taken by phone and nobody has confirmed its price. The amount cell still has to hold something.",
-      "sourceId": "sqlite-expr",
-      "section": "2: Operators; 5 LIKE; 6 BETWEEN; 7 CASE; 8 IN and NOT IN; 10 EXISTS; 11 subqueries",
-      "targetKind": "step",
-      "targetId": "missing-amount"
-    },
-    {
-      "claim": "Elm signs up today and has not ordered anything yet. Elm gets a row in one table only.",
-      "sourceId": "sqlite-aggregate",
-      "section": "Descriptions of avg(X), count(X), count(*), min(X), max(X) and sum(X)",
-      "targetKind": "step",
-      "targetId": "elm-joins"
-    },
-    {
       "claim": "The orders table has one row per order, identified by its order id. One customer can be associated with several of these order rows.",
       "sourceId": "sqlite-select",
       "section": "2: Simple Select Processing; 2.1 FROM and joins; 2.3 WHERE; 2.4 grouping; 2.6 DISTINCT; 3 compound queries; 4 ORDER BY; 5 LIMIT",
@@ -1620,13 +1724,6 @@
       "targetId": "sql-rows-and-keys-8"
     },
     {
-      "claim": "Each order row has its own id, so two orders can still share one customer_id.",
-      "sourceId": "sqlite-tables",
-      "section": "3: Column Definitions; 3.5 PRIMARY KEY constraints; 3.7 FOREIGN KEY constraints",
-      "targetKind": "question",
-      "targetId": "sql-rows-and-keys-9"
-    },
-    {
       "claim": "Four orders, one with a NULL amount, leave three known amounts.",
       "sourceId": "sqlite-expr",
       "section": "2: Operators; 5 LIKE; 6 BETWEEN; 7 CASE; 8 IN and NOT IN; 10 EXISTS; 11 subqueries",
@@ -1646,6 +1743,83 @@
       "section": "3: Column Definitions; 3.5 PRIMARY KEY constraints; 3.7 FOREIGN KEY constraints",
       "targetKind": "flashcard",
       "targetId": "sql-rows-and-keys-card-2"
+    },
+    {
+      "claim": "A table is a grid with one row per thing and one column per fact about it.",
+      "sourceId": "sqlite-tables",
+      "section": "3: Column Definitions; 3.5 PRIMARY KEY constraints; 3.7 FOREIGN KEY constraints",
+      "targetKind": "step",
+      "targetId": "one-line-for-each-cup"
+    },
+    {
+      "claim": "A table has one row per thing, so the number of rows follows the number of things.",
+      "sourceId": "sqlite-tables",
+      "section": "3: Column Definitions; 3.5 PRIMARY KEY constraints; 3.7 FOREIGN KEY constraints",
+      "targetKind": "step",
+      "targetId": "count-the-cups"
+    },
+    {
+      "claim": "A primary key differs in every row, so it names the row even when other columns match.",
+      "sourceId": "sqlite-tables",
+      "section": "3: Column Definitions; 3.5 PRIMARY KEY constraints; 3.7 FOREIGN KEY constraints",
+      "targetKind": "step",
+      "targetId": "telling-rows-apart"
+    },
+    {
+      "claim": "A primary key tells rows apart where a repeated name cannot.",
+      "sourceId": "sqlite-tables",
+      "section": "3: Column Definitions; 3.5 PRIMARY KEY constraints; 3.7 FOREIGN KEY constraints",
+      "targetKind": "step",
+      "targetId": "the-two-sams"
+    },
+    {
+      "claim": "A column that holds another table's key, such as customer_id, can repeat, while the primary key cannot.",
+      "sourceId": "sqlite-tables",
+      "section": "3: Column Definitions; 3.5 PRIMARY KEY constraints; 3.7 FOREIGN KEY constraints",
+      "targetKind": "step",
+      "targetId": "a-table-of-orders"
+    },
+    {
+      "claim": "Each row of the orders table is one order, named by its own id.",
+      "sourceId": "sqlite-select",
+      "section": "2: Simple Select Processing; 2.1 FROM and joins; 2.3 WHERE; 2.4 grouping; 2.6 DISTINCT; 3 compound queries; 4 ORDER BY; 5 LIMIT",
+      "targetKind": "step",
+      "targetId": "which-table"
+    },
+    {
+      "claim": "Following a customer through orders means reading the customer_id column.",
+      "sourceId": "sqlite-select",
+      "section": "2: Simple Select Processing; 2.1 FROM and joins; 2.3 WHERE; 2.4 grouping; 2.6 DISTINCT; 3 compound queries; 4 ORDER BY; 5 LIMIT",
+      "targetKind": "step",
+      "targetId": "count-ada"
+    },
+    {
+      "claim": "NULL marks a missing or unknown value and is not the same as zero.",
+      "sourceId": "sqlite-expr",
+      "section": "2: Operators; 5 LIKE; 6 BETWEEN; 7 CASE; 8 IN and NOT IN; 10 EXISTS; 11 subqueries",
+      "targetKind": "step",
+      "targetId": "when-a-value-is-unknown"
+    },
+    {
+      "claim": "An unknown amount is stored as NULL, not 0.",
+      "sourceId": "sqlite-expr",
+      "section": "2: Operators; 5 LIKE; 6 BETWEEN; 7 CASE; 8 IN and NOT IN; 10 EXISTS; 11 subqueries",
+      "targetKind": "step",
+      "targetId": "missing-amount"
+    },
+    {
+      "claim": "A new customer adds a row to customers only, and each count follows the rows of its own table.",
+      "sourceId": "sqlite-aggregate",
+      "section": "Descriptions of avg(X), count(X), count(*), min(X), max(X) and sum(X)",
+      "targetKind": "step",
+      "targetId": "a-new-customer"
+    },
+    {
+      "claim": "A new customer adds one row to customers and none to orders.",
+      "sourceId": "sqlite-aggregate",
+      "section": "Descriptions of avg(X), count(X), count(*), min(X), max(X) and sum(X)",
+      "targetKind": "step",
+      "targetId": "elm-joins"
     }
   ]
 }

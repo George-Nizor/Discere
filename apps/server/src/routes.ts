@@ -20,16 +20,12 @@ import {
   type IllustrationResponse,
   LessonDraftSchema,
   LessonFeedbackRequestSchema,
-  type LessonResponse,
   NotebookSaveRequestSchema,
-  type Question,
   RevealConfirmRequestSchema,
   RevealStartRequestSchema,
   ReviewRateRequestSchema,
   ReviewRecallRequestSchema,
   ReviewSessionCreateSchema,
-  RomanReferenceEssayIdSchema,
-  RomanReferenceQuestionIdSchema,
   StageProgressRequestSchema,
   StudyPreferencesUpdateSchema,
   StudyStatisticsPeriodSchema,
@@ -62,13 +58,6 @@ import { illustrationImagePath, readIllustration, requestIllustration } from "./
 import { buildLearningStatistics } from "./learning-statistics.js";
 import { getNotebookPage, saveNotebookPage } from "./notebook.js";
 import { coerceQueryBoolean } from "./query-coercion.js";
-import { privateEssayQuestionForRomanReference } from "./roman-reference-essay.js";
-import {
-  lessonForRomanReferenceEssayTutor,
-  lessonForRomanReferenceTutor,
-  resolveRomanReferenceTutorEssay,
-  resolveRomanReferenceTutorQuestion,
-} from "./roman-reference-routes.js";
 import { assessCode, codeTask } from "./rust/questions.js";
 import type { RustRuntime } from "./rust/runtime.js";
 import type { TopicMapRepository } from "./topic-maps.js";
@@ -114,13 +103,8 @@ const CompanionImportBodySchema = z
     attemptId: z.string().uuid().optional(),
     lessonId: z.string().min(1).max(200).optional(),
     questionId: z.string().min(1).max(200).optional(),
-    referenceQuestionId: RomanReferenceQuestionIdSchema.optional(),
-    referenceEssayId: RomanReferenceEssayIdSchema.optional(),
   })
-  .strict()
-  .refine((body) => body.referenceQuestionId === undefined || body.referenceEssayId === undefined, {
-    message: "An import binds to the reference question or the essay, not both.",
-  });
+  .strict();
 const LessonParamsSchema = z.object({ lessonId: z.string().min(1).max(200) }).strict();
 const CourseParamsSchema = z.object({ courseId: z.string().min(1).max(200) }).strict();
 const JourneyParamsSchema = z
@@ -1276,49 +1260,20 @@ export async function registerRoutes(
           "The tutoring mode is required for a tutor reply.",
           "TUTOR_MODE_REQUIRED",
         );
-      const boundToReference =
-        body.referenceQuestionId !== undefined || body.referenceEssayId !== undefined;
-      if (boundToReference && body.questionId)
-        throw new HttpError(
-          400,
-          "Choose a generic or reference question context.",
-          "TUTOR_CONTEXT_MISMATCH",
-        );
-      if (boundToReference && body.attemptId !== undefined) {
-        throw new HttpError(
-          400,
-          "Reference tutoring is not linked to a generic attempt.",
-          "REFERENCE_ATTEMPT_UNSUPPORTED",
-        );
-      }
       // The pasted reply is re-resolved against server state rather than trusted from the packet,
       // so a mode changed between copying and pasting is caught here and not honoured.
-      let currentLesson: LessonResponse;
-      let question: Question | undefined;
-      if (body.referenceQuestionId !== undefined) {
-        question = resolveRomanReferenceTutorQuestion(store, {
-          referenceQuestionId: body.referenceQuestionId,
-          mode: body.mode,
-        }).question;
-        currentLesson = lessonForRomanReferenceTutor(content, body.referenceQuestionId);
-      } else if (body.referenceEssayId !== undefined) {
-        resolveRomanReferenceTutorEssay(store, { mode: body.mode });
-        question = privateEssayQuestionForRomanReference();
-        currentLesson = lessonForRomanReferenceEssayTutor(content);
-      } else {
-        const lesson = body.lessonId
-          ? content.getLesson(body.lessonId)
-          : content.currentLesson(store.courseActivity());
-        if (!lesson) throw new HttpError(404, "Lesson not found.", "LESSON_NOT_FOUND");
-        ({ lesson: currentLesson, question } = genericTutorContext(
-          content,
-          store,
-          lesson,
-          body.mode,
-          body.questionId,
-          body.attemptId,
-        ));
-      }
+      const lesson = body.lessonId
+        ? content.getLesson(body.lessonId)
+        : content.currentLesson(store.courseActivity());
+      if (!lesson) throw new HttpError(404, "Lesson not found.", "LESSON_NOT_FOUND");
+      const { lesson: currentLesson, question } = genericTutorContext(
+        content,
+        store,
+        lesson,
+        body.mode,
+        body.questionId,
+        body.attemptId,
+      );
       if (!question) throw new HttpError(404, "Question not found.", "QUESTION_NOT_FOUND");
       // The pasted reply and the directly generated reply share this gate.
       return acceptTutorReply({
@@ -1328,11 +1283,7 @@ export async function registerRoutes(
         lesson: currentLesson,
         question,
         store,
-        ...(boundToReference ? {} : { attemptId: body.attemptId }),
-        ...(body.referenceQuestionId === undefined
-          ? {}
-          : { referenceQuestionId: body.referenceQuestionId }),
-        ...(body.referenceEssayId === undefined ? {} : { referenceEssayId: body.referenceEssayId }),
+        attemptId: body.attemptId,
       });
     }
 

@@ -131,7 +131,7 @@ test.describe("the review queue", () => {
     await expect(table.locator("tbody tr")).toHaveCount(courses.length);
     for (const course of courses)
       await expect(page.getByRole("rowheader", { name: course.title, exact: true })).toBeVisible();
-    await expect(page.getByRole("rowheader", { name: /Electronics|Roman/ })).toHaveCount(0);
+    await expect(page.getByRole("rowheader", { name: /Electronics/ })).toHaveCount(0);
   });
 
   test("takes turns between courses rather than clearing one first", async ({ page }) => {

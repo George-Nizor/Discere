@@ -2,23 +2,8 @@
   "lessonId": "running-totals-and-neighbours",
   "courseId": "sql-from-rows-to-reports",
   "migrationNotes": [
-    "step 'predict': the old title \"Extend a running total\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
-    "step 'predict': kind hook → predict; check the order of teaching and asking still fits (style guide §2).",
-    "step 'predict': 1 block(s) moved to reveal because they state the answer; make the reveal refer to the learner's attempt.",
-    "step 'work': the old title \"Peers can enter together\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
-    "step 'work': write workedSteps from the worked answer (one line per move, one self-explanation prompt), a headline naming the problem, and recompute every number.",
-    "step 'check': the old title \"Look at the previous row\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
-    "step 'check': kind check → try; check the order of teaching and asking still fits (style guide §2).",
-    "step 'check': 1 block(s) moved to reveal because they state the answer; make the reveal refer to the learner's attempt.",
-    "step 'transfer': the old title \"Look ahead explicitly\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
-    "step 'transfer': 1 block(s) moved to reveal because they state the answer; make the reveal refer to the learner's attempt.",
-    "intro: write the hook (a puzzle the learner can do from what they bring, never a definition), the promise (≤ 25 words, “By the end you'll …”) and the time.",
-    "recap: write the key idea (the promise, kept), the learner's own results, and the one-line bridge to the next lesson.",
-    "skill check: the lesson has 2 quiz item(s); it needs exactly 3, each on something this lesson taught.",
-    "questions: replace every TODO onCorrect (≤ 25 words, states the idea), tag each skill, add misconceptions for predictable wrong answers (the feedback must not state the key).",
-    "vocabulary: give each explain step introducesTerms; no prompt may use a term before the step that introduces it.",
-    "add an explain step before any question that needs a new word or symbol; add a transfer if the lesson has none.",
-    "citations: retarget the seeded citations to the new step and question ids, and give every step, question and flashcard at least one (same sourceIds; the claim is what that screen asserts)."
+    "Spine: a bank statement shows the balance so far on each line, and the lesson follows that one statement from a running total, to rows that tie in the ordering, to a look at the row before and the row after, and the blanks those can give.",
+    "Left out of the lesson (still in the course): sql-running-totals-and-neighbours-8 (a running sum over 4, 6 and 8). It repeats the first screen's idea and the check on the bank statement tests it."
   ],
   "lesson": {
     "id": "running-totals-and-neighbours",
@@ -29,38 +14,203 @@
     "title": "Read the rows before and after",
     "steps": [
       {
-        "id": "a-frame-of-rows",
+        "id": "adding-up-as-you-go",
         "kind": "explain",
         "blocks": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "headline": "Adding up as you go",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "A window can sum the rows from the first one up to the current one. That is a running total, and the frame is the range of rows it adds."
+            "text": "Think about the statement again. Each balance is a sum, but a different set of rows is added at every line: one deposit at line one, two at line two, three at line three. The window needs a way to say which rows to add for the row it is on."
           },
           {
-            "kind": "callout",
-            "tone": "key",
-            "text": "The order inside OVER decides which row is first, and so which rows come before."
+            "kind": "paragraph",
+            "text": "That is the frame, the stretch of the window that the calculation uses for the current row. Writing ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW sets the frame to every row from the start of the window down to the current one. SUM over that frame gives a running total, a sum that grows by one row at each step. The ORDER BY inside OVER matters here, because it decides which row is first and so which rows count as coming before."
           }
         ],
-        "reveal": [],
-        "visualStateId": "",
-        "checkQuestionId": "sql-running-totals-and-neighbours-8",
-        "activityId": "",
-        "headline": "A frame says which rows count toward each row's value.",
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "The figure follows a money jar with four deposits: 20, 5, 15 and 10. The running total, 20, 25, 40 and 50, is the sum of the frame at each line. As with any SUM, an unknown amount adds nothing and does not stop the total growing on later lines. The jar also records the day of each deposit, and two questions from now that column starts to matter."
+          }
+        ],
         "introducesTerms": [
           "frame",
           "running total"
-        ]
+        ],
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "jar",
+              "columns": [
+                "id",
+                "day",
+                "amount"
+              ],
+              "rows": [
+                {
+                  "id": "jar-0",
+                  "cells": [
+                    1,
+                    1,
+                    20
+                  ]
+                },
+                {
+                  "id": "jar-1",
+                  "cells": [
+                    2,
+                    2,
+                    5
+                  ]
+                },
+                {
+                  "id": "jar-2",
+                  "cells": [
+                    3,
+                    2,
+                    15
+                  ]
+                },
+                {
+                  "id": "jar-3",
+                  "cells": [
+                    4,
+                    3,
+                    10
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "The whole total on every row",
+              "sql": "SELECT id, amount, SUM(amount) OVER () AS total FROM jar ORDER BY id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "amount",
+                  "total"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      1,
+                      20,
+                      50
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      2,
+                      5,
+                      50
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      3,
+                      15,
+                      50
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      4,
+                      10,
+                      50
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "The total so far",
+              "sql": "SELECT id, amount, SUM(amount) OVER (ORDER BY id ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS total FROM jar ORDER BY id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "amount",
+                  "total"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      1,
+                      20,
+                      20
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      2,
+                      5,
+                      25
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      3,
+                      15,
+                      40
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      4,
+                      10,
+                      50
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        }
       },
       {
-        "id": "total-so-far",
-        "kind": "predict",
+        "id": "balance-so-far",
+        "kind": "try",
         "blocks": [],
+        "visualStateId": "",
+        "checkQuestionId": "sql-running-totals-and-neighbours-7",
+        "activityId": "",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "The frame here runs from the first ordered row to the current row. The last amount is unknown, so it adds no known value."
+            "text": "Each line adds one more row to the frame. Work out the third line of the statement."
+          }
+        ]
+      },
+      {
+        "id": "total-at-order-103",
+        "kind": "predict",
+        "blocks": [],
+        "visualStateId": "",
+        "checkQuestionId": "sql-running-totals-and-neighbours-1",
+        "activityId": "",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "The shop's orders in id order. The frame runs from the first order to the current one, and the last amount is unknown, so it adds nothing."
           }
         ],
         "reveal": [
@@ -69,9 +219,6 @@
             "text": "You added the rows up to and including the current one. The grand total would use every row at once."
           }
         ],
-        "visualStateId": "",
-        "checkQuestionId": "sql-running-totals-and-neighbours-1",
-        "activityId": "",
         "diagram": {
           "type": "relational_query",
           "inputs": [
@@ -288,15 +435,201 @@
         "answerVisibility": "hidden-until-response"
       },
       {
-        "id": "rows-or-range",
-        "kind": "worked_example",
+        "id": "rows-that-tie-in-the-order",
+        "kind": "explain",
         "blocks": [],
-        "lead": [],
-        "reveal": [],
         "visualStateId": "",
         "checkQuestionId": "",
         "activityId": "",
-        "headline": "Add the amounts up by day, once with ROWS and once with RANGE.",
+        "headline": "Rows that tie in the order",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "One detail of the frame needs care when two rows tie in the ordering. Look at the money jar: two deposits were made on day 2. If the window is ordered by day alone, nothing says which of the two comes first."
+          },
+          {
+            "kind": "paragraph",
+            "text": "ROWS counts physical rows. It takes them one at a time, so the first of the two day-2 deposits gets its own running total and the second adds to it. RANGE works by value instead. Rows that tie on the ordering value are called peers, and RANGE treats them as a single step, so every peer joins the frame together. Both day-2 deposits show the same running total, which includes the pair in full."
+          }
+        ],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "In the figure the first query gives 20, 25, 40 and 50, and the second gives 20, 40, 40 and 50. They agree everywhere except across the tied pair. When a window has an ORDER BY and no frame is written, SQL uses the RANGE version, so a running total over a column with repeats can jump by two rows at once. Writing the ROWS frame yourself removes the surprise."
+          }
+        ],
+        "introducesTerms": [
+          "RANGE",
+          "peers"
+        ],
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "jar",
+              "columns": [
+                "id",
+                "day",
+                "amount"
+              ],
+              "rows": [
+                {
+                  "id": "jar-0",
+                  "cells": [
+                    1,
+                    1,
+                    20
+                  ]
+                },
+                {
+                  "id": "jar-1",
+                  "cells": [
+                    2,
+                    2,
+                    5
+                  ]
+                },
+                {
+                  "id": "jar-2",
+                  "cells": [
+                    3,
+                    2,
+                    15
+                  ]
+                },
+                {
+                  "id": "jar-3",
+                  "cells": [
+                    4,
+                    3,
+                    10
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Counting rows",
+              "sql": "SELECT id, day, amount, SUM(amount) OVER (ORDER BY day, id ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS total FROM jar ORDER BY day, id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "day",
+                  "amount",
+                  "total"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      1,
+                      1,
+                      20,
+                      20
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      2,
+                      2,
+                      5,
+                      25
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      3,
+                      2,
+                      15,
+                      40
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      4,
+                      3,
+                      10,
+                      50
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "Counting by day",
+              "sql": "SELECT id, day, amount, SUM(amount) OVER (ORDER BY day RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS total FROM jar ORDER BY day, id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "day",
+                  "amount",
+                  "total"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      1,
+                      1,
+                      20,
+                      20
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      2,
+                      2,
+                      5,
+                      40
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      3,
+                      2,
+                      15,
+                      40
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      4,
+                      3,
+                      10,
+                      50
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        }
+      },
+      {
+        "id": "same-day-same-total",
+        "kind": "try",
+        "blocks": [],
+        "visualStateId": "",
+        "checkQuestionId": "sql-running-totals-and-neighbours-2",
+        "activityId": "",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Decide which rows the frame holds for each of the two September 2 orders."
+          }
+        ],
         "diagram": {
           "type": "relational_query",
           "inputs": [
@@ -510,32 +843,191 @@
           ],
           "initialQueryId": "query-0"
         },
-        "answerVisibility": "hidden-until-response",
-        "workedSteps": [
-          {
-            "text": "ROWS adds records one at a time in the order given.",
-            "math": "orders 102 then 103 on the same day: 100, then 180"
-          },
-          {
-            "text": "RANGE adds every row that ties on the ordering value together.",
-            "math": "orders 102 and 103 both show 180",
-            "selfExplain": {
-              "questionId": "sql-running-totals-and-neighbours-2"
-            }
-          },
-          {
-            "text": "The frame describes which rows contribute."
-          }
-        ]
+        "answerVisibility": "hidden-until-response"
       },
       {
         "id": "the-row-before",
-        "kind": "try",
+        "kind": "explain",
         "blocks": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "headline": "Looking at the row before",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "LAG(amount) returns the amount from the previous row in the window order. The first row has no previous row."
+            "text": "A frame adds rows up. Sometimes a report needs a single neighbour instead, such as the previous deposit, to see how the new one compares. LAG(amount) returns the amount from the row before the current one in the window's order."
+          },
+          {
+            "kind": "paragraph",
+            "text": "The first row has nothing before it, so LAG gives NULL there. The order inside OVER decides what before means, so the same table read in the opposite order hands back different neighbours. Read the jar's deposits from newest to oldest and the row before a deposit is the one made after it."
+          }
+        ],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "The figure shows the jar read both ways. In day order the second deposit sees 20 behind it. Read backwards, the first deposit sees 5, because 5 sits one row earlier in that reversed order. Subtract LAG's value from the current amount and you have the change since the previous line."
+          }
+        ],
+        "introducesTerms": [
+          "LAG"
+        ],
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "jar",
+              "columns": [
+                "id",
+                "day",
+                "amount"
+              ],
+              "rows": [
+                {
+                  "id": "jar-0",
+                  "cells": [
+                    1,
+                    1,
+                    20
+                  ]
+                },
+                {
+                  "id": "jar-1",
+                  "cells": [
+                    2,
+                    2,
+                    5
+                  ]
+                },
+                {
+                  "id": "jar-2",
+                  "cells": [
+                    3,
+                    2,
+                    15
+                  ]
+                },
+                {
+                  "id": "jar-3",
+                  "cells": [
+                    4,
+                    3,
+                    10
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Reading forwards",
+              "sql": "SELECT id, amount, LAG(amount) OVER (ORDER BY id ASC) AS previous FROM jar ORDER BY id ASC;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "amount",
+                  "previous"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      1,
+                      20,
+                      null
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      2,
+                      5,
+                      20
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      3,
+                      15,
+                      5
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      4,
+                      10,
+                      15
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "Reading backwards",
+              "sql": "SELECT id, amount, LAG(amount) OVER (ORDER BY id DESC) AS previous FROM jar ORDER BY id DESC;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "amount",
+                  "previous"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      4,
+                      10,
+                      null
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      3,
+                      15,
+                      10
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      2,
+                      5,
+                      15
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      1,
+                      20,
+                      5
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        }
+      },
+      {
+        "id": "lag-at-order-104",
+        "kind": "try",
+        "blocks": [],
+        "visualStateId": "",
+        "checkQuestionId": "sql-running-totals-and-neighbours-3",
+        "activityId": "",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "The shop's orders, read in increasing id order. LAG looks one row back."
           }
         ],
         "reveal": [
@@ -544,9 +1036,6 @@
             "text": "You read one row back in the stated order. Reversing the order would change which row counts as previous."
           }
         ],
-        "visualStateId": "",
-        "checkQuestionId": "sql-running-totals-and-neighbours-3",
-        "activityId": "",
         "diagram": {
           "type": "relational_query",
           "inputs": [
@@ -763,19 +1252,162 @@
         "answerVisibility": "hidden-until-response"
       },
       {
-        "id": "the-row-after",
-        "kind": "transfer",
+        "id": "looking-ahead",
+        "kind": "explain",
         "blocks": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "headline": "Looking ahead, and what a blank means",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "LEAD is the mirror of LAG. It reads the next row in the window order instead of the previous one."
+            "text": "LEAD is the mirror of LAG. It returns the value from the next row in the window's order, and the last row has nothing after it, so LEAD gives NULL there. Between them, LAG and LEAD let a row see both of its neighbours without a join."
+          },
+          {
+            "kind": "paragraph",
+            "text": "A NULL from either function has two possible causes. There may be no neighbour in that direction, as at the ends. Or the neighbour is there and its own value is unknown. Take a water meter read on three days: 12 litres on day 1, no reading on day 2 and 9 litres on day 3. LEAD of the litres gives NULL on day 1 and on day 3, for different reasons. Day 2's reading is missing, and nothing follows day 3."
           }
         ],
-        "reveal": [],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "To tell the two causes apart, read a column that is always filled in. LEAD of the day number is NULL only where no next row exists, so the figure shows it beside LEAD of the litres. A NULL in the first and a number in the second means the neighbour is there and its value is missing."
+          }
+        ],
+        "introducesTerms": [
+          "LEAD"
+        ],
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "meter",
+              "columns": [
+                "id",
+                "litres"
+              ],
+              "rows": [
+                {
+                  "id": "meter-0",
+                  "cells": [
+                    1,
+                    12
+                  ]
+                },
+                {
+                  "id": "meter-1",
+                  "cells": [
+                    2,
+                    null
+                  ]
+                },
+                {
+                  "id": "meter-2",
+                  "cells": [
+                    3,
+                    9
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "The next reading",
+              "sql": "SELECT id, litres, LEAD(litres) OVER (ORDER BY id) AS next_litres FROM meter ORDER BY id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "litres",
+                  "next_litres"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      1,
+                      12,
+                      null
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      2,
+                      null,
+                      9
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      3,
+                      9,
+                      null
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "The next day",
+              "sql": "SELECT id, litres, LEAD(id) OVER (ORDER BY id) AS next_id FROM meter ORDER BY id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "litres",
+                  "next_id"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      1,
+                      12,
+                      2
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      2,
+                      null,
+                      3
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      3,
+                      9,
+                      null
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        }
+      },
+      {
+        "id": "lead-at-order-103",
+        "kind": "transfer",
+        "blocks": [],
         "visualStateId": "",
         "checkQuestionId": "sql-running-totals-and-neighbours-4",
         "activityId": "",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Back in the shop's orders, in increasing id order. LEAD looks one row ahead."
+          }
+        ],
         "diagram": {
           "type": "relational_query",
           "inputs": [
@@ -1014,13 +1646,20 @@
         "blocks": [
           {
             "kind": "paragraph",
-            "text": "A bank statement lists deposits of 30, 10 and 50 pounds in order. Each line shows the balance so far."
+            "text": "A bank statement lists three deposits in the order they were made: 30 pounds, then 10, then 50. Beside each deposit the bank prints the balance, the amount in the account as of that line."
+          },
+          {
+            "kind": "paragraph",
+            "text": "The balance on the first line is 30, since nothing came before it. On the second line it covers the first deposit and the second. Each line adds one more deposit to what came before, so the figure beside a line depends on the lines above it, and reading the statement from the bottom up would give different numbers."
+          },
+          {
+            "kind": "paragraph",
+            "text": "The totals in the last lesson covered a whole group at once. A statement needs a total that grows down the page, and it invites a second kind of comparison too, between a line and its neighbours, such as how much more a deposit was than the one before. This final lesson adds both to the window."
           }
-        ],
-        "questionId": "sql-running-totals-and-neighbours-7"
+        ]
       },
-      "promise": "By the end you'll build running totals, and read the rows before and after with LAG and LEAD.",
-      "estimatedMinutes": 10
+      "promise": "By the end you'll add up the rows so far, and look at the rows just before and after.",
+      "estimatedMinutes": 12
     },
     "recap": {
       "keyIdea": "A frame decides which rows a window value adds, and LAG and LEAD read the neighbours in the stated order. A NULL there can mean no neighbour or no value.",
@@ -1030,7 +1669,7 @@
           "text": "You reached a balance of 90, then a running total of 180 at order 103. LAG gave 80 at order 104 and LEAD gave 40 at order 103."
         }
       ],
-      "nextHook": "You have now taken a table from rows to a finished report."
+      "nextHook": "You have now taken a table from rows to a finished report. Each lesson added one more thing a query can do, and the reports you write next will use them together."
     },
     "calculator": "off",
     "taughtSkills": [
@@ -1047,7 +1686,7 @@
       "conceptIds": [
         "sql-running-totals-and-neighbours"
       ],
-      "prompt": "What is the running known-amount total at order 103 when ids increase?",
+      "prompt": "Taking the shop's orders in increasing id order, what is the running total of the known amounts at order 103?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -1059,7 +1698,7 @@
         "kind": "numeric",
         "value": 180,
         "unit": "",
-        "absoluteTolerance": 1e-06,
+        "absoluteTolerance": 0.000001,
         "relativeTolerance": 0,
         "workedAnswer": "Orders 101, 102 and 103 contribute 80 + 20 + 80 = 180."
       },
@@ -1092,7 +1731,7 @@
       "conceptIds": [
         "sql-running-totals-and-neighbours"
       ],
-      "prompt": "Why do both September 2 rows show the same total in the RANGE-by-day example?",
+      "prompt": "The shop's orders are summed with a RANGE frame ordered by day, and orders 102 and 103 were both placed on 2 September. Why do both rows show the same total?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -1161,7 +1800,7 @@
         "kind": "numeric",
         "value": 80,
         "unit": "",
-        "absoluteTolerance": 1e-06,
+        "absoluteTolerance": 0.000001,
         "relativeTolerance": 0,
         "workedAnswer": "The preceding row is order 103, whose amount is 80."
       },
@@ -1206,7 +1845,7 @@
         "kind": "numeric",
         "value": 40,
         "unit": "",
-        "absoluteTolerance": 1e-06,
+        "absoluteTolerance": 0.000001,
         "relativeTolerance": 0,
         "workedAnswer": "The next row is order 104, whose amount is 40."
       },
@@ -1251,7 +1890,7 @@
         "kind": "numeric",
         "value": 40,
         "unit": "",
-        "absoluteTolerance": 1e-06,
+        "absoluteTolerance": 0.000001,
         "relativeTolerance": 0,
         "workedAnswer": "The known contributing amounts are 10 and 30. Their running sum is 40."
       },
@@ -1333,7 +1972,7 @@
       "conceptIds": [
         "sql-running-totals-and-neighbours"
       ],
-      "prompt": "What balance does the statement show after the third deposit?",
+      "prompt": "A statement lists deposits of 30, 10 and 50 pounds in order. Each line shows the balance so far. What balance does the statement show after the third deposit?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -1345,7 +1984,7 @@
         "kind": "numeric",
         "value": 90,
         "unit": "",
-        "absoluteTolerance": 1e-09,
+        "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
         "workedAnswer": "Deposits of 30, 10 and 50 add up to a balance of 90 after the third."
       },
@@ -1383,7 +2022,7 @@
         "kind": "numeric",
         "value": 10,
         "unit": "",
-        "absoluteTolerance": 1e-09,
+        "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
         "workedAnswer": "At the second row the frame holds 4 and 6, which add up to 10."
       },
@@ -1421,7 +2060,7 @@
         "kind": "numeric",
         "value": 9,
         "unit": "",
-        "absoluteTolerance": 1e-09,
+        "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
         "workedAnswer": "The row before the third holds 9, so LAG(amount) shows 9."
       },
@@ -1452,41 +2091,6 @@
     }
   ],
   "citations": [
-    {
-      "claim": "A frame says which rows count toward each row's value.",
-      "sourceId": "sqlite-window",
-      "section": "Window Functions 2.2: ROWS and RANGE frames; 3: lag(), lead()",
-      "targetKind": "step",
-      "targetId": "a-frame-of-rows"
-    },
-    {
-      "claim": "The frame here runs from the first ordered row to the current row. The last amount is unknown, so it adds no known value.",
-      "sourceId": "sqlite-window",
-      "section": "Window Functions 2.2: ROWS and RANGE frames; 3: lag(), lead()",
-      "targetKind": "step",
-      "targetId": "total-so-far"
-    },
-    {
-      "claim": "Add the amounts up by day, once with ROWS and once with RANGE.",
-      "sourceId": "sqlite-window",
-      "section": "Window Functions 2.2: ROWS and RANGE frames; 3: lag(), lead()",
-      "targetKind": "step",
-      "targetId": "rows-or-range"
-    },
-    {
-      "claim": "LAG(amount) returns the amount from the previous row in the window order. The first row has no previous row.",
-      "sourceId": "sqlite-window",
-      "section": "Window Functions 2.2: ROWS and RANGE frames; 3: lag(), lead()",
-      "targetKind": "step",
-      "targetId": "the-row-before"
-    },
-    {
-      "claim": "LEAD is the mirror of LAG. It reads the next row in the window order instead of the previous one.",
-      "sourceId": "sqlite-window",
-      "section": "Window Functions 2.2: ROWS and RANGE frames; 3: lag(), lead()",
-      "targetKind": "step",
-      "targetId": "the-row-after"
-    },
     {
       "claim": "Orders 101, 102 and 103 contribute 80 + 20 + 80 = 180.",
       "sourceId": "sqlite-window",
@@ -1537,13 +2141,6 @@
       "targetId": "sql-running-totals-and-neighbours-7"
     },
     {
-      "claim": "At the second row the frame holds 4 and 6, which add up to 10.",
-      "sourceId": "sqlite-window",
-      "section": "Window Functions 2.2: ROWS and RANGE frames; 3: lag(), lead()",
-      "targetKind": "question",
-      "targetId": "sql-running-totals-and-neighbours-8"
-    },
-    {
       "claim": "The row before the third holds 9, so LAG(amount) shows 9.",
       "sourceId": "sqlite-window",
       "section": "Window Functions 2.2: ROWS and RANGE frames; 3: lag(), lead()",
@@ -1563,6 +2160,69 @@
       "section": "Window Functions 2.2: ROWS and RANGE frames; 3: lag(), lead()",
       "targetKind": "flashcard",
       "targetId": "sql-running-totals-and-neighbours-card-2"
+    },
+    {
+      "claim": "A frame says which rows count towards each row's window value, and SUM over a frame from the first row to the current row is a running total.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 2.2: ROWS and RANGE frames; 3: lag(), lead()",
+      "targetKind": "step",
+      "targetId": "adding-up-as-you-go"
+    },
+    {
+      "claim": "Deposits of 30, 10 and 50 give a balance of 90 after the third.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 2.2: ROWS and RANGE frames; 3: lag(), lead()",
+      "targetKind": "step",
+      "targetId": "balance-so-far"
+    },
+    {
+      "claim": "Orders 101, 102 and 103 contribute 80 + 20 + 80 = 180 to the running total at order 103.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 2.2: ROWS and RANGE frames; 3: lag(), lead()",
+      "targetKind": "step",
+      "targetId": "total-at-order-103"
+    },
+    {
+      "claim": "A ROWS frame counts rows one at a time, while a RANGE frame includes all peers that tie on the ordering value.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 2.2: ROWS and RANGE frames; 3: lag(), lead()",
+      "targetKind": "step",
+      "targetId": "rows-that-tie-in-the-order"
+    },
+    {
+      "claim": "The RANGE frame includes peers with the same day, so both September 2 orders share the total of 180.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 2.2: ROWS and RANGE frames; 3: lag(), lead()",
+      "targetKind": "step",
+      "targetId": "same-day-same-total"
+    },
+    {
+      "claim": "LAG returns the value from the previous row in the window order, NULL on the first row, and reversing the order changes which row is previous.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 2.2: ROWS and RANGE frames; 3: lag(), lead()",
+      "targetKind": "step",
+      "targetId": "the-row-before"
+    },
+    {
+      "claim": "The row preceding order 104 in id order is order 103, whose amount is 80.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 2.2: ROWS and RANGE frames; 3: lag(), lead()",
+      "targetKind": "step",
+      "targetId": "lag-at-order-104"
+    },
+    {
+      "claim": "LEAD returns the next row's value; a NULL can mean no next row or a next row whose value is unknown, and LEAD of a filled-in column tells them apart.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 2.2: ROWS and RANGE frames; 3: lag(), lead()",
+      "targetKind": "step",
+      "targetId": "looking-ahead"
+    },
+    {
+      "claim": "The row following order 103 is order 104, whose amount is 40.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 2.2: ROWS and RANGE frames; 3: lag(), lead()",
+      "targetKind": "step",
+      "targetId": "lead-at-order-103"
     }
   ]
 }

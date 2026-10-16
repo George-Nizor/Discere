@@ -104,7 +104,7 @@ export async function prepareNavigation(client: QueryClient, url: URL): Promise<
     tasks.push(ensure(queryKeys.reviewHome, getReviewHome));
   } else {
     const match = pathname.match(/^\/courses\/([^/]+)(?:\/lessons\/([^/]+)(?:\/stages\/[^/]+)?)?$/);
-    if (match?.[1] && match[1] !== "roman-empire") {
+    if (match?.[1]) {
       const courseId = decodeURIComponent(match[1]);
       tasks.push(ensure(queryKeys.course(courseId), () => getCourseDetail(courseId)));
       if (match[2]) {
@@ -151,7 +151,7 @@ export function withNavigationData(routes: RouteObject[], client: QueryClient): 
                 const lesson = url.pathname.match(
                   /^\/courses\/([^/]+)\/lessons\/([^/]+)(?:\/stages\/([^/]+))?$/,
                 );
-                if (lesson?.[1] && lesson[2] && lesson[1] !== "roman-empire") {
+                if (lesson?.[1] && lesson[2]) {
                   const courseId = decodeURIComponent(lesson[1]),
                     lessonId = decodeURIComponent(lesson[2]);
                   const journey = client.getQueryData<JourneyResponse>(

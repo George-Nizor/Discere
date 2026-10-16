@@ -46,11 +46,6 @@ import {
   type ReviewSessionCreate,
   type ReviewSessionResponse,
   ReviewSessionResponseSchema,
-  type RomanReferenceAction,
-  type RomanReferenceEssayId,
-  type RomanReferenceProgress,
-  RomanReferenceProgressSchema,
-  type RomanReferenceQuestionId,
   type StageProgressUpdate,
   StudyPreferencesSchema,
   type StudyPreferencesUpdate,
@@ -156,28 +151,6 @@ export async function saveJourneyProgress(
     await requestJson<unknown>(`${journeyBase(courseId, lessonId)}/progress`, {
       method: "PUT",
       body: JSON.stringify(input),
-    }),
-  );
-}
-
-export async function getRomanReferenceProgress(
-  courseId: string,
-  lessonId: string,
-): Promise<RomanReferenceProgress> {
-  return RomanReferenceProgressSchema.parse(
-    await requestJson<unknown>(`${journeyBase(courseId, lessonId)}/reference/progress`),
-  );
-}
-
-export async function updateRomanReferenceProgress(
-  courseId: string,
-  lessonId: string,
-  action: RomanReferenceAction,
-): Promise<RomanReferenceProgress> {
-  return RomanReferenceProgressSchema.parse(
-    await requestJson<unknown>(`${journeyBase(courseId, lessonId)}/reference/progress`, {
-      method: "PUT",
-      body: JSON.stringify(action),
     }),
   );
 }
@@ -387,8 +360,6 @@ export async function importTutorReply(input: {
   lessonId?: string;
   questionId?: string;
   attemptId?: string;
-  referenceQuestionId?: RomanReferenceQuestionId;
-  referenceEssayId?: RomanReferenceEssayId;
 }): Promise<TutorImportResult> {
   const result = await requestJson<TutorImportResult>("/api/tutor/companion/import", {
     method: "POST",

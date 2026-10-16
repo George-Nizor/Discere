@@ -14,44 +14,28 @@
         "id": "list-to-grid",
         "kind": "explain",
         "blocks": [],
-        "headline": "pivot turns a long list into a grid, and each cell needs exactly one record.",
+        "headline": "From a list to a grid",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "df.pivot(index='shop', columns='month', values='units') puts shops down the side and months across the top. Each shop and month pair must appear once, because a cell can hold one value."
+            "text": "The list has one row per record, and the grid has one cell per record. df.pivot(index='shop', columns='month', values='units') builds the grid. The shop values become the row labels, the month values become the column headings, and each units figure moves into the cell where its shop row meets its month column. Nothing is added or changed on the way, so a pivot only rearranges the records."
           },
           {
-            "kind": "callout",
-            "tone": "key",
-            "text": "A pivot rearranges the observations. It does not change them."
+            "kind": "paragraph",
+            "text": "A cell holds one value, so pivot needs each shop and month pair to appear once. It also matters which way round you ask. The figure pivots four records twice, once with the shops down the side and once with the months."
           }
         ],
-        "reveal": [],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "Both grids hold the same four figures. Bay has 2 under Jan and 5 under Feb, and Hill has 3 under Jan and 7 under Feb. In the second grid the figures are the same and the months run down the side. Swapping index and columns turns one into the other. If a pair appeared twice, pivot could not choose between the two figures and would stop with an error, which is what the next screen deals with."
+          }
+        ],
         "introducesTerms": [
           "pivot"
         ],
         "visualStateId": "",
-        "checkQuestionId": "python-reshape-a-report-3",
-        "activityId": ""
-      },
-      {
-        "id": "size-of-the-grid",
-        "kind": "predict",
-        "blocks": [],
-        "lead": [
-          {
-            "kind": "paragraph",
-            "text": "Labels are not cells. A grid holds one measurement for each shop and month combination."
-          }
-        ],
-        "reveal": [
-          {
-            "kind": "paragraph",
-            "text": "You counted the cells as shops times months. The pivot only rearranges the records into that grid."
-          }
-        ],
-        "visualStateId": "",
-        "checkQuestionId": "python-reshape-a-report-1",
+        "checkQuestionId": "",
         "activityId": "",
         "diagram": {
           "type": "python_execution",
@@ -147,33 +131,55 @@
             }
           ],
           "initialCaseId": "case-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        }
       },
       {
-        "id": "two-records-one-cell",
-        "kind": "worked_example",
+        "id": "size-of-the-grid",
+        "kind": "predict",
         "blocks": [],
-        "headline": "Two Bay and Jan records have units 5 and 11. What does pivot_table with aggfunc='sum' put in that cell?",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "pivot_table can combine records that share a cell. You choose the combining rule with aggfunc."
+            "text": "Labels are not cells. A grid holds one measurement for each shop and month combination."
           }
         ],
-        "reveal": [],
-        "workedSteps": [
+        "reveal": [
           {
-            "text": "Both records map to the same Bay and Jan cell, so one value must be made from them.",
-            "math": "5 and 11",
-            "selfExplain": {
-              "questionId": "python-reshape-a-report-why-table"
-            }
+            "kind": "paragraph",
+            "text": "You counted the cells as shops times months. The pivot only rearranges the records into that grid."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-reshape-a-report-1",
+        "activityId": ""
+      },
+      {
+        "id": "records-share-a-cell",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "Two records in one cell",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Real lists are rarely so tidy. Two sales for Bay in January, perhaps from two tills, give two records for the same shop and month. In a grid they have to share one cell, and pivot refuses, because it would have to guess how to combine them."
           },
           {
-            "text": "Apply the chosen rule. With sum the cell is the total.",
-            "math": "5 + 11 = 16"
+            "kind": "paragraph",
+            "text": "df.pivot_table combines the records for you once you say how, through its aggfunc argument. With aggfunc='sum' a shared cell holds the total of its records, and with aggfunc='mean' it holds their average."
+          },
+          {
+            "kind": "paragraph",
+            "text": "In the figure, two of the three records are for Bay in January. The grid is built once with each rule."
           }
+        ],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "Bay's two January records are 2 and 6. The sum puts 8 in the cell and the mean puts 4. Hill has a single record of 3, which stays 3 either way, because a rule applied to one value returns that value. Neither answer is the true one. Which is right depends on what the records are: tills that each rang up part of a shop's sales should be summed, and repeated readings of one thing might be averaged. State the rule so that the reader knows what each cell contains."
+          }
+        ],
+        "introducesTerms": [
+          "pivot_table"
         ],
         "visualStateId": "",
         "checkQuestionId": "",
@@ -266,8 +272,31 @@
             }
           ],
           "initialCaseId": "case-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        }
+      },
+      {
+        "id": "two-records-one-cell",
+        "kind": "worked_example",
+        "blocks": [],
+        "headline": "Two Bay and Jan records have units 5 and 11. What does pivot_table with aggfunc='sum' put in that cell?",
+        "lead": [],
+        "reveal": [],
+        "workedSteps": [
+          {
+            "text": "Both records map to the same Bay and Jan cell, so one value must be made from them.",
+            "math": "5 and 11",
+            "selfExplain": {
+              "questionId": "python-reshape-a-report-why-table"
+            }
+          },
+          {
+            "text": "Apply the chosen rule. With sum the cell is the total.",
+            "math": "5 + 11 = 16"
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
       },
       {
         "id": "add-the-duplicates",
@@ -298,19 +327,28 @@
         "id": "grid-to-list",
         "kind": "explain",
         "blocks": [],
-        "headline": "melt turns a grid back into a long list, with one row per measurement.",
+        "headline": "Back to a list",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "df.melt(id_vars='shop', value_vars=['Jan', 'Feb']) keeps shop beside every value and stacks the month columns into a variable column and a value column. id_vars names the columns that stay attached."
+            "text": "Sometimes you need to go the other way. A grid with one column per month is easy to read but hard to group or plot, which usually want one row per measurement. df.melt reverses a pivot. It takes the month columns and stacks them into two new columns, one for the old column heading and one for the figure that sat under it."
+          },
+          {
+            "kind": "paragraph",
+            "text": "id_vars names the columns that stay attached to every measurement, here the shop. value_vars names the columns to stack. var_name and value_name set the names of the two new columns. The figure melts a small grid twice, first with both month columns and then with only Feb."
           }
         ],
-        "reveal": [],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "The first melt turns two shops and two month columns into four rows, one for each shop and month. The second stacks only Feb, so it makes two rows. Every row keeps its shop, so a figure never loses the label that says what it measured. Melting creates no measurements and loses none, because each cell in the stacked columns becomes exactly one row."
+          }
+        ],
         "introducesTerms": [
           "melt"
         ],
         "visualStateId": "",
-        "checkQuestionId": "python-reshape-a-report-4",
+        "checkQuestionId": "",
         "activityId": "",
         "diagram": {
           "type": "python_execution",
@@ -424,8 +462,22 @@
             }
           ],
           "initialCaseId": "case-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        }
+      },
+      {
+        "id": "keep-the-labels",
+        "kind": "predict",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Every melted row must still say which shop it came from. Something has to tell melt which columns to leave in place."
+          }
+        ],
+        "reveal": [],
+        "visualStateId": "",
+        "checkQuestionId": "python-reshape-a-report-4",
+        "activityId": ""
       },
       {
         "id": "count-the-long-rows",
@@ -448,23 +500,29 @@
         "activityId": ""
       },
       {
-        "id": "cells-with-no-record",
-        "kind": "transfer",
+        "id": "a-cell-with-no-record",
+        "kind": "explain",
         "blocks": [],
+        "headline": "Cells with no record",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "A pivot has a cell for every shop and month. If no record exists for a pair, that cell is missing. fill_value=0 would call it zero, which is only right when no record truly means none."
-          }
-        ],
-        "reveal": [
+            "text": "A grid has a cell for every shop and month pair, but the list may lack a record for some pairs. Suppose Hill has no record for January. The cell where Hill meets Jan has nothing to show, so pivot_table leaves it missing. That is the same kind of gap you met earlier."
+          },
           {
             "kind": "paragraph",
-            "text": "The cells without records stayed missing. Filling them with zero would have claimed that nothing was sold, which the data did not say."
+            "text": "fill_value=0 replaces the missing cells with zero. That is a claim that nothing was sold, and it is true only if a missing record really means none. If the record might simply be absent, a zero gives a false figure. The figure builds a grid from two records, first leaving the empty cells alone and then filling them with 0."
           }
         ],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "With records only for Bay in Jan and Hill in Feb, the grid has four cells and two of them are empty. The first case shows them as missing. The second shows them as 0, and a reader would take those zeros as sales that did not happen. Decide what an empty cell means before you fill it, and say which choice you made."
+          }
+        ],
+        "introducesTerms": [],
         "visualStateId": "",
-        "checkQuestionId": "python-reshape-a-report-missing-cells",
+        "checkQuestionId": "",
         "activityId": "",
         "diagram": {
           "type": "python_execution",
@@ -560,8 +618,27 @@
             }
           ],
           "initialCaseId": "case-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        }
+      },
+      {
+        "id": "cells-with-no-record",
+        "kind": "transfer",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "A pivot has a cell for every shop and month pair. If no record exists for a pair, that cell is missing."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "The cells without records stayed missing. Filling them with zero would have claimed that nothing was sold, which the data did not say."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-reshape-a-report-missing-cells",
+        "activityId": ""
       }
     ],
     "orientation": "Pivot unique records, aggregate duplicate keys and melt columns back into observations.",
@@ -593,23 +670,30 @@
         "blocks": [
           {
             "kind": "paragraph",
-            "text": "A list has one row for every combination of shop and month. There are 2 shops, and each has a figure for each of 3 months."
+            "text": "A shop manager sends a list in which every row is one shop in one month: Bay in each of three months, then Hill in the same three months. With two shops and three months the list has six rows, and each row holds one figure for units sold. A program can filter and group such a list easily, and a person finds it hard to compare."
+          },
+          {
+            "kind": "paragraph",
+            "text": "The person who reads the report wants the other shape: shops down the side, months across the top and one figure in each cell. A row then reads as one shop's months, and a column compares the shops. Moving between the two shapes is called reshaping. It sounds like tidying, and it can go wrong in a way that changes the figures, for instance when two records compete for one cell."
+          },
+          {
+            "kind": "paragraph",
+            "text": "This lesson turns the list into a grid and deals with cells that have two records. It then turns the grid back into a list and looks at what an empty cell means."
           }
-        ],
-        "questionId": "python-reshape-a-report-hook"
+        ]
       },
       "promise": "By the end you'll turn a long list into a grid and back, and know what to do when two records land in one cell.",
-      "estimatedMinutes": 10
+      "estimatedMinutes": 12
     },
     "recap": {
       "keyIdea": "pivot arranges records in a grid when each cell has one record, pivot_table combines repeats with a chosen rule, and melt returns the grid to a list.",
       "blocks": [
         {
           "kind": "paragraph",
-          "text": "You counted 6 rows for 2 shops and 3 months. You found 12 cells in a 3 by 4 grid, and 2 missing cells where no record existed."
+          "text": "You counted 6 rows for 2 shops and 3 months. You found 12 cells in a 3 by 4 grid, and 2 empty cells where no record existed."
         }
       ],
-      "nextHook": "Next: bring the whole toolkit together in one audited sales report."
+      "nextHook": "You can now clean text and dates, summarise in groups, combine tables and reshape them. The last lesson uses all of it on one sales report whose totals look right and are not, and asks you to find out why."
     },
     "calculator": "off",
     "taughtSkills": [
@@ -637,7 +721,7 @@
         "kind": "numeric",
         "value": 12,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "Each of the three shops has four monthly cells, giving 12."
       },
@@ -675,7 +759,7 @@
         "kind": "numeric",
         "value": 12,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The duplicate key pair is aggregated as 3 + 9 = 12."
       },
@@ -837,7 +921,7 @@
         "kind": "numeric",
         "value": 12,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "Each original row contributes three measurements, producing 4 × 3 = 12 rows."
       },
@@ -875,7 +959,7 @@
         "kind": "numeric",
         "value": 7,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The mean is (4 + 10) ÷ 2 = 7."
       },
@@ -916,7 +1000,7 @@
         "kind": "numeric",
         "value": 9,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "1 + 2 + 6 = 9."
       },
@@ -954,7 +1038,7 @@
         "kind": "numeric",
         "value": 6,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "2 shops × 3 months = 6 rows."
       },
@@ -1050,7 +1134,7 @@
         "kind": "numeric",
         "value": 2,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "Two records share the cell."
       },
@@ -1088,7 +1172,7 @@
         "kind": "numeric",
         "value": 10,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "5 shops × 2 months = 10 rows."
       },
@@ -1134,7 +1218,7 @@
         "kind": "numeric",
         "value": 2,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "A 2 by 2 grid has four cells, and two are filled."
       },
@@ -1163,55 +1247,6 @@
   ],
   "citations": [
     {
-      "claim": "pivot turns a long list into a grid, and each cell needs exactly one record.",
-      "sourceId": "pd-reshape",
-      "section": "pivot; pivot_table; melt",
-      "targetKind": "step",
-      "targetId": "list-to-grid"
-    },
-    {
-      "claim": "Labels are not cells. A grid holds one measurement for each shop and month combination.",
-      "sourceId": "pd-reshape",
-      "section": "pivot; pivot_table; melt",
-      "targetKind": "step",
-      "targetId": "size-of-the-grid"
-    },
-    {
-      "claim": "Two Bay and Jan records have units 5 and 11. What does pivot_table with aggfunc='sum' put in that cell?",
-      "sourceId": "pd-reshape",
-      "section": "pivot; pivot_table; melt",
-      "targetKind": "step",
-      "targetId": "two-records-one-cell"
-    },
-    {
-      "claim": "Two Bay and Jan records have units 3 and 9. What does aggfunc='sum' produce?",
-      "sourceId": "pd-reshape",
-      "section": "pivot; pivot_table; melt",
-      "targetKind": "step",
-      "targetId": "add-the-duplicates"
-    },
-    {
-      "claim": "melt turns a grid back into a long list, with one row per measurement.",
-      "sourceId": "pd-reshape",
-      "section": "pivot; pivot_table; melt",
-      "targetKind": "step",
-      "targetId": "grid-to-list"
-    },
-    {
-      "claim": "Each original row gives one long row for every value column that is melted.",
-      "sourceId": "pd-reshape",
-      "section": "pivot; pivot_table; melt",
-      "targetKind": "step",
-      "targetId": "count-the-long-rows"
-    },
-    {
-      "claim": "A pivot has a cell for every shop and month. If no record exists for a pair, that cell is missing. fill_value=0 would call it zero, which is only right when no record truly means none.",
-      "sourceId": "pd-reshape",
-      "section": "pivot; pivot_table; melt",
-      "targetKind": "step",
-      "targetId": "cells-with-no-record"
-    },
-    {
       "claim": "12. Each of the three shops has a cell for each of the four months.",
       "sourceId": "pd-reshape",
       "section": "pivot; pivot_table; melt",
@@ -1224,13 +1259,6 @@
       "section": "pivot; pivot_table; melt",
       "targetKind": "question",
       "targetId": "python-reshape-a-report-2"
-    },
-    {
-      "claim": "The cell is not uniquely identified. pivot does not choose how to combine two records.",
-      "sourceId": "pd-reshape",
-      "section": "pivot; pivot_table; melt",
-      "targetKind": "question",
-      "targetId": "python-reshape-a-report-3"
     },
     {
       "claim": "id_vars. It keeps identifier columns attached while the value columns are stacked.",
@@ -1259,13 +1287,6 @@
       "section": "pivot; pivot_table; melt",
       "targetKind": "question",
       "targetId": "python-reshape-a-report-7"
-    },
-    {
-      "claim": "6. One row for each shop and month pair. A pivot would lay those same six figures out as a 2 by 3 grid.",
-      "sourceId": "pd-reshape",
-      "section": "pivot; pivot_table; melt",
-      "targetKind": "question",
-      "targetId": "python-reshape-a-report-hook"
     },
     {
       "claim": "Two records share one cell, so a combining rule is needed. pivot_table lets you name it.",
@@ -1308,6 +1329,76 @@
       "section": "pivot; pivot_table; melt",
       "targetKind": "flashcard",
       "targetId": "python-reshape-a-report-card-2"
+    },
+    {
+      "claim": "pivot rearranges a long list into a grid with one cell per shop and month pair, and needs each pair to appear once.",
+      "sourceId": "pd-reshape",
+      "section": "pivot; pivot_table; melt",
+      "targetKind": "step",
+      "targetId": "list-to-grid"
+    },
+    {
+      "claim": "Labels are not cells. A grid holds one measurement for each shop and month combination.",
+      "sourceId": "pd-reshape",
+      "section": "pivot; pivot_table; melt",
+      "targetKind": "step",
+      "targetId": "size-of-the-grid"
+    },
+    {
+      "claim": "pivot_table combines records that share a cell with the rule named in aggfunc.",
+      "sourceId": "pd-reshape",
+      "section": "pivot; pivot_table; melt",
+      "targetKind": "step",
+      "targetId": "records-share-a-cell"
+    },
+    {
+      "claim": "Two Bay and Jan records have units 5 and 11. What does pivot_table with aggfunc='sum' put in that cell?",
+      "sourceId": "pd-reshape",
+      "section": "pivot; pivot_table; melt",
+      "targetKind": "step",
+      "targetId": "two-records-one-cell"
+    },
+    {
+      "claim": "Two Bay and Jan records have units 3 and 9. What does aggfunc='sum' produce?",
+      "sourceId": "pd-reshape",
+      "section": "pivot; pivot_table; melt",
+      "targetKind": "step",
+      "targetId": "add-the-duplicates"
+    },
+    {
+      "claim": "melt stacks columns into rows, keeping the id_vars columns attached to each measurement.",
+      "sourceId": "pd-reshape",
+      "section": "pivot; pivot_table; melt",
+      "targetKind": "step",
+      "targetId": "grid-to-list"
+    },
+    {
+      "claim": "Every melted row must still say which shop it came from. Something has to tell melt which columns to leave in place.",
+      "sourceId": "pd-reshape",
+      "section": "pivot; pivot_table; melt",
+      "targetKind": "step",
+      "targetId": "keep-the-labels"
+    },
+    {
+      "claim": "Each original row gives one long row for every value column that is melted.",
+      "sourceId": "pd-reshape",
+      "section": "pivot; pivot_table; melt",
+      "targetKind": "step",
+      "targetId": "count-the-long-rows"
+    },
+    {
+      "claim": "A pivot leaves a cell missing when no record exists, and fill_value=0 claims that nothing was recorded.",
+      "sourceId": "pd-reshape",
+      "section": "pivot; pivot_table; melt",
+      "targetKind": "step",
+      "targetId": "a-cell-with-no-record"
+    },
+    {
+      "claim": "A pivot has a cell for every shop and month. If no record exists for a pair, that cell is missing. fill_value=0 would call it zero, which is only right when no record truly means none.",
+      "sourceId": "pd-reshape",
+      "section": "pivot; pivot_table; melt",
+      "targetKind": "step",
+      "targetId": "cells-with-no-record"
     }
   ]
 }

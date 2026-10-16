@@ -1,7 +1,11 @@
 {
   "lessonId": "errors-and-resources",
   "courseId": "python-for-data-analysis",
-  "migrationNotes": [],
+  "migrationNotes": [
+    "Spine: a form asks for ages and one answer is the word 'unknown'. The lesson catches that failure on purpose (try/except ValueError), chooses between a fallback and a skip, counts and reports what was skipped, then follows the answers into a file (with closes it, blank lines need a policy) and finally asks which file a relative name means (working directory).",
+    "Left out of the lesson (still in the course): python-errors-and-resources-hook (the mean of 24 and 36, covered by the opener).",
+    "Figures: the try/except and rejected-counter figures moved onto the teaching screens that explain them."
+  ],
   "lesson": {
     "id": "errors-and-resources",
     "courseId": "python-for-data-analysis",
@@ -11,47 +15,31 @@
     "title": "Handle failure without hiding it",
     "steps": [
       {
-        "id": "an-error-you-expect",
+        "id": "when-a-conversion-fails",
         "kind": "explain",
         "blocks": [],
-        "headline": "try and except catch an error you expect, and nothing else.",
+        "headline": "When a conversion fails",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "int('18') gives a number. int('unknown') raises a ValueError, an exception. try runs the risky line. except ValueError runs only if that error happens, so you choose what to do next."
+            "text": "Turning text into a number is the step where the form goes wrong. int('18') gives the number 18. int('unknown') cannot work, so Python raises a ValueError. An error raised like this is called an exception, and unless something deals with it the program stops. Python lets you deal with it. The risky line goes under try:, and under except ValueError: you say what to do if that exception occurs. If the conversion works, the except lines are skipped. If it raises a ValueError, Python jumps to them and carries on afterwards."
           },
           {
-            "kind": "callout",
-            "tone": "key",
-            "text": "Name the error you expect. A bare catch-all can hide real mistakes."
+            "kind": "paragraph",
+            "text": "Name the exception you expect. Writing except ValueError catches the failure you planned for and nothing else. A bare except would catch every mistake, even a misspelt variable name, which hides real bugs behind a quiet fallback. In the picture the fallback is 0. Step through an age of '18' and an age of 'unknown'."
           }
         ],
-        "reveal": [],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "With '18' the conversion succeeds and value is 18, so the except lines never run. With 'unknown' the conversion fails, the except lines run and value becomes 0. A fallback of 0 is a choice, and it is not always a good one. An age of 0 would drag an average down, which the next screens come back to."
+          }
+        ],
         "introducesTerms": [
           "exception"
         ],
         "visualStateId": "",
-        "checkQuestionId": "python-errors-and-resources-error-check",
-        "activityId": ""
-      },
-      {
-        "id": "valid-or-not",
-        "kind": "predict",
-        "blocks": [],
-        "lead": [
-          {
-            "kind": "paragraph",
-            "text": "The except branch runs only if the conversion fails."
-          }
-        ],
-        "reveal": [
-          {
-            "kind": "paragraph",
-            "text": "You predicted which branch ran. With valid digits no exception was raised, so the fallback value was never used."
-          }
-        ],
-        "visualStateId": "",
-        "checkQuestionId": "python-errors-and-resources-1",
+        "checkQuestionId": "",
         "activityId": "",
         "diagram": {
           "type": "python_execution",
@@ -131,33 +119,74 @@
             }
           ],
           "initialCaseId": "case-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        }
       },
       {
-        "id": "count-what-you-skip",
-        "kind": "worked_example",
+        "id": "what-int-does-with-words",
+        "kind": "predict",
         "blocks": [],
-        "headline": "Add up ['3', 'x', '9', '?'] as integers, skipping any ValueError.",
-        "lead": [],
-        "reveal": [],
-        "workedSteps": [
+        "lead": [
           {
-            "text": "'3' converts, so it joins the total.",
-            "math": "total = 3, rejected = 0"
-          },
-          {
-            "text": "'x' raises ValueError. The except branch counts it instead of stopping.",
-            "math": "total = 3, rejected = 1",
-            "selfExplain": {
-              "questionId": "python-errors-and-resources-why-count"
-            }
-          },
-          {
-            "text": "'9' converts and '?' fails.",
-            "math": "total = 12, rejected = 2"
+            "kind": "paragraph",
+            "text": "Decide what Python does with text that has no digits in it."
           }
         ],
+        "visualStateId": "",
+        "checkQuestionId": "python-errors-and-resources-error-check",
+        "activityId": ""
+      },
+      {
+        "id": "valid-or-not",
+        "kind": "predict",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "The except lines run only if the conversion fails. Decide whether it fails for this text."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-errors-and-resources-1",
+        "activityId": ""
+      },
+      {
+        "id": "a-fallback-or-a-skip",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "A fallback or a skip",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "What happens to the bad entry is your choice, and the choice changes the answer. One option is to substitute a fallback and carry on. That suits a count where a missing value really does mean none, such as a drink nobody sold. Inside a loop over the entries, the try line is total += int(text) and the except line is total += 10. A bad entry adds 10 to total in place of its own value, and the good ones add what they hold. With the entries '4', 'y' and '5', total ends at 19."
+          },
+          {
+            "kind": "paragraph",
+            "text": "For ages the better option is to skip. A made-up age of 0 or 10 is a number nobody gave, and it pulls the average towards itself. Skipping leaves the entry out so that only real answers count. In code the except lines simply leave total alone, and with the same three entries total ends at 9. Either way the program carries on, which is the point of catching the exception. What remains to settle is how a reader can tell that entries were left out."
+          }
+        ],
+        "introducesTerms": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
+      },
+      {
+        "id": "counting-what-you-skip",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "Counting what you skip",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "A total built from skipped data looks just like a total built from complete data, and a reader has no way to tell the difference. The remedy is to count what was left out. A second accumulator, rejected, starts at 0 and goes up by 1 inside the except lines. It counts the entries that failed while total adds up the ones that worked. Step through the picture, where each entry is a piece of text to be added."
+          }
+        ],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "With '2' and '5' both convert, total is 7 and rejected is 0. With '2', 'bad' and '5' the middle entry fails, total is still 7 and rejected is 1. The same total comes from different data, and only the count shows which case you are in. Reporting a share is clearer still. One rejected entry out of 4 is 25 per cent, which tells a reader how much of the data the total leaves out."
+          }
+        ],
+        "introducesTerms": [],
         "visualStateId": "",
         "checkQuestionId": "",
         "activityId": "",
@@ -249,8 +278,40 @@
             }
           ],
           "initialCaseId": "case-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        }
+      },
+      {
+        "id": "count-what-you-skip",
+        "kind": "worked_example",
+        "blocks": [],
+        "headline": "Add up ['3', 'x', '9', '?'] as integers, skipping any ValueError.",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Work through four entries with the counter running."
+          }
+        ],
+        "reveal": [],
+        "workedSteps": [
+          {
+            "text": "'3' converts, so it joins the total.",
+            "math": "total = 3, rejected = 0"
+          },
+          {
+            "text": "'x' raises ValueError. The except branch counts it instead of stopping.",
+            "math": "total = 3, rejected = 1",
+            "selfExplain": {
+              "questionId": "python-errors-and-resources-why-count"
+            }
+          },
+          {
+            "text": "'9' converts and '?' fails.",
+            "math": "total = 12, rejected = 2"
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
       },
       {
         "id": "skip-and-count",
@@ -278,42 +339,76 @@
         "activityId": ""
       },
       {
-        "id": "close-it-for-you",
-        "kind": "explain",
-        "blocks": [],
-        "headline": "A with block closes a file for you when the block ends.",
-        "lead": [
-          {
-            "kind": "paragraph",
-            "text": "with open('notes.txt') as f: opens the file, runs the indented lines, then closes it, even if one of them fails. The with statement manages the resource. It does not check that the contents make sense."
-          }
-        ],
-        "reveal": [],
-        "introducesTerms": [
-          "context manager"
-        ],
-        "visualStateId": "",
-        "checkQuestionId": "python-errors-and-resources-3",
-        "activityId": ""
-      },
-      {
         "id": "how-much-did-you-drop",
         "kind": "try",
         "blocks": [],
         "lead": [
           {
             "kind": "paragraph",
-            "text": "Skipping rows changes which rows you analyse. A rejected count tells a reader how much was dropped."
-          }
-        ],
-        "reveal": [
-          {
-            "kind": "paragraph",
-            "text": "The share you worked out is the size of the gap between the data you had and the data you used. Reporting it keeps the skipping visible."
+            "text": "Turn the count of rejected entries into a share of all the entries."
           }
         ],
         "visualStateId": "",
         "checkQuestionId": "python-errors-and-resources-rejected-share",
+        "activityId": ""
+      },
+      {
+        "id": "files-that-close-themselves",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "Files that close themselves",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "The answers usually live in a file, and reading a file brings its own problem. Opening a file ties up something the operating system hands out, and it has to be given back by closing the file. A program that stops half-way can leave it open. The with statement looks after this. with open('answers.txt') as f: opens the file, runs the indented lines and closes the file when they end, even if one of them fails. The object that does this work is called a context manager."
+          },
+          {
+            "kind": "paragraph",
+            "text": "with looks after the file. It does nothing about what is inside. The lines come back as text, so every line still needs converting, and a blank line is an empty string that int cannot read. Decide how to treat blank lines before converting. The method strip removes spaces and the line break from the ends of a string, so line.strip() == '' picks out a blank line and lets you skip it. The rejected count can tell a reader how many there were."
+          }
+        ],
+        "introducesTerms": [
+          "context manager"
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
+      },
+      {
+        "id": "what-with-does",
+        "kind": "predict",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Separate looking after the file from checking what is inside it."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-errors-and-resources-3",
+        "activityId": ""
+      },
+      {
+        "id": "which-file-does-a-name-mean",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "Which file does a name mean",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Opening 'answers.txt' needs a path, the address of a file. A path with no folder in it, such as answers.txt or data.csv, is a relative path, and Python resolves it from the working directory, which is the folder the program was launched from. It is not the folder that holds the script. Launch the same script from a different folder and the same name can point at a different file, or at no file at all."
+          },
+          {
+            "kind": "paragraph",
+            "text": "That explains a common puzzle. A script works in one terminal window and reports 'file not found' in another, with nothing changed in the code. Before blaming the file, check where Python started. A full path that begins at the top of the drive always names the same place, wherever the program is launched from."
+          }
+        ],
+        "introducesTerms": [
+          "relative path",
+          "working directory"
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
         "activityId": ""
       },
       {
@@ -323,13 +418,7 @@
         "lead": [
           {
             "kind": "paragraph",
-            "text": "A relative path such as data.csv is resolved from the folder Python was launched in, the working directory. It is not resolved from the folder holding the script."
-          }
-        ],
-        "reveal": [
-          {
-            "kind": "paragraph",
-            "text": "The same name pointed at a different file each time, because the working directory changed. When a file goes missing, check where Python started before blaming the file."
+            "text": "The script is the same every time. Only the folder it is launched from changes."
           }
         ],
         "visualStateId": "",
@@ -366,23 +455,30 @@
         "blocks": [
           {
             "kind": "paragraph",
-            "text": "A form asked for age. Three people answered: 24, unknown and 36."
+            "text": "A form asked for age. Three people answered: 24, unknown and 36. Anyone working out the average age reads the three answers and sets the middle one aside without a second thought. The average of 24 and 36 is 30, and everyone agrees that unknown is not an age."
+          },
+          {
+            "kind": "paragraph",
+            "text": "A program has no such instinct. Asked to turn each answer into a number, it reaches the word unknown and cannot read it as digits, so it stops with an error message. The work done so far is lost, and so is every answer after the bad one. A form with ten thousand rows will always have a few entries like that."
+          },
+          {
+            "kind": "paragraph",
+            "text": "This lesson is about what a program should do instead. It looks at expecting a failure on purpose and at choosing what happens when one occurs. Then it covers how to report how much data was left out. The second half moves to the files such answers are stored in: how to read one without leaving it open, and how Python decides which file a name refers to."
           }
-        ],
-        "questionId": "python-errors-and-resources-hook"
+        ]
       },
       "promise": "By the end you'll catch an expected error on purpose and read a file inside a with block.",
-      "estimatedMinutes": 10
+      "estimatedMinutes": 12
     },
     "recap": {
       "keyIdea": "Catch the specific error you expect and say what you skipped. A with block closes the file, and relative paths follow the working directory.",
       "blocks": [
         {
           "kind": "paragraph",
-          "text": "You averaged the two valid ages to get 30. You skipped 2 bad entries to reach a total of 10, and found that 3 of 5 entries, 60 per cent, were rejected."
+          "text": "You averaged the two valid ages to get 30. You skipped 2 bad entries to reach a total of 10, and found that 3 of 5 entries, 60 per cent, were rejected. Three launch folders gave three different files, because a relative path follows the working directory."
         }
       ],
-      "nextHook": "Next: shape numbers into arrays so one operation covers every value."
+      "nextHook": "The ages are clean now but they sit in a list, and a list is built to hold anything. Data work usually means thousands of values of one kind laid out in a grid, such as seats in a cinema or readings from a sensor. The next lesson introduces the NumPy array, which holds a grid of one kind of value and works on all of it at once."
     },
     "calculator": "off",
     "taughtSkills": [
@@ -410,7 +506,7 @@
         "kind": "numeric",
         "value": 24,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The conversion succeeds, so the fallback is never used."
       },
@@ -448,7 +544,7 @@
         "kind": "numeric",
         "value": 10,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The valid entries are 4 and 6, which sum to 10. Two entries were rejected."
       },
@@ -552,7 +648,7 @@
         "kind": "numeric",
         "value": 3,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "Relative paths resolve from the current working directory, so each launch reads its own file."
       },
@@ -590,7 +686,7 @@
         "kind": "numeric",
         "value": 2,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "'8.5' is not an integer string, and 'no' is not numeric. The other two conversions succeed."
       },
@@ -636,7 +732,7 @@
         "kind": "numeric",
         "value": 14,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The two retained numbers are 5 and 9, giving 14."
       },
@@ -677,7 +773,7 @@
         "kind": "numeric",
         "value": 13,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "1 + 10 + 2 = 13."
       },
@@ -723,7 +819,7 @@
         "kind": "numeric",
         "value": 30,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "(24 + 36) ÷ 2 = 30."
       },
@@ -885,7 +981,7 @@
         "kind": "numeric",
         "value": 2,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "'bad' and '?' fail to convert."
       },
@@ -923,7 +1019,7 @@
         "kind": "numeric",
         "value": 60,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "3 of 5 entries were rejected, which is 60 per cent."
       },
@@ -952,49 +1048,84 @@
   ],
   "citations": [
     {
-      "claim": "try and except catch an error you expect, and nothing else.",
+      "claim": "int() raises ValueError on text that is not an integer; try/except ValueError runs a fallback only when that exception occurs.",
       "sourceId": "py-errors",
       "section": "8.3 handling exceptions; 8.8 predefined clean-up actions",
       "targetKind": "step",
-      "targetId": "an-error-you-expect"
+      "targetId": "when-a-conversion-fails"
     },
     {
-      "claim": "The except branch runs only if the conversion fails.",
+      "claim": "int() raises a ValueError for non-numeric text.",
+      "sourceId": "py-errors",
+      "section": "8.3 handling exceptions; 8.8 predefined clean-up actions",
+      "targetKind": "step",
+      "targetId": "what-int-does-with-words"
+    },
+    {
+      "claim": "The except branch is skipped when the conversion succeeds.",
       "sourceId": "py-errors",
       "section": "8.3 handling exceptions; 8.8 predefined clean-up actions",
       "targetKind": "step",
       "targetId": "valid-or-not"
     },
     {
-      "claim": "Add up ['3', 'x', '9', '?'] as integers, skipping any ValueError.",
+      "claim": "An except branch can substitute a fallback or skip the entry; a made-up value changes the result.",
+      "sourceId": "py-errors",
+      "section": "8.3 handling exceptions; 8.8 predefined clean-up actions",
+      "targetKind": "step",
+      "targetId": "a-fallback-or-a-skip"
+    },
+    {
+      "claim": "A rejected counter incremented in the except branch makes skipped entries visible; the share rejected is rejected divided by all entries.",
+      "sourceId": "py-errors",
+      "section": "8.3 handling exceptions; 8.8 predefined clean-up actions",
+      "targetKind": "step",
+      "targetId": "counting-what-you-skip"
+    },
+    {
+      "claim": "Adding ['3', 'x', '9', '?'] skipping ValueError gives a total of 12 with 2 rejected.",
       "sourceId": "py-errors",
       "section": "8.3 handling exceptions; 8.8 predefined clean-up actions",
       "targetKind": "step",
       "targetId": "count-what-you-skip"
     },
     {
-      "claim": "Parse ['4', 'bad', '6', '?'] as integers, skipping ValueError entries.",
+      "claim": "Entries that fail int() are rejected and the rest are totalled.",
       "sourceId": "py-errors",
       "section": "8.3 handling exceptions; 8.8 predefined clean-up actions",
       "targetKind": "step",
       "targetId": "skip-and-count"
     },
     {
-      "claim": "A with block closes a file for you when the block ends.",
-      "sourceId": "py-errors",
-      "section": "8.3 handling exceptions; 8.8 predefined clean-up actions",
-      "targetKind": "step",
-      "targetId": "close-it-for-you"
-    },
-    {
-      "claim": "Skipping rows changes which rows you analyse. A rejected count tells a reader how much was dropped.",
+      "claim": "The rejected share is the rejected count over all entries, times 100.",
       "sourceId": "py-errors",
       "section": "8.3 handling exceptions; 8.8 predefined clean-up actions",
       "targetKind": "step",
       "targetId": "how-much-did-you-drop"
     },
     {
-      "claim": "A relative path such as data.csv is resolved from the folder Python was launched in, the working directory. It is not resolved from the folder holding the script.",
+      "claim": "A with block closes the file when it ends, even after an error, but does not validate the contents; blank lines must be handled before int().",
+      "sourceId": "py-errors",
+      "section": "8.3 handling exceptions; 8.8 predefined clean-up actions",
+      "targetKind": "step",
+      "targetId": "files-that-close-themselves"
+    },
+    {
+      "claim": "with open(...) closes the file; it does not validate contents.",
+      "sourceId": "py-errors",
+      "section": "8.3 handling exceptions; 8.8 predefined clean-up actions",
+      "targetKind": "step",
+      "targetId": "what-with-does"
+    },
+    {
+      "claim": "A relative path resolves from the working directory, the folder Python was launched from, not from the script's folder.",
+      "sourceId": "py-errors",
+      "section": "8.3 handling exceptions; 8.8 predefined clean-up actions",
+      "targetKind": "step",
+      "targetId": "which-file-does-a-name-mean"
+    },
+    {
+      "claim": "The same relative path reads a different file from each launch folder.",
       "sourceId": "py-errors",
       "section": "8.3 handling exceptions; 8.8 predefined clean-up actions",
       "targetKind": "step",
@@ -1048,13 +1179,6 @@
       "section": "8.3 handling exceptions; 8.8 predefined clean-up actions",
       "targetKind": "question",
       "targetId": "python-errors-and-resources-7"
-    },
-    {
-      "claim": "30. You set aside the answer that is not a number and averaged the rest. Code must make the same choice on purpose.",
-      "sourceId": "py-errors",
-      "section": "8.3 handling exceptions; 8.8 predefined clean-up actions",
-      "targetKind": "question",
-      "targetId": "python-errors-and-resources-hook"
     },
     {
       "claim": "It raises a ValueError. The text is not integer digits, and int refuses rather than guessing.",

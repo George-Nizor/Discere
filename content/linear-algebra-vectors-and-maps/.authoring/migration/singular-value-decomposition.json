@@ -1,7 +1,9 @@
 {
   "lessonId": "singular-value-decomposition",
   "courseId": "linear-algebra-vectors-and-maps",
-  "migrationNotes": [],
+  "migrationNotes": [
+    "Story rewrite (part 3 of 3). Questions no longer asked: lin-singular-value-decomposition-8."
+  ],
   "lesson": {
     "id": "singular-value-decomposition",
     "courseId": "linear-algebra-vectors-and-maps",
@@ -11,23 +13,158 @@
     "title": "Singular value decomposition",
     "steps": [
       {
-        "id": "turn-stretch-turn",
+        "id": "stretch-then-turn",
         "kind": "explain",
         "blocks": [],
-        "headline": "Every matrix splits as A = U Σ Vᵀ: one stretch between two length-preserving turns.",
+        "headline": "Stretch, then turn",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "U and V are orthogonal, so they only rotate or reflect. Σ is diagonal and holds the stretch sizes, called singular values. They are never negative, and the number of positive ones equals the rank."
+            "text": "Take the machine from the opening and follow arrows of length 1 through it. The arrow (1, 0) points across. The stretch makes it 5 long, and the quarter turn swings it to point straight up, still 5 long. The arrow (0, 1) points up. The stretch makes it 3 long, and the turn lays it flat, still 3 long. A turn changes where an arrow points and never how long it is."
+          },
+          {
+            "kind": "paragraph",
+            "text": "Arrows between those two are stretched by amounts between 3 and 5, depending on how far they lean towards each axis. All the arrows of length 1 together form a circle. After the stretch the circle has become an oval, 5 across and 3 up, and the turn leaves the oval's size alone and only rotates it. So the longest output the machine can produce from an input of length 1 is the long side of the oval, and the shortest is the short side."
           }
         ],
-        "reveal": [],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "The two lengths, 5 and 3, describe the machine's stretching completely. The turn only decides which way the oval ends up pointing. Every matrix has a pair of numbers like this. The next screen gives them a name and says how a matrix is written in terms of them."
+          }
+        ],
+        "introducesTerms": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "diagram": {
+          "type": "linear_algebra_explorer",
+          "cases": [
+            {
+              "id": "turned",
+              "label": "Stretch, then quarter turn",
+              "model": {
+                "kind": "svd",
+                "matrix": [
+                  [
+                    0,
+                    -3
+                  ],
+                  [
+                    5,
+                    0
+                  ]
+                ]
+              }
+            },
+            {
+              "id": "plain",
+              "label": "Stretch only",
+              "model": {
+                "kind": "svd",
+                "matrix": [
+                  [
+                    5,
+                    0
+                  ],
+                  [
+                    0,
+                    3
+                  ]
+                ]
+              }
+            }
+          ],
+          "initialCaseId": "turned"
+        }
+      },
+      {
+        "id": "longest-output",
+        "kind": "predict",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "A different machine stretches every arrow across by 4 and up by 2, then spins the whole plane. Think about the oval that a circle of length-1 arrows becomes."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "A turn keeps lengths, so the longest output comes from the biggest stretch, which is 4."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "lin-singular-value-decomposition-7",
+        "activityId": ""
+      },
+      {
+        "id": "turn-stretch-turn",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "Turn, stretch, turn",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "The machine in the opening was a stretch followed by a turn. The general case allows a turn before the stretch as well, because the axes along which a matrix stretches need not be the axes the input came with. Every matrix A can be written as A = U Σ Vᵀ. Read it from the right. The input meets Vᵀ first, which turns it. The stretch Σ comes next, and U turns the result once more."
+          },
+          {
+            "kind": "paragraph",
+            "text": "U and V are orthogonal matrices, which means they only turn or flip the plane and never change a length. Σ, the Greek capital sigma, is a diagonal matrix, and the numbers on its diagonal are the stretch sizes. These numbers are the singular values of A. For the machine in the opening they are 5 and 3, listed from largest to smallest as is usual."
+          }
+        ],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "Singular values are never negative. The matrix with rows (−5, 0) and (0, 1) flips the x axis as well as stretching it, but a flip is a kind of turn, so it goes into U or V and Σ keeps only the sizes. A shortcut helps for matrices like these: when the columns of A are at right angles to each other, the singular values are simply the lengths of the columns."
+          }
+        ],
         "introducesTerms": [
           "singular value"
         ],
         "visualStateId": "",
-        "checkQuestionId": "lin-singular-value-decomposition-8",
-        "activityId": ""
+        "checkQuestionId": "",
+        "activityId": "",
+        "diagram": {
+          "type": "linear_algebra_explorer",
+          "cases": [
+            {
+              "id": "flip",
+              "label": "Stretch with a flip",
+              "model": {
+                "kind": "svd",
+                "matrix": [
+                  [
+                    -5,
+                    0
+                  ],
+                  [
+                    0,
+                    1
+                  ]
+                ]
+              }
+            },
+            {
+              "id": "plain",
+              "label": "Stretch only",
+              "model": {
+                "kind": "svd",
+                "matrix": [
+                  [
+                    5,
+                    0
+                  ],
+                  [
+                    0,
+                    1
+                  ]
+                ]
+              }
+            }
+          ],
+          "initialCaseId": "flip"
+        }
       },
       {
         "id": "stretch-sizes",
@@ -115,6 +252,66 @@
         "activityId": ""
       },
       {
+        "id": "zero-singular-values-and-rank",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "Zero singular values and rank",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "A singular value can be zero. Take the matrix with every entry 1, rows (1, 1) and (1, 1). Both columns equal (1, 1), so the machine sends every arrow (a, b) to (a + b, a + b), which lies on a single line. The plane has been flattened onto that line. The singular values are 2 and 0: the machine stretches the arrow (1, 1) by 2, and it crushes the perpendicular arrow (1, −1) to nothing."
+          },
+          {
+            "kind": "paragraph",
+            "text": "This links back to rank. The rank of a matrix counts the independent directions it keeps, and each kept direction has a stretch above zero. So the number of positive singular values equals the rank. A rank-one matrix has one positive singular value and the rest zero. A square matrix with determinant 0 has at least one singular value equal to 0, which is the flattening seen earlier."
+          }
+        ],
+        "introducesTerms": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "diagram": {
+          "type": "linear_algebra_explorer",
+          "cases": [
+            {
+              "id": "flat",
+              "label": "Every entry 1",
+              "model": {
+                "kind": "svd",
+                "matrix": [
+                  [
+                    1,
+                    1
+                  ],
+                  [
+                    1,
+                    1
+                  ]
+                ]
+              }
+            },
+            {
+              "id": "full",
+              "label": "Identity",
+              "model": {
+                "kind": "svd",
+                "matrix": [
+                  [
+                    1,
+                    0
+                  ],
+                  [
+                    0,
+                    1
+                  ]
+                ]
+              }
+            }
+          ],
+          "initialCaseId": "flat"
+        }
+      },
+      {
         "id": "rank-and-singular-values",
         "kind": "faded_example",
         "blocks": [],
@@ -178,13 +375,77 @@
         "activityId": ""
       },
       {
+        "id": "rectangular-matrices",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "Matrices that are not square",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "A matrix need not be square. A 3 × 2 matrix takes arrows with two entries and gives arrows with three entries, so it carries the plane into three-dimensional space. Take the matrix with rows (3, 0), (0, 1) and (0, 0). The arrow (1, 0) goes to (3, 0, 0), and (0, 1) goes to (0, 1, 0). The columns are at right angles and have lengths 3 and 1, so those are the singular values."
+          },
+          {
+            "kind": "paragraph",
+            "text": "The three factors change shape to fit. Vᵀ is 2 × 2, because it turns the plane of inputs, and U is 3 × 3, because it turns the space of outputs. Σ must carry two inputs to three outputs, so it is 3 × 2: the singular values 3 and 1 sit on its diagonal and a row of zeros fills the bottom. Σ always has the same shape as A, and a matrix has as many singular values as the smaller of its two sizes."
+          }
+        ],
+        "introducesTerms": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "diagram": {
+          "type": "linear_algebra_explorer",
+          "cases": [
+            {
+              "id": "tall",
+              "label": "Three rows, two columns",
+              "model": {
+                "kind": "svd",
+                "matrix": [
+                  [
+                    3,
+                    0
+                  ],
+                  [
+                    0,
+                    1
+                  ],
+                  [
+                    0,
+                    0
+                  ]
+                ]
+              }
+            },
+            {
+              "id": "square",
+              "label": "Two rows, two columns",
+              "model": {
+                "kind": "svd",
+                "matrix": [
+                  [
+                    3,
+                    0
+                  ],
+                  [
+                    0,
+                    1
+                  ]
+                ]
+              }
+            }
+          ],
+          "initialCaseId": "tall"
+        }
+      },
+      {
         "id": "a-wide-matrix",
         "kind": "try",
         "blocks": [],
         "lead": [
           {
             "kind": "paragraph",
-            "text": "The matrix is $\\begin{pmatrix}1&0&0\\\\0&2&0\\end{pmatrix}$. It has two nonzero stretches, one per row."
+            "text": "The matrix has rows (1, 0, 0) and (0, 2, 0). Its columns are (1, 0), (0, 2) and (0, 0). Read the stretches from the columns that are not zero."
           }
         ],
         "reveal": [
@@ -204,7 +465,7 @@
         "lead": [
           {
             "kind": "paragraph",
-            "text": "A 2 × 3 matrix takes three inputs to two outputs. In the full SVD, Σ has the same shape as A, with the singular values along its diagonal."
+            "text": "Now the other shape. A 2 × 3 matrix takes three inputs to two outputs. Think about what shape Σ needs so that it does the same job as A."
           }
         ],
         "reveal": [],
@@ -243,23 +504,30 @@
         "blocks": [
           {
             "kind": "paragraph",
-            "text": "A machine stretches every vector across by 4 and up by 2, then spins the whole plane a quarter turn."
+            "text": "Diagonalising worked for matrices with enough eigenvectors, and it left some matrices out: the rectangular ones, and square ones such as the shear. This lesson shows that a machine can be described plainly even for those, and that the description uses only turns and stretches."
+          },
+          {
+            "kind": "paragraph",
+            "text": "Start with a machine that works in two stages. The first stage makes arrows 5 times as long across and 3 times as long up. The second spins the plane through a quarter turn. Now feed in a circle of arrows of length 1 and look at the shape that comes out: an oval, 5 across and 3 up, turned onto its side. The spin cannot change the oval's shape, only the way it points."
+          },
+          {
+            "kind": "paragraph",
+            "text": "That picture holds for every matrix, with a turn before the stretch as well as after it. The sizes of the stretches are the numbers that matter most, and they are the subject of this lesson."
           }
-        ],
-        "questionId": "lin-singular-value-decomposition-7"
+        ]
       },
       "promise": "By the end you'll split any matrix into two length-preserving turns and one stretch, and read its singular values.",
-      "estimatedMinutes": 10
+      "estimatedMinutes": 12
     },
     "recap": {
       "keyIdea": "Every matrix is A = U Σ Vᵀ. U and Vᵀ preserve length, and Σ holds the nonnegative singular values: the stretches. The number of positive ones is the rank.",
       "blocks": [
         {
           "kind": "paragraph",
-          "text": "You read the largest singular value of diag(3, −2) as 3, found that a rank-one matrix has a singular value of 0, and matched the shape of Σ to A."
+          "text": "You followed a circle of arrows through a stretch and a turn and saw an oval come out. You read the largest singular value of the matrix with rows (3, 0) and (0, −2) as 3, found that a rank-one matrix has a singular value of 0, and matched the shape of Σ to A."
         }
       ],
-      "nextHook": "That completes the course. Review these ideas later and a fresh problem will bring them back."
+      "nextHook": "That completes the course. Every matrix, from a single column to a rectangle, now has a plain description as turns and stretches, and a fresh problem will bring these ideas back when you review them later."
     },
     "calculator": "available",
     "taughtSkills": [
@@ -283,11 +551,11 @@
         "kind": "numeric",
         "value": 4,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The turn keeps lengths, so the longest output comes from the biggest stretch: 4."
       },
-      "prompt": "What is the longest an output can be for an input of length 1?",
+      "prompt": "A machine stretches every arrow across by 4 and up by 2, then spins the whole plane a quarter turn. What is the longest output it can give for an input of length 1?",
       "responseType": "numeric",
       "hints": [
         "A quarter turn changes direction, not length.",
@@ -321,7 +589,7 @@
         "kind": "numeric",
         "value": 7,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The column lengths are 7 and 2, so the largest singular value is 7."
       },
@@ -370,7 +638,7 @@
         "kind": "numeric",
         "value": 3,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The two stretch magnitudes are 3 and 2, so the largest singular value is 3."
       },
@@ -466,7 +734,7 @@
         "kind": "numeric",
         "value": 0,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The matrix has rank one, so its second singular value is zero."
       },
@@ -504,7 +772,7 @@
         "kind": "numeric",
         "value": 1,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The two nonzero stretch factors are 2 and 1; the smaller is 1."
       },
@@ -658,7 +926,7 @@
         "kind": "numeric",
         "value": 5,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The column directions are perpendicular with lengths 2 and 5; the largest stretch is 5."
       },
@@ -701,7 +969,7 @@
         "kind": "numeric",
         "value": 3,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The column lengths are 3 and 8, so the smaller singular value is 3."
       },
@@ -736,42 +1004,70 @@
   ],
   "citations": [
     {
-      "claim": "Every matrix splits as A = U Σ Vᵀ: one stretch between two length-preserving turns.",
+      "claim": "A stretch followed by a turn sends the circle of length-1 arrows to an oval, and a turn never changes length.",
+      "sourceId": "lin-svd",
+      "section": "Lecture 29, orthogonal factors and singular values",
+      "targetKind": "step",
+      "targetId": "stretch-then-turn"
+    },
+    {
+      "claim": "The longest output for an input of length 1 comes from the biggest stretch.",
+      "sourceId": "lin-svd",
+      "section": "Lecture 29, orthogonal factors and singular values",
+      "targetKind": "step",
+      "targetId": "longest-output"
+    },
+    {
+      "claim": "Every matrix is A = U Σ Vᵀ, with U and V length-preserving and Σ holding the nonnegative singular values.",
       "sourceId": "lin-svd",
       "section": "Lecture 29, orthogonal factors and singular values",
       "targetKind": "step",
       "targetId": "turn-stretch-turn"
     },
     {
-      "claim": "A = $\\begin{pmatrix}3&0\\\\0&-2\\end{pmatrix}$ stretches across by 3 and up by 2, and flips up. Singular values record only the sizes of the stretches.",
+      "claim": "Singular values record only the sizes of the stretches, so the sign of an entry is ignored.",
       "sourceId": "lin-svd",
       "section": "Lecture 29, orthogonal factors and singular values",
       "targetKind": "step",
       "targetId": "stretch-sizes"
     },
     {
-      "claim": "Find the singular values of $\\begin{pmatrix}-6&0\\\\0&3\\end{pmatrix}$.",
+      "claim": "The minus sign in a diagonal matrix is a flip carried by U, and Σ keeps only the sizes 6 and 3.",
       "sourceId": "lin-svd",
       "section": "Lecture 29, orthogonal factors and singular values",
       "targetKind": "step",
       "targetId": "sign-goes-into-a-turn"
     },
     {
-      "claim": "Find the smaller singular value of $\\begin{pmatrix}1&2\\\\2&4\\end{pmatrix}$.",
+      "claim": "The number of positive singular values equals the rank, and a flattened direction has singular value 0.",
+      "sourceId": "lin-svd",
+      "section": "Lecture 29, orthogonal factors and singular values",
+      "targetKind": "step",
+      "targetId": "zero-singular-values-and-rank"
+    },
+    {
+      "claim": "A rank-one 2 × 2 matrix has one positive singular value and one equal to 0.",
       "sourceId": "lin-svd",
       "section": "Lecture 29, orthogonal factors and singular values",
       "targetKind": "step",
       "targetId": "rank-and-singular-values"
     },
     {
-      "claim": "The matrix is $\\begin{pmatrix}1&0&0\\\\0&2&0\\end{pmatrix}$. It has two nonzero stretches, one per row.",
+      "claim": "For a rectangular matrix Σ has the same shape as A, with the singular values on its diagonal.",
+      "sourceId": "lin-svd",
+      "section": "Lecture 29, orthogonal factors and singular values",
+      "targetKind": "step",
+      "targetId": "rectangular-matrices"
+    },
+    {
+      "claim": "The matrix with rows (1, 0, 0) and (0, 2, 0) has singular values 2 and 1.",
       "sourceId": "lin-svd",
       "section": "Lecture 29, orthogonal factors and singular values",
       "targetKind": "step",
       "targetId": "a-wide-matrix"
     },
     {
-      "claim": "A 2 × 3 matrix takes three inputs to two outputs. In the full SVD, Σ has the same shape as A, with the singular values along its diagonal.",
+      "claim": "For a 2 × 3 matrix A, Σ is also 2 × 3.",
       "sourceId": "lin-svd",
       "section": "Lecture 29, orthogonal factors and singular values",
       "targetKind": "step",
@@ -783,13 +1079,6 @@
       "section": "Lecture 29, orthogonal factors and singular values",
       "targetKind": "question",
       "targetId": "lin-singular-value-decomposition-7"
-    },
-    {
-      "claim": "The minus sign is a flip. The stretch size is 7.",
-      "sourceId": "lin-svd",
-      "section": "Lecture 29, orthogonal factors and singular values",
-      "targetKind": "question",
-      "targetId": "lin-singular-value-decomposition-8"
     },
     {
       "claim": "The stretch sizes are 3 and 2. The sign of the second is just a flip.",

@@ -4,6 +4,7 @@ import type { FastifyInstance } from "fastify";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createApp } from "../src/app.js";
 import type { DiscereStore } from "../src/db/store.js";
+import { archivedContentRoot } from "./helpers/archived-content.js";
 
 let app: FastifyInstance;
 let store: DiscereStore;
@@ -30,9 +31,10 @@ describe("Discere API", () => {
       "quiz",
       "essay",
       "review",
+      "recap",
       "completion",
     ]);
-    // One question moved inside the lesson as an inline check, so three remain as quiz stages.
+    // Four questions are asked inside the lesson's steps, so three remain as quiz stages.
     expect(body.stages.filter((stage: { type: string }) => stage.type === "quiz")).toHaveLength(3);
     const quiz = body.stages.find((stage: { type: string }) => stage.type === "quiz");
     expect(quiz.question.answerAuthority).toBeUndefined();
@@ -51,10 +53,13 @@ describe("Discere API", () => {
     expect(explainer.id).toBe("current-in-one-loop:explainer");
     expect(explainer.completionPolicy).toBe("interaction");
     expect(explainer.steps.length).toBeGreaterThanOrEqual(3);
-    expect(explainer.steps[0].kind).toBe("hook");
+    expect(explainer.steps[0].kind).toBe("explain");
 
-    const check = explainer.steps.find((step: { kind: string }) => step.kind === "check");
-    expect(check.question.id).toBe("choose-change-that-raises-current");
+    const check = explainer.steps.find(
+      (step: { question?: { id: string } }) =>
+        step.question?.id === "choose-change-that-raises-current",
+    );
+    expect(check.kind).toBe("predict");
     // Exactly the same protection a quiz stage gets: the answer never leaves the server.
     expect(check.question.answerAuthority).toBeUndefined();
     expect(check.question.transfer).toBeUndefined();
@@ -90,20 +95,18 @@ describe("Discere API", () => {
   });
 
   it("persists assessed journey progress and restores the next active stage", async () => {
-    await app.inject({
-      method: "POST",
-      url: "/api/activity-attempts",
-      payload: { activityId: "find-what-limits-current", response: "resistor", mode: "coach" },
-    });
-    await app.inject({
-      method: "POST",
-      url: "/api/attempts",
-      payload: {
-        questionId: "choose-change-that-raises-current",
-        response: "Raising the supply voltage",
-        mode: "coach",
-      },
-    });
+    // Every question asked inside the lesson has to be answered before the explainer completes.
+    for (const [questionId, response] of [
+      ["current-after-resistor", "0.05 A"],
+      ["calculate-current-5v-100ohm", "0.05 A"],
+      ["choose-change-that-raises-current", "Raising the supply voltage"],
+      ["current-at-second-meter", "0.2 A"],
+    ] as const)
+      await app.inject({
+        method: "POST",
+        url: "/api/attempts",
+        payload: { questionId, response, mode: "coach" },
+      });
     const update = await app.inject({
       method: "PUT",
       url: "/api/courses/electronics-foundations/lessons/current-in-one-loop/progress",
@@ -197,11 +200,11 @@ describe("Discere API", () => {
     expect(repeated.statusCode).toBe(409);
   });
 
-  it("lists the nineteen active courses and preserves archived course details", async () => {
+  it("lists the twenty active courses", async () => {
     const list = await app.inject({ method: "GET", url: "/api/courses" });
     expect(list.statusCode).toBe(200);
     const ids = list.json().courses.map((course: { id: string }) => course.id);
-    expect(ids).toHaveLength(19);
+    expect(ids).toHaveLength(20);
     for (const id of [
       "engineering-structures-and-machines",
       "economics-markets-and-strategy",
@@ -220,42 +223,45 @@ describe("Discere API", () => {
     expect(ids).toContain("python-for-data-analysis");
     expect(ids).toContain("sql-from-rows-to-reports");
     expect(ids).toContain("rust-foundations");
-    expect(ids).not.toContain("electronics-foundations");
-    expect(ids).not.toContain("roman-empire");
-    const detail = await app.inject({ method: "GET", url: "/api/courses/roman-empire" });
-    expect(detail.statusCode).toBe(200);
-    expect(detail.json().concepts.length).toBeGreaterThan(0);
-    expect(detail.json().concepts[0].title).toBeTruthy();
+    expect(ids).toContain("electronics-foundations");
   });
 
-  it("serves a second-subject journey with a retrieved image and a timeline activity", async () => {
-    const response = await app.inject({
-      method: "GET",
-      url: "/api/courses/roman-empire/lessons/rise-of-the-roman-empire/journey",
+  it("leaves an archived course out of the list but preserves its details", async () => {
+    const fixture = archivedContentRoot("electronics-foundations", ["maths-foundations"]);
+    const archived = await createApp({
+      dbPath: ":memory:",
+      migrate: true,
+      revealDelayMs: 0,
+      contentRoot: fixture.root,
     });
-    expect(response.statusCode).toBe(200);
-    const body = response.json();
-    const explainer = body.stages.find((stage: { type: string }) => stage.type === "explainer");
-    expect(explainer.visual.kind).toBe("image");
-    expect(explainer.visual.image.attribution).toContain("Tataryn");
-    expect(explainer.visual.src).toContain("/api/content/roman-empire/assets/");
-    const activity = body.stages.find(
-      (stage: { type: string }) => stage.type === "interactive_visual",
-    );
-    expect(activity.activity.type).toBe("timeline_explorer");
-    expect(activity.activity.events.length).toBeGreaterThan(1);
+    try {
+      const list = await archived.app.inject({ method: "GET", url: "/api/courses" });
+      expect(list.statusCode).toBe(200);
+      const ids = list.json().courses.map((course: { id: string }) => course.id);
+      expect(ids).toEqual(["maths-foundations"]);
+      const detail = await archived.app.inject({
+        method: "GET",
+        url: "/api/courses/electronics-foundations",
+      });
+      expect(detail.statusCode).toBe(200);
+      expect(detail.json().concepts.length).toBeGreaterThan(0);
+      expect(detail.json().concepts[0].title).toBeTruthy();
+    } finally {
+      await archived.app.close();
+      fixture.remove();
+    }
   });
 
   it("serves a course asset and refuses to escape its own directory", async () => {
     const asset = await app.inject({
       method: "GET",
-      url: "/api/content/roman-empire/assets/roman-empire-extent-117ce.png",
+      url: "/api/content/electronics-foundations/assets/cover.svg",
     });
     expect(asset.statusCode).toBe(200);
-    expect(asset.headers["content-type"]).toBe("image/png");
+    expect(asset.headers["content-type"]).toContain("image/svg+xml");
     const outsideCourse = await app.inject({
       method: "GET",
-      url: "/api/content/roman-empire/assets/%2e%2e%2fbundle.json",
+      url: "/api/content/electronics-foundations/assets/%2e%2e%2fbundle.json",
     });
     expect(outsideCourse.statusCode).toBe(404);
     expect(outsideCourse.json().code).toBe("ASSET_NOT_FOUND");
@@ -264,7 +270,10 @@ describe("Discere API", () => {
   it("refuses a course asset that is a symlink out of the course directory", async () => {
     // A lexical containment check cannot see through a link, so the route resolves both ends
     // before it reads. The link is first-party here only because a test has to create one.
-    const assets = path.resolve(import.meta.dirname, "../../../content/roman-empire/assets");
+    const assets = path.resolve(
+      import.meta.dirname,
+      "../../../content/electronics-foundations/assets",
+    );
     const link = path.join(assets, "escaped-bundle.json");
     const target = path.resolve(assets, "../bundle.json");
     rmSync(link, { force: true });
@@ -272,7 +281,7 @@ describe("Discere API", () => {
     try {
       const escaped = await app.inject({
         method: "GET",
-        url: "/api/content/roman-empire/assets/escaped-bundle.json",
+        url: "/api/content/electronics-foundations/assets/escaped-bundle.json",
       });
       expect(escaped.statusCode).toBe(404);
       expect(escaped.json().code).toBe("ASSET_NOT_FOUND");
@@ -283,7 +292,7 @@ describe("Discere API", () => {
   });
 
   it("reaches every lesson of every course, whatever activity it uses", async () => {
-    for (const courseId of ["electronics-foundations", "roman-empire"]) {
+    for (const courseId of ["electronics-foundations"]) {
       const detail = await app.inject({ method: "GET", url: `/api/courses/${courseId}` });
       for (const lesson of detail.json().lessons as Array<{ id: string; available: boolean }>) {
         expect(lesson.available).toBe(true);
@@ -300,9 +309,12 @@ describe("Discere API", () => {
     const response = await app.inject({ method: "GET", url: "/api/lessons/current" });
     expect(response.statusCode).toBe(200);
     const body = response.json();
-    expect(
-      body.lesson.steps.find((step: { diagram?: unknown }) => step.diagram).diagram.type,
-    ).toBe("number_machine");
+    // Story lessons open with drawn figures; the interactive number machine still follows them.
+    const types = body.lesson.steps
+      .filter((step: { diagram?: unknown }) => step.diagram)
+      .map((step: { diagram: { type: string } }) => step.diagram.type);
+    expect(types.length).toBeGreaterThan(0);
+    expect(types).toContain("number_machine");
     expect(body.question.answerAuthority).toBeUndefined();
   });
 

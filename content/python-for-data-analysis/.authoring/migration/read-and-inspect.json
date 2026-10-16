@@ -1,7 +1,12 @@
 {
   "lessonId": "read-and-inspect",
   "courseId": "python-for-data-analysis",
-  "migrationNotes": [],
+  "migrationNotes": [
+    "Spine: a shop's weekly export. We follow it from the text file to a table: its lines and header, reading it into a DataFrame, counting rows and columns, previewing with head, the product code that lost its zeros, and a semicolon file that arrives as one column.",
+    "Left out of the lesson (still in the course): python-read-and-inspect-hook (the 0012 cell, covered by the opener and the dtype screen) and python-read-and-inspect-header-check (a recall choice, covered by the first practice screen).",
+    "The worked example now uses a six-row table so that it applies the rule from the figure instead of repeating it. Nothing in it or the questions changed otherwise. The one-column figure moved to the teaching screen and the worked example lost its figure.",
+    "head was only used in questions before; it now has its own teaching screen. Keys unchanged: all numeric keys recomputed (6, 3, 4, 1, 3, 5, 4, 12, 1, 4)."
+  ],
   "lesson": {
     "id": "read-and-inspect",
     "courseId": "python-for-data-analysis",
@@ -11,27 +16,47 @@
     "title": "Meet a real table",
     "steps": [
       {
-        "id": "text-into-a-table",
+        "id": "a-table-stored-as-lines",
         "kind": "explain",
         "blocks": [],
-        "headline": "read_csv turns delimited text into a DataFrame, with the header line as column names.",
+        "headline": "A table stored as lines",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "A CSV file is lines of values separated by commas. pd.read_csv makes a DataFrame, a table with named columns. The first line becomes the column names, and each later line becomes a row."
+            "text": "Start with what is inside the shop's file. It is plain text, with one order on each line and the values on a line separated by commas. The first line is different. It holds the names of the things recorded, such as shop, units and price. Everything after it is data. This layout is called a CSV file, short for “comma-separated values”, and almost every spreadsheet and database can produce one."
           },
           {
-            "kind": "callout",
-            "tone": "key",
-            "text": "The header is not a row of data."
+            "kind": "paragraph",
+            "text": "Open the file in a text editor and the first line reads shop,units,price. The second line reads Bay,2,5 and the third reads Hill,1,8. Each line after the first is one order, which makes it a row of the table. Each comma marks the edge between two values. All the unit counts together make a column. The first line is the header. It names the columns and is not an order itself."
           }
         ],
-        "reveal": [],
+        "introducesTerms": [
+          "CSV"
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
+      },
+      {
+        "id": "reading-it-into-pandas",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "Reading it into pandas",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Lines of text cannot be added up or averaged until a program has split each line into its values. The pandas library does that. It is a Python library for tables, and by habit it is imported as pd. The call pd.read_csv(\"orders.csv\") reads the header line and uses it for the column names, then turns every line below it into a row."
+          },
+          {
+            "kind": "paragraph",
+            "text": "What comes back is a DataFrame, pandas' name for a table with named columns. Each column holds one kind of value and each row is one record, here one order. A file with a header and ten lines of orders gives a DataFrame with ten rows. The header became the column names, so it is not counted as data. By habit the DataFrame is stored in a name called df, and the rest of this lesson does the same."
+          }
+        ],
         "introducesTerms": [
           "DataFrame"
         ],
         "visualStateId": "",
-        "checkQuestionId": "python-read-and-inspect-header-check",
+        "checkQuestionId": "",
         "activityId": ""
       },
       {
@@ -41,13 +66,7 @@
         "lead": [
           {
             "kind": "paragraph",
-            "text": "A header line supplies names, not observations."
-          }
-        ],
-        "reveal": [
-          {
-            "kind": "paragraph",
-            "text": "You did not count the header, because it became the column names. The data lines became the rows."
+            "text": "The header names the columns. Think about which lines of the file turn into rows."
           }
         ],
         "visualStateId": "",
@@ -55,33 +74,33 @@
         "activityId": ""
       },
       {
-        "id": "one-column-or-a-table",
-        "kind": "worked_example",
+        "id": "rows-columns-and-shape",
+        "kind": "explain",
         "blocks": [],
-        "headline": "A table has 4 rows and the columns shop, units and price. What are the shapes of df, df['units'] and df[['units']]?",
+        "headline": "Rows, columns and shape",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "Selecting one column by name gives a Series. Selecting with a list of names keeps a table."
+            "text": "Once a table is in, the first thing to find out is how big it is. A DataFrame reports that through its shape, a pair of numbers with the rows first and the columns second. The shop's table has four orders and three columns, so df.shape is (4, 3)."
+          },
+          {
+            "kind": "paragraph",
+            "text": "To pick out one column, put its name in square brackets. df['units'] gives the four unit counts as a Series, which is a single column of values with the row numbers beside it. Putting the name in a list, df[['units']], gives a DataFrame that happens to have one column. The two print in a similar way and have different shapes."
+          },
+          {
+            "kind": "paragraph",
+            "text": "Step through the figure for the four-order table. The first case picks the column by its name alone and the second picks it with a list."
           }
         ],
-        "reveal": [],
-        "workedSteps": [
+        "afterFigure": [
           {
-            "text": "shape gives rows, then columns.",
-            "math": "df.shape = (4, 3)"
-          },
-          {
-            "text": "A single name gives a Series: one axis of 4 values.",
-            "math": "df['units'].shape = (4,)",
-            "selfExplain": {
-              "questionId": "python-read-and-inspect-why-series"
-            }
-          },
-          {
-            "text": "A list of names keeps a table with that column only.",
-            "math": "df[['units']].shape = (4, 1)"
+            "kind": "paragraph",
+            "text": "The Series has the shape (4,), a single number, because it has only one direction to count along. The one-column DataFrame has the shape (4, 1), which is four rows and one column. The rule to keep is that a single name gives a Series and a list of names gives a DataFrame."
           }
+        ],
+        "introducesTerms": [
+          "shape",
+          "Series"
         ],
         "visualStateId": "",
         "checkQuestionId": "",
@@ -200,15 +219,46 @@
             }
           ],
           "initialCaseId": "case-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        }
+      },
+      {
+        "id": "one-column-or-a-table",
+        "kind": "worked_example",
+        "blocks": [],
+        "headline": "A table has 6 rows and the columns shop, units and price. What are the shapes of df, df['units'] and df[['units']]?",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Apply the rule to a longer table."
+          }
+        ],
+        "reveal": [],
+        "workedSteps": [
+          {
+            "text": "shape gives rows, then columns.",
+            "math": "df.shape = (6, 3)"
+          },
+          {
+            "text": "A single name gives a Series: one axis of 6 values.",
+            "math": "df['units'].shape = (6,)",
+            "selfExplain": {
+              "questionId": "python-read-and-inspect-why-series"
+            }
+          },
+          {
+            "text": "A list of names keeps a table with that column only.",
+            "math": "df[['units']].shape = (6, 1)"
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
       },
       {
         "id": "rows-and-columns",
         "kind": "faded_example",
         "blocks": [],
         "headline": "A DataFrame has shape (7, 3). How many columns does df have, and how many does df[['units']] have?",
-        "lead": [],
         "reveal": [],
         "workedSteps": [
           {
@@ -229,19 +279,58 @@
         "activityId": ""
       },
       {
-        "id": "codes-are-not-numbers",
+        "id": "looking-at-a-few-rows",
         "kind": "explain",
         "blocks": [],
-        "headline": "An identifier such as 0012 is text, so tell read_csv to keep it as text.",
+        "headline": "Looking at a few rows",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "read_csv guesses a type for each column, and a column of digits becomes numbers, dropping leading zeros. dtype={'code': 'str'} keeps the column as text. Check df.dtypes before you analyse."
+            "text": "A real file can have thousands of rows, and printing them all only buries the part you need. df.head(4) returns the first four rows, which is enough to see what the table holds. With no number it returns five. The result is a preview. It is a separate object, so the table you asked about is untouched, and a table with ten rows still has ten rows after you store first_rows = df.head(4)."
+          },
+          {
+            "kind": "paragraph",
+            "text": "Shape and head together make a quick check after every read. Shape says whether the table has the size you expected. Head shows whether each column holds what its name promises. A problem is far cheaper to fix at this point than after an hour of analysis built on top of it."
           }
         ],
-        "reveal": [],
+        "introducesTerms": [
+          "head"
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
+      },
+      {
+        "id": "codes-that-look-like-numbers",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "Codes that look like numbers",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Now back to the code 0012. When read_csv reads a column it guesses what kind of value is in it. A column made only of digits is taken to hold numbers, and a number is stored without leading zeros, so 0012 becomes 12. Each column has a dtype, short for data type, that says what kind of value it holds. df.dtypes lists them, and a column of whole numbers shows as int64."
+          },
+          {
+            "kind": "paragraph",
+            "text": "A product code is a label and not a quantity. Nobody adds two codes together, and the zeros are part of the label. You can tell read_csv to keep the column as text with dtype={'code': 'str'}. Text keeps every character that was written, so 0012 stays 0012. Check df.dtypes after reading, because it shows at once when a column has been turned into something you did not intend."
+          }
+        ],
         "introducesTerms": [
           "dtype"
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
+      },
+      {
+        "id": "how-to-read-a-code",
+        "kind": "predict",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "A code is a label and not a quantity. Decide how the column should be read."
+          }
         ],
         "visualStateId": "",
         "checkQuestionId": "python-read-and-inspect-3",
@@ -254,17 +343,33 @@
         "lead": [
           {
             "kind": "paragraph",
-            "text": "When a column is read as text, every character of the code is kept, including leading zeros."
-          }
-        ],
-        "reveal": [
-          {
-            "kind": "paragraph",
-            "text": "The code kept all its characters, including the zeros the number format dropped. Identifiers are labels, not quantities."
+            "text": "Text keeps every character that was written, so the length of a code is the number of characters in it."
           }
         ],
         "visualStateId": "",
         "checkQuestionId": "python-read-and-inspect-id-length",
+        "activityId": ""
+      },
+      {
+        "id": "when-the-commas-are-not-commas",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "When the commas are not commas",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "The shop's second branch exports its file differently. The values on each line are separated by semicolons. read_csv splits at commas unless it is told otherwise, and a semicolon file read that way finds no commas to split at. Each whole line stays in one cell, and the table comes out with a single column holding text like Bay;2;5."
+          },
+          {
+            "kind": "paragraph",
+            "text": "The separator is set with the sep argument. pd.read_csv(\"branch2.csv\", sep=\";\") splits at the semicolons and gives the three columns the file really has. This is one more reason to check shape straight after reading. A table with the right number of rows and only one column is the sign of a wrong separator, and you can see it before any calculation runs on the wrong table."
+          }
+        ],
+        "introducesTerms": [
+          "separator"
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
         "activityId": ""
       },
       {
@@ -274,13 +379,7 @@
         "lead": [
           {
             "kind": "paragraph",
-            "text": "read_csv splits each line at commas unless you give sep. A semicolon-separated file read with the default comma has no commas to split at."
-          }
-        ],
-        "reveal": [
-          {
-            "kind": "paragraph",
-            "text": "No commas meant no splits, so each line stayed whole in one column. Checking df.shape after reading would have shown the problem at once."
+            "text": "read_csv splits at commas by default. Think about what the lines of a semicolon file contain."
           }
         ],
         "visualStateId": "",
@@ -318,23 +417,30 @@
         "blocks": [
           {
             "kind": "paragraph",
-            "text": "A product code is 0012. You type it into a spreadsheet cell that is formatted as a number."
+            "text": "Every Monday a shop emails a file of last week's orders. Someone opens it in a spreadsheet to have a look, and one product code stands out: the code 0012 now shows as 12. The spreadsheet decided that the cell held a number, and numbers have no use for leading zeros, so it dropped them without a word."
+          },
+          {
+            "kind": "paragraph",
+            "text": "A program that reads the file can make the same slip, so the first job with any new file is to check what actually arrived. The checks are short. Count the rows and columns, and see whether any value changed on the way in, as the code 0012 did."
+          },
+          {
+            "kind": "paragraph",
+            "text": "This lesson follows one weekly file from the moment it is read to the moment you can trust it."
           }
-        ],
-        "questionId": "python-read-and-inspect-hook"
+        ]
       },
       "promise": "By the end you'll read a CSV into a DataFrame, read its shape, and keep identifier codes from turning into numbers.",
-      "estimatedMinutes": 10
+      "estimatedMinutes": 12
     },
     "recap": {
-      "keyIdea": "read_csv turns lines into rows under a header, shape reads rows then columns, and identifier columns need a text dtype.",
+      "keyIdea": "read_csv turns lines into rows under a header, shape gives rows then columns, head previews without changing the table, and codes and separators have to be read as they were written.",
       "blocks": [
         {
           "kind": "paragraph",
-          "text": "You saw 0012 become 12 in a number cell. You counted 6 rows below a header and found that a semicolon file read with commas has 1 column."
+          "text": "You saw 0012 turn into 12 in a spreadsheet cell. You counted 6 rows below a header, kept all 4 characters of a code by reading it as text, and found that a semicolon file read with commas has 1 column."
         }
       ],
-      "nextHook": "Next: find the intended row with labels and positions."
+      "nextHook": "With the table in, the next job is to pick out the row you mean. Every row carries a label, much as a locker has a number on its door, and that label can differ from the place where the row stands. The next lesson tells labels from positions and shows how to pick rows with each."
     },
     "calculator": "off",
     "taughtSkills": [
@@ -362,7 +468,7 @@
         "kind": "numeric",
         "value": 6,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The header supplies column names, leaving six data rows."
       },
@@ -401,7 +507,7 @@
         "kind": "numeric",
         "value": 3,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The second shape entry is the column count, so there are three columns."
       },
@@ -499,7 +605,7 @@
         "kind": "numeric",
         "value": 1,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "No commas means no splits, so there is one column."
       },
@@ -538,7 +644,7 @@
         "kind": "numeric",
         "value": 3,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "head(3) returns the first three rows without removing the remaining rows."
       },
@@ -577,7 +683,7 @@
         "kind": "numeric",
         "value": 5,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "Creating the preview does not mutate df; all five rows remain."
       },
@@ -620,7 +726,7 @@
         "kind": "numeric",
         "value": 4,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "Each of the four fields becomes a column."
       },
@@ -659,7 +765,7 @@
         "kind": "numeric",
         "value": 12,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "As a number, 0012 is 12."
       },
@@ -824,7 +930,7 @@
         "kind": "numeric",
         "value": 1,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "One name in the list keeps one column."
       },
@@ -863,7 +969,7 @@
         "kind": "numeric",
         "value": 4,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The text 0012 has four characters."
       },
@@ -884,104 +990,6 @@
   ],
   "citations": [
     {
-      "claim": "read_csv turns delimited text into a DataFrame, with the header line as column names.",
-      "sourceId": "pd-io",
-      "section": "CSV parsing: read_csv, dtype, separator; pandas data structures: Series and DataFrame",
-      "targetKind": "step",
-      "targetId": "text-into-a-table"
-    },
-    {
-      "claim": "read_csv turns delimited text into a DataFrame, with the header line as column names.",
-      "sourceId": "pd-intro",
-      "section": "Series; DataFrame; column selection, addition and deletion",
-      "targetKind": "step",
-      "targetId": "text-into-a-table"
-    },
-    {
-      "claim": "A header line supplies names, not observations.",
-      "sourceId": "pd-io",
-      "section": "CSV parsing: read_csv, dtype, separator; pandas data structures: Series and DataFrame",
-      "targetKind": "step",
-      "targetId": "count-the-rows"
-    },
-    {
-      "claim": "A header line supplies names, not observations.",
-      "sourceId": "pd-intro",
-      "section": "Series; DataFrame; column selection, addition and deletion",
-      "targetKind": "step",
-      "targetId": "count-the-rows"
-    },
-    {
-      "claim": "A table has 4 rows and the columns shop, units and price. What are the shapes of df, df['units'] and df[['units']]?",
-      "sourceId": "pd-io",
-      "section": "CSV parsing: read_csv, dtype, separator; pandas data structures: Series and DataFrame",
-      "targetKind": "step",
-      "targetId": "one-column-or-a-table"
-    },
-    {
-      "claim": "A table has 4 rows and the columns shop, units and price. What are the shapes of df, df['units'] and df[['units']]?",
-      "sourceId": "pd-intro",
-      "section": "Series; DataFrame; column selection, addition and deletion",
-      "targetKind": "step",
-      "targetId": "one-column-or-a-table"
-    },
-    {
-      "claim": "A DataFrame has shape (7, 3). How many columns does df have, and how many does df[['units']] have?",
-      "sourceId": "pd-io",
-      "section": "CSV parsing: read_csv, dtype, separator; pandas data structures: Series and DataFrame",
-      "targetKind": "step",
-      "targetId": "rows-and-columns"
-    },
-    {
-      "claim": "A DataFrame has shape (7, 3). How many columns does df have, and how many does df[['units']] have?",
-      "sourceId": "pd-intro",
-      "section": "Series; DataFrame; column selection, addition and deletion",
-      "targetKind": "step",
-      "targetId": "rows-and-columns"
-    },
-    {
-      "claim": "An identifier such as 0012 is text, so tell read_csv to keep it as text.",
-      "sourceId": "pd-io",
-      "section": "CSV parsing: read_csv, dtype, separator; pandas data structures: Series and DataFrame",
-      "targetKind": "step",
-      "targetId": "codes-are-not-numbers"
-    },
-    {
-      "claim": "An identifier such as 0012 is text, so tell read_csv to keep it as text.",
-      "sourceId": "pd-intro",
-      "section": "Series; DataFrame; column selection, addition and deletion",
-      "targetKind": "step",
-      "targetId": "codes-are-not-numbers"
-    },
-    {
-      "claim": "When a column is read as text, every character of the code is kept, including leading zeros.",
-      "sourceId": "pd-io",
-      "section": "CSV parsing: read_csv, dtype, separator; pandas data structures: Series and DataFrame",
-      "targetKind": "step",
-      "targetId": "characters-kept"
-    },
-    {
-      "claim": "When a column is read as text, every character of the code is kept, including leading zeros.",
-      "sourceId": "pd-intro",
-      "section": "Series; DataFrame; column selection, addition and deletion",
-      "targetKind": "step",
-      "targetId": "characters-kept"
-    },
-    {
-      "claim": "read_csv splits each line at commas unless you give sep. A semicolon-separated file read with the default comma has no commas to split at.",
-      "sourceId": "pd-io",
-      "section": "CSV parsing: read_csv, dtype, separator; pandas data structures: Series and DataFrame",
-      "targetKind": "step",
-      "targetId": "wrong-separator"
-    },
-    {
-      "claim": "read_csv splits each line at commas unless you give sep. A semicolon-separated file read with the default comma has no commas to split at.",
-      "sourceId": "pd-intro",
-      "section": "Series; DataFrame; column selection, addition and deletion",
-      "targetKind": "step",
-      "targetId": "wrong-separator"
-    },
-    {
       "claim": "6. The header became the column names, so only the six data lines are rows.",
       "sourceId": "pd-io",
       "section": "CSV parsing: read_csv, dtype, separator; pandas data structures: Series and DataFrame",
@@ -1080,34 +1088,6 @@
       "targetId": "python-read-and-inspect-7"
     },
     {
-      "claim": "12. A number format drops leading zeros. read_csv does the same unless you tell it that the column is text.",
-      "sourceId": "pd-io",
-      "section": "CSV parsing: read_csv, dtype, separator; pandas data structures: Series and DataFrame",
-      "targetKind": "question",
-      "targetId": "python-read-and-inspect-hook"
-    },
-    {
-      "claim": "12. A number format drops leading zeros. read_csv does the same unless you tell it that the column is text.",
-      "sourceId": "pd-intro",
-      "section": "Series; DataFrame; column selection, addition and deletion",
-      "targetKind": "question",
-      "targetId": "python-read-and-inspect-hook"
-    },
-    {
-      "claim": "The column names. The header is read as names, and the later lines become the rows.",
-      "sourceId": "pd-io",
-      "section": "CSV parsing: read_csv, dtype, separator; pandas data structures: Series and DataFrame",
-      "targetKind": "question",
-      "targetId": "python-read-and-inspect-header-check"
-    },
-    {
-      "claim": "The column names. The header is read as names, and the later lines become the rows.",
-      "sourceId": "pd-intro",
-      "section": "Series; DataFrame; column selection, addition and deletion",
-      "targetKind": "question",
-      "targetId": "python-read-and-inspect-header-check"
-    },
-    {
       "claim": "A single name gives one column, while a list of names keeps a table.",
       "sourceId": "pd-io",
       "section": "CSV parsing: read_csv, dtype, separator; pandas data structures: Series and DataFrame",
@@ -1176,6 +1156,174 @@
       "section": "Series; DataFrame; column selection, addition and deletion",
       "targetKind": "flashcard",
       "targetId": "python-read-and-inspect-card-2"
+    },
+    {
+      "claim": "A CSV file holds one record per line with comma-separated values, and its first line is a header that names the columns.",
+      "sourceId": "pd-io",
+      "section": "CSV parsing: read_csv, dtype, separator; pandas data structures: Series and DataFrame",
+      "targetKind": "step",
+      "targetId": "a-table-stored-as-lines"
+    },
+    {
+      "claim": "A CSV file holds one record per line with comma-separated values, and its first line is a header that names the columns.",
+      "sourceId": "pd-intro",
+      "section": "Series; DataFrame; column selection, addition and deletion",
+      "targetKind": "step",
+      "targetId": "a-table-stored-as-lines"
+    },
+    {
+      "claim": "pd.read_csv reads a CSV file into a DataFrame, using the header line for the column names and every later line as a row.",
+      "sourceId": "pd-io",
+      "section": "CSV parsing: read_csv, dtype, separator; pandas data structures: Series and DataFrame",
+      "targetKind": "step",
+      "targetId": "reading-it-into-pandas"
+    },
+    {
+      "claim": "pd.read_csv reads a CSV file into a DataFrame, using the header line for the column names and every later line as a row.",
+      "sourceId": "pd-intro",
+      "section": "Series; DataFrame; column selection, addition and deletion",
+      "targetKind": "step",
+      "targetId": "reading-it-into-pandas"
+    },
+    {
+      "claim": "The header line becomes column names, so only the data lines are rows.",
+      "sourceId": "pd-io",
+      "section": "CSV parsing: read_csv, dtype, separator; pandas data structures: Series and DataFrame",
+      "targetKind": "step",
+      "targetId": "count-the-rows"
+    },
+    {
+      "claim": "The header line becomes column names, so only the data lines are rows.",
+      "sourceId": "pd-intro",
+      "section": "Series; DataFrame; column selection, addition and deletion",
+      "targetKind": "step",
+      "targetId": "count-the-rows"
+    },
+    {
+      "claim": "shape lists rows then columns, a single column name gives a Series, and a list of names keeps a DataFrame.",
+      "sourceId": "pd-io",
+      "section": "CSV parsing: read_csv, dtype, separator; pandas data structures: Series and DataFrame",
+      "targetKind": "step",
+      "targetId": "rows-columns-and-shape"
+    },
+    {
+      "claim": "shape lists rows then columns, a single column name gives a Series, and a list of names keeps a DataFrame.",
+      "sourceId": "pd-intro",
+      "section": "Series; DataFrame; column selection, addition and deletion",
+      "targetKind": "step",
+      "targetId": "rows-columns-and-shape"
+    },
+    {
+      "claim": "A single column name gives a Series and a list of names gives a DataFrame, with the row count unchanged.",
+      "sourceId": "pd-io",
+      "section": "CSV parsing: read_csv, dtype, separator; pandas data structures: Series and DataFrame",
+      "targetKind": "step",
+      "targetId": "one-column-or-a-table"
+    },
+    {
+      "claim": "A single column name gives a Series and a list of names gives a DataFrame, with the row count unchanged.",
+      "sourceId": "pd-intro",
+      "section": "Series; DataFrame; column selection, addition and deletion",
+      "targetKind": "step",
+      "targetId": "one-column-or-a-table"
+    },
+    {
+      "claim": "The second entry of shape is the column count, and a list of one name keeps one column.",
+      "sourceId": "pd-io",
+      "section": "CSV parsing: read_csv, dtype, separator; pandas data structures: Series and DataFrame",
+      "targetKind": "step",
+      "targetId": "rows-and-columns"
+    },
+    {
+      "claim": "The second entry of shape is the column count, and a list of one name keeps one column.",
+      "sourceId": "pd-intro",
+      "section": "Series; DataFrame; column selection, addition and deletion",
+      "targetKind": "step",
+      "targetId": "rows-and-columns"
+    },
+    {
+      "claim": "head returns a preview of the first rows without changing the DataFrame, and shape plus head make a quick check after reading.",
+      "sourceId": "pd-io",
+      "section": "CSV parsing: read_csv, dtype, separator; pandas data structures: Series and DataFrame",
+      "targetKind": "step",
+      "targetId": "looking-at-a-few-rows"
+    },
+    {
+      "claim": "head returns a preview of the first rows without changing the DataFrame, and shape plus head make a quick check after reading.",
+      "sourceId": "pd-intro",
+      "section": "Series; DataFrame; column selection, addition and deletion",
+      "targetKind": "step",
+      "targetId": "looking-at-a-few-rows"
+    },
+    {
+      "claim": "read_csv guesses a dtype for each column, and an identifier column should be read as text so that leading zeros survive.",
+      "sourceId": "pd-io",
+      "section": "CSV parsing: read_csv, dtype, separator; pandas data structures: Series and DataFrame",
+      "targetKind": "step",
+      "targetId": "codes-that-look-like-numbers"
+    },
+    {
+      "claim": "read_csv guesses a dtype for each column, and an identifier column should be read as text so that leading zeros survive.",
+      "sourceId": "pd-intro",
+      "section": "Series; DataFrame; column selection, addition and deletion",
+      "targetKind": "step",
+      "targetId": "codes-that-look-like-numbers"
+    },
+    {
+      "claim": "An identifier column should be read as text so that every character is kept.",
+      "sourceId": "pd-io",
+      "section": "CSV parsing: read_csv, dtype, separator; pandas data structures: Series and DataFrame",
+      "targetKind": "step",
+      "targetId": "how-to-read-a-code"
+    },
+    {
+      "claim": "An identifier column should be read as text so that every character is kept.",
+      "sourceId": "pd-intro",
+      "section": "Series; DataFrame; column selection, addition and deletion",
+      "targetKind": "step",
+      "targetId": "how-to-read-a-code"
+    },
+    {
+      "claim": "A column read as text keeps all the characters of a code, leading zeros included.",
+      "sourceId": "pd-io",
+      "section": "CSV parsing: read_csv, dtype, separator; pandas data structures: Series and DataFrame",
+      "targetKind": "step",
+      "targetId": "characters-kept"
+    },
+    {
+      "claim": "A column read as text keeps all the characters of a code, leading zeros included.",
+      "sourceId": "pd-intro",
+      "section": "Series; DataFrame; column selection, addition and deletion",
+      "targetKind": "step",
+      "targetId": "characters-kept"
+    },
+    {
+      "claim": "read_csv splits at commas by default, and the sep argument names the separator a file really uses.",
+      "sourceId": "pd-io",
+      "section": "CSV parsing: read_csv, dtype, separator; pandas data structures: Series and DataFrame",
+      "targetKind": "step",
+      "targetId": "when-the-commas-are-not-commas"
+    },
+    {
+      "claim": "read_csv splits at commas by default, and the sep argument names the separator a file really uses.",
+      "sourceId": "pd-intro",
+      "section": "Series; DataFrame; column selection, addition and deletion",
+      "targetKind": "step",
+      "targetId": "when-the-commas-are-not-commas"
+    },
+    {
+      "claim": "Reading a semicolon file with the default separator leaves each line whole in one column.",
+      "sourceId": "pd-io",
+      "section": "CSV parsing: read_csv, dtype, separator; pandas data structures: Series and DataFrame",
+      "targetKind": "step",
+      "targetId": "wrong-separator"
+    },
+    {
+      "claim": "Reading a semicolon file with the default separator leaves each line whole in one column.",
+      "sourceId": "pd-intro",
+      "section": "Series; DataFrame; column selection, addition and deletion",
+      "targetKind": "step",
+      "targetId": "wrong-separator"
     }
   ]
 }

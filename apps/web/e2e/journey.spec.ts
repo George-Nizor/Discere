@@ -1,4 +1,4 @@
-import { expect, gotoStage, readJourney, stageIdPath, test } from "./fixtures.js";
+import { expect, gotoStage, readJourney, test } from "./fixtures.js";
 
 const TEACH_BACK =
   "Voltage pushes charge around the loop and resistance limits how quickly that charge moves. " +
@@ -259,81 +259,5 @@ test.describe("the lesson journey", () => {
     );
     expect(overflow).toBeLessThanOrEqual(1);
     await expect(page.getByRole("navigation", { name: "Lesson stages" })).toBeVisible();
-  });
-  test("walks a Roman Empire lesson from its retrieved map to completion", async ({
-    page,
-    request,
-  }) => {
-    const journey = await readJourney(request, "roman-empire");
-
-    // Explainer: a retrieved image, with the attribution its licence requires beside it.
-    await gotoStage(page, journey, "explainer");
-    await expect(
-      page.getByRole("heading", { level: 1, name: "The rise of the Roman Empire" }),
-    ).toBeVisible();
-    await expect(page.getByText("Step 1 of 6")).toBeVisible();
-    const map = page.getByRole("img", { name: /Roman Empire at its greatest extent/i });
-    await expect(map).toBeVisible();
-    await expect(map).toHaveAttribute("src", /\/api\/content\/roman-empire\/assets\//);
-    await expect(page.getByText(/Tataryn/)).toBeVisible();
-    await expect(page.getByRole("link", { name: "CC BY-SA 3.0" })).toBeVisible();
-    // The picture must actually load, not merely be referenced.
-    expect(await map.evaluate((element: HTMLImageElement) => element.naturalWidth)).toBeGreaterThan(
-      0,
-    );
-    // Two prose steps, an ordering task, an inline check, then the closing step.
-    for (const step of [2, 3, 4]) {
-      await page.getByRole("button", { name: /^Continue/ }).click();
-      await expect(page.getByText(`Step ${step} of 6`)).toBeVisible();
-    }
-
-    const chronological = [
-      "Caesar crosses the Rubicon",
-      "Caesar is assassinated",
-      "Octavian wins at Actium",
-      "The Senate grants Octavian the name Augustus",
-    ];
-    for (const [position, label] of chronological.entries()) {
-      let labels = await page.locator(".order-item-label").allTextContents();
-      while (labels.indexOf(label) > position) {
-        await page.getByRole("button", { name: `Move "${label}" earlier` }).click();
-        labels = await page.locator(".order-item-label").allTextContents();
-      }
-    }
-    await page.getByRole("button", { name: "Check the order" }).click();
-    await expect(page.getByText(/That is the sequence/)).toBeVisible();
-    await page.getByRole("button", { name: /^Continue/ }).click();
-
-    await expect(page.getByText("Step 5 of 6")).toBeVisible();
-    await page
-      .getByRole("button", { name: /The Senate granted Octavian the name Augustus/ })
-      .click();
-    await page.getByRole("button", { name: "Check answer" }).click();
-    await expect(page.locator(".answer-feedback.is-correct")).toBeVisible();
-    await page.getByRole("button", { name: /^Continue/ }).click();
-    await page.getByRole("button", { name: /^Finish/ }).click();
-
-    // Timeline: the scrubber reveals events in date order and checks an ordering prediction.
-    await expect(page.getByRole("slider").first()).toBeVisible();
-    await expect(page.getByRole("slider", { name: "Year" })).toBeVisible();
-    await expect(page.getByText("509 BCE").first()).toBeVisible();
-    await expect(page.getByText("117 CE").first()).toBeVisible();
-    await page.getByRole("slider", { name: "Year" }).fill("-27");
-    await expect(page.getByText("Octavian becomes Augustus").first()).toBeVisible();
-    // The earlier of the two offered events, recomputed by the engine from their dates.
-    await page.getByRole("button", { name: "Caesar crosses the Rubicon" }).click();
-    await page.getByRole("button", { name: "Check prediction" }).click();
-    await expect(page.getByText("Matched")).toBeVisible();
-    await page.getByRole("button", { name: /^Continue/ }).click();
-
-    // A quiz stage still follows the visual; the transition question is now asked inside the
-    // lesson itself, which the walk above already answered.
-    await expect(page.getByText(/Question .* of/)).toBeVisible();
-    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-
-    // A direct completion link must return to unfinished work rather than claim success.
-    const completionStageId = journey.stageIds.at(-1)!;
-    await page.goto(stageIdPath(journey, completionStageId));
-    await expect(page).not.toHaveURL(stageIdPath(journey, completionStageId));
   });
 });

@@ -258,34 +258,18 @@ try {
     throw new Error("The course detail did not name its concepts.");
   }
 
-  // Archived history keeps its retrieved media and timeline delivery intact.
-  const secondDetail = await requestJson(`${apiUrl}/api/courses/roman-empire`);
-  const secondCourse = secondDetail.course;
-  const secondLessonId = secondCourse.availableLessonIds[0];
-  const secondJourney = await requestJson(
-    `${apiUrl}/api/courses/${encodeURIComponent(secondCourse.id)}/lessons/${encodeURIComponent(secondLessonId)}/journey`,
-  );
-  const secondExplainer = secondJourney.stages.find((stage) => stage.type === "explainer");
-  const secondActivity = secondJourney.stages.find((stage) => stage.type === "interactive_visual");
-  if (
-    secondDetail.lessons.length < 2 ||
-    secondExplainer?.visual?.kind !== "image" ||
-    !secondExplainer.visual.image?.attribution ||
-    secondActivity?.activity?.type !== "timeline_explorer" ||
-    !Array.isArray(secondActivity.activity.events)
-  ) {
-    throw new Error("The second course did not deliver a retrieved image and a timeline activity.");
-  }
-
-  const assetPath = `/api/content/${encodeURIComponent(secondCourse.id)}/assets/${secondExplainer.visual.image.src.split("/").pop()}`;
-  const asset = await fetch(`${apiUrl}${assetPath}`, { signal: AbortSignal.timeout(5_000) });
+  // Course assets are served from the course's own directory and nowhere else.
+  const assetCourseId = "electronics-foundations";
+  const asset = await fetch(`${apiUrl}/api/content/${assetCourseId}/assets/cover.webp`, {
+    signal: AbortSignal.timeout(5_000),
+  });
   if (!asset.ok || !asset.headers.get("content-type")?.startsWith("image/")) {
-    throw new Error("The course asset route did not serve the retrieved image.");
+    throw new Error("The course asset route did not serve the course image.");
   }
   // Percent-encoded, so the traversal reaches the route rather than being folded away by the
   // URL parser before the request is sent.
   const traversal = await fetch(
-    `${apiUrl}/api/content/${encodeURIComponent(secondCourse.id)}/assets/%2e%2e%2fbundle.json`,
+    `${apiUrl}/api/content/${assetCourseId}/assets/%2e%2e%2fbundle.json`,
     { signal: AbortSignal.timeout(5_000), redirect: "manual" },
   );
   if (traversal.status === 200) {
@@ -323,7 +307,7 @@ try {
   const essayStage = journey.stages.find((stage) => stage.type === "essay");
   if (!essayStage?.essayId) throw new Error("The journey did not expose an essay stage.");
   const essayContent =
-    "Roman government changed as Augustus concentrated authority, expansion increased administrative demands, and western deposition did not end government in the east.";
+    "Current in a single loop is the same at every point, because charge cannot pile up anywhere along the wire, so the meter reads one value wherever it is placed.";
   const savedEssay = await requestJson(
     `${apiUrl}/api/essays/${encodeURIComponent(essayStage.essayId)}`,
     {

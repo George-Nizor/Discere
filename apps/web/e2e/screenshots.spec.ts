@@ -92,14 +92,6 @@ test.describe("learner workspace screens", () => {
       await advanceUntil(page, page.getByRole("button", { name: "Check the point" }));
       await capture("activity-graph-plot", page.getByRole("button", { name: "Check the point" }));
 
-      const romanOrder = await readJourney(request, "roman-empire");
-      await gotoStage(page, romanOrder, "explainer");
-      await advanceUntil(page, page.getByRole("button", { name: "Check the order" }));
-      await capture(
-        "activity-order-sequence",
-        page.getByRole("button", { name: "Check the order" }),
-      );
-
       await gotoStage(page, journey, "interactive_visual");
       // Change the circuit before predicting, so the captured feedback shows a real comparison
       // rather than a circuit that never moved.
@@ -170,24 +162,6 @@ test.describe("learner workspace screens", () => {
         .click();
       await expect(page.getByRole("complementary", { name: "Lesson workbench" })).toBeVisible();
       await capture("tutor-panel");
-
-      // The second course, which is what proves the interface is not shaped around one subject.
-      const roman = await readJourney(request, "roman-empire");
-      await page.goto(`/courses/${encodeURIComponent(roman.courseId)}`);
-      await capture("roman-course");
-
-      await gotoStage(page, roman, "explainer");
-      await expect(page.getByRole("img", { name: /Roman Empire/i })).toBeVisible();
-      await capture("roman-explainer");
-
-      await gotoStage(page, roman, "interactive_visual");
-      await page.getByRole("slider", { name: "Year" }).fill("-27");
-      await page.getByRole("button", { name: "Caesar crosses the Rubicon" }).click();
-      await page.getByRole("button", { name: "Check prediction" }).click();
-      await capture("roman-timeline");
-
-      await gotoStage(page, roman, "quiz");
-      await capture("roman-quiz");
     });
   }
 });

@@ -22,6 +22,16 @@ import type { ContentIssue } from "./validate.js";
 type Lint = (path: string, text: string, context: WritingContext, hiddenAnswer?: string) => void;
 
 export const LEAD_WORD_LIMIT = 60;
+/**
+ * A screen that only teaches (an `explain` step with no check) is told like a story, in connected
+ * paragraphs: long enough to carry the idea and the way into the next one, short enough to read in
+ * about a minute. The limits count the prose before and after its figure.
+ */
+export const EXPLAIN_BODY_WORD_LIMIT = 280;
+export const EXPLAIN_BODY_WORD_FLOOR = 80;
+export const OPENER_WORD_LIMIT = 260;
+/** Longest run of teaching-only screens before the learner is asked to do something. */
+export const EXPLAIN_RUN_LIMIT = 3;
 export const ONE_LINE_WORD_LIMIT = 25;
 export const WHY_WORD_LIMIT = 20;
 export const SKILL_CHECK_SIZE = 3;
@@ -210,11 +220,33 @@ function v2LessonIssues(
       );
     if (step.blocks.some((block) => block.kind === "heading"))
       push(sat, "V2_HEADING_BLOCK", "Heading blocks are not valid in a v2 step; use an eyebrow.");
-    if (step.lead && blockWords(step.lead) > LEAD_WORD_LIMIT)
+    const teachingOnly = step.kind === "explain" && !step.checkQuestionId;
+    if (teachingOnly) {
+      const body = blockWords(step.lead ?? []) + blockWords(step.afterFigure ?? []);
+      if (body > EXPLAIN_BODY_WORD_LIMIT)
+        push(
+          sat,
+          "EXPLAIN_TOO_LONG",
+          `The screen's prose is ${body} words; keep it to ${EXPLAIN_BODY_WORD_LIMIT}, or split it into two screens.`,
+        );
+      else if (body < EXPLAIN_BODY_WORD_FLOOR)
+        push(
+          sat,
+          "EXPLAIN_TOO_THIN",
+          `The screen's prose is ${body} words. A teaching screen should tell the idea properly, in at least ${EXPLAIN_BODY_WORD_FLOOR}: say where we are, what is new and why it matters.`,
+          "warning",
+        );
+    } else if (step.lead && blockWords(step.lead) > LEAD_WORD_LIMIT)
       push(
         `${sat}.lead`,
         "LEAD_TOO_LONG",
         `The lead is ${blockWords(step.lead)} words; keep it to ${LEAD_WORD_LIMIT}.`,
+      );
+    if (step.afterFigure?.length && !teachingOnly)
+      push(
+        `${sat}.afterFigure`,
+        "AFTER_FIGURE_MISPLACED",
+        "afterFigure belongs on an explain step with no check question.",
       );
     if (
       (step.kind === "explain" ||
@@ -244,6 +276,7 @@ function v2LessonIssues(
       push(sat, "STEP_MISSING_QUESTION", `A ${step.kind} step needs a question.`);
     // Curation's gate (every screen asks something) surfaced here, so a writer sees it at apply.
     if (
+      step.kind !== "explain" &&
       !step.checkQuestionId &&
       !step.activityId &&
       !step.workedSteps?.some((line) => line.blank || line.selfExplain)
@@ -251,9 +284,7 @@ function v2LessonIssues(
       push(
         sat,
         "STEP_WITHOUT_RESPONSE",
-        step.kind === "explain"
-          ? "An explain step ends with a one-tap check (checkQuestionId): every screen asks the learner something."
-          : `A ${step.kind} step asks the learner something: a question, a blank or a self-explanation.`,
+        `A ${step.kind} step asks the learner something: a question, a blank or a self-explanation.`,
       );
     const graded =
       Boolean(step.checkQuestionId) || Boolean(step.workedSteps?.some((line) => line.blank));
@@ -270,6 +301,23 @@ function v2LessonIssues(
         "Only an explore step may show a live figure: anywhere else it prints the answer.",
       );
   }
+  let run = 0;
+  for (const step of lesson.steps) {
+    run = step.kind === "explain" && !step.checkQuestionId ? run + 1 : 0;
+    if (run === EXPLAIN_RUN_LIMIT + 1)
+      push(
+        `${at}.steps.${step.id}`,
+        "EXPLAIN_RUN_TOO_LONG",
+        `More than ${EXPLAIN_RUN_LIMIT} teaching screens in a row. Put a question after the idea that needs one.`,
+        "warning",
+      );
+  }
+  if (blockWords(intro.hook.blocks) > OPENER_WORD_LIMIT)
+    push(
+      `${at}.intro.hook`,
+      "OPENER_TOO_LONG",
+      `The opener is ${blockWords(intro.hook.blocks)} words; keep it to ${OPENER_WORD_LIMIT}.`,
+    );
   if (lessonIndex === 0 && lesson.steps[0]?.kind === "try")
     push(
       `${at}.steps`,
@@ -288,6 +336,7 @@ function v2LessonIssues(
     text: `${blockText(intro.hook.blocks)} ${hookQuestion?.prompt ?? ""}`,
     usesTerms: hookQuestion?.usesTerms ?? [],
   });
+  const storyLesson = lesson.steps.some((step) => step.kind === "explain" && !step.checkQuestionId);
   const introducedAt = new Map<string, number>();
   lesson.steps.forEach((step, index) => {
     const question = step.checkQuestionId ? questions.get(step.checkQuestionId) : undefined;
@@ -299,7 +348,15 @@ function v2LessonIssues(
     );
     screens.push({
       path: `${at}.steps.${step.id}`,
-      text: [question?.prompt ?? "", ...lineQuestions.map((item) => item.prompt)].join(" "),
+      text: [
+        // The screen's own prose counts only in a story lesson, where teaching screens carry the
+        // vocabulary; lessons reviewed before that format keep the rule they were accepted under.
+        ...(storyLesson
+          ? [step.headline ?? "", blockText(step.lead), blockText(step.afterFigure)]
+          : []),
+        question?.prompt ?? "",
+        ...lineQuestions.map((item) => item.prompt),
+      ].join(" "),
       usesTerms: [question, ...lineQuestions].flatMap((item) => item?.usesTerms ?? []),
     });
     for (const term of step.introducesTerms ?? [])
@@ -389,6 +446,7 @@ export function lessonV2Issues(bundle: CourseBundle, lint: Lint): ContentIssue[]
       if (step.headline) lint(`${sat}.headline`, step.headline, "lesson");
       if (step.eyebrow) lint(`${sat}.eyebrow`, step.eyebrow, "lesson");
       lintBlocks(`${sat}.lead`, step.lead);
+      lintBlocks(`${sat}.afterFigure`, step.afterFigure);
       lintBlocks(`${sat}.reveal`, step.reveal);
       (step.workedSteps ?? []).forEach((line, i) =>
         lint(`${sat}.workedSteps.${i}.text`, line.text, "lesson"),

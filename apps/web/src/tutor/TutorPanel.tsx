@@ -1,8 +1,4 @@
-import type {
-  RomanReferenceEssayId,
-  RomanReferenceQuestionId,
-  TutoringMode,
-} from "@discere/contracts";
+import type { TutoringMode } from "@discere/contracts";
 import { Loader2, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { errorCode, errorDetail, errorMessage } from "../api/client.js";
@@ -38,9 +34,6 @@ interface TutorPanelProps {
   onClose: () => void;
   /** Docked in the lesson workbench: a side pane beside the lesson, not a modal drawer. */
   docked?: boolean;
-  referenceQuestionId?: RomanReferenceQuestionId;
-  /** Set on the essay beat, where the server holds the mode and the draft the tutor answers about. */
-  referenceEssayId?: RomanReferenceEssayId;
 }
 
 const FOCUSABLE_SELECTOR = [
@@ -119,12 +112,10 @@ function TutorPanelConversation({
   accent = "#16a34a",
   onClose,
   docked = false,
-  referenceQuestionId,
-  referenceEssayId,
 }: TutorPanelProps) {
-  // A conversation about a question and one about the essay are different threads, so a resumed
+  // A conversation about one question and one about another are different threads, so a resumed
   // provider session must not carry across the boundary between them.
-  const providerSessionContext = `${referenceQuestionId ?? (referenceEssayId ? `essay:${referenceEssayId}` : (questionId ?? "lesson"))}:${mode}`;
+  const providerSessionContext = `${questionId ?? "lesson"}:${mode}`;
   const [question, setQuestion] = useState("");
   const [conversation, setConversation] = useState(() => {
     const loaded = loadTutorConversation(lessonId);
@@ -212,8 +203,6 @@ function TutorPanelConversation({
         ...(resumableSessionId === null ? {} : { sessionId: resumableSessionId }),
         ...(attemptId === undefined ? {} : { attemptId }),
         ...(questionId === undefined ? {} : { questionId }),
-        ...(referenceQuestionId === undefined ? {} : { referenceQuestionId }),
-        ...(referenceEssayId === undefined ? {} : { referenceEssayId }),
       });
       if (result.status === "answered") {
         setConversation((current) => ({
@@ -267,8 +256,6 @@ function TutorPanelConversation({
         lessonId,
         ...(questionId === undefined ? {} : { questionId }),
         ...(attemptId === undefined ? {} : { attemptId }),
-        ...(referenceQuestionId === undefined ? {} : { referenceQuestionId }),
-        ...(referenceEssayId === undefined ? {} : { referenceEssayId }),
       });
       setConversation((current) => ({
         ...current,

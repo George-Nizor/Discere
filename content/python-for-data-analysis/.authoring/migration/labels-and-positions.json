@@ -1,7 +1,12 @@
 {
   "lessonId": "labels-and-positions",
   "courseId": "python-for-data-analysis",
-  "migrationNotes": [],
+  "migrationNotes": [
+    "Spine: three numbered lockers in a row. The number on the door is a label and the place in the row is a position. We follow the two ideas into a table: loc and iloc, how their slices stop, rows and columns together, and the way a Series lines up by label.",
+    "Left out of the lesson (still in the course): python-labels-and-positions-hook (the locker at place 1, covered by the opener and the first screen) and python-labels-and-positions-4 (a recall choice about alignment, covered by the transfer screen and the skill-check item -6).",
+    "Figures: all four figures moved onto teaching screens, so the predict, worked and try screens no longer carry them. The label screen has no figure; a row of lockers drawn with their numbers and places is on the figure wishlist.",
+    "Fixed the wording of the misconception on python-labels-and-positions-7 (11 is 4 + 7, the value at label 20). Rewrote the prompt of -3 to give its table. Keys unchanged: all numeric keys recomputed (7, 3, 2, 3, 22, 13, 20, 2, 60)."
+  ],
   "lesson": {
     "id": "labels-and-positions",
     "courseId": "python-for-data-analysis",
@@ -11,43 +16,54 @@
     "title": "Find the intended row",
     "steps": [
       {
-        "id": "label-or-place",
+        "id": "the-number-on-the-door",
         "kind": "explain",
         "blocks": [],
-        "headline": "A row has a label and a position, and loc and iloc read them differently.",
+        "headline": "The number on the door",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "Every row of a DataFrame has a label in its index and a place in the table. With labels 10, 20 and 30, the label 10 sits at position 0. loc looks rows up by label. iloc looks them up by position, counted from zero."
+            "text": "Return to the lockers. A table has the same arrangement. Each row has a label, which is the value stored for it in the table's index, and each row also has a position, which counts its place in the order from 0. The label travels with the row. The position is only where the row stands at the moment."
+          },
+          {
+            "kind": "paragraph",
+            "text": "By default pandas labels the rows 0, 1, 2 and so on, which makes label and position look like one thing. They come apart as soon as the labels are anything else. A table whose index holds 10, 20 and 30 has the label 10 at position 0, the label 20 at position 1 and the label 30 at position 2. Sorting or filtering moves rows to new positions, and each label goes along with its row."
           }
         ],
-        "reveal": [],
+        "introducesTerms": [
+          "index"
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
+      },
+      {
+        "id": "loc-and-iloc",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "Asking by label and by position",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "pandas has one tool for each way of asking. loc looks a row up by its label, and iloc looks it up by its position. Both take square brackets, and both can take a row and then a column. The i in iloc stands for integer position, which is a handy way to remember which is which."
+          },
+          {
+            "kind": "paragraph",
+            "text": "Take a table with the index 10, 20 and 30, a units column holding 2, 5 and 8 and a price column holding 4, 6 and 3. df.loc[20, 'units'] goes to the row labelled 20 and reads the units column. df.iloc[1, 0] goes to position 1, the second row, and to column position 0, the first column. Step through both cases to see where they land."
+          }
+        ],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "Both calls reach the value 5. The first found it by asking for the label 20 and the second by counting to the second row. If the rows were sorted into a different order, the loc call would still find the row labelled 20 and the iloc call would find whatever row had moved into position 1. Use loc when you know the label of the row you mean and iloc when you know where it stands."
+          }
+        ],
         "introducesTerms": [
           "loc",
           "iloc"
         ],
         "visualStateId": "",
-        "checkQuestionId": "python-labels-and-positions-iloc-check",
-        "activityId": ""
-      },
-      {
-        "id": "read-by-label",
-        "kind": "predict",
-        "blocks": [],
-        "lead": [
-          {
-            "kind": "paragraph",
-            "text": "loc asks for a label, not a place in the list. Pair each label with its value first."
-          }
-        ],
-        "reveal": [
-          {
-            "kind": "paragraph",
-            "text": "You read a value by its label, not by counting along. With loc, the label is what matters, wherever the row sits."
-          }
-        ],
-        "visualStateId": "",
-        "checkQuestionId": "python-labels-and-positions-1",
+        "checkQuestionId": "",
         "activityId": "",
         "diagram": {
           "type": "python_execution",
@@ -223,29 +239,58 @@
             }
           ],
           "initialCaseId": "case-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        }
       },
       {
-        "id": "two-kinds-of-slice",
-        "kind": "worked_example",
+        "id": "which-row-is-place-zero",
+        "kind": "predict",
         "blocks": [],
-        "headline": "With labels 5, 10, 15, 20 and 25, how many rows do df.loc[10:20] and df.iloc[1:3] select?",
-        "lead": [],
-        "reveal": [],
-        "workedSteps": [
+        "lead": [
           {
-            "text": "loc slices by label and includes both ends: 10, 15 and 20.",
-            "math": "3 rows"
-          },
-          {
-            "text": "iloc slices by position and stops before the end: positions 1 and 2.",
-            "math": "2 rows",
-            "selfExplain": {
-              "questionId": "python-labels-and-positions-why-differ"
-            }
+            "kind": "paragraph",
+            "text": "iloc ignores the labels and counts places. Decide which row place 0 refers to."
           }
         ],
+        "visualStateId": "",
+        "checkQuestionId": "python-labels-and-positions-iloc-check",
+        "activityId": ""
+      },
+      {
+        "id": "read-by-label",
+        "kind": "predict",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "loc asks for a label, not a place in the list. Pair each label with its value before you read."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-labels-and-positions-1",
+        "activityId": ""
+      },
+      {
+        "id": "where-a-slice-stops",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "Where a slice stops",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Both tools also take slices, a range of rows written with a colon. You met slices on lists, where the end position is left out. iloc follows that rule. df.iloc[0:2] gives the rows at positions 0 and 1. Labels are different. They need not be numbers or step up by one, so no label obviously comes just before the one you name. That is why a loc slice includes both labels you write."
+          },
+          {
+            "kind": "paragraph",
+            "text": "For the three-row table, df.loc[10:20] gives the rows labelled 10 and 20, and df.iloc[0:1] gives only the row at position 0. The first slice ends on a row that it names. The second stops before the position it names. Step through both cases."
+          }
+        ],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "In both cases the end of the slice is the number typed after the colon. loc keeps the row with that label, and iloc leaves out the row at that position. When you count the rows a slice selects, first ask which tool is being used. That tells you whether the last number is in or out."
+          }
+        ],
+        "introducesTerms": [],
         "visualStateId": "",
         "checkQuestionId": "",
         "activityId": "",
@@ -338,15 +383,42 @@
             }
           ],
           "initialCaseId": "case-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        }
+      },
+      {
+        "id": "two-kinds-of-slice",
+        "kind": "worked_example",
+        "blocks": [],
+        "headline": "With labels 5, 10, 15, 20 and 25, how many rows do df.loc[10:20] and df.iloc[1:3] select?",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Count each slice with its own rule."
+          }
+        ],
+        "reveal": [],
+        "workedSteps": [
+          {
+            "text": "loc slices by label and includes both ends: 10, 15 and 20.",
+            "math": "3 rows"
+          },
+          {
+            "text": "iloc slices by position and stops before the end: positions 1 and 2.",
+            "math": "2 rows",
+            "selfExplain": {
+              "questionId": "python-labels-and-positions-why-differ"
+            }
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
       },
       {
         "id": "count-both-slices",
         "kind": "faded_example",
         "blocks": [],
         "headline": "With labels 10, 20, 30 and 40, how many rows do df.loc[20:40] and df.iloc[1:3] select?",
-        "lead": [],
         "reveal": [],
         "workedSteps": [
           {
@@ -367,23 +439,29 @@
         "activityId": ""
       },
       {
-        "id": "row-and-column",
-        "kind": "try",
+        "id": "a-row-and-a-column",
+        "kind": "explain",
         "blocks": [],
+        "headline": "A row and a column together",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "In df.iloc[r, c], the first value picks the row position and the second picks the column position, both counted from zero. loc takes labels in the same two places."
-          }
-        ],
-        "reveal": [
+            "text": "So far each call picked rows. Both tools take a second value that picks columns in the same way. The first value inside the brackets is for rows and the second is for columns. With iloc both are positions counted from 0, so df.iloc[0, 1] means the first row and the second column. With loc both are labels, so df.loc[30, 'price'] means the row labelled 30 and the column called price."
+          },
           {
             "kind": "paragraph",
-            "text": "You counted a row position and a column position, each from zero. The first value always picks rows and the second picks columns."
+            "text": "Either value can also be a list, which picks several at once. df.loc[[10, 30], ['price']] takes the rows labelled 10 and 30 and keeps only the price column. The figure shows that call next to an iloc call that reaches the same cells."
           }
         ],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "Both calls return a small table holding the prices 4 and 3. The loc call names the rows 10 and 30 by label. The iloc call counts to positions 0 and 2 and to column position 1, because price is the second column. Because the values were lists, the result stays a table with a row for each one."
+          }
+        ],
+        "introducesTerms": [],
         "visualStateId": "",
-        "checkQuestionId": "python-labels-and-positions-3",
+        "checkQuestionId": "",
         "activityId": "",
         "diagram": {
           "type": "python_execution",
@@ -473,26 +551,48 @@
             }
           ],
           "initialCaseId": "case-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        }
       },
       {
-        "id": "matched-by-label",
-        "kind": "explain",
+        "id": "row-and-column",
+        "kind": "try",
         "blocks": [],
-        "headline": "Assigning a Series to a column matches values by index label, not by order.",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "When pandas stores a Series in a column, it lines up the labels first. A Series written in a different order still lands on the rows with the same labels. A plain list has no labels, so it fills the rows by position."
+            "text": "The first number is a row position and the second is a column position, both counted from zero."
           }
         ],
-        "reveal": [],
+        "visualStateId": "",
+        "checkQuestionId": "python-labels-and-positions-3",
+        "activityId": ""
+      },
+      {
+        "id": "when-labels-meet",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "When labels meet",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Labels do one more job, and it matters whenever two sets of values come together. Suppose a table has rows labelled 10 and 20, and you add a column to it from a Series, which carries labels of its own. pandas does not paste the values down in the order they are written. It lines the Series up with the table by label first, so each value lands on the row that has the same label. This matching is called alignment."
+          },
+          {
+            "kind": "paragraph",
+            "text": "The figure shows it. The Series holds 8 and 3, written with the labels 20 and 10. The first case assigns that Series as a column, and the second assigns the plain list [8, 3], which has no labels at all."
+          }
+        ],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "In the first case the 8 carries the label 20, so it lands on the row labelled 20. The 3 lands on the row labelled 10. The order the Series was written in makes no difference. In the second case the list has no labels, so its values fill the rows in order and the 8 goes to the first row. A Series follows its labels and a list follows its places, which is the same split as between loc and iloc."
+          }
+        ],
         "introducesTerms": [
           "alignment"
         ],
         "visualStateId": "",
-        "checkQuestionId": "python-labels-and-positions-4",
+        "checkQuestionId": "",
         "activityId": "",
         "diagram": {
           "type": "python_execution",
@@ -632,8 +732,7 @@
             }
           ],
           "initialCaseId": "case-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        }
       },
       {
         "id": "which-value-lands",
@@ -643,12 +742,6 @@
           {
             "kind": "paragraph",
             "text": "A DataFrame has rows labelled 1 and 2. You assign pd.Series([50, 60], index=[2, 1]) as a new column."
-          }
-        ],
-        "reveal": [
-          {
-            "kind": "paragraph",
-            "text": "The labels decided where each value went. Row 1 received the value that carried the label 1, even though it was written second."
           }
         ],
         "visualStateId": "",
@@ -685,23 +778,30 @@
         "blocks": [
           {
             "kind": "paragraph",
-            "text": "Three lockers numbered 10, 20 and 30 stand in a row. The caretaker counts their places from zero, starting at the left."
+            "text": "Three lockers stand in a row in a school corridor. Each has a number painted on its door: 10, 20 and 30. The caretaker, who likes to count from zero, calls the first locker place 0, the next place 1 and the last place 2. A student asks for locker 20, and the caretaker walks to place 1."
+          },
+          {
+            "kind": "paragraph",
+            "text": "The number on the door and the place in the row are two separate facts about the same locker, and either can be used to find it. A pandas table has the same two facts about every row. The number is the label and the place is the position, and pandas gives you a different tool for each. Mixing them up is a common way to read the wrong row without any error message."
+          },
+          {
+            "kind": "paragraph",
+            "text": "This lesson asks for rows by label and by position, takes slices of each, and then sees what happens when two sets of labelled values meet."
           }
-        ],
-        "questionId": "python-labels-and-positions-hook"
+        ]
       },
       "promise": "By the end you'll tell a row's label from its position, and pick the right one with loc and iloc.",
-      "estimatedMinutes": 10
+      "estimatedMinutes": 12
     },
     "recap": {
-      "keyIdea": "loc reads by label and iloc by position from zero, and a Series assigned to a column lines up by label.",
+      "keyIdea": "loc reads by label and iloc by position from zero, a loc slice keeps its end label while an iloc slice stops before its end position, and a Series assigned to a column lines up by label.",
       "blocks": [
         {
           "kind": "paragraph",
-          "text": "You found that the locker at place 1 is number 20. You read 7 at label 20, and found row 1 receives 60 when a Series carries the label 1."
+          "text": "You found that the locker at place 1 carries the number 20. You read 7 at label 20, and you found that row 1 receives 60 when the Series carries the label 1."
         }
       ],
-      "nextHook": "Next: keep only the rows that answer a question, using a Boolean mask."
+      "nextHook": "Picking a row by label or by place suits a row you can name in advance. More often you know a rule, such as orders of three units or more. You want every row that follows it. The next lesson selects rows by a condition and then adds and changes columns."
     },
     "calculator": "off",
     "taughtSkills": [
@@ -729,7 +829,7 @@
         "kind": "numeric",
         "value": 7,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "Label 20 identifies the middle value, 7."
       },
@@ -775,7 +875,7 @@
         "kind": "numeric",
         "value": 3,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The included labels are 20, 30 and 40. Label slicing includes the stop."
       },
@@ -801,7 +901,7 @@
       "conceptIds": [
         "python-labels-and-positions"
       ],
-      "prompt": "A DataFrame has columns units and price, rows labelled 10, 20 and 30, units 3, 6, 9 and price 5, 7, 2. What is df.iloc[2, 1]?",
+      "prompt": "A DataFrame has columns units and price and rows labelled 10, 20 and 30. The units are 3, 6 and 9 and the prices are 5, 7 and 2. What is df.iloc[2, 1]?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -813,7 +913,7 @@
         "kind": "numeric",
         "value": 2,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The third row's price is 2."
       },
@@ -917,7 +1017,7 @@
         "kind": "numeric",
         "value": 3,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "It selects positions 1, 2 and 3; the stop is excluded."
       },
@@ -955,7 +1055,7 @@
         "kind": "numeric",
         "value": 22,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The value with label a is 22, regardless of its position in the Series."
       },
@@ -996,7 +1096,7 @@
         "kind": "numeric",
         "value": 13,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "4 + 9 = 13."
       },
@@ -1008,7 +1108,7 @@
               11
             ]
           },
-          "feedback": "That reads loc[30] as position 30... use the value at label 30."
+          "feedback": "That is 4 + 7. The second term asks for the label 30, and 7 sits at label 20."
         },
         {
           "match": {
@@ -1016,7 +1116,7 @@
               8
             ]
           },
-          "feedback": "iloc[0] and loc[10] would be the same row, but loc[30] is a different one."
+          "feedback": "That is 4 + 4, which reads the first row twice. loc[30] is a different row."
         }
       ],
       "skill": "label-versus-position",
@@ -1042,7 +1142,7 @@
         "kind": "numeric",
         "value": 20,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "Place 0 holds 10, so place 1 holds 20."
       },
@@ -1204,7 +1304,7 @@
         "kind": "numeric",
         "value": 2,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The positions are 1 and 2."
       },
@@ -1242,7 +1342,7 @@
         "kind": "numeric",
         "value": 60,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The value with label 1 is 60, so row 1 receives it."
       },
@@ -1262,55 +1362,6 @@
     }
   ],
   "citations": [
-    {
-      "claim": "A row has a label and a position, and loc and iloc read them differently.",
-      "sourceId": "pd-index",
-      "section": "Selection by label; selection by position; series assignment and index alignment",
-      "targetKind": "step",
-      "targetId": "label-or-place"
-    },
-    {
-      "claim": "loc asks for a label, not a place in the list. Pair each label with its value first.",
-      "sourceId": "pd-index",
-      "section": "Selection by label; selection by position; series assignment and index alignment",
-      "targetKind": "step",
-      "targetId": "read-by-label"
-    },
-    {
-      "claim": "With labels 5, 10, 15, 20 and 25, how many rows do df.loc[10:20] and df.iloc[1:3] select?",
-      "sourceId": "pd-index",
-      "section": "Selection by label; selection by position; series assignment and index alignment",
-      "targetKind": "step",
-      "targetId": "two-kinds-of-slice"
-    },
-    {
-      "claim": "With labels 10, 20, 30 and 40, how many rows do df.loc[20:40] and df.iloc[1:3] select?",
-      "sourceId": "pd-index",
-      "section": "Selection by label; selection by position; series assignment and index alignment",
-      "targetKind": "step",
-      "targetId": "count-both-slices"
-    },
-    {
-      "claim": "In df.iloc[r, c], the first value picks the row position and the second picks the column position, both counted from zero. loc takes labels in the same two places.",
-      "sourceId": "pd-index",
-      "section": "Selection by label; selection by position; series assignment and index alignment",
-      "targetKind": "step",
-      "targetId": "row-and-column"
-    },
-    {
-      "claim": "Assigning a Series to a column matches values by index label, not by order.",
-      "sourceId": "pd-index",
-      "section": "Selection by label; selection by position; series assignment and index alignment",
-      "targetKind": "step",
-      "targetId": "matched-by-label"
-    },
-    {
-      "claim": "A DataFrame has rows labelled 1 and 2. You assign pd.Series([50, 60], index=[2, 1]) as a new column.",
-      "sourceId": "pd-index",
-      "section": "Selection by label; selection by position; series assignment and index alignment",
-      "targetKind": "step",
-      "targetId": "which-value-lands"
-    },
     {
       "claim": "7. loc looked up the label 20, and its row holds the middle value.",
       "sourceId": "pd-index",
@@ -1333,13 +1384,6 @@
       "targetId": "python-labels-and-positions-3"
     },
     {
-      "claim": "By index label. pandas lines up the labels, including when the Series is written in a different order.",
-      "sourceId": "pd-index",
-      "section": "Selection by label; selection by position; series assignment and index alignment",
-      "targetKind": "question",
-      "targetId": "python-labels-and-positions-4"
-    },
-    {
       "claim": "3. The positions are 1, 2 and 3, because the stop of an iloc slice is excluded.",
       "sourceId": "pd-index",
       "section": "Selection by label; selection by position; series assignment and index alignment",
@@ -1359,13 +1403,6 @@
       "section": "Selection by label; selection by position; series assignment and index alignment",
       "targetKind": "question",
       "targetId": "python-labels-and-positions-7"
-    },
-    {
-      "claim": "20. The number on a locker is its label, and its place is where it stands. pandas keeps those two ideas apart.",
-      "sourceId": "pd-index",
-      "section": "Selection by label; selection by position; series assignment and index alignment",
-      "targetKind": "question",
-      "targetId": "python-labels-and-positions-hook"
     },
     {
       "claim": "The row labelled 100. iloc counts places from zero, so place 0 is the first row whatever its label is.",
@@ -1408,6 +1445,83 @@
       "section": "Selection by label; selection by position; series assignment and index alignment",
       "targetKind": "flashcard",
       "targetId": "python-labels-and-positions-card-2"
+    },
+    {
+      "claim": "Every row has a label held in the index and a position counted from zero, and the two differ unless the labels are 0, 1, 2 and so on.",
+      "sourceId": "pd-index",
+      "section": "Selection by label; selection by position; series assignment and index alignment",
+      "targetKind": "step",
+      "targetId": "the-number-on-the-door"
+    },
+    {
+      "claim": "loc looks rows up by label and iloc by integer position counted from zero.",
+      "sourceId": "pd-index",
+      "section": "Selection by label; selection by position; series assignment and index alignment",
+      "targetKind": "step",
+      "targetId": "loc-and-iloc"
+    },
+    {
+      "claim": "iloc selects by position, so iloc[0] is the first row whatever its label.",
+      "sourceId": "pd-index",
+      "section": "Selection by label; selection by position; series assignment and index alignment",
+      "targetKind": "step",
+      "targetId": "which-row-is-place-zero"
+    },
+    {
+      "claim": "loc reads the value at a label, wherever that row sits.",
+      "sourceId": "pd-index",
+      "section": "Selection by label; selection by position; series assignment and index alignment",
+      "targetKind": "step",
+      "targetId": "read-by-label"
+    },
+    {
+      "claim": "A loc slice includes its end label and an iloc slice stops before its end position.",
+      "sourceId": "pd-index",
+      "section": "Selection by label; selection by position; series assignment and index alignment",
+      "targetKind": "step",
+      "targetId": "where-a-slice-stops"
+    },
+    {
+      "claim": "loc slices include both end labels, while iloc slices stop before the end position.",
+      "sourceId": "pd-index",
+      "section": "Selection by label; selection by position; series assignment and index alignment",
+      "targetKind": "step",
+      "targetId": "two-kinds-of-slice"
+    },
+    {
+      "claim": "A label slice counts both ends and a position slice leaves out its stop.",
+      "sourceId": "pd-index",
+      "section": "Selection by label; selection by position; series assignment and index alignment",
+      "targetKind": "step",
+      "targetId": "count-both-slices"
+    },
+    {
+      "claim": "With two values inside the brackets, loc and iloc take rows first and columns second, as labels or as positions.",
+      "sourceId": "pd-index",
+      "section": "Selection by label; selection by position; series assignment and index alignment",
+      "targetKind": "step",
+      "targetId": "a-row-and-a-column"
+    },
+    {
+      "claim": "df.iloc[r, c] reads the cell at row position r and column position c, counted from zero.",
+      "sourceId": "pd-index",
+      "section": "Selection by label; selection by position; series assignment and index alignment",
+      "targetKind": "step",
+      "targetId": "row-and-column"
+    },
+    {
+      "claim": "Assigning a Series to a column matches its values to rows by index label, while a plain list fills the rows by position.",
+      "sourceId": "pd-index",
+      "section": "Selection by label; selection by position; series assignment and index alignment",
+      "targetKind": "step",
+      "targetId": "when-labels-meet"
+    },
+    {
+      "claim": "A Series assigned to a column lands on the rows with the same labels, whatever order it was written in.",
+      "sourceId": "pd-index",
+      "section": "Selection by label; selection by position; series assignment and index alignment",
+      "targetKind": "step",
+      "targetId": "which-value-lands"
     }
   ]
 }

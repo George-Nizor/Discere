@@ -1,7 +1,9 @@
 {
   "lessonId": "build-an-orthonormal-basis",
   "courseId": "linear-algebra-vectors-and-maps",
-  "migrationNotes": [],
+  "migrationNotes": [
+    "Story rewrite (part 3 of 3). Questions no longer asked: lin-build-an-orthonormal-basis-7, lin-build-an-orthonormal-basis-8."
+  ],
   "lesson": {
     "id": "build-an-orthonormal-basis",
     "courseId": "linear-algebra-vectors-and-maps",
@@ -11,23 +13,130 @@
     "title": "Build an orthonormal basis",
     "steps": [
       {
-        "id": "one-direction-at-a-time",
+        "id": "why-right-angles-help",
         "kind": "explain",
         "blocks": [],
-        "headline": "Gram–Schmidt makes perpendicular unit vectors: normalise the first, remove it from the next, then normalise what is left.",
+        "headline": "Why right angles help",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "Start with independent vectors. Divide the first by its length. From the second, subtract its projection onto the first. The residual is perpendicular to the first, so divide it by its length too."
+            "text": "Suppose e₁ = (0.6, 0.8) and e₂ = (0.8, −0.6). Both have length 1, since 0.36 + 0.64 = 1, and their dot product is 0.48 − 0.48 = 0, so they meet at a right angle. Take the vector w = (5, 0) and ask how much of each stake it needs. Dot w with each one: w · e₁ = 3 and w · e₂ = 4."
+          },
+          {
+            "kind": "paragraph",
+            "text": "Those two numbers are the answer. Three copies of e₁ plus four copies of e₂ give 3(0.6, 0.8) + 4(0.8, −0.6) = (1.8 + 3.2, 2.4 − 2.4) = (5, 0), which is w. No equations had to be solved. When two directions are at right angles and each has length 1, the amount of each that a vector needs is a single dot product. A basis made of such vectors is called an orthonormal basis."
           }
         ],
-        "reveal": [],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "The length of 1 matters. A longer stake would make the dot product overshoot, and it would have to be divided by the length squared, as in the projection formula. Making each length 1 removes that division, so the amount needed is the dot product on its own. The rest of the lesson builds an orthonormal basis from vectors that start out crooked."
+          }
+        ],
         "introducesTerms": [
-          "Gram–Schmidt"
+          "orthonormal basis"
         ],
         "visualStateId": "",
-        "checkQuestionId": "lin-build-an-orthonormal-basis-8",
-        "activityId": ""
+        "checkQuestionId": "",
+        "activityId": "",
+        "diagram": {
+          "type": "linear_algebra_explorer",
+          "cases": [
+            {
+              "id": "square",
+              "label": "Right-angled pair",
+              "model": {
+                "kind": "dot_product",
+                "u": [
+                  0.6,
+                  0.8
+                ],
+                "v": [
+                  0.8,
+                  -0.6
+                ]
+              }
+            },
+            {
+              "id": "crooked",
+              "label": "Crooked pair",
+              "model": {
+                "kind": "dot_product",
+                "u": [
+                  1,
+                  1
+                ],
+                "v": [
+                  1,
+                  0
+                ]
+              }
+            }
+          ],
+          "initialCaseId": "square"
+        }
+      },
+      {
+        "id": "cutting-off-the-shadow",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "Cutting off the shadow",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Start with the simplest straightening. A vector v points to (4, 7): 4 across and 7 up. The x axis can serve as the first stake, with direction (1, 0). The part of v that lies along the axis is its projection, (4, 0), the shadow that v casts on the axis."
+          },
+          {
+            "kind": "paragraph",
+            "text": "Cut that shadow off. What remains is v minus the projection, the residual from the earlier lessons: (4, 7) − (4, 0) = (0, 7). It points straight up, at a right angle to the axis. That is no accident, since the residual of any projection is perpendicular to the line it was projected onto."
+          }
+        ],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "Here the axis made the arithmetic easy, but the idea works for any direction. Cut the projection onto a first stake off any vector and what is left has nothing along that stake, so it is perpendicular to it. This gives a way to turn a crooked second vector into one at a right angle to the first. What the cut leaves has an arbitrary length, which is the next thing to fix."
+          }
+        ],
+        "introducesTerms": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "diagram": {
+          "type": "linear_algebra_explorer",
+          "cases": [
+            {
+              "id": "axis",
+              "label": "Cut along the x axis",
+              "model": {
+                "kind": "projection",
+                "v": [
+                  4,
+                  7
+                ],
+                "direction": [
+                  1,
+                  0
+                ]
+              }
+            },
+            {
+              "id": "slant",
+              "label": "Cut along a slanted line",
+              "model": {
+                "kind": "projection",
+                "v": [
+                  4,
+                  7
+                ],
+                "direction": [
+                  1,
+                  1
+                ]
+              }
+            }
+          ],
+          "initialCaseId": "axis"
+        }
       },
       {
         "id": "cut-off-the-part",
@@ -42,12 +151,80 @@
         "reveal": [
           {
             "kind": "paragraph",
-            "text": "You removed the part along the x axis. What is left points straight up, perpendicular to the direction you removed."
+            "text": "You removed the part along the x axis. What is left, (0, 1), points straight up, at a right angle to the direction you removed."
           }
         ],
         "visualStateId": "",
         "checkQuestionId": "lin-build-an-orthonormal-basis-5",
         "activityId": ""
+      },
+      {
+        "id": "gram-schmidt-in-three-moves",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "Gram–Schmidt in three moves",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Now try a crooked pair with a slanted first vector: u = (4, 3) and v = (3, 5). The first move is to divide u by its length, which is called normalising it, because the first stake of an orthonormal basis needs length 1. The length of u is 5, so e₁ = (0.8, 0.6)."
+          },
+          {
+            "kind": "paragraph",
+            "text": "The second move cuts from v its shadow on e₁. Since e₁ has length 1, the shadow is (v · e₁) e₁ with no division. Here v · e₁ = 2.4 + 3 = 5.4, so the shadow is 5.4(0.8, 0.6) = (4.32, 3.24). The residual is (3, 5) − (4.32, 3.24) = (−1.32, 1.76), and it is at a right angle to e₁."
+          },
+          {
+            "kind": "paragraph",
+            "text": "The third move normalises the residual. Its length is √(1.7424 + 3.0976) = √4.84 = 2.2, so e₂ = (−1.32, 1.76) ÷ 2.2 = (−0.6, 0.8). A dot product checks the result: e₁ · e₂ = −0.48 + 0.48 = 0. These moves make up the Gram–Schmidt process. Normalise the first vector. Then cut its shadow off the next vector and normalise what remains."
+          }
+        ],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "The last move is needed because cutting off a shadow only guarantees a right angle. It says nothing about length, and the residual here came out 2.2 long. A third vector would be handled the same way, with the shadows on both earlier stakes cut off before it is normalised."
+          }
+        ],
+        "introducesTerms": [
+          "Gram–Schmidt"
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "diagram": {
+          "type": "linear_algebra_explorer",
+          "cases": [
+            {
+              "id": "pair",
+              "label": "Shadow of (3, 5) on (4, 3)",
+              "model": {
+                "kind": "projection",
+                "v": [
+                  3,
+                  5
+                ],
+                "direction": [
+                  4,
+                  3
+                ]
+              }
+            },
+            {
+              "id": "axis",
+              "label": "Shadow of (3, 5) on the x axis",
+              "model": {
+                "kind": "projection",
+                "v": [
+                  3,
+                  5
+                ],
+                "direction": [
+                  1,
+                  0
+                ]
+              }
+            }
+          ],
+          "initialCaseId": "pair"
+        }
       },
       {
         "id": "a-full-round",
@@ -150,13 +327,75 @@
         "activityId": ""
       },
       {
+        "id": "when-nothing-is-left",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "When nothing is left",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "The process can fail, and the failure tells you something. Take u = (1, 2) and v = (3, 6). Normalise u to get e₁ = (1, 2) ÷ √5. The shadow of v on e₁ is (v · e₁) e₁ = (15 ÷ √5)(1, 2) ÷ √5 = 3(1, 2) = (3, 6), which is all of v, so the residual is (0, 0)."
+          },
+          {
+            "kind": "paragraph",
+            "text": "Here v is already a multiple of u, so the two vectors never pointed in different directions. Nothing is left after the cut, and the zero vector cannot be divided by its length to give a vector of length 1. This is why Gram–Schmidt needs independent vectors. A vector that lies along an earlier one adds no new direction, so the process stops with fewer vectors than it started with."
+          }
+        ],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "When the vectors are independent, every step leaves something behind. Two independent vectors in the plane always give an orthonormal basis of the plane, and the first stake can be any direction you like. A basis chosen this way is a set of axes you picked yourself. The next lesson looks for axes that a matrix picks out on its own."
+          }
+        ],
+        "introducesTerms": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "diagram": {
+          "type": "linear_algebra_explorer",
+          "cases": [
+            {
+              "id": "dependent",
+              "label": "Shadow of (3, 6) on (1, 2)",
+              "model": {
+                "kind": "projection",
+                "v": [
+                  3,
+                  6
+                ],
+                "direction": [
+                  1,
+                  2
+                ]
+              }
+            },
+            {
+              "id": "independent",
+              "label": "Shadow of (3, 5) on (1, 2)",
+              "model": {
+                "kind": "projection",
+                "v": [
+                  3,
+                  5
+                ],
+                "direction": [
+                  1,
+                  2
+                ]
+              }
+            }
+          ],
+          "initialCaseId": "dependent"
+        }
+      },
+      {
         "id": "nothing-left-over",
         "kind": "transfer",
         "blocks": [],
         "lead": [
           {
             "kind": "paragraph",
-            "text": "Take u = (1, 1) and v = (2, 2). Remove from v its projection onto u, then ask whether a second perpendicular direction is left."
+            "text": "Take u = (1, 1) and v = (2, 2). Cut from v its shadow on u, then see whether anything is left to make a second basis vector."
           }
         ],
         "reveal": [],
@@ -195,23 +434,30 @@
         "blocks": [
           {
             "kind": "paragraph",
-            "text": "A vector points to (4, 7): 4 across and 7 up. You cut off the part of it that lies along the x axis."
+            "text": "Fitting the seedling's line took two equations that had to be solved together, because the columns (1, 1, 1) and (0, 1, 2) lean on each other. Their dot product is 3, so the amount of one column you need depends on how much of the other you use."
+          },
+          {
+            "kind": "paragraph",
+            "text": "Directions at right angles do not interfere like that. Picture two stakes in a field, one pointing east and one pointing north. To describe the way to a flagpole you say how far east and how far north, and the two answers are independent: changing one does nothing to the other. Stakes that lean towards each other lose this, because walking along one also carries you part of the way along the other."
+          },
+          {
+            "kind": "paragraph",
+            "text": "Most pairs of directions are crooked. This lesson takes any two crooked vectors and straightens them, one step at a time, into two vectors at right angles that each have length 1. The first stays where it is, and the second is trimmed until it stands square to it."
           }
-        ],
-        "questionId": "lin-build-an-orthonormal-basis-7"
+        ]
       },
       "promise": "By the end you'll turn two independent vectors into two perpendicular unit vectors, step by step.",
-      "estimatedMinutes": 10
+      "estimatedMinutes": 12
     },
     "recap": {
-      "keyIdea": "Gram–Schmidt builds an orthonormal basis: normalise the first vector, subtract each earlier direction from the next, then normalise what is left.",
+      "keyIdea": "Gram–Schmidt builds an orthonormal basis from independent vectors. The first is normalised. Each later one has its shadows on the earlier vectors cut off, and what is left is normalised.",
       "blocks": [
         {
           "kind": "paragraph",
-          "text": "You removed the part of (1, 0) along (1, 1). You normalised (1, 1) and (−3, 4)."
+          "text": "You started with crooked pairs and straightened them. You cut the shadow off (4, 7), built e₁ and e₂ from (4, 3) and (3, 5), and saw that (3, 6) leaves nothing after the cut because it lies along (1, 2)."
         }
       ],
-      "nextHook": "Some directions are special for a map: it only stretches them. Next: eigenvectors."
+      "nextHook": "An orthonormal basis is a set of axes that you choose yourself. A matrix has axes of its own, which are directions it only stretches. The next lesson shows how to find them."
     },
     "calculator": "available",
     "taughtSkills": [
@@ -235,7 +481,7 @@
         "kind": "numeric",
         "value": 7,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "Removing the across part leaves (0, 7), which is 7 up."
       },
@@ -273,7 +519,7 @@
         "kind": "numeric",
         "value": 3,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The projection is (2, 0), so the residual is (0, 3)."
       },
@@ -314,7 +560,7 @@
         "kind": "numeric",
         "value": 1,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The projection is (3, 0), leaving residual (0, 1)."
       },
@@ -418,7 +664,7 @@
         "kind": "numeric",
         "value": 0.7071067811865475,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The length is √2, so the first unit coordinate is 1/√2 ≈ 0.707107."
       },
@@ -464,7 +710,7 @@
         "kind": "numeric",
         "value": 0.8,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The length is 5, giving second coordinate 4/5 = 0.8."
       },
@@ -556,7 +802,7 @@
         "kind": "numeric",
         "value": -0.5,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The projection is (0.5, 0.5), so the residual is (0.5, −0.5)."
       },
@@ -594,7 +840,7 @@
         "kind": "numeric",
         "value": 0,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The products 1 and −1 cancel. Normalising both nonzero directions keeps their dot product zero."
       },
@@ -629,7 +875,7 @@
         "kind": "numeric",
         "value": -1,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The coefficient is 6 ÷ 2 = 3, so the projection is (3, 3) and the residual is (−1, 1)."
       },
@@ -664,60 +910,67 @@
   ],
   "citations": [
     {
-      "claim": "Gram–Schmidt makes perpendicular unit vectors: normalise the first, remove it from the next, then normalise what is left.",
+      "claim": "For vectors at right angles with length 1, the amount of each that a vector needs is its dot product with it.",
       "sourceId": "lin-orthogonal",
       "section": "6.4, Orthogonal Sets",
       "targetKind": "step",
-      "targetId": "one-direction-at-a-time"
+      "targetId": "why-right-angles-help"
     },
     {
-      "claim": "Removing the part of v that lies along a direction leaves the part that does not. The direction here is the x axis, (1, 0), and v = (3, 1).",
+      "claim": "Cutting the projection onto a direction off a vector leaves a residual at a right angle to that direction.",
+      "sourceId": "lin-orthogonal",
+      "section": "6.4, Orthogonal Sets",
+      "targetKind": "step",
+      "targetId": "cutting-off-the-shadow"
+    },
+    {
+      "claim": "Removing the part of (3, 1) along the x axis leaves (0, 1).",
       "sourceId": "lin-orthogonal",
       "section": "6.4, Orthogonal Sets",
       "targetKind": "step",
       "targetId": "cut-off-the-part"
     },
     {
-      "claim": "Make an orthonormal pair from (3, 4) and (1, 0).",
+      "claim": "Gram–Schmidt normalises the first vector, subtracts its projection from the next and normalises the residual.",
+      "sourceId": "lin-orthogonal",
+      "section": "6.4, Orthogonal Sets",
+      "targetKind": "step",
+      "targetId": "gram-schmidt-in-three-moves"
+    },
+    {
+      "claim": "Gram–Schmidt on (3, 4) and (1, 0) gives (0.6, 0.8) and (0.8, −0.6).",
       "sourceId": "lin-orthogonal",
       "section": "6.4, Orthogonal Sets",
       "targetKind": "step",
       "targetId": "a-full-round"
     },
     {
-      "claim": "Normalise (1, 1). Find its first coordinate as a decimal.",
+      "claim": "Normalising (1, 1) divides each coordinate by √2.",
       "sourceId": "lin-orthogonal",
       "section": "6.4, Orthogonal Sets",
       "targetKind": "step",
       "targetId": "normalise-with-help"
     },
     {
-      "claim": "The vector is (−3, 4). Find its length, then divide the coordinate the question asks for.",
+      "claim": "Normalising (−3, 4) divides each coordinate by the length 5.",
       "sourceId": "lin-orthogonal",
       "section": "6.4, Orthogonal Sets",
       "targetKind": "step",
       "targetId": "normalise-another"
     },
     {
-      "claim": "Take u = (1, 1) and v = (2, 2). Remove from v its projection onto u, then ask whether a second perpendicular direction is left.",
+      "claim": "A vector along an earlier one leaves a zero residual, which cannot be normalised, so Gram–Schmidt needs independent vectors.",
+      "sourceId": "lin-orthogonal",
+      "section": "6.4, Orthogonal Sets",
+      "targetKind": "step",
+      "targetId": "when-nothing-is-left"
+    },
+    {
+      "claim": "The residual of (2, 2) after cutting its shadow on (1, 1) is zero.",
       "sourceId": "lin-orthogonal",
       "section": "6.4, Orthogonal Sets",
       "targetKind": "step",
       "targetId": "nothing-left-over"
-    },
-    {
-      "claim": "7. Subtracting a vector's part along a direction leaves the part perpendicular to it.",
-      "sourceId": "lin-orthogonal",
-      "section": "6.4, Orthogonal Sets",
-      "targetKind": "question",
-      "targetId": "lin-build-an-orthonormal-basis-7"
-    },
-    {
-      "claim": "The residual is (0, 3): the part perpendicular to e₁.",
-      "sourceId": "lin-orthogonal",
-      "section": "6.4, Orthogonal Sets",
-      "targetKind": "question",
-      "targetId": "lin-build-an-orthonormal-basis-8"
     },
     {
       "claim": "Remove the part along (1, 0) and only the up part remains.",

@@ -1,7 +1,11 @@
 {
   "lessonId": "keys-and-sets",
   "courseId": "python-for-data-analysis",
-  "migrationNotes": [],
+  "migrationNotes": [
+    "Spine: a café's chalkboard tally grows from a single updated line into a dictionary (named lines, replacing and adding, looking up safely), and then a visitors' book that holds each name once becomes a set that can be compared with another.",
+    "The last screen weighs the four collections against each other (list, tuple, dictionary, set), which leads into the transfer on shared members.",
+    "Left out of the lesson (still in the course): python-keys-and-sets-hook (the chalkboard sum, covered by the opener) and -add-check (covered by the first screen and the question that follows it)."
+  ],
   "lesson": {
     "id": "keys-and-sets",
     "courseId": "python-for-data-analysis",
@@ -11,48 +15,36 @@
     "title": "Choose the right collection",
     "steps": [
       {
-        "id": "look-up-by-key",
+        "id": "a-board-of-named-lines",
         "kind": "explain",
         "blocks": [],
-        "headline": "A dictionary looks a value up by its key, and each key appears only once.",
+        "headline": "A board of named lines",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "A dictionary pairs keys with values: {'tea': 4}. d['tea'] looks the value up. Assigning to a key that exists replaces its value. Assigning to a new key adds a pair."
+            "text": "The tally board is a dictionary. It holds pairs, each made of a name and the value that goes with it, written between curly braces: board = {'tea': 4, 'coffee': 6}. The name in each pair is called its key, and the value is what the key leads to. Write a key in square brackets to look up its value, so board['tea'] is 4."
           },
           {
-            "kind": "callout",
-            "tone": "key",
-            "text": "Keys are unique. A second assignment to the same key never makes a second copy."
+            "kind": "paragraph",
+            "text": "A dictionary can be changed, like a list. Assign to a key that is already there and its value is replaced, so board['tea'] = 7 changes the 4 to a 7 and the board still has two lines. Assign to a key that is new and Python adds a pair, so board['cocoa'] = 2 gives the board a third line. Each key appears once, because assigning to a key twice replaces the first value and never makes a second line."
+          },
+          {
+            "kind": "paragraph",
+            "text": "Step through the picture, where a shop's stock is kept in a dictionary."
           }
         ],
-        "reveal": [],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "In the first case the key 'pen' already exists, so its value changes from 3 to 7 and the dictionary keeps two pairs. In the second case 'lamp' is new, so the dictionary grows to three. Reading a key that is not there is different. board['milk'] stops the program with a KeyError, because the board has no such line."
+          }
+        ],
         "introducesTerms": [
           "dictionary",
           "key"
         ],
         "visualStateId": "",
-        "checkQuestionId": "python-keys-and-sets-add-check",
-        "activityId": ""
-      },
-      {
-        "id": "replace-or-add",
-        "kind": "predict",
-        "blocks": [],
-        "lead": [
-          {
-            "kind": "paragraph",
-            "text": "Assigning to a key that is already present replaces its value. Think about whether a new pair is created."
-          }
-        ],
-        "reveal": [
-          {
-            "kind": "paragraph",
-            "text": "You predicted how many keys remain. The key was already there, so its value was replaced and no new pair appeared."
-          }
-        ],
-        "visualStateId": "",
-        "checkQuestionId": "python-keys-and-sets-1",
+        "checkQuestionId": "",
         "activityId": "",
         "diagram": {
           "type": "python_execution",
@@ -122,16 +114,59 @@
             }
           ],
           "initialCaseId": "case-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        }
+      },
+      {
+        "id": "replace-or-add",
+        "kind": "predict",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Assigning to a key can replace a value or add a pair. Look at the key in the program before you decide which happens."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-keys-and-sets-1",
+        "activityId": ""
+      },
+      {
+        "id": "looking-up-safely",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "Looking up safely",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "A lookup like board['milk'] fails when the key is missing, and a data program often cannot tell in advance which keys exist. Python gives you two safe tools. The word in checks for a key without reading it, so 'tea' in board is True and 'milk' in board is False."
+          },
+          {
+            "kind": "paragraph",
+            "text": "The second tool is the method get, which takes a key and a fallback. The call board.get('milk', 0) returns the value if 'milk' is a key, and returns the fallback, 0, if it is not. The program carries on either way. A fallback of 0 suits a tally, since a drink that has never been sold has simply sold none."
+          },
+          {
+            "kind": "paragraph",
+            "text": "There is one trap. The word in looks at the keys and never at the values. Take a dictionary of prices. The test 2 in prices asks whether 2 is a key, which it usually is not. To test the values, ask the dictionary for them with prices.values(), so 2 in prices.values() checks the values."
+          }
+        ],
+        "introducesTerms": [
+          "fallback"
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
       },
       {
         "id": "key-or-value",
         "kind": "worked_example",
         "blocks": [],
         "headline": "With prices = {'tea': 2, 'cake': 5}, what do 'tea' in prices, 2 in prices and prices.get('milk', 9) give?",
-        "lead": [],
-        "reveal": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Try the safe tools on one small dictionary of prices."
+          }
+        ],
         "workedSteps": [
           {
             "text": "in checks the keys. tea is a key.",
@@ -227,7 +262,6 @@
         "blocks": [],
         "headline": "With stock = {'pen': 3, 'book': 2}, what is stock.get('lamp', 0) + stock.get('pen', 0)?",
         "lead": [],
-        "reveal": [],
         "workedSteps": [
           {
             "text": "lamp is not a key, so get returns the fallback. What does stock.get('lamp', 0) return?",
@@ -251,22 +285,33 @@
         "activityId": ""
       },
       {
-        "id": "each-once",
+        "id": "the-visitors-book",
         "kind": "explain",
         "blocks": [],
-        "headline": "A set keeps each member once and has no positions.",
+        "headline": "The visitors' book",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "set(['Bay', 'Hill', 'Bay']) keeps Bay once. add puts a member in. A set uses curly braces like a dictionary but holds bare members, not pairs. A frozenset is a set that cannot be changed."
+            "text": "The café also keeps a visitors' book. A regular signs it every visit, but a name needs to appear only once. Python has a collection for that, called a set. A set keeps each member once and ignores repeats, so set(['Bay', 'Hill', 'Bay']) holds Bay once and Hill once."
+          },
+          {
+            "kind": "paragraph",
+            "text": "A set is written with curly braces like a dictionary, but it holds bare members with no values. It has no positions either, so there is no first member to ask for. You can ask whether something is a member by using in. You can also add to a set with the method add. Step through the picture to see a set made from a list of visits and then extended."
           }
         ],
-        "reveal": [],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "A set tells you whether something is in it and never how often. Adding a member that is already there does nothing. A plain set can be changed with add and remove. A frozenset is a set that cannot be changed once it is made. Neither kind has positions, so neither can be indexed like a list. Counting how many different shops appear in a long list of visits is the classic job for a set."
+          }
+        ],
         "introducesTerms": [
-          "set"
+          "set",
+          "member",
+          "frozenset"
         ],
         "visualStateId": "",
-        "checkQuestionId": "python-keys-and-sets-3",
+        "checkQuestionId": "",
         "activityId": "",
         "diagram": {
           "type": "python_execution",
@@ -341,8 +386,21 @@
             }
           ],
           "initialCaseId": "case-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        }
+      },
+      {
+        "id": "what-a-set-allows",
+        "kind": "predict",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Decide which of the statements fits what you have just read about sets."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-keys-and-sets-3",
+        "activityId": ""
       },
       {
         "id": "add-the-same-twice",
@@ -351,13 +409,7 @@
         "lead": [
           {
             "kind": "paragraph",
-            "text": "add puts one member into a set. If the member is already there, the set is unchanged."
-          }
-        ],
-        "reveal": [
-          {
-            "kind": "paragraph",
-            "text": "Adding a member that was already present left the set as it was. A set records whether something is in it, never how often."
+            "text": "Go through the two additions one at a time, and note the members after each."
           }
         ],
         "visualStateId": "",
@@ -365,23 +417,28 @@
         "activityId": ""
       },
       {
-        "id": "in-both-or-either",
-        "kind": "transfer",
+        "id": "combining-sets",
+        "kind": "explain",
         "blocks": [],
+        "headline": "Combining sets",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "Set operators combine two sets. & keeps members in both. | keeps members in either. - keeps members of the left set that are not in the right."
+            "text": "Two sets can be compared directly, and Python writes the comparisons as operators. Take a = {1, 2, 4} and b = {2, 3, 4}, with the numbers standing for people who signed two different visitors' books. The operator & keeps the members found in both sets, and that result is called the intersection. Writing a | b keeps the members found in either set. That result is called the union, and a member found in both is counted once. Subtraction, a - b, keeps the members of a that b lacks. Step through the picture to see the first two at work."
           }
         ],
-        "reveal": [
+        "afterFigure": [
           {
             "kind": "paragraph",
-            "text": "Only members present in both sets survive an intersection. The same idea answers any question of the form: which are in both lists?"
+            "text": "In the first case a & b is {2, 4}, the two people who signed both books. In the second case a | b is {1, 2, 3, 4}, everybody who signed either. Each answer is itself a set, so you can count it with len or combine it with another set."
           }
         ],
+        "introducesTerms": [
+          "intersection",
+          "union"
+        ],
         "visualStateId": "",
-        "checkQuestionId": "python-keys-and-sets-4",
+        "checkQuestionId": "",
         "activityId": "",
         "diagram": {
           "type": "python_execution",
@@ -481,8 +538,41 @@
             }
           ],
           "initialCaseId": "case-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        }
+      },
+      {
+        "id": "choosing-a-collection",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "Choosing a collection",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "That gives four ways to keep a group of values, and each answers a different need. A list keeps items in order, finds them by position and allows repeats. A tuple does the same but cannot be rearranged. A dictionary finds a value by its key. A set records which members are present and ignores repeats."
+          },
+          {
+            "kind": "paragraph",
+            "text": "The question to ask is how you will look the data up. The third reading in a sequence is a job for a list. The price of tea is a job for a dictionary. Whether tea is on the menu, or how many different drinks were sold, is a job for a set. A question of the form 'which names appear in both lists?' is exactly what & answers once the names are put into sets."
+          }
+        ],
+        "introducesTerms": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
+      },
+      {
+        "id": "in-both-or-either",
+        "kind": "transfer",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Two sets, and you want only what they share. Decide which operator fits that question before you count."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-keys-and-sets-4",
+        "activityId": ""
       }
     ],
     "orientation": "Use dictionary keys for lookup and sets for distinct membership.",
@@ -514,23 +604,30 @@
         "blocks": [
           {
             "kind": "paragraph",
-            "text": "A café keeps a chalkboard tally with one line per drink: tea 4, coffee 6. Then three more teas are sold and the tea line is updated."
+            "text": "A café keeps a chalkboard tally with one line for each drink: tea 4, coffee 6. When three more teas are sold, nobody rubs out the board and starts again. They find the tea line and change the number beside it. If the café starts selling hot chocolate, a new line goes at the bottom."
+          },
+          {
+            "kind": "paragraph",
+            "text": "The board works because every line is found by its name. Nobody asks for the second line or the third. Python has a collection built the same way, and it is the usual home for counts, prices and options in data work, wherever a value has to be found by what it is called and not by where it sits."
+          },
+          {
+            "kind": "paragraph",
+            "text": "A second kind of collection answers a different question: has this name come up at all? Think of a visitors' book where each person signs once, no matter how many times they call in. This lesson builds the board, learns to look up a line that may not exist, and then turns to the visitors' book and to the question of who appears in two of them."
           }
-        ],
-        "questionId": "python-keys-and-sets-hook"
+        ]
       },
       "promise": "By the end you'll look values up by key in a dictionary and use a set to keep only distinct items.",
-      "estimatedMinutes": 10
+      "estimatedMinutes": 12
     },
     "recap": {
       "keyIdea": "A dictionary finds values by unique key, and in tests keys while get supplies a fallback. A set keeps each member once.",
       "blocks": [
         {
           "kind": "paragraph",
-          "text": "You found that replacing a value leaves the number of keys at 2. You also found that adding Bay to a set twice changes nothing, and that {1, 3, 5} & {3, 4, 5} has 2 members."
+          "text": "Back at the café, tea went from 4 to 7 on one line while a new drink got a line of its own. You found that replacing a value leaves the number of keys at 2. Adding a member a set already holds changes nothing. The sets {1, 3, 5} and {3, 4, 5} share 2 members."
         }
       ],
-      "nextHook": "Next: choose which lines run with if, for and while."
+      "nextHook": "So far each line has run once, in order. A car park that charges by the length of a stay needs a program that chooses between lines and repeats some of them, and the next lesson shows how if, for and while decide which lines run."
     },
     "calculator": "off",
     "taughtSkills": [
@@ -558,7 +655,7 @@
         "kind": "numeric",
         "value": 2,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The existing a entry changes value, leaving two distinct keys."
       },
@@ -712,7 +809,7 @@
         "kind": "numeric",
         "value": 2,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The shared members are 3 and 5."
       },
@@ -758,7 +855,7 @@
         "kind": "numeric",
         "value": 3,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The distinct items are 2, 4 and 6."
       },
@@ -796,7 +893,7 @@
         "kind": "numeric",
         "value": 10,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The key b is absent, so get returns the supplied fallback 10."
       },
@@ -837,7 +934,7 @@
         "kind": "numeric",
         "value": 13,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "d ends as {'x': 8, 'y': 5}, and 8 + 5 = 13."
       },
@@ -883,7 +980,7 @@
         "kind": "numeric",
         "value": 7,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "Tea was 4 and 3 more sold, so the line reads 7."
       },
@@ -987,7 +1084,7 @@
         "kind": "numeric",
         "value": 0,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "lamp is absent, so get returns 0."
       },
@@ -1033,7 +1130,7 @@
         "kind": "numeric",
         "value": 3,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "pen is present with the value 3."
       },
@@ -1079,7 +1176,7 @@
         "kind": "numeric",
         "value": 3,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The members are Bay, Hill and Lake."
       },
@@ -1108,49 +1205,77 @@
   ],
   "citations": [
     {
-      "claim": "A dictionary looks a value up by its key, and each key appears only once.",
+      "claim": "A dictionary pairs unique keys with values; assigning to an existing key replaces its value and assigning to a new key adds a pair.",
       "sourceId": "py-structures",
       "section": "5.4 Sets; 5.5 Dictionaries",
       "targetKind": "step",
-      "targetId": "look-up-by-key"
+      "targetId": "a-board-of-named-lines"
     },
     {
-      "claim": "Assigning to a key that is already present replaces its value. Think about whether a new pair is created.",
+      "claim": "Assigning to a key that already exists replaces its value without adding a key.",
       "sourceId": "py-structures",
       "section": "5.4 Sets; 5.5 Dictionaries",
       "targetKind": "step",
       "targetId": "replace-or-add"
     },
     {
-      "claim": "With prices = {'tea': 2, 'cake': 5}, what do 'tea' in prices, 2 in prices and prices.get('milk', 9) give?",
+      "claim": "in tests dictionary keys, values() exposes the values, and get returns a fallback when a key is missing.",
+      "sourceId": "py-structures",
+      "section": "5.4 Sets; 5.5 Dictionaries",
+      "targetKind": "step",
+      "targetId": "looking-up-safely"
+    },
+    {
+      "claim": "in tests keys, and get returns the fallback for a missing key.",
       "sourceId": "py-structures",
       "section": "5.4 Sets; 5.5 Dictionaries",
       "targetKind": "step",
       "targetId": "key-or-value"
     },
     {
-      "claim": "With stock = {'pen': 3, 'book': 2}, what is stock.get('lamp', 0) + stock.get('pen', 0)?",
+      "claim": "get returns the stored value when the key exists and the fallback when it does not.",
       "sourceId": "py-structures",
       "section": "5.4 Sets; 5.5 Dictionaries",
       "targetKind": "step",
       "targetId": "fallback-or-value"
     },
     {
-      "claim": "A set keeps each member once and has no positions.",
+      "claim": "A set keeps each member once and has no positions; a set can change and a frozenset cannot.",
       "sourceId": "py-structures",
       "section": "5.4 Sets; 5.5 Dictionaries",
       "targetKind": "step",
-      "targetId": "each-once"
+      "targetId": "the-visitors-book"
     },
     {
-      "claim": "add puts one member into a set. If the member is already there, the set is unchanged.",
+      "claim": "A set is mutable and a frozenset is immutable; neither is a sequence with positions.",
+      "sourceId": "py-structures",
+      "section": "5.4 Sets; 5.5 Dictionaries",
+      "targetKind": "step",
+      "targetId": "what-a-set-allows"
+    },
+    {
+      "claim": "Adding a member that is already in a set leaves the set unchanged.",
       "sourceId": "py-structures",
       "section": "5.4 Sets; 5.5 Dictionaries",
       "targetKind": "step",
       "targetId": "add-the-same-twice"
     },
     {
-      "claim": "Set operators combine two sets. & keeps members in both. | keeps members in either. - keeps members of the left set that are not in the right.",
+      "claim": "& keeps members in both sets, | keeps members in either, and - keeps members of the left set that are not in the right.",
+      "sourceId": "py-structures",
+      "section": "5.4 Sets; 5.5 Dictionaries",
+      "targetKind": "step",
+      "targetId": "combining-sets"
+    },
+    {
+      "claim": "Lists, tuples, dictionaries and sets suit different lookups, and set operators answer which members appear in both groups.",
+      "sourceId": "py-structures",
+      "section": "5.4 Sets; 5.5 Dictionaries",
+      "targetKind": "step",
+      "targetId": "choosing-a-collection"
+    },
+    {
+      "claim": "& keeps only the members found in both sets.",
       "sourceId": "py-structures",
       "section": "5.4 Sets; 5.5 Dictionaries",
       "targetKind": "step",
@@ -1204,20 +1329,6 @@
       "section": "5.4 Sets; 5.5 Dictionaries",
       "targetKind": "question",
       "targetId": "python-keys-and-sets-7"
-    },
-    {
-      "claim": "7. The tea line holds one number, and updating it replaces the old count. A dictionary works the same way.",
-      "sourceId": "py-structures",
-      "section": "5.4 Sets; 5.5 Dictionaries",
-      "targetKind": "question",
-      "targetId": "python-keys-and-sets-hook"
-    },
-    {
-      "claim": "A new key and value are added. Assignment either replaces an existing key's value or creates the pair.",
-      "sourceId": "py-structures",
-      "section": "5.4 Sets; 5.5 Dictionaries",
-      "targetKind": "question",
-      "targetId": "python-keys-and-sets-add-check"
     },
     {
       "claim": "0. lamp is not a key, so get returned the fallback you supplied.",

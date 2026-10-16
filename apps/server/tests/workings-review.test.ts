@@ -138,7 +138,7 @@ describe("workings review companion", () => {
             transcription: "I = 5 / 100.",
             transcriptionConfidence: 0.98,
             assessment: "partly_correct",
-            feedback: "The correct result is 0.05 A.",
+            feedback: "The correct result is 0.025 A.",
             firstMeaningfulError: "The written result is incomplete.",
             nextStep: "Write the current with its unit.",
             sourceIds: [],

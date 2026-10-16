@@ -1,7 +1,9 @@
 {
   "lessonId": "rank-and-null-space",
   "courseId": "linear-algebra-vectors-and-maps",
-  "migrationNotes": [],
+  "migrationNotes": [
+    "Story rewrite (part 2 of 3). Questions no longer asked: lin-rank-and-null-space-8."
+  ],
   "lesson": {
     "id": "rank-and-null-space",
     "courseId": "linear-algebra-vectors-and-maps",
@@ -11,29 +13,135 @@
     "title": "Rank and null space",
     "steps": [
       {
-        "id": "outputs-and-collapse",
+        "id": "inputs-that-vanish",
         "kind": "explain",
         "blocks": [],
-        "headline": "The rank counts a matrix's independent outputs. The null space holds the inputs it sends to zero.",
+        "headline": "Inputs that vanish",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "The column space is every output A v. Its dimension is the rank, which is the number of pivots. The null space is every input with A v = 0, and its dimension is the nullity."
+            "text": "Return to the sum machine. It turns (x, y) into x + y, which is what the matrix with the single row (1, 1) does to its input. An input comes out as zero exactly when x + y = 0. So (2, −2) vanishes, and so do (5, −5) and (0, 0), and so does every point of the form (t, −t). Plotted, they make a line through the origin."
           },
           {
-            "kind": "equation",
-            "latex": "\\text{rank} + \\text{nullity} = \\text{number of columns}"
+            "kind": "paragraph",
+            "text": "The set of all inputs that a matrix sends to zero is its null space. The zero vector is always in it, since a matrix applied to nothing gives nothing. Here the null space is a whole line, so the machine throws away a direction: moving along that line changes nothing about the output. The null space is a subspace, because the sum of two inputs that vanish also vanishes, and so does any multiple of one."
+          },
+          {
+            "kind": "paragraph",
+            "text": "That is why the null space matters. Two inputs that differ by a vector in it give the same output, so it measures how much the machine loses."
           }
         ],
-        "reveal": [],
         "introducesTerms": [
-          "rank",
-          "null space",
-          "nullity"
+          "null space"
         ],
         "visualStateId": "",
-        "checkQuestionId": "lin-rank-and-null-space-8",
+        "checkQuestionId": "",
         "activityId": ""
+      },
+      {
+        "id": "a-vanishing-input",
+        "kind": "predict",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "The sum machine adds the two coordinates of its input. This time the input has x = 5."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "5 + y = 0 gives y = −5. The point (5, −5) lies on the null-space line y = −x."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "lin-rank-and-null-space-7",
+        "activityId": ""
+      },
+      {
+        "id": "what-can-come-out",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "What can come out",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Now look at the other end of the machine. Take the matrix B with rows (1, 0, 2) and (0, 1, 3). It takes three numbers in and gives two out: B(x, y, z) = (x + 2z, y + 3z). Split the input into its parts and the output becomes x(1, 0) + y(0, 1) + z(2, 3). Whatever you put in, the output is a combination of the columns of B."
+          },
+          {
+            "kind": "paragraph",
+            "text": "So the set of all outputs is the span of the columns, and it is called the column space. For B the first two columns, (1, 0) and (0, 1), already span the whole plane, so the column space is the plane. The third column (2, 3) is a combination of the first two, so it adds no new output."
+          }
+        ],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "The dimension of the column space is called the rank of the matrix. B has rank 2: of its three columns, only two give independent directions. The rank counts the variety of outputs in the way that the dimension of a span counted the directions of the robot."
+          }
+        ],
+        "introducesTerms": [
+          "column space",
+          "rank"
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "diagram": {
+          "type": "linear_algebra_explorer",
+          "cases": [
+            {
+              "id": "first",
+              "label": "B applied to (3, 1, 2)",
+              "model": {
+                "kind": "matrix",
+                "operation": "apply",
+                "matrix": [
+                  [
+                    1,
+                    0,
+                    2
+                  ],
+                  [
+                    0,
+                    1,
+                    3
+                  ]
+                ],
+                "vector": [
+                  3,
+                  1,
+                  2
+                ]
+              }
+            },
+            {
+              "id": "second",
+              "label": "B applied to (0, 0, 4)",
+              "model": {
+                "kind": "matrix",
+                "operation": "apply",
+                "matrix": [
+                  [
+                    1,
+                    0,
+                    2
+                  ],
+                  [
+                    0,
+                    1,
+                    3
+                  ]
+                ],
+                "vector": [
+                  0,
+                  0,
+                  4
+                ]
+              }
+            }
+          ],
+          "initialCaseId": "first"
+        }
       },
       {
         "id": "does-it-vanish",
@@ -42,13 +150,13 @@
         "lead": [
           {
             "kind": "paragraph",
-            "text": "The null space holds the inputs that A sends to zero. Here A is $\\begin{pmatrix}1&2&0\\\\0&0&1\\end{pmatrix}$. Dot each row with the input to test one."
+            "text": "Apply A, with rows (1, 2, 0) and (0, 0, 1), to the input (−2, 1, 0). Dot the first row with the input to get the first coordinate of the output."
           }
         ],
         "reveal": [
           {
             "kind": "paragraph",
-            "text": "You dotted the first row with the input, and it vanished. That input is in the null space, since the second row vanishes too."
+            "text": "The first row gives −2 + 2 + 0 = 0, and the second row gives 0. The whole output is zero, so this input is in the null space of A."
           }
         ],
         "diagram": {
@@ -110,6 +218,56 @@
         "answerVisibility": "hidden-until-response",
         "visualStateId": "",
         "checkQuestionId": "lin-rank-and-null-space-3",
+        "activityId": ""
+      },
+      {
+        "id": "counting-with-pivots",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "Counting with pivots",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "The rank can be found without drawing anything. Reduce the matrix with row operations, as in the earlier lessons. Then count the pivots. Each pivot marks a column that brings a new direction, and a column without a pivot is a combination of the columns before it. B is already reduced: it has pivots in columns 1 and 2, so its rank is 2."
+          },
+          {
+            "kind": "paragraph",
+            "text": "A matrix with many columns can still have a small rank. If the second row of a matrix is twice its first row, reduction turns the second row into zeros, which leaves one pivot at most and rank 1. The rank can never exceed the number of rows or the number of columns, because each pivot needs a row and a column of its own."
+          }
+        ],
+        "introducesTerms": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
+      },
+      {
+        "id": "what-the-pivots-leave-over",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "What the pivots leave over",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Columns with a pivot give outputs. The columns without one are the free columns, like the free variables of the earlier lessons, and each of them lets the input change without changing the output. For B the third column has no pivot, so z is free. Set z = 1 and solve B(x, y, 1) = (0, 0): then x = −2 and y = −3. So (−2, −3, 1) is in the null space, and so is every multiple of it."
+          },
+          {
+            "kind": "paragraph",
+            "text": "The dimension of the null space is called the nullity, and it equals the number of free columns. Every column either has a pivot or does not, so the two counts add up to the number of columns."
+          },
+          {
+            "kind": "equation",
+            "latex": "\\text{rank} + \\text{nullity} = \\text{number of columns}"
+          },
+          {
+            "kind": "paragraph",
+            "text": "For B that is 2 + 1 = 3. The sum gives a matrix a fixed budget of columns. Each column either contributes a new output direction or is a direction that the machine throws away."
+          }
+        ],
+        "introducesTerms": [
+          "nullity"
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
         "activityId": ""
       },
       {
@@ -218,7 +376,7 @@
         "lead": [
           {
             "kind": "paragraph",
-            "text": "The matrix A is $\\begin{pmatrix}1&2&0\\\\0&0&1\\end{pmatrix}$. It has three columns, and you know its rank."
+            "text": "The matrix A has rows (1, 2, 0) and (0, 0, 1), so it has three columns. You know its rank."
           }
         ],
         "reveal": [
@@ -232,13 +390,37 @@
         "activityId": ""
       },
       {
+        "id": "choosing-columns-for-a-basis",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "Choosing columns for a basis",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "The column space is built from the columns of the original matrix, so a basis for it must be made of those columns. Take E with rows (0, 1, 2) and (0, 2, 5). Subtract 2 times row 1 from row 2 and the rows become (0, 1, 2) and (0, 0, 1). The pivots are in columns 2 and 3."
+          },
+          {
+            "kind": "paragraph",
+            "text": "Those are the columns to keep, but read them from E, because row operations change the columns and only the positions of the pivots carry over. The original columns 2 and 3 are (1, 2) and (2, 5). They are independent, and there are as many of them as the rank, so they form a basis of the column space. Column 1 is the zero vector, which adds nothing."
+          },
+          {
+            "kind": "paragraph",
+            "text": "To pick a basis for the column space, row-reduce to find where the pivots are. Then take the columns in those positions from the original matrix."
+          }
+        ],
+        "introducesTerms": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
+      },
+      {
         "id": "which-columns-to-keep",
         "kind": "transfer",
         "blocks": [],
         "lead": [
           {
             "kind": "paragraph",
-            "text": "The column space is built from columns of the original matrix. The pivot columns show which of them are independent."
+            "text": "A designer must pick, from the three columns of A, the fewest that still give every output."
           }
         ],
         "reveal": [],
@@ -277,23 +459,30 @@
         "blocks": [
           {
             "kind": "paragraph",
-            "text": "A machine takes a point (x, y) and gives back the number x + y. The point (2, −2) goes to 0."
+            "text": "The last lesson counted the buttons a robot really needs. This lesson gives the robot a machine instead of a remote, and looks at what the machine does to whatever you put into it."
+          },
+          {
+            "kind": "paragraph",
+            "text": "Here is the smallest machine we can build. You feed it a point (x, y) and it hands back one number, the sum x + y. Feed it (3, 1) and it returns 4. Feed it (2, −2) and it returns 0. Many different points give the same answer, and a whole line of them give the answer 0, because every pair with y = −x adds up to nothing."
+          },
+          {
+            "kind": "paragraph",
+            "text": "A matrix is a machine of this kind, and two things are worth knowing about any matrix. One is which inputs it sends to zero. The other is how much variety can come out of it. This lesson counts both and finds that the two counts are linked."
           }
-        ],
-        "questionId": "lin-rank-and-null-space-7"
+        ]
       },
       "promise": "By the end you'll count a matrix's rank and nullity, and say which inputs it sends to zero.",
-      "estimatedMinutes": 10
+      "estimatedMinutes": 12
     },
     "recap": {
       "keyIdea": "The rank counts the independent output directions and the nullity counts the inputs sent to zero. Together they add up to the number of columns.",
       "blocks": [
         {
           "kind": "paragraph",
-          "text": "You found rank 2 and nullity 1 for the same three-column matrix, checked that (−2, 1, 0) is sent to zero, and chose columns 1 and 3 as a basis."
+          "text": "Back at the sum machine, you found that the inputs it sends to zero form a line. For the three-column matrix A you counted rank 2 and nullity 1, checked that (−2, 1, 0) is sent to zero, and chose columns 1 and 3 as a basis."
         }
       ],
-      "nextHook": "Maps also stretch area. Next: the determinant, and why zero means a collapse."
+      "nextHook": "A matrix can also stretch the floor it acts on, and when it squashes everything onto a line it has lost a dimension for good. The next lesson measures how much a matrix stretches area, and what the number says when the area vanishes."
     },
     "calculator": "available",
     "taughtSkills": [
@@ -318,16 +507,16 @@
         "kind": "numeric",
         "value": -5,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "5 + y = 0, so y = −5."
       },
-      "prompt": "For x = 5, what value of y also gives the output 0?",
+      "prompt": "For x = 5, what value of y makes the machine's output 0?",
       "responseType": "numeric",
       "hints": [
         "The output is x + y. What must y be for it to vanish?",
         "The two numbers must cancel.",
-        "What number added to five gives zero?"
+        "The two numbers must have opposite signs."
       ],
       "misconceptions": [
         {
@@ -356,7 +545,7 @@
         "kind": "numeric",
         "value": 3,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "Rank plus nullity is 5, so the nullity is 5 − 2 = 3."
       },
@@ -405,7 +594,7 @@
         "kind": "numeric",
         "value": 0,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The first row gives −2 + 2 = 0; the second output is also zero."
       },
@@ -501,7 +690,7 @@
         "kind": "numeric",
         "value": 2,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "There is a pivot in the first and third columns, giving rank two."
       },
@@ -539,7 +728,7 @@
         "kind": "numeric",
         "value": 1,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "A has three columns and rank two, so nullity is 3 − 2 = 1."
       },
@@ -631,7 +820,7 @@
         "kind": "numeric",
         "value": 3,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "All three diagonal entries are nonzero, so there are three pivots."
       },
@@ -669,7 +858,7 @@
         "kind": "numeric",
         "value": 2,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The second row is redundant; rank is one and there are three columns, so nullity is two."
       },
@@ -712,7 +901,7 @@
         "kind": "numeric",
         "value": 1,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The second column is twice the first, so there is only a single pivot."
       },
@@ -747,42 +936,77 @@
   ],
   "citations": [
     {
-      "claim": "The rank counts a matrix's independent outputs. The null space holds the inputs it sends to zero.",
+      "claim": "The null space is the set of inputs a matrix sends to zero; it always contains the zero vector and is a subspace.",
       "sourceId": "lin-rank",
       "section": "2.9, The Rank Theorem",
       "targetKind": "step",
-      "targetId": "outputs-and-collapse"
+      "targetId": "inputs-that-vanish"
     },
     {
-      "claim": "The null space holds the inputs that A sends to zero. Here A is $\\begin{pmatrix}1&2&0\\\\0&0&1\\end{pmatrix}$. Dot each row with the input to test one.",
+      "claim": "For the sum machine x + y, the inputs sent to zero satisfy y = −x.",
+      "sourceId": "lin-rank",
+      "section": "2.9, The Rank Theorem",
+      "targetKind": "step",
+      "targetId": "a-vanishing-input"
+    },
+    {
+      "claim": "The outputs of a matrix are the combinations of its columns, which form the column space, whose dimension is the rank.",
+      "sourceId": "lin-rank",
+      "section": "2.9, The Rank Theorem",
+      "targetKind": "step",
+      "targetId": "what-can-come-out"
+    },
+    {
+      "claim": "An input is in the null space when every row of the matrix dotted with it gives zero.",
       "sourceId": "lin-rank",
       "section": "2.9, The Rank Theorem",
       "targetKind": "step",
       "targetId": "does-it-vanish"
     },
     {
-      "claim": "Find the rank and nullity of $\\begin{pmatrix}1&3&0&2\\\\0&0&1&4\\end{pmatrix}$.",
+      "claim": "The rank equals the number of pivots after row reduction.",
+      "sourceId": "lin-rank",
+      "section": "2.9, The Rank Theorem",
+      "targetKind": "step",
+      "targetId": "counting-with-pivots"
+    },
+    {
+      "claim": "The nullity equals the number of free columns, so rank plus nullity is the number of columns.",
+      "sourceId": "lin-rank",
+      "section": "2.9, The Rank Theorem",
+      "targetKind": "step",
+      "targetId": "what-the-pivots-leave-over"
+    },
+    {
+      "claim": "For a reduced matrix the rank is the number of pivots and the nullity is the columns that are left over.",
       "sourceId": "lin-rank",
       "section": "2.9, The Rank Theorem",
       "targetKind": "step",
       "targetId": "count-pivots"
     },
     {
-      "claim": "Find the rank of A = $\\begin{pmatrix}1&2&0\\\\0&0&1\\end{pmatrix}$.",
+      "claim": "The rank of A is the number of its pivots.",
       "sourceId": "lin-rank",
       "section": "2.9, The Rank Theorem",
       "targetKind": "step",
       "targetId": "count-with-help"
     },
     {
-      "claim": "The matrix A is $\\begin{pmatrix}1&2&0\\\\0&0&1\\end{pmatrix}$. It has three columns, and you know its rank.",
+      "claim": "The nullity of a matrix is its number of columns minus its rank.",
       "sourceId": "lin-rank",
       "section": "2.9, The Rank Theorem",
       "targetKind": "step",
       "targetId": "free-columns"
     },
     {
-      "claim": "The column space is built from columns of the original matrix. The pivot columns show which of them are independent.",
+      "claim": "A basis for the column space is the set of original columns in the pivot positions.",
+      "sourceId": "lin-rank",
+      "section": "2.9, The Rank Theorem",
+      "targetKind": "step",
+      "targetId": "choosing-columns-for-a-basis"
+    },
+    {
+      "claim": "The pivot columns of the original matrix give a basis for the column space.",
       "sourceId": "lin-rank",
       "section": "2.9, The Rank Theorem",
       "targetKind": "step",
@@ -794,13 +1018,6 @@
       "section": "2.9, The Rank Theorem",
       "targetKind": "question",
       "targetId": "lin-rank-and-null-space-7"
-    },
-    {
-      "claim": "Nullity = columns − rank = 5 − 2 = 3.",
-      "sourceId": "lin-rank",
-      "section": "2.9, The Rank Theorem",
-      "targetKind": "question",
-      "targetId": "lin-rank-and-null-space-8"
     },
     {
       "claim": "The products cancel. An input that A sends to zero lies in the null space.",

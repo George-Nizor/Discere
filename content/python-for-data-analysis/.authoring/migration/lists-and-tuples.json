@@ -1,7 +1,11 @@
 {
   "lessonId": "lists-and-tuples",
   "courseId": "python-for-data-analysis",
-  "migrationNotes": [],
+  "migrationNotes": [
+    "Spine: one locker with several keys. We follow one list as a second name is attached, as a copy is made, as a list is nested inside another and as a tuple is built around it, and watch who sees each change.",
+    "Left out of the lesson (still in the course): python-lists-and-tuples-hook (the locker sum, covered by the opener), -alias-check and -shallow-check (covered by the teaching screens and the practice that follows them).",
+    "A nested-lists picture would help the 'Lists inside lists' screen; it is in figure-wishlist.md."
+  ],
   "lesson": {
     "id": "lists-and-tuples",
     "courseId": "python-for-data-analysis",
@@ -11,47 +15,58 @@
     "title": "Change a collection without surprises",
     "steps": [
       {
-        "id": "one-list-two-names",
+        "id": "a-row-you-can-change",
         "kind": "explain",
         "blocks": [],
-        "headline": "b = a gives the same list a second name, and append changes that one list in place.",
+        "headline": "A row you can change",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "Assignment never copies a list. After b = a, both names lead to one list, so a change through either name shows through both. a.copy() builds a new list instead."
+            "text": "Think of the locker as a Python list: a row of values kept in order, written in square brackets with commas between the items. [4, 7] is a list of two items. The items are numbered from zero, like the characters in a string, so with books = [4, 7] the expression books[0] is 4 and len(books) is 2. Negative numbers count back from the end, and slices cut out pieces, exactly as they do for text."
           },
           {
-            "kind": "callout",
-            "tone": "key",
-            "text": "Two names, one list. Use copy when you need two lists."
+            "kind": "paragraph",
+            "text": "Unlike a string, a list can be changed after it is made. The method books.append(9) adds 9 to the end of the same list, and books[0] = 5 replaces the first item. Changing a list like this is called changing it in place, because the list itself is altered and nothing new is made. The locker keeps its place and only its contents change."
+          },
+          {
+            "kind": "paragraph",
+            "text": "A list is the locker, and a name is a key to it. The next screen puts a second key in someone else's hand."
           }
         ],
-        "reveal": [],
+        "introducesTerms": [
+          "list",
+          "append"
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
+      },
+      {
+        "id": "two-names-one-list",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "Two names, one list",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Suppose a = [2, 5] and you then write b = a. It looks as though b gets a list of its own holding 2 and 5, but Python only attaches a second name to the list that already exists. Now there is one list with two names, like two keys to one locker. A second name for the same list is called an alias. Whatever you do through b happens to the list that a leads to, so b.append(8) makes the list [2, 5, 8] for both names."
+          },
+          {
+            "kind": "paragraph",
+            "text": "To get a second locker you have to ask for one. The method a.copy() builds a new list with the same items, and b = a.copy() points b at that new list. Step through the picture, where the first case uses b = a and the second uses b = a.copy()."
+          }
+        ],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "In the first case a ends as [2, 5, 8], though the append was called through b. In the second case a stays [2, 5] and only b grows. The difference lies in the second line: assignment adds a name, while copy adds a list. When a list changes and nobody seems to have changed it, the first thing to check is whether two names share it."
+          }
+        ],
         "introducesTerms": [
           "alias"
         ],
         "visualStateId": "",
-        "checkQuestionId": "python-lists-and-tuples-alias-check",
-        "activityId": ""
-      },
-      {
-        "id": "who-sees-the-new-item",
-        "kind": "predict",
-        "blocks": [],
-        "lead": [
-          {
-            "kind": "paragraph",
-            "text": "b = a does not copy the list. Think about how many lists exist when append runs."
-          }
-        ],
-        "reveal": [
-          {
-            "kind": "paragraph",
-            "text": "You predicted a change through b. It showed up in a because both names led to one list, and append edited that list in place."
-          }
-        ],
-        "visualStateId": "",
-        "checkQuestionId": "python-lists-and-tuples-1",
+        "checkQuestionId": "",
         "activityId": "",
         "diagram": {
           "type": "python_execution",
@@ -141,16 +156,55 @@
             }
           ],
           "initialCaseId": "case-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        }
+      },
+      {
+        "id": "who-sees-the-new-item",
+        "kind": "predict",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Two names can lead to one list. Think about how many lists exist at the moment append runs."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-lists-and-tuples-1",
+        "activityId": ""
+      },
+      {
+        "id": "what-append-hands-back",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "What append hands back",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "A method that changes a list in place has a quiet habit: it returns nothing useful. Every method hands something back to the line that called it, and append hands back None, the special value that means 'no value'. The list has already been changed by then. String methods trained you to expect the new thing back, so this is easy to forget."
+          },
+          {
+            "kind": "paragraph",
+            "text": "It becomes a trap when you store the result. The line items = items.append(9) appends 9 to the list and then stores the returned None under the name items. The name now leads to None, and the list, though still in memory, has lost the only name it had. The safe habit is to call append on a line of its own and leave the name alone."
+          }
+        ],
+        "introducesTerms": [
+          "None"
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
       },
       {
         "id": "append-hands-back-nothing",
         "kind": "worked_example",
         "blocks": [],
         "headline": "With items = [4, 7], what goes wrong in items = items.append(9)?",
-        "lead": [],
-        "reveal": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Follow the line items = items.append(9) one step at a time."
+          }
+        ],
         "workedSteps": [
           {
             "text": "append adds 9 to the list itself, in place.",
@@ -248,103 +302,30 @@
         "answerVisibility": "hidden-until-response"
       },
       {
-        "id": "copy-one-level",
+        "id": "lists-inside-lists",
         "kind": "explain",
         "blocks": [],
-        "headline": "list.copy is shallow: the outer list is new, but any lists inside it are still shared.",
+        "headline": "Lists inside lists",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "A copy has its own list of items. If an item is itself a list, the copy holds the same inner list as the original. A tuple works this way too: it stops you replacing an item, but it cannot freeze a list inside it."
+            "text": "A list may hold other lists. A table of two columns can be written [[1], [2]], an outer list whose items are themselves lists. That is where a copy gets tricky. The method copy builds a new outer list, but it fills it with the very same items. When an item is itself a list, the new outer list holds the same inner list as the old one, and not another one like it."
+          },
+          {
+            "kind": "paragraph",
+            "text": "Picture two lockers, each with a small box inside, where the second locker was filled by moving the same small boxes across. The outer lockers are separate, so adding a box to one does not add it to the other. Put something into one of the small boxes, though, and the other locker's matching box has changed too, because it is the same box."
+          },
+          {
+            "kind": "paragraph",
+            "text": "A copy that goes one level deep is called a shallow copy. With a = [[1], [2]] and b = a.copy(), the lists a and b are different, yet a[0] and b[0] are one list. So b[0].append(3) shows up in a[0] as well."
           }
         ],
-        "reveal": [],
         "introducesTerms": [
           "shallow copy"
         ],
         "visualStateId": "",
-        "checkQuestionId": "python-lists-and-tuples-shallow-check",
-        "activityId": "",
-        "diagram": {
-          "type": "python_execution",
-          "runtime": "Python 3.12",
-          "cases": [
-            {
-              "id": "case-0",
-              "label": "Case A",
-              "code": "a = [[1], [2]]\nb = a.copy()\nb[0].append(3)",
-              "steps": [
-                {
-                  "lineStart": 1,
-                  "lineEnd": 2,
-                  "values": [
-                    {
-                      "name": "a",
-                      "type": "list",
-                      "display": "[[1], [2]]"
-                    },
-                    {
-                      "name": "b",
-                      "type": "list",
-                      "display": "[[1], [2]]"
-                    }
-                  ],
-                  "stdout": ""
-                },
-                {
-                  "lineStart": 3,
-                  "lineEnd": 3,
-                  "values": [
-                    {
-                      "name": "a",
-                      "type": "list",
-                      "display": "[[1, 3], [2]]"
-                    },
-                    {
-                      "name": "b",
-                      "type": "list",
-                      "display": "[[1, 3], [2]]"
-                    }
-                  ],
-                  "stdout": ""
-                }
-              ]
-            },
-            {
-              "id": "case-1",
-              "label": "Case B",
-              "code": "record = ('Bay', [1, 2])\nrecord[1].append(3)",
-              "steps": [
-                {
-                  "lineStart": 1,
-                  "lineEnd": 1,
-                  "values": [
-                    {
-                      "name": "record",
-                      "type": "tuple",
-                      "display": "('Bay', [1, 2])"
-                    }
-                  ],
-                  "stdout": ""
-                },
-                {
-                  "lineStart": 2,
-                  "lineEnd": 2,
-                  "values": [
-                    {
-                      "name": "record",
-                      "type": "tuple",
-                      "display": "('Bay', [1, 2, 3])"
-                    }
-                  ],
-                  "stdout": ""
-                }
-              ]
-            }
-          ],
-          "initialCaseId": "case-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        "checkQuestionId": "",
+        "activityId": ""
       },
       {
         "id": "inner-lists-are-shared",
@@ -352,7 +333,6 @@
         "blocks": [],
         "headline": "With a = [[1, 2], [3]], b = a.copy() and b[0].append(9), how many items do a and a[0] hold?",
         "lead": [],
-        "reveal": [],
         "workedSteps": [
           {
             "text": "b = a.copy() makes a new outer list. b[0] is still the same inner list as a[0].",
@@ -376,19 +356,39 @@
         "activityId": ""
       },
       {
+        "id": "a-row-that-stays-put",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "A row that stays put",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Sometimes you want a row of values that cannot be rearranged by accident. A tuple is a row like a list, written with round brackets: record = ('Bay', 7). Its items have indexes and slices work on it, but you cannot replace an item or append to it. A line such as record[0] = 'Hill' stops with an error."
+          },
+          {
+            "kind": "paragraph",
+            "text": "A tuple fixes which objects it holds. It does not freeze what those objects are. If an item is a list, the tuple keeps pointing at that same list. That list can still be changed. A tuple protects its own slots and has no power over a list that sits in one of them."
+          },
+          {
+            "kind": "paragraph",
+            "text": "Tuples suit values that belong together and should stay that way, such as a shop's name and its opening hours."
+          }
+        ],
+        "introducesTerms": [
+          "tuple"
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
+      },
+      {
         "id": "a-list-inside-a-tuple",
         "kind": "try",
         "blocks": [],
         "lead": [
           {
             "kind": "paragraph",
-            "text": "A tuple fixes which objects it holds. It does not stop one of those objects, if it is a list, from changing."
-          }
-        ],
-        "reveal": [
-          {
-            "kind": "paragraph",
-            "text": "The tuple still holds the same list, and that list grew. A tuple protects its own slots, not the objects in them."
+            "text": "The tuple below holds a name and a list. Think about which of the two a tuple is able to protect."
           }
         ],
         "visualStateId": "",
@@ -476,23 +476,23 @@
         "answerVisibility": "hidden-until-response"
       },
       {
-        "id": "slice-and-repeat",
-        "kind": "transfer",
+        "id": "slicing-and-repeating",
+        "kind": "explain",
         "blocks": [],
+        "headline": "Slicing and repeating",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "A list slice uses the same boundaries as a string slice: start included, stop excluded. Multiplying a list repeats its items: [1, 2] * 2 is [1, 2, 1, 2]."
-          }
-        ],
-        "reveal": [
+            "text": "Lists share more with strings than their indexes. A list slice uses the same marks and the same rule: the start is included and the stop is left out, so values[1:3] takes the items at index 1 and 2. A slice builds a new list, so changing it later leaves the original alone."
+          },
           {
             "kind": "paragraph",
-            "text": "The slice picked the items at positions 1 and 2, and the sum added them. Boundaries work the same way for lists as they did for text."
+            "text": "Multiplying a list repeats its items. [3, 6] * 2 is the list [3, 6, 3, 6], which has four items. Adding two lists with + joins them end to end, as it does for text. The picture shows a slice in its first case and a repeated list in its second."
           }
         ],
+        "introducesTerms": [],
         "visualStateId": "",
-        "checkQuestionId": "python-lists-and-tuples-4",
+        "checkQuestionId": "",
         "activityId": "",
         "diagram": {
           "type": "python_execution",
@@ -572,8 +572,21 @@
             }
           ],
           "initialCaseId": "case-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        }
+      },
+      {
+        "id": "sum-a-slice",
+        "kind": "transfer",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "A list slice follows the same marks as a string slice. Work out which items it takes before you add them up."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-lists-and-tuples-4",
+        "activityId": ""
       }
     ],
     "orientation": "Follow list aliases, shallow copies, append and tuple immutability.",
@@ -605,23 +618,30 @@
         "blocks": [
           {
             "kind": "paragraph",
-            "text": "A locker holds 2 books. You and a friend each have a key to the same locker. You use your key to put one more book inside."
+            "text": "A school locker holds two books. You and a friend each carry a key, and both keys open the same locker. On your way past, you use your key to put a third book inside. Later your friend opens the locker with their key and looks in."
+          },
+          {
+            "kind": "paragraph",
+            "text": "You can say what they will find, because there is one locker no matter how many keys exist. Programs have the same shape. A collection of values can have more than one name leading to it, and changing it through one name changes it for all of them. Data code runs into this often, when a collection is passed from one part of a program to another and altered on the way. The surprise then turns up far from the line that caused it."
+          },
+          {
+            "kind": "paragraph",
+            "text": "This lesson follows one collection of values through a short program. It begins with how Python holds a row of values you can change. Then a second name is attached to the row, and we watch what happens. Making a true duplicate comes next, along with the places where duplicates fall short. The lesson finishes with a row that can't be rearranged."
           }
-        ],
-        "questionId": "python-lists-and-tuples-hook"
+        ]
       },
       "promise": "By the end you'll tell when two Python names share one list, and when a copy keeps them apart.",
-      "estimatedMinutes": 10
+      "estimatedMinutes": 12
     },
     "recap": {
       "keyIdea": "Assignment shares a list; copy makes a new outer list but keeps shared inner lists; append changes in place and returns None.",
       "blocks": [
         {
           "kind": "paragraph",
-          "text": "You found a holds 3 items after b.append, and that a stays at 3 items after a copy. You also summed a slice of 5 and 8 to get 13."
+          "text": "Back at the locker, two keys opened one list and a copy gave you a second. You found that a holds 3 items after b.append, that a keeps 2 after a copy, that a list inside a tuple can still grow to 3 items, and that the slice [2, 5, 8, 11][1:3] adds up to 13."
         }
       ],
-      "nextHook": "Next: dictionaries and sets, where items are found by key instead of position."
+      "nextHook": "A list finds an item by its position, which is awkward on a café's tally board, where you want the tea line wherever it sits. The next lesson looks things up by name instead."
     },
     "calculator": "off",
     "taughtSkills": [
@@ -649,7 +669,7 @@
         "kind": "numeric",
         "value": 3,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "Both names refer to the list [1, 4, 7], so a has three items."
       },
@@ -745,7 +765,7 @@
         "kind": "numeric",
         "value": 3,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The list inside the tuple is now [1, 2, 3]."
       },
@@ -783,7 +803,7 @@
         "kind": "numeric",
         "value": 13,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The selected items are 5 and 8; their sum is 13."
       },
@@ -829,7 +849,7 @@
         "kind": "numeric",
         "value": 2,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The separate outer list b grows, while a stays [3, 9]."
       },
@@ -867,7 +887,7 @@
         "kind": "numeric",
         "value": 6,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The two-item list is repeated three times, producing six items."
       },
@@ -916,7 +936,7 @@
         "kind": "numeric",
         "value": 2,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "x and y share [2, 3]. z is a copy, so appending 4 to it leaves x at two items."
       },
@@ -962,7 +982,7 @@
         "kind": "numeric",
         "value": 3,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "One locker with 2 + 1 = 3 books."
       },
@@ -1124,7 +1144,7 @@
         "kind": "numeric",
         "value": 2,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "a still has its two inner lists."
       },
@@ -1162,7 +1182,7 @@
         "kind": "numeric",
         "value": 3,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "a[0] is [1, 2, 9], three items."
       },
@@ -1183,21 +1203,35 @@
   ],
   "citations": [
     {
-      "claim": "b = a gives the same list a second name, and append changes that one list in place.",
+      "claim": "A list is an ordered row of values in square brackets, indexed from zero, that can be changed in place with append or by assigning to an index.",
       "sourceId": "py-structures",
       "section": "5.1 Lists; 5.3 Tuples and sequences",
       "targetKind": "step",
-      "targetId": "one-list-two-names"
+      "targetId": "a-row-you-can-change"
     },
     {
-      "claim": "b = a does not copy the list. Think about how many lists exist when append runs.",
+      "claim": "Assignment never copies a list: b = a gives the same list a second name, while a.copy() builds a new list.",
+      "sourceId": "py-structures",
+      "section": "5.1 Lists; 5.3 Tuples and sequences",
+      "targetKind": "step",
+      "targetId": "two-names-one-list"
+    },
+    {
+      "claim": "After b = a, a change made through b shows through a because both names lead to one list.",
       "sourceId": "py-structures",
       "section": "5.1 Lists; 5.3 Tuples and sequences",
       "targetKind": "step",
       "targetId": "who-sees-the-new-item"
     },
     {
-      "claim": "With items = [4, 7], what goes wrong in items = items.append(9)?",
+      "claim": "list.append changes the list in place and returns None, so items = items.append(9) leaves items as None.",
+      "sourceId": "py-structures",
+      "section": "5.1 Lists; 5.3 Tuples and sequences",
+      "targetKind": "step",
+      "targetId": "what-append-hands-back"
+    },
+    {
+      "claim": "append returns None, and storing that result under the list's name loses the list.",
       "sourceId": "py-structures",
       "section": "5.1 Lists; 5.3 Tuples and sequences",
       "targetKind": "step",
@@ -1208,28 +1242,42 @@
       "sourceId": "py-structures",
       "section": "5.1 Lists; 5.3 Tuples and sequences",
       "targetKind": "step",
-      "targetId": "copy-one-level"
+      "targetId": "lists-inside-lists"
     },
     {
-      "claim": "With a = [[1, 2], [3]], b = a.copy() and b[0].append(9), how many items do a and a[0] hold?",
+      "claim": "After a shallow copy, an inner list is shared, so appending to it through the copy shows in the original.",
       "sourceId": "py-structures",
       "section": "5.1 Lists; 5.3 Tuples and sequences",
       "targetKind": "step",
       "targetId": "inner-lists-are-shared"
     },
     {
-      "claim": "A tuple fixes which objects it holds. It does not stop one of those objects, if it is a list, from changing.",
+      "claim": "A tuple fixes which objects it holds but cannot stop a mutable object inside it from changing.",
+      "sourceId": "py-structures",
+      "section": "5.1 Lists; 5.3 Tuples and sequences",
+      "targetKind": "step",
+      "targetId": "a-row-that-stays-put"
+    },
+    {
+      "claim": "A list inside a tuple can still grow.",
       "sourceId": "py-structures",
       "section": "5.1 Lists; 5.3 Tuples and sequences",
       "targetKind": "step",
       "targetId": "a-list-inside-a-tuple"
     },
     {
-      "claim": "A list slice uses the same boundaries as a string slice: start included, stop excluded. Multiplying a list repeats its items: [1, 2] * 2 is [1, 2, 1, 2].",
+      "claim": "A list slice includes its start and excludes its stop and builds a new list, and multiplying a list repeats its items.",
       "sourceId": "py-structures",
       "section": "5.1 Lists; 5.3 Tuples and sequences",
       "targetKind": "step",
-      "targetId": "slice-and-repeat"
+      "targetId": "slicing-and-repeating"
+    },
+    {
+      "claim": "A list slice uses the same boundaries as a string slice.",
+      "sourceId": "py-structures",
+      "section": "5.1 Lists; 5.3 Tuples and sequences",
+      "targetKind": "step",
+      "targetId": "sum-a-slice"
     },
     {
       "claim": "3. a and b lead to one list, so the item appended through b is in a too.",
@@ -1279,27 +1327,6 @@
       "section": "5.1 Lists; 5.3 Tuples and sequences",
       "targetKind": "question",
       "targetId": "python-lists-and-tuples-7"
-    },
-    {
-      "claim": "3. Both keys open one locker, so your book is there for your friend too. Python names can share a list the same way.",
-      "sourceId": "py-structures",
-      "section": "5.1 Lists; 5.3 Tuples and sequences",
-      "targetKind": "question",
-      "targetId": "python-lists-and-tuples-hook"
-    },
-    {
-      "claim": "One list with two names. Assignment attaches a name; it never copies the list.",
-      "sourceId": "py-structures",
-      "section": "5.1 Lists; 5.3 Tuples and sequences",
-      "targetKind": "question",
-      "targetId": "python-lists-and-tuples-alias-check"
-    },
-    {
-      "claim": "Yes. The copy has a new outer list but holds the same inner lists.",
-      "sourceId": "py-structures",
-      "section": "5.1 Lists; 5.3 Tuples and sequences",
-      "targetKind": "question",
-      "targetId": "python-lists-and-tuples-shallow-check"
     },
     {
       "claim": "2. The outer list still holds two inner lists. The append went into one of them.",

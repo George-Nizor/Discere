@@ -31,8 +31,8 @@ The top-level metadata inventory is complete; nested child-page discovery and co
 His 1 October Brilliant screenshots govern the active interface: illustrated connected learning
 paths, dimensional pedestals, an original companion, a consistent dark neutral/green theme,
 question-first teaching, earned sound and a green frame, corrections after mistakes and fresh
-recall. Roman and Electronics are archived from discovery. Their saved histories and routes remain
-available. Earlier Roman approval stops are superseded by George's delegated decisions.
+recall. Electronics is archived from discovery; its saved history and routes remain available.
+The Roman prototype and its reference flow were removed on 2026-10-16.
 
 Keep edits inside Discere. Preserve Instrumenta and Claude's wrapper work, server-owned answers,
 tutoring permissions and the host-neutral learning core. Do not add an OpenAI API dependency.

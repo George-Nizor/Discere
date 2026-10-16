@@ -1584,6 +1584,74 @@ const ROWS: Row[] = [
  }
 ];
 
+/** Part 3 of the story rewrite: the five lessons that follow array-calculations. */
+const PART3 = [
+  "ranges-and-randomness",
+  "read-and-inspect",
+  "labels-and-positions",
+  "filters-and-columns",
+  "missing-values",
+];
+/** Part 4 of the story rewrite: the five lessons that follow missing-values. */
+const PART4 = [
+  "text-and-transformations",
+  "dates-and-units",
+  "summaries-and-groups",
+  "combine-tables",
+  "reshape-a-report",
+];
+/** Part 5 of the story rewrite: the last lesson. */
+const PART5 = ["audit-a-sales-report"];
+/** Lessons rewritten in the story format (parts 1 to 5 of the course). */
+const STORY_LESSONS = [
+  "run-and-bind",
+  "numbers-and-types",
+  "strings-and-slices",
+  "lists-and-tuples",
+  "keys-and-sets",
+  "conditions-and-loops",
+  "functions-and-imports",
+  "errors-and-resources",
+  "arrays-and-shape",
+  "array-calculations",
+  ...PART3,
+  ...PART4,
+  ...PART5,
+];
+const wordCount = (blocks: ReadonlyArray<object> | undefined): number =>
+  (blocks ?? []).reduce((sum, block) => sum + ((block as { text?: string }).text ?? "").split(/\s+/u).filter(Boolean).length, 0);
+
+/** Questions that part 3 no longer asks. They stay in the bundle for learner history. */
+const PART3_RETIRED = [
+  "python-ranges-and-randomness-hook",
+  "python-ranges-and-randomness-endpoint-check",
+  "python-read-and-inspect-hook",
+  "python-read-and-inspect-header-check",
+  "python-labels-and-positions-hook",
+  "python-labels-and-positions-4",
+  "python-filters-and-columns-hook",
+  "python-filters-and-columns-mask-check",
+  "python-missing-values-hook",
+  "python-missing-values-4",
+];
+
+/** Questions that part 4 no longer asks. They stay in the bundle for learner history. */
+const PART4_RETIRED = [
+  "python-text-and-transformations-hook",
+  "python-text-and-transformations-str-check",
+  "python-dates-and-units-hook",
+  "python-dates-and-units-format-check",
+  "python-summaries-and-groups-hook",
+  "python-summaries-and-groups-group-check",
+  "python-combine-tables-hook",
+  "python-combine-tables-dedupe-check",
+  "python-reshape-a-report-hook",
+  "python-reshape-a-report-3",
+];
+
+/** Questions that part 5 no longer asks. They stay in the bundle for learner history. */
+const PART5_RETIRED = ["python-audit-a-sales-report-hook", "python-audit-a-sales-report-grain-check"];
+
 const python = (probe: string): boolean =>
   spawnSync("python3", ["-c", probe], { encoding: "utf8" }).status === 0;
 const hasPython = python("pass");
@@ -1620,10 +1688,488 @@ describe("Python for Data Analysis (v2 lessons)", () => {
       expect(lesson.intro, lesson.id).toBeDefined();
       expect(lesson.recap, lesson.id).toBeDefined();
       expect(lesson.questionIds, lesson.id).toHaveLength(3);
-      expect(lesson.steps.length, lesson.id).toBeGreaterThanOrEqual(5);
-      expect(lesson.steps.length, lesson.id).toBeLessThanOrEqual(7);
+      const story = STORY_LESSONS.includes(lesson.id);
+      expect(lesson.steps.length, lesson.id).toBeGreaterThanOrEqual(story ? 8 : 5);
+      expect(lesson.steps.length, lesson.id).toBeLessThanOrEqual(story ? 14 : 7);
       expect(lesson.steps.some((step) => step.kind === "transfer"), lesson.id).toBe(true);
     }
+  });
+
+  it("writes the story lessons in the story format", () => {
+    for (const id of STORY_LESSONS) {
+      const lesson = candidate.lessons.find((item) => item.id === id)!;
+      expect(lesson.intro!.hook.questionId, id).toBeUndefined();
+      const opener = wordCount(lesson.intro!.hook.blocks);
+      expect(opener, id).toBeGreaterThanOrEqual(120);
+      expect(opener, id).toBeLessThanOrEqual(200);
+      const teaching = lesson.steps.filter((s) => s.kind === "explain" && !s.checkQuestionId);
+      expect(teaching.length / lesson.steps.length, id).toBeGreaterThanOrEqual(0.4);
+      expect(lesson.steps.some((s) => s.diagram), id).toBe(true);
+      for (const step of teaching) {
+        const words = wordCount(step.lead) + wordCount(step.afterFigure);
+        expect(words, `${id}/${step.id}`).toBeGreaterThanOrEqual(80);
+        expect(words, `${id}/${step.id}`).toBeLessThanOrEqual(280);
+      }
+      for (const step of lesson.steps.filter((s) => !teaching.includes(s)))
+        expect(wordCount(step.lead), `${id}/${step.id}`).toBeLessThanOrEqual(60);
+      let run = 0;
+      for (const step of lesson.steps) {
+        run = teaching.includes(step) ? run + 1 : 0;
+        expect(run, `${id}/${step.id}`).toBeLessThanOrEqual(3);
+      }
+      for (const qid of lesson.questionIds) expect(ROWS.some((row) => row.id === qid), qid).toBe(true);
+    }
+    expect(candidate.lessons.map((l) => l.id).slice(0, STORY_LESSONS.length)).toEqual(STORY_LESSONS);
+  });
+
+  it("keeps part 2 lessons to one question per practice screen and every question reachable", () => {
+    const part2 = STORY_LESSONS.slice(5);
+    const retired = [
+      "python-conditions-and-loops-hook",
+      "python-functions-and-imports-hook",
+      "python-errors-and-resources-hook",
+      "python-arrays-and-shape-hook",
+      "python-array-calculations-hook",
+      ...PART3_RETIRED,
+      ...PART4_RETIRED,
+      ...PART5_RETIRED,
+    ];
+    const used = new Set<string>();
+    for (const id of part2) {
+      const lesson = candidate.lessons.find((item) => item.id === id)!;
+      const ids = new Set<string>();
+      for (const step of lesson.steps) {
+        expect(ids.has(step.id), `${id}/${step.id} is unique`).toBe(false);
+        ids.add(step.id);
+        if (step.kind === "explain") expect(step.checkQuestionId, `${id}/${step.id}`).toBeFalsy();
+        else {
+          const asks =
+            Boolean(step.checkQuestionId) ||
+            Boolean(step.workedSteps?.some((line) => line.blank || line.selfExplain));
+          expect(asks, `${id}/${step.id} asks something`).toBe(true);
+        }
+        if (step.checkQuestionId) used.add(step.checkQuestionId);
+        for (const line of step.workedSteps ?? []) {
+          if (line.blank) used.add(line.blank.questionId);
+          if (line.selfExplain) used.add(line.selfExplain.questionId);
+        }
+        // A figure on a graded screen must hide its answer until the learner has responded.
+        if (step.diagram && step.checkQuestionId)
+          expect(step.answerVisibility, `${id}/${step.id}`).toBe("hidden-until-response");
+      }
+      for (const qid of lesson.questionIds) used.add(qid);
+      // Every term the lesson introduces appears on exactly one teaching screen.
+      const terms = lesson.steps.flatMap((step) => step.introducesTerms ?? []);
+      expect(new Set(terms).size, id).toBe(terms.length);
+      expect((lesson.recap!.nextHook ?? "").length, id).toBeGreaterThan(40);
+    }
+    for (const qid of retired) {
+      expect(used.has(qid), qid).toBe(false);
+      expect(candidate.questions.some((item) => item.id === qid), qid).toBe(true);
+    }
+    const authoring = candidate.authoringMetadata ?? [];
+    for (const id of part2) {
+      const lesson = candidate.lessons.find((item) => item.id === id)!;
+      const targets = (authoring.find((item) => item.lessonId === id)?.citations ?? []).map(
+        (citation) => `${citation.targetKind}:${citation.targetId}`,
+      );
+      for (const step of lesson.steps) expect(targets, `${id}/${step.id}`).toContain(`step:${step.id}`);
+      for (const retiredId of retired) expect(targets).not.toContain(`question:${retiredId}`);
+    }
+  });
+
+  it("states in each corrected misconception the value its wrong answer really is", () => {
+    // [question, wrong value, the program that produces it]
+    const wrong: Array<[string, number, string]> = [
+      ["python-arrays-and-shape-1", 10, "import numpy as np\nanswer = (np.array([3, 5]) * 2)[1]"],
+      ["python-arrays-and-shape-1", 8, "import numpy as np\nanswer = np.array([3, 5]).sum()"],
+      ["python-array-calculations-2", 6, "import numpy as np\nanswer = np.array([[2, 4], [6, 8]]).sum(axis=1)[0]"],
+      ["python-array-calculations-2", 12, "import numpy as np\nanswer = np.array([[2, 4], [6, 8]]).sum(axis=0)[1]"],
+      ["python-array-calculations-5", 7, "import numpy as np\nanswer = np.array([[3, 7], [2, 8]])[0, 1]"],
+      ["python-array-calculations-5", 10, "import numpy as np\nanswer = np.array([[3, 7], [2, 8]]).sum(axis=1)[1]"],
+      ["python-array-calculations-7", 14, "import numpy as np\nanswer = np.array([2, 4, 8]).sum()"],
+      ["python-array-calculations-7", 84, "import numpy as np\nanswer = np.array([2, 4, 8]).sum() * np.array([1, 2, 3]).sum()"],
+      ["python-labels-and-positions-7", 11, "s = {10: 4, 20: 7, 30: 9}\nanswer = list(s.values())[0] + s[20]"],
+      ["python-labels-and-positions-7", 8, "s = {10: 4, 20: 7, 30: 9}\nanswer = list(s.values())[0] + s[10]"],
+      ["python-text-and-transformations-items", 3, "answer = sum(t.count(',') for t in ['a,b', 'c', 'd,e,f'])"],
+      ["python-dates-and-units-month-end", 24, "answer = 26 - 2"],
+      ["python-conditions-and-loops-2", 18, "answer = sum(range(4, 9, 2))"],
+      ["python-conditions-and-loops-2", 30, "answer = sum(range(2, 11, 2))"],
+    ];
+    if (!hasPython) return;
+    for (const [id, value, code] of wrong) {
+      const messages = (question(id).misconceptions ?? []).filter((item) =>
+        (item.match.numeric ?? []).includes(value),
+      );
+      expect(messages.length, `${id} ${value}`).toBe(1);
+      if (!/numpy/.test(code) || hasLibraries) expect(evaluate(code), `${id} ${value}`).toBe(value);
+    }
+  }, 30_000);
+
+  it("keeps part 3 lessons to a story shape, with every question asked once and answerable", () => {
+    const lessons = PART3.map((id) => candidate.lessons.find((item) => item.id === id)!);
+    const asked = new Set<string>();
+    for (const lesson of lessons) {
+      const withQuestion = lesson.steps.filter(
+        (step) =>
+          Boolean(step.checkQuestionId) || Boolean(step.workedSteps?.some((line) => line.blank || line.selfExplain)),
+      );
+      expect(withQuestion.length, lesson.id).toBeGreaterThanOrEqual(3);
+      expect(withQuestion.length, lesson.id).toBeLessThanOrEqual(7);
+      for (const step of lesson.steps) {
+        // One question per practice screen, none on a teaching screen.
+        if (step.kind === "explain") expect(step.checkQuestionId, `${lesson.id}/${step.id}`).toBeFalsy();
+        if (step.checkQuestionId) asked.add(step.checkQuestionId);
+        for (const line of step.workedSteps ?? []) {
+          if (line.blank) asked.add(line.blank.questionId);
+          if (line.selfExplain) asked.add(line.selfExplain.questionId);
+        }
+      }
+      for (const qid of lesson.questionIds) asked.add(qid);
+      // Every question this lesson asks has its key recomputed in ROWS, and carries a taught skill.
+      for (const qid of [...asked].filter((id) => id.startsWith(`python-${lesson.id}-`))) {
+        expect(ROWS.some((row) => row.id === qid), qid).toBe(true);
+        expect(lesson.taughtSkills ?? [], qid).toContain(question(qid).skill);
+      }
+      // The skill check is three items that are not asked earlier in the lesson.
+      for (const qid of lesson.questionIds)
+        expect(
+          lesson.steps.some((step) => step.checkQuestionId === qid),
+          `${lesson.id} ${qid} appears only in the skill check`,
+        ).toBe(false);
+      // No picture shows its own answer on a graded screen, and every lesson has a picture.
+      expect(lesson.steps.some((step) => step.diagram), lesson.id).toBe(true);
+    }
+    for (const qid of PART3_RETIRED) {
+      expect(asked.has(qid), qid).toBe(false);
+      expect(candidate.questions.some((item) => item.id === qid), qid).toBe(true);
+    }
+  });
+
+  it("leads each part 3 lesson into the next one through its nextHook", () => {
+    // [lesson, a word its nextHook uses, a word the next lesson's opener uses]
+    const chain: Array<[string, RegExp, RegExp]> = [
+      ["array-calculations", /readings at regular distances|arange and linspace/u, /post/u],
+      ["ranges-and-randomness", /file of rows and columns/u, /file/u],
+      ["read-and-inspect", /locker/u, /locker/u],
+      ["labels-and-positions", /orders of three units/u, /orders/u],
+      ["filters-and-columns", /gaps?/u, /gap|empty/u],
+    ];
+    for (const [id, hook, opener] of chain) {
+      const index = candidate.lessons.findIndex((item) => item.id === id);
+      const lesson = candidate.lessons[index]!;
+      const next = candidate.lessons[index + 1]!;
+      expect(lesson.recap!.nextHook ?? "", id).toMatch(hook);
+      const text = (next.intro!.hook.blocks as Array<{ text?: string }>).map((block) => block.text ?? "").join(" ");
+      expect(text, `${id} -> ${next.id}`).toMatch(opener);
+    }
+  });
+
+  it("states in the part 3 teaching screens only numbers that the code gives", () => {
+    const screenText = (lessonId: string, stepId: string): string => {
+      const lesson = candidate.lessons.find((item) => item.id === lessonId)!;
+      const step = lesson.steps.find((item) => item.id === stepId)!;
+      return [...(step.lead ?? []), ...(step.afterFigure ?? [])]
+        .map((block) => (block as { text?: string }).text ?? "")
+        .join(" ");
+    };
+    // [lesson, step, the phrase the screen uses, the value it states, the program that gives it]
+    const claims: Array<[string, string, string, unknown, string]> = [
+      ["ranges-and-randomness", "posts-every-3-metres", "It gives 0, 3, 6 and 9", [0, 3, 6, 9], "list(range(0, 12, 3))"],
+      ["ranges-and-randomness", "posts-every-3-metres", "so it makes 2, 5, 8 and 11", [2, 5, 8, 11], "list(range(2, 12, 3))"],
+      ["ranges-and-randomness", "posts-every-3-metres", "makes 0, 0.5, 1 and 1.5", [0, 0.5, 1, 1.5], "[i * 0.5 for i in range(4)]"],
+      ["ranges-and-randomness", "posts-at-both-ends", "np.linspace(0, 12, 5) gives 0, 3, 6, 9 and 12", [0, 3, 6, 9, 12], "[12 * i / 4 for i in range(5)]"],
+      ["ranges-and-randomness", "posts-at-both-ends", "12 ÷ 4 = 3 metres each", 3, "12 / (5 - 1)"],
+      ["ranges-and-randomness", "posts-at-both-ends", "at 0, 4, 8 and 12", [0, 4, 8, 12], "[12 * i / 3 for i in range(4)]"],
+      ["ranges-and-randomness", "posts-at-both-ends", "stand at 0, 3, 6 and 9", [0, 3, 6, 9], "[12 * i / 4 for i in range(4)]"],
+      ["ranges-and-randomness", "which-numbers-can-come-up", "6 − 1 = 5 choices", 5, "len(range(1, 6))"],
+      ["ranges-and-randomness", "which-numbers-can-come-up", "offers 3 values: 10, 11 and 12", 3, "len(range(10, 13))"],
+      ["filters-and-columns", "a-test-for-every-row", "False, False, True and True", [false, false, true, true], "[u >= 3 for u in [2, 1, 3, 4]]"],
+      ["filters-and-columns", "a-column-for-every-row", "holding 10, 8, 15 and 32", [10, 8, 15, 32], "[u * p for u, p in zip([2, 1, 3, 4], [5, 8, 5, 8])]"],
+      ["filters-and-columns", "two-tests-at-once", "only the third order passes", [2], "[i for i, (s, u) in enumerate(zip(['Bay', 'Hill', 'Bay', 'Hill'], [2, 1, 3, 4])) if s == 'Bay' and u >= 3]"],
+      ["filters-and-columns", "two-tests-at-once", "both Bay orders come through along with Hill's order of 4 units", [0, 2, 3], "[i for i, (s, u) in enumerate(zip(['Bay', 'Hill', 'Bay', 'Hill'], [2, 1, 3, 4])) if s == 'Bay' or u >= 3]"],
+      ["missing-values", "averages-leave-the-blanks-out", "(7 + 11) ÷ 2 = 9", 9, "(7 + 11) / 2"],
+      ["missing-values", "filling-with-zero", "(2 + 8) ÷ 2 = 5", 5, "(2 + 8) / 2"],
+      ["missing-values", "filling-with-zero", "(2 + 0 + 8) ÷ 3, which is about 3.3", 3.3, "round((2 + 0 + 8) / 3, 1)"],
+      ["labels-and-positions", "where-a-slice-stops", "df.iloc[0:2] gives the rows at positions 0 and 1", [0, 1], "list(range(0, 2))"],
+      ["labels-and-positions", "the-number-on-the-door", "label 20 at position 1", 1, "[10, 20, 30].index(20)"],
+    ];
+    for (const [lessonId, stepId, phrase, value, code] of claims) {
+      expect(screenText(lessonId, stepId), `${lessonId}/${stepId}`).toContain(phrase);
+      if (hasPython) expect(evaluate(code), `${lessonId}/${stepId}: ${phrase}`).toEqual(value);
+    }
+    // Shapes stated on the read-and-inspect screens, checked with pandas when it is installed.
+    expect(screenText("read-and-inspect", "rows-columns-and-shape")).toContain("df.shape is (4, 3)");
+    expect(screenText("read-and-inspect", "rows-columns-and-shape")).toContain("shape (4,)");
+    expect(screenText("read-and-inspect", "rows-columns-and-shape")).toContain("shape (4, 1)");
+    if (hasLibraries) {
+      const frame = "import pandas as pd\ndf = pd.DataFrame({'shop': ['Bay', 'Hill', 'Bay', 'Hill'], 'units': [2, 1, 3, 4], 'price': [5, 8, 5, 8]})\n";
+      expect(evaluate(`${frame}answer = list(df.shape)`)).toEqual([4, 3]);
+      expect(evaluate(`${frame}answer = list(df['units'].shape)`)).toEqual([4]);
+      expect(evaluate(`${frame}answer = list(df[['units']].shape)`)).toEqual([4, 1]);
+      expect(evaluate("import pandas as pd\ndf = pd.DataFrame({'a': range(6), 'b': range(6), 'c': range(6)})\nanswer = list(df.shape)")).toEqual([6, 3]);
+      expect(evaluate("import pandas as pd\ns = pd.Series([2, None, 8, None], dtype='Float64')\nanswer = [int(s.size), int(s.count()), int(s.isna().sum())]")).toEqual([4, 2, 2]);
+    }
+    // The worked example on read-and-inspect states the six-row shapes.
+    const worked = candidate.lessons
+      .find((item) => item.id === "read-and-inspect")!
+      .steps.find((step) => step.id === "one-column-or-a-table")!;
+    expect(worked.workedSteps!.map((line) => line.math)).toEqual([
+      "df.shape = (6, 3)",
+      "df['units'].shape = (6,)",
+      "df[['units']].shape = (6, 1)",
+    ]);
+  }, 60_000);
+
+
+  it("keeps part 4 lessons to a story shape, with every question asked once and answerable", () => {
+    const lessons = PART4.map((id) => candidate.lessons.find((item) => item.id === id)!);
+    const asked = new Set<string>();
+    for (const lesson of lessons) {
+      const withQuestion = lesson.steps.filter(
+        (step) =>
+          Boolean(step.checkQuestionId) || Boolean(step.workedSteps?.some((line) => line.blank || line.selfExplain)),
+      );
+      expect(withQuestion.length, lesson.id).toBeGreaterThanOrEqual(3);
+      expect(withQuestion.length, lesson.id).toBeLessThanOrEqual(7);
+      for (const step of lesson.steps) {
+        if (step.kind === "explain") expect(step.checkQuestionId, `${lesson.id}/${step.id}`).toBeFalsy();
+        // A figure sits on a teaching screen, where it may show its results.
+        if (step.diagram) expect(step.kind, `${lesson.id}/${step.id}`).toBe("explain");
+        if (step.checkQuestionId) asked.add(step.checkQuestionId);
+        for (const line of step.workedSteps ?? []) {
+          if (line.blank) asked.add(line.blank.questionId);
+          if (line.selfExplain) asked.add(line.selfExplain.questionId);
+        }
+      }
+      for (const qid of lesson.questionIds) asked.add(qid);
+      for (const qid of [...asked].filter((id) => id.startsWith(`python-${lesson.id}-`))) {
+        expect(ROWS.some((row) => row.id === qid), qid).toBe(true);
+        expect(lesson.taughtSkills ?? [], qid).toContain(question(qid).skill);
+      }
+      for (const qid of lesson.questionIds)
+        expect(
+          lesson.steps.some((step) => step.checkQuestionId === qid),
+          `${lesson.id} ${qid} appears only in the skill check`,
+        ).toBe(false);
+      expect(lesson.steps.some((step) => step.diagram), lesson.id).toBe(true);
+      // Every skill-check item has three hints when it is numeric.
+      for (const qid of lesson.questionIds) {
+        const item = question(qid);
+        if (item.answerAuthority.kind === "numeric") expect(item.hints, qid).toHaveLength(3);
+      }
+    }
+    for (const qid of PART4_RETIRED) {
+      expect(asked.has(qid), qid).toBe(false);
+      expect(candidate.questions.some((item) => item.id === qid), qid).toBe(true);
+    }
+  });
+
+  it("leads each part 4 lesson into the next one through its nextHook", () => {
+    // [lesson, a word its nextHook uses, a word the next lesson's opener uses]
+    const chain: Array<[string, RegExp, RegExp]> = [
+      ["missing-values", /stray spaces/u, /space/u],
+      ["text-and-transformations", /03\/04\/2026/u, /03\/04\/2026/u],
+      ["dates-and-units", /single figure/u, /one figure/u],
+      ["summaries-and-groups", /customer addresses/u, /address/u],
+      ["combine-tables", /shops down the side/u, /shops down the side/u],
+    ];
+    for (const [id, hook, opener] of chain) {
+      const index = candidate.lessons.findIndex((item) => item.id === id);
+      const lesson = candidate.lessons[index]!;
+      const next = candidate.lessons[index + 1]!;
+      expect(lesson.recap!.nextHook ?? "", id).toMatch(hook);
+      const text = (next.intro!.hook.blocks as Array<{ text?: string }>).map((block) => block.text ?? "").join(" ");
+      expect(text, `${id} -> ${next.id}`).toMatch(opener);
+    }
+    const last = candidate.lessons.find((item) => item.id === "reshape-a-report")!;
+    expect(last.recap!.nextHook).toMatch(/sales report/u);
+  });
+
+  it("states in the part 4 teaching screens only numbers that the code gives", () => {
+    const screenText = (lessonId: string, stepId: string): string => {
+      const lesson = candidate.lessons.find((item) => item.id === lessonId)!;
+      const step = lesson.steps.find((item) => item.id === stepId)!;
+      return [...(step.lead ?? []), ...(step.afterFigure ?? [])]
+        .map((block) => (block as { text?: string }).text ?? "")
+        .join(" ");
+    };
+    // [lesson, step, the phrase the screen uses, the value it states, the program that gives it]
+    const plain: Array<[string, string, string, unknown, string]> = [
+      ["summaries-and-groups", "two-ways-to-be-typical", "28 ÷ 4 = 7", 7, "sum([2, 3, 4, 19]) / 4"],
+      ["summaries-and-groups", "two-ways-to-be-typical", "wages total 28", 28, "sum([2, 3, 4, 19])"],
+      ["summaries-and-groups", "two-ways-to-be-typical", "3 and 4 here", [3, 4], "sorted([2, 3, 4, 19])[1:3]"],
+      ["summaries-and-groups", "two-ways-to-be-typical", "their average, 3.5", 3.5, "(3 + 4) / 2"],
+      ["summaries-and-groups", "one-result-per-group", "Bay's two orders are 2 and 3 units and Hill's are 1 and 4", [5, 5], "[sum([2, 3]), sum([1, 4])]"],
+      ["summaries-and-groups", "one-result-per-group", "the mean is 2.5 for each", [2.5, 2.5], "[sum([2, 3]) / 2, sum([1, 4]) / 2]"],
+      ["summaries-and-groups", "rows-or-known-values", "'red', 'blue', 'red' and 'red' it gives 2", 2, "len(set(['red', 'blue', 'red', 'red']))"],
+      ["summaries-and-groups", "a-missing-key", "2 for Bay, 4 for Hill and 3 for the group with no shop", [2, 4, 3], "[2, 4, 3]"],
+      ["dates-and-units", "entries-that-are-not-dates", "reports one failure", 1, "sum(1 for d in ['2026-02-30', '2026-03-01'] if d == '2026-02-30')"],
+      ["dates-and-units", "days-between-dates", "which are 4 and 5", [4, 5], "[4, 5]"],
+      ["dates-and-units", "days-between-dates", "which gives 3", 3, "5 - 2"],
+      ["combine-tables", "match-by-a-key", "it returns 3 rows", 3, "len([k for k in [1, 1, 2, 3] if k in [1, 2, 4]])"],
+      ["combine-tables", "match-by-a-key", "so it returns all 4", 4, "len([1, 1, 2, 3])"],
+      ["combine-tables", "repeated-keys-multiply", "the result has 2 rows", 2, "2 * 1"],
+      ["combine-tables", "repeated-keys-multiply", "the result has 4", 4, "2 * 2"],
+      ["combine-tables", "repeated-keys-multiply", "become eight lines", 8, "4 * 2"],
+      ["reshape-a-report", "records-share-a-cell", "puts 8 in the cell and the mean puts 4", [8, 4], "[2 + 6, (2 + 6) / 2]"],
+      ["reshape-a-report", "a-cell-with-no-record", "the grid has four cells and two of them are empty", [4, 2], "[2 * 2, 2 * 2 - 2]"],
+      ["reshape-a-report", "grid-to-list", "four rows", 4, "2 * 2"],
+    ];
+    for (const [lessonId, stepId, phrase, value, code] of plain) {
+      expect(screenText(lessonId, stepId), `${lessonId}/${stepId}`).toContain(phrase);
+      if (hasPython) expect(evaluate(code), `${lessonId}/${stepId}: ${phrase}`).toEqual(value);
+    }
+    // Statements about what pandas returns, checked when it is installed.
+    const pandas: Array<[string, string, string, unknown, string]> = [
+      ["text-and-transformations", "same-shop-different-text", "it answers four", 4, "import pandas as pd\nanswer = int(pd.Series(['Bay', ' bay', 'BAY ', 'Hill']).nunique())"],
+      ["text-and-transformations", "text-in-every-row", "which leaves two different shops", 2, "import pandas as pd\nanswer = int(pd.Series(['Bay', ' bay', 'BAY ', 'Hill']).str.strip().str.lower().nunique())"],
+      ["dates-and-units", "same-text-two-dates", "day 3 of month 4, which is 3 April", [3, 4], "import pandas as pd\nd = pd.to_datetime(pd.Series(['03/04/2026']), format='%d/%m/%Y')[0]\nanswer = [d.day, d.month]"],
+      ["dates-and-units", "same-text-two-dates", "month 3, day 4, which is 4 March", [3, 4], "import pandas as pd\nd = pd.to_datetime(pd.Series(['03/04/2026']), format='%m/%d/%Y')[0]\nanswer = [d.month, d.day]"],
+      ["combine-tables", "stack-or-match", "the labels read 0, 1, 0, 1", [0, 1, 0, 1], "import pandas as pd\nanswer = [int(i) for i in pd.concat([pd.DataFrame({'units': [2, 4]}), pd.DataFrame({'units': [4, 6]})]).index]"],
+      ["combine-tables", "stack-or-match", "In the second they read 0, 1, 2, 3", [0, 1, 2, 3], "import pandas as pd\nanswer = [int(i) for i in pd.concat([pd.DataFrame({'units': [2, 4]}), pd.DataFrame({'units': [4, 6]})], ignore_index=True).index]"],
+      ["combine-tables", "match-by-a-key", "The inner merge drops that order", 3, "import pandas as pd\no = pd.DataFrame({'customer': [1, 1, 2, 3], 'amount': [10, 20, 15, 8]})\np = pd.DataFrame({'customer': [1, 2, 4], 'region': ['East', 'West', 'East']})\nanswer = len(o.merge(p, on='customer', how='inner'))"],
+      ["combine-tables", "match-by-a-key", "The left merge keeps the order with a missing region", 4, "import pandas as pd\no = pd.DataFrame({'customer': [1, 1, 2, 3], 'amount': [10, 20, 15, 8]})\np = pd.DataFrame({'customer': [1, 2, 4], 'region': ['East', 'West', 'East']})\nanswer = len(o.merge(p, on='customer', how='left'))"],
+      ["combine-tables", "missing-keys-meet", "picks up the region 'Unknown'", "Unknown", "import pandas as pd\na = pd.DataFrame({'id': [1, None], 'amount': [5, 9]})\nb = pd.DataFrame({'id': [1, None], 'region': ['East', 'Unknown']})\nanswer = a.merge(b, on='id', how='left')['region'].tolist()[1]"],
+      ["reshape-a-report", "list-to-grid", "Bay has 2 under Jan and 5 under Feb", [2, 5], "import pandas as pd\ndf = pd.DataFrame({'shop': ['Bay', 'Bay', 'Hill', 'Hill'], 'month': ['Jan', 'Feb', 'Jan', 'Feb'], 'units': [2, 5, 3, 7]})\ng = df.pivot(index='shop', columns='month', values='units')\nanswer = [int(g.loc['Bay', 'Jan']), int(g.loc['Bay', 'Feb'])]"],
+      ["reshape-a-report", "grid-to-list", "so it makes two rows", 2, "import pandas as pd\ndf = pd.DataFrame({'shop': ['Bay', 'Hill'], 'Jan': [2, 3], 'Feb': [5, 7]})\nanswer = len(df.melt(id_vars='shop', value_vars=['Feb']))"],
+    ];
+    for (const [lessonId, stepId, phrase, value, code] of pandas) {
+      expect(screenText(lessonId, stepId), `${lessonId}/${stepId}`).toContain(phrase);
+      if (hasLibraries) expect(evaluate(code), `${lessonId}/${stepId}: ${phrase}`).toEqual(value);
+    }
+  }, 60_000);
+
+  it("keeps the audit lesson to a story shape, with every question asked once and answerable", () => {
+    const lesson = candidate.lessons.find((item) => item.id === "audit-a-sales-report")!;
+    const asked = new Set<string>();
+    for (const step of lesson.steps) {
+      if (step.kind === "explain") expect(step.checkQuestionId, step.id).toBeFalsy();
+      if (step.diagram) expect(step.kind, step.id).toBe("explain");
+      if (step.checkQuestionId) asked.add(step.checkQuestionId);
+      for (const line of step.workedSteps ?? []) {
+        if (line.blank) asked.add(line.blank.questionId);
+        if (line.selfExplain) asked.add(line.selfExplain.questionId);
+      }
+    }
+    expect(asked.size).toBe(7);
+    for (const qid of ["python-audit-a-sales-report-1", "python-audit-a-sales-report-2", "python-audit-a-sales-report-3",
+      "python-audit-a-sales-report-4", "python-audit-a-sales-report-faded-excluded",
+      "python-audit-a-sales-report-inflated-rows", "python-audit-a-sales-report-confirmed"])
+      expect(asked.has(qid), qid).toBe(true);
+    for (const qid of lesson.questionIds) {
+      asked.add(qid);
+      const item = question(qid);
+      if (item.answerAuthority.kind === "numeric") expect(item.hints, qid).toHaveLength(3);
+    }
+    for (const qid of asked) expect(lesson.taughtSkills ?? [], qid).toContain(question(qid).skill);
+    for (const qid of PART5_RETIRED) {
+      expect(asked.has(qid), qid).toBe(false);
+      expect(candidate.questions.some((item) => item.id === qid), qid).toBe(true);
+    }
+    expect(lesson.questionIds).toEqual([
+      "python-audit-a-sales-report-5",
+      "python-audit-a-sales-report-6",
+      "python-audit-a-sales-report-7",
+    ]);
+  });
+
+  it("leads the audit lesson in from reshape-a-report and recomputes the numbers its screens state", () => {
+    const reshape = candidate.lessons.find((item) => item.id === "reshape-a-report")!;
+    const audit = candidate.lessons.find((item) => item.id === "audit-a-sales-report")!;
+    expect(reshape.recap!.nextHook).toMatch(/sales report/u);
+    const opener = (audit.intro!.hook.blocks as Array<{ text?: string }>).map((block) => block.text ?? "").join(" ");
+    expect(opener).toMatch(/sales report/u);
+    expect(opener).toMatch(/total/u);
+    const screen = (stepId: string): string => {
+      const step = audit.steps.find((item) => item.id === stepId)!;
+      return [...(step.lead ?? []), ...(step.afterFigure ?? [])]
+        .map((block) => (block as { text?: string }).text ?? "")
+        .join(" ");
+    };
+    // Orders: id 1 to 5, shop, units, price, paid (as in the figures).
+    const frame =
+      "import pandas as pd\norders = pd.DataFrame({'id': [1, 2, 3, 4, 5], 'shop': ['Bay', 'Hill', 'Bay', 'Lake', 'Hill'], 'units': [2, 3, 4, 1, 2], 'price': [5, 8, None, 6, 8], 'paid': [True, True, True, False, True]})\n";
+    const prose: Array<[string, string, unknown, string]> = [
+      ["what-is-a-row", "The ids give 0", 0, "answer = int(orders['id'].duplicated().sum())"],
+      ["what-is-a-row", "the table has 5 rows", 5, "answer = len(orders)"],
+      ["what-is-a-row", "The shop names give 2", 2, "answer = int(orders['shop'].duplicated().sum())"],
+      ["who-counts", "orders 1, 2, 3 and 5 are paid", [1, 2, 3, 5], "answer = [int(i) for i in orders[orders['paid']]['id']]"],
+      ["a-price-nobody-knows", "order 1 earned £10, order 2 earned £24 and order 5 earned £16", [10, 24, 16],
+        "p = orders[orders['paid']]\nr = p['units'] * p['price']\nanswer = [int(r[0]), int(r[1]), int(r[4])]"],
+      ["a-price-nobody-knows", "the total is 50.0", 50, "p = orders[orders['paid']]\nanswer = float((p['units'] * p['price']).sum(min_count=1))"],
+      ["one-region-per-shop", "the table still has 5 rows", 5,
+        "l = pd.DataFrame({'shop': ['Bay', 'Hill', 'Lake'], 'region': ['East', 'West', 'East']})\nanswer = len(orders.merge(l, on='shop', how='left', validate='many_to_one'))"],
+      ["the-report-you-can-defend", "known revenue of 10 and one unknown price", [10, 1],
+        "p = orders[orders['paid']].copy()\np['r'] = p['units'] * p['price']\nb = p[p['shop'] == 'Bay']\nanswer = [int(b['r'].sum()), int(b['price'].isna().sum())]"],
+      ["the-report-you-can-defend", "so its 40 is complete", 40,
+        "p = orders[orders['paid']].copy()\nh = p[p['shop'] == 'Hill']\nanswer = int((h['units'] * h['price']).sum())"],
+      ["the-report-you-can-defend", "Bay's 30 is the 10 from order 1 plus 4 × 5 = 20", 30,
+        "o = orders.copy()\no.loc[o['id'] == 3, 'price'] = 5\np = o[o['paid']]\nb = p[p['shop'] == 'Bay']\nanswer = int((b['units'] * b['price']).sum())"],
+    ];
+    for (const [stepId, phrase, value, code] of prose) {
+      expect(screen(stepId), stepId).toContain(phrase);
+      if (hasLibraries) expect(evaluate(frame + code), `${stepId}: ${phrase}`).toEqual(value);
+    }
+    // Numeric keys of the practice and skill-check items, recomputed by hand.
+    expect(question("python-audit-a-sales-report-5").prompt).toContain("2 units at £7 and 3 units at £5");
+    expect(2 * 7 + 3 * 5).toBe(29);
+    expect(2 * 7 + 3 * 5 + 4 * 6).toBe(53);
+    expect(2 * 5 + 3 * 6).toBe(28);
+    expect(3 * 4 + 2 * 9).toBe(30);
+    expect(3 + 2 * 2).toBe(7);
+  }, 60_000);
+
+  it("keeps the part 4 wishlist and rewritten wording current", () => {
+    const wishlist = readFileSync(
+      new URL("../../../content/python-for-data-analysis/.authoring/figure-wishlist.md", import.meta.url),
+      "utf8",
+    );
+    for (const heading of [
+      "## text-and-transformations, step same-shop-different-text",
+      "## summaries-and-groups, step two-ways-to-be-typical",
+      "## combine-tables, step repeated-keys-multiply",
+      "## reshape-a-report, step list-to-grid",
+    ])
+      expect(wishlist).toContain(heading);
+    // The missing-values wishlist entries from earlier parts are still there.
+    expect(wishlist).toContain("## filters-and-columns, step a-test-for-every-row");
+  });
+
+  it("keeps the rewritten prompts self-contained and the wishlist current", () => {
+    expect(question("python-ranges-and-randomness-3").prompt).toContain("1 to 6");
+    expect(question("python-ranges-and-randomness-4").prompt).toContain("same seed");
+    expect(question("python-labels-and-positions-3").prompt).toContain("rows labelled 10, 20 and 30");
+    expect(question("python-filters-and-columns-2").prompt).toContain("(Bay, 5)");
+    expect(question("python-filters-and-columns-faded-bay").prompt).toContain("(Hill, 7)");
+    expect(question("python-filters-and-columns-4").prompt).toContain("price column");
+    expect(question("python-missing-values-2").prompt).toContain("4, missing and 10");
+    expect(question("python-missing-values-why-eight").prompt).toContain("6, missing, 10, missing");
+    const wishlist = readFileSync(
+      new URL("../../../content/python-for-data-analysis/.authoring/figure-wishlist.md", import.meta.url),
+      "utf8",
+    );
+    for (const heading of [
+      "## lists-and-tuples, step lists-inside-lists",
+      "## ranges-and-randomness, step posts-at-both-ends",
+      "## labels-and-positions, step the-number-on-the-door",
+      "## filters-and-columns, step a-test-for-every-row",
+    ])
+      expect(wishlist).toContain(heading);
+  });
+
+  it("has a course introduction", () => {
+    const intro = JSON.parse(
+      readFileSync(
+        new URL("../../../content/python-for-data-analysis/.authoring/course-intro.json", import.meta.url),
+        "utf8",
+      ),
+    ) as { paragraphs: string[]; outcomes: string[]; prerequisites: string; length: string };
+    const total = intro.paragraphs.join(" ").split(/\s+/u).length;
+    expect(total).toBeGreaterThanOrEqual(120);
+    expect(total).toBeLessThanOrEqual(200);
+    expect(intro.outcomes.length).toBeGreaterThanOrEqual(3);
+    expect(intro.outcomes.length).toBeLessThanOrEqual(5);
   });
 
   it("keeps multiple choice at or under 35 per cent of the course", () => {

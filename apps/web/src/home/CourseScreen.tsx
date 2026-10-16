@@ -9,6 +9,7 @@ import { CourseChecks } from "../checks/CourseChecks.js";
 import { SqlProjects } from "../sql-projects/SqlProjects.js";
 import { PythonProjects } from "../python-projects/PythonProjects.js";
 import { RustProjects } from "../rust/RustProjects.js";
+import { CourseIntroduction } from "./CourseIntroduction.js";
 import { CourseOverview, CourseRoadmap } from "./CourseRoadmap.js";
 
 export function CourseListScreen() {
@@ -66,6 +67,7 @@ export function CourseScreen() {
     >
       <div className="course-overview-column">
         <CourseOverview detail={course.data} />
+        <CourseIntroduction detail={course.data} />
         <CourseChecks courseId={courseId} />
         <SqlProjects courseId={courseId} />
         <PythonProjects courseId={courseId} />

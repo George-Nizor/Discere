@@ -28,7 +28,7 @@ build, 53 affected-route browser scenarios and read-only checks of the served ap
 owner rows and preferences are unchanged. [Motion evidence](motion-polish/README.md) records exact
 run results, recordings and validation limits.
 
-As of 2026-10-07 the checked-in library has 20 courses (233 lessons, 2,447 questions, 468 recall cards in `content/`). The figures below describe the original twelve, in Maths, Geometry, Linear Algebra, Calculus, Physics, Chemistry, Biology, Logic, Computer Science, introductory Probability and Statistics, SQL reporting, and Python data analysis. Later additions are Astronomy, Economics, Electronics Foundations, Engineering, English, Philosophy, Psychology and the Roman Empire. George's latest 2 October direction closes new-material work for this release. The existing library is the quality and verification scope; wider Notion topics and technical curricula remain a documented future backlog.
+As of 2026-10-07 the checked-in library has 20 courses (233 lessons, 2,447 questions, 468 recall cards in `content/`). The figures below describe the original twelve, in Maths, Geometry, Linear Algebra, Calculus, Physics, Chemistry, Biology, Logic, Computer Science, introductory Probability and Statistics, SQL reporting, and Python data analysis. Later additions are Astronomy, Economics, Electronics Foundations, Engineering, English, Philosophy and Psychology. The Roman Empire placeholder course, counted in those figures, was removed on 2026-10-16 together with its Roman reference flow. George's latest 2 October direction closes new-material work for this release. The existing library is the quality and verification scope; wider Notion topics and technical curricula remain a documented future backlog.
 The full product target remains in [the roadmap](product-goal-and-library-roadmap.md).
 
 The current-library quality release is complete and running locally. It improves 120 hint sets,
@@ -49,7 +49,7 @@ You adds recorded weekly summaries, calendar-period filters, answer accuracy and
 George's 1 October request supersedes the earlier Roman reference direction for the active
 product. [The experience notes](brilliant-experience/README.md) record the supplied Brilliant
 screenshots, public reference study, original artwork, and question-first teaching flow.
-The earlier Roman recovery remains an archived compatibility flow.
+The Roman course and its recovery flow were removed on 2026-10-16.
 
 All work is inside Discere. Instrumenta and Claude's wrapper work were not edited. The learning
 core remains independent of the wrapper and model vendor. That release added no OpenAI API
@@ -154,8 +154,8 @@ cards. All twelve courses provide 458 separate placement, mixed and delayed-appl
 twenty for Maths; 36 each for Geometry, Calculus and Chemistry; 54 for Physics; 48 for Biology;
 24 for Logic; eighteen each for Computer Science and Statistics; 45 for SQL; 63 for Python;
 and sixty for Linear Algebra.
-Roman and Electronics prototypes are archived from discovery, home suggestions and general
-review. Saved routes and records remain accessible. The fourteen stored bundles contain 160 lessons;
+The Electronics prototype is archived from discovery, home suggestions and general
+review. Its saved routes and records remain accessible. The fourteen stored bundles contain 160 lessons;
 the three essays and eleven older activity definitions belong to the archived prototypes.
 
 Maths covers variables, equations and line graphs. Logic covers conditionals, constraints, truth
@@ -323,20 +323,6 @@ partial parent-curriculum coverage: the introductory guide and three constructio
 implemented, while random sampling, larger datasets, environment setup, advanced structures,
 inference and machine learning remain. Geometry
 now records partial introductory coverage, with the rest of the subject explicitly outstanding.
-
-## Roman recovery
-
-Gates 1–3 were approved previously. Gate 4 retains server-owned essay prompts, evidence, rubrics,
-excerpt-linked feedback, revision, and finish. Gate 5 adds concealed recall, typed response, server
-assessment, reveal, four ratings, scheduling, due-only restart, and completion based on actual work.
-
-Reference progress is v4, with validated upgrades from v1–v3. Impossible rows fall back safely;
-reads do not persist upgrades. Exam requires a response before recall reveal. The reference flow
-still awards no catalogue completion, XP, or general mastery. Its Stage 3 → Stage 7 jump is explicit:
-Stages 4–6 are absent. Completion continues into the existing next Roman lesson.
-
-Nine new recall/completion captures accompany earlier essay screens at 1440 × 900, 1024 × 768,
-and 390 × 844. [Visual comparison](recovery-v2/visual-comparison.md) records deliberate deviations.
 
 ## Subscription tutoring
 
@@ -555,8 +541,6 @@ measured.
 - The writing engine does not implement every normative editorial rule.
 - All sixty source-map topics, named science subfields, technical curricula and optional pathways
   remain required. Source inventories and introductory overlap do not satisfy full implementation.
-- Archived Roman Stages 4–6 remain unfinished historical work; the prototype is outside active
-  production discovery.
 - A documented learner trial remains necessary.
 
 The broader curriculum request remains unfinished. George's 2 October clarification restores

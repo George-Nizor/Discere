@@ -7,6 +7,7 @@ import {
   LessonBeatSchema,
   RichTextBlockSchema,
   SourceSchema,
+  CourseIntroductionSchema,
 } from "./curriculum.js";
 import {
   CourseSummarySchema,
@@ -129,6 +130,8 @@ export const CourseDetailResponseSchema = z
       )
       .optional(),
     exerciseCount: z.number().int().nonnegative().optional(),
+    /** The course introduction, when the course has one. */
+    introduction: CourseIntroductionSchema.optional(),
     /** The saved unfinished lesson, or the next authored lesson after a completion. */
     resumeLessonId: z.string().min(1).optional(),
   })

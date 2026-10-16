@@ -44,7 +44,7 @@ The architecture is ahead of the library. The checked-in runtime corpus currentl
 
 Maths Foundations, Logic and Reasoning, and How Computers Solve Problems now contain all 20 mapped
 lessons, 120 questions, and 40 standalone recall cards. Each new lesson has four answered visual
-beats and two practice questions. Roman and Electronics are archived from discovery, suggestions and general review; saved routes and records remain accessible.
+beats and two practice questions. Electronics is archived from discovery, suggestions and general review; its saved routes and records remain accessible. The Roman prototype was removed on 2026-10-16.
 Probability and Statistics adds six assessed lessons and twelve standalone cards. Its outcome,
 distribution and sampling diagrams are playable at all three required viewports. The catalogue now
 uses illustrated paths, subject/search/progress filters and dimensional lesson roadmaps.
@@ -190,7 +190,7 @@ George's 1 October request and supplied Brilliant screenshots now govern the act
 illustrated learning paths, dimensional pedestals, an original companion, one consistent dark
 theme, questions before explanation, correctness sound and a green frame, correction after
 mistakes, and fresh recall. These are implemented and checked at three viewport sizes.
-The archived Roman flow keeps its historical recovery contracts.
+The Roman flow and its recovery contracts were removed on 2026-10-16.
 
 Gates 1–3 were approved previously. George delegated the pending visual decision with ‘I have no
 clue decide for me’ and instructed us to continue. Gates 4–5 are implemented, browser-verified, and

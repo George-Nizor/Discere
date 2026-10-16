@@ -1,7 +1,9 @@
 {
   "lessonId": "fit-with-least-squares",
   "courseId": "linear-algebra-vectors-and-maps",
-  "migrationNotes": [],
+  "migrationNotes": [
+    "Story rewrite (part 3 of 3). Questions no longer asked: lin-fit-with-least-squares-7, lin-fit-with-least-squares-1."
+  ],
   "lesson": {
     "id": "fit-with-least-squares",
     "courseId": "linear-algebra-vectors-and-maps",
@@ -11,96 +13,132 @@
     "title": "Fit with least squares",
     "steps": [
       {
-        "id": "no-exact-answer",
+        "id": "one-number-for-three-readings",
         "kind": "explain",
         "blocks": [],
-        "headline": "Least squares picks the fit whose squared residuals add up to the smallest total.",
+        "headline": "One number for three readings",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "A residual is a measurement minus the fitted value. When no fit matches every measurement, add up the squares of all the residuals. The least-squares fit makes that total smallest."
+            "text": "Call the bolt's true length x. Each reading is a claim about x: x = 6, x = 7 and x = 11. Written as columns, that is x times the column (1, 1, 1) on the left and the column of readings (6, 7, 11) on the right. The column of ones has three rows because there are three readings."
+          },
+          {
+            "kind": "paragraph",
+            "text": "Now ask what a single x can produce on the left. Only multiples of (1, 1, 1), such as (3, 3, 3) or (8, 8, 8), where every entry is the same. In three-dimensional space that is a line through the origin, the span of one vector. The readings are not all equal, so they sit off that line and no value of x solves the equation."
           }
         ],
-        "reveal": [],
-        "introducesTerms": [
-          "least squares",
-          "residual"
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "The last lesson's idea applies here. Take the point of the line that is nearest to the readings, which is their projection onto the direction d = (1, 1, 1). The coefficient is (v · d) ÷ (d · d) = (6 + 7 + 11) ÷ 3 = 8. The nearest point is 8 copies of (1, 1, 1), so the best single value is 8 cm. That is the average of the readings, and projection shows why it is the right choice: no other value gives a point nearer to them."
+          }
+        ],
+        "introducesTerms": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "diagram": {
+          "type": "linear_algebra_explorer",
+          "cases": [
+            {
+              "id": "bolt",
+              "label": "Bolt readings 6, 7, 11",
+              "model": {
+                "kind": "least_squares",
+                "matrix": [
+                  [
+                    1
+                  ],
+                  [
+                    1
+                  ],
+                  [
+                    1
+                  ]
+                ],
+                "rhs": [
+                  6,
+                  7,
+                  11
+                ]
+              }
+            },
+            {
+              "id": "other",
+              "label": "Other readings 5, 6, 10",
+              "model": {
+                "kind": "least_squares",
+                "matrix": [
+                  [
+                    1
+                  ],
+                  [
+                    1
+                  ],
+                  [
+                    1
+                  ]
+                ],
+                "rhs": [
+                  5,
+                  6,
+                  10
+                ]
+              }
+            }
+          ],
+          "initialCaseId": "bolt"
+        }
+      },
+      {
+        "id": "a-second-bolt",
+        "kind": "predict",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Another bolt reads 1 cm, 2 cm and 6 cm. Project the readings onto (1, 1, 1), as with the first bolt, to find the one value that fits them best."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "You projected (1, 2, 6) onto (1, 1, 1). The coefficient is (1 + 2 + 6) ÷ 3 = 3, which is the average of the readings."
+          }
         ],
         "visualStateId": "",
         "checkQuestionId": "lin-fit-with-least-squares-8",
         "activityId": ""
       },
       {
-        "id": "one-fair-value",
-        "kind": "predict",
+        "id": "measuring-the-miss",
+        "kind": "explain",
         "blocks": [],
+        "headline": "Measuring the miss",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "A single constant cannot equal 2, 4 and 9 at once. Choose the one that treats the three measurements fairly."
-          }
-        ],
-        "reveal": [
+            "text": "Next, check how well 8 cm does by comparing each reading with it. The readings 6, 7 and 11 miss 8 by −2, −1 and 3. Each gap, a reading minus the fitted value, is a residual. It is the same residual as in the last lesson, the part of the readings that the fit leaves unexplained, and as a column it is (−2, −1, 3)."
+          },
           {
             "kind": "paragraph",
-            "text": "You balanced the three measurements. For a single constant, the least-squares fit is exactly their mean."
+            "text": "The residuals add up to zero. The last lesson showed that the residual of a projection is perpendicular to the direction, and here the direction is (1, 1, 1). Perpendicular means a dot product of zero, and the dot product of (−2, −1, 3) with (1, 1, 1) is just the sum of its entries. So the misses above the fit and the misses below it balance exactly."
+          },
+          {
+            "kind": "paragraph",
+            "text": "To compare fits we need one number for the size of the misses. The plain sum cannot do it, because it cancels. So each residual is squared first and the squares are added. Squaring makes every miss positive and makes a big miss count for more. For the value 8 the total is 4 + 1 + 9 = 14. The middle reading, 7, leaves residuals −1, 0 and 4, and their squares add up to 17, which is worse."
+          },
+          {
+            "kind": "paragraph",
+            "text": "The fit with the smallest total of squared residuals is called the least-squares fit. That total is the squared length of the residual column, and a projection is the nearest point there is. So the projection has the smallest total of all, and that is why 8 beats 7 and every other value."
           }
         ],
-        "diagram": {
-          "type": "linear_algebra_explorer",
-          "cases": [
-            {
-              "id": "first",
-              "label": "Example",
-              "model": {
-                "kind": "least_squares",
-                "matrix": [
-                  [
-                    1
-                  ],
-                  [
-                    1
-                  ],
-                  [
-                    1
-                  ]
-                ],
-                "rhs": [
-                  2,
-                  4,
-                  9
-                ]
-              }
-            },
-            {
-              "id": "second",
-              "label": "Compare",
-              "model": {
-                "kind": "least_squares",
-                "matrix": [
-                  [
-                    1
-                  ],
-                  [
-                    1
-                  ],
-                  [
-                    1
-                  ]
-                ],
-                "rhs": [
-                  1,
-                  5,
-                  9
-                ]
-              }
-            }
-          ],
-          "initialCaseId": "first"
-        },
-        "answerVisibility": "hidden-until-response",
+        "introducesTerms": [
+          "residual",
+          "least squares"
+        ],
         "visualStateId": "",
-        "checkQuestionId": "lin-fit-with-least-squares-1",
+        "checkQuestionId": "",
         "activityId": ""
       },
       {
@@ -112,7 +150,7 @@
         "reveal": [],
         "workedSteps": [
           {
-            "text": "The best constant is the mean: 15 ÷ 3.",
+            "text": "Project onto (1, 1, 1). The best constant is the average: 15 ÷ 3.",
             "math": "5"
           },
           {
@@ -220,11 +258,139 @@
         "reveal": [
           {
             "kind": "paragraph",
-            "text": "You found they cancel. Residuals of a least-squares constant always sum to zero, so errors above and below balance."
+            "text": "You found they cancel. The residuals of a least-squares constant are perpendicular to (1, 1, 1), so they always sum to zero."
           }
         ],
         "visualStateId": "",
         "checkQuestionId": "lin-fit-with-least-squares-2",
+        "activityId": ""
+      },
+      {
+        "id": "fitting-a-line",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "Fitting a line",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "A single constant suits readings that should all be the same. Often a quantity changes steadily, and then a line fits better. A seedling is measured at planting, in week 0, and again in weeks 1 and 2, and stands 3 cm, 3 cm and 6 cm tall. A line c + s x describes its height after x weeks: c is the starting height and s is the slope, the number of centimetres gained each week."
+          },
+          {
+            "kind": "paragraph",
+            "text": "Each measurement is one equation. Week 0 gives c + 0s = 3, week 1 gives c + 1s = 3 and week 2 gives c + 2s = 6. As columns, that is c times (1, 1, 1) plus s times (0, 1, 2), set equal to the heights (3, 3, 6). The first column is the one from the bolt, and the second holds the weeks. With two unknowns the left side can make every mix of the two columns, which fills a flat sheet through the origin and is wider than a single line."
+          }
+        ],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "The heights (3, 3, 6) do not lie on a straight line, so they are off the sheet. The method is the one from the bolt, one dimension up. The best c and s give the point of the sheet nearest to the heights, and the residuals are perpendicular to both columns. Working it through gives c = 2.5 and s = 1.5. The fitted line 2.5 + 1.5x predicts 2.5, 4 and 5.5 cm, which miss the measurements by 0.5, −1 and 0.5."
+          }
+        ],
+        "introducesTerms": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "diagram": {
+          "type": "linear_algebra_explorer",
+          "cases": [
+            {
+              "id": "seedling",
+              "label": "Seedling heights 3, 3, 6",
+              "model": {
+                "kind": "least_squares",
+                "matrix": [
+                  [
+                    1,
+                    0
+                  ],
+                  [
+                    1,
+                    1
+                  ],
+                  [
+                    1,
+                    2
+                  ]
+                ],
+                "rhs": [
+                  3,
+                  3,
+                  6
+                ]
+              }
+            },
+            {
+              "id": "other",
+              "label": "Another plant 4, 6, 5",
+              "model": {
+                "kind": "least_squares",
+                "matrix": [
+                  [
+                    1,
+                    0
+                  ],
+                  [
+                    1,
+                    1
+                  ],
+                  [
+                    1,
+                    2
+                  ]
+                ],
+                "rhs": [
+                  4,
+                  6,
+                  5
+                ]
+              }
+            }
+          ],
+          "initialCaseId": "seedling"
+        }
+      },
+      {
+        "id": "a-shortcut-for-the-slope",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "A shortcut for the slope",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Solving for c and s from scratch is slow, but evenly spaced measurements allow a shortcut. Take measurements at x = 0, 1 and 2, and call the residuals r₀, r₁ and r₂. Perpendicular to the column (1, 1, 1) means r₀ + r₁ + r₂ = 0. Perpendicular to the column (0, 1, 2) means r₁ + 2r₂ = 0, because the first entry is multiplied by 0. The second equation gives r₁ = −2r₂, and putting that into the first leaves r₀ = r₂."
+          },
+          {
+            "kind": "paragraph",
+            "text": "So the first and last residuals are equal. A residual is a measurement minus the line, and the line rises by 2s between x = 0 and x = 2, so equal residuals mean that the measurements rise by exactly 2s as well. In symbols, last y − first y = 2s, which gives s = (last y − first y) ÷ 2. For the seedling this is (6 − 3) ÷ 2 = 1.5, as the figure showed."
+          },
+          {
+            "kind": "paragraph",
+            "text": "The middle measurement plays no part in the slope. It still matters for c, because the residuals sum to zero, which makes c the average of the measurements minus s. For the seedling that is 4 − 1.5 = 2.5. The shortcut works only for measurements at x = 0, 1 and 2."
+          }
+        ],
+        "introducesTerms": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
+      },
+      {
+        "id": "a-vine-over-three-weeks",
+        "kind": "try",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "A vine is measured in weeks 0, 1 and 2 and stands 5 cm, 9 cm and 7 cm tall. Use the shortcut to find the slope of the best line c + s x."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "You used only the first and last measurements: (7 − 5) ÷ 2 = 1. The middle one, 9, moves c and leaves the slope alone."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "lin-fit-with-least-squares-11",
         "activityId": ""
       },
       {
@@ -234,7 +400,7 @@
         "lead": [
           {
             "kind": "paragraph",
-            "text": "A taxi's fare is £2, £5 and £8 for trips of 0, 1 and 2 km. A line c + sx has slope s. For points at x = 0, 1, 2, the best-fit slope is (last y − first y) ÷ 2."
+            "text": "A taxi's fare is £2, £5 and £8 for trips of 0, 1 and 2 km. Fit a line c + s x through these fares, where s is the cost of each extra kilometre."
           }
         ],
         "reveal": [],
@@ -273,23 +439,30 @@
         "blocks": [
           {
             "kind": "paragraph",
-            "text": "You measure the same length three times and get 6 cm, 7 cm and 11 cm. You want one fair value to report."
+            "text": "You are measuring a metal bolt with a cheap ruler. Three readings give 6 cm, 7 cm and 11 cm. The ruler is worn at one end, so the readings disagree and no single length can match all of them."
+          },
+          {
+            "kind": "paragraph",
+            "text": "A report still needs one number. The middle reading, 7 cm, ignores the other two. The largest, 11 cm, trusts one glance over the rest. Averaging feels fair, yet a feeling is a weak reason for choosing it."
+          },
+          {
+            "kind": "paragraph",
+            "text": "The last lesson ended with an idea that settles this. When no exact answer exists, the best answer is the nearest one that can be reached, and that is a projection. This lesson applies it to the bolt and makes the word nearest precise. After that it fits a straight line through points that do not quite line up."
           }
-        ],
-        "questionId": "lin-fit-with-least-squares-7"
+        ]
       },
-      "promise": "By the end you'll find the best constant or line for measurements that disagree, by making the squared errors smallest.",
-      "estimatedMinutes": 10
+      "promise": "By the end you'll find the best constant or straight line for measurements that disagree, by making the squared errors as small as possible.",
+      "estimatedMinutes": 12
     },
     "recap": {
-      "keyIdea": "When measurements cannot all be matched, least squares picks the fit with the smallest sum of squared residuals. For a constant, that fit is the mean.",
+      "keyIdea": "When measurements cannot all be matched, least squares picks the fit with the smallest total of squared residuals. For one constant that fit is the average, and for measurements at x = 0, 1 and 2 the slope is (last y − first y) ÷ 2.",
       "blocks": [
         {
           "kind": "paragraph",
-          "text": "You found that 5 is the best constant for 2, 4 and 9. Its squared residuals total 26."
+          "text": "Back with the bolt, you found that 8 cm is the projection of the readings onto (1, 1, 1) and that the residuals of a projection add up to zero. You then fitted a line through the seedling's heights, and used the same idea on a vine and on taxi fares."
         }
       ],
-      "nextHook": "Next, build perpendicular unit vectors step by step: the orthonormal basis."
+      "nextHook": "Fitting the line took two equations solved together, because the columns (1, 1, 1) and (0, 1, 2) are not at right angles to each other. A pair at right angles would split the work in two, and the next lesson shows how to build such a pair from any two vectors."
     },
     "calculator": "available",
     "taughtSkills": [
@@ -313,7 +486,7 @@
         "kind": "numeric",
         "value": 8,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "(6 + 7 + 11) ÷ 3 = 24 ÷ 3 = 8."
       },
@@ -359,16 +532,16 @@
         "kind": "numeric",
         "value": 3,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
-        "workedAnswer": "The mean is (1 + 2 + 6) ÷ 3 = 3."
+        "workedAnswer": "(1 + 2 + 6) ÷ 3 = 3."
       },
-      "prompt": "Fit one constant to the measurements 1, 2 and 6 by least squares. What is it?",
+      "prompt": "A bolt reads 1 cm, 2 cm and 6 cm. Project the readings onto (1, 1, 1). What single value x results?",
       "responseType": "numeric",
       "hints": [
-        "For one constant, the best fit is the mean.",
-        "Add the measurements.",
-        "Divide the total by how many there are."
+        "Which direction are the three readings projected onto?",
+        "Dot the readings with (1, 1, 1), and dot (1, 1, 1) with itself.",
+        "Divide the first number by the second."
       ],
       "misconceptions": [
         {
@@ -377,7 +550,7 @@
               2
             ]
           },
-          "feedback": "That is the middle measurement. Use the mean of all of them."
+          "feedback": "That is the middle reading. Project all three readings, not just one."
         },
         {
           "match": {
@@ -385,10 +558,10 @@
               9
             ]
           },
-          "feedback": "That is the total. Divide it by the number of measurements."
+          "feedback": "That is the total of the readings. Divide it by the number of readings."
         }
       ],
-      "onCorrect": "The best constant is the mean: the total shared equally.",
+      "onCorrect": "x = 3. Projecting onto (1, 1, 1) shares the total equally, so the single best value is the average.",
       "skill": "constant-fit"
     },
     {
@@ -408,7 +581,7 @@
         "kind": "numeric",
         "value": 5,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The mean is (2 + 4 + 9)/3 = 5."
       },
@@ -450,17 +623,17 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "The best constant is the mean, so the errors above and below balance."
+          "The residuals are perpendicular to (1, 1, 1), so their entries add up to zero."
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "The mean sits between the measurements, so the misses above and below cancel."
+        "exampleAnswer": "The residual column is perpendicular to (1, 1, 1), so its entries sum to zero."
       },
       "prompt": "Why do the residuals of a least-squares constant add up to zero?",
       "responseType": "short_text",
       "choices": [
         {
           "id": "a",
-          "label": "The best constant is the mean, so the errors above and below balance."
+          "label": "The residuals are perpendicular to (1, 1, 1), so their entries add up to zero."
         },
         {
           "id": "b",
@@ -472,7 +645,7 @@
         }
       ],
       "hints": [
-        "Which constant is the mean, and what does it do to the errors?"
+        "Which direction is the residual column perpendicular to, and what does that say about a dot product with it?"
       ],
       "misconceptions": [
         {
@@ -492,7 +665,7 @@
           "feedback": "The sum is taken before squaring. Squares are used afterwards to measure total error."
         }
       ],
-      "onCorrect": "The mean sits between the measurements, so the errors above and below cancel.",
+      "onCorrect": "The residual column is perpendicular to (1, 1, 1), so its entries sum to zero: errors above and below balance.",
       "skill": "squared-residuals"
     },
     {
@@ -512,7 +685,7 @@
         "kind": "numeric",
         "value": 26,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The sum is (−3)² + (−1)² + 4² = 9 + 1 + 16 = 26."
       },
@@ -550,7 +723,7 @@
         "kind": "numeric",
         "value": 0,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The residuals are −3, −1 and 4, whose sum is zero."
       },
@@ -582,13 +755,13 @@
       "hints": [
         "How much does y rise for each step in x?",
         "Use the slope shortcut for points at 0, 1 and 2.",
-        "Subtract the first y from the last, then divide by the number of steps."
+        "Subtract the first y from the last, then divide by the number of steps across."
       ],
       "answerAuthority": {
         "kind": "numeric",
         "value": 3,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The points lie exactly on y = 2 + 3x, so the least-squares slope is 3."
       },
@@ -626,7 +799,7 @@
         "kind": "numeric",
         "value": 0.5,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The normal equations are 3c + 3s = 5 and 3c + 5s = 6. Subtracting gives 2s = 1, so s = 0.5."
       },
@@ -664,7 +837,7 @@
         "kind": "numeric",
         "value": 5,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "Their mean is 15/3 = 5."
       },
@@ -699,7 +872,7 @@
         "kind": "numeric",
         "value": -2,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "(0 − 4) ÷ 2 = −2."
       },
@@ -730,74 +903,134 @@
       ],
       "onCorrect": "The y values fall, so the slope is negative: (0 − 4) ÷ 2 = −2.",
       "skill": "line-fit-slope"
+    },
+    {
+      "id": "lin-fit-with-least-squares-11",
+      "conceptIds": [
+        "lin-fit-with-least-squares"
+      ],
+      "prompt": "A vine is 5 cm, 9 cm and 7 cm tall in weeks 0, 1 and 2. The best line through (0, 5), (1, 9) and (2, 7) is y = c + sx. What is s?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "The weeks are evenly spaced.",
+        "Use the shortcut: last y minus first y, over the number of steps across.",
+        "Subtract the first height from the last, then halve it."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 1,
+        "unit": "",
+        "absoluteTolerance": 1e-06,
+        "relativeTolerance": 0,
+        "workedAnswer": "(7 − 5) ÷ 2 = 1. The best line is y = 6 + x, with residuals −1, 2 and −1."
+      },
+      "sourceIds": [
+        "lin-fit",
+        "lin-projection"
+      ],
+      "skill": "line-fit-slope",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              2
+            ]
+          },
+          "feedback": "That is the last y minus the first. Divide by the number of steps across."
+        },
+        {
+          "match": {
+            "numeric": [
+              4
+            ]
+          },
+          "feedback": "That is the middle height minus the first. The slope uses the last measurement."
+        }
+      ],
+      "onCorrect": "(7 − 5) ÷ 2 = 1. The middle measurement does not change the slope."
     }
   ],
   "citations": [
     {
-      "claim": "Least squares picks the fit whose squared residuals add up to the smallest total.",
+      "claim": "Several disagreeing readings of one length cannot be matched by one value, and the nearest reachable value is the projection onto (1, 1, 1), which is the average.",
       "sourceId": "lin-fit",
       "section": "6.5, The Method of Least Squares",
       "targetKind": "step",
-      "targetId": "no-exact-answer"
+      "targetId": "one-number-for-three-readings"
     },
     {
-      "claim": "A single constant cannot equal 2, 4 and 9 at once. Choose the one that treats the three measurements fairly.",
+      "claim": "The best single value for readings 1, 2 and 6 is their projection onto (1, 1, 1), the average 3.",
       "sourceId": "lin-fit",
       "section": "6.5, The Method of Least Squares",
       "targetKind": "step",
-      "targetId": "one-fair-value"
+      "targetId": "a-second-bolt"
     },
     {
-      "claim": "Fit one constant to 2, 3 and 10, then total the squared residuals.",
+      "claim": "A residual is a measurement minus the fitted value, the residuals of a projection sum to zero, and the least-squares fit has the smallest sum of squared residuals.",
+      "sourceId": "lin-fit",
+      "section": "6.5, The Method of Least Squares",
+      "targetKind": "step",
+      "targetId": "measuring-the-miss"
+    },
+    {
+      "claim": "For 2, 3 and 10 the best constant is 5, the residuals are −3, −2 and 5, and their squares total 38.",
       "sourceId": "lin-fit",
       "section": "6.5, The Method of Least Squares",
       "targetKind": "step",
       "targetId": "residuals-of-a-fit"
     },
     {
-      "claim": "Measurements 2, 4 and 9 are fitted by the constant 5. Total the squared residuals.",
+      "claim": "Fitting 5 to 2, 4 and 9 leaves residuals −3, −1 and 4, whose squares total 26.",
       "sourceId": "lin-fit",
       "section": "6.5, The Method of Least Squares",
       "targetKind": "step",
       "targetId": "squares-with-help"
     },
     {
-      "claim": "The residuals of the fit 5 to the measurements 2, 4 and 9 are −3, −1 and 4. Add them as they are, with their signs.",
+      "claim": "The residuals of a least-squares constant add up to zero.",
       "sourceId": "lin-fit",
       "section": "6.5, The Method of Least Squares",
       "targetKind": "step",
       "targetId": "do-they-balance"
     },
     {
-      "claim": "A taxi's fare is £2, £5 and £8 for trips of 0, 1 and 2 km. A line c + sx has slope s. For points at x = 0, 1, 2, the best-fit slope is (last y − first y) ÷ 2.",
+      "claim": "Fitting a line c + sx gives one equation per measurement and the best fit is the projection onto the span of the two columns.",
+      "sourceId": "lin-fit",
+      "section": "6.5, The Method of Least Squares",
+      "targetKind": "step",
+      "targetId": "fitting-a-line"
+    },
+    {
+      "claim": "For measurements at x = 0, 1 and 2 the least-squares slope is (last y − first y) ÷ 2.",
+      "sourceId": "lin-fit",
+      "section": "6.5, The Method of Least Squares",
+      "targetKind": "step",
+      "targetId": "a-shortcut-for-the-slope"
+    },
+    {
+      "claim": "The slope of the best line through measurements at x = 0, 1 and 2 uses only the first and last values.",
+      "sourceId": "lin-fit",
+      "section": "6.5, The Method of Least Squares",
+      "targetKind": "step",
+      "targetId": "a-vine-over-three-weeks"
+    },
+    {
+      "claim": "Points that lie exactly on a line are fitted by that line, with slope (last y − first y) ÷ 2.",
       "sourceId": "lin-fit",
       "section": "6.5, The Method of Least Squares",
       "targetKind": "step",
       "targetId": "a-taxi-fare-line"
     },
     {
-      "claim": "8 cm. Averaging balances the readings. That mean is the least-squares constant.",
-      "sourceId": "lin-fit",
-      "section": "6.5, The Method of Least Squares",
-      "targetKind": "question",
-      "targetId": "lin-fit-with-least-squares-7"
-    },
-    {
-      "claim": "The best constant is the mean: the total shared equally.",
+      "claim": "x = 3. Projecting onto (1, 1, 1) shares the total equally, so the single best value is the average.",
       "sourceId": "lin-fit",
       "section": "6.5, The Method of Least Squares",
       "targetKind": "question",
       "targetId": "lin-fit-with-least-squares-8"
     },
     {
-      "claim": "For one constant, least squares gives the mean of the measurements.",
-      "sourceId": "lin-fit",
-      "section": "6.5, The Method of Least Squares",
-      "targetKind": "question",
-      "targetId": "lin-fit-with-least-squares-1"
-    },
-    {
-      "claim": "The mean sits between the measurements, so the errors above and below cancel.",
+      "claim": "The residual column is perpendicular to (1, 1, 1), so its entries sum to zero: errors above and below balance.",
       "sourceId": "lin-fit",
       "section": "6.5, The Method of Least Squares",
       "targetKind": "question",
@@ -844,6 +1077,13 @@
       "section": "6.5, The Method of Least Squares",
       "targetKind": "question",
       "targetId": "lin-fit-with-least-squares-10"
+    },
+    {
+      "claim": "(7 − 5) ÷ 2 = 1. The middle measurement does not change the slope.",
+      "sourceId": "lin-fit",
+      "section": "6.5, The Method of Least Squares",
+      "targetKind": "question",
+      "targetId": "lin-fit-with-least-squares-11"
     },
     {
       "claim": "The mean is 21/3 = 7.",

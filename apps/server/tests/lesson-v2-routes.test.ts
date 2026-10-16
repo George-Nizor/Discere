@@ -45,30 +45,30 @@ describe("v2 lesson routes", () => {
 
   it("explains a correct answer with its onCorrect line and records no assistance", async () => {
     const right = (await attempt(q("order"), "14")).json();
-    const response = (await feedback(right.attemptId, "order-matters")).json();
+    const response = (await feedback(right.attemptId, "run-the-machine")).json();
     expect(response.onCorrect).toBe(
       "14. Multiply first, then subtract: the order is written into the expression.",
     );
-    expect(response.blocks[0].text).toContain("keeps that order");
+    expect(response.blocks[0].text).toContain("3 × 6 is 18");
     expect(store.getAttempt(right.attemptId)).toMatchObject({ answerRevealed: false });
   });
 
   it("marks the right choice on a reveal and records it as assistance", async () => {
-    const wrong = (await attempt(q("notation"), "5x = 12")).json();
-    const response = (await feedback(wrong.attemptId, "a-name-for-the-number")).json();
+    const wrong = (await attempt(q("same-letter"), "Because 5 was the first number given.")).json();
+    const response = (await feedback(wrong.attemptId, "one-letter-one-number")).json();
     expect(response.correctChoiceId).toBe("a");
     expect(store.getAttempt(wrong.attemptId)).toMatchObject({ answerRevealed: true });
   });
 
-  it("accepts lesson feedback for a faded blank, the opener's hook and a skill check", async () => {
+  it("accepts lesson feedback for a faded blank, the hook step and a skill check", async () => {
     const blank = (await attempt(q("left-side"), "9")).json();
-    expect((await feedback(blank.attemptId, "testing-a-candidate")).statusCode).toBe(200);
+    expect((await feedback(blank.attemptId, "test-a-number-with-help")).statusCode).toBe(200);
     const hook = (await attempt(q("hook"), "7")).json();
-    expect((await feedback(hook.attemptId, "opener")).statusCode).toBe(200);
+    expect((await feedback(hook.attemptId, "play-a-round")).statusCode).toBe(200);
     const check = (await attempt(q("check-1"), "14")).json();
     expect((await feedback(check.attemptId)).statusCode).toBe(200);
     // A question from another step is refused.
-    expect((await feedback(hook.attemptId, "order-matters")).statusCode).toBe(409);
+    expect((await feedback(hook.attemptId, "run-the-machine")).statusCode).toBe(409);
   });
 
   it("serves the close with card fronts only, and keeps reveals out of the lesson payload", async () => {

@@ -1,7 +1,11 @@
 {
   "lessonId": "functions-and-imports",
   "courseId": "python-for-data-analysis",
-  "migrationNotes": [],
+  "migrationNotes": [
+    "Spine: the till card becomes a named rule. It is called with arguments, hands an answer back with return (and print only displays), copes with a missing rate through a default and with names through keyword arguments, may change or merely rename a list it is handed, and finally borrows ready-made rules from a module.",
+    "Left out of the lesson (still in the course): python-functions-and-imports-hook (3 units at the default rate, covered by the opener and the defaults screen).",
+    "Figures: the return and print, defaults and mutation figures moved onto the teaching screens; the import figure stays on the transfer screen."
+  ],
   "lesson": {
     "id": "functions-and-imports",
     "courseId": "python-for-data-analysis",
@@ -11,48 +15,52 @@
     "title": "Turn a calculation into a tool",
     "steps": [
       {
-        "id": "a-calculation-with-a-name",
+        "id": "a-named-rule",
         "kind": "explain",
         "blocks": [],
-        "headline": "A function packages a calculation under a name, and return hands its answer back.",
+        "headline": "A named rule",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "def gives a calculation a name. Its parameters receive arguments when you call it. return sends a value back to the caller. print only writes text on the screen."
+            "text": "Here is the till card as Python: def cost(units): return units * 5. This is a function, a piece of code with a name, written once and run whenever it is needed. The first line starts with def and gives the function its name, cost, then lists in brackets what it needs. Each name in the brackets is a parameter, a label for a value the function will be given. Here there is one, units. The indented line underneath is the body, the work done every time the function runs."
           },
           {
-            "kind": "callout",
-            "tone": "key",
-            "text": "A function that never reaches return hands back None."
+            "kind": "paragraph",
+            "text": "Using the function is called calling it. You write its name with the values in brackets, as in cost(3). The value you pass is the argument, and Python attaches it to the parameter, so inside that call units stands for 3. The word return sends an answer back to the place that made the call. cost(3) hands back 15, and total = cost(3) stores that 15 under the name total. The parameter is the label inside the function, and the argument is the actual value from outside. Calling cost(8) afterwards gives the same rule a new argument and a new answer."
           }
         ],
-        "reveal": [],
         "introducesTerms": [
           "function",
+          "parameter",
+          "argument",
           "return"
         ],
         "visualStateId": "",
-        "checkQuestionId": "python-functions-and-imports-3",
+        "checkQuestionId": "",
         "activityId": ""
       },
       {
         "id": "what-comes-back",
-        "kind": "predict",
+        "kind": "explain",
         "blocks": [],
+        "headline": "What comes back",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "The parameter x receives the argument you pass in. return sends the result of the line back to where the function was called."
+            "text": "Many people expect a function to show its answer on the screen, and print does that. print writes text for a person to read. return does a different job: it hands a value back to the code that called the function, where it can be stored and used in more arithmetic. A function can print, return or do both. Each has its own effect. Step through the picture, where one function returns twice its input and another only prints it."
           }
         ],
-        "reveal": [
+        "afterFigure": [
           {
             "kind": "paragraph",
-            "text": "You predicted what comes back to the caller. Return gives the caller the value; a function that only prints would hand back None."
+            "text": "The first function returns 8, so result holds 8. The second prints 8 on the screen, but nothing is returned, so result holds None. None is Python's value for 'nothing here', and a function that finishes without reaching a return line hands it back. The 8 on the screen was shown to the reader and stored nowhere. If a later line needs the answer, the function has to return it."
           }
         ],
+        "introducesTerms": [
+          "None"
+        ],
         "visualStateId": "",
-        "checkQuestionId": "python-functions-and-imports-1",
+        "checkQuestionId": "",
         "activityId": "",
         "diagram": {
           "type": "python_execution",
@@ -110,28 +118,60 @@
             }
           ],
           "initialCaseId": "case-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        }
       },
       {
-        "id": "default-and-named",
-        "kind": "worked_example",
+        "id": "what-triple-gives",
+        "kind": "predict",
         "blocks": [],
-        "headline": "With def pay(hours, wage=10): return hours * wage, what do pay(3) and pay(wage=12, hours=2) give?",
-        "lead": [],
-        "reveal": [],
-        "workedSteps": [
+        "lead": [
           {
-            "text": "pay(3) gives hours the value 3. No wage is passed, so the default 10 is used.",
-            "math": "3 × 10 = 30"
+            "kind": "paragraph",
+            "text": "The parameter x receives the argument. Follow it through the body to the line that sends the answer back."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-functions-and-imports-1",
+        "activityId": ""
+      },
+      {
+        "id": "print-is-not-return",
+        "kind": "predict",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Showing a number and giving it back are separate jobs. Decide what the caller receives when only the first is done."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-functions-and-imports-3",
+        "activityId": ""
+      },
+      {
+        "id": "filling-in-a-missing-value",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "Filling in a missing value",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "The till card said the rate is 5 unless the card says otherwise. A function can follow the same rule with a default, a value a parameter takes when the call leaves it out. In def cost(units, rate=5): return units * rate, the parameter rate has a default of 5. So cost(3) leaves rate alone and gets 15. A call such as cost(3, 7) fills both parameters: values given by position go to the parameters in order, so rate becomes 7 and the answer is 21."
           },
           {
-            "text": "pay(wage=12, hours=2) names each parameter, so the order does not matter.",
-            "math": "2 × 12 = 24",
-            "selfExplain": {
-              "questionId": "python-functions-and-imports-why-order"
-            }
+            "kind": "paragraph",
+            "text": "An argument can also be given by name, which is called a keyword argument. In cost(rate=7, units=3) each value is labelled with the parameter it fills, so the order no longer matters. The name tells Python where each value goes. Names also make a call easier to read when several values look alike. Step through the picture and compare a call that uses the default with one that names both values."
           }
+        ],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "The first call uses the default rate of 5 and gives 15. The second replaces the rate with 7 and gives 21. Both run the same function, and only the arguments changed."
+          }
+        ],
+        "introducesTerms": [
+          "default",
+          "keyword argument"
         ],
         "visualStateId": "",
         "checkQuestionId": "",
@@ -192,8 +232,36 @@
             }
           ],
           "initialCaseId": "case-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        }
+      },
+      {
+        "id": "default-and-named",
+        "kind": "worked_example",
+        "blocks": [],
+        "headline": "With def pay(hours, wage=10): return hours * wage, what do pay(3) and pay(wage=12, hours=2) give?",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Check both ways of passing values on one small function."
+          }
+        ],
+        "reveal": [],
+        "workedSteps": [
+          {
+            "text": "pay(3) gives hours the value 3. No wage is passed, so the default 10 is used.",
+            "math": "3 × 10 = 30"
+          },
+          {
+            "text": "pay(wage=12, hours=2) names each parameter, so the order does not matter.",
+            "math": "2 × 12 = 24",
+            "selfExplain": {
+              "questionId": "python-functions-and-imports-why-order"
+            }
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
       },
       {
         "id": "positional-then-named",
@@ -219,23 +287,29 @@
         "activityId": ""
       },
       {
-        "id": "change-or-rename",
-        "kind": "try",
+        "id": "what-a-function-can-change",
+        "kind": "explain",
         "blocks": [],
+        "headline": "What a function can change",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "A parameter is another name for the object you passed in. A method like append changes that object, so the caller sees it. Assigning a new list to the parameter only renames it inside the function."
-          }
-        ],
-        "reveal": [
+            "text": "So far the arguments have been numbers, and a number cannot be changed in place. A list can be, and that raises a new question: what does a function do to a list it is handed? Python does not copy the list into the function. The parameter becomes another name for the same list the caller holds, much as two labels can point at one locker."
+          },
           {
             "kind": "paragraph",
-            "text": "The function reached the caller's list through its parameter, so the appends were visible outside. Rebinding the parameter would not have been."
+            "text": "That gives two different outcomes. A method such as append changes the list itself, so def add_item(items): items.append(9) changes the caller's list, and the caller sees the 9 afterwards. An assignment such as items = [9] only points the name items at a new list. The caller's list is left as it was, because only a label inside the function moved. Step through both cases."
           }
         ],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "In the first case values goes from [1, 2] to [1, 2, 9] after the call. In the second it stays [1, 2]. When you read any function, ask whether it changes the object it was given or only points its own label somewhere else."
+          }
+        ],
+        "introducesTerms": [],
         "visualStateId": "",
-        "checkQuestionId": "python-functions-and-imports-mutate",
+        "checkQuestionId": "",
         "activityId": "",
         "diagram": {
           "type": "python_execution",
@@ -317,8 +391,45 @@
             }
           ],
           "initialCaseId": "case-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        }
+      },
+      {
+        "id": "change-or-rename",
+        "kind": "try",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Find the line that changes the list, then decide how many items the caller's list holds afterwards."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-functions-and-imports-mutate",
+        "activityId": ""
+      },
+      {
+        "id": "borrowing-rules",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "Borrowing rules from a module",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Not every rule has to be written by you. Python ships with a large stock of ready-made functions, grouped into modules, which are files of related code. The word import loads a module. After import math, its functions are reached through the module's name: math.sqrt(81) is 9.0, and math.ceil(4.2) is 5, because ceil rounds up to the next whole number."
+          },
+          {
+            "kind": "paragraph",
+            "text": "Typing a long module name over and over gets tiring, so import allows an alias, a shorter name of your choosing. import math as m makes m.ceil(4.2) the same call as math.ceil(4.2). The alias exists only inside your program. The rest of this course imports NumPy as np in the same way. One limit is worth knowing. import loads a module that is already installed. It cannot fetch a missing package from the internet, so importing something that is not installed stops the program with an error."
+          }
+        ],
+        "introducesTerms": [
+          "module",
+          "import",
+          "alias"
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
       },
       {
         "id": "import-and-alias",
@@ -327,13 +438,7 @@
         "lead": [
           {
             "kind": "paragraph",
-            "text": "import makes a module's names available. import math as m gives it the shorter name m. math.ceil rounds up to the next whole number. Importing does not install a missing package."
-          }
-        ],
-        "reveal": [
-          {
-            "kind": "paragraph",
-            "text": "The alias m is only a local name for the module. m.ceil is math.ceil, and the package had to be available before the import could work."
+            "text": "Treat the alias as one more name for the same module, and work out what the call returns."
           }
         ],
         "visualStateId": "",
@@ -429,23 +534,30 @@
         "blocks": [
           {
             "kind": "paragraph",
-            "text": "A card on the till says: cost = units × rate, and the rate is 5 unless the card says otherwise. The card says nothing else."
+            "text": "A card taped beside the till reads: cost = units × rate, where the rate is 5 pounds a unit unless the card says otherwise. Everyone who serves a customer follows it the same way. They take the number of units, multiply it by the rate and say the total. Nothing on the card has to be remembered, and nobody invents their own version."
+          },
+          {
+            "kind": "paragraph",
+            "text": "The barrier program from the last lesson needed a fee rule too, and so do the shop's stock sheet and its website. Copying the arithmetic into each place works until the rate changes, and then one copy always gets forgotten. The card has the right idea. The rule is written once and given a name, and every place that needs it refers to the name."
+          },
+          {
+            "kind": "paragraph",
+            "text": "Python lets you do exactly that. This lesson turns the till card into a named rule. It looks at what comes back from the rule and what happens when a value is missing. It also covers what a rule can do to the things it is handed. It ends by borrowing rules that other people have already written."
           }
-        ],
-        "questionId": "python-functions-and-imports-hook"
+        ]
       },
       "promise": "By the end you'll read a function call and tell what return gives back that print does not.",
-      "estimatedMinutes": 10
+      "estimatedMinutes": 12
     },
     "recap": {
       "keyIdea": "A function takes arguments through its parameters and hands a value back with return; print only displays, and import makes a module's names available.",
       "blocks": [
         {
           "kind": "paragraph",
-          "text": "You priced the card at £15, called triple(7) for 21, and found cost(rate=6, units=5) gives 30. You also saw m.ceil(4.2) round up to 5."
+          "text": "You priced a 3-unit sale at £15 with the default rate, called triple(7) for 21 and found that cost(rate=6, units=5) gives 30. You also saw that a function which only prints hands back None, and that m.ceil(4.2) rounds up to 5."
         }
       ],
-      "nextHook": "Next: catch expected failures, and read files without leaving them open."
+      "nextHook": "Every rule so far was handed values it could use. Real data is less tidy. A form that asks for an age will sometimes come back with the word 'unknown', and int('unknown') stops a program dead. The next lesson shows how to expect that failure, carry on past it and say how much you skipped."
     },
     "calculator": "off",
     "taughtSkills": [
@@ -474,7 +586,7 @@
         "kind": "numeric",
         "value": 21,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The argument 7 is multiplied by 3 and returned as 21."
       },
@@ -521,7 +633,7 @@
         "kind": "numeric",
         "value": 30,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "Keyword arguments assign units = 5 and rate = 6, so the product is 30."
       },
@@ -627,7 +739,7 @@
         "kind": "numeric",
         "value": 5,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "ceil rounds 4.2 up to 5."
       },
@@ -666,7 +778,7 @@
         "kind": "numeric",
         "value": 32,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The omitted rate uses the default 4: 8 × 4 = 32."
       },
@@ -713,7 +825,7 @@
         "kind": "numeric",
         "value": 12,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The square root is 12 because 12 × 12 = 144."
       },
@@ -756,7 +868,7 @@
         "kind": "numeric",
         "value": 4,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The function prints 3 and returns 3 + 1 = 4, so y holds 4."
       },
@@ -795,7 +907,7 @@
         "kind": "numeric",
         "value": 15,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "3 units at the default rate 5 cost 15."
       },
@@ -901,7 +1013,7 @@
         "kind": "numeric",
         "value": 6,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The function appends two items to the caller's list, so it now has six."
       },
@@ -922,84 +1034,154 @@
   ],
   "citations": [
     {
-      "claim": "A function packages a calculation under a name, and return hands its answer back.",
+      "claim": "def defines a function whose parameters receive the arguments of a call, and return hands a value back to the caller.",
       "sourceId": "py-flow",
       "section": "Defining functions; default arguments; keyword arguments; Python Modules 6",
       "targetKind": "step",
-      "targetId": "a-calculation-with-a-name"
+      "targetId": "a-named-rule"
     },
     {
-      "claim": "A function packages a calculation under a name, and return hands its answer back.",
+      "claim": "def defines a function whose parameters receive the arguments of a call, and return hands a value back to the caller.",
       "sourceId": "py-modules",
       "section": "6 modules and import statements; 6.4 packages",
       "targetKind": "step",
-      "targetId": "a-calculation-with-a-name"
+      "targetId": "a-named-rule"
     },
     {
-      "claim": "The parameter x receives the argument you pass in. return sends the result of the line back to where the function was called.",
+      "claim": "return hands a value to the caller while print only displays it; a function that never reaches return gives back None.",
       "sourceId": "py-flow",
       "section": "Defining functions; default arguments; keyword arguments; Python Modules 6",
       "targetKind": "step",
       "targetId": "what-comes-back"
     },
     {
-      "claim": "The parameter x receives the argument you pass in. return sends the result of the line back to where the function was called.",
+      "claim": "return hands a value to the caller while print only displays it; a function that never reaches return gives back None.",
       "sourceId": "py-modules",
       "section": "6 modules and import statements; 6.4 packages",
       "targetKind": "step",
       "targetId": "what-comes-back"
     },
     {
-      "claim": "With def pay(hours, wage=10): return hours * wage, what do pay(3) and pay(wage=12, hours=2) give?",
+      "claim": "A call's value is whatever return sends back.",
+      "sourceId": "py-flow",
+      "section": "Defining functions; default arguments; keyword arguments; Python Modules 6",
+      "targetKind": "step",
+      "targetId": "what-triple-gives"
+    },
+    {
+      "claim": "A call's value is whatever return sends back.",
+      "sourceId": "py-modules",
+      "section": "6 modules and import statements; 6.4 packages",
+      "targetKind": "step",
+      "targetId": "what-triple-gives"
+    },
+    {
+      "claim": "A function with no return statement gives back None, even if it prints.",
+      "sourceId": "py-flow",
+      "section": "Defining functions; default arguments; keyword arguments; Python Modules 6",
+      "targetKind": "step",
+      "targetId": "print-is-not-return"
+    },
+    {
+      "claim": "A function with no return statement gives back None, even if it prints.",
+      "sourceId": "py-modules",
+      "section": "6 modules and import statements; 6.4 packages",
+      "targetKind": "step",
+      "targetId": "print-is-not-return"
+    },
+    {
+      "claim": "A parameter with a default takes it when the call omits it; keyword arguments fill parameters by name in any order.",
+      "sourceId": "py-flow",
+      "section": "Defining functions; default arguments; keyword arguments; Python Modules 6",
+      "targetKind": "step",
+      "targetId": "filling-in-a-missing-value"
+    },
+    {
+      "claim": "A parameter with a default takes it when the call omits it; keyword arguments fill parameters by name in any order.",
+      "sourceId": "py-modules",
+      "section": "6 modules and import statements; 6.4 packages",
+      "targetKind": "step",
+      "targetId": "filling-in-a-missing-value"
+    },
+    {
+      "claim": "Defaults and keyword arguments applied to pay(hours, wage=10).",
       "sourceId": "py-flow",
       "section": "Defining functions; default arguments; keyword arguments; Python Modules 6",
       "targetKind": "step",
       "targetId": "default-and-named"
     },
     {
-      "claim": "With def pay(hours, wage=10): return hours * wage, what do pay(3) and pay(wage=12, hours=2) give?",
+      "claim": "Defaults and keyword arguments applied to pay(hours, wage=10).",
       "sourceId": "py-modules",
       "section": "6 modules and import statements; 6.4 packages",
       "targetKind": "step",
       "targetId": "default-and-named"
     },
     {
-      "claim": "With def cost(units, rate=4): return units * rate, what does cost(rate=6, units=5) return?",
+      "claim": "Keyword arguments set units and rate by name, so cost(rate=6, units=5) multiplies them.",
       "sourceId": "py-flow",
       "section": "Defining functions; default arguments; keyword arguments; Python Modules 6",
       "targetKind": "step",
       "targetId": "positional-then-named"
     },
     {
-      "claim": "With def cost(units, rate=4): return units * rate, what does cost(rate=6, units=5) return?",
+      "claim": "Keyword arguments set units and rate by name, so cost(rate=6, units=5) multiplies them.",
       "sourceId": "py-modules",
       "section": "6 modules and import statements; 6.4 packages",
       "targetKind": "step",
       "targetId": "positional-then-named"
     },
     {
-      "claim": "A parameter is another name for the object you passed in. A method like append changes that object, so the caller sees it. Assigning a new list to the parameter only renames it inside the function.",
+      "claim": "A parameter names the caller's object; a method like append changes it, while assigning to the parameter only rebinds the local name.",
+      "sourceId": "py-flow",
+      "section": "Defining functions; default arguments; keyword arguments; Python Modules 6",
+      "targetKind": "step",
+      "targetId": "what-a-function-can-change"
+    },
+    {
+      "claim": "A parameter names the caller's object; a method like append changes it, while assigning to the parameter only rebinds the local name.",
+      "sourceId": "py-modules",
+      "section": "6 modules and import statements; 6.4 packages",
+      "targetKind": "step",
+      "targetId": "what-a-function-can-change"
+    },
+    {
+      "claim": "A mutating method inside a function is visible to the caller.",
       "sourceId": "py-flow",
       "section": "Defining functions; default arguments; keyword arguments; Python Modules 6",
       "targetKind": "step",
       "targetId": "change-or-rename"
     },
     {
-      "claim": "A parameter is another name for the object you passed in. A method like append changes that object, so the caller sees it. Assigning a new list to the parameter only renames it inside the function.",
+      "claim": "A mutating method inside a function is visible to the caller.",
       "sourceId": "py-modules",
       "section": "6 modules and import statements; 6.4 packages",
       "targetKind": "step",
       "targetId": "change-or-rename"
     },
     {
-      "claim": "import makes a module's names available. import math as m gives it the shorter name m. math.ceil rounds up to the next whole number. Importing does not install a missing package.",
+      "claim": "import loads an installed module, an alias gives it a shorter name, and import does not install missing packages.",
+      "sourceId": "py-flow",
+      "section": "Defining functions; default arguments; keyword arguments; Python Modules 6",
+      "targetKind": "step",
+      "targetId": "borrowing-rules"
+    },
+    {
+      "claim": "import loads an installed module, an alias gives it a shorter name, and import does not install missing packages.",
+      "sourceId": "py-modules",
+      "section": "6 modules and import statements; 6.4 packages",
+      "targetKind": "step",
+      "targetId": "borrowing-rules"
+    },
+    {
+      "claim": "m.ceil is math.ceil under an alias, and ceil rounds up.",
       "sourceId": "py-flow",
       "section": "Defining functions; default arguments; keyword arguments; Python Modules 6",
       "targetKind": "step",
       "targetId": "import-and-alias"
     },
     {
-      "claim": "import makes a module's names available. import math as m gives it the shorter name m. math.ceil rounds up to the next whole number. Importing does not install a missing package.",
+      "claim": "m.ceil is math.ceil under an alias, and ceil rounds up.",
       "sourceId": "py-modules",
       "section": "6 modules and import statements; 6.4 packages",
       "targetKind": "step",
@@ -1102,20 +1284,6 @@
       "section": "6 modules and import statements; 6.4 packages",
       "targetKind": "question",
       "targetId": "python-functions-and-imports-7"
-    },
-    {
-      "claim": "£15. The default rate of 5 applies unless you say otherwise. A default argument works exactly this way.",
-      "sourceId": "py-flow",
-      "section": "Defining functions; default arguments; keyword arguments; Python Modules 6",
-      "targetKind": "question",
-      "targetId": "python-functions-and-imports-hook"
-    },
-    {
-      "claim": "£15. The default rate of 5 applies unless you say otherwise. A default argument works exactly this way.",
-      "sourceId": "py-modules",
-      "section": "6 modules and import statements; 6.4 packages",
-      "targetKind": "question",
-      "targetId": "python-functions-and-imports-hook"
     },
     {
       "claim": "Each keyword names the parameter it fills, so position does not matter.",

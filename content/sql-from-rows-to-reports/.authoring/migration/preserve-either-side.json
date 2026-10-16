@@ -2,21 +2,8 @@
   "lessonId": "preserve-either-side",
   "courseId": "sql-from-rows-to-reports",
   "migrationNotes": [
-    "step 'predict': the old title \"Which side stays?\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
-    "step 'predict': kind hook → predict; check the order of teaching and asking still fits (style guide §2).",
-    "step 'predict': 1 block(s) moved to reveal because they state the answer; make the reveal refer to the learner's attempt.",
-    "step 'work': the old title \"Keep both unmatched records\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
-    "step 'work': write workedSteps from the worked answer (one line per move, one self-explanation prompt), a headline naming the problem, and recompute every number.",
-    "step 'check': the old title \"Inspect the missing side\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
-    "step 'check': kind check → try; check the order of teaching and asking still fits (style guide §2).",
-    "step 'transfer': the old title \"Restrict matches without hiding the rest\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
-    "intro: write the hook (a puzzle the learner can do from what they bring, never a definition), the promise (≤ 25 words, “By the end you'll …”) and the time.",
-    "recap: write the key idea (the promise, kept), the learner's own results, and the one-line bridge to the next lesson.",
-    "skill check: the lesson has 2 quiz item(s); it needs exactly 3, each on something this lesson taught.",
-    "questions: replace every TODO onCorrect (≤ 25 words, states the idea), tag each skill, add misconceptions for predictable wrong answers (the feedback must not state the key).",
-    "vocabulary: give each explain step introducesTerms; no prompt may use a term before the step that introduces it.",
-    "add an explain step before any question that needs a new word or symbol; add a transfer if the lesson has none.",
-    "citations: retarget the seeded citations to the new step and question ids, and give every step, question and flashcard at least one (same sourceIds; the claim is what that screen asserts)."
+    "Spine: a party organiser needs one list of everyone on the reply list or the badge list, and the same two-sided lookup is followed from RIGHT JOIN to FULL OUTER JOIN, the count of its rows, the NULLs that show who is missing, and a test in ON that creates more unmatched rows.",
+    "Left out of the lesson (still in the course): sql-preserve-either-side-8 (which join keeps both) and -9 (why Dee is not paired with order 107). Both are taught on the third screen."
   ],
   "lesson": {
     "id": "preserve-either-side",
@@ -27,37 +14,354 @@
     "title": "Keep unmatched rows on either side",
     "steps": [
       {
-        "id": "keep-both-sides",
+        "id": "left-and-right",
         "kind": "explain",
         "blocks": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "headline": "Left, right and the mirror image",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "LEFT JOIN keeps every row of the left table. RIGHT JOIN keeps every row of the right table."
+            "text": "A LEFT JOIN keeps every row of the table written first. When the unmatched rows that matter are in the other table, you want the mirror image. That is RIGHT JOIN, which keeps every row of the table written second and puts NULL on the left wherever a row there has no partner."
           },
           {
             "kind": "paragraph",
-            "text": "FULL OUTER JOIN keeps both. Wherever one side has no match, its columns are NULL."
+            "text": "The party lists show both. Ana replied but has no badge, so she has no partner in the badge list. Dot has a badge but never replied, so she has none in the reply list. Ben and Cy are on both lists. A LEFT JOIN from the replies to the badges keeps Ana. A RIGHT JOIN keeps Dot. Which one to use depends on whose missing partner you care about."
           }
         ],
-        "reveal": [],
-        "visualStateId": "",
-        "checkQuestionId": "sql-preserve-either-side-8",
-        "activityId": "",
-        "headline": "RIGHT JOIN keeps every right row, and FULL OUTER JOIN keeps both sides.",
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "In the picture the first query starts from the replies and keeps all three guests, with Ana's badge blank. The second keeps all three badges, with Dot's reply blank. Each has three rows, and each drops one of the two unmatched people. Neither is wrong, because each answers a different question."
+          }
+        ],
         "introducesTerms": [
-          "RIGHT JOIN",
-          "FULL OUTER JOIN"
+          "RIGHT JOIN"
+        ],
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "guests",
+              "columns": [
+                "name"
+              ],
+              "rows": [
+                {
+                  "id": "guests-0",
+                  "cells": [
+                    "Ana"
+                  ]
+                },
+                {
+                  "id": "guests-1",
+                  "cells": [
+                    "Ben"
+                  ]
+                },
+                {
+                  "id": "guests-2",
+                  "cells": [
+                    "Cy"
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "badges",
+              "columns": [
+                "name",
+                "colour"
+              ],
+              "rows": [
+                {
+                  "id": "badges-0",
+                  "cells": [
+                    "Ben",
+                    "blue"
+                  ]
+                },
+                {
+                  "id": "badges-1",
+                  "cells": [
+                    "Cy",
+                    "red"
+                  ]
+                },
+                {
+                  "id": "badges-2",
+                  "cells": [
+                    "Dot",
+                    "blue"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Keep every reply",
+              "sql": "SELECT g.name AS guest, b.name AS badge FROM guests AS g LEFT JOIN badges AS b ON b.name = g.name ORDER BY g.name;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "guest",
+                  "badge"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      "Ana",
+                      null
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      "Ben",
+                      "Ben"
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      "Cy",
+                      "Cy"
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "Keep every badge",
+              "sql": "SELECT g.name AS guest, b.name AS badge FROM guests AS g RIGHT JOIN badges AS b ON b.name = g.name ORDER BY b.name;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "guest",
+                  "badge"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      "Ben",
+                      "Ben"
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      "Cy",
+                      "Cy"
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      null,
+                      "Dot"
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        }
+      },
+      {
+        "id": "everyone-on-either-list",
+        "kind": "try",
+        "blocks": [],
+        "visualStateId": "",
+        "checkQuestionId": "sql-preserve-either-side-7",
+        "activityId": "",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Make the combined list by hand, with a line for everyone who is on either list."
+          }
         ]
+      },
+      {
+        "id": "keeping-both-sides",
+        "kind": "explain",
+        "blocks": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "headline": "Keeping both sides",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Sometimes neither side may lose anyone. The combined guest list needs Ana from one list and Dot from the other, along with the people on both. FULL OUTER JOIN does that. It returns every matched pair, then adds each unmatched row of the left table with NULLs on the right, and each unmatched row of the right table with NULLs on the left."
+          },
+          {
+            "kind": "paragraph",
+            "text": "That gives a way to count the result. The number of rows is the number of matched pairs, plus the unmatched rows on the left, plus the unmatched rows on the right. An unmatched left row is never paired with an unmatched right row, because their keys differ, so each stays in a row of its own."
+          }
+        ],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "The first query in the picture is an inner join and returns two rows, for Ben and Cy. The second is the full join. It returns four: the two matches, Ana with a blank badge and Dot with a blank reply. Reading the NULLs shows who is missing from which list."
+          }
+        ],
+        "introducesTerms": [
+          "FULL OUTER JOIN"
+        ],
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "guests",
+              "columns": [
+                "name"
+              ],
+              "rows": [
+                {
+                  "id": "guests-0",
+                  "cells": [
+                    "Ana"
+                  ]
+                },
+                {
+                  "id": "guests-1",
+                  "cells": [
+                    "Ben"
+                  ]
+                },
+                {
+                  "id": "guests-2",
+                  "cells": [
+                    "Cy"
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "badges",
+              "columns": [
+                "name",
+                "colour"
+              ],
+              "rows": [
+                {
+                  "id": "badges-0",
+                  "cells": [
+                    "Ben",
+                    "blue"
+                  ]
+                },
+                {
+                  "id": "badges-1",
+                  "cells": [
+                    "Cy",
+                    "red"
+                  ]
+                },
+                {
+                  "id": "badges-2",
+                  "cells": [
+                    "Dot",
+                    "blue"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Matches only",
+              "sql": "SELECT g.name AS guest, b.name AS badge FROM guests AS g INNER JOIN badges AS b ON b.name = g.name ORDER BY g.name;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "guest",
+                  "badge"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      "Ben",
+                      "Ben"
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      "Cy",
+                      "Cy"
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "Keep both sides",
+              "sql": "SELECT g.name AS guest, b.name AS badge FROM guests AS g FULL OUTER JOIN badges AS b ON b.name = g.name ORDER BY COALESCE(g.name, b.name);",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "guest",
+                  "badge"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      "Ana",
+                      null
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      "Ben",
+                      "Ben"
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      "Cy",
+                      "Cy"
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      null,
+                      "Dot"
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-1"
+        }
       },
       {
         "id": "which-side",
         "kind": "predict",
         "blocks": [],
+        "visualStateId": "",
+        "checkQuestionId": "sql-preserve-either-side-1",
+        "activityId": "",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "Orders now include a guest order, 107, with no customer. Dee still has no order. Each join preserves one side."
+            "text": "The shop's orders now include a guest order, 107, with no customer. Dee still has no order. Each join preserves one side."
           }
         ],
         "reveal": [
@@ -66,9 +370,6 @@
             "text": "You picked the side that RIGHT keeps: the table written on the right. Its unmatched row stays, and the other side's unmatched row is dropped."
           }
         ],
-        "visualStateId": "",
-        "checkQuestionId": "sql-preserve-either-side-1",
-        "activityId": "",
         "diagram": {
           "type": "relational_query",
           "inputs": [
@@ -338,308 +639,16 @@
         "answerVisibility": "hidden-until-response"
       },
       {
-        "id": "every-customer-and-order",
-        "kind": "worked_example",
-        "blocks": [],
-        "lead": [],
-        "reveal": [],
-        "visualStateId": "",
-        "checkQuestionId": "",
-        "activityId": "",
-        "headline": "List every customer and every order, matched or not.",
-        "diagram": {
-          "type": "relational_query",
-          "inputs": [
-            {
-              "name": "customers",
-              "columns": [
-                "id",
-                "name",
-                "region"
-              ],
-              "rows": [
-                {
-                  "id": "customers-0",
-                  "cells": [
-                    1,
-                    "Ada",
-                    "North"
-                  ]
-                },
-                {
-                  "id": "customers-1",
-                  "cells": [
-                    2,
-                    "Ben",
-                    "South"
-                  ]
-                },
-                {
-                  "id": "customers-2",
-                  "cells": [
-                    3,
-                    "Cy",
-                    "North"
-                  ]
-                },
-                {
-                  "id": "customers-3",
-                  "cells": [
-                    4,
-                    "Dee",
-                    "West"
-                  ]
-                }
-              ]
-            },
-            {
-              "name": "orders",
-              "columns": [
-                "id",
-                "customer_id",
-                "item",
-                "amount",
-                "status",
-                "day"
-              ],
-              "rows": [
-                {
-                  "id": "orders-0",
-                  "cells": [
-                    101,
-                    1,
-                    "Desk",
-                    80,
-                    "paid",
-                    "2026-09-01"
-                  ]
-                },
-                {
-                  "id": "orders-1",
-                  "cells": [
-                    102,
-                    1,
-                    "Book",
-                    20,
-                    "paid",
-                    "2026-09-02"
-                  ]
-                },
-                {
-                  "id": "orders-2",
-                  "cells": [
-                    103,
-                    2,
-                    "Desk",
-                    80,
-                    "paid",
-                    "2026-09-02"
-                  ]
-                },
-                {
-                  "id": "orders-3",
-                  "cells": [
-                    104,
-                    2,
-                    "Lamp",
-                    40,
-                    "pending",
-                    "2026-09-03"
-                  ]
-                },
-                {
-                  "id": "orders-4",
-                  "cells": [
-                    105,
-                    3,
-                    "Book",
-                    20,
-                    "paid",
-                    "2026-09-03"
-                  ]
-                },
-                {
-                  "id": "orders-5",
-                  "cells": [
-                    106,
-                    3,
-                    "Lamp",
-                    null,
-                    "pending",
-                    "2026-09-04"
-                  ]
-                },
-                {
-                  "id": "orders-6",
-                  "cells": [
-                    107,
-                    null,
-                    "Mug",
-                    30,
-                    "paid",
-                    "2026-09-04"
-                  ]
-                }
-              ]
-            }
-          ],
-          "queries": [
-            {
-              "id": "query-0",
-              "label": "Matches only",
-              "sql": "SELECT c.name, o.id FROM customers AS c INNER JOIN orders AS o ON c.id = o.customer_id ORDER BY o.id, c.id;",
-              "result": {
-                "name": "Result",
-                "columns": [
-                  "name",
-                  "id"
-                ],
-                "rows": [
-                  {
-                    "id": "result-0",
-                    "cells": [
-                      "Ada",
-                      101
-                    ]
-                  },
-                  {
-                    "id": "result-1",
-                    "cells": [
-                      "Ada",
-                      102
-                    ]
-                  },
-                  {
-                    "id": "result-2",
-                    "cells": [
-                      "Ben",
-                      103
-                    ]
-                  },
-                  {
-                    "id": "result-3",
-                    "cells": [
-                      "Ben",
-                      104
-                    ]
-                  },
-                  {
-                    "id": "result-4",
-                    "cells": [
-                      "Cy",
-                      105
-                    ]
-                  },
-                  {
-                    "id": "result-5",
-                    "cells": [
-                      "Cy",
-                      106
-                    ]
-                  }
-                ]
-              }
-            },
-            {
-              "id": "query-1",
-              "label": "Preserve both sides",
-              "sql": "SELECT c.name, o.id FROM customers AS c FULL OUTER JOIN orders AS o ON c.id = o.customer_id ORDER BY o.id, c.id;",
-              "result": {
-                "name": "Result",
-                "columns": [
-                  "name",
-                  "id"
-                ],
-                "rows": [
-                  {
-                    "id": "result-0",
-                    "cells": [
-                      "Dee",
-                      null
-                    ]
-                  },
-                  {
-                    "id": "result-1",
-                    "cells": [
-                      "Ada",
-                      101
-                    ]
-                  },
-                  {
-                    "id": "result-2",
-                    "cells": [
-                      "Ada",
-                      102
-                    ]
-                  },
-                  {
-                    "id": "result-3",
-                    "cells": [
-                      "Ben",
-                      103
-                    ]
-                  },
-                  {
-                    "id": "result-4",
-                    "cells": [
-                      "Ben",
-                      104
-                    ]
-                  },
-                  {
-                    "id": "result-5",
-                    "cells": [
-                      "Cy",
-                      105
-                    ]
-                  },
-                  {
-                    "id": "result-6",
-                    "cells": [
-                      "Cy",
-                      106
-                    ]
-                  },
-                  {
-                    "id": "result-7",
-                    "cells": [
-                      null,
-                      107
-                    ]
-                  }
-                ]
-              }
-            }
-          ],
-          "initialQueryId": "query-1"
-        },
-        "answerVisibility": "hidden-until-response",
-        "workedSteps": [
-          {
-            "text": "Keep every matched pair.",
-            "math": "Ada 101, Ada 102, Ben 103, Ben 104, Cy 105, Cy 106"
-          },
-          {
-            "text": "Keep the customer who matches no order.",
-            "math": "Dee, NULL"
-          },
-          {
-            "text": "Keep the order that matches no customer.",
-            "math": "NULL, 107",
-            "selfExplain": {
-              "questionId": "sql-preserve-either-side-9"
-            }
-          }
-        ]
-      },
-      {
         "id": "count-the-full-join",
         "kind": "try",
         "blocks": [],
+        "visualStateId": "",
+        "checkQuestionId": "sql-preserve-either-side-2",
+        "activityId": "",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "A FULL OUTER JOIN keeps the matched pairs and the unmatched rows from both sides."
+            "text": "The same two tables, with guest order 107 included. A FULL OUTER JOIN keeps the matched pairs and the unmatched rows from both sides."
           }
         ],
         "reveal": [
@@ -648,9 +657,6 @@
             "text": "You added the matches to the unmatched rows from each side. Both kinds of absence are rows of the result."
           }
         ],
-        "visualStateId": "",
-        "checkQuestionId": "sql-preserve-either-side-2",
-        "activityId": "",
         "diagram": {
           "type": "relational_query",
           "inputs": [
@@ -920,13 +926,438 @@
         "answerVisibility": "hidden-until-response"
       },
       {
-        "id": "which-key-is-null",
-        "kind": "predict",
+        "id": "same-count-different-rows",
+        "kind": "explain",
         "blocks": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "headline": "The same count, different rows",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "After a full join, a NULL key shows which side had no match."
+            "text": "With the guest order in the table, the shop has a customer with no order and an order with no customer. A LEFT JOIN from customers to orders keeps Dee and loses the guest order. A RIGHT JOIN keeps the guest order and loses Dee. Each returns seven rows: six matched pairs plus one kept row."
+          },
+          {
+            "kind": "paragraph",
+            "text": "Equal counts do not mean equal results. Two joins can return the same number of rows while keeping different records, and only the NULLs show which side was kept. Look for the blanks in a result before you trust its size."
+          }
+        ],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "One more fact helps with counting. A RIGHT JOIN returns at least one row for every row of the right table, and exactly one when each of those rows matches no more than one row on the left. A right table of five rows that each match at most once gives five rows, wherever the matches fall."
+          }
+        ],
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "customers",
+              "columns": [
+                "id",
+                "name",
+                "region"
+              ],
+              "rows": [
+                {
+                  "id": "customers-0",
+                  "cells": [
+                    1,
+                    "Ada",
+                    "North"
+                  ]
+                },
+                {
+                  "id": "customers-1",
+                  "cells": [
+                    2,
+                    "Ben",
+                    "South"
+                  ]
+                },
+                {
+                  "id": "customers-2",
+                  "cells": [
+                    3,
+                    "Cy",
+                    "North"
+                  ]
+                },
+                {
+                  "id": "customers-3",
+                  "cells": [
+                    4,
+                    "Dee",
+                    "West"
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "orders",
+              "columns": [
+                "id",
+                "customer_id",
+                "item",
+                "amount",
+                "status",
+                "day"
+              ],
+              "rows": [
+                {
+                  "id": "orders-0",
+                  "cells": [
+                    101,
+                    1,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-01"
+                  ]
+                },
+                {
+                  "id": "orders-1",
+                  "cells": [
+                    102,
+                    1,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-2",
+                  "cells": [
+                    103,
+                    2,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-3",
+                  "cells": [
+                    104,
+                    2,
+                    "Lamp",
+                    40,
+                    "pending",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-4",
+                  "cells": [
+                    105,
+                    3,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-5",
+                  "cells": [
+                    106,
+                    3,
+                    "Lamp",
+                    null,
+                    "pending",
+                    "2026-09-04"
+                  ]
+                },
+                {
+                  "id": "orders-6",
+                  "cells": [
+                    107,
+                    null,
+                    "Mug",
+                    30,
+                    "paid",
+                    "2026-09-04"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Preserve customers",
+              "sql": "SELECT c.name, o.id FROM customers AS c LEFT JOIN orders AS o ON c.id = o.customer_id ORDER BY o.id, c.id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "name",
+                  "id"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      "Dee",
+                      null
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      "Ada",
+                      101
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      "Ada",
+                      102
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      "Ben",
+                      103
+                    ]
+                  },
+                  {
+                    "id": "result-4",
+                    "cells": [
+                      "Ben",
+                      104
+                    ]
+                  },
+                  {
+                    "id": "result-5",
+                    "cells": [
+                      "Cy",
+                      105
+                    ]
+                  },
+                  {
+                    "id": "result-6",
+                    "cells": [
+                      "Cy",
+                      106
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "Preserve orders",
+              "sql": "SELECT c.name, o.id FROM customers AS c RIGHT JOIN orders AS o ON c.id = o.customer_id ORDER BY o.id, c.id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "name",
+                  "id"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      "Ada",
+                      101
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      "Ada",
+                      102
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      "Ben",
+                      103
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      "Ben",
+                      104
+                    ]
+                  },
+                  {
+                    "id": "result-4",
+                    "cells": [
+                      "Cy",
+                      105
+                    ]
+                  },
+                  {
+                    "id": "result-5",
+                    "cells": [
+                      "Cy",
+                      106
+                    ]
+                  },
+                  {
+                    "id": "result-6",
+                    "cells": [
+                      null,
+                      107
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        }
+      },
+      {
+        "id": "reading-the-nulls",
+        "kind": "explain",
+        "blocks": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "headline": "Reading the NULLs",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "After a full join the NULLs say which side lacked a partner. If the guest column is NULL, the row is a badge with no reply. If the badge column is NULL, the row is a reply with no badge. Testing one side's key with IS NULL picks out the rows where that side was missing."
+          },
+          {
+            "kind": "paragraph",
+            "text": "As in the last lesson, choose a key that is always filled on a real row, such as the name. A real row cannot have a NULL there, so a NULL always means that nothing matched."
+          }
+        ],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "The first query asks for the rows where the badge is NULL and finds Ana, who replied and has no badge. The second asks for the rows where the guest is NULL and finds Dot. A count of rows cannot tell the two apart, but the blanks can."
+          }
+        ],
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "guests",
+              "columns": [
+                "name"
+              ],
+              "rows": [
+                {
+                  "id": "guests-0",
+                  "cells": [
+                    "Ana"
+                  ]
+                },
+                {
+                  "id": "guests-1",
+                  "cells": [
+                    "Ben"
+                  ]
+                },
+                {
+                  "id": "guests-2",
+                  "cells": [
+                    "Cy"
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "badges",
+              "columns": [
+                "name",
+                "colour"
+              ],
+              "rows": [
+                {
+                  "id": "badges-0",
+                  "cells": [
+                    "Ben",
+                    "blue"
+                  ]
+                },
+                {
+                  "id": "badges-1",
+                  "cells": [
+                    "Cy",
+                    "red"
+                  ]
+                },
+                {
+                  "id": "badges-2",
+                  "cells": [
+                    "Dot",
+                    "blue"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Badge is NULL",
+              "sql": "SELECT g.name AS guest, b.name AS badge FROM guests AS g FULL OUTER JOIN badges AS b ON b.name = g.name WHERE b.name IS NULL ORDER BY g.name;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "guest",
+                  "badge"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      "Ana",
+                      null
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "Guest is NULL",
+              "sql": "SELECT g.name AS guest, b.name AS badge FROM guests AS g FULL OUTER JOIN badges AS b ON b.name = g.name WHERE g.name IS NULL ORDER BY b.name;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "guest",
+                  "badge"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      null,
+                      "Dot"
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        }
+      },
+      {
+        "id": "which-key-is-null",
+        "kind": "predict",
+        "blocks": [],
+        "visualStateId": "",
+        "checkQuestionId": "sql-preserve-either-side-3",
+        "activityId": "",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "The shop's customers and orders are joined again, with every unmatched row kept. Think about which side a NULL key points to."
           }
         ],
         "reveal": [
@@ -935,9 +1366,6 @@
             "text": "You read the NULL key to see which side was absent. A row count alone cannot tell you that."
           }
         ],
-        "visualStateId": "",
-        "checkQuestionId": "sql-preserve-either-side-3",
-        "activityId": "",
         "diagram": {
           "type": "relational_query",
           "inputs": [
@@ -1123,19 +1551,198 @@
         "answerVisibility": "hidden-until-response"
       },
       {
-        "id": "failed-on-test",
-        "kind": "transfer",
+        "id": "a-test-in-the-on-condition",
+        "kind": "explain",
         "blocks": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "headline": "A test in the ON condition",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "A condition in ON decides which rows can pair. Rows that fail it are still kept as unmatched rows."
+            "text": "A condition in ON decides which rows can pair. In a full join a row that fails the condition is kept as an unmatched row on its own side, and so adding a test to ON can create more unmatched rows."
+          },
+          {
+            "kind": "paragraph",
+            "text": "Suppose the badges have colours, and the rule is to pair a guest only with a blue badge. Ben's badge is blue, so Ben still pairs. Cy's badge is red, so the pair fails the rule. Cy the guest and Cy the badge are now two unmatched rows, one on each side."
           }
         ],
-        "reveal": [],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "The first query matches on name alone and returns four rows. The second adds the colour test and returns five: Ben's pair, then Ana and Cy as replies with no badge, then Cy and Dot as badges with no reply. The test removed nothing. It turned one matched row for Cy into two unmatched ones."
+          }
+        ],
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "guests",
+              "columns": [
+                "name"
+              ],
+              "rows": [
+                {
+                  "id": "guests-0",
+                  "cells": [
+                    "Ana"
+                  ]
+                },
+                {
+                  "id": "guests-1",
+                  "cells": [
+                    "Ben"
+                  ]
+                },
+                {
+                  "id": "guests-2",
+                  "cells": [
+                    "Cy"
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "badges",
+              "columns": [
+                "name",
+                "colour"
+              ],
+              "rows": [
+                {
+                  "id": "badges-0",
+                  "cells": [
+                    "Ben",
+                    "blue"
+                  ]
+                },
+                {
+                  "id": "badges-1",
+                  "cells": [
+                    "Cy",
+                    "red"
+                  ]
+                },
+                {
+                  "id": "badges-2",
+                  "cells": [
+                    "Dot",
+                    "blue"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Match on name",
+              "sql": "SELECT g.name AS guest, b.name AS badge FROM guests AS g FULL OUTER JOIN badges AS b ON b.name = g.name ORDER BY COALESCE(g.name, b.name);",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "guest",
+                  "badge"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      "Ana",
+                      null
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      "Ben",
+                      "Ben"
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      "Cy",
+                      "Cy"
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      null,
+                      "Dot"
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "Match on name and blue",
+              "sql": "SELECT g.name AS guest, b.name AS badge FROM guests AS g FULL OUTER JOIN badges AS b ON b.name = g.name AND b.colour = 'blue' ORDER BY COALESCE(g.name, b.name), b.name;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "guest",
+                  "badge"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      "Ana",
+                      null
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      "Ben",
+                      "Ben"
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      "Cy",
+                      null
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      null,
+                      "Cy"
+                    ]
+                  },
+                  {
+                    "id": "result-4",
+                    "cells": [
+                      null,
+                      "Dot"
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        }
+      },
+      {
+        "id": "failed-on-test",
+        "kind": "transfer",
+        "blocks": [],
         "visualStateId": "",
         "checkQuestionId": "sql-preserve-either-side-4",
         "activityId": "",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "The paid test now sits in the ON condition of the full join. Orders that fail it stay in the result as unmatched rows."
+          }
+        ],
         "diagram": {
           "type": "relational_query",
           "inputs": [
@@ -1370,23 +1977,30 @@
         "blocks": [
           {
             "kind": "paragraph",
-            "text": "Guests who replied: Ana, Ben and Cy. Name badges printed: Ben, Cy and Dot. You make one list of everyone on either."
+            "text": "A party organiser has two lists. The reply list has the guests who said they were coming: Ana, Ben and Cy. The badge list has the names that were printed on badges: Ben, Cy and Dot. The two lists mostly agree, but not entirely."
+          },
+          {
+            "kind": "paragraph",
+            "text": "The organiser wants one list of everyone who appears on either. Ben and Cy are on both lists and go down once each. Ana replied but has no badge, so she goes down anyway. Dot has a badge but never replied, and she goes down too. Keeping only the names that appear on both lists would lose two people who matter."
+          },
+          {
+            "kind": "paragraph",
+            "text": "The last lesson kept the customer with no orders. This one keeps unmatched rows from either side, so that nobody is lost from a list because the other list has no partner for them. It also covers what the blanks in the combined list tell you."
           }
-        ],
-        "questionId": "sql-preserve-either-side-7"
+        ]
       },
       "promise": "By the end you'll choose which side of a join to preserve, and read the NULLs that show who is missing.",
-      "estimatedMinutes": 10
+      "estimatedMinutes": 12
     },
     "recap": {
-      "keyIdea": "RIGHT JOIN preserves the right table and FULL OUTER JOIN preserves both. A NULL key shows which side had no match.",
+      "keyIdea": "A RIGHT JOIN preserves the right table and a FULL OUTER JOIN preserves both. A NULL key shows which side had no match.",
       "blocks": [
         {
           "kind": "paragraph",
-          "text": "You combined 4 names from two lists, then counted 8 rows in a full join. The guest order was the one with no customer."
+          "text": "You combined two lists into 4 names, then counted 8 rows in the full join of the shop's tables. With the paid test in the ON condition, 3 order rows had no customer."
         }
       ],
-      "nextHook": "Next, use one query's answer inside another."
+      "nextHook": "Joins settle which rows from two tables belong together. Some questions need an answer that the table itself has to supply first, such as a class average that decides who gets a sticker. The next lesson puts one query inside another to get it."
     },
     "calculator": "off",
     "taughtSkills": [
@@ -1505,7 +2119,7 @@
       "conceptIds": [
         "sql-preserve-either-side"
       ],
-      "prompt": "In that full join, c.id IS NULL identifies which case?",
+      "prompt": "In the full join of customers and orders, which case does c.id IS NULL identify?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -1709,7 +2323,7 @@
       "conceptIds": [
         "sql-preserve-either-side"
       ],
-      "prompt": "How many different names are on the combined list?",
+      "prompt": "Guests who replied: Ana, Ben and Cy. Badges printed: Ben, Cy and Dot. You make one list of everyone who is on either list. How many different names are on it?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -1907,48 +2521,6 @@
   ],
   "citations": [
     {
-      "claim": "RIGHT JOIN keeps every right row, and FULL OUTER JOIN keeps both sides.",
-      "sourceId": "sqlite-select",
-      "section": "SELECT 2.1: RIGHT and FULL outer-join unmatched rows",
-      "targetKind": "step",
-      "targetId": "keep-both-sides"
-    },
-    {
-      "claim": "Orders now include a guest order, 107, with no customer. Dee still has no order. Each join preserves one side.",
-      "sourceId": "sqlite-select",
-      "section": "SELECT 2.1: RIGHT and FULL outer-join unmatched rows",
-      "targetKind": "step",
-      "targetId": "which-side"
-    },
-    {
-      "claim": "List every customer and every order, matched or not.",
-      "sourceId": "sqlite-select",
-      "section": "SELECT 2.1: RIGHT and FULL outer-join unmatched rows",
-      "targetKind": "step",
-      "targetId": "every-customer-and-order"
-    },
-    {
-      "claim": "A FULL OUTER JOIN keeps the matched pairs and the unmatched rows from both sides.",
-      "sourceId": "sqlite-select",
-      "section": "SELECT 2.1: RIGHT and FULL outer-join unmatched rows",
-      "targetKind": "step",
-      "targetId": "count-the-full-join"
-    },
-    {
-      "claim": "After a full join, a NULL key shows which side had no match.",
-      "sourceId": "sqlite-select",
-      "section": "SELECT 2.1: RIGHT and FULL outer-join unmatched rows",
-      "targetKind": "step",
-      "targetId": "which-key-is-null"
-    },
-    {
-      "claim": "A condition in ON decides which rows can pair. Rows that fail it are still kept as unmatched rows.",
-      "sourceId": "sqlite-select",
-      "section": "SELECT 2.1: RIGHT and FULL outer-join unmatched rows",
-      "targetKind": "step",
-      "targetId": "failed-on-test"
-    },
-    {
       "claim": "A RIGHT JOIN preserves the orders side. Guest order 107 survives even though it has no matching customer; customer columns for that row are NULL.",
       "sourceId": "sqlite-select",
       "section": "SELECT 2.1: RIGHT and FULL outer-join unmatched rows",
@@ -1998,20 +2570,6 @@
       "targetId": "sql-preserve-either-side-7"
     },
     {
-      "claim": "A FULL OUTER JOIN keeps unmatched rows from both tables.",
-      "sourceId": "sqlite-select",
-      "section": "SELECT 2.1: RIGHT and FULL outer-join unmatched rows",
-      "targetKind": "question",
-      "targetId": "sql-preserve-either-side-8"
-    },
-    {
-      "claim": "Order 107 has no customer reference, so it matches no customer, and Dee matches no order.",
-      "sourceId": "sqlite-select",
-      "section": "SELECT 2.1: RIGHT and FULL outer-join unmatched rows",
-      "targetKind": "question",
-      "targetId": "sql-preserve-either-side-9"
-    },
-    {
       "claim": "RIGHT JOIN keeps every row of B. B has three ids, and each appears once.",
       "sourceId": "sqlite-select",
       "section": "SELECT 2.1: RIGHT and FULL outer-join unmatched rows",
@@ -2031,6 +2589,76 @@
       "section": "SELECT 2.1: RIGHT and FULL outer-join unmatched rows",
       "targetKind": "flashcard",
       "targetId": "sql-preserve-either-side-card-2"
+    },
+    {
+      "claim": "RIGHT JOIN keeps every row of the right table, the mirror image of LEFT JOIN.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.1: RIGHT and FULL outer-join unmatched rows",
+      "targetKind": "step",
+      "targetId": "left-and-right"
+    },
+    {
+      "claim": "Combining the two lists once gives Ana, Ben, Cy and Dot, four different names.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.1: RIGHT and FULL outer-join unmatched rows",
+      "targetKind": "step",
+      "targetId": "everyone-on-either-list"
+    },
+    {
+      "claim": "FULL OUTER JOIN keeps matched pairs and the unmatched rows of both tables, so its row count is matches plus both kinds of unmatched row.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.1: RIGHT and FULL outer-join unmatched rows",
+      "targetKind": "step",
+      "targetId": "keeping-both-sides"
+    },
+    {
+      "claim": "RIGHT JOIN preserves the unmatched guest order, not Dee.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.1: RIGHT and FULL outer-join unmatched rows",
+      "targetKind": "step",
+      "targetId": "which-side"
+    },
+    {
+      "claim": "Six matched pairs, Dee and the guest order make eight rows.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.1: RIGHT and FULL outer-join unmatched rows",
+      "targetKind": "step",
+      "targetId": "count-the-full-join"
+    },
+    {
+      "claim": "A LEFT and a RIGHT JOIN can return the same number of rows while keeping different records.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.1: RIGHT and FULL outer-join unmatched rows",
+      "targetKind": "step",
+      "targetId": "same-count-different-rows"
+    },
+    {
+      "claim": "After a full join, a NULL key shows which side had no match.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.1: RIGHT and FULL outer-join unmatched rows",
+      "targetKind": "step",
+      "targetId": "reading-the-nulls"
+    },
+    {
+      "claim": "c.id IS NULL marks an order that matched no customer.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.1: RIGHT and FULL outer-join unmatched rows",
+      "targetKind": "step",
+      "targetId": "which-key-is-null"
+    },
+    {
+      "claim": "A row that fails an ON test is kept as an unmatched row in a full join.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.1: RIGHT and FULL outer-join unmatched rows",
+      "targetKind": "step",
+      "targetId": "a-test-in-the-on-condition"
+    },
+    {
+      "claim": "With the paid test in ON, orders 104, 106 and 107 are unmatched.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.1: RIGHT and FULL outer-join unmatched rows",
+      "targetKind": "step",
+      "targetId": "failed-on-test"
     }
   ]
 }

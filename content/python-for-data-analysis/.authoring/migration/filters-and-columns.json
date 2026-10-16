@@ -1,7 +1,12 @@
 {
   "lessonId": "filters-and-columns",
   "courseId": "python-for-data-analysis",
-  "migrationNotes": [],
+  "migrationNotes": [
+    "Spine: four shop orders and a free-shipping rule. We test every row (a mask), keep the rows that pass, join two tests, work out a new column for every row, and correct a price in exactly the rows we mean.",
+    "Left out of the lesson (still in the course): python-filters-and-columns-hook (which orders ship free, covered by the opener and the first teaching screen) and python-filters-and-columns-mask-check (a recall choice, covered by the first practice screen).",
+    "Figures: the mask, the two-test, the revenue and the loc figures moved onto the teaching screens, so the practice and worked screens no longer carry them. The skill-check items use numbers that do not appear in any figure.",
+    "Rewrote the prompts of -2, -faded-bay and -4 so each stands on its own. Chained indexing is described as pandas 3 behaves (the assignment goes to a temporary table). Keys unchanged: all numeric keys recomputed (2, 1, 29, 15, 10, 2, 33, 34)."
+  ],
   "lesson": {
     "id": "filters-and-columns",
     "courseId": "python-for-data-analysis",
@@ -11,47 +16,51 @@
     "title": "Keep the rows that answer the question",
     "steps": [
       {
-        "id": "true-or-false-per-row",
+        "id": "a-test-for-every-row",
         "kind": "explain",
         "blocks": [],
-        "headline": "Comparing a column with a value gives a mask, one True or False per row.",
+        "headline": "A test for every row",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "df['units'] >= 3 does not pick rows by itself. It gives a Boolean mask with one True or False for each row. df[mask] then keeps only the rows where the mask is True."
+            "text": "Say the owner's rule to the table: units of 3 or more. In pandas it is written df['units'] >= 3. The comparison does not pick anything out yet. It is made against every row separately, and the answer for each row is either True or False. For the four orders, with 2, 1, 3 and 4 units, the answers are False, False, True and True."
           },
           {
-            "kind": "callout",
-            "tone": "key",
-            "text": "Build the mask first. Then use it to select."
+            "kind": "paragraph",
+            "text": "That column of True and False values is called a mask. It has one entry for each row of the table, in the same order, so the mask and the table line up. Think of a stencil laid over the table: the holes are the True entries, and only the rows showing through the holes are kept. A value exactly at the limit passes a >= test, which is why the order of 3 units is True."
           }
         ],
-        "reveal": [],
         "introducesTerms": [
           "mask"
         ],
         "visualStateId": "",
-        "checkQuestionId": "python-filters-and-columns-mask-check",
+        "checkQuestionId": "",
         "activityId": ""
       },
       {
-        "id": "count-the-passes",
-        "kind": "predict",
+        "id": "keeping-the-rows-that-pass",
+        "kind": "explain",
         "blocks": [],
+        "headline": "Keeping the rows that pass",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "The test is applied to each value separately. A value equal to the limit passes a >= test."
-          }
-        ],
-        "reveal": [
+            "text": "Laying the stencil over the table is written df[mask]. It keeps the rows where the mask is True and leaves out the rest. Each kept row comes through whole, with its shop, units and price still together, so the data on a row never gets separated from the row itself."
+          },
           {
             "kind": "paragraph",
-            "text": "You applied the test one value at a time, and the True rows are the ones that survive. The mask keeps every row tied to its own data."
+            "text": "Step through the two cases. Both build a mask first and then use it. The first tests units. The second tests the shop name with ==, which asks whether two values are equal."
           }
         ],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "In the first case the mask reads False, False, True, True, so rows 2 and 3 survive and keep their original row numbers. In the second case the shop is Bay in rows 0 and 2, so those two come through. A single equals sign stores a value and two equals signs ask a question, so a test for equality always uses ==. The mask can be stored under a name, as it is here. It can also be written straight inside the brackets."
+          }
+        ],
+        "introducesTerms": [],
         "visualStateId": "",
-        "checkQuestionId": "python-filters-and-columns-1",
+        "checkQuestionId": "",
         "activityId": "",
         "diagram": {
           "type": "python_execution",
@@ -211,33 +220,48 @@
             }
           ],
           "initialCaseId": "case-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        }
       },
       {
-        "id": "both-tests-at-once",
-        "kind": "worked_example",
+        "id": "count-the-passes",
+        "kind": "predict",
         "blocks": [],
-        "headline": "Rows are (Bay, 2), (Hill, 6), (Bay, 8) and (Hill, 1). How many pass shop 'Bay' and units above 5?",
-        "lead": [],
-        "reveal": [],
-        "workedSteps": [
+        "lead": [
           {
-            "text": "Find the Bay rows first: the first and the third.",
-            "math": "2 rows"
-          },
-          {
-            "text": "Join the two tests with & and put each in brackets.",
-            "math": "(df['shop'] == 'Bay') & (df['units'] > 5)",
-            "selfExplain": {
-              "questionId": "python-filters-and-columns-3"
-            }
-          },
-          {
-            "text": "Among the Bay rows, only the third has more than 5 units.",
-            "math": "1 row"
+            "kind": "paragraph",
+            "text": "The test is made on each value separately. A value equal to the limit passes a >= test."
           }
         ],
+        "visualStateId": "",
+        "checkQuestionId": "python-filters-and-columns-1",
+        "activityId": ""
+      },
+      {
+        "id": "two-tests-at-once",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "Two tests at once",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Often one rule is not enough. The owner may want only Bay's orders of 3 units or more. That needs two masks, one for the shop and one for the units, joined so that a row is kept only when both are True. The joiner for “and” is & and the joiner for “or” is |. Each comparison goes in its own brackets, and the whole expression goes inside df[...]: df[(df['shop'] == 'Bay') & (df['units'] >= 3)]."
+          },
+          {
+            "kind": "paragraph",
+            "text": "The word and will not do here. It wants a single yes or no for the whole column, and a column of True and False values has no single answer, so pandas stops with an error. The symbols & and | work on each row separately. They also bind more tightly than a comparison does, which is why every comparison needs its own brackets."
+          },
+          {
+            "kind": "paragraph",
+            "text": "The figure joins the same two masks with & in the first case and with | in the second."
+          }
+        ],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "With &, only the third order passes, since it is the only one that is both from Bay and of 3 units or more. With |, a row passes when at least one test is True, so both Bay orders come through along with Hill's order of 4 units."
+          }
+        ],
+        "introducesTerms": [],
         "visualStateId": "",
         "checkQuestionId": "",
         "activityId": "",
@@ -341,15 +365,46 @@
             }
           ],
           "initialCaseId": "case-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        }
+      },
+      {
+        "id": "both-tests-at-once",
+        "kind": "worked_example",
+        "blocks": [],
+        "headline": "Rows are (Bay, 2), (Hill, 6), (Bay, 8) and (Hill, 1). How many pass shop 'Bay' and units above 5?",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Apply one test and then the other, on the same rows."
+          }
+        ],
+        "reveal": [],
+        "workedSteps": [
+          {
+            "text": "Find the Bay rows first: the first and the third.",
+            "math": "2 rows"
+          },
+          {
+            "text": "Join the two tests with & and put each in brackets.",
+            "math": "(df['shop'] == 'Bay') & (df['units'] > 5)",
+            "selfExplain": {
+              "questionId": "python-filters-and-columns-3"
+            }
+          },
+          {
+            "text": "Among the Bay rows, only the third has more than 5 units.",
+            "math": "1 row"
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
       },
       {
         "id": "and-by-row",
         "kind": "faded_example",
         "blocks": [],
         "headline": "Rows are (Bay, 2), (Bay, 5) and (Hill, 7). How many pass shop 'Bay' and units above 3?",
-        "lead": [],
         "reveal": [],
         "workedSteps": [
           {
@@ -370,23 +425,29 @@
         "activityId": ""
       },
       {
-        "id": "one-value-per-row",
-        "kind": "try",
+        "id": "a-column-for-every-row",
+        "kind": "explain",
         "blocks": [],
+        "headline": "A column for every row",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "Multiplying two columns gives one value per row. Assigning to a new column name adds that column."
-          }
-        ],
-        "reveal": [
+            "text": "A mask asks a yes-or-no question of each row. A new column can hold a number worked out from each row instead. Arithmetic between two columns happens row by row, just as array arithmetic happened position by position. df['units'] * df['price'] multiplies the units of each order by that order's own price. Storing the result under a name the table does not have yet, as in df['revenue'] = df['units'] * df['price'], adds a new column."
+          },
           {
             "kind": "paragraph",
-            "text": "Each row's units multiplied its own price, giving one revenue per row. Summing that column gives the total."
+            "text": "An assignment does not have to come from another column. df['fee'] = 4 puts the single value 4 into every row of a new column, repeated to fit the table, so the column's total is 4 times the number of rows. Step through the figure, where the first case adds revenue and the second removes a column."
           }
         ],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "The first case adds a revenue column holding 10, 8, 15 and 32, one figure for each order. The second case uses drop, which returns a copy of the table without the named column and leaves df itself as it was. The revenue for the whole shop is then the sum of the new column."
+          }
+        ],
+        "introducesTerms": [],
         "visualStateId": "",
-        "checkQuestionId": "python-filters-and-columns-revenue",
+        "checkQuestionId": "",
         "activityId": "",
         "diagram": {
           "type": "python_execution",
@@ -552,26 +613,52 @@
             }
           ],
           "initialCaseId": "case-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        }
       },
       {
-        "id": "change-the-right-rows",
-        "kind": "explain",
+        "id": "one-value-per-row",
+        "kind": "try",
         "blocks": [],
-        "headline": "df.loc[mask, column] = value changes the rows you chose, in df itself.",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "A single loc assignment names the rows and the column together, and writes to df. Chained indexing, such as df[mask]['price'] = 6, selects first and assigns second, and may change a temporary object instead."
+            "text": "Multiply each order's units by its own price before you add anything up."
           }
         ],
-        "reveal": [],
+        "visualStateId": "",
+        "checkQuestionId": "python-filters-and-columns-revenue",
+        "activityId": ""
+      },
+      {
+        "id": "changing-only-some-rows",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "Changing only some rows",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "The last job is a price correction. The owner finds that Bay's price should be 6, and the change is wanted in the Bay rows only. loc, which you used with labels in the last lesson, accepts a mask for the rows. df.loc[df['shop'] == 'Bay', 'price'] reads the prices of the Bay rows. Adding .sum() would total them. Put an equals sign after it and it writes to those cells instead: df.loc[df['shop'] == 'Bay', 'price'] = 6."
+          },
+          {
+            "kind": "paragraph",
+            "text": "It is tempting to do the job in two steps, selecting the Bay rows first and assigning afterwards, as in df[df['shop'] == 'Bay']['price'] = 6. That is chained indexing. The first step hands back a separate table, and the assignment goes to that table, so df does not change. Older versions of pandas sometimes let it through, which is why it still turns up in old code. A single loc call names the rows and the column together and writes straight to df."
+          },
+          {
+            "kind": "paragraph",
+            "text": "Step through the figure. The first case corrects the Bay prices and the second the Hill prices."
+          }
+        ],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "In the first case the two Bay rows now hold 6 and the Hill rows keep 8. In the second case only the Hill rows change, to 9. The mask picks the rows, the second value picks the column, and the number after the equals sign is written into those cells only. Rows the mask leaves out are never touched."
+          }
+        ],
         "introducesTerms": [
           "chained indexing"
         ],
         "visualStateId": "",
-        "checkQuestionId": "python-filters-and-columns-4",
+        "checkQuestionId": "",
         "activityId": "",
         "diagram": {
           "type": "python_execution",
@@ -777,8 +864,21 @@
             }
           ],
           "initialCaseId": "case-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        }
+      },
+      {
+        "id": "which-line-changes-df",
+        "kind": "predict",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Only one of these names the rows and the column together and writes to df. Check each line for that."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-filters-and-columns-4",
+        "activityId": ""
       },
       {
         "id": "correct-one-shop",
@@ -788,12 +888,6 @@
           {
             "kind": "paragraph",
             "text": "A table has shops Bay, Hill, Bay and Hill, with prices 3, 7, 3 and 7. You run df.loc[df['shop'] == 'Bay', 'price'] = 10."
-          }
-        ],
-        "reveal": [
-          {
-            "kind": "paragraph",
-            "text": "The mask chose the two Bay rows and the assignment wrote to df directly. Rows the mask left out kept their old prices."
           }
         ],
         "visualStateId": "",
@@ -832,23 +926,30 @@
         "blocks": [
           {
             "kind": "paragraph",
-            "text": "Four orders came in: Bay 2 units, Hill 1 unit, Bay 3 units and Hill 4 units. Orders of 3 units or more are shipped free."
+            "text": "A small online shop has four orders on its list. Bay ordered 2 units, Hill ordered 1, Bay ordered 3 and Hill ordered 4. The shop ships an order free when it holds 3 units or more, and the owner wants to see which orders qualify."
+          },
+          {
+            "kind": "paragraph",
+            "text": "On four rows she can check by eye. On four thousand she needs the table to do it, and she needs to state the rule once and have it applied to every row. The same table then has to answer follow-up jobs, such as the takings from each order, or a price entered wrongly for one shop that must be corrected in that shop's rows alone."
+          },
+          {
+            "kind": "paragraph",
+            "text": "This lesson works through those jobs on the four orders. It begins with testing each row against a rule and ends with changing a column in exactly the rows that pass."
           }
-        ],
-        "questionId": "python-filters-and-columns-hook"
+        ]
       },
       "promise": "By the end you'll filter a table with a mask, combine two conditions, and add or change a column on exactly the rows you mean.",
-      "estimatedMinutes": 10
+      "estimatedMinutes": 12
     },
     "recap": {
-      "keyIdea": "A comparison gives a mask, & and | combine masks inside brackets, and loc with a mask changes exactly the rows you chose.",
+      "keyIdea": "A comparison gives a mask with a True or False for each row, & and | join masks when each comparison is in brackets, column arithmetic works row by row, and one loc call changes exactly the rows you chose.",
       "blocks": [
         {
           "kind": "paragraph",
-          "text": "You found that two of the four orders qualify, and that one row passes both tests. After the Bay correction the price column totals 34."
+          "text": "You found that only one row passes both a shop test and a units test when they are joined with &. You worked out revenue of 33 from three orders, and the price column totals 34 after the Bay correction."
         }
       ],
-      "nextHook": "Next: keep an unknown value separate from a zero."
+      "nextHook": "Every table so far had a value in every cell. Real tables have gaps: a customer skips a question, or a sensor loses a reading. The next lesson shows how pandas marks a gap, and what a total or an average does when it meets one."
     },
     "calculator": "off",
     "taughtSkills": [
@@ -876,7 +977,7 @@
         "kind": "numeric",
         "value": 2,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "Only 4 and 6 satisfy the comparison."
       },
@@ -912,7 +1013,7 @@
       "conceptIds": [
         "python-filters-and-columns"
       ],
-      "prompt": "How many rows pass both tests?",
+      "prompt": "Rows are (Bay, 2), (Bay, 5) and (Hill, 7), as shop and units. How many rows pass both shop 'Bay' and units above 3?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -924,7 +1025,7 @@
         "kind": "numeric",
         "value": 1,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "Only the Bay row with 5 units passes both conditions."
       },
@@ -1020,7 +1121,7 @@
       "conceptIds": [
         "python-filters-and-columns"
       ],
-      "prompt": "Which update directly targets df?",
+      "prompt": "Which line changes the price column of df itself, for the rows the mask chooses?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -1092,7 +1193,7 @@
         "kind": "numeric",
         "value": 29,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The row revenues are 14 and 15, totalling 29."
       },
@@ -1132,7 +1233,7 @@
         "kind": "numeric",
         "value": 15,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The single value fills all five rows, and 5 × 3 = 15."
       },
@@ -1177,7 +1278,7 @@
         "kind": "numeric",
         "value": 10,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The rows with 4 and 6 pass, and 4 + 6 = 10."
       },
@@ -1225,7 +1326,7 @@
         "kind": "numeric",
         "value": 2,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The orders with 3 and 4 units pass."
       },
@@ -1327,13 +1428,13 @@
         "The third row is Hill.",
         "Count the rows that match."
       ],
-      "prompt": "How many of the three rows have shop 'Bay'?",
+      "prompt": "Among the rows (Bay, 2), (Bay, 5) and (Hill, 7), how many have shop 'Bay'?",
       "responseType": "numeric",
       "answerAuthority": {
         "kind": "numeric",
         "value": 2,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The first two rows are Bay."
       },
@@ -1373,11 +1474,11 @@
         "kind": "numeric",
         "value": 33,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The row revenues are 6, 20 and 7, totalling 33."
       },
-      "onCorrect": "33. The row revenues are 6, 20 and 7, and their sum is the total.",
+      "onCorrect": "33. The row revenues are 6, 20 and 7, which add to the total.",
       "misconceptions": [
         {
           "match": {
@@ -1421,7 +1522,7 @@
         "kind": "numeric",
         "value": 34,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "10 + 7 + 10 + 7 = 34."
       },
@@ -1450,153 +1551,6 @@
   ],
   "citations": [
     {
-      "claim": "Comparing a column with a value gives a mask, one True or False per row.",
-      "sourceId": "pd-index",
-      "section": "Boolean indexing; combining conditions; setting values with loc; DataFrame column operations",
-      "targetKind": "step",
-      "targetId": "true-or-false-per-row"
-    },
-    {
-      "claim": "Comparing a column with a value gives a mask, one True or False per row.",
-      "sourceId": "pd-intro",
-      "section": "Series; DataFrame; column selection, addition and deletion",
-      "targetKind": "step",
-      "targetId": "true-or-false-per-row"
-    },
-    {
-      "claim": "Comparing a column with a value gives a mask, one True or False per row.",
-      "sourceId": "pd-cow",
-      "section": "pandas 3.0 migration; chained assignment and inplace operations on selected columns",
-      "targetKind": "step",
-      "targetId": "true-or-false-per-row"
-    },
-    {
-      "claim": "The test is applied to each value separately. A value equal to the limit passes a >= test.",
-      "sourceId": "pd-index",
-      "section": "Boolean indexing; combining conditions; setting values with loc; DataFrame column operations",
-      "targetKind": "step",
-      "targetId": "count-the-passes"
-    },
-    {
-      "claim": "The test is applied to each value separately. A value equal to the limit passes a >= test.",
-      "sourceId": "pd-intro",
-      "section": "Series; DataFrame; column selection, addition and deletion",
-      "targetKind": "step",
-      "targetId": "count-the-passes"
-    },
-    {
-      "claim": "The test is applied to each value separately. A value equal to the limit passes a >= test.",
-      "sourceId": "pd-cow",
-      "section": "pandas 3.0 migration; chained assignment and inplace operations on selected columns",
-      "targetKind": "step",
-      "targetId": "count-the-passes"
-    },
-    {
-      "claim": "Rows are (Bay, 2), (Hill, 6), (Bay, 8) and (Hill, 1). How many pass shop 'Bay' and units above 5?",
-      "sourceId": "pd-index",
-      "section": "Boolean indexing; combining conditions; setting values with loc; DataFrame column operations",
-      "targetKind": "step",
-      "targetId": "both-tests-at-once"
-    },
-    {
-      "claim": "Rows are (Bay, 2), (Hill, 6), (Bay, 8) and (Hill, 1). How many pass shop 'Bay' and units above 5?",
-      "sourceId": "pd-intro",
-      "section": "Series; DataFrame; column selection, addition and deletion",
-      "targetKind": "step",
-      "targetId": "both-tests-at-once"
-    },
-    {
-      "claim": "Rows are (Bay, 2), (Hill, 6), (Bay, 8) and (Hill, 1). How many pass shop 'Bay' and units above 5?",
-      "sourceId": "pd-cow",
-      "section": "pandas 3.0 migration; chained assignment and inplace operations on selected columns",
-      "targetKind": "step",
-      "targetId": "both-tests-at-once"
-    },
-    {
-      "claim": "Rows are (Bay, 2), (Bay, 5) and (Hill, 7). How many pass shop 'Bay' and units above 3?",
-      "sourceId": "pd-index",
-      "section": "Boolean indexing; combining conditions; setting values with loc; DataFrame column operations",
-      "targetKind": "step",
-      "targetId": "and-by-row"
-    },
-    {
-      "claim": "Rows are (Bay, 2), (Bay, 5) and (Hill, 7). How many pass shop 'Bay' and units above 3?",
-      "sourceId": "pd-intro",
-      "section": "Series; DataFrame; column selection, addition and deletion",
-      "targetKind": "step",
-      "targetId": "and-by-row"
-    },
-    {
-      "claim": "Rows are (Bay, 2), (Bay, 5) and (Hill, 7). How many pass shop 'Bay' and units above 3?",
-      "sourceId": "pd-cow",
-      "section": "pandas 3.0 migration; chained assignment and inplace operations on selected columns",
-      "targetKind": "step",
-      "targetId": "and-by-row"
-    },
-    {
-      "claim": "Multiplying two columns gives one value per row. Assigning to a new column name adds that column.",
-      "sourceId": "pd-index",
-      "section": "Boolean indexing; combining conditions; setting values with loc; DataFrame column operations",
-      "targetKind": "step",
-      "targetId": "one-value-per-row"
-    },
-    {
-      "claim": "Multiplying two columns gives one value per row. Assigning to a new column name adds that column.",
-      "sourceId": "pd-intro",
-      "section": "Series; DataFrame; column selection, addition and deletion",
-      "targetKind": "step",
-      "targetId": "one-value-per-row"
-    },
-    {
-      "claim": "Multiplying two columns gives one value per row. Assigning to a new column name adds that column.",
-      "sourceId": "pd-cow",
-      "section": "pandas 3.0 migration; chained assignment and inplace operations on selected columns",
-      "targetKind": "step",
-      "targetId": "one-value-per-row"
-    },
-    {
-      "claim": "df.loc[mask, column] = value changes the rows you chose, in df itself.",
-      "sourceId": "pd-index",
-      "section": "Boolean indexing; combining conditions; setting values with loc; DataFrame column operations",
-      "targetKind": "step",
-      "targetId": "change-the-right-rows"
-    },
-    {
-      "claim": "df.loc[mask, column] = value changes the rows you chose, in df itself.",
-      "sourceId": "pd-intro",
-      "section": "Series; DataFrame; column selection, addition and deletion",
-      "targetKind": "step",
-      "targetId": "change-the-right-rows"
-    },
-    {
-      "claim": "df.loc[mask, column] = value changes the rows you chose, in df itself.",
-      "sourceId": "pd-cow",
-      "section": "pandas 3.0 migration; chained assignment and inplace operations on selected columns",
-      "targetKind": "step",
-      "targetId": "change-the-right-rows"
-    },
-    {
-      "claim": "A table has shops Bay, Hill, Bay and Hill, with prices 3, 7, 3 and 7. You run df.loc[df['shop'] == 'Bay', 'price'] = 10.",
-      "sourceId": "pd-index",
-      "section": "Boolean indexing; combining conditions; setting values with loc; DataFrame column operations",
-      "targetKind": "step",
-      "targetId": "correct-one-shop"
-    },
-    {
-      "claim": "A table has shops Bay, Hill, Bay and Hill, with prices 3, 7, 3 and 7. You run df.loc[df['shop'] == 'Bay', 'price'] = 10.",
-      "sourceId": "pd-intro",
-      "section": "Series; DataFrame; column selection, addition and deletion",
-      "targetKind": "step",
-      "targetId": "correct-one-shop"
-    },
-    {
-      "claim": "A table has shops Bay, Hill, Bay and Hill, with prices 3, 7, 3 and 7. You run df.loc[df['shop'] == 'Bay', 'price'] = 10.",
-      "sourceId": "pd-cow",
-      "section": "pandas 3.0 migration; chained assignment and inplace operations on selected columns",
-      "targetKind": "step",
-      "targetId": "correct-one-shop"
-    },
-    {
       "claim": "2. The values 4 and 6 pass, and 4 counts because the test is >=.",
       "sourceId": "pd-index",
       "section": "Boolean indexing; combining conditions; setting values with loc; DataFrame column operations",
@@ -1744,48 +1698,6 @@
       "targetId": "python-filters-and-columns-7"
     },
     {
-      "claim": "2. You tested each order separately and kept the ones that passed. That is what a Boolean mask does.",
-      "sourceId": "pd-index",
-      "section": "Boolean indexing; combining conditions; setting values with loc; DataFrame column operations",
-      "targetKind": "question",
-      "targetId": "python-filters-and-columns-hook"
-    },
-    {
-      "claim": "2. You tested each order separately and kept the ones that passed. That is what a Boolean mask does.",
-      "sourceId": "pd-intro",
-      "section": "Series; DataFrame; column selection, addition and deletion",
-      "targetKind": "question",
-      "targetId": "python-filters-and-columns-hook"
-    },
-    {
-      "claim": "2. You tested each order separately and kept the ones that passed. That is what a Boolean mask does.",
-      "sourceId": "pd-cow",
-      "section": "pandas 3.0 migration; chained assignment and inplace operations on selected columns",
-      "targetKind": "question",
-      "targetId": "python-filters-and-columns-hook"
-    },
-    {
-      "claim": "One True or False for each row. Selecting with df[mask] is a separate step.",
-      "sourceId": "pd-index",
-      "section": "Boolean indexing; combining conditions; setting values with loc; DataFrame column operations",
-      "targetKind": "question",
-      "targetId": "python-filters-and-columns-mask-check"
-    },
-    {
-      "claim": "One True or False for each row. Selecting with df[mask] is a separate step.",
-      "sourceId": "pd-intro",
-      "section": "Series; DataFrame; column selection, addition and deletion",
-      "targetKind": "question",
-      "targetId": "python-filters-and-columns-mask-check"
-    },
-    {
-      "claim": "One True or False for each row. Selecting with df[mask] is a separate step.",
-      "sourceId": "pd-cow",
-      "section": "pandas 3.0 migration; chained assignment and inplace operations on selected columns",
-      "targetKind": "question",
-      "targetId": "python-filters-and-columns-mask-check"
-    },
-    {
       "claim": "2. The first and second rows pass the shop test.",
       "sourceId": "pd-index",
       "section": "Boolean indexing; combining conditions; setting values with loc; DataFrame column operations",
@@ -1889,6 +1801,237 @@
       "section": "pandas 3.0 migration; chained assignment and inplace operations on selected columns",
       "targetKind": "flashcard",
       "targetId": "python-filters-and-columns-card-2"
+    },
+    {
+      "claim": "A comparison on a column gives a mask with one True or False for each row, and a value equal to the limit passes a >= test.",
+      "sourceId": "pd-index",
+      "section": "Boolean indexing; combining conditions; setting values with loc; DataFrame column operations",
+      "targetKind": "step",
+      "targetId": "a-test-for-every-row"
+    },
+    {
+      "claim": "A comparison on a column gives a mask with one True or False for each row, and a value equal to the limit passes a >= test.",
+      "sourceId": "pd-intro",
+      "section": "Series; DataFrame; column selection, addition and deletion",
+      "targetKind": "step",
+      "targetId": "a-test-for-every-row"
+    },
+    {
+      "claim": "A comparison on a column gives a mask with one True or False for each row, and a value equal to the limit passes a >= test.",
+      "sourceId": "pd-cow",
+      "section": "pandas 3.0 migration; chained assignment and inplace operations on selected columns",
+      "targetKind": "step",
+      "targetId": "a-test-for-every-row"
+    },
+    {
+      "claim": "df[mask] keeps the rows where the mask is True, and == tests for equality.",
+      "sourceId": "pd-index",
+      "section": "Boolean indexing; combining conditions; setting values with loc; DataFrame column operations",
+      "targetKind": "step",
+      "targetId": "keeping-the-rows-that-pass"
+    },
+    {
+      "claim": "df[mask] keeps the rows where the mask is True, and == tests for equality.",
+      "sourceId": "pd-intro",
+      "section": "Series; DataFrame; column selection, addition and deletion",
+      "targetKind": "step",
+      "targetId": "keeping-the-rows-that-pass"
+    },
+    {
+      "claim": "df[mask] keeps the rows where the mask is True, and == tests for equality.",
+      "sourceId": "pd-cow",
+      "section": "pandas 3.0 migration; chained assignment and inplace operations on selected columns",
+      "targetKind": "step",
+      "targetId": "keeping-the-rows-that-pass"
+    },
+    {
+      "claim": "A mask is built by testing each row, and the rows that pass are the True ones.",
+      "sourceId": "pd-index",
+      "section": "Boolean indexing; combining conditions; setting values with loc; DataFrame column operations",
+      "targetKind": "step",
+      "targetId": "count-the-passes"
+    },
+    {
+      "claim": "A mask is built by testing each row, and the rows that pass are the True ones.",
+      "sourceId": "pd-intro",
+      "section": "Series; DataFrame; column selection, addition and deletion",
+      "targetKind": "step",
+      "targetId": "count-the-passes"
+    },
+    {
+      "claim": "A mask is built by testing each row, and the rows that pass are the True ones.",
+      "sourceId": "pd-cow",
+      "section": "pandas 3.0 migration; chained assignment and inplace operations on selected columns",
+      "targetKind": "step",
+      "targetId": "count-the-passes"
+    },
+    {
+      "claim": "& keeps rows where both masks are True and | keeps rows where either is, with each comparison in brackets.",
+      "sourceId": "pd-index",
+      "section": "Boolean indexing; combining conditions; setting values with loc; DataFrame column operations",
+      "targetKind": "step",
+      "targetId": "two-tests-at-once"
+    },
+    {
+      "claim": "& keeps rows where both masks are True and | keeps rows where either is, with each comparison in brackets.",
+      "sourceId": "pd-intro",
+      "section": "Series; DataFrame; column selection, addition and deletion",
+      "targetKind": "step",
+      "targetId": "two-tests-at-once"
+    },
+    {
+      "claim": "& keeps rows where both masks are True and | keeps rows where either is, with each comparison in brackets.",
+      "sourceId": "pd-cow",
+      "section": "pandas 3.0 migration; chained assignment and inplace operations on selected columns",
+      "targetKind": "step",
+      "targetId": "two-tests-at-once"
+    },
+    {
+      "claim": "Two masks joined with & keep only the rows where both tests hold.",
+      "sourceId": "pd-index",
+      "section": "Boolean indexing; combining conditions; setting values with loc; DataFrame column operations",
+      "targetKind": "step",
+      "targetId": "both-tests-at-once"
+    },
+    {
+      "claim": "Two masks joined with & keep only the rows where both tests hold.",
+      "sourceId": "pd-intro",
+      "section": "Series; DataFrame; column selection, addition and deletion",
+      "targetKind": "step",
+      "targetId": "both-tests-at-once"
+    },
+    {
+      "claim": "Two masks joined with & keep only the rows where both tests hold.",
+      "sourceId": "pd-cow",
+      "section": "pandas 3.0 migration; chained assignment and inplace operations on selected columns",
+      "targetKind": "step",
+      "targetId": "both-tests-at-once"
+    },
+    {
+      "claim": "A row passes an & only when both of its tests are True.",
+      "sourceId": "pd-index",
+      "section": "Boolean indexing; combining conditions; setting values with loc; DataFrame column operations",
+      "targetKind": "step",
+      "targetId": "and-by-row"
+    },
+    {
+      "claim": "A row passes an & only when both of its tests are True.",
+      "sourceId": "pd-intro",
+      "section": "Series; DataFrame; column selection, addition and deletion",
+      "targetKind": "step",
+      "targetId": "and-by-row"
+    },
+    {
+      "claim": "A row passes an & only when both of its tests are True.",
+      "sourceId": "pd-cow",
+      "section": "pandas 3.0 migration; chained assignment and inplace operations on selected columns",
+      "targetKind": "step",
+      "targetId": "and-by-row"
+    },
+    {
+      "claim": "Arithmetic on columns works row by row, assigning to a new name adds a column, and a single value fills every row.",
+      "sourceId": "pd-index",
+      "section": "Boolean indexing; combining conditions; setting values with loc; DataFrame column operations",
+      "targetKind": "step",
+      "targetId": "a-column-for-every-row"
+    },
+    {
+      "claim": "Arithmetic on columns works row by row, assigning to a new name adds a column, and a single value fills every row.",
+      "sourceId": "pd-intro",
+      "section": "Series; DataFrame; column selection, addition and deletion",
+      "targetKind": "step",
+      "targetId": "a-column-for-every-row"
+    },
+    {
+      "claim": "Arithmetic on columns works row by row, assigning to a new name adds a column, and a single value fills every row.",
+      "sourceId": "pd-cow",
+      "section": "pandas 3.0 migration; chained assignment and inplace operations on selected columns",
+      "targetKind": "step",
+      "targetId": "a-column-for-every-row"
+    },
+    {
+      "claim": "Revenue per row is units times price for that row, and the total adds the row figures.",
+      "sourceId": "pd-index",
+      "section": "Boolean indexing; combining conditions; setting values with loc; DataFrame column operations",
+      "targetKind": "step",
+      "targetId": "one-value-per-row"
+    },
+    {
+      "claim": "Revenue per row is units times price for that row, and the total adds the row figures.",
+      "sourceId": "pd-intro",
+      "section": "Series; DataFrame; column selection, addition and deletion",
+      "targetKind": "step",
+      "targetId": "one-value-per-row"
+    },
+    {
+      "claim": "Revenue per row is units times price for that row, and the total adds the row figures.",
+      "sourceId": "pd-cow",
+      "section": "pandas 3.0 migration; chained assignment and inplace operations on selected columns",
+      "targetKind": "step",
+      "targetId": "one-value-per-row"
+    },
+    {
+      "claim": "A single loc assignment with a mask changes exactly the chosen rows of df, while chained indexing assigns to a temporary table.",
+      "sourceId": "pd-index",
+      "section": "Boolean indexing; combining conditions; setting values with loc; DataFrame column operations",
+      "targetKind": "step",
+      "targetId": "changing-only-some-rows"
+    },
+    {
+      "claim": "A single loc assignment with a mask changes exactly the chosen rows of df, while chained indexing assigns to a temporary table.",
+      "sourceId": "pd-intro",
+      "section": "Series; DataFrame; column selection, addition and deletion",
+      "targetKind": "step",
+      "targetId": "changing-only-some-rows"
+    },
+    {
+      "claim": "A single loc assignment with a mask changes exactly the chosen rows of df, while chained indexing assigns to a temporary table.",
+      "sourceId": "pd-cow",
+      "section": "pandas 3.0 migration; chained assignment and inplace operations on selected columns",
+      "targetKind": "step",
+      "targetId": "changing-only-some-rows"
+    },
+    {
+      "claim": "Naming the rows and the column in one loc assignment changes df itself.",
+      "sourceId": "pd-index",
+      "section": "Boolean indexing; combining conditions; setting values with loc; DataFrame column operations",
+      "targetKind": "step",
+      "targetId": "which-line-changes-df"
+    },
+    {
+      "claim": "Naming the rows and the column in one loc assignment changes df itself.",
+      "sourceId": "pd-intro",
+      "section": "Series; DataFrame; column selection, addition and deletion",
+      "targetKind": "step",
+      "targetId": "which-line-changes-df"
+    },
+    {
+      "claim": "Naming the rows and the column in one loc assignment changes df itself.",
+      "sourceId": "pd-cow",
+      "section": "pandas 3.0 migration; chained assignment and inplace operations on selected columns",
+      "targetKind": "step",
+      "targetId": "which-line-changes-df"
+    },
+    {
+      "claim": "The mask chose the Bay rows and the assignment wrote only to them, so the Hill prices stayed.",
+      "sourceId": "pd-index",
+      "section": "Boolean indexing; combining conditions; setting values with loc; DataFrame column operations",
+      "targetKind": "step",
+      "targetId": "correct-one-shop"
+    },
+    {
+      "claim": "The mask chose the Bay rows and the assignment wrote only to them, so the Hill prices stayed.",
+      "sourceId": "pd-intro",
+      "section": "Series; DataFrame; column selection, addition and deletion",
+      "targetKind": "step",
+      "targetId": "correct-one-shop"
+    },
+    {
+      "claim": "The mask chose the Bay rows and the assignment wrote only to them, so the Hill prices stayed.",
+      "sourceId": "pd-cow",
+      "section": "pandas 3.0 migration; chained assignment and inplace operations on selected columns",
+      "targetKind": "step",
+      "targetId": "correct-one-shop"
     }
   ]
 }

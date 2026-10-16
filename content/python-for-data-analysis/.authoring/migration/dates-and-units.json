@@ -14,44 +14,28 @@
         "id": "same-text-two-dates",
         "kind": "explain",
         "blocks": [],
-        "headline": "A date written as text is ambiguous until you state its format.",
+        "headline": "One text, two dates",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "03/04/2026 could be 3 April or 4 March. format='%d/%m/%Y' says the first field is the day (%d), the second the month (%m) and the last the year (%Y)."
+            "text": "pandas can turn a column of date text into real dates with pd.to_datetime. To do it correctly it needs to know which field is which. For 03/04/2026 there are two sensible answers, and you tell pandas which one you mean with a format. A format is a short pattern that names each field in order: %d is the day, %m is the month and %Y is the four-digit year, with the slashes copied as they appear in the text."
           },
           {
-            "kind": "callout",
-            "tone": "key",
-            "text": "Say the format. Do not let the software guess."
+            "kind": "paragraph",
+            "text": "So format='%d/%m/%Y' reads 03/04/2026 as day 3 of month 4, which is 3 April. format='%m/%d/%Y' reads the same text as month 3, day 4, which is 4 March. The figure runs both on the invoice date."
           }
         ],
-        "reveal": [],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "Neither answer is wrong, since each matches a real convention. The mistake is leaving pandas to guess. A guess can be right for one file and wrong for the next, and the dates it gets wrong look perfectly valid, so nothing warns you. Stating the format makes the reading a written decision that anyone can check, and an entry that does not fit the format raises an error instead of being quietly misread."
+          }
+        ],
         "introducesTerms": [
           "format"
         ],
         "visualStateId": "",
-        "checkQuestionId": "python-dates-and-units-format-check",
-        "activityId": ""
-      },
-      {
-        "id": "read-the-month",
-        "kind": "predict",
-        "blocks": [],
-        "lead": [
-          {
-            "kind": "paragraph",
-            "text": "The format string decides which field is the month. Read the fields in the order the format lists them."
-          }
-        ],
-        "reveal": [
-          {
-            "kind": "paragraph",
-            "text": "You followed the format, not a regional habit. %d came first, so the first field was the day and the middle field the month."
-          }
-        ],
-        "visualStateId": "",
-        "checkQuestionId": "python-dates-and-units-1",
+        "checkQuestionId": "",
         "activityId": "",
         "diagram": {
           "type": "python_execution",
@@ -203,37 +187,51 @@
             }
           ],
           "initialCaseId": "case-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        }
       },
       {
-        "id": "when-a-date-fails",
-        "kind": "worked_example",
+        "id": "read-the-month",
+        "kind": "predict",
         "blocks": [],
-        "headline": "With format='%Y-%m-%d' and errors='coerce', how many of '2026-06-31', '2026-07-01' and '2026-07-02' fail to parse?",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "errors='coerce' turns anything it cannot read into a missing date, instead of stopping with an error."
+            "text": "The format lists the fields in the order they appear in the text. Match the text to the format one field at a time."
           }
         ],
-        "reveal": [],
-        "workedSteps": [
+        "reveal": [
           {
-            "text": "Check each date against the calendar. June has 30 days, so June 31 does not exist.",
-            "math": "2026-06-31: invalid"
-          },
-          {
-            "text": "The coerced result for the invalid date is a missing date.",
-            "math": "NaT",
-            "selfExplain": {
-              "questionId": "python-dates-and-units-4"
-            }
-          },
-          {
-            "text": "The other two are real dates. Count the failures.",
-            "math": "1"
+            "kind": "paragraph",
+            "text": "You followed the format, not a regional habit. %d came first, so the first field was the day and the middle field the month."
           }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-dates-and-units-1",
+        "activityId": ""
+      },
+      {
+        "id": "entries-that-are-not-dates",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "Entries that are not dates",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "A format fixes the layout, but it cannot make every entry a date. Real columns hold typing slips, placeholders and impossible dates. '2026-02-30' fits the pattern year-month-day and still does not exist, because February 2026 ends on the 28th. And 'bad' fits nothing at all."
+          },
+          {
+            "kind": "paragraph",
+            "text": "By default to_datetime stops with an error at the first entry it cannot read. That is safe, but awkward for a column of thousands. Passing errors='coerce' tells it to carry on and put NaT in place of each entry it cannot read. NaT, short for not a time, is the missing value for dates, the counterpart of NaN for numbers. The figure parses two small Series that way."
+          }
+        ],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "Both entries in the first case are real dates, so both parse. In the second case '2026-02-30' does not exist. It becomes NaT, and isna().sum() on the result reports one failure. Make that count a habit, because a coerced column no longer shows what failed, only that something is missing. The count is your evidence of how much of the column could not be read."
+          }
+        ],
+        "introducesTerms": [
+          "NaT"
         ],
         "visualStateId": "",
         "checkQuestionId": "",
@@ -331,8 +329,35 @@
             }
           ],
           "initialCaseId": "case-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        }
+      },
+      {
+        "id": "when-a-date-fails",
+        "kind": "worked_example",
+        "blocks": [],
+        "headline": "With format='%Y-%m-%d' and errors='coerce', how many of '2026-06-31', '2026-07-01' and '2026-07-02' fail to parse?",
+        "lead": [],
+        "reveal": [],
+        "workedSteps": [
+          {
+            "text": "Check each date against the calendar. June has 30 days, so June 31 does not exist.",
+            "math": "2026-06-31: invalid"
+          },
+          {
+            "text": "The coerced result for the invalid date is a missing date.",
+            "math": "NaT",
+            "selfExplain": {
+              "questionId": "python-dates-and-units-4"
+            }
+          },
+          {
+            "text": "The other two are real dates. Count the failures.",
+            "math": "1"
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
       },
       {
         "id": "real-or-impossible",
@@ -363,19 +388,28 @@
         "id": "a-number-with-a-scale",
         "kind": "explain",
         "blocks": [],
-        "headline": "An epoch number counts time from 1970-01-01, and unit says what one step means.",
+        "headline": "Time as a plain number",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "Unix timestamps count from 1970-01-01 UTC. The number alone does not say whether it counts seconds or milliseconds, so pass unit='s' or unit='ms'."
+            "text": "Dates do not always arrive as text. Systems often store a moment as a single number that says how much time has passed since a fixed starting point. The most common starting point is the Unix epoch, midnight at the start of 1 January 1970 in UTC, and an epoch number counts the time elapsed since then."
+          },
+          {
+            "kind": "paragraph",
+            "text": "The number alone does not say what it counts. A 60 might be sixty seconds or sixty milliseconds, and those moments are far apart. pandas cannot tell, so you say so with unit='s' for seconds or unit='ms' for milliseconds. Adding utc=True marks the results as UTC times so that no local time zone creeps in. The figure converts the numbers 0 and 60 both ways."
           }
         ],
-        "reveal": [],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "In the first case 0 becomes the epoch itself and 60 becomes one minute later. In the second case the same 60 counts milliseconds, so it lands a fraction of a second after the epoch. The numbers are identical and the dates differ, which is why you ask whoever produced the data for the unit before you convert. A wrong unit gives dates that look plausible and are wrong."
+          }
+        ],
         "introducesTerms": [
           "epoch"
         ],
         "visualStateId": "",
-        "checkQuestionId": "python-dates-and-units-3",
+        "checkQuestionId": "",
         "activityId": "",
         "diagram": {
           "type": "python_execution",
@@ -465,8 +499,22 @@
             }
           ],
           "initialCaseId": "case-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        }
+      },
+      {
+        "id": "which-argument-sets-the-scale",
+        "kind": "predict",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "A bare number carries no scale of its own, so pandas has to be told what one step of it means."
+          }
+        ],
+        "reveal": [],
+        "visualStateId": "",
+        "checkQuestionId": "python-dates-and-units-3",
+        "activityId": ""
       },
       {
         "id": "minutes-between",
@@ -475,7 +523,7 @@
         "lead": [
           {
             "kind": "paragraph",
-            "text": "With unit='s', each epoch step is one second. Subtract two offsets to get the seconds between them."
+            "text": "With unit='s', each step of an epoch number is one second. A minute holds 60 seconds."
           }
         ],
         "reveal": [
@@ -489,23 +537,31 @@
         "activityId": ""
       },
       {
-        "id": "across-a-month-end",
-        "kind": "transfer",
+        "id": "days-between-dates",
+        "kind": "explain",
         "blocks": [],
+        "headline": "Counting days between dates",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "Subtracting two timestamps gives a duration, and .days reads its whole days. The .dt accessor reads calendar fields such as the month from a column of dates."
-          }
-        ],
-        "reveal": [
+            "text": "Real dates can be subtracted, and the result is a duration, a length of time whose .days part is the number of whole days in it. The calendar looks after the length of each month, so you never count them yourself."
+          },
           {
             "kind": "paragraph",
-            "text": "The calendar counted the days left in February and then added the days into March. Subtracting dates handles month lengths for you."
+            "text": "A column of dates also has a .dt accessor, which works like .str but reads calendar fields such as the year, the month or the day of the week. dates.dt.month gives the month number of every entry, with 1 for January. The figure shows the months of two dates, and then the days between two dates in April."
           }
         ],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "The first case reads the months of 2 April and 3 May, which are 4 and 5. The second subtracts 2 April from 5 April and reads .days, which gives 3. When two dates fall in different months the subtraction still works, because it counts days on the calendar and does not compare day numbers."
+          }
+        ],
+        "introducesTerms": [
+          "duration"
+        ],
         "visualStateId": "",
-        "checkQuestionId": "python-dates-and-units-month-end",
+        "checkQuestionId": "",
         "activityId": "",
         "diagram": {
           "type": "python_execution",
@@ -665,8 +721,27 @@
             }
           ],
           "initialCaseId": "case-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        }
+      },
+      {
+        "id": "across-a-month-end",
+        "kind": "transfer",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Subtracting two dates gives a duration, and .days reads its whole days. February 2026 has 28 days."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "The calendar counted the days left in February and then added the days into March. Subtracting dates handles month lengths for you."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-dates-and-units-month-end",
+        "activityId": ""
       }
     ],
     "orientation": "Parse known date formats, retain invalid-date evidence and state epoch units.",
@@ -698,13 +773,20 @@
         "blocks": [
           {
             "kind": "paragraph",
-            "text": "An invoice is dated 03/04/2026. In the UK the first number is the day. In the US the first number is the month."
+            "text": "Two suppliers send you an invoice on the same day. One is in Manchester and the other in Chicago, and both are dated 03/04/2026. The Manchester clerk wrote the day first, so it means 3 April. The Chicago clerk wrote the month first, so it means 4 March. The digits are identical, and nothing in them says which habit produced them."
+          },
+          {
+            "kind": "paragraph",
+            "text": "The last lesson made text consistent. A date is a stricter kind of text, because once pandas has read it as a real date you can sort by it, subtract one from another and group by month. Reading it correctly is the hard part. A column may also hold entries that look like dates and are impossible, such as 30 February, and times sometimes arrive as plain numbers counting from a starting moment, with no hint of the unit."
+          },
+          {
+            "kind": "paragraph",
+            "text": "This lesson follows invoice dates through those problems and ends by working out how many days lie between two of them."
           }
-        ],
-        "questionId": "python-dates-and-units-hook"
+        ]
       },
-      "promise": "By the end you'll parse a date with a stated format, count the dates that fail, and convert epoch numbers with the right unit.",
-      "estimatedMinutes": 10
+      "promise": "By the end you'll read dates with a stated format and count the failures. You'll also convert time given as a plain number.",
+      "estimatedMinutes": 12
     },
     "recap": {
       "keyIdea": "State the date format, count the dates that fail to parse, and say the unit of an epoch number before you convert it.",
@@ -714,7 +796,7 @@
           "text": "You read 03/04/2026 as month 4 under the day-first rule. You found 2 failures among three entries, and 4 days between 26 February and 2 March."
         }
       ],
-      "nextHook": "Next: summarise the right observations with means, medians and groups."
+      "nextHook": "Dates are now real dates and the text around them is clean. A table in that state can be summarised, and the first choice is which single figure should stand for many values. When a few values sit far above the rest, the average and the middle tell different stories. The next lesson chooses between them and then works them out inside groups."
     },
     "calculator": "off",
     "taughtSkills": [
@@ -742,7 +824,7 @@
         "kind": "numeric",
         "value": 9,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The format reads day 05 and month 09, so the month is 9."
       },
@@ -780,7 +862,7 @@
         "kind": "numeric",
         "value": 2,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "February 30 and bad cannot be parsed as valid dates, so both become NaT."
       },
@@ -942,7 +1024,7 @@
         "kind": "numeric",
         "value": 180,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "Both offsets use seconds, so the elapsed time is 300 − 120 = 180 seconds."
       },
@@ -980,7 +1062,7 @@
         "kind": "numeric",
         "value": 5,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The later date is five days after the earlier one."
       },
@@ -1021,7 +1103,7 @@
         "kind": "numeric",
         "value": 11,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The date is in November, month 11."
       },
@@ -1059,7 +1141,7 @@
         "kind": "numeric",
         "value": 4,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "Day first: 3 April, so the month is 4."
       },
@@ -1163,7 +1245,7 @@
         "kind": "numeric",
         "value": 1,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "February 30 does not exist, and March 1 does."
       },
@@ -1209,7 +1291,7 @@
         "kind": "numeric",
         "value": 60,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "(4600 − 1000) ÷ 60 = 60 minutes."
       },
@@ -1255,7 +1337,7 @@
         "kind": "numeric",
         "value": 4,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "26 to 28 February is 2 days, then 2 more reaches 2 March: 4 days."
       },
@@ -1264,10 +1346,10 @@
         {
           "match": {
             "numeric": [
-              6
+              24
             ]
           },
-          "feedback": "That subtracts the day numbers, 26 and 2, as if they were in the same month."
+          "feedback": "That subtracts the day numbers, 26 and 2, as if both dates were in the same month."
         },
         {
           "match": {
@@ -1275,7 +1357,7 @@
               3
             ]
           },
-          "feedback": "February 2026 has 28 days, so there is one more day than that."
+          "feedback": "Count the days left in February after the 26th as well as the days into March."
         }
       ],
       "skill": "date-differences",
@@ -1283,55 +1365,6 @@
     }
   ],
   "citations": [
-    {
-      "claim": "A date written as text is ambiguous until you state its format.",
-      "sourceId": "pd-dates",
-      "section": "Converting to timestamps; invalid data; epoch timestamps; datetime properties",
-      "targetKind": "step",
-      "targetId": "same-text-two-dates"
-    },
-    {
-      "claim": "The format string decides which field is the month. Read the fields in the order the format lists them.",
-      "sourceId": "pd-dates",
-      "section": "Converting to timestamps; invalid data; epoch timestamps; datetime properties",
-      "targetKind": "step",
-      "targetId": "read-the-month"
-    },
-    {
-      "claim": "With format='%Y-%m-%d' and errors='coerce', how many of '2026-06-31', '2026-07-01' and '2026-07-02' fail to parse?",
-      "sourceId": "pd-dates",
-      "section": "Converting to timestamps; invalid data; epoch timestamps; datetime properties",
-      "targetKind": "step",
-      "targetId": "when-a-date-fails"
-    },
-    {
-      "claim": "With format='%Y-%m-%d' and errors='coerce', how many of '2026-02-30', '2026-03-01' and 'bad' fail?",
-      "sourceId": "pd-dates",
-      "section": "Converting to timestamps; invalid data; epoch timestamps; datetime properties",
-      "targetKind": "step",
-      "targetId": "real-or-impossible"
-    },
-    {
-      "claim": "An epoch number counts time from 1970-01-01, and unit says what one step means.",
-      "sourceId": "pd-dates",
-      "section": "Converting to timestamps; invalid data; epoch timestamps; datetime properties",
-      "targetKind": "step",
-      "targetId": "a-number-with-a-scale"
-    },
-    {
-      "claim": "With unit='s', each epoch step is one second. Subtract two offsets to get the seconds between them.",
-      "sourceId": "pd-dates",
-      "section": "Converting to timestamps; invalid data; epoch timestamps; datetime properties",
-      "targetKind": "step",
-      "targetId": "minutes-between"
-    },
-    {
-      "claim": "Subtracting two timestamps gives a duration, and .days reads its whole days. The .dt accessor reads calendar fields such as the month from a column of dates.",
-      "sourceId": "pd-dates",
-      "section": "Converting to timestamps; invalid data; epoch timestamps; datetime properties",
-      "targetKind": "step",
-      "targetId": "across-a-month-end"
-    },
     {
       "claim": "9. The format reads day 05 and month 09, so the month is September.",
       "sourceId": "pd-dates",
@@ -1382,20 +1415,6 @@
       "targetId": "python-dates-and-units-7"
     },
     {
-      "claim": "4. Day first means the middle field is the month, so it is April. The same text means March in the US.",
-      "sourceId": "pd-dates",
-      "section": "Converting to timestamps; invalid data; epoch timestamps; datetime properties",
-      "targetKind": "question",
-      "targetId": "python-dates-and-units-hook"
-    },
-    {
-      "claim": "The month. %m comes first in this format, so the first field is the month.",
-      "sourceId": "pd-dates",
-      "section": "Converting to timestamps; invalid data; epoch timestamps; datetime properties",
-      "targetKind": "question",
-      "targetId": "python-dates-and-units-format-check"
-    },
-    {
       "claim": "1. February never reaches 30, so only March 1 is a real date.",
       "sourceId": "pd-dates",
       "section": "Converting to timestamps; invalid data; epoch timestamps; datetime properties",
@@ -1429,6 +1448,76 @@
       "section": "Converting to timestamps; invalid data; epoch timestamps; datetime properties",
       "targetKind": "flashcard",
       "targetId": "python-dates-and-units-card-2"
+    },
+    {
+      "claim": "A date written as text is ambiguous until you state its format with directives such as %d, %m and %Y.",
+      "sourceId": "pd-dates",
+      "section": "Converting to timestamps; invalid data; epoch timestamps; datetime properties",
+      "targetKind": "step",
+      "targetId": "same-text-two-dates"
+    },
+    {
+      "claim": "The format string decides which field is the month. Read the fields in the order the format lists them.",
+      "sourceId": "pd-dates",
+      "section": "Converting to timestamps; invalid data; epoch timestamps; datetime properties",
+      "targetKind": "step",
+      "targetId": "read-the-month"
+    },
+    {
+      "claim": "errors='coerce' turns entries that cannot be parsed into NaT, and isna().sum() counts them.",
+      "sourceId": "pd-dates",
+      "section": "Converting to timestamps; invalid data; epoch timestamps; datetime properties",
+      "targetKind": "step",
+      "targetId": "entries-that-are-not-dates"
+    },
+    {
+      "claim": "With format='%Y-%m-%d' and errors='coerce', how many of '2026-06-31', '2026-07-01' and '2026-07-02' fail to parse?",
+      "sourceId": "pd-dates",
+      "section": "Converting to timestamps; invalid data; epoch timestamps; datetime properties",
+      "targetKind": "step",
+      "targetId": "when-a-date-fails"
+    },
+    {
+      "claim": "With format='%Y-%m-%d' and errors='coerce', how many of '2026-02-30', '2026-03-01' and 'bad' fail?",
+      "sourceId": "pd-dates",
+      "section": "Converting to timestamps; invalid data; epoch timestamps; datetime properties",
+      "targetKind": "step",
+      "targetId": "real-or-impossible"
+    },
+    {
+      "claim": "An epoch number counts time from 1970-01-01 UTC, and unit says whether one step is a second or a millisecond.",
+      "sourceId": "pd-dates",
+      "section": "Converting to timestamps; invalid data; epoch timestamps; datetime properties",
+      "targetKind": "step",
+      "targetId": "a-number-with-a-scale"
+    },
+    {
+      "claim": "A bare number carries no scale of its own, so pandas has to be told what one step of it means.",
+      "sourceId": "pd-dates",
+      "section": "Converting to timestamps; invalid data; epoch timestamps; datetime properties",
+      "targetKind": "step",
+      "targetId": "which-argument-sets-the-scale"
+    },
+    {
+      "claim": "With unit='s', each epoch step is one second. Subtract two offsets to get the seconds between them.",
+      "sourceId": "pd-dates",
+      "section": "Converting to timestamps; invalid data; epoch timestamps; datetime properties",
+      "targetKind": "step",
+      "targetId": "minutes-between"
+    },
+    {
+      "claim": "Subtracting dates gives a duration whose .days counts calendar days, and .dt reads fields such as the month.",
+      "sourceId": "pd-dates",
+      "section": "Converting to timestamps; invalid data; epoch timestamps; datetime properties",
+      "targetKind": "step",
+      "targetId": "days-between-dates"
+    },
+    {
+      "claim": "Subtracting two timestamps gives a duration, and .days reads its whole days. The .dt accessor reads calendar fields such as the month from a column of dates.",
+      "sourceId": "pd-dates",
+      "section": "Converting to timestamps; invalid data; epoch timestamps; datetime properties",
+      "targetKind": "step",
+      "targetId": "across-a-month-end"
     }
   ]
 }

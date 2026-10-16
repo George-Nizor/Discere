@@ -97,6 +97,8 @@ export const LearnerStepSchema = z
     eyebrow: z.string().min(1).optional(),
     /** v2 `explain`: the key idea, set as the screen's headline. */
     headline: z.string().min(1).optional(),
+    /** v2 `explain` with no check: prose shown after the figure. */
+    afterFigure: z.array(RichTextBlockSchema).optional(),
     workedSteps: z.array(LearnerWorkedStepSchema).optional(),
     answerVisibility: z.enum(["hidden-until-response", "live"]).optional(),
     calculator: CalculatorPolicySchema.optional(),

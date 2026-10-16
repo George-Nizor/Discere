@@ -1,7 +1,12 @@
 {
   "lessonId": "array-calculations",
   "courseId": "python-for-data-analysis",
-  "migrationNotes": [],
+  "migrationNotes": [
+    "Spine: a two-row ticket sheet and the manager's requests. The lesson changes every cell at once (broadcasting a single value, equal shapes), reduces the sheet to one number (sum, mean), reduces along a chosen axis, adds a short row to every row, and ends with slices sharing data (view and copy).",
+    "Left out of the lesson (still in the course): python-array-calculations-hook (the middle column total of 7, covered by the opener and the axis screen).",
+    "Figures: the axis, row broadcasting and view/copy figures moved onto the teaching screens. The scalar-and-product figure was dropped from the practice screen because its second case is the skill-check item python-array-calculations-7.",
+    "Corrected misconception messages on python-array-calculations-5 (7 is the first row's second value, not its mean) and cleaned the ellipsis wording on -2, -7."
+  ],
   "lesson": {
     "id": "array-calculations",
     "courseId": "python-for-data-analysis",
@@ -11,24 +16,36 @@
     "title": "Calculate across the right axis",
     "steps": [
       {
-        "id": "one-value-stretched",
+        "id": "changing-every-cell",
         "kind": "explain",
         "blocks": [],
-        "headline": "Array arithmetic acts on every element, and a single value is stretched to fit.",
+        "headline": "Changing every cell",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "a + 3 adds 3 to every element of a. a * b multiplies matching positions when the shapes agree. A single value is stretched across the array first. This stretching is called broadcasting."
+            "text": "Start with the request that touches every cell. The sheet is held by tickets = np.array([[1, 2, 3], [4, 5, 6]]). Adding 2 with tickets + 2 gives [[3, 4, 5], [6, 7, 8]]. The single 2 has no grid of its own, so NumPy stretches it to fit the grid and then adds position by position. This stretching is called broadcasting. Multiplying with tickets * 10 works the same way and gives [[10, 20, 30], [40, 50, 60]]."
           },
           {
-            "kind": "callout",
-            "tone": "key",
-            "text": "No loop is needed. The operation applies to every element."
+            "kind": "paragraph",
+            "text": "Two arrays of the same shape combine position by position, with no stretching needed. If prices = np.array([5, 7, 9]) and sold = np.array([2, 1, 3]), then prices * sold is [10, 7, 27], which is 5 × 2, 7 × 1 and 9 × 3. Each product comes from matching positions, so the result has the shape of the inputs. In neither case does the code contain a loop."
           }
         ],
-        "reveal": [],
         "introducesTerms": [
           "broadcasting"
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
+      },
+      {
+        "id": "one-value-or-every-value",
+        "kind": "predict",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Decide whether the single number is added once or reaches every element."
+          }
         ],
         "visualStateId": "",
         "checkQuestionId": "python-array-calculations-broadcast-check",
@@ -41,126 +58,57 @@
         "lead": [
           {
             "kind": "paragraph",
-            "text": "The scalar is broadcast, so it meets every element once."
-          }
-        ],
-        "reveal": [
-          {
-            "kind": "paragraph",
-            "text": "You predicted the sum of the stretched result. The 2 was added to each element, not once to the total."
+            "text": "The 2 reaches every element before you add the elements up."
           }
         ],
         "visualStateId": "",
         "checkQuestionId": "python-array-calculations-1",
-        "activityId": "",
-        "diagram": {
-          "type": "python_execution",
-          "runtime": "Python 3.12 · NumPy 2.3",
-          "cases": [
-            {
-              "id": "case-0",
-              "label": "Case A",
-              "code": "import numpy as np\na = np.array([2, 4, 8])\nresult = a + 3",
-              "steps": [
-                {
-                  "lineStart": 1,
-                  "lineEnd": 2,
-                  "values": [
-                    {
-                      "name": "a",
-                      "type": "ndarray",
-                      "display": "array([2, 4, 8])"
-                    }
-                  ],
-                  "stdout": ""
-                },
-                {
-                  "lineStart": 3,
-                  "lineEnd": 3,
-                  "values": [
-                    {
-                      "name": "a",
-                      "type": "ndarray",
-                      "display": "array([2, 4, 8])"
-                    },
-                    {
-                      "name": "result",
-                      "type": "ndarray",
-                      "display": "array([ 5,  7, 11])"
-                    }
-                  ],
-                  "stdout": ""
-                }
-              ]
-            },
-            {
-              "id": "case-1",
-              "label": "Case B",
-              "code": "import numpy as np\na = np.array([2, 4, 8])\nb = np.array([1, 2, 3])\nresult = a * b",
-              "steps": [
-                {
-                  "lineStart": 1,
-                  "lineEnd": 3,
-                  "values": [
-                    {
-                      "name": "a",
-                      "type": "ndarray",
-                      "display": "array([2, 4, 8])"
-                    },
-                    {
-                      "name": "b",
-                      "type": "ndarray",
-                      "display": "array([1, 2, 3])"
-                    }
-                  ],
-                  "stdout": ""
-                },
-                {
-                  "lineStart": 4,
-                  "lineEnd": 4,
-                  "values": [
-                    {
-                      "name": "a",
-                      "type": "ndarray",
-                      "display": "array([2, 4, 8])"
-                    },
-                    {
-                      "name": "b",
-                      "type": "ndarray",
-                      "display": "array([1, 2, 3])"
-                    },
-                    {
-                      "name": "result",
-                      "type": "ndarray",
-                      "display": "array([ 2,  8, 24])"
-                    }
-                  ],
-                  "stdout": ""
-                }
-              ]
-            }
-          ],
-          "initialCaseId": "case-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        "activityId": ""
       },
       {
-        "id": "which-direction",
+        "id": "many-numbers-into-one",
         "kind": "explain",
         "blocks": [],
-        "headline": "axis says which direction to combine: axis=0 runs down each column, axis=1 across each row.",
+        "headline": "Many numbers into one",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "In a two-dimensional array, sum(axis=0) adds the rows together and leaves one total per column. sum(axis=1) adds across each row and leaves one total per row."
+            "text": "The second request goes the other way. Instead of changing every cell, it asks for one number that summarises many. tickets.sum() adds all six values and gives 21. tickets.mean() adds them and divides by how many there are, giving 3.5. Methods like these are called reductions, because they reduce many values to one."
+          },
+          {
+            "kind": "paragraph",
+            "text": "A single total for the whole sheet is rarely what the manager wants. She wants the total for each day and the total for each showing. Those need the grid divided up in a chosen way, and NumPy has to be told which way. That choice is the next idea."
           }
         ],
-        "reveal": [],
+        "introducesTerms": [
+          "reduction"
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
+      },
+      {
+        "id": "choosing-the-direction",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "Choosing the direction",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Each direction through the grid is an axis. Axis 0 runs down, from one row to the next. Axis 1 runs across, from one column to the next. The axis you name is the one that gets combined. sum(axis=0) adds down each column and leaves one total per column. sum(axis=1) adds across each row and leaves one total per row. Step through both on the sheet."
+          }
+        ],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "On the sheet, axis=0 gives [5, 7, 9]. The middle showing sold 7 tickets over the two days, which answers the manager's first request. axis=1 gives [6, 15], the total for each day. The result always has one axis fewer than the grid, so a grid with two axes becomes a single line. mean takes the axis in the same way, so mean(axis=1) gives the average for each row."
+          }
+        ],
         "introducesTerms": [
           "axis"
         ],
         "visualStateId": "",
-        "checkQuestionId": "python-array-calculations-axis-check",
+        "checkQuestionId": "",
         "activityId": "",
         "diagram": {
           "type": "python_execution",
@@ -328,15 +276,33 @@
             }
           ],
           "initialCaseId": "case-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        }
+      },
+      {
+        "id": "which-call-per-column",
+        "kind": "predict",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Decide which axis leaves one total for each column."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-array-calculations-axis-check",
+        "activityId": ""
       },
       {
         "id": "one-total-per-row",
         "kind": "worked_example",
         "blocks": [],
         "headline": "What does sum(axis=1) give for np.array([[3, 1], [2, 5]])?",
-        "lead": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Add across each row of a small grid."
+          }
+        ],
         "reveal": [],
         "workedSteps": [
           {
@@ -385,23 +351,25 @@
         "activityId": ""
       },
       {
-        "id": "a-row-added-to-every-row",
-        "kind": "try",
+        "id": "a-short-array-meets-a-grid",
+        "kind": "explain",
         "blocks": [],
+        "headline": "A row added to every row",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "A one-dimensional array whose length matches the last dimension is combined with every row in turn."
+            "text": "Broadcasting also works between a grid and a shorter array. Suppose a different amount has to be added to each showing: 10 more tickets for the first and 20 for the second. A line of two numbers, np.array([10, 20]), can be added to a grid with two columns. NumPy lines the short array up with the last dimension and repeats it down the rows, so every row gets the same two additions. The short array's length has to match the number of columns. Step through the picture, where the same grid also gets a single 10."
           }
         ],
-        "reveal": [
+        "afterFigure": [
           {
             "kind": "paragraph",
-            "text": "The short array was repeated for each row, so every row received the same offsets. That is broadcasting along the rows."
+            "text": "In the first case each row receives 10 in its first column and 20 in its second, giving [[11, 22], [13, 24]]. In the second case the single 10 reaches every cell. When the lengths cannot be lined up this way, such as an array of three numbers against two columns, NumPy stops with an error."
           }
         ],
+        "introducesTerms": [],
         "visualStateId": "",
-        "checkQuestionId": "python-array-calculations-3",
+        "checkQuestionId": "",
         "activityId": "",
         "diagram": {
           "type": "python_execution",
@@ -595,27 +563,48 @@
             }
           ],
           "initialCaseId": "case-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        }
       },
       {
-        "id": "view-or-copy",
-        "kind": "transfer",
+        "id": "a-row-added-to-every-row",
+        "kind": "try",
         "blocks": [],
         "lead": [
           {
             "kind": "paragraph",
-            "text": "A basic slice is a view of the original data. Editing the view edits the original. The copy method makes independent data."
-          }
-        ],
-        "reveal": [
-          {
-            "kind": "paragraph",
-            "text": "The copy owned its own data, so changing it left the original alone. Without copy, the slice would have shared storage."
+            "text": "The short array is repeated for every row. Work out the four results, then add them."
           }
         ],
         "visualStateId": "",
-        "checkQuestionId": "python-array-calculations-4",
+        "checkQuestionId": "python-array-calculations-3",
+        "activityId": ""
+      },
+      {
+        "id": "a-slice-shares-its-data",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "A slice shares its data",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "The last request was a copy of the sheet, and it raises a question about slices. Slicing an array with a[:2] gives a view, a window onto the same stored numbers and not a new set. A view takes almost no extra memory, which suits large data. It also has a consequence: changing the view changes the original, because the two share one set of numbers. In the picture, b = a[:2] followed by b[0] = 99 changes a[0] as well."
+          },
+          {
+            "kind": "paragraph",
+            "text": "When you want numbers that can be changed freely, ask for a copy with the copy method. a[:2].copy() makes independent storage, and edits to it leave a alone. A list slice behaves differently, since it always builds a new list, so the habit from lists needs adjusting. Step through both cases."
+          }
+        ],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "With the view, b[0] = 99 shows up in a as well: a becomes [99, 4, 6]. With the copy, a stays [2, 4, 6] and only b changes. When an array has to stay as it was, copy before editing."
+          }
+        ],
+        "introducesTerms": [
+          "view"
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
         "activityId": "",
         "diagram": {
           "type": "python_execution",
@@ -705,8 +694,21 @@
             }
           ],
           "initialCaseId": "case-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        }
+      },
+      {
+        "id": "view-or-copy",
+        "kind": "transfer",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Decide whether the changed array shares its numbers with a."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-array-calculations-4",
+        "activityId": ""
       }
     ],
     "orientation": "Apply elementwise operations, broadcasting and reductions.",
@@ -739,23 +741,30 @@
         "blocks": [
           {
             "kind": "paragraph",
-            "text": "A table has two rows. Row one reads 1, 2, 3. Row two reads 4, 5, 6."
+            "text": "A booking sheet for a small hall has two rows of numbers. Row one reads 1, 2, 3 and row two reads 4, 5, 6, standing for tickets sold at three showings on each of two days. The manager has three requests. She wants the tickets sold at the middle showing over the two days, the total for each day, and a copy of the sheet with every figure raised by two."
+          },
+          {
+            "kind": "paragraph",
+            "text": "On paper each request is easy, and each one asks for a different movement across the grid. The middle showing needs one number from each row. Each day's total needs the numbers within a row. The rise applies to every cell. The arrays from the last lesson can answer all three in a line each, provided the direction of the calculation is clear."
+          },
+          {
+            "kind": "paragraph",
+            "text": "This lesson works through those requests on the small sheet. It begins with changing every value at once and moves on to adding up in a chosen direction. It ends with a warning about what happens when you edit a piece of an array."
           }
-        ],
-        "questionId": "python-array-calculations-hook"
+        ]
       },
       "promise": "By the end you'll predict an array calculation, choose which axis to combine along, and know when editing a slice changes the original.",
-      "estimatedMinutes": 10
+      "estimatedMinutes": 12
     },
     "recap": {
       "keyIdea": "Array arithmetic applies to every element, axis=0 combines down columns and axis=1 across rows, and a basic slice is a view unless you copy it.",
       "blocks": [
         {
           "kind": "paragraph",
-          "text": "You found the middle column of the table totals 7. You also found np.array([1, 3, 5]) + 2 sums to 15, and that the copy left the original's first value at 7."
+          "text": "You found that the middle showing sold 7 tickets over the two days, by adding down a column. You also found that np.array([1, 3, 5]) + 2 sums to 15, and that editing a copy left the original's first value at 7."
         }
       ],
-      "nextHook": "Next: generate values with clear boundaries using arange, linspace and a seeded generator."
+      "nextHook": "Every array in this lesson was typed out by hand. Real data usually has a pattern: readings at regular distances along a path, or random draws that have to be repeatable. The next lesson shows how arange and linspace lay values out between two ends, and how a seeded generator makes random numbers that can be reproduced."
     },
     "calculator": "off",
     "taughtSkills": [
@@ -783,7 +792,7 @@
         "kind": "numeric",
         "value": 15,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "Adding 2 gives [3, 5, 7], whose sum is 15."
       },
@@ -791,7 +800,7 @@
         "np-quickstart",
         "np-index"
       ],
-      "onCorrect": "15. Adding 2 gave 3, 5 and 7, and the sum added them. The 2 reached every element.",
+      "onCorrect": "15. The 2 reached every element, giving 3, 5 and 7, which sum to 15.",
       "skill": "elementwise-and-broadcast",
       "misconceptions": [
         {
@@ -822,7 +831,7 @@
         "kind": "numeric",
         "value": 8,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The first column reduces to 2 + 6 = 8."
       },
@@ -839,7 +848,7 @@
               6
             ]
           },
-          "feedback": "That is the first row's sum... axis=0 adds down a column, not across a row."
+          "feedback": "That is the sum of the first row. axis=0 adds down a column and not across a row."
         },
         {
           "match": {
@@ -869,7 +878,7 @@
         "kind": "numeric",
         "value": 32,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "a + b is [[6, 8], [8, 10]], whose sum is 32."
       },
@@ -916,7 +925,7 @@
         "kind": "numeric",
         "value": 7,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The copy is independent, so a[0] is still 7."
       },
@@ -955,7 +964,7 @@
         "kind": "numeric",
         "value": 5,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The second row has mean (2 + 8) ÷ 2 = 5."
       },
@@ -972,7 +981,7 @@
               7
             ]
           },
-          "feedback": "That is the mean of the first row... the second row is 2 and 8."
+          "feedback": "That is the second value of the first row. The second row holds 2 and 8."
         },
         {
           "match": {
@@ -1002,7 +1011,7 @@
         "kind": "numeric",
         "value": 20,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "b is a view into a, so the write changes a[1] to 20."
       },
@@ -1045,9 +1054,9 @@
         "kind": "numeric",
         "value": 34,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
-        "workedAnswer": "The products are 2, 8 and 24, and they sum to 34."
+        "workedAnswer": "The products are 2, 8 and 24. They sum to 34."
       },
       "onCorrect": "34. The products are 2, 8 and 24, formed position by position.",
       "misconceptions": [
@@ -1057,7 +1066,7 @@
               14
             ]
           },
-          "feedback": "That adds the first array... multiply matching positions, then add."
+          "feedback": "That adds up the first array alone. Multiply matching positions, then add."
         },
         {
           "match": {
@@ -1092,7 +1101,7 @@
         "kind": "numeric",
         "value": 7,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The middle column holds 2 and 5, and 2 + 5 = 7."
       },
@@ -1316,7 +1325,7 @@
         "kind": "numeric",
         "value": 12,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "4 + 8 = 12, so sum(axis=0) is [8, 12]."
       },
@@ -1337,70 +1346,112 @@
   ],
   "citations": [
     {
-      "claim": "Array arithmetic acts on every element, and a single value is stretched to fit.",
+      "claim": "An operation on an array applies to every element, a single value is broadcast across the array, and equal shapes combine position by position.",
       "sourceId": "np-quickstart",
       "section": "Basic operations; universal functions; indexing and slicing",
       "targetKind": "step",
-      "targetId": "one-value-stretched"
+      "targetId": "changing-every-cell"
     },
     {
-      "claim": "Array arithmetic acts on every element, and a single value is stretched to fit.",
+      "claim": "An operation on an array applies to every element, a single value is broadcast across the array, and equal shapes combine position by position.",
       "sourceId": "np-index",
       "section": "Basic slicing and views; multidimensional indexing",
       "targetKind": "step",
-      "targetId": "one-value-stretched"
+      "targetId": "changing-every-cell"
     },
     {
-      "claim": "The scalar is broadcast, so it meets every element once.",
+      "claim": "A single value broadcasts to every element.",
+      "sourceId": "np-quickstart",
+      "section": "Basic operations; universal functions; indexing and slicing",
+      "targetKind": "step",
+      "targetId": "one-value-or-every-value"
+    },
+    {
+      "claim": "A single value broadcasts to every element.",
+      "sourceId": "np-index",
+      "section": "Basic slicing and views; multidimensional indexing",
+      "targetKind": "step",
+      "targetId": "one-value-or-every-value"
+    },
+    {
+      "claim": "Adding a scalar to an array adds it to each element.",
       "sourceId": "np-quickstart",
       "section": "Basic operations; universal functions; indexing and slicing",
       "targetKind": "step",
       "targetId": "add-to-every-element"
     },
     {
-      "claim": "The scalar is broadcast, so it meets every element once.",
+      "claim": "Adding a scalar to an array adds it to each element.",
       "sourceId": "np-index",
       "section": "Basic slicing and views; multidimensional indexing",
       "targetKind": "step",
       "targetId": "add-to-every-element"
     },
     {
-      "claim": "axis says which direction to combine: axis=0 runs down each column, axis=1 across each row.",
+      "claim": "sum and mean reduce an array to one number.",
       "sourceId": "np-quickstart",
       "section": "Basic operations; universal functions; indexing and slicing",
       "targetKind": "step",
-      "targetId": "which-direction"
+      "targetId": "many-numbers-into-one"
     },
     {
-      "claim": "axis says which direction to combine: axis=0 runs down each column, axis=1 across each row.",
+      "claim": "sum and mean reduce an array to one number.",
       "sourceId": "np-index",
       "section": "Basic slicing and views; multidimensional indexing",
       "targetKind": "step",
-      "targetId": "which-direction"
+      "targetId": "many-numbers-into-one"
     },
     {
-      "claim": "What does sum(axis=1) give for np.array([[3, 1], [2, 5]])?",
+      "claim": "axis=0 combines down each column and axis=1 across each row; the named axis is the one combined away.",
+      "sourceId": "np-quickstart",
+      "section": "Basic operations; universal functions; indexing and slicing",
+      "targetKind": "step",
+      "targetId": "choosing-the-direction"
+    },
+    {
+      "claim": "axis=0 combines down each column and axis=1 across each row; the named axis is the one combined away.",
+      "sourceId": "np-index",
+      "section": "Basic slicing and views; multidimensional indexing",
+      "targetKind": "step",
+      "targetId": "choosing-the-direction"
+    },
+    {
+      "claim": "sum(axis=0) gives one total per column.",
+      "sourceId": "np-quickstart",
+      "section": "Basic operations; universal functions; indexing and slicing",
+      "targetKind": "step",
+      "targetId": "which-call-per-column"
+    },
+    {
+      "claim": "sum(axis=0) gives one total per column.",
+      "sourceId": "np-index",
+      "section": "Basic slicing and views; multidimensional indexing",
+      "targetKind": "step",
+      "targetId": "which-call-per-column"
+    },
+    {
+      "claim": "sum(axis=1) gives one total per row.",
       "sourceId": "np-quickstart",
       "section": "Basic operations; universal functions; indexing and slicing",
       "targetKind": "step",
       "targetId": "one-total-per-row"
     },
     {
-      "claim": "What does sum(axis=1) give for np.array([[3, 1], [2, 5]])?",
+      "claim": "sum(axis=1) gives one total per row.",
       "sourceId": "np-index",
       "section": "Basic slicing and views; multidimensional indexing",
       "targetKind": "step",
       "targetId": "one-total-per-row"
     },
     {
-      "claim": "For np.array([[2, 4], [6, 8]]), what does sum(axis=0) give?",
+      "claim": "sum(axis=0) adds down each column.",
       "sourceId": "np-quickstart",
       "section": "Basic operations; universal functions; indexing and slicing",
       "targetKind": "step",
       "targetId": "down-the-columns"
     },
     {
-      "claim": "For np.array([[2, 4], [6, 8]]), what does sum(axis=0) give?",
+      "claim": "sum(axis=0) adds down each column.",
       "sourceId": "np-index",
       "section": "Basic slicing and views; multidimensional indexing",
       "targetKind": "step",
@@ -1411,24 +1462,52 @@
       "sourceId": "np-quickstart",
       "section": "Basic operations; universal functions; indexing and slicing",
       "targetKind": "step",
-      "targetId": "a-row-added-to-every-row"
+      "targetId": "a-short-array-meets-a-grid"
     },
     {
       "claim": "A one-dimensional array whose length matches the last dimension is combined with every row in turn.",
       "sourceId": "np-index",
       "section": "Basic slicing and views; multidimensional indexing",
       "targetKind": "step",
+      "targetId": "a-short-array-meets-a-grid"
+    },
+    {
+      "claim": "Row broadcasting adds the same offsets to each row.",
+      "sourceId": "np-quickstart",
+      "section": "Basic operations; universal functions; indexing and slicing",
+      "targetKind": "step",
       "targetId": "a-row-added-to-every-row"
     },
     {
-      "claim": "A basic slice is a view of the original data. Editing the view edits the original. The copy method makes independent data.",
+      "claim": "Row broadcasting adds the same offsets to each row.",
+      "sourceId": "np-index",
+      "section": "Basic slicing and views; multidimensional indexing",
+      "targetKind": "step",
+      "targetId": "a-row-added-to-every-row"
+    },
+    {
+      "claim": "A basic slice is a view that shares storage with the original; the copy method makes independent data.",
+      "sourceId": "np-quickstart",
+      "section": "Basic operations; universal functions; indexing and slicing",
+      "targetKind": "step",
+      "targetId": "a-slice-shares-its-data"
+    },
+    {
+      "claim": "A basic slice is a view that shares storage with the original; the copy method makes independent data.",
+      "sourceId": "np-index",
+      "section": "Basic slicing and views; multidimensional indexing",
+      "targetKind": "step",
+      "targetId": "a-slice-shares-its-data"
+    },
+    {
+      "claim": "Editing a copy leaves the original unchanged.",
       "sourceId": "np-quickstart",
       "section": "Basic operations; universal functions; indexing and slicing",
       "targetKind": "step",
       "targetId": "view-or-copy"
     },
     {
-      "claim": "A basic slice is a view of the original data. Editing the view edits the original. The copy method makes independent data.",
+      "claim": "Editing a copy leaves the original unchanged.",
       "sourceId": "np-index",
       "section": "Basic slicing and views; multidimensional indexing",
       "targetKind": "step",
@@ -1531,20 +1610,6 @@
       "section": "Basic slicing and views; multidimensional indexing",
       "targetKind": "question",
       "targetId": "python-array-calculations-7"
-    },
-    {
-      "claim": "7. You added down the middle column. That is a total taken along one direction of a grid, which NumPy calls an axis.",
-      "sourceId": "np-quickstart",
-      "section": "Basic operations; universal functions; indexing and slicing",
-      "targetKind": "question",
-      "targetId": "python-array-calculations-hook"
-    },
-    {
-      "claim": "7. You added down the middle column. That is a total taken along one direction of a grid, which NumPy calls an axis.",
-      "sourceId": "np-index",
-      "section": "Basic slicing and views; multidimensional indexing",
-      "targetKind": "question",
-      "targetId": "python-array-calculations-hook"
     },
     {
       "claim": "An array holding 11 and 12. The single value was stretched across the array and added to each element.",

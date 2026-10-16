@@ -2,24 +2,27 @@ import { resolveDatabasePath } from "@discere/paths";
 import cors from "@fastify/cors";
 import Fastify, { type FastifyInstance } from "fastify";
 import { ZodError } from "zod";
+import { createCodeRunners, registerCodeRuntimeRoutes } from "./code-runtimes/index.js";
 import { ContentRepository } from "./content.js";
+import { registerCourseCheckRoutes } from "./course-checks.js";
+import { DiscereStore } from "./db/store.js";
+import { HttpError } from "./errors.js";
 import { PythonProjectRepository } from "./python-projects/repository.js";
 import type { PythonRuntime } from "./python-projects/runtime.js";
 import { PythonProjectService, registerPythonProjectRoutes } from "./python-projects/service.js";
-import { RustProjectRepository, RustProjectService, registerRustProjectRoutes } from "./rust/projects.js";
+import { registerRoutes } from "./routes.js";
 import { registerRustPlaygroundRoutes } from "./rust/playground.js";
+import {
+  RustProjectRepository,
+  RustProjectService,
+  registerRustProjectRoutes,
+} from "./rust/projects.js";
 import { registerCodeQuestionRoutes } from "./rust/questions.js";
 import type { RustRuntime } from "./rust/runtime.js";
+import { registerSearchRoutes } from "./search.js";
 import { SqlProjectRepository } from "./sql-projects/repository.js";
 import type { SqlRuntime } from "./sql-projects/runtime.js";
-import { createCodeRunners, registerCodeRuntimeRoutes } from "./code-runtimes/index.js";
-import { SqlProjectService, registerSqlProjectRoutes } from "./sql-projects/service.js";
-import { registerCourseCheckRoutes } from "./course-checks.js";
-import { registerSearchRoutes } from "./search.js";
-import { DiscereStore } from "./db/store.js";
-import { HttpError } from "./errors.js";
-import { registerRomanReferenceRoutes } from "./roman-reference-routes.js";
-import { registerRoutes } from "./routes.js";
+import { registerSqlProjectRoutes, SqlProjectService } from "./sql-projects/service.js";
 import { TopicMapRepository } from "./topic-maps.js";
 import { registerTransferRoutes } from "./transfer-routes.js";
 import { createTutorRuntime, type TutorRuntimeOptions } from "./tutor-provider.js";
@@ -124,9 +127,15 @@ export async function createApp(options: AppOptions = {}): Promise<DiscereApp> {
   await registerCourseCheckRoutes(app, { content, store });
   await registerSearchRoutes(app, { content });
   const pythonProjects = await PythonProjectRepository.load(contentRoot, content);
-  await registerPythonProjectRoutes(app, new PythonProjectService(
-    store, pythonProjects, options.pythonRuntime ?? runners.python, options.revealDelayMs ?? 5000,
-  ));
+  await registerPythonProjectRoutes(
+    app,
+    new PythonProjectService(
+      store,
+      pythonProjects,
+      options.pythonRuntime ?? runners.python,
+      options.revealDelayMs ?? 5000,
+    ),
+  );
   await registerRustPlaygroundRoutes(app, rustRuntime);
   await registerRustProjectRoutes(
     app,
@@ -147,7 +156,6 @@ export async function createApp(options: AppOptions = {}): Promise<DiscereApp> {
       options.revealDelayMs ?? 5000,
     ),
   );
-  await registerRomanReferenceRoutes(app, { store });
   await registerTransferRoutes(app, { content, store });
   await registerWorkingsReviewRoutes(app, { content, store, runtime });
   await registerTutorRoutes(app, { content, store, runtime });

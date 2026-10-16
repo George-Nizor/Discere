@@ -88,8 +88,8 @@ const reviewHome = {
       nextDueAt: "2026-08-19T08:00:00.000Z",
     },
     {
-      courseId: "roman-empire",
-      title: "The Rise of the Roman Empire",
+      courseId: "astronomy-sky-to-cosmos",
+      title: "Astronomy: From Sky to Cosmos",
       dueCount: 1,
       cardCount: 8,
       nextDueAt: "2026-08-19T08:00:00.000Z",
@@ -214,7 +214,7 @@ describe("routed application", () => {
     expect(rows).toBeInTheDocument();
     expect(screen.getByRole("rowheader", { name: "Electronics Foundations" })).toBeInTheDocument();
     expect(
-      screen.getByRole("rowheader", { name: "The Rise of the Roman Empire" }),
+      screen.getByRole("rowheader", { name: "Astronomy: From Sky to Cosmos" }),
     ).toBeInTheDocument();
     expect(screen.getByRole("columnheader", { name: "Due" })).toBeInTheDocument();
     expect(screen.getByRole("columnheader", { name: "Cards" })).toBeInTheDocument();
@@ -277,11 +277,11 @@ describe("routed application", () => {
 
   it("answers an unknown address without pretending the page exists", async () => {
     stubFetch({ "GET /api/home": { body: home } });
-    renderApp("/qa/roman");
+    renderApp("/qa/missing");
     expect(
       await screen.findByRole("heading", { level: 1, name: "This page doesn’t exist" }),
     ).toBeInTheDocument();
-    expect(screen.getByText("/qa/roman")).toBeInTheDocument();
+    expect(screen.getByText("/qa/missing")).toBeInTheDocument();
     expect(screen.getByRole("searchbox")).toBeInTheDocument();
   });
 

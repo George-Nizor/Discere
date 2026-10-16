@@ -11,42 +11,55 @@
     "title": "Turn messy text into usable columns",
     "steps": [
       {
-        "id": "text-in-every-row",
+        "id": "same-shop-different-text",
         "kind": "explain",
         "blocks": [],
-        "headline": "The .str accessor applies a string operation to every value in a column.",
+        "headline": "Same shop, different text",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "s.str.strip() removes spaces from the ends of every value. s.str.lower() makes every value lower case. Each returns a new Series, so store it if you want to keep it."
+            "text": "Put the tally sheet into a pandas Series with one entry per tally: 'Bay', ' bay', 'BAY ' and 'Hill'. Ask pandas how many different shops there are and it answers four. It compares text character by character, so a space counts as a character like any other, and a capital B is a different character from a small b. You read past those differences without noticing, but the computer has no way to."
+          },
+          {
+            "kind": "paragraph",
+            "text": "So the text has to be made consistent before anything is counted or matched. Two small jobs cover most of it. Stripping removes blank characters from both ends of an entry, which turns ' bay' into 'bay'. Lowercasing turns every capital into its small form, which turns 'BAY' into 'bay'. Once both have been done, the three spellings of Bay are one piece of text and Hill is unchanged."
+          },
+          {
+            "kind": "paragraph",
+            "text": "A real sheet has thousands of entries, and writing a loop to tidy each one would be slow to write and slow to read. pandas has a shortcut for applying a text job to a whole column, which is where we go next."
           }
         ],
-        "reveal": [],
+        "introducesTerms": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
+      },
+      {
+        "id": "text-in-every-row",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "One call for the whole column",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Put .str in front of a method and pandas applies that method to every entry in the Series. s.str.strip() strips each entry and s.str.lower() lowercases each one. The .str part is called an accessor. It is a doorway on the Series that opens onto the text methods, so you can skip the loop and ask for the job once."
+          },
+          {
+            "kind": "paragraph",
+            "text": "The figure runs this on three entries that need tidying: ' Bay ', 'HILL' and ' lake'. The first case only strips them. The second chains another call on the end, so each entry is stripped and then lowercased."
+          }
+        ],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "Chaining works because every .str call returns a new Series, ready for the next call. It also means the original is untouched, so store the result if you want to keep it, for example clean = s.str.strip().str.lower(). Apply that to the tally sheet and the three spellings of Bay become one entry, which leaves two different shops in the column."
+          }
+        ],
         "introducesTerms": [
           "accessor"
         ],
         "visualStateId": "",
-        "checkQuestionId": "python-text-and-transformations-str-check",
-        "activityId": ""
-      },
-      {
-        "id": "clean-then-count",
-        "kind": "predict",
-        "blocks": [],
-        "lead": [
-          {
-            "kind": "paragraph",
-            "text": "strip removes the outside whitespace and lower changes letter case. Neither adds or removes letters."
-          }
-        ],
-        "reveal": [
-          {
-            "kind": "paragraph",
-            "text": "You cleaned the text before counting. Case conversion changes letters but keeps their number, so only the spaces were lost."
-          }
-        ],
-        "visualStateId": "",
-        "checkQuestionId": "python-text-and-transformations-1",
+        "checkQuestionId": "",
         "activityId": "",
         "diagram": {
           "type": "python_execution",
@@ -246,29 +259,50 @@
             }
           ],
           "initialCaseId": "case-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        }
       },
       {
-        "id": "split-once",
-        "kind": "worked_example",
+        "id": "clean-then-count",
+        "kind": "predict",
         "blocks": [],
-        "headline": "Split ['Bay|east|harbour', 'Hill|west|dock'] once at '|' with expand=True. What does the second column hold?",
-        "lead": [],
-        "reveal": [],
-        "workedSteps": [
+        "lead": [
           {
-            "text": "n=1 splits at the first '|' only. The first column is the shop.",
-            "math": "'Bay' and 'Hill'",
-            "selfExplain": {
-              "questionId": "python-text-and-transformations-why-once"
-            }
-          },
-          {
-            "text": "The second column keeps everything after that first '|'.",
-            "math": "'east|harbour' and 'west|dock'"
+            "kind": "paragraph",
+            "text": "strip removes blank characters at the ends, and lower changes capitals to small letters. Neither adds or removes a letter."
           }
         ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "You cleaned the text before counting. Case conversion changes letters but keeps their number, so only the spaces were lost."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-text-and-transformations-1",
+        "activityId": ""
+      },
+      {
+        "id": "two-facts-one-cell",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "Two facts in one cell",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Cleaning makes entries consistent, but a cell can still hold two facts. Suppose the supplier's export writes each row as 'Bay|east', the shop and its region joined by a bar. To count shops by region you need those two parts in separate columns."
+          },
+          {
+            "kind": "paragraph",
+            "text": "s.str.split('|', expand=True) cuts every entry at the bar and gives each piece its own column. Without expand=True you would get a list of pieces inside each cell, which is awkward to use. The figure splits two small Series and names the new columns afterwards."
+          }
+        ],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "Both cases pass n=1, which tells split to stop after the first bar. In the first case every entry has one bar, so n=1 changes nothing. In the second case 'Bay|east|harbour' has two bars. The shop is 'Bay' and the rest, 'east|harbour', stays together in the second column. That matters when a later piece may contain the separator itself and should not be torn apart."
+          }
+        ],
+        "introducesTerms": [],
         "visualStateId": "",
         "checkQuestionId": "",
         "activityId": "",
@@ -366,8 +400,31 @@
             }
           ],
           "initialCaseId": "case-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        }
+      },
+      {
+        "id": "split-once",
+        "kind": "worked_example",
+        "blocks": [],
+        "headline": "Split ['Bay|east|harbour', 'Hill|west|dock'] once at '|' with expand=True. What does the second column hold?",
+        "lead": [],
+        "reveal": [],
+        "workedSteps": [
+          {
+            "text": "n=1 splits at the first '|' only. The first column is the shop.",
+            "math": "'Bay' and 'Hill'",
+            "selfExplain": {
+              "questionId": "python-text-and-transformations-why-once"
+            }
+          },
+          {
+            "text": "The second column keeps everything after that first '|'.",
+            "math": "'east|harbour' and 'west|dock'"
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
       },
       {
         "id": "count-the-cells",
@@ -395,22 +452,31 @@
         "activityId": ""
       },
       {
-        "id": "a-function-per-value",
+        "id": "a-rule-of-your-own",
         "kind": "explain",
         "blocks": [],
-        "headline": "map and apply call a function on each value or row, but a vectorised operation does the same in one step.",
+        "headline": "A rule of your own for every value",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "Series.map calls a function on every value of that Series. df.apply(f, axis=1) calls it on every row. If a vectorised string or arithmetic operation expresses the same thing, prefer it: it is shorter and usually clearer."
+            "text": "The .str methods cover cleaning and splitting, but sometimes you need a rule they do not offer. Say each entry lists colours, as in 'red,blue', and you want the number of colours in each. Series.map takes a function and calls it once on every value, then collects the answers into a new Series. A lambda is a small function written on one line, and lambda text: len(text.split(',')) splits an entry at its commas and counts the pieces."
+          },
+          {
+            "kind": "paragraph",
+            "text": "The figure has two versions of the same job."
           }
         ],
-        "reveal": [],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "The first case uses map, so the function is called once per entry. The second needs no function at all. s.str.count(',') + 1 counts the commas in each entry and adds one, because an entry with one comma holds two items. That is a vectorised operation: a single instruction that works on the whole column at once. Prefer it when it can express your rule, since it is shorter, easier to read and much faster on a long column. Keep map for rules that no built-in operation covers."
+          }
+        ],
         "introducesTerms": [
           "vectorised"
         ],
         "visualStateId": "",
-        "checkQuestionId": "python-text-and-transformations-3",
+        "checkQuestionId": "",
         "activityId": "",
         "diagram": {
           "type": "python_execution",
@@ -586,8 +652,22 @@
             }
           ],
           "initialCaseId": "case-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        }
+      },
+      {
+        "id": "what-map-passes",
+        "kind": "predict",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Series.map is a method of one Series, and it calls the function once for each value in that Series. Decide what the function receives each time."
+          }
+        ],
+        "reveal": [],
+        "visualStateId": "",
+        "checkQuestionId": "python-text-and-transformations-3",
+        "activityId": ""
       },
       {
         "id": "count-the-items",
@@ -610,23 +690,29 @@
         "activityId": ""
       },
       {
-        "id": "row-by-row",
-        "kind": "transfer",
+        "id": "rows-not-single-values",
+        "kind": "explain",
         "blocks": [],
+        "headline": "Rules that need a whole row",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "df.apply(f, axis=1) calls f once for every row, and row['a'] reads that row's value in column a. A vectorised df['a'] * df['b'] gives the same result in one step."
-          }
-        ],
-        "reveal": [
+            "text": "Some rules need more than one value at a time. To add the a column to the b column for each order, the function has to see both numbers from the same row. df.apply(f, axis=1) calls f once for each row, and inside f the expression row['a'] reads that row's value in column a. The axis=1 asks for one row at a time. The default, axis=0, would hand over whole columns instead."
+          },
           {
             "kind": "paragraph",
-            "text": "The function ran once for each row and combined that row's two values. The vectorised version does the same arithmetic without calling a function."
+            "text": "The figure adds two columns both ways."
           }
         ],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "The first case uses apply with a lambda. The second does the same sum as df['a'] + df['b'] and then renames the new column with df.rename. Both give the same numbers. Use apply when the rule needs steps that column arithmetic cannot express, such as choosing between two formulas by the values in the row. When plain arithmetic on the columns will do, that is the form to write. The tally sheet is now tidy and split where it needed splitting, and any rule you add can be run row by row or on the whole column."
+          }
+        ],
+        "introducesTerms": [],
         "visualStateId": "",
-        "checkQuestionId": "python-text-and-transformations-4",
+        "checkQuestionId": "",
         "activityId": "",
         "diagram": {
           "type": "python_execution",
@@ -778,8 +864,27 @@
             }
           ],
           "initialCaseId": "case-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        }
+      },
+      {
+        "id": "row-by-row",
+        "kind": "transfer",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "With axis=1, apply hands the function one row at a time. Inside it, row['a'] is that row's value in column a. Adding up the results is a separate step."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "The function ran once for each row and combined that row's two values. The vectorised version does the same arithmetic without calling a function."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-text-and-transformations-4",
+        "activityId": ""
       }
     ],
     "orientation": "Clean and split strings, rename columns and choose vectorised or rowwise work.",
@@ -812,23 +917,30 @@
         "blocks": [
           {
             "kind": "paragraph",
-            "text": "A tally sheet lists the shops as Bay, ' bay', 'BAY ' and Hill. The extra spaces and capitals are slips of the pen."
+            "text": "Picture a tally sheet from a market stall, filled in by three people over a week. One writes Bay. Another writes ' bay' with a space slipped in front, and a third writes 'BAY ' in capitals with a space at the end. Hill is written down once, tidily. A person reads that as two shops. A computer that compares text exactly sees four different pieces of text."
+          },
+          {
+            "kind": "paragraph",
+            "text": "The last lesson was about gaps, which a table admits to by showing them as NaN. These slips are harder because they look like ordinary data, so nothing warns you and a count or a match goes quietly wrong. Some cells hold two facts squeezed into one, such as a shop and its region joined by a bar."
+          },
+          {
+            "kind": "paragraph",
+            "text": "This lesson cleans the sheet until each shop is written one way. It then splits the cells that hold two facts, and ends with how to apply a rule of your own to every row."
           }
-        ],
-        "questionId": "python-text-and-transformations-hook"
+        ]
       },
-      "promise": "By the end you'll clean and split text in a column, and choose between a rowwise function and a vectorised operation.",
-      "estimatedMinutes": 10
+      "promise": "By the end you'll clean and split text in a column, and know when a one-line operation replaces a loop.",
+      "estimatedMinutes": 12
     },
     "recap": {
-      "keyIdea": "The .str accessor cleans and splits text for every row, and a vectorised operation does what a rowwise function would, in one step.",
+      "keyIdea": "The .str accessor cleans and splits text for every row at once, and a vectorised operation does what a rowwise function would, in one step.",
       "blocks": [
         {
           "kind": "paragraph",
-          "text": "You found that the tally sheet lists 2 different shops once the slips are cleaned. A split of two strings made 4 cells, and the rowwise product summed to 10."
+          "text": "You cleaned the tally sheet until Bay appeared once, which left 2 different shops. Splitting two strings once made 4 cells, and a rowwise product over the rows (2, 3) and (4, 1) summed to 10."
         }
       ],
-      "nextHook": "Next: read a date without guessing."
+      "nextHook": "Clean text is still only text. A date such as 03/04/2026 is text too, and it can be read two ways depending on who wrote it. The next lesson turns date strings into real dates by stating their format, and counts the entries that cannot be read at all."
     },
     "calculator": "off",
     "taughtSkills": [
@@ -856,7 +968,7 @@
         "kind": "numeric",
         "value": 5,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The cleaned string is north, which has five characters."
       },
@@ -895,7 +1007,7 @@
         "kind": "numeric",
         "value": 4,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "Two rows times two columns gives four cells."
       },
@@ -993,7 +1105,7 @@
         "kind": "numeric",
         "value": 10,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The row products are 6 and 4, and they sum to 10."
       },
@@ -1001,7 +1113,7 @@
         "pd-text",
         "pd-apply"
       ],
-      "onCorrect": "10. The function ran once per row, giving 6 and 4, and the sum added them.",
+      "onCorrect": "10. The function gave 6 for the first row and 4 for the second, and the sum added them.",
       "skill": "rowwise-apply",
       "misconceptions": [
         {
@@ -1040,7 +1152,7 @@
         "kind": "numeric",
         "value": 3,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "Splitting at the two commas produces three items."
       },
@@ -1079,7 +1191,7 @@
         "kind": "numeric",
         "value": 16,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The row calculation adds 7 and 9 to give 16."
       },
@@ -1122,11 +1234,11 @@
         "kind": "numeric",
         "value": 4,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The cleaned values are 'Ab' and 'cD', with 2 + 2 = 4 characters."
       },
-      "onCorrect": "4. After stripping, each value has two letters, and the lengths add to 4.",
+      "onCorrect": "4. Stripping leaves two letters in each value, so the lengths add up to 4.",
       "misconceptions": [
         {
           "match": {
@@ -1161,7 +1273,7 @@
         "kind": "numeric",
         "value": 2,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The three Bay spellings are one shop, and Hill is the other."
       },
@@ -1326,7 +1438,7 @@
         "kind": "numeric",
         "value": 2,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "One split gives two fields, so two columns."
       },
@@ -1365,7 +1477,7 @@
         "kind": "numeric",
         "value": 6,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The item counts are 2, 1 and 3, totalling 6."
       },
@@ -1377,15 +1489,7 @@
               3
             ]
           },
-          "feedback": "That is the number of values. Add up the items in each of them."
-        },
-        {
-          "match": {
-            "numeric": [
-              3
-            ]
-          },
-          "feedback": "That is the number of values. Add up the items in each of them."
+          "feedback": "That is the number of values, and also the number of commas. Add up the items in each value."
         }
       ],
       "skill": "map-and-vectorise",
@@ -1394,104 +1498,6 @@
   ],
   "citations": [
     {
-      "claim": "The .str accessor applies a string operation to every value in a column.",
-      "sourceId": "pd-text",
-      "section": "String methods; splitting and replacing strings; pandas DataFrame.apply axis",
-      "targetKind": "step",
-      "targetId": "text-in-every-row"
-    },
-    {
-      "claim": "The .str accessor applies a string operation to every value in a column.",
-      "sourceId": "pd-apply",
-      "section": "axis=0 columns and axis=1 rows",
-      "targetKind": "step",
-      "targetId": "text-in-every-row"
-    },
-    {
-      "claim": "strip removes the outside whitespace and lower changes letter case. Neither adds or removes letters.",
-      "sourceId": "pd-text",
-      "section": "String methods; splitting and replacing strings; pandas DataFrame.apply axis",
-      "targetKind": "step",
-      "targetId": "clean-then-count"
-    },
-    {
-      "claim": "strip removes the outside whitespace and lower changes letter case. Neither adds or removes letters.",
-      "sourceId": "pd-apply",
-      "section": "axis=0 columns and axis=1 rows",
-      "targetKind": "step",
-      "targetId": "clean-then-count"
-    },
-    {
-      "claim": "Split ['Bay|east|harbour', 'Hill|west|dock'] once at '|' with expand=True. What does the second column hold?",
-      "sourceId": "pd-text",
-      "section": "String methods; splitting and replacing strings; pandas DataFrame.apply axis",
-      "targetKind": "step",
-      "targetId": "split-once"
-    },
-    {
-      "claim": "Split ['Bay|east|harbour', 'Hill|west|dock'] once at '|' with expand=True. What does the second column hold?",
-      "sourceId": "pd-apply",
-      "section": "axis=0 columns and axis=1 rows",
-      "targetKind": "step",
-      "targetId": "split-once"
-    },
-    {
-      "claim": "Splitting each of two strings once with expand=True gives a small table. How many cells does it hold?",
-      "sourceId": "pd-text",
-      "section": "String methods; splitting and replacing strings; pandas DataFrame.apply axis",
-      "targetKind": "step",
-      "targetId": "count-the-cells"
-    },
-    {
-      "claim": "Splitting each of two strings once with expand=True gives a small table. How many cells does it hold?",
-      "sourceId": "pd-apply",
-      "section": "axis=0 columns and axis=1 rows",
-      "targetKind": "step",
-      "targetId": "count-the-cells"
-    },
-    {
-      "claim": "map and apply call a function on each value or row, but a vectorised operation does the same in one step.",
-      "sourceId": "pd-text",
-      "section": "String methods; splitting and replacing strings; pandas DataFrame.apply axis",
-      "targetKind": "step",
-      "targetId": "a-function-per-value"
-    },
-    {
-      "claim": "map and apply call a function on each value or row, but a vectorised operation does the same in one step.",
-      "sourceId": "pd-apply",
-      "section": "axis=0 columns and axis=1 rows",
-      "targetKind": "step",
-      "targetId": "a-function-per-value"
-    },
-    {
-      "claim": "s.str.count(',') counts the commas in each value. One more than that is the number of items in a comma-separated list.",
-      "sourceId": "pd-text",
-      "section": "String methods; splitting and replacing strings; pandas DataFrame.apply axis",
-      "targetKind": "step",
-      "targetId": "count-the-items"
-    },
-    {
-      "claim": "s.str.count(',') counts the commas in each value. One more than that is the number of items in a comma-separated list.",
-      "sourceId": "pd-apply",
-      "section": "axis=0 columns and axis=1 rows",
-      "targetKind": "step",
-      "targetId": "count-the-items"
-    },
-    {
-      "claim": "df.apply(f, axis=1) calls f once for every row, and row['a'] reads that row's value in column a. A vectorised df['a'] * df['b'] gives the same result in one step.",
-      "sourceId": "pd-text",
-      "section": "String methods; splitting and replacing strings; pandas DataFrame.apply axis",
-      "targetKind": "step",
-      "targetId": "row-by-row"
-    },
-    {
-      "claim": "df.apply(f, axis=1) calls f once for every row, and row['a'] reads that row's value in column a. A vectorised df['a'] * df['b'] gives the same result in one step.",
-      "sourceId": "pd-apply",
-      "section": "axis=0 columns and axis=1 rows",
-      "targetKind": "step",
-      "targetId": "row-by-row"
-    },
-    {
       "claim": "5. strip removed the spaces, and lower kept every letter, leaving five characters.",
       "sourceId": "pd-text",
       "section": "String methods; splitting and replacing strings; pandas DataFrame.apply axis",
@@ -1590,34 +1596,6 @@
       "targetId": "python-text-and-transformations-7"
     },
     {
-      "claim": "2. Spaces and capitals are slips, not differences, so Bay appears once. In pandas you clean them with strip and lower.",
-      "sourceId": "pd-text",
-      "section": "String methods; splitting and replacing strings; pandas DataFrame.apply axis",
-      "targetKind": "question",
-      "targetId": "python-text-and-transformations-hook"
-    },
-    {
-      "claim": "2. Spaces and capitals are slips, not differences, so Bay appears once. In pandas you clean them with strip and lower.",
-      "sourceId": "pd-apply",
-      "section": "axis=0 columns and axis=1 rows",
-      "targetKind": "question",
-      "targetId": "python-text-and-transformations-hook"
-    },
-    {
-      "claim": "Nothing. It returns a new Series, so assign the result if you want to keep it.",
-      "sourceId": "pd-text",
-      "section": "String methods; splitting and replacing strings; pandas DataFrame.apply axis",
-      "targetKind": "question",
-      "targetId": "python-text-and-transformations-str-check"
-    },
-    {
-      "claim": "Nothing. It returns a new Series, so assign the result if you want to keep it.",
-      "sourceId": "pd-apply",
-      "section": "axis=0 columns and axis=1 rows",
-      "targetKind": "question",
-      "targetId": "python-text-and-transformations-str-check"
-    },
-    {
       "claim": "Later text may contain the separator too. Limiting the splits keeps it together.",
       "sourceId": "pd-text",
       "section": "String methods; splitting and replacing strings; pandas DataFrame.apply axis",
@@ -1686,6 +1664,160 @@
       "section": "axis=0 columns and axis=1 rows",
       "targetKind": "flashcard",
       "targetId": "python-text-and-transformations-card-2"
+    },
+    {
+      "claim": "Text is compared character by character, so stray spaces and capitals make entries differ; strip and lower make them consistent.",
+      "sourceId": "pd-text",
+      "section": "String methods; splitting and replacing strings; pandas DataFrame.apply axis",
+      "targetKind": "step",
+      "targetId": "same-shop-different-text"
+    },
+    {
+      "claim": "Text is compared character by character, so stray spaces and capitals make entries differ; strip and lower make them consistent.",
+      "sourceId": "pd-apply",
+      "section": "axis=0 columns and axis=1 rows",
+      "targetKind": "step",
+      "targetId": "same-shop-different-text"
+    },
+    {
+      "claim": "The .str accessor applies a string operation to every value in a column and returns a new Series.",
+      "sourceId": "pd-text",
+      "section": "String methods; splitting and replacing strings; pandas DataFrame.apply axis",
+      "targetKind": "step",
+      "targetId": "text-in-every-row"
+    },
+    {
+      "claim": "The .str accessor applies a string operation to every value in a column and returns a new Series.",
+      "sourceId": "pd-apply",
+      "section": "axis=0 columns and axis=1 rows",
+      "targetKind": "step",
+      "targetId": "text-in-every-row"
+    },
+    {
+      "claim": "strip removes the outside whitespace and lower changes letter case. Neither adds or removes letters.",
+      "sourceId": "pd-text",
+      "section": "String methods; splitting and replacing strings; pandas DataFrame.apply axis",
+      "targetKind": "step",
+      "targetId": "clean-then-count"
+    },
+    {
+      "claim": "strip removes the outside whitespace and lower changes letter case. Neither adds or removes letters.",
+      "sourceId": "pd-apply",
+      "section": "axis=0 columns and axis=1 rows",
+      "targetKind": "step",
+      "targetId": "clean-then-count"
+    },
+    {
+      "claim": "str.split with expand=True cuts each entry at a separator into columns, and n limits the number of splits.",
+      "sourceId": "pd-text",
+      "section": "String methods; splitting and replacing strings; pandas DataFrame.apply axis",
+      "targetKind": "step",
+      "targetId": "two-facts-one-cell"
+    },
+    {
+      "claim": "str.split with expand=True cuts each entry at a separator into columns, and n limits the number of splits.",
+      "sourceId": "pd-apply",
+      "section": "axis=0 columns and axis=1 rows",
+      "targetKind": "step",
+      "targetId": "two-facts-one-cell"
+    },
+    {
+      "claim": "Split ['Bay|east|harbour', 'Hill|west|dock'] once at '|' with expand=True. What does the second column hold?",
+      "sourceId": "pd-text",
+      "section": "String methods; splitting and replacing strings; pandas DataFrame.apply axis",
+      "targetKind": "step",
+      "targetId": "split-once"
+    },
+    {
+      "claim": "Split ['Bay|east|harbour', 'Hill|west|dock'] once at '|' with expand=True. What does the second column hold?",
+      "sourceId": "pd-apply",
+      "section": "axis=0 columns and axis=1 rows",
+      "targetKind": "step",
+      "targetId": "split-once"
+    },
+    {
+      "claim": "Splitting each of two strings once with expand=True gives a small table. How many cells does it hold?",
+      "sourceId": "pd-text",
+      "section": "String methods; splitting and replacing strings; pandas DataFrame.apply axis",
+      "targetKind": "step",
+      "targetId": "count-the-cells"
+    },
+    {
+      "claim": "Splitting each of two strings once with expand=True gives a small table. How many cells does it hold?",
+      "sourceId": "pd-apply",
+      "section": "axis=0 columns and axis=1 rows",
+      "targetKind": "step",
+      "targetId": "count-the-cells"
+    },
+    {
+      "claim": "Series.map calls a function on each value, and a vectorised operation does the same job in one step.",
+      "sourceId": "pd-text",
+      "section": "String methods; splitting and replacing strings; pandas DataFrame.apply axis",
+      "targetKind": "step",
+      "targetId": "a-rule-of-your-own"
+    },
+    {
+      "claim": "Series.map calls a function on each value, and a vectorised operation does the same job in one step.",
+      "sourceId": "pd-apply",
+      "section": "axis=0 columns and axis=1 rows",
+      "targetKind": "step",
+      "targetId": "a-rule-of-your-own"
+    },
+    {
+      "claim": "Series.map is a method of one Series, and it calls the function once for each value in that Series. Decide what the function receives each time.",
+      "sourceId": "pd-text",
+      "section": "String methods; splitting and replacing strings; pandas DataFrame.apply axis",
+      "targetKind": "step",
+      "targetId": "what-map-passes"
+    },
+    {
+      "claim": "Series.map is a method of one Series, and it calls the function once for each value in that Series. Decide what the function receives each time.",
+      "sourceId": "pd-apply",
+      "section": "axis=0 columns and axis=1 rows",
+      "targetKind": "step",
+      "targetId": "what-map-passes"
+    },
+    {
+      "claim": "s.str.count(',') counts the commas in each value. One more than that is the number of items in a comma-separated list.",
+      "sourceId": "pd-text",
+      "section": "String methods; splitting and replacing strings; pandas DataFrame.apply axis",
+      "targetKind": "step",
+      "targetId": "count-the-items"
+    },
+    {
+      "claim": "s.str.count(',') counts the commas in each value. One more than that is the number of items in a comma-separated list.",
+      "sourceId": "pd-apply",
+      "section": "axis=0 columns and axis=1 rows",
+      "targetKind": "step",
+      "targetId": "count-the-items"
+    },
+    {
+      "claim": "df.apply with axis=1 calls a function once per row, and column arithmetic gives the same result in one step.",
+      "sourceId": "pd-text",
+      "section": "String methods; splitting and replacing strings; pandas DataFrame.apply axis",
+      "targetKind": "step",
+      "targetId": "rows-not-single-values"
+    },
+    {
+      "claim": "df.apply with axis=1 calls a function once per row, and column arithmetic gives the same result in one step.",
+      "sourceId": "pd-apply",
+      "section": "axis=0 columns and axis=1 rows",
+      "targetKind": "step",
+      "targetId": "rows-not-single-values"
+    },
+    {
+      "claim": "df.apply(f, axis=1) calls f once for every row, and row['a'] reads that row's value in column a. A vectorised df['a'] * df['b'] gives the same result in one step.",
+      "sourceId": "pd-text",
+      "section": "String methods; splitting and replacing strings; pandas DataFrame.apply axis",
+      "targetKind": "step",
+      "targetId": "row-by-row"
+    },
+    {
+      "claim": "df.apply(f, axis=1) calls f once for every row, and row['a'] reads that row's value in column a. A vectorised df['a'] * df['b'] gives the same result in one step.",
+      "sourceId": "pd-apply",
+      "section": "axis=0 columns and axis=1 rows",
+      "targetKind": "step",
+      "targetId": "row-by-row"
     }
   ]
 }

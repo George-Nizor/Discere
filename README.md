@@ -11,7 +11,7 @@ It keeps learner state in SQLite and renders its teaching visuals deterministica
 the learner's own Claude Code, an OpenAI-compatible endpoint, the local Codex CLI, or an explicit
 ChatGPT handoff.
 
-Version 1.1.3 (from `package.json`).
+Version 1.2.0 (from `package.json`).
 
 ## Install it
 
@@ -63,8 +63,7 @@ from `content/` (every directory with a `bundle.json` is a course; nothing in th
 - **Computing:** How Computers Solve Problems, Python for Data Analysis, SQL from Rows to Reports.
 - **Science and engineering:** Physics, Chemistry, Biology, Astronomy, Electronics Foundations,
   Engineering.
-- **Humanities and social science:** Economics, Psychology, Philosophy, English, and The Rise of the
-  Roman Empire.
+- **Humanities and social science:** Economics, Psychology, Philosophy and English.
 
 A lesson is a sequence of addressed stages (explainer, interactive visual, questions, optional essay,
 review, completion), assembled from the lesson bundle, so a stage appears only when the content

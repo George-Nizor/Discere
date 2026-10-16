@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { CourseBundleSchema } from "@discere/contracts";
 import { bundleDigest, assertEditorialApproval, validateCourseBundle } from "../src/index.js";
 import { restorePreGuidanceBundle } from "./helpers/guidance-history.js";
-import { historicalBundle } from "./helpers/published-history.js";
+import { historicalBundle, historyFileName, SUPERSEDED_PUBLICATIONS } from "./helpers/published-history.js";
 const read = (p: string) =>
   JSON.parse(readFileSync(new URL("../../../" + p, import.meta.url), "utf8"));
 const baseline = read("docs/quality-pass/content-baseline.json") as {
@@ -17,8 +17,16 @@ describe("current-library quality release", () => {
       // History is checked on the bundle that release published; approval on the current one.
       const bundle = CourseBundleSchema.parse(historicalBundle(entry.name));
       if (bundle.course.catalogueVisibility === "archived") {
+        // An archived course is held to the bytes it was published with: the current file, or
+        // the copy kept in review/history once the course has moved on.
+        const pinned = SUPERSEDED_PUBLICATIONS[entry.name];
         const raw = readFileSync(
-          new URL("../../../content/" + entry.name + "/bundle.json", import.meta.url),
+          new URL(
+            "../../../content/" +
+              entry.name +
+              (pinned ? "/review/history/" + historyFileName(pinned) + "-bundle.json" : "/bundle.json"),
+            import.meta.url,
+          ),
         );
         expect(createHash("sha256").update(raw).digest("hex")).toBe(entry.sha256);
       } else expect(bundleDigest(restorePreGuidanceBundle(entry.name, bundle))).toBe(entry.sha256);

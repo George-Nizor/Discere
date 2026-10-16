@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createApp, type DiscereApp } from "../src/app.js";
 import { buildSearchIndex, searchLessons } from "../src/search.js";
+import { archivedContentRoot } from "./helpers/archived-content.js";
 
 let service: DiscereApp;
 beforeAll(async () => {
@@ -61,8 +62,31 @@ describe("library search", () => {
   });
 
   it("leaves archived courses out", async () => {
-    const { lessons } = await search("augustus");
-    expect(lessons.every((lesson) => lesson.courseId !== "roman-empire")).toBe(true);
+    const fixture = archivedContentRoot("electronics-foundations", ["maths-foundations"]);
+    const archived = await createApp({
+      dbPath: ":memory:",
+      migrate: true,
+      contentRoot: fixture.root,
+    });
+    try {
+      // The live catalogue lists Electronics, so it is found there.
+      expect(
+        (await search("resistance")).lessons.some(
+          (lesson) => lesson.courseId === "electronics-foundations",
+        ),
+      ).toBe(true);
+      const found = (
+        await archived.app.inject({ method: "GET", url: "/api/search?q=resistance" })
+      ).json() as Found;
+      expect(found.lessons.every((lesson) => lesson.courseId !== "electronics-foundations")).toBe(
+        true,
+      );
+      expect(archived.content.bundles).toHaveLength(2);
+      expect(archived.content.listedBundles).toHaveLength(1);
+    } finally {
+      await archived.app.close();
+      fixture.remove();
+    }
   });
 
   it("reports the library's course count on the health probe", async () => {

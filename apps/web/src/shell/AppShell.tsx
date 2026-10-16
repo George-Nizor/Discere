@@ -11,7 +11,6 @@ import { FxLayer } from "../fx/FxLayer.js";
 import { GameWatcher } from "../game/GameWatcher.js";
 import { MascotPet } from "../mascot/MascotPet.js";
 import { useExperience } from "../study/experience.js";
-import { isRomanReferencePath, RomanReferenceNav } from "../recovery/RomanReference.js";
 import { ArchivedNotice } from "./ArchivedNotice.js";
 import { EngineBanner } from "./EngineBanner.js";
 import { NavRail } from "./NavRail.js";
@@ -45,9 +44,7 @@ export function AppShell() {
     previous.current = location.pathname;
     return () => entrance?.cancel();
   }, [location.pathname, location.key, navigationType, reduced]);
-  const isReference = isRomanReferencePath(location.pathname);
   const lessonPath = location.pathname.match(/^(\/courses\/[^/]+\/lessons\/[^/]+)/)?.[1];
-  const recoveredShell = isReference;
   const focusedLesson =
     (Boolean(lessonPath) && !location.pathname.endsWith("/notebook")) ||
     location.pathname.startsWith("/course-checks/") ||
@@ -57,21 +54,13 @@ export function AppShell() {
     location.pathname.startsWith("/rust/");
   return (
     <div
-      className={
-        recoveredShell
-          ? "app-shell app-shell--recovery"
-          : "app-shell app-shell--learning" + (focusedLesson ? " app-shell--lesson" : "")
-      }
+      className={"app-shell app-shell--learning" + (focusedLesson ? " app-shell--lesson" : "")}
     >
       <AmbientBackdrop intensity={focusedLesson ? 0.55 : 1} />
       <a className="skip-link" href="#stage">
         Skip to the main content
       </a>
-      {recoveredShell ? (
-        <RomanReferenceNav {...(lessonPath ? { notebookPath: `${lessonPath}/notebook` } : {})} />
-      ) : focusedLesson ? null : (
-        <NavRail />
-      )}
+      {focusedLesson ? null : <NavRail />}
       <div
         className="navigation-progress"
         data-pending={navigation.state !== "idle"}
@@ -83,8 +72,7 @@ export function AppShell() {
         <Outlet />
       </div>
       <GameWatcher />
-      {recoveredShell ||
-      location.pathname === "/" ||
+      {location.pathname === "/" ||
       // The Rust workspace fills the screen; a mascot there would sit on the task or the code.
       /^\/rust(?:-projects)?\//.test(location.pathname) ||
       /completion$/.test(decodeURIComponent(location.pathname)) ? null : (

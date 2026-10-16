@@ -23,6 +23,7 @@ import { PythonDiagram } from "./PythonDiagram.js";
 import { QueryDiagram } from "./QueryDiagram.js";
 import { RustDiagram } from "./RustDiagram.js";
 import { StatisticsDiagram } from "./StatisticsDiagram.js";
+import { SvgFigure } from "./SvgFigure.js";
 
 function format(value: number): string {
   return Number(value.toFixed(4)).toString();
@@ -390,6 +391,8 @@ export function LearningDiagram({
   showResults?: boolean;
 } & CandidateProps) {
   switch (spec.type) {
+    case "svg_figure":
+      return <SvgFigure key={JSON.stringify(spec)} spec={spec} />;
     case "biology_explorer":
       return <BiologyDiagram key={JSON.stringify(spec)} spec={spec} showResults={showResults} />;
     case "chemistry_explorer":

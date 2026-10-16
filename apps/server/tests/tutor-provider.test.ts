@@ -156,7 +156,7 @@ describe("direct tutor generation", () => {
   });
 
   it("rejects a generated reply that leaks the hidden answer in Coach mode", async () => {
-    const leak = { ...CLEAN_REPLY, answer: "The current is 0.05 A, so the loop carries 0.05 A." };
+    const leak = { ...CLEAN_REPLY, answer: "The current is 0.025 A, so the loop carries 0.025 A." };
     // The style pass is given the same leaking text back, so the repair cannot succeed.
     useFakeCodex([
       { output: leak },
@@ -183,7 +183,7 @@ describe("direct tutor generation", () => {
 
     expect(response.statusCode).toBe(502);
     expect(response.json().code).toBe("TUTOR_WRITING_GATE");
-    expect(response.body).not.toContain("0.05");
+    expect(response.body).not.toContain("0.025");
   });
 
   it("runs the generated reply through the companion source allowlist", async () => {

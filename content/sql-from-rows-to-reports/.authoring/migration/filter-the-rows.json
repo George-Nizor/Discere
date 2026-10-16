@@ -2,20 +2,8 @@
   "lessonId": "filter-the-rows",
   "courseId": "sql-from-rows-to-reports",
   "migrationNotes": [
-    "step 'predict': the old title \"Keep rows that pass\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
-    "step 'predict': kind hook → predict; check the order of teaching and asking still fits (style guide §2).",
-    "step 'work': the old title \"Both conditions or either\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
-    "step 'work': write workedSteps from the worked answer (one line per move, one self-explanation prompt), a headline naming the problem, and recompute every number.",
-    "step 'check': the old title \"Decide on the boundaries\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
-    "step 'check': kind check → try; check the order of teaching and asking still fits (style guide §2).",
-    "step 'transfer': the old title \"Match a set or a pattern\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
-    "intro: write the hook (a puzzle the learner can do from what they bring, never a definition), the promise (≤ 25 words, “By the end you'll …”) and the time.",
-    "recap: write the key idea (the promise, kept), the learner's own results, and the one-line bridge to the next lesson.",
-    "skill check: the lesson has 2 quiz item(s); it needs exactly 3, each on something this lesson taught.",
-    "questions: replace every TODO onCorrect (≤ 25 words, states the idea), tag each skill, add misconceptions for predictable wrong answers (the feedback must not state the key).",
-    "vocabulary: give each explain step introducesTerms; no prompt may use a term before the step that introduces it.",
-    "add an explain step before any question that needs a new word or symbol; add a transfer if the lesson has none.",
-    "citations: retarget the seeded citations to the new step and question ids, and give every step, question and flashcard at least one (same sourceIds; the claim is what that screen asserts)."
+    "Spine: a bookshop sign is a test each book passes or fails, and we write that test for the shop's orders, then meet its awkward cases in turn (a missing amount, two tests at once, a value on the line, a list of values).",
+    "Left out of the lesson (still in the course): sql-filter-the-rows-8 (WHERE amount > 50 over 30, 60, NULL and 90). The first teaching screens and sql-filter-the-rows-1 cover the same idea."
   ],
   "lesson": {
     "id": "filter-the-rows",
@@ -26,49 +14,451 @@
     "title": "Write the condition you mean",
     "steps": [
       {
-        "id": "keep-what-is-true",
+        "id": "a-test-for-each-row",
         "kind": "explain",
         "blocks": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "headline": "A test that each row passes or fails",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "A condition is a test on each row, such as amount > 50. WHERE keeps the rows that pass and drops the rest."
+            "text": "Take a shop sign that says 'Under £10'. It is a test you can apply to any book, and every book either passes or fails it. A book priced at exactly 10 pounds fails, because 10 is not under 10. A test like that is called a condition."
           },
           {
             "kind": "paragraph",
-            "text": "A comparison with an unknown amount is never true, so those rows are dropped too. To find unknown amounts, write IS NULL."
+            "text": "In a query the condition goes after WHERE, and the database keeps the rows that pass it and drops the rest. WHERE amount > 50 keeps the orders worth more than 50. The comparison signs are = for equal, <> for not equal, > and < for greater and less, and >= and <= for greater or equal and less or equal. The two signs with an equals sign include the line itself. The picture sets two of them side by side."
           }
         ],
-        "reveal": [],
-        "visualStateId": "",
-        "checkQuestionId": "sql-filter-the-rows-8",
-        "activityId": "",
-        "headline": "WHERE keeps only the rows whose condition is true.",
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "Both queries read the same orders. The first keeps the two orders worth exactly 20, and the second drops them because 20 is not more than 20. Which sign you want depends on the sentence in your head. 'At least' and 'at most' include the line, while 'more than' and 'less than' leave it out."
+          }
+        ],
         "introducesTerms": [
-          "WHERE",
-          "condition",
-          "IS NULL"
+          "condition"
+        ],
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "orders",
+              "columns": [
+                "id",
+                "customer_id",
+                "item",
+                "amount",
+                "status",
+                "day"
+              ],
+              "rows": [
+                {
+                  "id": "orders-0",
+                  "cells": [
+                    101,
+                    1,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-01"
+                  ]
+                },
+                {
+                  "id": "orders-1",
+                  "cells": [
+                    102,
+                    1,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-2",
+                  "cells": [
+                    103,
+                    2,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-3",
+                  "cells": [
+                    104,
+                    2,
+                    "Lamp",
+                    40,
+                    "pending",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-4",
+                  "cells": [
+                    105,
+                    3,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-5",
+                  "cells": [
+                    106,
+                    3,
+                    "Lamp",
+                    null,
+                    "pending",
+                    "2026-09-04"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "At least 20",
+              "sql": "SELECT id, amount FROM orders WHERE amount >= 20 ORDER BY id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "amount"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      101,
+                      80
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      102,
+                      20
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      103,
+                      80
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      104,
+                      40
+                    ]
+                  },
+                  {
+                    "id": "result-4",
+                    "cells": [
+                      105,
+                      20
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "More than 20",
+              "sql": "SELECT id, amount FROM orders WHERE amount > 20 ORDER BY id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "amount"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      101,
+                      80
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      103,
+                      80
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      104,
+                      40
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        }
+      },
+      {
+        "id": "the-bookshop-sign",
+        "kind": "try",
+        "blocks": [],
+        "visualStateId": "",
+        "checkQuestionId": "sql-filter-the-rows-7",
+        "activityId": "",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Each book on the shelf either passes the sign's test or fails it."
+          }
         ]
+      },
+      {
+        "id": "rows-with-no-amount",
+        "kind": "explain",
+        "blocks": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "headline": "Rows with no known amount",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "One order in the shop has no amount at all. Order 106 holds NULL, and a test on an unknown value can't come out true, because the database has no way to show that an unknown number is above or below anything. WHERE keeps only the rows whose condition is true, so a row with a missing amount is dropped by every test on that amount, including tests such as amount <= 40 that look as if it might survive."
+          },
+          {
+            "kind": "paragraph",
+            "text": "To find the missing amounts themselves you need a different test. amount = NULL doesn't work, because nothing is ever equal to an unknown value, not even another unknown one. SQL has its own wording for this: amount IS NULL keeps the rows whose amount is missing, and amount IS NOT NULL keeps the rest."
+          }
+        ],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "Look for order 106 in the picture. It is missing from the first result, and it appears only when the condition asks for a missing amount directly."
+          }
+        ],
+        "introducesTerms": [
+          "IS NULL"
+        ],
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "orders",
+              "columns": [
+                "id",
+                "customer_id",
+                "item",
+                "amount",
+                "status",
+                "day"
+              ],
+              "rows": [
+                {
+                  "id": "orders-0",
+                  "cells": [
+                    101,
+                    1,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-01"
+                  ]
+                },
+                {
+                  "id": "orders-1",
+                  "cells": [
+                    102,
+                    1,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-2",
+                  "cells": [
+                    103,
+                    2,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-3",
+                  "cells": [
+                    104,
+                    2,
+                    "Lamp",
+                    40,
+                    "pending",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-4",
+                  "cells": [
+                    105,
+                    3,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-5",
+                  "cells": [
+                    106,
+                    3,
+                    "Lamp",
+                    null,
+                    "pending",
+                    "2026-09-04"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Amount at most 40",
+              "sql": "SELECT id, amount FROM orders WHERE amount <= 40 ORDER BY id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "amount"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      102,
+                      20
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      104,
+                      40
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      105,
+                      20
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "Missing amount",
+              "sql": "SELECT id, amount FROM orders WHERE amount IS NULL ORDER BY id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "amount"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      106,
+                      null
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-2",
+              "label": "Amount known",
+              "sql": "SELECT id, amount FROM orders WHERE amount IS NOT NULL ORDER BY id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "amount"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      101,
+                      80
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      102,
+                      20
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      103,
+                      80
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      104,
+                      40
+                    ]
+                  },
+                  {
+                    "id": "result-4",
+                    "cells": [
+                      105,
+                      20
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        }
       },
       {
         "id": "at-least-forty",
         "kind": "predict",
         "blocks": [],
-        "lead": [
-          {
-            "kind": "paragraph",
-            "text": "Two queries filter the same orders, with a higher threshold in the second. One amount is unknown."
-          }
-        ],
-        "reveal": [
-          {
-            "kind": "paragraph",
-            "text": "You tested each amount against the boundary, which counts. The unknown amount dropped out because a comparison with it is never true."
-          }
-        ],
         "visualStateId": "",
         "checkQuestionId": "sql-filter-the-rows-1",
         "activityId": "",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Of the six orders, one has no known amount."
+          }
+        ],
         "diagram": {
           "type": "relational_query",
           "inputs": [
@@ -222,15 +612,29 @@
         "answerVisibility": "hidden-until-response"
       },
       {
-        "id": "paid-or-large",
-        "kind": "worked_example",
+        "id": "two-tests-at-once",
+        "kind": "explain",
         "blocks": [],
-        "lead": [],
-        "reveal": [],
         "visualStateId": "",
         "checkQuestionId": "",
         "activityId": "",
-        "headline": "Keep orders that are paid or worth at least 40.",
+        "headline": "Two tests at once",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "A shop owner rarely wants a single test. She might want the orders that are paid and also worth at least 40, or the orders that are paid or worth at least 40. Two conditions can be joined into one rule with AND and OR. With AND a row has to pass both tests, and with OR a row has to pass at least one of them."
+          },
+          {
+            "kind": "paragraph",
+            "text": "That makes AND the stricter word. Adding a test with AND can only remove rows, because each row has more to satisfy, while adding a test with OR can only let more rows in. A missing amount still can't pass the amount test, so a row with one survives an OR only by passing the other test."
+          }
+        ],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "Order 106 shows the difference in the picture. It is a Lamp with no known amount, so it fails the AND query. It appears in the OR query, because it passes the item test."
+          }
+        ],
         "diagram": {
           "type": "relational_query",
           "inputs": [
@@ -317,30 +721,22 @@
           "queries": [
             {
               "id": "query-0",
-              "label": "Both conditions",
-              "sql": "SELECT id, amount, status FROM orders WHERE status = 'paid' AND amount >= 40 ORDER BY id;",
+              "label": "Lamp AND at least 40",
+              "sql": "SELECT id, item, amount FROM orders WHERE item = 'Lamp' AND amount >= 40 ORDER BY id;",
               "result": {
                 "name": "Result",
                 "columns": [
                   "id",
-                  "amount",
-                  "status"
+                  "item",
+                  "amount"
                 ],
                 "rows": [
                   {
                     "id": "result-0",
                     "cells": [
-                      101,
-                      80,
-                      "paid"
-                    ]
-                  },
-                  {
-                    "id": "result-1",
-                    "cells": [
-                      103,
-                      80,
-                      "paid"
+                      104,
+                      "Lamp",
+                      40
                     ]
                   }
                 ]
@@ -348,100 +744,68 @@
             },
             {
               "id": "query-1",
-              "label": "Either condition",
-              "sql": "SELECT id, amount, status FROM orders WHERE status = 'paid' OR amount >= 40 ORDER BY id;",
+              "label": "Lamp OR at least 40",
+              "sql": "SELECT id, item, amount FROM orders WHERE item = 'Lamp' OR amount >= 40 ORDER BY id;",
               "result": {
                 "name": "Result",
                 "columns": [
                   "id",
-                  "amount",
-                  "status"
+                  "item",
+                  "amount"
                 ],
                 "rows": [
                   {
                     "id": "result-0",
                     "cells": [
                       101,
-                      80,
-                      "paid"
+                      "Desk",
+                      80
                     ]
                   },
                   {
                     "id": "result-1",
                     "cells": [
-                      102,
-                      20,
-                      "paid"
+                      103,
+                      "Desk",
+                      80
                     ]
                   },
                   {
                     "id": "result-2",
                     "cells": [
-                      103,
-                      80,
-                      "paid"
+                      104,
+                      "Lamp",
+                      40
                     ]
                   },
                   {
                     "id": "result-3",
                     "cells": [
-                      104,
-                      40,
-                      "pending"
-                    ]
-                  },
-                  {
-                    "id": "result-4",
-                    "cells": [
-                      105,
-                      20,
-                      "paid"
+                      106,
+                      "Lamp",
+                      null
                     ]
                   }
                 ]
               }
             }
           ],
-          "initialQueryId": "query-1"
-        },
-        "answerVisibility": "hidden-until-response",
-        "workedSteps": [
-          {
-            "text": "Keep every row that passes the first test, status = 'paid'.",
-            "math": "101, 102, 103, 105"
-          },
-          {
-            "text": "Add rows that pass the second test and are not kept yet.",
-            "math": "104",
-            "selfExplain": {
-              "questionId": "sql-filter-the-rows-9"
-            }
-          },
-          {
-            "text": "Order 106 is pending and its amount is unknown, so it passes neither test.",
-            "math": "101, 102, 103, 104, 105"
-          }
-        ]
+          "initialQueryId": "query-0"
+        }
       },
       {
         "id": "paid-and-large",
         "kind": "try",
         "blocks": [],
-        "lead": [
-          {
-            "kind": "paragraph",
-            "text": "AND is stricter than OR. A row must pass every test joined by AND."
-          }
-        ],
-        "reveal": [
-          {
-            "kind": "paragraph",
-            "text": "You kept only rows that passed both tests. Adding a test with AND can only remove rows."
-          }
-        ],
         "visualStateId": "",
         "checkQuestionId": "sql-filter-the-rows-2",
         "activityId": "",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "A row must pass every test that AND joins."
+          }
+        ],
         "diagram": {
           "type": "relational_query",
           "inputs": [
@@ -618,24 +982,43 @@
         "answerVisibility": "hidden-until-response"
       },
       {
-        "id": "on-the-line",
+        "id": "paid-or-large",
         "kind": "predict",
         "blocks": [],
+        "visualStateId": "",
+        "checkQuestionId": "sql-filter-the-rows-9",
+        "activityId": "",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "Boundaries decide close calls. Compare a range that includes its ends with one that leaves them out."
+            "text": "With OR, a row stays when either test is true."
           }
-        ],
-        "reveal": [
+        ]
+      },
+      {
+        "id": "on-the-line",
+        "kind": "explain",
+        "blocks": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "headline": "On the line and between lines",
+        "lead": [
           {
             "kind": "paragraph",
-            "text": "You decided what happens to an amount exactly on a boundary. BETWEEN keeps it. A strict comparison drops it."
+            "text": "Back to the line itself. A range such as 'from 20 to 40' has two ends, and the question is whether the ends count. BETWEEN 20 AND 40 includes both of them, so it means the same as amount >= 20 AND amount <= 40. Writing amount > 20 AND amount < 40 leaves both ends out."
+          },
+          {
+            "kind": "paragraph",
+            "text": "Say the rule aloud before you write it. 'From 20 to 40' and 'between 20 and 40' usually mean that the ends count, while 'over 20 and under 40' means they don't. The comparison signs are the exact version of that wording. The picture runs both versions over the shop's orders."
           }
         ],
-        "visualStateId": "",
-        "checkQuestionId": "sql-filter-the-rows-3",
-        "activityId": "",
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "As before, an order with a missing amount passes neither query. The ends matter whenever a value can land exactly on one, and in the shop several amounts do."
+          }
+        ],
         "diagram": {
           "type": "relational_query",
           "inputs": [
@@ -722,7 +1105,7 @@
           "queries": [
             {
               "id": "query-0",
-              "label": "Range A",
+              "label": "Ends counted",
               "sql": "SELECT id, amount FROM orders WHERE amount BETWEEN 20 AND 40 ORDER BY id;",
               "result": {
                 "name": "Result",
@@ -757,7 +1140,7 @@
             },
             {
               "id": "query-1",
-              "label": "Range B",
+              "label": "Ends left out",
               "sql": "SELECT id, amount FROM orders WHERE amount > 20 AND amount < 40 ORDER BY id;",
               "result": {
                 "name": "Result",
@@ -770,23 +1153,46 @@
             }
           ],
           "initialQueryId": "query-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        }
       },
       {
-        "id": "a-list-of-values",
-        "kind": "transfer",
+        "id": "on-the-line-check",
+        "kind": "predict",
         "blocks": [],
+        "visualStateId": "",
+        "checkQuestionId": "sql-filter-the-rows-3",
+        "activityId": "",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "A list of accepted values is another kind of condition. IN ('Book', 'Lamp') keeps a row whose item is either name. An unknown amount does not change an item."
+            "text": "Compare a range that counts its ends with one that leaves them out."
+          }
+        ]
+      },
+      {
+        "id": "a-list-of-values",
+        "kind": "explain",
+        "blocks": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "headline": "A list of values",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Sometimes the condition isn't a range. The shop might want the orders for Books or Lamps. One way is item = 'Book' OR item = 'Lamp'. A shorter way is IN, which keeps a row whose value matches anything in a list, as in item IN ('Book', 'Lamp'). Text goes inside single quotes."
+          },
+          {
+            "kind": "paragraph",
+            "text": "The picture shows two lists run over the same orders."
           }
         ],
-        "reveal": [],
-        "visualStateId": "",
-        "checkQuestionId": "sql-filter-the-rows-4",
-        "activityId": "",
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "This condition looks at the item, so the unknown amount on order 106 makes no difference to it. The order is a Lamp, and it passes. Conditions on different columns don't affect each other, which is why a missing amount matters only to tests that read the amount."
+          }
+        ],
         "diagram": {
           "type": "relational_query",
           "inputs": [
@@ -915,8 +1321,151 @@
             },
             {
               "id": "query-1",
-              "label": "Starts with B",
-              "sql": "SELECT id, item FROM orders WHERE item LIKE 'B%' ORDER BY id;",
+              "label": "Desk or Lamp",
+              "sql": "SELECT id, item FROM orders WHERE item IN ('Desk', 'Lamp') ORDER BY id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "id",
+                  "item"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      101,
+                      "Desk"
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      103,
+                      "Desk"
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      104,
+                      "Lamp"
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      106,
+                      "Lamp"
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        }
+      },
+      {
+        "id": "a-list-check",
+        "kind": "transfer",
+        "blocks": [],
+        "visualStateId": "",
+        "checkQuestionId": "sql-filter-the-rows-4",
+        "activityId": "",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "A list of accepted values is another kind of condition."
+          }
+        ],
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "orders",
+              "columns": [
+                "id",
+                "customer_id",
+                "item",
+                "amount",
+                "status",
+                "day"
+              ],
+              "rows": [
+                {
+                  "id": "orders-0",
+                  "cells": [
+                    101,
+                    1,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-01"
+                  ]
+                },
+                {
+                  "id": "orders-1",
+                  "cells": [
+                    102,
+                    1,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-2",
+                  "cells": [
+                    103,
+                    2,
+                    "Desk",
+                    80,
+                    "paid",
+                    "2026-09-02"
+                  ]
+                },
+                {
+                  "id": "orders-3",
+                  "cells": [
+                    104,
+                    2,
+                    "Lamp",
+                    40,
+                    "pending",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-4",
+                  "cells": [
+                    105,
+                    3,
+                    "Book",
+                    20,
+                    "paid",
+                    "2026-09-03"
+                  ]
+                },
+                {
+                  "id": "orders-5",
+                  "cells": [
+                    106,
+                    3,
+                    "Lamp",
+                    null,
+                    "pending",
+                    "2026-09-04"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Book or Lamp",
+              "sql": "SELECT id, item FROM orders WHERE item IN ('Book', 'Lamp') ORDER BY id;",
               "result": {
                 "name": "Result",
                 "columns": [
@@ -934,15 +1483,29 @@
                   {
                     "id": "result-1",
                     "cells": [
+                      104,
+                      "Lamp"
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
                       105,
                       "Book"
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      106,
+                      "Lamp"
                     ]
                   }
                 ]
               }
             },
             {
-              "id": "query-2",
+              "id": "query-1",
               "label": "Missing amount",
               "sql": "SELECT id, amount FROM orders WHERE amount IS NULL ORDER BY id;",
               "result": {
@@ -997,23 +1560,30 @@
         "blocks": [
           {
             "kind": "paragraph",
-            "text": "A bookshop sign says 'Books at least £20'. The shelf holds books priced 5, 12, 20, 25 and 30 pounds."
+            "text": "A bookshop puts a sign on one shelf. It says 'Books at least £20', and the shelf holds books priced at 5, 12, 20, 25 and 30 pounds. A customer reads the sign and works out which of the books it covers."
+          },
+          {
+            "kind": "paragraph",
+            "text": "The sign is a test, and each book either passes it or doesn't. Most books are clear. The book at exactly 20 pounds is the one that needs a moment's thought, because it sits on the line that the test draws."
+          },
+          {
+            "kind": "paragraph",
+            "text": "A query carries tests like this, and it can apply one to a table of many thousands of orders as easily as to a shelf of five books. This lesson shows how to write the test you mean. The hard cases are the value that sits exactly on the line and the order whose price nobody knows. It also shows how to join two tests into one rule."
           }
-        ],
-        "questionId": "sql-filter-the-rows-7"
+        ]
       },
       "promise": "By the end you'll write conditions that keep exactly the rows you mean, including at the boundary and for unknown values.",
-      "estimatedMinutes": 10
+      "estimatedMinutes": 12
     },
     "recap": {
       "keyIdea": "WHERE keeps the rows whose condition is true. Choose the comparison, the boundary and AND or OR for exactly the rows you mean.",
       "blocks": [
         {
           "kind": "paragraph",
-          "text": "You counted 3 orders of at least 40 and 2 that were paid and large. Unknown amounts passed no comparison."
+          "text": "Back at the shelf, the sign's test became a condition you could write. You counted 3 orders of at least 40 and 2 that were paid and large, and you saw that an order with an unknown amount passed no comparison."
         }
       ],
-      "nextHook": "Next, put the rows you kept into a useful order."
+      "nextHook": "A condition decides which rows stay, and it says nothing about their order. Five runners and a stopwatch begin the next lesson, because a medal depends on who finished first."
     },
     "calculator": "off",
     "taughtSkills": [
@@ -1034,9 +1604,9 @@
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
-        "Read only known amounts.",
-        "Include the boundary amount 40.",
-        "Inspect orders 101, 103 and 104; each passes the inclusive threshold."
+        "Which amounts are 40 or more?",
+        "A comparison with an unknown amount is never true.",
+        "Go down the amount column and count each known amount that is 40 or higher. An amount of exactly 40 counts."
       ],
       "answerAuthority": {
         "kind": "numeric",
@@ -1079,9 +1649,9 @@
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
-        "Each row must satisfy both tests.",
-        "Exclude pending 104 and the two smaller paid orders.",
-        "Orders 101 and 103 pass both conditions; the other known large order is pending."
+        "A row has to pass both tests, the one on status and the one on amount.",
+        "List the paid orders first, then check each of them against the amount test.",
+        "Cross out any paid order with an amount below 40."
       ],
       "answerAuthority": {
         "kind": "numeric",
@@ -1182,8 +1752,8 @@
       "difficulty": 1,
       "hints": [
         "An item can match either value in the list.",
-        "The missing amount does not stop its item from being Lamp.",
-        "The Book rows are 102 and 105; the Lamp rows are 104 and 106."
+        "An unknown amount doesn't stop an item from matching.",
+        "Count the Book orders and the Lamp orders separately, then add the two counts."
       ],
       "answerAuthority": {
         "kind": "numeric",
@@ -1324,7 +1894,7 @@
       "conceptIds": [
         "sql-filter-the-rows"
       ],
-      "prompt": "How many books does the sign cover?",
+      "prompt": "A bookshop sign says 'Books at least £20'. The shelf holds books priced 5, 12, 20, 25 and 30 pounds. How many books does the sign cover?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -1420,7 +1990,7 @@
       "conceptIds": [
         "sql-filter-the-rows"
       ],
-      "prompt": "Why is order 102 kept when its amount is only 20?",
+      "prompt": "A query keeps the orders where status = 'paid' OR amount >= 40. Order 102 is paid and its amount is only 20. Why is it kept?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -1522,48 +2092,6 @@
   ],
   "citations": [
     {
-      "claim": "WHERE keeps only the rows whose condition is true.",
-      "sourceId": "sqlite-expr",
-      "section": "SQL Expressions 2: comparisons and NULL; 5: LIKE; 6: BETWEEN; 8: IN",
-      "targetKind": "step",
-      "targetId": "keep-what-is-true"
-    },
-    {
-      "claim": "Two queries filter the same orders, with a higher threshold in the second. One amount is unknown.",
-      "sourceId": "sqlite-expr",
-      "section": "SQL Expressions 2: comparisons and NULL; 5: LIKE; 6: BETWEEN; 8: IN",
-      "targetKind": "step",
-      "targetId": "at-least-forty"
-    },
-    {
-      "claim": "Keep orders that are paid or worth at least 40.",
-      "sourceId": "sqlite-expr",
-      "section": "SQL Expressions 2: comparisons and NULL; 5: LIKE; 6: BETWEEN; 8: IN",
-      "targetKind": "step",
-      "targetId": "paid-or-large"
-    },
-    {
-      "claim": "AND is stricter than OR. A row must pass every test joined by AND.",
-      "sourceId": "sqlite-expr",
-      "section": "SQL Expressions 2: comparisons and NULL; 5: LIKE; 6: BETWEEN; 8: IN",
-      "targetKind": "step",
-      "targetId": "paid-and-large"
-    },
-    {
-      "claim": "Boundaries decide close calls. Compare a range that includes its ends with one that leaves them out.",
-      "sourceId": "sqlite-expr",
-      "section": "SQL Expressions 2: comparisons and NULL; 5: LIKE; 6: BETWEEN; 8: IN",
-      "targetKind": "step",
-      "targetId": "on-the-line"
-    },
-    {
-      "claim": "A list of accepted values is another kind of condition. IN ('Book', 'Lamp') keeps a row whose item is either name. An unknown amount does not change an item.",
-      "sourceId": "sqlite-expr",
-      "section": "SQL Expressions 2: comparisons and NULL; 5: LIKE; 6: BETWEEN; 8: IN",
-      "targetKind": "step",
-      "targetId": "a-list-of-values"
-    },
-    {
       "claim": "Orders 101, 103 and 104 satisfy the comparison; 106 has a missing amount.",
       "sourceId": "sqlite-expr",
       "section": "SQL Expressions 2: comparisons and NULL; 5: LIKE; 6: BETWEEN; 8: IN",
@@ -1613,13 +2141,6 @@
       "targetId": "sql-filter-the-rows-7"
     },
     {
-      "claim": "60 and 90 are greater than 50. 30 is not, and a comparison with NULL is never true.",
-      "sourceId": "sqlite-expr",
-      "section": "SQL Expressions 2: comparisons and NULL; 5: LIKE; 6: BETWEEN; 8: IN",
-      "targetKind": "question",
-      "targetId": "sql-filter-the-rows-8"
-    },
-    {
       "claim": "Order 102 is paid. With OR, passing one test is enough.",
       "sourceId": "sqlite-expr",
       "section": "SQL Expressions 2: comparisons and NULL; 5: LIKE; 6: BETWEEN; 8: IN",
@@ -1646,6 +2167,83 @@
       "section": "SQL Expressions 2: comparisons and NULL; 5: LIKE; 6: BETWEEN; 8: IN",
       "targetKind": "flashcard",
       "targetId": "sql-filter-the-rows-card-2"
+    },
+    {
+      "claim": "A comparison is a condition; WHERE keeps the rows for which it is true, and >= and <= include the boundary.",
+      "sourceId": "sqlite-expr",
+      "section": "SQL Expressions 2: comparisons and NULL; 5: LIKE; 6: BETWEEN; 8: IN",
+      "targetKind": "step",
+      "targetId": "a-test-for-each-row"
+    },
+    {
+      "claim": "A condition with an inclusive boundary keeps a value that sits exactly on it.",
+      "sourceId": "sqlite-expr",
+      "section": "SQL Expressions 2: comparisons and NULL; 5: LIKE; 6: BETWEEN; 8: IN",
+      "targetKind": "step",
+      "targetId": "the-bookshop-sign"
+    },
+    {
+      "claim": "A comparison with NULL is never true, so WHERE drops the row; IS NULL finds missing values.",
+      "sourceId": "sqlite-expr",
+      "section": "SQL Expressions 2: comparisons and NULL; 5: LIKE; 6: BETWEEN; 8: IN",
+      "targetKind": "step",
+      "targetId": "rows-with-no-amount"
+    },
+    {
+      "claim": "A comparison with an unknown amount is never true, so only known amounts of 40 or more pass.",
+      "sourceId": "sqlite-expr",
+      "section": "SQL Expressions 2: comparisons and NULL; 5: LIKE; 6: BETWEEN; 8: IN",
+      "targetKind": "step",
+      "targetId": "at-least-forty"
+    },
+    {
+      "claim": "AND keeps a row only if both conditions are true; OR keeps it if either is true.",
+      "sourceId": "sqlite-expr",
+      "section": "SQL Expressions 2: comparisons and NULL; 5: LIKE; 6: BETWEEN; 8: IN",
+      "targetKind": "step",
+      "targetId": "two-tests-at-once"
+    },
+    {
+      "claim": "AND needs both conditions to be true.",
+      "sourceId": "sqlite-expr",
+      "section": "SQL Expressions 2: comparisons and NULL; 5: LIKE; 6: BETWEEN; 8: IN",
+      "targetKind": "step",
+      "targetId": "paid-and-large"
+    },
+    {
+      "claim": "OR keeps a row when either condition is true.",
+      "sourceId": "sqlite-expr",
+      "section": "SQL Expressions 2: comparisons and NULL; 5: LIKE; 6: BETWEEN; 8: IN",
+      "targetKind": "step",
+      "targetId": "paid-or-large"
+    },
+    {
+      "claim": "BETWEEN includes both of its ends; strict comparisons leave them out.",
+      "sourceId": "sqlite-expr",
+      "section": "SQL Expressions 2: comparisons and NULL; 5: LIKE; 6: BETWEEN; 8: IN",
+      "targetKind": "step",
+      "targetId": "on-the-line"
+    },
+    {
+      "claim": "BETWEEN a AND b includes a and b.",
+      "sourceId": "sqlite-expr",
+      "section": "SQL Expressions 2: comparisons and NULL; 5: LIKE; 6: BETWEEN; 8: IN",
+      "targetKind": "step",
+      "targetId": "on-the-line-check"
+    },
+    {
+      "claim": "IN keeps a row whose value matches any value in the list.",
+      "sourceId": "sqlite-expr",
+      "section": "SQL Expressions 2: comparisons and NULL; 5: LIKE; 6: BETWEEN; 8: IN",
+      "targetKind": "step",
+      "targetId": "a-list-of-values"
+    },
+    {
+      "claim": "IN accepts any value in its list.",
+      "sourceId": "sqlite-expr",
+      "section": "SQL Expressions 2: comparisons and NULL; 5: LIKE; 6: BETWEEN; 8: IN",
+      "targetKind": "step",
+      "targetId": "a-list-check"
     }
   ]
 }

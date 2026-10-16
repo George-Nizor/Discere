@@ -8,7 +8,6 @@ import type {
   JourneyProgress,
   JourneyResponse,
   ReviewHomeResponse,
-  RomanReferenceProgress,
   TutorStatus,
   StudyStatisticsPeriod,
 } from "@discere/contracts";
@@ -23,7 +22,6 @@ import {
   getJourney,
   getJourneyProgress,
   getReviewHome,
-  getRomanReferenceProgress,
   getTutorStatus,
   getStudy,
   getStudyStatistics,
@@ -37,8 +35,6 @@ export const queryKeys = {
   journey: (courseId: string, lessonId: string) => ["journey", courseId, lessonId] as const,
   journeyProgress: (courseId: string, lessonId: string) =>
     ["journey-progress", courseId, lessonId] as const,
-  romanReferenceProgress: (courseId: string, lessonId: string) =>
-    ["roman-reference-progress", courseId, lessonId] as const,
   essay: (essayId: string) => ["essay", essayId] as const,
   essayAssessment: (essayId: string) => ["essay-assessment", essayId] as const,
   notebook: (lessonId: string) => ["notebook", lessonId] as const,
@@ -128,16 +124,6 @@ export function useJourneyProgress(
   return useQuery({
     queryKey: queryKeys.journeyProgress(courseId, lessonId),
     queryFn: () => getJourneyProgress(courseId, lessonId),
-  });
-}
-
-export function useRomanReferenceProgress(
-  courseId: string,
-  lessonId: string,
-): UseQueryResult<RomanReferenceProgress> {
-  return useQuery({
-    queryKey: queryKeys.romanReferenceProgress(courseId, lessonId),
-    queryFn: () => getRomanReferenceProgress(courseId, lessonId),
   });
 }
 

@@ -64,7 +64,7 @@ test("old and unknown addresses lead somewhere honest", async ({ page }) => {
   expect(errors).toEqual([]);
   await page.goto("/legacy/courses/maths-foundations");
   await expect(page).toHaveURL(/\/courses\/maths-foundations$/);
-  await page.goto("/courses/roman-empire");
+  await page.goto("/courses/electronics-foundations");
   await expect(page.getByRole("complementary", { name: "Archived course" })).toBeVisible();
   await page.goto("/somewhere/else");
   await expect(page.getByRole("heading", { name: "This page doesn’t exist" })).toBeVisible();

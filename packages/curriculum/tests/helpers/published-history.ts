@@ -6,6 +6,19 @@ import { bundleDigest } from "../../src/index.js";
  * once a course moves on (Maths Foundations 1.2.0, the v2 gold lesson), the pinned bundle is
  * kept beside its review record as review/history/<sha256>-bundle.json and checked from there.
  */
+/**
+ * History files that sit under a different name than the digest of what they hold. The story
+ * rewrite's curate step filed Electronics Foundations 0.3.0 (digest 87fb5b73...) under the
+ * hash of an intermediate publication record, so that file is found by this table and still
+ * checked against the digest it is pinned by.
+ */
+const HISTORY_FILE_NAMES: Record<string, string> = {
+  "87fb5b73f1a981bf0e6526716a2f53628d7827a65ba0e5544e7ff93dc6594590":
+    "ba985f55fb4316eefae9582851e2ae2135a98541250edabe187634a0a2121482",
+};
+
+export const historyFileName = (sha256: string): string => HISTORY_FILE_NAMES[sha256] ?? sha256;
+
 export function publishedBundle(courseId: string, sha256: string): unknown {
   const current = JSON.parse(
     readFileSync(new URL(`../../../../content/${courseId}/bundle.json`, import.meta.url), "utf8"),
@@ -14,7 +27,7 @@ export function publishedBundle(courseId: string, sha256: string): unknown {
   const archived = JSON.parse(
     readFileSync(
       new URL(
-        `../../../../content/${courseId}/review/history/${sha256}-bundle.json`,
+        `../../../../content/${courseId}/review/history/${historyFileName(sha256)}-bundle.json`,
         import.meta.url,
       ),
       "utf8",
@@ -46,6 +59,8 @@ export const SUPERSEDED_PUBLICATIONS: Record<string, string> = {
   "logic-and-reasoning": "ec990e1907ee00d79040b7d0446c9e6d0351f523b1368b2c5e63e7b0bd8b0b84",
   "cs-basics": "c83d3e41577d607f39da222535778eed041f3f19d0ae675b80f9c4884d4670b1",
   "probability-statistics": "3c893ab99e8d4a669ea89f8cf0c6cce9d45b62a771038e05e5f3c58a9d35027b",
+  // The 0.3.0 bundle, kept in review/history when the story rewrite published 0.4.2.
+  "electronics-foundations": "87fb5b73f1a981bf0e6526716a2f53628d7827a65ba0e5544e7ff93dc6594590",
 };
 
 /** The bundle a history test should check: the archived one for a superseded course. */

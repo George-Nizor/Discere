@@ -326,6 +326,11 @@ function StepScreen({
       ) : !hasLines && step.diagram ? (
         <LearningDiagram spec={step.diagram} showResults={figureShowsResults(step, true)} />
       ) : null}
+      {step.afterFigure?.length ? (
+        <div className="step-lead step-after-figure">
+          <RichBlocks blocks={step.afterFigure} />
+        </div>
+      ) : null}
     </article>
   );
 }

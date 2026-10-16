@@ -1,7 +1,12 @@
 {
   "lessonId": "arrays-and-shape",
   "courseId": "python-for-data-analysis",
-  "migrationNotes": [],
+  "migrationNotes": [
+    "Spine: a cinema's seat plan. The lesson reads the plan as an array (shape, size, ndim), calculates on every seat at once (and contrasts a list), lays the same seats out again with reshape and -1, and ends with how much memory each seat takes (dtype).",
+    "Left out of the lesson (still in the course): python-arrays-and-shape-hook (the 30 seats, covered by the opener and the first screen). python-arrays-and-shape-6 and -7 stay in the skill check.",
+    "Figures: the list-or-array and reshape figures moved onto the teaching screens; the dtype figure stays on the transfer screen.",
+    "Corrected a misconception message on python-arrays-and-shape-1: 10 is the second scaled element, not the unscaled sum."
+  ],
   "lesson": {
     "id": "arrays-and-shape",
     "courseId": "python-for-data-analysis",
@@ -11,48 +16,63 @@
     "title": "Give data a shape",
     "steps": [
       {
-        "id": "a-grid-of-one-type",
+        "id": "a-plan-of-the-hall",
         "kind": "explain",
         "blocks": [],
-        "headline": "An array is a grid of values of one type, and its shape gives rows first, then columns.",
+        "headline": "A plan of the hall",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "np.array([[1, 2, 3], [4, 5, 6]]) has 2 rows and 3 columns, so its shape is (2, 3). size counts every element. ndim counts the axes. Arithmetic on an array acts on every element at once."
+            "text": "NumPy is the library that supplies this container, and by convention it is imported as np. Its array is a grid of values that all have the same type. A plan with 2 rows of 3 seats, each marked with a seat number, is np.array([[1, 2, 3], [4, 5, 6]]). The outer brackets hold the rows, and each inner pair of brackets is one row."
           },
           {
-            "kind": "callout",
-            "tone": "key",
-            "text": "A list holds anything. An array holds one dtype and calculates on all of it."
+            "kind": "paragraph",
+            "text": "An array knows its own dimensions. Its shape lists the number of rows first and then the number of columns, so this plan has shape (2, 3). The attribute size counts every value, which is rows times columns, so here it is 6. Each entry in the shape belongs to one axis, which is a direction along which the grid extends. The attribute ndim counts the axes. A table has two. A hall with several floors needs three, and np.zeros((3, 2, 5)) builds a block of zeros with 3 floors of 2 rows of 5 seats, so its ndim is 3."
           }
         ],
-        "reveal": [],
         "introducesTerms": [
           "array",
-          "shape"
+          "shape",
+          "axis"
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
+      },
+      {
+        "id": "which-number-is-rows",
+        "kind": "predict",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "The shape is written as a pair of numbers. Read which position stands for the rows."
+          }
         ],
         "visualStateId": "",
         "checkQuestionId": "python-arrays-and-shape-shape-check",
         "activityId": ""
       },
       {
-        "id": "list-or-array",
-        "kind": "predict",
+        "id": "one-calculation-for-every-seat",
+        "kind": "explain",
         "blocks": [],
+        "headline": "One calculation for every seat",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "Multiplying a Python list repeats it. Multiplying a numeric array scales every value."
+            "text": "A list and an array answer to the same arithmetic in different ways. Multiply a list by 2 and Python repeats it: [2, 4, 6] * 2 is [2, 4, 6, 2, 4, 6], a list twice as long. Multiply an array by 2 and NumPy applies the 2 to every value, so np.array([2, 4, 6]) * 2 is [4, 8, 12], the same length as before. Because an array holds one type of value, NumPy can run the same operation over all of it at once, and no loop is needed. Step through both."
           }
         ],
-        "reveal": [
+        "afterFigure": [
           {
             "kind": "paragraph",
-            "text": "You predicted a scaled array, and the sum came from the scaled values. A list would have repeated its items instead."
+            "text": "That is why arrays suit data work. A price rise, a unit conversion or a rescaling is one line applied to the whole grid. It also means the same operator can mean two things, depending on whether its left side is a list or an array, so check which one you hold before you read a multiplication."
           }
         ],
+        "introducesTerms": [],
         "visualStateId": "",
-        "checkQuestionId": "python-arrays-and-shape-1",
+        "checkQuestionId": "",
         "activityId": "",
         "diagram": {
           "type": "python_execution",
@@ -132,179 +152,20 @@
             }
           ],
           "initialCaseId": "case-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        }
       },
       {
-        "id": "same-values-new-grid",
-        "kind": "explain",
+        "id": "list-or-array",
+        "kind": "predict",
         "blocks": [],
-        "headline": "reshape rearranges the same values into a new grid, and the grid must hold exactly that many.",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "a.reshape(2, 5) turns ten values into 2 rows of 5. The rows times the columns must equal size. A single -1 lets NumPy work out that dimension from the others."
-          }
-        ],
-        "reveal": [],
-        "introducesTerms": [
-          "reshape"
-        ],
-        "visualStateId": "",
-        "checkQuestionId": "python-arrays-and-shape-3",
-        "activityId": "",
-        "diagram": {
-          "type": "python_execution",
-          "runtime": "Python 3.12 · NumPy 2.3",
-          "cases": [
-            {
-              "id": "case-0",
-              "label": "Case A",
-              "code": "import numpy as np\na = np.arange(12)\nresult = a.reshape(3, -1)",
-              "steps": [
-                {
-                  "lineStart": 1,
-                  "lineEnd": 2,
-                  "values": [],
-                  "stdout": ""
-                },
-                {
-                  "lineStart": 3,
-                  "lineEnd": 3,
-                  "values": [
-                    {
-                      "name": "result",
-                      "type": "ndarray",
-                      "display": "array([[ 0,  1,  2,  3],\n       [ 4,  5,  6,  7],\n       [ 8,  9, 10, 11]])",
-                      "table": {
-                        "columns": [
-                          "row",
-                          "0",
-                          "1",
-                          "2",
-                          "3"
-                        ],
-                        "rows": [
-                          [
-                            0,
-                            0,
-                            1,
-                            2,
-                            3
-                          ],
-                          [
-                            1,
-                            4,
-                            5,
-                            6,
-                            7
-                          ],
-                          [
-                            2,
-                            8,
-                            9,
-                            10,
-                            11
-                          ]
-                        ]
-                      }
-                    }
-                  ],
-                  "stdout": ""
-                }
-              ]
-            },
-            {
-              "id": "case-1",
-              "label": "Case B",
-              "code": "import numpy as np\na = np.arange(12)\nresult = a.reshape(-1, 2)",
-              "steps": [
-                {
-                  "lineStart": 1,
-                  "lineEnd": 2,
-                  "values": [],
-                  "stdout": ""
-                },
-                {
-                  "lineStart": 3,
-                  "lineEnd": 3,
-                  "values": [
-                    {
-                      "name": "result",
-                      "type": "ndarray",
-                      "display": "array([[ 0,  1],\n       [ 2,  3],\n       [ 4,  5],\n       [ 6,  7],\n       [ 8,  9],\n       [10, 11]])",
-                      "table": {
-                        "columns": [
-                          "row",
-                          "0",
-                          "1"
-                        ],
-                        "rows": [
-                          [
-                            0,
-                            0,
-                            1
-                          ],
-                          [
-                            1,
-                            2,
-                            3
-                          ],
-                          [
-                            2,
-                            4,
-                            5
-                          ],
-                          [
-                            3,
-                            6,
-                            7
-                          ],
-                          [
-                            4,
-                            8,
-                            9
-                          ],
-                          [
-                            5,
-                            10,
-                            11
-                          ]
-                        ]
-                      }
-                    }
-                  ],
-                  "stdout": ""
-                }
-              ]
-            }
-          ],
-          "initialCaseId": "case-0"
-        },
-        "answerVisibility": "hidden-until-response"
-      },
-      {
-        "id": "shape-and-size",
-        "kind": "worked_example",
-        "blocks": [],
-        "headline": "What are the shape and size of np.arange(10).reshape(2, 5)?",
-        "lead": [],
-        "reveal": [],
-        "workedSteps": [
-          {
-            "text": "arange(10) holds the ten values 0 to 9. reshape(2, 5) lays them out as rows of five.",
-            "math": "(2, 5)",
-            "selfExplain": {
-              "questionId": "python-arrays-and-shape-why-rows-first"
-            }
-          },
-          {
-            "text": "size counts every element: rows times columns.",
-            "math": "2 × 5 = 10"
+            "text": "Multiplying an array scales every value. Work out the scaled values before you add them."
           }
         ],
         "visualStateId": "",
-        "checkQuestionId": "",
+        "checkQuestionId": "python-arrays-and-shape-1",
         "activityId": ""
       },
       {
@@ -333,23 +194,90 @@
         "activityId": ""
       },
       {
-        "id": "let-numpy-count",
-        "kind": "try",
+        "id": "the-same-seats-laid-out-again",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "The same seats laid out again",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "The same twelve seats could be laid out as 3 rows of 4, 4 rows of 3 or 2 rows of 6. NumPy does this with reshape, which gives back the values in a new shape. np.arange(10) makes the numbers 0 to 9, and np.arange(10).reshape(2, 5) arranges them as 2 rows of 5. The values are read off in order and fill the new rows from the left, so the first row holds 0 to 4."
+          },
+          {
+            "kind": "paragraph",
+            "text": "One rule governs every reshape: rows times columns must equal the size. Ten values fit 2 by 5, 5 by 2 and 1 by 10. They cannot fit 3 by 5, which needs fifteen, because reshape never invents a value to fill a gap and never drops one to make things fit. If the numbers disagree, NumPy stops with an error."
+          }
+        ],
+        "introducesTerms": [
+          "reshape"
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
+      },
+      {
+        "id": "can-ten-fit",
+        "kind": "predict",
         "blocks": [],
         "lead": [
           {
             "kind": "paragraph",
-            "text": "With -1, NumPy divides the total number of elements by the other dimensions you gave."
-          }
-        ],
-        "reveal": [
-          {
-            "kind": "paragraph",
-            "text": "The -1 stood for whatever number made the product equal size. NumPy worked it out so that you did not have to."
+            "text": "Compare the number of values with what the new shape would need."
           }
         ],
         "visualStateId": "",
-        "checkQuestionId": "python-arrays-and-shape-infer-rows",
+        "checkQuestionId": "python-arrays-and-shape-3",
+        "activityId": ""
+      },
+      {
+        "id": "shape-and-size",
+        "kind": "worked_example",
+        "blocks": [],
+        "headline": "What are the shape and size of np.arange(10).reshape(2, 5)?",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "See how the shape and the size follow from one call."
+          }
+        ],
+        "reveal": [],
+        "workedSteps": [
+          {
+            "text": "arange(10) holds the ten values 0 to 9. reshape(2, 5) lays them out as rows of five.",
+            "math": "(2, 5)",
+            "selfExplain": {
+              "questionId": "python-arrays-and-shape-why-rows-first"
+            }
+          },
+          {
+            "text": "size counts every element: rows times columns.",
+            "math": "2 × 5 = 10"
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
+      },
+      {
+        "id": "letting-numpy-count",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "Letting NumPy count",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Counting the rows or columns yourself gets tedious and is easy to get wrong. Give reshape a -1 for one dimension and NumPy works that dimension out for you. It divides the number of values by the dimensions you did give. For twelve values, reshape(3, -1) means 3 rows and as many columns as are needed, which is 12 ÷ 3 = 4. reshape(-1, 2) means 2 columns and as many rows as are needed, which is 12 ÷ 2 = 6. Only one dimension can be -1, because two unknowns could not be told apart. Step through both."
+          }
+        ],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "The first result has 3 rows of 4 and the second has 6 rows of 2. Both hold the same twelve numbers in the same order. If the division does not come out even, NumPy stops with an error, since a whole grid cannot be made."
+          }
+        ],
+        "introducesTerms": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
         "activityId": "",
         "diagram": {
           "type": "python_execution",
@@ -478,8 +406,43 @@
             }
           ],
           "initialCaseId": "case-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        }
+      },
+      {
+        "id": "let-numpy-count",
+        "kind": "try",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "The columns are fixed. Divide the number of values by the dimension you gave."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-arrays-and-shape-infer-rows",
+        "activityId": ""
+      },
+      {
+        "id": "how-many-bytes",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "Bytes per value",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "One more property follows from an array holding a single type. Each array has a dtype, its data type, such as int16 for a whole number stored in 16 bits or int64 for one stored in 64 bits. A bit is a single 0 or 1, and 8 bits make a byte. Every value in the array takes the same number of bytes, so int16 takes 2 bytes per value and int64 takes 8. The attribute itemsize reports it."
+          },
+          {
+            "kind": "paragraph",
+            "text": "That makes the memory an array needs easy to work out: the number of values times the bytes per value. An int64 array of 50 values takes 400 bytes. A Python int has no such fixed width and grows as its value grows. The fixed width is part of why NumPy is fast, and it has a cost. Each dtype has a largest value it can hold, and a bigger number no longer fits."
+          }
+        ],
+        "introducesTerms": [
+          "dtype"
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
       },
       {
         "id": "bytes-per-value",
@@ -488,13 +451,7 @@
         "lead": [
           {
             "kind": "paragraph",
-            "text": "NumPy integer dtypes have fixed widths. int16 uses 16 bits, which is 2 bytes, for every value. Python's own int can grow; an array dtype cannot."
-          }
-        ],
-        "reveal": [
-          {
-            "kind": "paragraph",
-            "text": "Every item takes the same fixed number of bytes, so storage grows with the count. A Python int has no such fixed width."
+            "text": "Work out how many bytes one value takes, then scale up to all the values."
           }
         ],
         "visualStateId": "",
@@ -611,23 +568,30 @@
         "blocks": [
           {
             "kind": "paragraph",
-            "text": "A cinema has 5 rows with 6 seats in each row, and every seat is the same kind."
+            "text": "A cinema has 5 rows with 6 seats in each, and every seat is the same kind. The booking system keeps a plan of the hall. Ask it for the number of seats and it multiplies 5 by 6. Ask it to raise every ticket price by 10 per cent and it makes the same change to each seat without anyone going through them one by one. Ask for the plan rearranged as 3 rows of 10 and it lays out the same seats again, with none gained or lost."
+          },
+          {
+            "kind": "paragraph",
+            "text": "A Python list is a poor fit for that job. It can hold anything, so it keeps a note of what each item is. It has no idea that its items form a hall. Ages were fine in a list, but data work usually means thousands of values of one kind in a grid, and a better container exists for them."
+          },
+          {
+            "kind": "paragraph",
+            "text": "This lesson meets that container. It starts with the plan itself and how to read its dimensions. Then it asks how a whole plan is calculated on at once and how the same seats can be laid out again. It ends with the memory each seat takes."
           }
-        ],
-        "questionId": "python-arrays-and-shape-hook"
+        ]
       },
       "promise": "By the end you'll read an array's shape, count its elements, and reshape it without losing or inventing a value.",
-      "estimatedMinutes": 10
+      "estimatedMinutes": 12
     },
     "recap": {
-      "keyIdea": "An array's shape lists rows then columns, size is their product, and reshape rearranges exactly that many values; array dtypes have a fixed width.",
+      "keyIdea": "An array's shape lists rows then columns and its size is their product. reshape rearranges exactly that many values, and array dtypes have a fixed width.",
       "blocks": [
         {
           "kind": "paragraph",
-          "text": "You counted 30 seats in the cinema. You found that np.array([3, 5]) * 2 sums to 16, and that an array of shape (3, 4) holds 12 elements across 2 axes."
+          "text": "You counted 30 seats in the cinema. You found that np.array([3, 5]) * 2 sums to 16, that an array of shape (3, 4) holds 12 elements across 2 axes, and that 18 values reshaped with a -1 into 3 rows make 6 columns."
         }
       ],
-      "nextHook": "Next: calculate across an axis, and see how one value is stretched to fit an array."
+      "nextHook": "The hall plan can be laid out any way you like, and a plan is only useful if you can calculate from it. The takings for each row, the figure for each column and a price change for just one row are all questions about the same grid. The next lesson shows how to calculate across the right axis."
     },
     "calculator": "off",
     "taughtSkills": [
@@ -655,7 +619,7 @@
         "kind": "numeric",
         "value": 16,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "Elementwise multiplication gives [6, 10], whose sum is 16."
       },
@@ -671,7 +635,7 @@
               10
             ]
           },
-          "feedback": "That is the sum before scaling by 2... check that every element is multiplied."
+          "feedback": "That is only the second scaled element. Every element is scaled, and then all of them are added."
         },
         {
           "match": {
@@ -701,7 +665,7 @@
         "kind": "numeric",
         "value": 12,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "There are 3 rows of 4 values, giving 12 elements."
       },
@@ -758,7 +722,7 @@
           "label": "Yes, reshape drops two values"
         }
       ],
-      "onCorrect": "No. A (3, 4) grid holds twelve values, and reshape never adds or drops any.",
+      "onCorrect": "No. A (3, 4) grid holds twelve values. reshape never adds or drops any.",
       "skill": "reshape-arrays",
       "misconceptions": [
         {
@@ -797,7 +761,7 @@
         "kind": "numeric",
         "value": 200,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "int16 is 2 bytes per value, and 100 × 2 = 200."
       },
@@ -843,7 +807,7 @@
         "kind": "numeric",
         "value": 6,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "Eighteen values divided among three rows gives six columns."
       },
@@ -889,7 +853,7 @@
         "kind": "numeric",
         "value": 3,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The shape has three axes, so ndim is 3. Its size is 24."
       },
@@ -930,7 +894,7 @@
         "kind": "numeric",
         "value": 9,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The list is repeated three times, giving 9 items."
       },
@@ -968,7 +932,7 @@
         "kind": "numeric",
         "value": 30,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "5 rows of 6 seats gives 5 × 6 = 30 seats."
       },
@@ -1122,7 +1086,7 @@
         "kind": "numeric",
         "value": 2,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The shape (3, 4) has two entries, so ndim is 2."
       },
@@ -1160,7 +1124,7 @@
         "kind": "numeric",
         "value": 5,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "20 ÷ 4 = 5 rows."
       },
@@ -1189,49 +1153,84 @@
   ],
   "citations": [
     {
-      "claim": "An array is a grid of values of one type, and its shape gives rows first, then columns.",
+      "claim": "A NumPy array is a grid of one type; shape lists rows then columns, size counts the elements and ndim counts the axes.",
       "sourceId": "np-quickstart",
       "section": "The basics; array creation; shape manipulation",
       "targetKind": "step",
-      "targetId": "a-grid-of-one-type"
+      "targetId": "a-plan-of-the-hall"
     },
     {
-      "claim": "Multiplying a Python list repeats it. Multiplying a numeric array scales every value.",
+      "claim": "The first entry of shape is the number of rows.",
+      "sourceId": "np-quickstart",
+      "section": "The basics; array creation; shape manipulation",
+      "targetKind": "step",
+      "targetId": "which-number-is-rows"
+    },
+    {
+      "claim": "Multiplying a list repeats it, while multiplying a numeric array scales every element.",
+      "sourceId": "np-quickstart",
+      "section": "The basics; array creation; shape manipulation",
+      "targetKind": "step",
+      "targetId": "one-calculation-for-every-seat"
+    },
+    {
+      "claim": "Array multiplication is elementwise.",
       "sourceId": "np-quickstart",
       "section": "The basics; array creation; shape manipulation",
       "targetKind": "step",
       "targetId": "list-or-array"
     },
     {
-      "claim": "reshape rearranges the same values into a new grid, and the grid must hold exactly that many.",
-      "sourceId": "np-quickstart",
-      "section": "The basics; array creation; shape manipulation",
-      "targetKind": "step",
-      "targetId": "same-values-new-grid"
-    },
-    {
-      "claim": "What are the shape and size of np.arange(10).reshape(2, 5)?",
-      "sourceId": "np-quickstart",
-      "section": "The basics; array creation; shape manipulation",
-      "targetKind": "step",
-      "targetId": "shape-and-size"
-    },
-    {
-      "claim": "An array has shape (3, 4). How many elements and how many axes does it have?",
+      "claim": "Shape (3, 4) means 12 elements across 2 axes.",
       "sourceId": "np-quickstart",
       "section": "The basics; array creation; shape manipulation",
       "targetKind": "step",
       "targetId": "count-the-grid"
     },
     {
-      "claim": "With -1, NumPy divides the total number of elements by the other dimensions you gave.",
+      "claim": "reshape rearranges the same values into a new shape whose product equals the size; it never adds or drops values.",
+      "sourceId": "np-quickstart",
+      "section": "The basics; array creation; shape manipulation",
+      "targetKind": "step",
+      "targetId": "the-same-seats-laid-out-again"
+    },
+    {
+      "claim": "reshape requires rows times columns to equal the size.",
+      "sourceId": "np-quickstart",
+      "section": "The basics; array creation; shape manipulation",
+      "targetKind": "step",
+      "targetId": "can-ten-fit"
+    },
+    {
+      "claim": "np.arange(10).reshape(2, 5) has shape (2, 5) and size 10.",
+      "sourceId": "np-quickstart",
+      "section": "The basics; array creation; shape manipulation",
+      "targetKind": "step",
+      "targetId": "shape-and-size"
+    },
+    {
+      "claim": "A -1 in reshape is replaced by the size divided by the other dimensions.",
+      "sourceId": "np-quickstart",
+      "section": "The basics; array creation; shape manipulation",
+      "targetKind": "step",
+      "targetId": "letting-numpy-count"
+    },
+    {
+      "claim": "-1 stands for whatever makes rows times columns equal the size.",
       "sourceId": "np-quickstart",
       "section": "The basics; array creation; shape manipulation",
       "targetKind": "step",
       "targetId": "let-numpy-count"
     },
     {
-      "claim": "NumPy integer dtypes have fixed widths. int16 uses 16 bits, which is 2 bytes, for every value. Python's own int can grow; an array dtype cannot.",
+      "claim": "NumPy integer dtypes have a fixed width, so memory is the count times the bytes per value; Python ints have no fixed width.",
+      "sourceId": "np-quickstart",
+      "section": "The basics; array creation; shape manipulation",
+      "targetKind": "step",
+      "targetId": "how-many-bytes"
+    },
+    {
+      "claim": "int16 uses 2 bytes per value, so 100 values use 200 bytes.",
       "sourceId": "np-quickstart",
       "section": "The basics; array creation; shape manipulation",
       "targetKind": "step",
@@ -1285,13 +1284,6 @@
       "section": "The basics; array creation; shape manipulation",
       "targetKind": "question",
       "targetId": "python-arrays-and-shape-7"
-    },
-    {
-      "claim": "30. Rows times seats per row. An array's size is its rows times its columns in the same way.",
-      "sourceId": "np-quickstart",
-      "section": "The basics; array creation; shape manipulation",
-      "targetKind": "question",
-      "targetId": "python-arrays-and-shape-hook"
     },
     {
       "claim": "The first number. Shape lists rows, then columns, so (2, 3) is 2 rows of 3.",

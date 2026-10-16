@@ -32,30 +32,7 @@ interface ImageRequest {
  * Reviewed shortlist per course. Titles are pinned rather than searched at run time so that a
  * rebuild fetches the exact files an author already licence-checked by eye.
  */
-const COURSE_REQUESTS: Record<string, readonly ImageRequest[]> = {
-  "roman-empire": [
-    {
-      id: "roman-empire-extent-117ce",
-      title: "File:Roman Empire Trajan 117AD.png",
-      purpose: "Map of the Roman Empire at its greatest extent, around 117 CE",
-    },
-    {
-      id: "colosseum-rome",
-      title: "File:Colosseum in Rome, Italy - April 2007.jpg",
-      purpose: "Exterior photograph of the Colosseum in Rome",
-    },
-    {
-      id: "via-appia-roman-road",
-      title: "File:Appian Way.jpg",
-      purpose: "Surviving Roman road: the paved Via Appia outside Rome",
-    },
-    {
-      id: "augustus-of-prima-porta",
-      title: "File:Statue-Augustus.jpg",
-      purpose: "Portrait statue of Augustus, the Augustus of Prima Porta",
-    },
-  ],
-};
+const COURSE_REQUESTS: Record<string, readonly ImageRequest[]> = {};
 
 interface ProvenanceRecord {
   readonly id: string;

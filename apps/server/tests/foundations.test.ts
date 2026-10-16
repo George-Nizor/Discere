@@ -141,11 +141,18 @@ describe("foundation lessons and recall", () => {
     expect(result.body).not.toContain("acceptedIdeas");
     const machine = result
       .json()
-      .stages[0].steps.find((step: { diagram?: { type: string } }) => step.diagram);
+      .stages[0].steps.find(
+        (step: { diagram?: { type: string }; question?: unknown }) => step.diagram && step.question,
+      );
     expect(machine.diagram.type).toBe("number_machine");
     expect(machine.question.expectedUnit).toBe("");
-    // The v2 opener reaches the learner with its hook question, keyless.
-    expect(result.json().stages[0].intro.hook.question.prompt).toBe("What's my number?");
+    // In story lessons the hook is a "try" step of its own, served with its question, keyless.
+    const hook = result
+      .json()
+      .stages[0].steps.find((step: { id: string }) => step.id === "play-a-round");
+    expect(hook.question.prompt).toBe(
+      "I'm thinking of a number. I add 5 to it and get 12. What is my number?",
+    );
     expect(result.body).not.toMatch(/onCorrect|misconceptions/);
     expect(result.json().stages.map((stage: { type: string }) => stage.type)).toEqual([
       "explainer",

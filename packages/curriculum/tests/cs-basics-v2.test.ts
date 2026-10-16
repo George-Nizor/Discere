@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { assessTextAnswer } from "@discere/assessment-engine";
 import type { CourseBundle, Question } from "@discere/contracts";
 import { describe, expect, it } from "vitest";
@@ -173,5 +173,172 @@ describe("CS Basics v2 lessons", () => {
     expect(worstBinary(31)).toBe(5); // worked example
     expect(marked(L, "practice-3")).toEqual(["a"]);
     expect(1000 < 5000 + worstBinary(1000)).toBe(true);
+  });
+});
+
+describe("CS Basics story lessons 1 to 6", () => {
+  const story = bundle.lessons.slice(0, 6);
+  const words = (blocks: ReadonlyArray<object> | undefined) =>
+    (blocks ?? []).reduce(
+      (sum: number, b) =>
+        sum + ((b as { text?: string }).text ?? "").split(/\s+/u).filter(Boolean).length,
+      0,
+    );
+
+  it("opens with a scene, teaches before it asks, and closes with a hook", () => {
+    for (const lesson of story) {
+      expect(lesson.intro?.hook.questionId, lesson.id).toBeUndefined();
+      const opener = words(lesson.intro!.hook.blocks);
+      expect(opener, lesson.id).toBeGreaterThanOrEqual(110);
+      expect(opener, lesson.id).toBeLessThanOrEqual(260);
+      expect(lesson.intro!.promise.split(/\s+/u).length, lesson.id).toBeLessThanOrEqual(25);
+      expect(lesson.steps[0]!.kind, lesson.id).toBe("explain");
+      const teaching = lesson.steps.filter((s) => s.kind === "explain" && !s.checkQuestionId);
+      expect(teaching.length / lesson.steps.length, lesson.id).toBeGreaterThanOrEqual(0.4);
+      expect(lesson.steps.length, lesson.id).toBeGreaterThanOrEqual(8);
+      expect(lesson.steps.length, lesson.id).toBeLessThanOrEqual(14);
+      for (const step of teaching) {
+        const body = words(step.lead) + words(step.afterFigure);
+        expect(body, `${lesson.id}/${step.id}`).toBeGreaterThanOrEqual(80);
+        expect(body, `${lesson.id}/${step.id}`).toBeLessThanOrEqual(280);
+      }
+      expect(lesson.steps.some((s) => s.diagram), lesson.id).toBe(true);
+      expect(lesson.recap!.nextHook, lesson.id).toBeTruthy();
+    }
+  });
+
+  it("keeps the hook questions, now asked after the teaching they need", () => {
+    for (const lesson of story) {
+      const hook = lesson.steps.findIndex((s) => s.checkQuestionId === `cs-basics-${lesson.id}-hook`);
+      expect(hook, lesson.id).toBeGreaterThan(0);
+    }
+    // Each prompt now carries its own scene, since the opener no longer asks it.
+    expect(q("steps-a-machine-could-follow", "hook").prompt).toContain("start with 10");
+    expect(q("choosing-between-paths", "hook").prompt).toContain("£30");
+    expect(q("doing-it-again", "hook").prompt).toContain("7 sweets");
+    expect(q("looking-things-up", "hook").prompt).toContain("9 papers");
+    expect(q("halving-the-problem", "hook").prompt).toContain("1 to 100");
+    expect(q("when-the-input-grows", "hook").prompt).toContain("folded in half 3 times");
+  });
+
+  it("each opener leads into the next lesson's scene", () => {
+    const hooks = story.map((l) => l.recap!.nextHook ?? "");
+    expect(hooks[0]).toContain("café");
+    expect(hooks[1]).toContain("sweets");
+    expect(hooks[2]).toContain("Maya");
+    expect(hooks[3]).toContain("between 1 and 100");
+    expect(hooks[4]).toContain("folded");
+    expect(hooks[5]).toContain("completes the course");
+    const opener = story[5]!.intro!.hook.blocks.map((b) => (b as { text?: string }).text ?? "").join(" ");
+    expect(opener).toContain("Take a sheet of paper and fold it in half");
+  });
+
+  it("lesson 6: teaching on growth, doubling and the cost of sorting", () => {
+    const lesson = story[5]!;
+    const ids = lesson.steps.map((s) => s.id);
+    expect(ids).toEqual([
+      "folding-paper",
+      "folds-and-layers",
+      "count-steps-not-seconds",
+      "linear-on-a-sorted-list",
+      "what-one-comparison-removes",
+      "halving-31",
+      "binary-on-the-same-list",
+      "the-largest-range",
+      "one-more-doubles",
+      "what-four-comparisons-reach",
+      "a-list-too-big-to-trace",
+      "when-sorting-pays",
+    ]);
+    // The count-check item is no longer asked; its id stays in the bundle.
+    expect(lesson.steps.some((s) => s.checkQuestionId?.endsWith("count-check"))).toBe(false);
+    // Opener and first screen: ten folds give 1,024 layers; adding two per fold would give about twenty.
+    expect(2 ** 10).toBe(1024);
+    expect(1 + 2 * 10).toBeLessThan(25);
+    // Sizes in the 31-item worked example, and the limits k comparisons reach.
+    const sizes = [31];
+    while (sizes[sizes.length - 1]! > 0) sizes.push(Math.floor(sizes[sizes.length - 1]! / 2));
+    expect(sizes).toEqual([31, 15, 7, 3, 1, 0]);
+    expect([1, 2, 3, 4].map((k) => 2 ** k - 1)).toEqual([1, 3, 7, 15]);
+    expect(worstBinary(7)).toBe(3);
+    expect(worstBinary(15)).toBe(4);
+    expect(2 ** 9 - 1).toBe(511);
+    // Seven items: the first comparison leaves at most three; target 1 leaves 1, 3 and 5.
+    const seven = [1, 3, 5, 7, 9, 11, 13];
+    expect(seven[Math.floor((seven.length - 1) / 2)]).toBe(7);
+    expect(seven.slice(0, 3)).toEqual([1, 3, 5]);
+    expect(binary(seven, 1)).toBe(3);
+    // Sorting 1,000 items at about 10,000 steps: one search, then 100 searches.
+    const sort = 10000;
+    expect(sort + worstBinary(1000)).toBe(10010);
+    expect(sort + worstBinary(1000)).toBeGreaterThan(1000 * 10);
+    expect(1000 * 100).toBe(100000);
+    expect(sort + 100 * worstBinary(1000)).toBe(11000);
+    // The skill check has one item for each skill the lesson taught.
+    expect(lesson.questionIds.map((id) => bundle.questions.find((x) => x.id === id)!.skill)).toEqual([
+      "compare-algorithms",
+      "count-by-halving",
+      "when-sorting-pays",
+    ]);
+  });
+
+  it("the worked figures and numbers used in the teaching screens are right", () => {
+    // Lesson 1: card (8 + 4) / 2; trace 2, 8, 16; reorder 5 -> 11 or 12; overwrite 9, 1, 6.
+    expect((8 + 4) / 2).toBe(6);
+    expect((2 + 6) * 2).toBe(16);
+    expect(5 * 2 + 1).toBe(11);
+    expect((5 + 1) * 2).toBe(12);
+    expect(1 + 5).toBe(6);
+    // Lesson 2: x = 8 takes the if branch (8 + 10); x = 7 takes it too (7 - 4), then doubles.
+    expect(8 > 5 ? 8 + 10 : 8 - 1).toBe(18);
+    expect((7 >= 5 ? 7 - 4 : 7 + 1) * 2).toBe(6);
+    expect([4, 6].map((v) => (v > 5) === (v >= 5))).toEqual([true, true]);
+    expect((5 > 5) === (5 >= 5)).toBe(false);
+    // Lesson 3: 9 while > 5 subtracting 2 (two passes, three checks); range(3) adding 4; 6 up to 20 by 3.
+    expect(whileDown(9, 5, 2)).toEqual({ x: 5, passes: 2 });
+    let y = 10;
+    for (let i = 0; i < 3; i++) y += 4;
+    expect(y).toBe(22);
+    let up = 6;
+    const seen: number[] = [];
+    while (up < 20) {
+      up += 3;
+      seen.push(up);
+    }
+    expect(seen).toEqual([9, 12, 15, 18, 21]);
+    // Lesson 4: the five-item list shows index 1 after two checks; a missing target in a list of five costs five.
+    expect(linear([5, 12, 7, 9, 3], 12)).toBe(2);
+    expect(linear([5, 12, 7, 9, 3], 12) - 1).toBe([5, 12, 7, 9, 3].indexOf(12));
+    expect(linear([5, 12, 7, 9, 3], 100)).toBe(5);
+    // Lesson 5: guess 4 of 1 to 10 and "higher" leaves 5 to 10; the seven-item picture.
+    expect(10 - 4).toBe(6);
+    const seven = [4, 9, 13, 18, 24, 31, 40];
+    expect(binary(seven, 31)).toBe(2);
+    expect(linear(seven, 31)).toBe(6);
+    expect(binary(seven, 20)).toBe(3);
+    expect(worstBinary(7)).toBe(3);
+    // The unsorted list in the teaching text loses its target to a binary search.
+    const unsorted = [9, 2, 7, 4, 6];
+    const mid = Math.floor((0 + unsorted.length - 1) / 2);
+    expect(unsorted[mid]).toBe(7);
+    expect(unsorted[mid]! < 9).toBe(true);
+    expect(unsorted.indexOf(9)).toBeLessThan(mid);
+  });
+
+  it("the course introduction fits the brief", () => {
+    const path = new URL("../../../content/cs-basics/.authoring/course-intro.json", import.meta.url);
+    expect(existsSync(path)).toBe(true);
+    const intro = JSON.parse(readFileSync(path, "utf8")) as {
+      paragraphs: string[];
+      outcomes: string[];
+      prerequisites: string;
+      length: string;
+    };
+    const total = intro.paragraphs.join(" ").split(/\s+/u).length;
+    expect(total).toBeGreaterThanOrEqual(120);
+    expect(total).toBeLessThanOrEqual(200);
+    expect(intro.outcomes.length).toBeGreaterThanOrEqual(3);
+    expect(intro.outcomes.length).toBeLessThanOrEqual(5);
+    expect(intro.length).toContain("6 lessons");
   });
 });

@@ -2,21 +2,8 @@
   "lessonId": "preserve-the-left-table",
   "courseId": "sql-from-rows-to-reports",
   "migrationNotes": [
-    "step 'predict': the old title \"Keep the left-hand row\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
-    "step 'predict': kind hook → predict; check the order of teaching and asking still fits (style guide §2).",
-    "step 'work': the old title \"Count the matched key\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
-    "step 'work': write workedSteps from the worked answer (one line per move, one self-explanation prompt), a headline naming the problem, and recompute every number.",
-    "step 'check': the old title \"A WHERE filter can remove the retained row\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
-    "step 'check': kind check → try; check the order of teaching and asking still fits (style guide §2).",
-    "step 'transfer': the old title \"Find the absence itself\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
-    "step 'transfer': 1 block(s) moved to reveal because they state the answer; make the reveal refer to the learner's attempt.",
-    "intro: write the hook (a puzzle the learner can do from what they bring, never a definition), the promise (≤ 25 words, “By the end you'll …”) and the time.",
-    "recap: write the key idea (the promise, kept), the learner's own results, and the one-line bridge to the next lesson.",
-    "skill check: the lesson has 2 quiz item(s); it needs exactly 3, each on something this lesson taught.",
-    "questions: replace every TODO onCorrect (≤ 25 words, states the idea), tag each skill, add misconceptions for predictable wrong answers (the feedback must not state the key).",
-    "vocabulary: give each explain step introducesTerms; no prompt may use a term before the step that introduces it.",
-    "add an explain step before any question that needs a new word or symbol; add a transfer if the lesson has none.",
-    "citations: retarget the seeded citations to the new step and question ids, and give every step, question and flashcard at least one (same sourceIds; the claim is what that screen asserts)."
+    "Spine: a librarian must list every pupil even when a pupil has borrowed nothing, and the same kept-row rule is followed through what the blank means, how to count it, where a test goes and how to find the rows that matched nothing.",
+    "Left out of the lesson (still in the course): sql-preserve-the-left-table-8 (what the orders columns hold) and -9 (which column is always filled). Both are taught on the first, third and fifth screens."
   ],
   "lesson": {
     "id": "preserve-the-left-table",
@@ -27,41 +14,275 @@
     "title": "Keep the customers with no orders",
     "steps": [
       {
-        "id": "keep-every-customer",
+        "id": "a-line-for-everyone",
         "kind": "explain",
         "blocks": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "headline": "Keeping the pupil with no books",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "JOIN keeps only matches. LEFT JOIN customers ... orders keeps every customer."
+            "text": "An INNER JOIN works like a librarian who writes down only the lines that have a book. A row with no partner leaves no trace in the result. When a report has to list everything on one side, that is the wrong tool."
           },
           {
             "kind": "paragraph",
-            "text": "If a customer has no order, the order columns are filled with NULL."
+            "text": "LEFT JOIN is the right one. Take customers LEFT JOIN orders. The table written first is the left table, and every one of its rows appears in the result. A customer with matching orders gets a row for each order, as before. A customer with no matching order still gets one row, and the columns that should have come from orders are filled with NULL."
           },
           {
-            "kind": "callout",
-            "tone": "key",
-            "text": "That NULL means no order matched. It is not an order with a missing amount."
+            "kind": "paragraph",
+            "text": "That NULL has a definite meaning. It says that no order matched, so there was nothing to copy into those columns. The next screens look at how such a blank behaves when you count it, test it and filter around it."
           }
         ],
-        "reveal": [],
-        "visualStateId": "",
-        "checkQuestionId": "sql-preserve-the-left-table-8",
-        "activityId": "",
-        "headline": "A LEFT JOIN keeps every row of the left table, matched or not.",
         "introducesTerms": [
           "LEFT JOIN"
         ]
       },
       {
-        "id": "count-the-rows",
-        "kind": "predict",
+        "id": "library-lines",
+        "kind": "try",
         "blocks": [],
+        "visualStateId": "",
+        "checkQuestionId": "sql-preserve-the-left-table-7",
+        "activityId": "",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "Six orders match their customers, and one customer has no order. Join the tables so that every customer stays."
+            "text": "Write the list the way the librarian would, with a line for every pupil."
+          }
+        ]
+      },
+      {
+        "id": "a-blank-that-means-no-match",
+        "kind": "explain",
+        "blocks": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "headline": "A blank that means no match",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Now the clubs are the left table, and the pupils are the rows that may or may not be there. Art has no pupils, so no pupil satisfies the ON condition for it. An INNER JOIN would drop Art. A LEFT JOIN keeps it and fills the pupil columns with NULL."
+          },
+          {
+            "kind": "paragraph",
+            "text": "Look at the two blanks in the second result. Di's year is NULL because the school never recorded it, and Di is a real pupil. Art's pupil and year are both NULL because no pupil matched. The same symbol sits in both places and means different things. To tell them apart, look at a column that every real pupil has, such as the pupil's id."
+          }
+        ],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "The first query returns four rows and the second returns five. The extra row is the club with nobody in it. Everything the inner join returned is still there, so a LEFT JOIN never loses rows from the left table and never loses a match."
+          }
+        ],
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "pupils",
+              "columns": [
+                "id",
+                "name",
+                "club",
+                "year"
+              ],
+              "rows": [
+                {
+                  "id": "pupils-0",
+                  "cells": [
+                    1,
+                    "Ann",
+                    1,
+                    5
+                  ]
+                },
+                {
+                  "id": "pupils-1",
+                  "cells": [
+                    2,
+                    "Bo",
+                    2,
+                    6
+                  ]
+                },
+                {
+                  "id": "pupils-2",
+                  "cells": [
+                    3,
+                    "Cy",
+                    1,
+                    6
+                  ]
+                },
+                {
+                  "id": "pupils-3",
+                  "cells": [
+                    4,
+                    "Di",
+                    3,
+                    null
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "clubs",
+              "columns": [
+                "id",
+                "name"
+              ],
+              "rows": [
+                {
+                  "id": "clubs-0",
+                  "cells": [
+                    1,
+                    "Chess"
+                  ]
+                },
+                {
+                  "id": "clubs-1",
+                  "cells": [
+                    2,
+                    "Choir"
+                  ]
+                },
+                {
+                  "id": "clubs-2",
+                  "cells": [
+                    3,
+                    "Drama"
+                  ]
+                },
+                {
+                  "id": "clubs-3",
+                  "cells": [
+                    4,
+                    "Art"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Matches only",
+              "sql": "SELECT c.name AS club, p.name AS pupil, p.year FROM clubs AS c JOIN pupils AS p ON p.club = c.id ORDER BY c.id, p.id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "club",
+                  "pupil",
+                  "year"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      "Chess",
+                      "Ann",
+                      5
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      "Chess",
+                      "Cy",
+                      6
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      "Choir",
+                      "Bo",
+                      6
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      "Drama",
+                      "Di",
+                      null
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "Keep every club",
+              "sql": "SELECT c.name AS club, p.name AS pupil, p.year FROM clubs AS c LEFT JOIN pupils AS p ON p.club = c.id ORDER BY c.id, p.id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "club",
+                  "pupil",
+                  "year"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      "Chess",
+                      "Ann",
+                      5
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      "Chess",
+                      "Cy",
+                      6
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      "Choir",
+                      "Bo",
+                      6
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      "Drama",
+                      "Di",
+                      null
+                    ]
+                  },
+                  {
+                    "id": "result-4",
+                    "cells": [
+                      "Art",
+                      null,
+                      null
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-1"
+        }
+      },
+      {
+        "id": "keep-every-customer",
+        "kind": "predict",
+        "blocks": [],
+        "visualStateId": "",
+        "checkQuestionId": "sql-preserve-the-left-table-1",
+        "activityId": "",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Six orders match their customers, and one customer, Dee, has no order. Join the tables so that every customer stays."
           }
         ],
         "reveal": [
@@ -70,9 +291,6 @@
             "text": "You kept every match and added the customer with none. The unmatched row is still a row of the result."
           }
         ],
-        "visualStateId": "",
-        "checkQuestionId": "sql-preserve-the-left-table-1",
-        "activityId": "",
         "diagram": {
           "type": "relational_query",
           "inputs": [
@@ -339,135 +557,112 @@
         "answerVisibility": "hidden-until-response"
       },
       {
-        "id": "cys-orders",
-        "kind": "worked_example",
+        "id": "counting-what-matched",
+        "kind": "explain",
         "blocks": [],
-        "lead": [],
-        "reveal": [],
         "visualStateId": "",
         "checkQuestionId": "",
         "activityId": "",
-        "headline": "Count Cy's rows, orders and known amounts after the LEFT JOIN.",
+        "headline": "Counting what matched",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "A kept row counts as a row. COUNT(*) counts every row of the result, so a club with no pupils still adds 1 to it. Often that is not the number you want. To count matches, count a column from the other table, because COUNT(column) skips the NULLs."
+          },
+          {
+            "kind": "paragraph",
+            "text": "Not every column of the other table is safe for this. A real pupil can have an unknown year, so COUNT(p.year) would miss Di. The key column is different. Every real pupil has an id, so COUNT(p.id) is filled on every matched row and empty only on the kept one. It counts the matches exactly."
+          }
+        ],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "In the picture the clubs are grouped, and the first query counts rows while the second counts pupil ids. Art has one row but no pupils, so it shows 1 in the first query and 0 in the second. The other clubs agree in both queries because every row of theirs is a real match."
+          }
+        ],
         "diagram": {
           "type": "relational_query",
           "inputs": [
             {
-              "name": "customers",
+              "name": "pupils",
               "columns": [
                 "id",
                 "name",
-                "region"
+                "club",
+                "year"
               ],
               "rows": [
                 {
-                  "id": "customers-0",
+                  "id": "pupils-0",
                   "cells": [
                     1,
-                    "Ada",
-                    "North"
+                    "Ann",
+                    1,
+                    5
                   ]
                 },
                 {
-                  "id": "customers-1",
+                  "id": "pupils-1",
                   "cells": [
                     2,
-                    "Ben",
-                    "South"
+                    "Bo",
+                    2,
+                    6
                   ]
                 },
                 {
-                  "id": "customers-2",
+                  "id": "pupils-2",
                   "cells": [
                     3,
                     "Cy",
-                    "North"
+                    1,
+                    6
                   ]
                 },
                 {
-                  "id": "customers-3",
+                  "id": "pupils-3",
                   "cells": [
                     4,
-                    "Dee",
-                    "West"
+                    "Di",
+                    3,
+                    null
                   ]
                 }
               ]
             },
             {
-              "name": "orders",
+              "name": "clubs",
               "columns": [
                 "id",
-                "customer_id",
-                "item",
-                "amount",
-                "status",
-                "day"
+                "name"
               ],
               "rows": [
                 {
-                  "id": "orders-0",
+                  "id": "clubs-0",
                   "cells": [
-                    101,
                     1,
-                    "Desk",
-                    80,
-                    "paid",
-                    "2026-09-01"
+                    "Chess"
                   ]
                 },
                 {
-                  "id": "orders-1",
+                  "id": "clubs-1",
                   "cells": [
-                    102,
-                    1,
-                    "Book",
-                    20,
-                    "paid",
-                    "2026-09-02"
-                  ]
-                },
-                {
-                  "id": "orders-2",
-                  "cells": [
-                    103,
                     2,
-                    "Desk",
-                    80,
-                    "paid",
-                    "2026-09-02"
+                    "Choir"
                   ]
                 },
                 {
-                  "id": "orders-3",
+                  "id": "clubs-2",
                   "cells": [
-                    104,
-                    2,
-                    "Lamp",
-                    40,
-                    "pending",
-                    "2026-09-03"
-                  ]
-                },
-                {
-                  "id": "orders-4",
-                  "cells": [
-                    105,
                     3,
-                    "Book",
-                    20,
-                    "paid",
-                    "2026-09-03"
+                    "Drama"
                   ]
                 },
                 {
-                  "id": "orders-5",
+                  "id": "clubs-3",
                   "cells": [
-                    106,
-                    3,
-                    "Lamp",
-                    null,
-                    "pending",
-                    "2026-09-04"
+                    4,
+                    "Art"
                   ]
                 }
               ]
@@ -476,23 +671,40 @@
           "queries": [
             {
               "id": "query-0",
-              "label": "Cy's rows, orders and known amounts",
-              "sql": "SELECT c.name, COUNT(*) AS joined_rows, COUNT(o.id) AS orders, COUNT(o.amount) AS known_amounts FROM customers AS c LEFT JOIN orders AS o ON c.id = o.customer_id WHERE c.id = 3 GROUP BY c.id, c.name;",
+              "label": "Count the rows",
+              "sql": "SELECT c.name AS club, COUNT(*) AS joined_rows FROM clubs AS c LEFT JOIN pupils AS p ON p.club = c.id GROUP BY c.id, c.name ORDER BY c.id;",
               "result": {
                 "name": "Result",
                 "columns": [
-                  "name",
-                  "joined_rows",
-                  "orders",
-                  "known_amounts"
+                  "club",
+                  "joined_rows"
                 ],
                 "rows": [
                   {
                     "id": "result-0",
                     "cells": [
-                      "Cy",
-                      2,
-                      2,
+                      "Chess",
+                      2
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      "Choir",
+                      1
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      "Drama",
+                      1
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      "Art",
                       1
                     ]
                   }
@@ -501,30 +713,41 @@
             },
             {
               "id": "query-1",
-              "label": "Cy's joined rows",
-              "sql": "SELECT c.name, o.id, o.amount FROM customers AS c LEFT JOIN orders AS o ON c.id = o.customer_id WHERE c.id = 3 ORDER BY o.id;",
+              "label": "Count the pupil ids",
+              "sql": "SELECT c.name AS club, COUNT(p.id) AS pupils FROM clubs AS c LEFT JOIN pupils AS p ON p.club = c.id GROUP BY c.id, c.name ORDER BY c.id;",
               "result": {
                 "name": "Result",
                 "columns": [
-                  "name",
-                  "id",
-                  "amount"
+                  "club",
+                  "pupils"
                 ],
                 "rows": [
                   {
                     "id": "result-0",
                     "cells": [
-                      "Cy",
-                      105,
-                      20
+                      "Chess",
+                      2
                     ]
                   },
                   {
                     "id": "result-1",
                     "cells": [
-                      "Cy",
-                      106,
-                      null
+                      "Choir",
+                      1
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      "Drama",
+                      1
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      "Art",
+                      0
                     ]
                   }
                 ]
@@ -532,34 +755,19 @@
             }
           ],
           "initialQueryId": "query-0"
-        },
-        "answerVisibility": "hidden-until-response",
-        "workedSteps": [
-          {
-            "text": "Cy matched two orders, so the join gives two rows.",
-            "math": "COUNT(*) = 2"
-          },
-          {
-            "text": "Count an order column that is always filled on a match.",
-            "math": "COUNT(o.id) = 2",
-            "selfExplain": {
-              "questionId": "sql-preserve-the-left-table-9"
-            }
-          },
-          {
-            "text": "One matched order has no amount, and COUNT(o.amount) skips it.",
-            "math": "COUNT(o.amount) = 1"
-          }
-        ]
+        }
       },
       {
         "id": "dees-orders",
         "kind": "try",
         "blocks": [],
+        "visualStateId": "",
+        "checkQuestionId": "sql-preserve-the-left-table-2",
+        "activityId": "",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "COUNT of a column ignores NULL. After a LEFT JOIN, a customer with no match has NULL in every order column."
+            "text": "COUNT of a column ignores NULL. After the join, a customer with no match has NULL in every order column."
           }
         ],
         "reveal": [
@@ -568,9 +776,6 @@
             "text": "You counted matched orders, not rows. Counting a column from the right table gives zero for a customer with none."
           }
         ],
-        "visualStateId": "",
-        "checkQuestionId": "sql-preserve-the-left-table-2",
-        "activityId": "",
         "diagram": {
           "type": "relational_query",
           "inputs": [
@@ -787,9 +992,199 @@
         "answerVisibility": "hidden-until-response"
       },
       {
+        "id": "where-a-test-belongs",
+        "kind": "explain",
+        "blocks": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "headline": "Where a test belongs",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "A test on the other table raises a new question, because it can go in two places. Written in ON, it becomes part of the matching rule and decides which rows pair up, and a row that finds no partner is still kept with NULLs. Written in WHERE, it runs afterwards on the finished rows and removes any row that fails."
+          },
+          {
+            "kind": "paragraph",
+            "text": "A row kept for lack of a partner has NULL in the pupil columns, and a test such as p.year = 6 is never true of NULL. In WHERE that row fails the test and disappears, so the LEFT JOIN quietly turns back into an inner join. Put the test in ON when every row of the left table has to stay."
+          }
+        ],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "The picture asks for the clubs with their year 6 pupils. With the test in ON, all four clubs are still listed. Chess and Choir show a year 6 pupil, and Drama and Art show NULL because nobody in year 6 matched them. With the test in WHERE, only the two clubs that have a year 6 pupil remain."
+          }
+        ],
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "pupils",
+              "columns": [
+                "id",
+                "name",
+                "club",
+                "year"
+              ],
+              "rows": [
+                {
+                  "id": "pupils-0",
+                  "cells": [
+                    1,
+                    "Ann",
+                    1,
+                    5
+                  ]
+                },
+                {
+                  "id": "pupils-1",
+                  "cells": [
+                    2,
+                    "Bo",
+                    2,
+                    6
+                  ]
+                },
+                {
+                  "id": "pupils-2",
+                  "cells": [
+                    3,
+                    "Cy",
+                    1,
+                    6
+                  ]
+                },
+                {
+                  "id": "pupils-3",
+                  "cells": [
+                    4,
+                    "Di",
+                    3,
+                    null
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "clubs",
+              "columns": [
+                "id",
+                "name"
+              ],
+              "rows": [
+                {
+                  "id": "clubs-0",
+                  "cells": [
+                    1,
+                    "Chess"
+                  ]
+                },
+                {
+                  "id": "clubs-1",
+                  "cells": [
+                    2,
+                    "Choir"
+                  ]
+                },
+                {
+                  "id": "clubs-2",
+                  "cells": [
+                    3,
+                    "Drama"
+                  ]
+                },
+                {
+                  "id": "clubs-3",
+                  "cells": [
+                    4,
+                    "Art"
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Test in ON",
+              "sql": "SELECT c.name AS club, p.name AS pupil FROM clubs AS c LEFT JOIN pupils AS p ON p.club = c.id AND p.year = 6 ORDER BY c.id, p.id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "club",
+                  "pupil"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      "Chess",
+                      "Cy"
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      "Choir",
+                      "Bo"
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      "Drama",
+                      null
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      "Art",
+                      null
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "Test in WHERE",
+              "sql": "SELECT c.name AS club, p.name AS pupil FROM clubs AS c LEFT JOIN pupils AS p ON p.club = c.id WHERE p.year = 6 ORDER BY c.id, p.id;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "club",
+                  "pupil"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      "Chess",
+                      "Cy"
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      "Choir",
+                      "Bo"
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        }
+      },
+      {
         "id": "paid-test-placement",
         "kind": "predict",
         "blocks": [],
+        "visualStateId": "",
+        "checkQuestionId": "sql-preserve-the-left-table-3",
+        "activityId": "",
         "lead": [
           {
             "kind": "paragraph",
@@ -802,9 +1197,6 @@
             "text": "You decided where the paid test belongs. A test in ON limits which orders match. A test in WHERE can remove the preserved customer."
           }
         ],
-        "visualStateId": "",
-        "checkQuestionId": "sql-preserve-the-left-table-3",
-        "activityId": "",
         "diagram": {
           "type": "relational_query",
           "inputs": [
@@ -1028,139 +1420,112 @@
         "answerVisibility": "hidden-until-response"
       },
       {
-        "id": "no-order-at-all",
-        "kind": "transfer",
+        "id": "finding-rows-with-no-match",
+        "kind": "explain",
         "blocks": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "headline": "Finding rows with no match",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "To find customers with no order, test a column from orders. Think about which columns can be NULL on a real order."
+            "text": "A kept row can be picked out with IS NULL, which you met earlier for unknown values. The question is which column to test. A column that the other table can leave unknown on a real row gives a muddled answer, because the test then finds both kinds of blank."
+          },
+          {
+            "kind": "paragraph",
+            "text": "The pupils show it. Di is a real pupil whose year was never recorded, so p.year IS NULL is true for Di and for the kept row of Art. The key column p.id is filled on every real pupil, so p.id IS NULL is true only where nothing matched. Testing the key finds exactly the clubs with no pupils."
           }
         ],
-        "reveal": [],
-        "visualStateId": "",
-        "checkQuestionId": "sql-preserve-the-left-table-4",
-        "activityId": "",
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "The first query tests the key and returns Art alone. The second tests the year and returns Drama and Art, which are different kinds of row. When you want the rows with no match, test a column that a matched row always has."
+          }
+        ],
         "diagram": {
           "type": "relational_query",
           "inputs": [
             {
-              "name": "customers",
+              "name": "pupils",
               "columns": [
                 "id",
                 "name",
-                "region"
+                "club",
+                "year"
               ],
               "rows": [
                 {
-                  "id": "customers-0",
+                  "id": "pupils-0",
                   "cells": [
                     1,
-                    "Ada",
-                    "North"
+                    "Ann",
+                    1,
+                    5
                   ]
                 },
                 {
-                  "id": "customers-1",
+                  "id": "pupils-1",
                   "cells": [
                     2,
-                    "Ben",
-                    "South"
+                    "Bo",
+                    2,
+                    6
                   ]
                 },
                 {
-                  "id": "customers-2",
+                  "id": "pupils-2",
                   "cells": [
                     3,
                     "Cy",
-                    "North"
+                    1,
+                    6
                   ]
                 },
                 {
-                  "id": "customers-3",
+                  "id": "pupils-3",
                   "cells": [
                     4,
-                    "Dee",
-                    "West"
+                    "Di",
+                    3,
+                    null
                   ]
                 }
               ]
             },
             {
-              "name": "orders",
+              "name": "clubs",
               "columns": [
                 "id",
-                "customer_id",
-                "item",
-                "amount",
-                "status",
-                "day"
+                "name"
               ],
               "rows": [
                 {
-                  "id": "orders-0",
+                  "id": "clubs-0",
                   "cells": [
-                    101,
                     1,
-                    "Desk",
-                    80,
-                    "paid",
-                    "2026-09-01"
+                    "Chess"
                   ]
                 },
                 {
-                  "id": "orders-1",
+                  "id": "clubs-1",
                   "cells": [
-                    102,
-                    1,
-                    "Book",
-                    20,
-                    "paid",
-                    "2026-09-02"
-                  ]
-                },
-                {
-                  "id": "orders-2",
-                  "cells": [
-                    103,
                     2,
-                    "Desk",
-                    80,
-                    "paid",
-                    "2026-09-02"
+                    "Choir"
                   ]
                 },
                 {
-                  "id": "orders-3",
+                  "id": "clubs-2",
                   "cells": [
-                    104,
-                    2,
-                    "Lamp",
-                    40,
-                    "pending",
-                    "2026-09-03"
-                  ]
-                },
-                {
-                  "id": "orders-4",
-                  "cells": [
-                    105,
                     3,
-                    "Book",
-                    20,
-                    "paid",
-                    "2026-09-03"
+                    "Drama"
                   ]
                 },
                 {
-                  "id": "orders-5",
+                  "id": "clubs-3",
                   "cells": [
-                    106,
-                    3,
-                    "Lamp",
-                    null,
-                    "pending",
-                    "2026-09-04"
+                    4,
+                    "Art"
                   ]
                 }
               ]
@@ -1169,19 +1534,19 @@
           "queries": [
             {
               "id": "query-0",
-              "label": "No matching order",
-              "sql": "SELECT c.name, o.id FROM customers AS c LEFT JOIN orders AS o ON c.id = o.customer_id WHERE o.id IS NULL ORDER BY c.id;",
+              "label": "Test the key",
+              "sql": "SELECT c.name AS club, p.name AS pupil FROM clubs AS c LEFT JOIN pupils AS p ON p.club = c.id WHERE p.id IS NULL ORDER BY c.id;",
               "result": {
                 "name": "Result",
                 "columns": [
-                  "name",
-                  "id"
+                  "club",
+                  "pupil"
                 ],
                 "rows": [
                   {
                     "id": "result-0",
                     "cells": [
-                      "Dee",
+                      "Art",
                       null
                     ]
                   }
@@ -1190,29 +1555,26 @@
             },
             {
               "id": "query-1",
-              "label": "No known amount",
-              "sql": "SELECT c.name, o.id, o.amount FROM customers AS c LEFT JOIN orders AS o ON c.id = o.customer_id WHERE o.amount IS NULL ORDER BY c.id, o.id;",
+              "label": "Test the year",
+              "sql": "SELECT c.name AS club, p.name AS pupil FROM clubs AS c LEFT JOIN pupils AS p ON p.club = c.id WHERE p.year IS NULL ORDER BY c.id, p.id;",
               "result": {
                 "name": "Result",
                 "columns": [
-                  "name",
-                  "id",
-                  "amount"
+                  "club",
+                  "pupil"
                 ],
                 "rows": [
                   {
                     "id": "result-0",
                     "cells": [
-                      "Cy",
-                      106,
-                      null
+                      "Drama",
+                      "Di"
                     ]
                   },
                   {
                     "id": "result-1",
                     "cells": [
-                      "Dee",
-                      null,
+                      "Art",
                       null
                     ]
                   }
@@ -1221,8 +1583,21 @@
             }
           ],
           "initialQueryId": "query-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        }
+      },
+      {
+        "id": "no-order-at-all",
+        "kind": "transfer",
+        "blocks": [],
+        "visualStateId": "",
+        "checkQuestionId": "sql-preserve-the-left-table-4",
+        "activityId": "",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "The shop's customers are the left table and the orders are the other. Pick the test that finds only the customers with no order."
+          }
+        ]
       }
     ],
     "orientation": "Preserve unmatched customers without counting them as orders.",
@@ -1256,23 +1631,30 @@
         "blocks": [
           {
             "kind": "paragraph",
-            "text": "A librarian lists each pupil beside the books they have borrowed. Ann borrowed 2, Bo borrowed 1 and Cy borrowed none."
+            "text": "A librarian lists each pupil beside the books they have borrowed. Ann borrowed 2, Bo borrowed 1 and Cy borrowed none. The head teacher wants a list of every pupil with the books they have out, so she can see at a glance who has been using the library."
+          },
+          {
+            "kind": "paragraph",
+            "text": "If the librarian writes only the lines that have a book, Cy never appears, and the list suggests that the school has two pupils. To show everyone she writes a line for Cy as well and leaves the book blank. The blank has a definite meaning: no book matched Cy."
+          },
+          {
+            "kind": "paragraph",
+            "text": "The last lesson's join drops a row that has no partner. This lesson keeps it, and shows how to count and test the blanks that result, so that a missing partner is never mistaken for a missing value inside a row that did have one."
           }
-        ],
-        "questionId": "sql-preserve-the-left-table-7"
+        ]
       },
       "promise": "By the end you'll keep customers who have no orders, and tell a missing match from a missing amount.",
-      "estimatedMinutes": 10
+      "estimatedMinutes": 12
     },
     "recap": {
-      "keyIdea": "A LEFT JOIN keeps every left row and fills unmatched columns with NULL. Count and test the order key to tell a missing match from a missing amount.",
+      "keyIdea": "A LEFT JOIN keeps every row of the left table and fills the other table's columns with NULL where nothing matched. Count and test the other table's key to tell a missing match from a missing value.",
       "blocks": [
         {
           "kind": "paragraph",
-          "text": "You counted 4 list lines and 7 rows after the LEFT JOIN. Dee's COUNT(o.id) was 0 because no order matched."
+          "text": "You wrote 4 lines for 3 pupils and counted 7 rows once Dee was kept. Her COUNT(o.id) was 0, because no order matched."
         }
       ],
-      "nextHook": "Next, keep the unmatched rows from both sides."
+      "nextHook": "A LEFT JOIN protects only the table written first. Sometimes both lists have people missing from the other: guests who replied but have no badge, and badges printed for people who never replied. Keeping everyone from both sides is the next step."
     },
     "calculator": "off",
     "taughtSkills": [
@@ -1550,7 +1932,7 @@
       "conceptIds": [
         "sql-preserve-the-left-table"
       ],
-      "prompt": "How many lines does the list need if every pupil must appear?",
+      "prompt": "A librarian lists each pupil beside the books they have borrowed. Ann borrowed 2, Bo borrowed 1 and Cy borrowed none. How many lines does the list need if every pupil must appear?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -1730,48 +2112,6 @@
   ],
   "citations": [
     {
-      "claim": "A LEFT JOIN keeps every row of the left table, matched or not.",
-      "sourceId": "sqlite-select",
-      "section": "SELECT 2.1: outer joins; 2.3: WHERE filtering after outer-join NULL rows",
-      "targetKind": "step",
-      "targetId": "keep-every-customer"
-    },
-    {
-      "claim": "Six orders match their customers, and one customer has no order. Join the tables so that every customer stays.",
-      "sourceId": "sqlite-select",
-      "section": "SELECT 2.1: outer joins; 2.3: WHERE filtering after outer-join NULL rows",
-      "targetKind": "step",
-      "targetId": "count-the-rows"
-    },
-    {
-      "claim": "Count Cy's rows, orders and known amounts after the LEFT JOIN.",
-      "sourceId": "sqlite-aggregate",
-      "section": "Descriptions of avg(X), count(X), count(*), min(X), max(X) and sum(X)",
-      "targetKind": "step",
-      "targetId": "cys-orders"
-    },
-    {
-      "claim": "COUNT of a column ignores NULL. After a LEFT JOIN, a customer with no match has NULL in every order column.",
-      "sourceId": "sqlite-aggregate",
-      "section": "Descriptions of avg(X), count(X), count(*), min(X), max(X) and sum(X)",
-      "targetKind": "step",
-      "targetId": "dees-orders"
-    },
-    {
-      "claim": "In Dee's row every orders column is NULL. A test written after the join runs on those NULLs.",
-      "sourceId": "sqlite-expr",
-      "section": "2: Operators; 5 LIKE; 6 BETWEEN; 7 CASE; 8 IN and NOT IN; 10 EXISTS; 11 subqueries",
-      "targetKind": "step",
-      "targetId": "paid-test-placement"
-    },
-    {
-      "claim": "To find customers with no order, test a column from orders. Think about which columns can be NULL on a real order.",
-      "sourceId": "sqlite-expr",
-      "section": "2: Operators; 5 LIKE; 6 BETWEEN; 7 CASE; 8 IN and NOT IN; 10 EXISTS; 11 subqueries",
-      "targetKind": "step",
-      "targetId": "no-order-at-all"
-    },
-    {
       "claim": "Six matched order rows plus Dee's unmatched customer row make seven.",
       "sourceId": "sqlite-select",
       "section": "SELECT 2.1: outer joins; 2.3: WHERE filtering after outer-join NULL rows",
@@ -1821,20 +2161,6 @@
       "targetId": "sql-preserve-the-left-table-7"
     },
     {
-      "claim": "No order matched, so there is nothing to show. The orders columns are left empty, as NULL.",
-      "sourceId": "sqlite-select",
-      "section": "SELECT 2.1: outer joins; 2.3: WHERE filtering after outer-join NULL rows",
-      "targetKind": "question",
-      "targetId": "sql-preserve-the-left-table-8"
-    },
-    {
-      "claim": "Every real order has an id, even when its amount is unknown, so o.id is filled on each match.",
-      "sourceId": "sqlite-aggregate",
-      "section": "Descriptions of avg(X), count(X), count(*), min(X), max(X) and sum(X)",
-      "targetKind": "question",
-      "targetId": "sql-preserve-the-left-table-9"
-    },
-    {
       "claim": "X gives four rows. Y and Z each give one preserved row, so six rows in all.",
       "sourceId": "sqlite-select",
       "section": "SELECT 2.1: outer joins; 2.3: WHERE filtering after outer-join NULL rows",
@@ -1854,6 +2180,76 @@
       "section": "SELECT 2.1: outer joins; 2.3: WHERE filtering after outer-join NULL rows",
       "targetKind": "flashcard",
       "targetId": "sql-preserve-the-left-table-card-2"
+    },
+    {
+      "claim": "A LEFT JOIN keeps every row of the left table, filling the other table's columns with NULL when nothing matches.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.1: outer joins; 2.3: WHERE filtering after outer-join NULL rows",
+      "targetKind": "step",
+      "targetId": "a-line-for-everyone"
+    },
+    {
+      "claim": "A pupil with no books still gets a line, so the list has four lines.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.1: outer joins; 2.3: WHERE filtering after outer-join NULL rows",
+      "targetKind": "step",
+      "targetId": "library-lines"
+    },
+    {
+      "claim": "A kept row has NULL in the other table's columns, which is different from an unknown value in a matched row.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.1: outer joins; 2.3: WHERE filtering after outer-join NULL rows",
+      "targetKind": "step",
+      "targetId": "a-blank-that-means-no-match"
+    },
+    {
+      "claim": "The LEFT JOIN returns the six matches plus one row for the customer with none.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.1: outer joins; 2.3: WHERE filtering after outer-join NULL rows",
+      "targetKind": "step",
+      "targetId": "keep-every-customer"
+    },
+    {
+      "claim": "COUNT(*) counts the kept row, while COUNT of the other table's key counts only the matches.",
+      "sourceId": "sqlite-aggregate",
+      "section": "Descriptions of avg(X), count(X), count(*), min(X), max(X) and sum(X)",
+      "targetKind": "step",
+      "targetId": "counting-what-matched"
+    },
+    {
+      "claim": "COUNT(o.id) is zero for Dee because her order id is NULL.",
+      "sourceId": "sqlite-aggregate",
+      "section": "Descriptions of avg(X), count(X), count(*), min(X), max(X) and sum(X)",
+      "targetKind": "step",
+      "targetId": "dees-orders"
+    },
+    {
+      "claim": "A test in ON limits which rows match and keeps unmatched rows, while a test in WHERE removes them.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.1: outer joins; 2.3: WHERE filtering after outer-join NULL rows",
+      "targetKind": "step",
+      "targetId": "where-a-test-belongs"
+    },
+    {
+      "claim": "The paid test belongs in ON when every customer must remain.",
+      "sourceId": "sqlite-select",
+      "section": "SELECT 2.1: outer joins; 2.3: WHERE filtering after outer-join NULL rows",
+      "targetKind": "step",
+      "targetId": "paid-test-placement"
+    },
+    {
+      "claim": "Testing the other table's key with IS NULL finds the rows that matched nothing, while a test on another column can find more.",
+      "sourceId": "sqlite-expr",
+      "section": "2: Operators; 5 LIKE; 6 BETWEEN; 7 CASE; 8 IN and NOT IN; 10 EXISTS; 11 subqueries",
+      "targetKind": "step",
+      "targetId": "finding-rows-with-no-match"
+    },
+    {
+      "claim": "o.id IS NULL identifies customers with no matched order.",
+      "sourceId": "sqlite-expr",
+      "section": "2: Operators; 5 LIKE; 6 BETWEEN; 7 CASE; 8 IN and NOT IN; 10 EXISTS; 11 subqueries",
+      "targetKind": "step",
+      "targetId": "no-order-at-all"
     }
   ]
 }

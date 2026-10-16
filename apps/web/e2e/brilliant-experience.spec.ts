@@ -93,7 +93,7 @@ test("the catalogue contains eighteen real courses in illustrated learning paths
     expect(list.map((course: { id: string }) => course.id)).toContain(id);
   await page.goto("/courses");
   await expect(page.getByRole("heading", { name: "Learning paths", exact: true })).toBeVisible();
-  await expect(page.getByRole("link", { name: /Roman|Electronics/ })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: /Electronics/ })).toHaveCount(0);
   for (const viewport of viewports) await capture(page, "catalogue", viewport);
   await page.setViewportSize({ width: 1024, height: 768 });
   const path = page.getByRole("region", { name: "Foundations for thinking" });

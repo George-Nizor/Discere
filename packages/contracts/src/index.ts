@@ -6,8 +6,6 @@ export * from "./curation.js";
 export * from "./journey.js";
 export * from "./modes.js";
 export * from "./notebook.js";
-export * from "./recovery.js";
-export * from "./reference-review.js";
 export * from "./tutor.js";
 export * from "./visuals.js";
 export { LearningDiagramSchema, type LearningDiagram } from "./learning-diagram.js";
@@ -43,3 +41,4 @@ export * from "./linear-algebra-diagram.js";
 
 export * from "./inference-diagram.js";
 export * from "./code-runtimes.js";
+export * from "./svg-figure.js";

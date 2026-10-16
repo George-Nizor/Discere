@@ -115,6 +115,7 @@ function learnerSteps(lesson: LessonBeat, bundle: CourseBundle): LearnerStep[] {
       blocks: projection.lead,
       ...(projection.eyebrow && !archived ? { eyebrow: projection.eyebrow } : {}),
       ...(step.headline ? { headline: step.headline } : {}),
+      ...(step.afterFigure?.length && !archived ? { afterFigure: step.afterFigure } : {}),
       ...(workedSteps ? { workedSteps } : {}),
       ...(step.answerVisibility ? { answerVisibility: step.answerVisibility } : {}),
       ...(step.calculator ? { calculator: step.calculator } : {}),
@@ -270,6 +271,7 @@ export class ContentRepository {
         completed: completedLessonIds.has(lesson.id),
       })),
       exerciseCount: bundle.questions.length,
+      ...(bundle.course.introduction ? { introduction: bundle.course.introduction } : {}),
       modules: bundle.course.moduleIds.flatMap((id) => {
         const module = bundle.modules.find((item) => item.id === id);
         if (!module) return [];

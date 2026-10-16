@@ -1,7 +1,11 @@
 {
   "lessonId": "run-and-bind",
   "courseId": "python-for-data-analysis",
-  "migrationNotes": [],
+  "migrationNotes": [
+    "Spine: a tiny shop program that starts as one line, then grows: a name stores an answer and forgets the rule, a name can update itself, and a notebook kernel keeps all of it between runs.",
+    "The spreadsheet in the opener is the contrast the whole lesson comes back to: a sheet keeps rules, Python keeps answers.",
+    "Left out of the lesson (still in the course): python-run-and-bind-hook (the spreadsheet sum, covered by the opener)."
+  ],
   "lesson": {
     "id": "run-and-bind",
     "courseId": "python-for-data-analysis",
@@ -11,47 +15,70 @@
     "title": "Follow a value through a program",
     "steps": [
       {
-        "id": "a-name-and-a-value",
+        "id": "a-name-for-a-value",
         "kind": "explain",
         "blocks": [],
-        "headline": "A line like price = 4 works out the right side now and stores the result under a name.",
+        "headline": "A name for a value",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "Python runs one line at a time, from the top. An assignment stores a value, not a formula. Later lines can read the name, or store a new value under it."
+            "text": "A Python program is a list of instructions, written one to a line. Python reads them from the top and carries out each one in turn, so the order you write them in is the order things happen. The most common instruction gives a value a name."
           },
           {
-            "kind": "callout",
-            "tone": "key",
-            "text": "A name does not remember how its value was calculated. Spreadsheets recalculate; Python does not."
+            "kind": "paragraph",
+            "text": "Say a shop sells pens at 4 each. The line price = 4 stores the number 4 under the name price. A labelled jar is a good picture: the name is the label and the value is what's inside. The equals sign here is an instruction to store, and it says nothing about whether two things match. An instruction of this kind is called an assignment."
+          },
+          {
+            "kind": "paragraph",
+            "text": "The right-hand side can be a calculation. For total = price * 3, Python reads price and finds 4, then multiplies it by 3 and puts the answer, 12, in a new jar labelled total. The star is Python's multiplication sign. You can also leave a note for people reading the program: a line that starts with # is a comment, and Python skips it."
           }
         ],
-        "reveal": [],
         "introducesTerms": [
-          "assignment"
+          "assignment",
+          "comment"
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
+      },
+      {
+        "id": "what-the-line-does",
+        "kind": "predict",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Python has reached the line price = 4, and nothing else has run yet. Think about what the line leaves behind once it has finished."
+          }
         ],
         "visualStateId": "",
         "checkQuestionId": "python-run-and-bind-assign-check",
         "activityId": ""
       },
       {
-        "id": "what-does-total-keep",
-        "kind": "predict",
+        "id": "what-a-name-keeps",
+        "kind": "explain",
         "blocks": [],
+        "headline": "What a name keeps",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "The program stores total, then changes price. Think about what total was given when it was stored."
+            "text": "Return to the spreadsheet, where changing A1 rewrote B1 for you. A short program shows how Python differs. Step through the lines in the picture and watch the two names, price and total. The small int label beside each value only says it is a whole number, which the next lesson explains."
           }
         ],
-        "reveal": [
+        "afterFigure": [
           {
             "kind": "paragraph",
-            "text": "Whatever you predicted, Python worked out 5 × 4 once, at the line that stored total. Changing price later did not run that line again."
+            "text": "After line 3, price holds 6 and total still holds 12. When Python ran line 2 it read price, which was 4 at that moment, worked out 4 × 3 and stored the answer. The name total keeps only that answer. It has no record of the calculation behind it, so changing price later cannot reach back and alter it."
+          },
+          {
+            "kind": "paragraph",
+            "text": "The second case in the picture shows the only way to get a total of 18. You run the calculation again, by writing total = price * 3 a second time after price has changed. Python works out each line when it reaches it, and the result stays in its name until a later line stores something else there."
           }
         ],
+        "introducesTerms": [],
         "visualStateId": "",
-        "checkQuestionId": "python-run-and-bind-1",
+        "checkQuestionId": "",
         "activityId": "",
         "diagram": {
           "type": "python_execution",
@@ -182,8 +209,159 @@
             }
           ],
           "initialCaseId": "case-0"
+        }
+      },
+      {
+        "id": "what-does-total-keep",
+        "kind": "predict",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Here is the same pattern with new numbers. The program stores price and uses it to work out total. Then it changes price. Decide what total holds at the end."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-run-and-bind-1",
+        "activityId": ""
+      },
+      {
+        "id": "using-a-name-to-change-itself",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "Changing a name using its own value",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "A line can change a name by building on what it already holds. Take x = 3 followed by x = x + 2. Python always works out the right-hand side first, using the value x holds at that moment, which is 3. It gets 5 and stores that under x, which replaces the old 3."
+          },
+          {
+            "kind": "paragraph",
+            "text": "Storing a new value under a name that already has one is called reassignment. Adding to a name is so common that Python has a shorthand: the line x += 2 means exactly the same as x = x + 2. A running total in a data program is usually built this way, with each line reading the name and putting back an adjusted value."
+          },
+          {
+            "kind": "paragraph",
+            "text": "To say what a name holds at any point, read the lines above that point and apply them in order. Skip the comments, since Python does. Whatever the last line stored under the name is what it holds."
+          }
+        ],
+        "introducesTerms": [
+          "reassignment"
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
+      },
+      {
+        "id": "what-the-comment-does",
+        "kind": "try",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Comments change nothing, so they are easy to trace. Work through the program line by line and ignore anything Python would skip."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-run-and-bind-3",
+        "activityId": "",
+        "diagram": {
+          "type": "python_execution",
+          "runtime": "Python 3.12",
+          "cases": [
+            {
+              "id": "case-0",
+              "label": "Case A",
+              "code": "amount = 7\n# amount = 100\nprint(amount)",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 2,
+                  "values": [
+                    {
+                      "name": "amount",
+                      "type": "int",
+                      "display": "7"
+                    }
+                  ],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 3,
+                  "lineEnd": 3,
+                  "values": [
+                    {
+                      "name": "amount",
+                      "type": "int",
+                      "display": "7"
+                    }
+                  ],
+                  "stdout": "7\n"
+                }
+              ]
+            },
+            {
+              "id": "case-1",
+              "label": "Case B",
+              "code": "amount = 7\namount = 100\nprint(amount)",
+              "steps": [
+                {
+                  "lineStart": 1,
+                  "lineEnd": 2,
+                  "values": [
+                    {
+                      "name": "amount",
+                      "type": "int",
+                      "display": "100"
+                    }
+                  ],
+                  "stdout": ""
+                },
+                {
+                  "lineStart": 3,
+                  "lineEnd": 3,
+                  "values": [
+                    {
+                      "name": "amount",
+                      "type": "int",
+                      "display": "100"
+                    }
+                  ],
+                  "stdout": "100\n"
+                }
+              ]
+            }
+          ],
+          "initialCaseId": "case-0"
         },
         "answerVisibility": "hidden-until-response"
+      },
+      {
+        "id": "a-notebook-and-its-kernel",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "A notebook and its kernel",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "So far the lines ran from top to bottom in one go. Most data analysis happens in a notebook instead, a page made of separate boxes called cells, each holding a few lines of Python. You run a cell by pressing a button, and you may run any cell, in any order, as many times as you like."
+          },
+          {
+            "kind": "paragraph",
+            "text": "Something has to remember the names between those runs. It is a program called the kernel, which sits behind the notebook and keeps a record of every name and its value. Run a cell that sets count = 2 and the kernel holds count at 2. Run a different cell later and it finds count still there."
+          },
+          {
+            "kind": "paragraph",
+            "text": "Put together, a notebook is one long program that you feed in pieces. The kernel keeps its names until you restart it, and then they are all gone."
+          }
+        ],
+        "introducesTerms": [
+          "notebook",
+          "cell",
+          "kernel"
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
       },
       {
         "id": "run-it-twice",
@@ -193,10 +371,9 @@
         "lead": [
           {
             "kind": "paragraph",
-            "text": "A notebook sends each cell you run to a kernel. The kernel keeps every name between runs until you restart it."
+            "text": "The kernel's memory does the work here. Follow count through each run."
           }
         ],
-        "reveal": [],
         "workedSteps": [
           {
             "text": "The first cell stores 2 under count.",
@@ -330,7 +507,6 @@
         "blocks": [],
         "headline": "A notebook starts with count = 1. You run count += 4 three times. What is count at the end?",
         "lead": [],
-        "reveal": [],
         "workedSteps": [
           {
             "text": "Start with count = 1. The first run adds 4.",
@@ -351,203 +527,31 @@
         ],
         "visualStateId": "",
         "checkQuestionId": "",
-        "activityId": "",
-        "diagram": {
-          "type": "python_execution",
-          "runtime": "Python 3.12",
-          "cases": [
-            {
-              "id": "case-0",
-              "label": "Case A",
-              "code": "count = 2\ncount += 3\nprint(count)",
-              "steps": [
-                {
-                  "lineStart": 1,
-                  "lineEnd": 1,
-                  "values": [
-                    {
-                      "name": "count",
-                      "type": "int",
-                      "display": "2"
-                    }
-                  ],
-                  "stdout": ""
-                },
-                {
-                  "lineStart": 2,
-                  "lineEnd": 2,
-                  "values": [
-                    {
-                      "name": "count",
-                      "type": "int",
-                      "display": "5"
-                    }
-                  ],
-                  "stdout": ""
-                },
-                {
-                  "lineStart": 3,
-                  "lineEnd": 3,
-                  "values": [
-                    {
-                      "name": "count",
-                      "type": "int",
-                      "display": "5"
-                    }
-                  ],
-                  "stdout": "5\n"
-                }
-              ]
-            },
-            {
-              "id": "case-1",
-              "label": "Case B",
-              "code": "count = 2\ncount += 3\ncount += 3\nprint(count)",
-              "steps": [
-                {
-                  "lineStart": 1,
-                  "lineEnd": 1,
-                  "values": [
-                    {
-                      "name": "count",
-                      "type": "int",
-                      "display": "2"
-                    }
-                  ],
-                  "stdout": ""
-                },
-                {
-                  "lineStart": 2,
-                  "lineEnd": 2,
-                  "values": [
-                    {
-                      "name": "count",
-                      "type": "int",
-                      "display": "5"
-                    }
-                  ],
-                  "stdout": ""
-                },
-                {
-                  "lineStart": 3,
-                  "lineEnd": 3,
-                  "values": [
-                    {
-                      "name": "count",
-                      "type": "int",
-                      "display": "8"
-                    }
-                  ],
-                  "stdout": ""
-                },
-                {
-                  "lineStart": 4,
-                  "lineEnd": 4,
-                  "values": [
-                    {
-                      "name": "count",
-                      "type": "int",
-                      "display": "8"
-                    }
-                  ],
-                  "stdout": "8\n"
-                }
-              ]
-            }
-          ],
-          "initialCaseId": "case-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        "activityId": ""
       },
       {
-        "id": "what-the-comment-does",
-        "kind": "try",
+        "id": "why-the-order-of-runs-matters",
+        "kind": "explain",
         "blocks": [],
+        "headline": "Why the order of runs matters",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "A line that starts with # is a comment. It is a note for readers."
-          }
-        ],
-        "reveal": [
+            "text": "Because the kernel remembers, the order in which you run cells decides what it holds, and that order need not match the order down the page. Say cell 1 sets days = 3 and cell 2 works out hours = days * 24, so hours is 72."
+          },
           {
             "kind": "paragraph",
-            "text": "The comment line never ran, so x stayed at the value it was given. Notes explain code; only statements change what the names hold."
+            "text": "Now go back and edit cell 1 to days = 5, and run only that cell. The kernel holds days at 5, but hours is still 72, because the line that works it out has not run again. Run cell 2 and hours becomes 120. Until you do, the page shows code that no longer matches what the kernel holds."
+          },
+          {
+            "kind": "paragraph",
+            "text": "This is why a notebook can mislead. The page can look right while the kernel holds results from older runs. The check is to restart the kernel and run every cell from the top, in page order. If the results still make sense, nothing in the notebook depends on an old run."
           }
         ],
+        "introducesTerms": [],
         "visualStateId": "",
-        "checkQuestionId": "python-run-and-bind-3",
-        "activityId": "",
-        "diagram": {
-          "type": "python_execution",
-          "runtime": "Python 3.12",
-          "cases": [
-            {
-              "id": "case-0",
-              "label": "Case A",
-              "code": "amount = 7\n# amount = 100\nprint(amount)",
-              "steps": [
-                {
-                  "lineStart": 1,
-                  "lineEnd": 2,
-                  "values": [
-                    {
-                      "name": "amount",
-                      "type": "int",
-                      "display": "7"
-                    }
-                  ],
-                  "stdout": ""
-                },
-                {
-                  "lineStart": 3,
-                  "lineEnd": 3,
-                  "values": [
-                    {
-                      "name": "amount",
-                      "type": "int",
-                      "display": "7"
-                    }
-                  ],
-                  "stdout": "7\n"
-                }
-              ]
-            },
-            {
-              "id": "case-1",
-              "label": "Case B",
-              "code": "amount = 7\namount = 100\nprint(amount)",
-              "steps": [
-                {
-                  "lineStart": 1,
-                  "lineEnd": 2,
-                  "values": [
-                    {
-                      "name": "amount",
-                      "type": "int",
-                      "display": "100"
-                    }
-                  ],
-                  "stdout": ""
-                },
-                {
-                  "lineStart": 3,
-                  "lineEnd": 3,
-                  "values": [
-                    {
-                      "name": "amount",
-                      "type": "int",
-                      "display": "100"
-                    }
-                  ],
-                  "stdout": "100\n"
-                }
-              ]
-            }
-          ],
-          "initialCaseId": "case-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        "checkQuestionId": "",
+        "activityId": ""
       },
       {
         "id": "run-the-middle-cell-again",
@@ -556,142 +560,12 @@
         "lead": [
           {
             "kind": "paragraph",
-            "text": "A notebook has three cells, run in this order: rate = 2, then total = rate * 10, then rate = 5."
-          }
-        ],
-        "reveal": [
-          {
-            "kind": "paragraph",
-            "text": "Cell 2 read the rate the kernel held when it ran, which was the newest one. Restarting the kernel and running every cell in order is the check that a notebook does not depend on an old run."
+            "text": "Three cells share one kernel. Think about which value of rate the kernel holds when cell 2 runs for the second time."
           }
         ],
         "visualStateId": "",
         "checkQuestionId": "python-run-and-bind-4",
-        "activityId": "",
-        "diagram": {
-          "type": "python_execution",
-          "runtime": "Python 3.12",
-          "cases": [
-            {
-              "id": "case-0",
-              "label": "Case A",
-              "code": "units = 3\ncost = 8\ntotal = units * cost",
-              "steps": [
-                {
-                  "lineStart": 1,
-                  "lineEnd": 1,
-                  "values": [
-                    {
-                      "name": "units",
-                      "type": "int",
-                      "display": "3"
-                    }
-                  ],
-                  "stdout": ""
-                },
-                {
-                  "lineStart": 2,
-                  "lineEnd": 2,
-                  "values": [
-                    {
-                      "name": "units",
-                      "type": "int",
-                      "display": "3"
-                    },
-                    {
-                      "name": "cost",
-                      "type": "int",
-                      "display": "8"
-                    }
-                  ],
-                  "stdout": ""
-                },
-                {
-                  "lineStart": 3,
-                  "lineEnd": 3,
-                  "values": [
-                    {
-                      "name": "units",
-                      "type": "int",
-                      "display": "3"
-                    },
-                    {
-                      "name": "cost",
-                      "type": "int",
-                      "display": "8"
-                    },
-                    {
-                      "name": "total",
-                      "type": "int",
-                      "display": "24"
-                    }
-                  ],
-                  "stdout": ""
-                }
-              ]
-            },
-            {
-              "id": "case-1",
-              "label": "Case B",
-              "code": "units = 5\ncost = 8\ntotal = units * cost",
-              "steps": [
-                {
-                  "lineStart": 1,
-                  "lineEnd": 1,
-                  "values": [
-                    {
-                      "name": "units",
-                      "type": "int",
-                      "display": "5"
-                    }
-                  ],
-                  "stdout": ""
-                },
-                {
-                  "lineStart": 2,
-                  "lineEnd": 2,
-                  "values": [
-                    {
-                      "name": "units",
-                      "type": "int",
-                      "display": "5"
-                    },
-                    {
-                      "name": "cost",
-                      "type": "int",
-                      "display": "8"
-                    }
-                  ],
-                  "stdout": ""
-                },
-                {
-                  "lineStart": 3,
-                  "lineEnd": 3,
-                  "values": [
-                    {
-                      "name": "units",
-                      "type": "int",
-                      "display": "5"
-                    },
-                    {
-                      "name": "cost",
-                      "type": "int",
-                      "display": "8"
-                    },
-                    {
-                      "name": "total",
-                      "type": "int",
-                      "display": "40"
-                    }
-                  ],
-                  "stdout": ""
-                }
-              ]
-            }
-          ],
-          "initialCaseId": "case-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        "activityId": ""
       }
     ],
     "orientation": "Track assignment and execution order, then make a notebook reproducible.",
@@ -724,23 +598,30 @@
         "blocks": [
           {
             "kind": "paragraph",
-            "text": "In a spreadsheet, cell A1 holds 5 and cell B1 holds the formula =A1*4. Then you type 9 into A1."
+            "text": "Open a spreadsheet and type 5 into A1. In B1 type =A1*4, and B1 shows 20. Now change A1 to 9. B1 changes to 36 without you touching it, because B1 holds a rule and the sheet applies that rule again whenever A1 changes."
+          },
+          {
+            "kind": "paragraph",
+            "text": "Python is a language for giving a computer written instructions, and much of modern data analysis is done in it. It behaves differently from a spreadsheet. When Python works something out it keeps the answer and forgets how it got there. That difference explains most of the surprises a newcomer meets, and it decides which numbers you can trust when you return to a piece of work an hour later."
+          },
+          {
+            "kind": "paragraph",
+            "text": "This lesson follows one number through a tiny shop program. It starts with a single line, to see what Python keeps. After that it moves to the kind of page where analysts usually work, and there the order you run lines in starts to matter."
           }
-        ],
-        "questionId": "python-run-and-bind-hook"
+        ]
       },
       "promise": "By the end you'll follow a value through a Python program line by line, and say what a notebook still remembers.",
-      "estimatedMinutes": 10
+      "estimatedMinutes": 12
     },
     "recap": {
       "keyIdea": "A name holds the value it was given at that line. Python runs lines in order, and a notebook kernel keeps every name between runs.",
       "blocks": [
         {
           "kind": "paragraph",
-          "text": "You saw that total keeps 20 when price changes later. You found count at 13 after three runs, and that running cell 2 again reads the newest rate."
+          "text": "Back at the spreadsheet, B1 follows a rule and a Python name keeps an answer. You saw total hold 20 after price changed, counted a notebook up to 13 across three runs, and worked out that running cell 2 again reads the newest rate."
         }
       ],
-      "nextHook": "Next: what kind of value a name holds, and why '12' + '3' is not 15."
+      "nextHook": "Every value so far was a number, yet a name can also hold text, and Python treats the text '12' very differently from the number 12. The next lesson sorts out which is which and shares eleven biscuits between four plates."
     },
     "calculator": "off",
     "taughtSkills": [
@@ -767,7 +648,7 @@
         "kind": "numeric",
         "value": 20,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "total was assigned 5 × 4 = 20. Reassigning price does not run the earlier multiplication again."
       },
@@ -802,7 +683,7 @@
       "conceptIds": [
         "python-run-and-bind"
       ],
-      "prompt": "What is count after the third run?",
+      "prompt": "A notebook starts with count = 1, and you run count += 4 three times. What is count after the third run?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -814,7 +695,7 @@
         "kind": "numeric",
         "value": 13,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The updates produce 5, then 9, then 13."
       },
@@ -861,7 +742,7 @@
         "kind": "numeric",
         "value": 6,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The comment is skipped, so x is 3 and y is 3 × 2 = 6."
       },
@@ -896,7 +777,7 @@
       "conceptIds": [
         "python-run-and-bind"
       ],
-      "prompt": "You run cells 1, 2 and 3 in that order, then run only cell 2 again. What is total now?",
+      "prompt": "A notebook's first cell sets rate = 2, and its second cell sets total = rate * 10. A third cell sets rate = 5. You run the cells in that order and then run only the second cell again. What is total now?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -908,7 +789,7 @@
         "kind": "numeric",
         "value": 50,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The kernel holds rate = 5, so cell 2 gives 5 × 10 = 50."
       },
@@ -955,7 +836,7 @@
         "kind": "numeric",
         "value": 42,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The two stored values give 6 × 7 = 42."
       },
@@ -994,7 +875,7 @@
         "kind": "numeric",
         "value": 20,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The second line makes x equal 5; the last line gives 5 × 4 = 20."
       },
@@ -1045,7 +926,7 @@
         "kind": "numeric",
         "value": 7,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "m keeps 3 + 4 = 7 until cell 2 is run again."
       },
@@ -1092,7 +973,7 @@
         "kind": "numeric",
         "value": 36,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "9 × 4 = 36."
       },
@@ -1257,7 +1138,7 @@
         "kind": "numeric",
         "value": 9,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "5 + 4 = 9."
       },
@@ -1286,84 +1167,154 @@
   ],
   "citations": [
     {
-      "claim": "A line like price = 4 works out the right side now and stores the result under a name.",
+      "claim": "An assignment such as price = 4 works out the right-hand side and stores the result under a name; a line starting with # is a comment that Python skips.",
       "sourceId": "py-intro",
       "section": "3.1 assignment and expressions; Jupyter Running Code: code cells and kernel state",
       "targetKind": "step",
-      "targetId": "a-name-and-a-value"
+      "targetId": "a-name-for-a-value"
     },
     {
-      "claim": "A line like price = 4 works out the right side now and stores the result under a name.",
+      "claim": "An assignment such as price = 4 works out the right-hand side and stores the result under a name; a line starting with # is a comment that Python skips.",
       "sourceId": "jupyter-cells",
       "section": "Code cells; restarting kernels",
       "targetKind": "step",
-      "targetId": "a-name-and-a-value"
+      "targetId": "a-name-for-a-value"
     },
     {
-      "claim": "The program stores total, then changes price. Think about what total was given when it was stored.",
+      "claim": "An assignment stores a value once, when the line runs.",
+      "sourceId": "py-intro",
+      "section": "3.1 assignment and expressions; Jupyter Running Code: code cells and kernel state",
+      "targetKind": "step",
+      "targetId": "what-the-line-does"
+    },
+    {
+      "claim": "An assignment stores a value once, when the line runs.",
+      "sourceId": "jupyter-cells",
+      "section": "Code cells; restarting kernels",
+      "targetKind": "step",
+      "targetId": "what-the-line-does"
+    },
+    {
+      "claim": "A name keeps the value stored at its own line; later changes to other names do not recalculate it.",
+      "sourceId": "py-intro",
+      "section": "3.1 assignment and expressions; Jupyter Running Code: code cells and kernel state",
+      "targetKind": "step",
+      "targetId": "what-a-name-keeps"
+    },
+    {
+      "claim": "A name keeps the value stored at its own line; later changes to other names do not recalculate it.",
+      "sourceId": "jupyter-cells",
+      "section": "Code cells; restarting kernels",
+      "targetKind": "step",
+      "targetId": "what-a-name-keeps"
+    },
+    {
+      "claim": "A name keeps the value stored at its own line; later changes to other names do not recalculate it.",
       "sourceId": "py-intro",
       "section": "3.1 assignment and expressions; Jupyter Running Code: code cells and kernel state",
       "targetKind": "step",
       "targetId": "what-does-total-keep"
     },
     {
-      "claim": "The program stores total, then changes price. Think about what total was given when it was stored.",
+      "claim": "A name keeps the value stored at its own line; later changes to other names do not recalculate it.",
       "sourceId": "jupyter-cells",
       "section": "Code cells; restarting kernels",
       "targetKind": "step",
       "targetId": "what-does-total-keep"
     },
     {
-      "claim": "A notebook cell sets count = 2. Then a second cell, count += 3, is run twice. What is count?",
+      "claim": "x = x + 2 evaluates the right-hand side with the current value of x and stores the result back; += is shorthand for it.",
       "sourceId": "py-intro",
       "section": "3.1 assignment and expressions; Jupyter Running Code: code cells and kernel state",
       "targetKind": "step",
-      "targetId": "run-it-twice"
+      "targetId": "using-a-name-to-change-itself"
     },
     {
-      "claim": "A notebook cell sets count = 2. Then a second cell, count += 3, is run twice. What is count?",
+      "claim": "x = x + 2 evaluates the right-hand side with the current value of x and stores the result back; += is shorthand for it.",
       "sourceId": "jupyter-cells",
       "section": "Code cells; restarting kernels",
       "targetKind": "step",
-      "targetId": "run-it-twice"
+      "targetId": "using-a-name-to-change-itself"
     },
     {
-      "claim": "A notebook starts with count = 1. You run count += 4 three times. What is count at the end?",
-      "sourceId": "py-intro",
-      "section": "3.1 assignment and expressions; Jupyter Running Code: code cells and kernel state",
-      "targetKind": "step",
-      "targetId": "keep-counting"
-    },
-    {
-      "claim": "A notebook starts with count = 1. You run count += 4 three times. What is count at the end?",
-      "sourceId": "jupyter-cells",
-      "section": "Code cells; restarting kernels",
-      "targetKind": "step",
-      "targetId": "keep-counting"
-    },
-    {
-      "claim": "A line that starts with # is a comment. It is a note for readers.",
+      "claim": "A line starting with # is a comment and does not run.",
       "sourceId": "py-intro",
       "section": "3.1 assignment and expressions; Jupyter Running Code: code cells and kernel state",
       "targetKind": "step",
       "targetId": "what-the-comment-does"
     },
     {
-      "claim": "A line that starts with # is a comment. It is a note for readers.",
+      "claim": "A line starting with # is a comment and does not run.",
       "sourceId": "jupyter-cells",
       "section": "Code cells; restarting kernels",
       "targetKind": "step",
       "targetId": "what-the-comment-does"
     },
     {
-      "claim": "A notebook has three cells, run in this order: rate = 2, then total = rate * 10, then rate = 5.",
+      "claim": "A notebook sends each cell to a kernel, which keeps every name between runs until it is restarted.",
+      "sourceId": "py-intro",
+      "section": "3.1 assignment and expressions; Jupyter Running Code: code cells and kernel state",
+      "targetKind": "step",
+      "targetId": "a-notebook-and-its-kernel"
+    },
+    {
+      "claim": "A notebook sends each cell to a kernel, which keeps every name between runs until it is restarted.",
+      "sourceId": "jupyter-cells",
+      "section": "Code cells; restarting kernels",
+      "targetKind": "step",
+      "targetId": "a-notebook-and-its-kernel"
+    },
+    {
+      "claim": "The kernel keeps names between runs, so count += 3 run twice adds 3 twice to the kept value.",
+      "sourceId": "py-intro",
+      "section": "3.1 assignment and expressions; Jupyter Running Code: code cells and kernel state",
+      "targetKind": "step",
+      "targetId": "run-it-twice"
+    },
+    {
+      "claim": "The kernel keeps names between runs, so count += 3 run twice adds 3 twice to the kept value.",
+      "sourceId": "jupyter-cells",
+      "section": "Code cells; restarting kernels",
+      "targetKind": "step",
+      "targetId": "run-it-twice"
+    },
+    {
+      "claim": "The kernel keeps names between runs, so each run of count += 4 starts from the kept value.",
+      "sourceId": "py-intro",
+      "section": "3.1 assignment and expressions; Jupyter Running Code: code cells and kernel state",
+      "targetKind": "step",
+      "targetId": "keep-counting"
+    },
+    {
+      "claim": "The kernel keeps names between runs, so each run of count += 4 starts from the kept value.",
+      "sourceId": "jupyter-cells",
+      "section": "Code cells; restarting kernels",
+      "targetKind": "step",
+      "targetId": "keep-counting"
+    },
+    {
+      "claim": "The result of a cell depends on the order the cells were run, and restarting the kernel and running all cells in order checks that a notebook does not rely on an old run.",
+      "sourceId": "py-intro",
+      "section": "3.1 assignment and expressions; Jupyter Running Code: code cells and kernel state",
+      "targetKind": "step",
+      "targetId": "why-the-order-of-runs-matters"
+    },
+    {
+      "claim": "The result of a cell depends on the order the cells were run, and restarting the kernel and running all cells in order checks that a notebook does not rely on an old run.",
+      "sourceId": "jupyter-cells",
+      "section": "Code cells; restarting kernels",
+      "targetKind": "step",
+      "targetId": "why-the-order-of-runs-matters"
+    },
+    {
+      "claim": "A cell that runs again reads the values the kernel holds at that moment.",
       "sourceId": "py-intro",
       "section": "3.1 assignment and expressions; Jupyter Running Code: code cells and kernel state",
       "targetKind": "step",
       "targetId": "run-the-middle-cell-again"
     },
     {
-      "claim": "A notebook has three cells, run in this order: rate = 2, then total = rate * 10, then rate = 5.",
+      "claim": "A cell that runs again reads the values the kernel holds at that moment.",
       "sourceId": "jupyter-cells",
       "section": "Code cells; restarting kernels",
       "targetKind": "step",
@@ -1466,20 +1417,6 @@
       "section": "Code cells; restarting kernels",
       "targetKind": "question",
       "targetId": "python-run-and-bind-7"
-    },
-    {
-      "claim": "36. A spreadsheet formula recalculates when its inputs change. Python assignments behave differently, as the next screens show.",
-      "sourceId": "py-intro",
-      "section": "3.1 assignment and expressions; Jupyter Running Code: code cells and kernel state",
-      "targetKind": "question",
-      "targetId": "python-run-and-bind-hook"
-    },
-    {
-      "claim": "36. A spreadsheet formula recalculates when its inputs change. Python assignments behave differently, as the next screens show.",
-      "sourceId": "jupyter-cells",
-      "section": "Code cells; restarting kernels",
-      "targetKind": "question",
-      "targetId": "python-run-and-bind-hook"
     },
     {
       "claim": "It stores the value 4 under the name price. A later line can store a different value under the same name.",

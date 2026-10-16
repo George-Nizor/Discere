@@ -1,7 +1,12 @@
 {
   "lessonId": "ranges-and-randomness",
   "courseId": "python-for-data-analysis",
-  "migrationNotes": [],
+  "migrationNotes": [
+    "Spine: a surveyor walks a 12 metre path. She places posts by stride (arange, which stops before its stop), then by count (linspace, which keeps the end), then picks a post by chance (integers, with its excluded high limit) and makes the pick repeatable with a seed.",
+    "Left out of the lesson (still in the course): python-ranges-and-randomness-hook (the posts on the path, covered by the opener and the first two teaching screens) and python-ranges-and-randomness-endpoint-check (a recall choice, covered by the blank in the faded example).",
+    "Figures: the arange, linspace and seed figures moved onto the teaching screens. The worked example and the practice screens after them lost their figures, because the teaching screens now show the same cases. The same-seed figure stays on its transfer screen with the answer hidden.",
+    "Rewrote the prompts of python-ranges-and-randomness-3 and -4 so they stand without the old opener. Keys unchanged: all numeric keys recomputed (4, 14, 3, 0, 5, 3, 4, 6, 3, 3)."
+  ],
   "lesson": {
     "id": "ranges-and-randomness",
     "courseId": "python-for-data-analysis",
@@ -11,48 +16,35 @@
     "title": "Generate values with clear boundaries",
     "steps": [
       {
-        "id": "step-or-count",
+        "id": "posts-every-3-metres",
         "kind": "explain",
         "blocks": [],
-        "headline": "arange steps by a size and stops before its stop, while linspace fixes how many points and includes both ends.",
+        "headline": "Posts every 3 metres",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "np.arange(2, 12, 3) starts at 2, adds 3 each time, and stops before 12. np.linspace(2, 14, 5) gives exactly 5 evenly spaced points, including both 2 and 14."
+            "text": "Start with the surveyor's first method. She begins at 0 and walks along the path in strides of 3 metres, putting a post in each time she pauses. NumPy has a function for exactly this, called arange, short for “array range”. It takes three numbers. The first says where to start and the second says where to stop. The third is the size of each step."
           },
           {
-            "kind": "callout",
-            "tone": "key",
-            "text": "arange excludes its stop. linspace includes its endpoint by default."
+            "kind": "paragraph",
+            "text": "For her path that is np.arange(0, 12, 3). It gives 0, 3, 6 and 9, and nothing more. The 12 is missing because arange counts up from the start and quits before it reaches the stop value, so the stop is never part of the result. Her path does have a post at 12 metres, and arange has left it off the list."
+          },
+          {
+            "kind": "paragraph",
+            "text": "Step through the two cases below. With one number, as in np.arange(5), that number is the stop. The start is 0 and the step is 1, so the last value is 4."
           }
         ],
-        "reveal": [],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "The second case starts at 2 and steps by 3, so it makes 2, 5, 8 and 11. The next value would be 14, which is beyond the stop at 12, so it ends at 11. The step does not have to be a whole number. np.arange(0, 2, 0.5) makes 0, 0.5, 1 and 1.5, and the 2 stays out. To count the values by hand, step up from the start and stop before you reach the stop value."
+          }
+        ],
         "introducesTerms": [
-          "arange",
-          "linspace"
+          "arange"
         ],
         "visualStateId": "",
-        "checkQuestionId": "python-ranges-and-randomness-endpoint-check",
-        "activityId": ""
-      },
-      {
-        "id": "count-the-steps",
-        "kind": "predict",
-        "blocks": [],
-        "lead": [
-          {
-            "kind": "paragraph",
-            "text": "Start at the first value, add the step, and stop before you reach the stop value."
-          }
-        ],
-        "reveal": [
-          {
-            "kind": "paragraph",
-            "text": "You listed the values before the stop. The stop itself was excluded, which is why arange can fall short of it."
-          }
-        ],
-        "visualStateId": "",
-        "checkQuestionId": "python-ranges-and-randomness-1",
+        "checkQuestionId": "",
         "activityId": "",
         "diagram": {
           "type": "python_execution",
@@ -110,32 +102,49 @@
             }
           ],
           "initialCaseId": "case-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        }
       },
       {
-        "id": "gaps-between-points",
-        "kind": "worked_example",
+        "id": "count-the-steps",
+        "kind": "predict",
         "blocks": [],
-        "headline": "What are the spacing and the values of np.linspace(0, 10, 6)?",
-        "lead": [],
-        "reveal": [],
-        "workedSteps": [
+        "lead": [
           {
-            "text": "Six points that include both ends have one fewer gap than points.",
-            "math": "5 gaps",
-            "selfExplain": {
-              "questionId": "python-ranges-and-randomness-why-five-gaps"
-            }
-          },
-          {
-            "text": "The span is shared among the gaps.",
-            "math": "10 ÷ 5 = 2"
-          },
-          {
-            "text": "Step from the start by that spacing.",
-            "math": "0, 2, 4, 6, 8, 10"
+            "kind": "paragraph",
+            "text": "List the values the way arange makes them. Begin at the start and keep adding the step, and stop before you reach the stop value."
           }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-ranges-and-randomness-1",
+        "activityId": ""
+      },
+      {
+        "id": "posts-at-both-ends",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "Posts at both ends",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "The surveyor would like a post at the end of the path as well, and she would rather say how many posts she has than how big each stride is. NumPy's linspace, short for “linear space”, works that way. It takes the first value, the last value and how many values to make. It spreads them evenly, with the first at the start and the last at the end."
+          },
+          {
+            "kind": "paragraph",
+            "text": "np.linspace(0, 12, 5) gives 0, 3, 6, 9 and 12, so this time the end of the path is included. Nobody told linspace the gap between posts. It worked the gap out. Five posts have four gaps between them, one fewer than the number of posts, and the 12 metres are shared among those four gaps: 12 ÷ 4 = 3 metres each."
+          },
+          {
+            "kind": "paragraph",
+            "text": "The figure asks for four posts along the same path, with and without the end. Step through both cases."
+          }
+        ],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "With four posts there are three gaps, so the first case spaces them 4 metres apart, at 0, 4, 8 and 12. The second case adds endpoint=False, which tells linspace to leave the last point out. The 12 metres are now shared among four gaps, so the posts stand at 0, 3, 6 and 9, which is what arange gave at the start. Left alone, linspace includes its end, while arange never includes its stop."
+          }
+        ],
+        "introducesTerms": [
+          "linspace"
         ],
         "visualStateId": "",
         "checkQuestionId": "",
@@ -196,15 +205,46 @@
             }
           ],
           "initialCaseId": "case-0"
-        },
-        "answerVisibility": "hidden-until-response"
+        }
+      },
+      {
+        "id": "gaps-between-points",
+        "kind": "worked_example",
+        "blocks": [],
+        "headline": "What are the spacing and the values of np.linspace(0, 10, 6)?",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "The spacing comes from the number of gaps, so find that first."
+          }
+        ],
+        "reveal": [],
+        "workedSteps": [
+          {
+            "text": "Six points that include both ends have one fewer gap than points.",
+            "math": "5 gaps",
+            "selfExplain": {
+              "questionId": "python-ranges-and-randomness-why-five-gaps"
+            }
+          },
+          {
+            "text": "The span is shared among the gaps.",
+            "math": "10 ÷ 5 = 2"
+          },
+          {
+            "text": "Step from the start by that spacing.",
+            "math": "0, 2, 4, 6, 8, 10"
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
       },
       {
         "id": "spacing-and-end",
         "kind": "faded_example",
         "blocks": [],
         "headline": "For np.linspace(2, 14, 5), what are the spacing and the final value?",
-        "lead": [],
         "reveal": [],
         "workedSteps": [
           {
@@ -225,22 +265,105 @@
         "activityId": ""
       },
       {
-        "id": "from-low-to-high",
+        "id": "numbers-chosen-by-chance",
         "kind": "explain",
         "blocks": [],
-        "headline": "rng.integers(low, high) includes low and excludes high, and a seed makes the draws repeatable.",
+        "headline": "Numbers chosen by chance",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "np.random.default_rng(21) makes a generator. Giving it the same seed makes it produce the same sequence again. rng.integers(low, high) can return low but never high."
+            "text": "The surveyor now wants to inspect one post picked at random. She numbers her five posts 1 to 5, and she needs the computer to choose among those numbers without any pattern she could predict."
+          },
+          {
+            "kind": "paragraph",
+            "text": "NumPy does this with a random generator, an object that produces numbers that look unpredictable. You make one with np.random.default_rng(), and by habit it is stored in a name called rng. Asking it for whole numbers uses its integers method, so rng.integers(1, 6, size=3) draws three whole numbers, each somewhere from 1 to 5."
+          },
+          {
+            "kind": "paragraph",
+            "text": "The size says how many numbers to draw, and leaving it out gives a single number. Run the same line again with a fresh generator and you get different numbers, much as a die gives a different face on each roll."
           }
         ],
-        "reveal": [],
+        "introducesTerms": [
+          "generator"
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
+      },
+      {
+        "id": "which-numbers-can-come-up",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "Which numbers can come up",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "The two limits given to integers follow the rule that arange used. The low limit can come up and the high limit cannot. rng.integers(1, 6) can return 1, 2, 3, 4 or 5, and it can never return 6. That is why the surveyor, with posts numbered 1 to 5, had to write 6 as the high limit."
+          },
+          {
+            "kind": "paragraph",
+            "text": "Stopping short of the high limit also makes counting easy. The number of different values on offer is the high limit minus the low limit, so rng.integers(1, 6) has 6 − 1 = 5 choices, one for each post. A call such as rng.integers(10, 13) offers 3 values: 10, 11 and 12. The 13 stays out."
+          }
+        ],
+        "introducesTerms": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
+      },
+      {
+        "id": "which-call-draws-one-to-six",
+        "kind": "predict",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "The high limit is the one that is left out. Decide which limits would allow the last number you want to come up."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-ranges-and-randomness-3",
+        "activityId": ""
+      },
+      {
+        "id": "largest-possible",
+        "kind": "try",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "The high limit is left out, so every value the generator returns lies below it."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "python-ranges-and-randomness-largest",
+        "activityId": ""
+      },
+      {
+        "id": "making-a-draw-repeatable",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "Making a draw repeatable",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "There is a snag for the surveyor. If her colleague runs the same code tomorrow, a fresh generator gives different posts and the two of them cannot compare notes. The fix is to hand the generator a starting number, called a seed, when you create it."
+          },
+          {
+            "kind": "paragraph",
+            "text": "np.random.default_rng(21) always begins from the same place, so it hands out the same numbers in the same order every time the code runs. A different seed gives a different sequence that is just as fixed. Step through the two cases, where only the seed changes."
+          }
+        ],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "Both cases ask for six whole numbers from 1 to 6, and they differ only in the seed. Anyone who creates a generator with seed 21 and makes the same call gets 2, 5, 3, 4, 3 and 5. A seed is how an analysis shares its random choices so that other people can check them. It does not make the sample any fairer. A sample that leaves out part of the picture leaves it out every time the code is rerun."
+          }
+        ],
         "introducesTerms": [
           "seed"
         ],
         "visualStateId": "",
-        "checkQuestionId": "python-ranges-and-randomness-3",
+        "checkQuestionId": "",
         "activityId": "",
         "diagram": {
           "type": "python_execution",
@@ -298,28 +421,7 @@
             }
           ],
           "initialCaseId": "case-0"
-        },
-        "answerVisibility": "hidden-until-response"
-      },
-      {
-        "id": "largest-possible",
-        "kind": "try",
-        "blocks": [],
-        "lead": [
-          {
-            "kind": "paragraph",
-            "text": "rng.integers excludes its upper bound, so every value it returns lies below that bound."
-          }
-        ],
-        "reveal": [
-          {
-            "kind": "paragraph",
-            "text": "The high bound never appears, so the largest result sits one below it. That is the same stop-excluded rule as arange."
-          }
-        ],
-        "visualStateId": "",
-        "checkQuestionId": "python-ranges-and-randomness-largest",
-        "activityId": ""
+        }
       },
       {
         "id": "same-seed-again",
@@ -328,13 +430,7 @@
         "lead": [
           {
             "kind": "paragraph",
-            "text": "Two generators are made with the same seed, and each draws the same four integers. The same seed and the same operations give the same sequence."
-          }
-        ],
-        "reveal": [
-          {
-            "kind": "paragraph",
-            "text": "Matching seeds gave matching draws. That makes your work repeatable, but it does not make the sample representative of anything."
+            "text": "Two generators are each created with the same seed and asked for four whole numbers from 0 to 9. Compare what they return."
           }
         ],
         "visualStateId": "",
@@ -463,23 +559,30 @@
         "blocks": [
           {
             "kind": "paragraph",
-            "text": "A path is 15 metres long. You put a post at the start, a post at the end, and a post every 3 metres in between."
+            "text": "A footpath across a park is 12 metres long, and a surveyor wants to take a reading at regular points along it. She puts a post in at the start of the path and another every 3 metres after that. When she reaches the far end she is not sure whether the post at exactly 12 metres belongs on her list."
+          },
+          {
+            "kind": "paragraph",
+            "text": "How she asks decides what NumPy gives back. One way is to say how big each step is and let the numbers run until they reach the end. Another is to say how many posts she needs and let the spacing follow. The two ways treat the last number differently, which is exactly what she is worried about."
+          },
+          {
+            "kind": "paragraph",
+            "text": "Later she wants to inspect a few posts chosen by chance, and she wants a colleague to be able to choose the very same ones tomorrow. NumPy can do that too."
           }
-        ],
-        "questionId": "python-ranges-and-randomness-hook"
+        ]
       },
-      "promise": "By the end you'll tell where arange stops and linspace ends, count the values each makes, and say what a random seed does.",
-      "estimatedMinutes": 10
+      "promise": "By the end you'll count the values arange and linspace make, and say what a random seed does.",
+      "estimatedMinutes": 12
     },
     "recap": {
-      "keyIdea": "arange stops before its stop and linspace includes its endpoint; integers excludes its high bound, and a seed repeats a sequence without making it representative.",
+      "keyIdea": "arange stops before its stop value and linspace includes its end unless told otherwise. integers leaves out its high limit, and a seed makes a random sequence repeat.",
       "blocks": [
         {
           "kind": "paragraph",
-          "text": "You put 6 posts along the path. You found np.arange(3, 15, 3) holds 4 values, and that two generators with one seed differ in 0 positions."
+          "text": "You saw that np.arange(0, 12, 3) leaves the post at 12 metres off the list, while np.linspace(0, 12, 5) keeps it. You counted 4 values in np.arange(3, 15, 3) and found that two generators with the same seed differ in 0 positions."
         }
       ],
-      "nextHook": "Next: meet a real table and read it into pandas."
+      "nextHook": "Every array in this lesson was built by a rule or by a generator. Most data you will meet arrives some other way, as a file of rows and columns that people filled in, with names across the top and codes mixed in among the counts. The next lesson reads such a file into pandas and checks what came in."
     },
     "calculator": "off",
     "taughtSkills": [
@@ -507,7 +610,7 @@
         "kind": "numeric",
         "value": 4,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The values are 3, 6, 9 and 12. The stop is excluded."
       },
@@ -555,7 +658,7 @@
         "kind": "numeric",
         "value": 14,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "linspace includes the endpoint by default, so the final value is 14."
       },
@@ -583,7 +686,7 @@
       "conceptIds": [
         "python-ranges-and-randomness"
       ],
-      "prompt": "Which call generates integers from 1 through 6 with the default endpoint setting?",
+      "prompt": "Which call can return any whole number from 1 to 6, and no other?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -643,7 +746,7 @@
       "conceptIds": [
         "python-ranges-and-randomness"
       ],
-      "prompt": "Two generators use the same seed and each draws four integers. In how many positions do their results differ?",
+      "prompt": "Two generators are created with the same seed, and each draws four integers with the same call. In how many positions do their results differ?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -655,7 +758,7 @@
         "kind": "numeric",
         "value": 0,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "Equal seeds and equal operations give equal draws."
       },
@@ -695,7 +798,7 @@
         "kind": "numeric",
         "value": 5,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The possible values are 4, 5, 6, 7 and 8."
       },
@@ -743,7 +846,7 @@
         "kind": "numeric",
         "value": 3,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "Six points including both ends create five equal gaps: 15 ÷ 5 = 3."
       },
@@ -788,7 +891,7 @@
         "kind": "numeric",
         "value": 4,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The values are 0, 0.25, 0.5 and 0.75."
       },
@@ -836,7 +939,7 @@
         "kind": "numeric",
         "value": 6,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "Posts at 0, 3, 6, 9, 12 and 15 make 6."
       },
@@ -1004,7 +1107,7 @@
         "kind": "numeric",
         "value": 3,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "(14 − 2) ÷ 4 = 3."
       },
@@ -1044,7 +1147,7 @@
         "kind": "numeric",
         "value": 3,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The possible values are 0, 1, 2 and 3."
       },
@@ -1065,153 +1168,6 @@
   ],
   "citations": [
     {
-      "claim": "arange steps by a size and stops before its stop, while linspace fixes how many points and includes both ends.",
-      "sourceId": "np-quickstart",
-      "section": "Array creation; np.random.Generator.integers parameters and seeding",
-      "targetKind": "step",
-      "targetId": "step-or-count"
-    },
-    {
-      "claim": "arange steps by a size and stops before its stop, while linspace fixes how many points and includes both ends.",
-      "sourceId": "np-random",
-      "section": "low, high, size and endpoint parameters",
-      "targetKind": "step",
-      "targetId": "step-or-count"
-    },
-    {
-      "claim": "arange steps by a size and stops before its stop, while linspace fixes how many points and includes both ends.",
-      "sourceId": "np-linspace",
-      "section": "num and endpoint parameters",
-      "targetKind": "step",
-      "targetId": "step-or-count"
-    },
-    {
-      "claim": "Start at the first value, add the step, and stop before you reach the stop value.",
-      "sourceId": "np-quickstart",
-      "section": "Array creation; np.random.Generator.integers parameters and seeding",
-      "targetKind": "step",
-      "targetId": "count-the-steps"
-    },
-    {
-      "claim": "Start at the first value, add the step, and stop before you reach the stop value.",
-      "sourceId": "np-random",
-      "section": "low, high, size and endpoint parameters",
-      "targetKind": "step",
-      "targetId": "count-the-steps"
-    },
-    {
-      "claim": "Start at the first value, add the step, and stop before you reach the stop value.",
-      "sourceId": "np-linspace",
-      "section": "num and endpoint parameters",
-      "targetKind": "step",
-      "targetId": "count-the-steps"
-    },
-    {
-      "claim": "What are the spacing and the values of np.linspace(0, 10, 6)?",
-      "sourceId": "np-quickstart",
-      "section": "Array creation; np.random.Generator.integers parameters and seeding",
-      "targetKind": "step",
-      "targetId": "gaps-between-points"
-    },
-    {
-      "claim": "What are the spacing and the values of np.linspace(0, 10, 6)?",
-      "sourceId": "np-random",
-      "section": "low, high, size and endpoint parameters",
-      "targetKind": "step",
-      "targetId": "gaps-between-points"
-    },
-    {
-      "claim": "What are the spacing and the values of np.linspace(0, 10, 6)?",
-      "sourceId": "np-linspace",
-      "section": "num and endpoint parameters",
-      "targetKind": "step",
-      "targetId": "gaps-between-points"
-    },
-    {
-      "claim": "For np.linspace(2, 14, 5), what are the spacing and the final value?",
-      "sourceId": "np-quickstart",
-      "section": "Array creation; np.random.Generator.integers parameters and seeding",
-      "targetKind": "step",
-      "targetId": "spacing-and-end"
-    },
-    {
-      "claim": "For np.linspace(2, 14, 5), what are the spacing and the final value?",
-      "sourceId": "np-random",
-      "section": "low, high, size and endpoint parameters",
-      "targetKind": "step",
-      "targetId": "spacing-and-end"
-    },
-    {
-      "claim": "For np.linspace(2, 14, 5), what are the spacing and the final value?",
-      "sourceId": "np-linspace",
-      "section": "num and endpoint parameters",
-      "targetKind": "step",
-      "targetId": "spacing-and-end"
-    },
-    {
-      "claim": "rng.integers(low, high) includes low and excludes high, and a seed makes the draws repeatable.",
-      "sourceId": "np-quickstart",
-      "section": "Array creation; np.random.Generator.integers parameters and seeding",
-      "targetKind": "step",
-      "targetId": "from-low-to-high"
-    },
-    {
-      "claim": "rng.integers(low, high) includes low and excludes high, and a seed makes the draws repeatable.",
-      "sourceId": "np-random",
-      "section": "low, high, size and endpoint parameters",
-      "targetKind": "step",
-      "targetId": "from-low-to-high"
-    },
-    {
-      "claim": "rng.integers(low, high) includes low and excludes high, and a seed makes the draws repeatable.",
-      "sourceId": "np-linspace",
-      "section": "num and endpoint parameters",
-      "targetKind": "step",
-      "targetId": "from-low-to-high"
-    },
-    {
-      "claim": "rng.integers excludes its upper bound, so every value it returns lies below that bound.",
-      "sourceId": "np-quickstart",
-      "section": "Array creation; np.random.Generator.integers parameters and seeding",
-      "targetKind": "step",
-      "targetId": "largest-possible"
-    },
-    {
-      "claim": "rng.integers excludes its upper bound, so every value it returns lies below that bound.",
-      "sourceId": "np-random",
-      "section": "low, high, size and endpoint parameters",
-      "targetKind": "step",
-      "targetId": "largest-possible"
-    },
-    {
-      "claim": "rng.integers excludes its upper bound, so every value it returns lies below that bound.",
-      "sourceId": "np-linspace",
-      "section": "num and endpoint parameters",
-      "targetKind": "step",
-      "targetId": "largest-possible"
-    },
-    {
-      "claim": "Two generators are made with the same seed, and each draws the same four integers. The same seed and the same operations give the same sequence.",
-      "sourceId": "np-quickstart",
-      "section": "Array creation; np.random.Generator.integers parameters and seeding",
-      "targetKind": "step",
-      "targetId": "same-seed-again"
-    },
-    {
-      "claim": "Two generators are made with the same seed, and each draws the same four integers. The same seed and the same operations give the same sequence.",
-      "sourceId": "np-random",
-      "section": "low, high, size and endpoint parameters",
-      "targetKind": "step",
-      "targetId": "same-seed-again"
-    },
-    {
-      "claim": "Two generators are made with the same seed, and each draws the same four integers. The same seed and the same operations give the same sequence.",
-      "sourceId": "np-linspace",
-      "section": "num and endpoint parameters",
-      "targetKind": "step",
-      "targetId": "same-seed-again"
-    },
-    {
       "claim": "4. The values are 3, 6, 9 and 12. The next one would reach the stop, and the stop is excluded.",
       "sourceId": "np-quickstart",
       "section": "Array creation; np.random.Generator.integers parameters and seeding",
@@ -1359,48 +1315,6 @@
       "targetId": "python-ranges-and-randomness-7"
     },
     {
-      "claim": "6. Posts at 0, 3, 6, 9, 12 and 15. Counting both ends is what linspace does, and arange does not.",
-      "sourceId": "np-quickstart",
-      "section": "Array creation; np.random.Generator.integers parameters and seeding",
-      "targetKind": "question",
-      "targetId": "python-ranges-and-randomness-hook"
-    },
-    {
-      "claim": "6. Posts at 0, 3, 6, 9, 12 and 15. Counting both ends is what linspace does, and arange does not.",
-      "sourceId": "np-random",
-      "section": "low, high, size and endpoint parameters",
-      "targetKind": "question",
-      "targetId": "python-ranges-and-randomness-hook"
-    },
-    {
-      "claim": "6. Posts at 0, 3, 6, 9, 12 and 15. Counting both ends is what linspace does, and arange does not.",
-      "sourceId": "np-linspace",
-      "section": "num and endpoint parameters",
-      "targetKind": "question",
-      "targetId": "python-ranges-and-randomness-hook"
-    },
-    {
-      "claim": "linspace. It spreads points from the start to the stop, so the endpoint is included. arange stops before it.",
-      "sourceId": "np-quickstart",
-      "section": "Array creation; np.random.Generator.integers parameters and seeding",
-      "targetKind": "question",
-      "targetId": "python-ranges-and-randomness-endpoint-check"
-    },
-    {
-      "claim": "linspace. It spreads points from the start to the stop, so the endpoint is included. arange stops before it.",
-      "sourceId": "np-random",
-      "section": "low, high, size and endpoint parameters",
-      "targetKind": "question",
-      "targetId": "python-ranges-and-randomness-endpoint-check"
-    },
-    {
-      "claim": "linspace. It spreads points from the start to the stop, so the endpoint is included. arange stops before it.",
-      "sourceId": "np-linspace",
-      "section": "num and endpoint parameters",
-      "targetKind": "question",
-      "targetId": "python-ranges-and-randomness-endpoint-check"
-    },
-    {
       "claim": "Both ends are points, so there is one fewer gap than there are points.",
       "sourceId": "np-quickstart",
       "section": "Array creation; np.random.Generator.integers parameters and seeding",
@@ -1504,6 +1418,237 @@
       "section": "num and endpoint parameters",
       "targetKind": "flashcard",
       "targetId": "python-ranges-and-randomness-card-2"
+    },
+    {
+      "claim": "arange steps up from a start in fixed strides and stops before its stop value.",
+      "sourceId": "np-quickstart",
+      "section": "Array creation; np.random.Generator.integers parameters and seeding",
+      "targetKind": "step",
+      "targetId": "posts-every-3-metres"
+    },
+    {
+      "claim": "arange steps up from a start in fixed strides and stops before its stop value.",
+      "sourceId": "np-random",
+      "section": "low, high, size and endpoint parameters",
+      "targetKind": "step",
+      "targetId": "posts-every-3-metres"
+    },
+    {
+      "claim": "arange steps up from a start in fixed strides and stops before its stop value.",
+      "sourceId": "np-linspace",
+      "section": "num and endpoint parameters",
+      "targetKind": "step",
+      "targetId": "posts-every-3-metres"
+    },
+    {
+      "claim": "Counting the values arange makes means stepping from the start and stopping before the stop value.",
+      "sourceId": "np-quickstart",
+      "section": "Array creation; np.random.Generator.integers parameters and seeding",
+      "targetKind": "step",
+      "targetId": "count-the-steps"
+    },
+    {
+      "claim": "Counting the values arange makes means stepping from the start and stopping before the stop value.",
+      "sourceId": "np-random",
+      "section": "low, high, size and endpoint parameters",
+      "targetKind": "step",
+      "targetId": "count-the-steps"
+    },
+    {
+      "claim": "Counting the values arange makes means stepping from the start and stopping before the stop value.",
+      "sourceId": "np-linspace",
+      "section": "num and endpoint parameters",
+      "targetKind": "step",
+      "targetId": "count-the-steps"
+    },
+    {
+      "claim": "linspace fixes how many values to make and includes both ends by default, so its spacing is the span divided by one fewer than the count.",
+      "sourceId": "np-quickstart",
+      "section": "Array creation; np.random.Generator.integers parameters and seeding",
+      "targetKind": "step",
+      "targetId": "posts-at-both-ends"
+    },
+    {
+      "claim": "linspace fixes how many values to make and includes both ends by default, so its spacing is the span divided by one fewer than the count.",
+      "sourceId": "np-random",
+      "section": "low, high, size and endpoint parameters",
+      "targetKind": "step",
+      "targetId": "posts-at-both-ends"
+    },
+    {
+      "claim": "linspace fixes how many values to make and includes both ends by default, so its spacing is the span divided by one fewer than the count.",
+      "sourceId": "np-linspace",
+      "section": "num and endpoint parameters",
+      "targetKind": "step",
+      "targetId": "posts-at-both-ends"
+    },
+    {
+      "claim": "A linspace call with both ends included makes one fewer gap than values, and the span is shared among the gaps.",
+      "sourceId": "np-quickstart",
+      "section": "Array creation; np.random.Generator.integers parameters and seeding",
+      "targetKind": "step",
+      "targetId": "gaps-between-points"
+    },
+    {
+      "claim": "A linspace call with both ends included makes one fewer gap than values, and the span is shared among the gaps.",
+      "sourceId": "np-random",
+      "section": "low, high, size and endpoint parameters",
+      "targetKind": "step",
+      "targetId": "gaps-between-points"
+    },
+    {
+      "claim": "A linspace call with both ends included makes one fewer gap than values, and the span is shared among the gaps.",
+      "sourceId": "np-linspace",
+      "section": "num and endpoint parameters",
+      "targetKind": "step",
+      "targetId": "gaps-between-points"
+    },
+    {
+      "claim": "The spacing of linspace is the span over the number of gaps, and the stop is its final value.",
+      "sourceId": "np-quickstart",
+      "section": "Array creation; np.random.Generator.integers parameters and seeding",
+      "targetKind": "step",
+      "targetId": "spacing-and-end"
+    },
+    {
+      "claim": "The spacing of linspace is the span over the number of gaps, and the stop is its final value.",
+      "sourceId": "np-random",
+      "section": "low, high, size and endpoint parameters",
+      "targetKind": "step",
+      "targetId": "spacing-and-end"
+    },
+    {
+      "claim": "The spacing of linspace is the span over the number of gaps, and the stop is its final value.",
+      "sourceId": "np-linspace",
+      "section": "num and endpoint parameters",
+      "targetKind": "step",
+      "targetId": "spacing-and-end"
+    },
+    {
+      "claim": "A NumPy random generator draws whole numbers with its integers method, and size sets how many.",
+      "sourceId": "np-quickstart",
+      "section": "Array creation; np.random.Generator.integers parameters and seeding",
+      "targetKind": "step",
+      "targetId": "numbers-chosen-by-chance"
+    },
+    {
+      "claim": "A NumPy random generator draws whole numbers with its integers method, and size sets how many.",
+      "sourceId": "np-random",
+      "section": "low, high, size and endpoint parameters",
+      "targetKind": "step",
+      "targetId": "numbers-chosen-by-chance"
+    },
+    {
+      "claim": "A NumPy random generator draws whole numbers with its integers method, and size sets how many.",
+      "sourceId": "np-linspace",
+      "section": "num and endpoint parameters",
+      "targetKind": "step",
+      "targetId": "numbers-chosen-by-chance"
+    },
+    {
+      "claim": "rng.integers includes its low limit and excludes its high limit, so it offers high minus low different values.",
+      "sourceId": "np-quickstart",
+      "section": "Array creation; np.random.Generator.integers parameters and seeding",
+      "targetKind": "step",
+      "targetId": "which-numbers-can-come-up"
+    },
+    {
+      "claim": "rng.integers includes its low limit and excludes its high limit, so it offers high minus low different values.",
+      "sourceId": "np-random",
+      "section": "low, high, size and endpoint parameters",
+      "targetKind": "step",
+      "targetId": "which-numbers-can-come-up"
+    },
+    {
+      "claim": "rng.integers includes its low limit and excludes its high limit, so it offers high minus low different values.",
+      "sourceId": "np-linspace",
+      "section": "num and endpoint parameters",
+      "targetKind": "step",
+      "targetId": "which-numbers-can-come-up"
+    },
+    {
+      "claim": "The high limit of integers must be one more than the largest value wanted.",
+      "sourceId": "np-quickstart",
+      "section": "Array creation; np.random.Generator.integers parameters and seeding",
+      "targetKind": "step",
+      "targetId": "which-call-draws-one-to-six"
+    },
+    {
+      "claim": "The high limit of integers must be one more than the largest value wanted.",
+      "sourceId": "np-random",
+      "section": "low, high, size and endpoint parameters",
+      "targetKind": "step",
+      "targetId": "which-call-draws-one-to-six"
+    },
+    {
+      "claim": "The high limit of integers must be one more than the largest value wanted.",
+      "sourceId": "np-linspace",
+      "section": "num and endpoint parameters",
+      "targetKind": "step",
+      "targetId": "which-call-draws-one-to-six"
+    },
+    {
+      "claim": "The largest value integers can return is the whole number just below its high limit.",
+      "sourceId": "np-quickstart",
+      "section": "Array creation; np.random.Generator.integers parameters and seeding",
+      "targetKind": "step",
+      "targetId": "largest-possible"
+    },
+    {
+      "claim": "The largest value integers can return is the whole number just below its high limit.",
+      "sourceId": "np-random",
+      "section": "low, high, size and endpoint parameters",
+      "targetKind": "step",
+      "targetId": "largest-possible"
+    },
+    {
+      "claim": "The largest value integers can return is the whole number just below its high limit.",
+      "sourceId": "np-linspace",
+      "section": "num and endpoint parameters",
+      "targetKind": "step",
+      "targetId": "largest-possible"
+    },
+    {
+      "claim": "A seed fixes the starting point of a generator, so the same seed and the same calls give the same numbers.",
+      "sourceId": "np-quickstart",
+      "section": "Array creation; np.random.Generator.integers parameters and seeding",
+      "targetKind": "step",
+      "targetId": "making-a-draw-repeatable"
+    },
+    {
+      "claim": "A seed fixes the starting point of a generator, so the same seed and the same calls give the same numbers.",
+      "sourceId": "np-random",
+      "section": "low, high, size and endpoint parameters",
+      "targetKind": "step",
+      "targetId": "making-a-draw-repeatable"
+    },
+    {
+      "claim": "A seed fixes the starting point of a generator, so the same seed and the same calls give the same numbers.",
+      "sourceId": "np-linspace",
+      "section": "num and endpoint parameters",
+      "targetKind": "step",
+      "targetId": "making-a-draw-repeatable"
+    },
+    {
+      "claim": "Two generators with the same seed and the same calls return the same numbers.",
+      "sourceId": "np-quickstart",
+      "section": "Array creation; np.random.Generator.integers parameters and seeding",
+      "targetKind": "step",
+      "targetId": "same-seed-again"
+    },
+    {
+      "claim": "Two generators with the same seed and the same calls return the same numbers.",
+      "sourceId": "np-random",
+      "section": "low, high, size and endpoint parameters",
+      "targetKind": "step",
+      "targetId": "same-seed-again"
+    },
+    {
+      "claim": "Two generators with the same seed and the same calls return the same numbers.",
+      "sourceId": "np-linspace",
+      "section": "num and endpoint parameters",
+      "targetKind": "step",
+      "targetId": "same-seed-again"
     }
   ]
 }

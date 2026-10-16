@@ -1,0 +1,1082 @@
+<title>The Turning Sky</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Commissioner:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap">
+<style>
+/* Layout: one centred reading column under a thin progress bar, a docked action bar below.
+   Figures sit on dark night panels in both themes; the page around them follows the viewer's theme. */
+:root {
+  --bg: #0c0f16;
+  --surface: #141925;
+  --surface-2: #1b2231;
+  --line: #2a3347;
+  --fg: #e8ecf6;
+  --muted: #9ca7bf;
+  --accent: #8e9aff;
+  --accent-ink: #0c0f16;
+  --good: #58cd94;
+  --good-soft: rgba(88, 205, 148, .13);
+  --warn: #f2b560;
+  --warn-soft: rgba(242, 181, 96, .13);
+  --font-ui: "Commissioner", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+  /* figure panels: a night sky in either theme */
+  --panel: #0a0e1b;
+  --sky-top: #060913;
+  --sky-bot: #1a2352;
+  --ground: #080b12;
+  --horizon: #6b78a0;
+  --fig-ink: #dfe5f5;
+  --fig-muted: #97a3c4;
+  --fig-line: #4b5a86;
+  --fig-star: #f4f6ff;
+  --fig-gold: #ffd98a;
+  --fig-accent: #9aa6ff;
+  --fig-good: #62d6a0;
+  --fig-warn: #f4b862;
+  --earth-a: #3b6fb8;
+  --earth-b: #182f5c;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #f3f4fa; --surface: #ffffff; --surface-2: #eaedf7; --line: #d3d9ea;
+    --fg: #141a2a; --muted: #566079; --accent: #4757dd; --accent-ink: #ffffff;
+    --good: #15805a; --good-soft: rgba(21, 128, 90, .1);
+    --warn: #965a08; --warn-soft: rgba(150, 90, 8, .1);
+    color-scheme: light;
+  }
+}
+:root[data-theme="light"] {
+  --bg: #f3f4fa; --surface: #ffffff; --surface-2: #eaedf7; --line: #d3d9ea;
+  --fg: #141a2a; --muted: #566079; --accent: #4757dd; --accent-ink: #ffffff;
+  --good: #15805a; --good-soft: rgba(21, 128, 90, .1);
+  --warn: #965a08; --warn-soft: rgba(150, 90, 8, .1);
+  color-scheme: light;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: 400 19px/1.6 var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+}
+button, input { font-family: inherit; }
+
+/* top bar */
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); }
+.top-in { max-width: 760px; margin: 0 auto; padding: 10px 16px; display: flex; align-items: center; gap: 14px; }
+.iconbtn { flex: none; width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); display: grid; place-items: center; cursor: pointer; }
+.iconbtn:disabled { opacity: .35; cursor: default; }
+.iconbtn:focus-visible, .btn:focus-visible, .chip:focus-visible, .slider input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.crumb { font-size: 14px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 30%; }
+.progress { flex: 1; height: 6px; border-radius: 99px; background: var(--surface-2); overflow: hidden; }
+.progress > span { display: block; height: 100%; width: 0; background: var(--accent); border-radius: 99px; transition: width .3s ease; }
+.count { font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; min-width: 3.6em; text-align: right; }
+
+/* reading column */
+main { max-width: 760px; margin: 0 auto; padding: 30px 16px 44px; outline: none; }
+.screen { animation: rise .28s ease both; }
+@keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+h1 { margin: 0 0 18px; font-weight: 800; font-size: clamp(27px, 5.2vw, 35px); line-height: 1.14; letter-spacing: -.012em; text-wrap: balance; }
+h1.display { font-family: var(--font-display); font-weight: 700; letter-spacing: -.02em; }
+p { margin: 0 0 16px; max-width: 65ch; }
+dfn { font-style: normal; font-weight: 700; color: var(--accent); }
+.muted { color: var(--muted); }
+.small { font-size: 16px; }
+
+/* course page */
+.modules { list-style: none; margin: 22px 0 14px; padding: 0; max-width: 65ch; }
+.modules li { padding: 13px 0; border-top: 1px solid var(--line); font-size: 17px; line-height: 1.45; color: var(--muted); }
+.modules li:last-child { border-bottom: 1px solid var(--line); }
+.modules b { display: block; color: var(--fg); font-weight: 700; font-size: 18px; }
+.results li { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 2px 16px; color: var(--fg); }
+.results li .muted { font-size: 16px; }
+
+/* questions */
+.prompt { font-weight: 800; font-size: clamp(23px, 4.4vw, 30px); line-height: 1.22; margin: 8px 0 22px; text-wrap: balance; }
+.answer { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+.answer input { width: min(190px, 56%); padding: 12px 14px; font: 600 24px var(--font-ui); border-radius: 12px; border: 2px solid var(--line); background: var(--surface); color: var(--fg); }
+.answer input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-color: var(--accent); }
+.answer input:disabled { opacity: .8; }
+.unit { color: var(--muted); font-size: 20px; }
+.choices { display: grid; gap: 10px; margin-bottom: 18px; }
+.choice { position: relative; display: flex; align-items: center; gap: 14px; padding: 14px 16px; border: 2px solid var(--line); border-radius: 14px; background: var(--surface); cursor: pointer; font-size: 18px; line-height: 1.4; }
+.choice input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
+.choice .key { flex: none; width: 32px; height: 32px; border-radius: 9px; background: var(--surface-2); display: grid; place-items: center; font-weight: 700; font-size: 15px; color: var(--muted); }
+.choice.sel { border-color: var(--accent); }
+.choice.focus { outline: 3px solid var(--accent); outline-offset: 2px; }
+.choice.is-right { border-color: var(--good); background: var(--good-soft); }
+.choice.is-wrong { border-color: var(--warn); background: var(--warn-soft); }
+.choice.locked { cursor: default; }
+.hintbox { min-height: 0; }
+.hintbox p { padding: 12px 14px; border-radius: 12px; background: var(--surface-2); font-size: 17px; margin: 0 0 10px; }
+.chip { border: 1px solid var(--line); background: var(--surface-2); color: var(--fg); border-radius: 999px; padding: 8px 18px; min-height: 40px; font: 600 15px var(--font-ui); cursor: pointer; }
+.chip:disabled { opacity: .4; cursor: default; }
+.chip[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+
+/* beats */
+.beat { animation: rise .28s ease both; }
+.beat.old { color: var(--muted); }
+
+/* dock */
+.dock { position: sticky; bottom: 0; z-index: 5; background: var(--bg); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom, 0px); }
+.dock-in { max-width: 760px; margin: 0 auto; padding: 12px 16px; display: flex; gap: 16px; align-items: center; justify-content: space-between; }
+.fb { flex: 1; min-width: 0; font-size: 16.5px; line-height: 1.45; max-height: 38vh; overflow: auto; }
+.fb strong { display: block; font-size: 17px; margin-bottom: 2px; }
+.fb.good strong { color: var(--good); }
+.fb.warn strong { color: var(--warn); }
+.fb .note { display: block; margin-top: 6px; color: var(--muted); font-size: 15px; }
+.btn { flex: none; border: 0; border-radius: 12px; padding: 12px 24px; min-height: 48px; font: 700 17px var(--font-ui); background: var(--accent); color: var(--accent-ink); cursor: pointer; }
+.btn:disabled { opacity: .4; cursor: not-allowed; }
+.btn.ghost { background: var(--surface-2); color: var(--fg); border: 1px solid var(--line); }
+.dock-end { justify-content: flex-end; }
+
+/* figures */
+.fig-wrap { margin: 22px 0 24px; }
+.fig { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+.fig-svg svg { display: block; width: 100%; height: auto; }
+.fig-ctl { padding: 12px 14px 14px; background: var(--surface); border-top: 1px solid var(--line); display: grid; gap: 12px; }
+.ctl-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.slider { display: grid; grid-template-columns: 1fr auto; gap: 0 12px; align-items: baseline; }
+.slider label { font-size: 15px; color: var(--muted); }
+.slider output { font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.slider input { grid-column: 1 / -1; width: 100%; height: 30px; margin: 2px 0 0; accent-color: var(--accent); }
+.readouts { display: grid; gap: 8px; }
+.readouts:empty { display: none; }
+.ro { font-size: 15.5px; line-height: 1.45; margin: 0; max-width: none; }
+.ro.pill { padding: 9px 12px; border-radius: 10px; }
+.ro.pill.good { background: var(--good-soft); color: var(--good); }
+.ro.pill.warn { background: var(--warn-soft); color: var(--warn); }
+figcaption { margin: 10px 2px 0; font-size: 15px; line-height: 1.5; color: var(--muted); max-width: 65ch; }
+
+/* figure drawing */
+.fig-bg { fill: var(--panel); }
+.sk-ground { fill: var(--ground); }
+.sk-horizon { stroke: var(--horizon); stroke-width: 2; }
+.sk-trail { fill: none; stroke: var(--fig-ink); stroke-opacity: .14; stroke-width: 1; }
+.sk-star { fill: var(--fig-star); }
+.hl-circle { fill: none; stroke: var(--fig-accent); stroke-width: 1.5; stroke-dasharray: 5 5; stroke-opacity: .85; }
+.hl-trail { fill: none; stroke: var(--fig-accent); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.hl-star { fill: var(--fig-gold); }
+.hl-glow { fill: var(--fig-gold); opacity: .25; }
+.pole-ring { fill: none; stroke: var(--fig-gold); stroke-width: 2; }
+.pole-cross { stroke: var(--fig-gold); stroke-width: 2; }
+.lo-good { fill: none; stroke: var(--fig-good); stroke-width: 2.5; }
+.lo-warn { fill: none; stroke: var(--fig-warn); stroke-width: 2.5; }
+.lo-line-good { stroke: var(--fig-good); stroke-width: 1.5; stroke-dasharray: 4 4; }
+.lo-line-warn { stroke: var(--fig-warn); stroke-width: 1.5; stroke-dasharray: 4 4; }
+.earth { stroke: var(--fig-line); stroke-width: 2; }
+.ln { stroke: var(--fig-ink); stroke-width: 2; fill: none; }
+.ln-soft { stroke: var(--fig-line); stroke-width: 1.5; fill: none; }
+.ln-dash { stroke: var(--fig-muted); stroke-width: 1.5; stroke-dasharray: 6 6; fill: none; }
+.ln-acc { stroke: var(--fig-accent); stroke-width: 3; fill: none; stroke-linecap: round; }
+.ln-gold { stroke: var(--fig-gold); stroke-width: 3; fill: none; stroke-linecap: round; }
+.ln-good { stroke: var(--fig-good); stroke-width: 3; fill: none; stroke-linecap: round; }
+.ln-dim { opacity: .35; }
+.dot-gold { fill: var(--fig-gold); }
+.dot-acc { fill: var(--fig-accent); }
+.dot-ink { fill: var(--fig-ink); }
+.mk { fill: var(--fig-ink); }
+.mk-gold { fill: var(--fig-gold); }
+.mk-acc { fill: var(--fig-accent); }
+.fg-label, .fg-sub { paint-order: stroke; stroke: var(--panel); stroke-width: 5px; stroke-linejoin: round; }
+.fg-label { fill: var(--fig-ink); font: 600 17px var(--font-ui); }
+.fg-sub { fill: var(--fig-muted); font: 500 15px var(--font-ui); }
+.fg-gold { fill: var(--fig-gold); }
+.fg-acc { fill: var(--fig-accent); }
+.fg-good { fill: var(--fig-good); }
+
+@media (max-width: 560px) {
+  body { font-size: 17.5px; }
+  .crumb { display: none; }
+  .dock-in { flex-direction: column; align-items: stretch; gap: 10px; }
+  .btn { width: 100%; }
+  .answer input { width: 52%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .screen, .beat { animation: none; }
+  .progress > span { transition: none; }
+}
+</style>
+
+<header class="top">
+  <div class="top-in">
+    <button class="iconbtn" id="back" type="button" aria-label="Previous screen">
+      <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M12.5 4.5 7 10l5.5 5.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <span class="crumb">Astronomy: From Sky to Cosmos</span>
+    <div class="progress" role="progressbar" aria-label="Lesson progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="bar"></span></div>
+    <span class="count" id="count"></span>
+  </div>
+</header>
+<main id="main" tabindex="-1"></main>
+<div class="dock"><div class="dock-in" id="dock"></div></div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- small helpers ---------- */
+  var D2R = Math.PI / 180;
+  var W = 640, H = 440;
+  var uidc = 0;
+  var reduce = false;
+  try { reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) {}
+
+  function $(s, r) { return (r || document).querySelector(s); }
+  function fx(n) { return n.toFixed(1); }
+  function r1(n) { return Math.round(n * 10) / 10; }
+  function sgn(n) { return n < 0 ? "−" + Math.abs(n) : (n > 0 ? "+" + n : "0"); }
+  function neg(n) { return n < 0 ? "−" + Math.abs(n) : String(n); }
+  function pt(cx, cy, r, a) { return [cx + r * Math.cos(a * D2R), cy - r * Math.sin(a * D2R)]; }
+  function arcPath(cx, cy, r, a0, a1) {
+    var p0 = pt(cx, cy, r, a0), p1 = pt(cx, cy, r, a1);
+    var large = Math.abs(a1 - a0) > 180 ? 1 : 0;
+    var sweep = a1 > a0 ? 0 : 1;
+    return "M" + fx(p0[0]) + " " + fx(p0[1]) + " A" + r + " " + r + " 0 " + large + " " + sweep + " " + fx(p1[0]) + " " + fx(p1[1]);
+  }
+  function mulberry(a) {
+    return function () {
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      var t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  function shuffle(arr) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; }
+    return a;
+  }
+
+  var BG = (function () {
+    var r = mulberry(11);
+    return Array.from({ length: 46 }, function () { return { x: r() * W, y: r() * H, r: 0.6 + r() * 1.2, o: 0.25 + r() * 0.5 }; });
+  })();
+  function bgStars() {
+    return BG.map(function (s) { return '<circle class="sk-star" cx="' + fx(s.x) + '" cy="' + fx(s.y) + '" r="' + fx(s.r) + '" opacity="' + s.o.toFixed(2) + '"/>'; }).join("");
+  }
+  function markers(uid) {
+    function m(id, cls) { return '<marker id="' + id + uid + '" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="' + cls + '"/></marker>'; }
+    return m("ar", "mk") + m("ag", "mk-gold") + m("aa", "mk-acc");
+  }
+  function sliderHTML(id, label, min, max, step, val) {
+    return '<div class="slider"><label for="f-' + id + '">' + label + '</label><output id="o-' + id + '" for="f-' + id + '"></output>' +
+      '<input id="f-' + id + '" type="range" min="' + min + '" max="' + max + '" step="' + step + '" value="' + val + '"></div>';
+  }
+  function figShell(host, spec, controlsHTML) {
+    host.innerHTML = '<figure class="fig-wrap"><div class="fig"><div class="fig-svg" role="img" aria-label="' + (spec.alt || "") + '"></div>' +
+      '<div class="fig-ctl">' + controlsHTML + '<div class="readouts" aria-live="polite"></div></div></div>' +
+      (spec.caption ? '<figcaption>' + spec.caption + '</figcaption>' : "") + '</figure>';
+    return { box: $(".fig-svg", host), ro: $(".readouts", host) };
+  }
+  var playRow = '<div class="ctl-row"><button type="button" class="chip" data-play>Play</button><button type="button" class="chip" data-reset>Reset</button></div>';
+
+  /* ---------- sky figure: facing north, a flat sketch ---------- */
+  var SK = { Y0: 392, K: 3.5, CX: 320 };
+  var STARS = (function () {
+    var r = mulberry(7);
+    return Array.from({ length: 38 }, function () { return { r: 6 + r() * 74, a: r() * 360, m: 0.9 + r() * 1.5 }; });
+  })();
+
+  function skyMarkup(st, cfg, uid) {
+    var Y0 = SK.Y0, K = SK.K, CX = SK.CX;
+    var poleY = Y0 - st.lat * K;
+    var o = [];
+    o.push('<svg viewBox="0 0 ' + W + ' ' + H + '" aria-hidden="true" focusable="false">');
+    o.push('<defs><linearGradient id="sg' + uid + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--sky-top)"/><stop offset="1" style="stop-color:var(--sky-bot)"/></linearGradient>' +
+      '<clipPath id="cl' + uid + '"><rect x="0" y="0" width="' + W + '" height="' + Y0 + '"/></clipPath></defs>');
+    o.push('<rect x="0" y="0" width="' + W + '" height="' + Y0 + '" fill="url(#sg' + uid + ')"/>');
+    o.push('<g clip-path="url(#cl' + uid + ')">');
+    if (cfg.circles) STARS.forEach(function (t) { o.push('<circle class="sk-trail" cx="' + CX + '" cy="' + fx(poleY) + '" r="' + fx(t.r * K) + '"/>'); });
+    STARS.forEach(function (t) {
+      var a = (t.a + 15 * st.hours) * D2R;
+      o.push('<circle class="sk-star" cx="' + fx(CX + t.r * K * Math.cos(a)) + '" cy="' + fx(poleY - t.r * K * Math.sin(a)) + '" r="' + fx(t.m) + '"/>');
+    });
+    o.push('<circle class="sk-star" cx="' + CX + '" cy="' + fx(poleY) + '" r="2.6"/>');
+    var hasStar = cfg.dec !== undefined && st.dec !== null;
+    var rd = 0, rpx = 0;
+    if (hasStar) {
+      rd = 90 - st.dec; rpx = rd * K;
+      if (cfg.showCircle) o.push('<circle class="hl-circle" cx="' + CX + '" cy="' + fx(poleY) + '" r="' + fx(rpx) + '"/>');
+      if (st.hours > 0) {
+        var n = Math.ceil(st.hours * 4), pts = [];
+        for (var k = 0; k <= n; k++) {
+          var h = Math.min(st.hours, k / 4), a2 = 15 * h * D2R;
+          pts.push(fx(CX + rpx * Math.cos(a2)) + "," + fx(poleY - rpx * Math.sin(a2)));
+        }
+        o.push('<polyline class="hl-trail" points="' + pts.join(" ") + '"/>');
+      }
+      var a3 = 15 * st.hours * D2R, sx = CX + rpx * Math.cos(a3), sy = poleY - rpx * Math.sin(a3);
+      o.push('<circle class="hl-glow" cx="' + fx(sx) + '" cy="' + fx(sy) + '" r="12"/><circle class="hl-star" cx="' + fx(sx) + '" cy="' + fx(sy) + '" r="5.5"/>');
+    }
+    o.push("</g>");
+    o.push('<rect class="sk-ground" x="0" y="' + Y0 + '" width="' + W + '" height="' + (H - Y0) + '"/>');
+    o.push('<line class="sk-horizon" x1="0" y1="' + Y0 + '" x2="' + W + '" y2="' + Y0 + '"/>');
+    o.push('<text class="fg-sub" x="14" y="' + (Y0 + 31) + '">west</text>');
+    o.push('<text class="fg-sub" x="' + CX + '" y="' + (Y0 + 31) + '" text-anchor="middle">north</text>');
+    o.push('<text class="fg-sub" x="' + (W - 14) + '" y="' + (Y0 + 31) + '" text-anchor="end">east</text>');
+    if (cfg.poleLabel) {
+      o.push('<circle class="pole-ring" cx="' + CX + '" cy="' + fx(poleY) + '" r="9"/>' +
+        '<path class="pole-cross" d="M' + (CX - 15) + ' ' + fx(poleY) + 'H' + (CX - 9) + 'M' + (CX + 9) + ' ' + fx(poleY) + 'H' + (CX + 15) + 'M' + CX + ' ' + fx(poleY - 15) + 'V' + fx(poleY - 9) + 'M' + CX + ' ' + fx(poleY + 9) + 'V' + fx(poleY + 15) + '"/>');
+      o.push('<text class="fg-label fg-gold" x="' + (CX - 20) + '" y="' + fx(poleY - 14) + '" text-anchor="end">north celestial pole</text>');
+    }
+    if (hasStar && cfg.showLowest) {
+      var ly = poleY + rd * K, alt = st.lat - rd, good = alt > 0;
+      if (ly < H - 10) {
+        o.push('<line class="' + (good ? "lo-line-good" : "lo-line-warn") + '" x1="' + CX + '" y1="' + fx(poleY) + '" x2="' + CX + '" y2="' + fx(ly) + '"/>');
+        o.push('<circle class="' + (good ? "lo-good" : "lo-warn") + '" cx="' + CX + '" cy="' + fx(ly) + '" r="7"/>');
+        o.push('<text class="fg-sub" x="' + (CX + 16) + '" y="' + fx(ly + 5) + '">lowest point</text>');
+      }
+    }
+    o.push("</svg>");
+    return o.join("");
+  }
+
+  function mountSky(host, spec) {
+    var uid = ++uidc;
+    var st = { lat: spec.lat, hours: 0, dec: spec.dec === undefined ? null : spec.dec, playing: false };
+    var sl = [sliderHTML("hrs", "Hours watched", 0, 24, 0.1, 0)];
+    if (spec.latControl) sl.push(sliderHTML("lat", "Latitude φ", 0, 90, 1, st.lat));
+    if (spec.decControl) sl.push(sliderHTML("dec", "Star’s declination δ", 0, 90, 1, st.dec));
+    var pre = spec.presets ? '<div class="ctl-row">' + spec.presets.map(function (p) {
+      return '<button type="button" class="chip" data-lat="' + p.lat + '" aria-pressed="' + (p.lat === st.lat) + '">' + p.label + "</button>";
+    }).join("") + "</div>" : "";
+    var sh = figShell(host, spec, pre + playRow + sl.join(""));
+    var raf = 0, last = 0;
+    var hrs = $("#f-hrs", host), latI = $("#f-lat", host), decI = $("#f-dec", host), playB = $("[data-play]", host);
+    host.querySelectorAll("[data-lat]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        st.lat = parseInt(b.getAttribute("data-lat"), 10);
+        host.querySelectorAll("[data-lat]").forEach(function (o) { o.setAttribute("aria-pressed", o === b ? "true" : "false"); });
+        draw();
+      });
+    });
+
+    function readouts() {
+      var ro = [];
+      if (spec.showPoleAlt) ro.push('<p class="ro">The pole stands <b>' + st.lat + '°</b> above the horizon.</p>');
+      if (spec.showDist && st.dec !== null) ro.push('<p class="ro">δ = ' + sgn(st.dec) + '°, so the star lies 90° − ' + st.dec + '° = <b>' + (90 - st.dec) + '°</b> from the pole.</p>');
+      if (spec.showLowest && st.dec !== null) {
+        var rd = 90 - st.dec, alt = st.lat - rd, txt, cls;
+        var math = 'φ − (90° − δ) = ' + st.lat + '° − ' + rd + '° = <b>' + neg(alt) + '°</b>. ';
+        if (alt > 0) { txt = "The lowest point is above the horizon, so this star never sets."; cls = "good"; }
+        else if (alt === 0) { txt = "The lowest point just touches the horizon."; cls = "good"; }
+        else { txt = "The lowest point is below the horizon, so this star sets each day."; cls = "warn"; }
+        ro.push('<p class="ro pill ' + cls + '">' + math + txt + '</p>');
+      }
+      sh.ro.innerHTML = ro.join("");
+    }
+    function draw() {
+      sh.box.innerHTML = skyMarkup(st, spec, uid);
+      $("#o-hrs", host).textContent = r1(st.hours).toFixed(1) + " h";
+      if (latI) $("#o-lat", host).textContent = st.lat + "° N";
+      if (decI) $("#o-dec", host).textContent = sgn(st.dec) + "°";
+      readouts();
+    }
+    function tick(t) {
+      if (!st.playing) return;
+      var dt = Math.min(0.1, (t - last) / 1000); last = t;
+      st.hours = (st.hours + dt * 2.6) % 24;
+      hrs.value = st.hours; draw();
+      raf = requestAnimationFrame(tick);
+    }
+    function setPlay(on) {
+      st.playing = on; playB.textContent = on ? "Pause" : "Play";
+      if (on) { last = performance.now(); raf = requestAnimationFrame(tick); } else cancelAnimationFrame(raf);
+    }
+    playB.addEventListener("click", function () { setPlay(!st.playing); });
+    $("[data-reset]", host).addEventListener("click", function () { st.hours = 0; hrs.value = 0; draw(); });
+    hrs.addEventListener("input", function () { st.hours = parseFloat(hrs.value); draw(); });
+    if (latI) latI.addEventListener("input", function () { st.lat = parseInt(latI.value, 10); draw(); });
+    if (decI) decI.addEventListener("input", function () { st.dec = parseInt(decI.value, 10); draw(); });
+    draw();
+    if (spec.autoplay && !reduce) setPlay(true);
+    return { destroy: function () { st.playing = false; cancelAnimationFrame(raf); }, set: function () {} };
+  }
+
+  /* ---------- Earth in cross-section ---------- */
+  function earthMarkup(st, cfg, uid) {
+    var o = [];
+    var mode = cfg.mode;
+    o.push('<svg viewBox="0 0 ' + W + ' ' + H + '" aria-hidden="true" focusable="false">');
+    o.push('<defs><radialGradient id="eg' + uid + '" cx="38%" cy="32%" r="80%"><stop offset="0" style="stop-color:var(--earth-a)"/><stop offset="1" style="stop-color:var(--earth-b)"/></radialGradient>' + markers(uid) + '</defs>');
+    o.push('<rect class="fig-bg" x="0" y="0" width="' + W + '" height="' + H + '"/>' + bgStars());
+
+    if (mode === "axis") {
+      var C = [230, 245], R = 100;
+      o.push('<line class="ln-dash" x1="' + C[0] + '" y1="52" x2="' + C[0] + '" y2="426"/>');
+      o.push('<circle class="earth" cx="' + C[0] + '" cy="' + C[1] + '" r="' + R + '" fill="url(#eg' + uid + ')"/>');
+      o.push('<line class="ln-soft" x1="' + (C[0] - R) + '" y1="' + C[1] + '" x2="' + (C[0] + R) + '" y2="' + C[1] + '"/>');
+      o.push('<line class="ln" x1="' + C[0] + '" y1="' + (C[1] - R) + '" x2="' + C[0] + '" y2="' + (C[1] + R) + '"/>');
+      o.push('<circle class="dot-ink" cx="' + C[0] + '" cy="' + (C[1] - R) + '" r="4"/><circle class="dot-ink" cx="' + C[0] + '" cy="' + (C[1] + R) + '" r="4"/>');
+      o.push('<text class="fg-sub" x="' + (C[0] - 12) + '" y="' + (C[1] - R + 20) + '" text-anchor="end">North Pole</text>');
+      o.push('<text class="fg-sub" x="' + (C[0] - 12) + '" y="' + (C[1] + R - 8) + '" text-anchor="end">South Pole</text>');
+      o.push('<text class="fg-sub" x="' + (C[0] + R + 14) + '" y="' + (C[1] + 5) + '">equator</text>');
+      o.push('<path class="ln-acc" d="M180 118 A50 14 0 0 1 280 118" marker-end="url(#aa' + uid + ')"/>');
+      o.push('<text class="fg-label fg-acc" x="168" y="112" text-anchor="end">Earth spins</text>');
+      o.push('<circle class="hl-glow" cx="' + C[0] + '" cy="40" r="13"/><circle class="hl-star" cx="' + C[0] + '" cy="40" r="5.5"/>');
+      o.push('<text class="fg-label fg-gold" x="' + (C[0] + 18) + '" y="38">north celestial pole</text>');
+      o.push('<text class="fg-sub" x="' + (C[0] + 18) + '" y="60">Polaris lies within 1° of it</text>');
+      o.push('<circle class="hl-glow" cx="' + C[0] + '" cy="426" r="13"/><circle class="hl-star" cx="' + C[0] + '" cy="426" r="5.5"/>');
+      o.push('<text class="fg-label fg-gold" x="' + (C[0] + 18) + '" y="424">south celestial pole</text>');
+    }
+
+    if (mode === "latitude" || mode === "geometry") {
+      var geo = mode === "geometry";
+      var Lr = geo ? st.layers : 1;
+      var c = geo ? [215, 250] : [210, 240], rr = 100;
+      var phi = st.lat, O = pt(c[0], c[1], rr, phi);
+      var u = [Math.cos(phi * D2R), -Math.sin(phi * D2R)];
+      var nn = [-Math.sin(phi * D2R), -Math.cos(phi * D2R)];
+      o.push('<line class="ln-dash" x1="' + c[0] + '" y1="' + (geo ? 36 : 70) + '" x2="' + c[0] + '" y2="' + (c[1] + 135) + '"/>');
+      o.push('<circle class="earth" cx="' + c[0] + '" cy="' + c[1] + '" r="' + rr + '" fill="url(#eg' + uid + ')"/>');
+      o.push('<line class="ln-soft" x1="' + (c[0] - rr) + '" y1="' + c[1] + '" x2="' + (c[0] + rr + (geo ? 60 : 190)) + '" y2="' + c[1] + '"/>');
+      if (geo) o.push('<text class="fg-sub" x="' + (c[0] - rr - 10) + '" y="' + (c[1] + 5) + '" text-anchor="end">equator</text>');
+      else o.push('<text class="fg-sub" x="' + (c[0] + rr + 196) + '" y="' + (c[1] + 24) + '" text-anchor="end">equator</text>');
+      // radius to the observer
+      o.push('<line class="ln-acc" x1="' + c[0] + '" y1="' + c[1] + '" x2="' + fx(O[0]) + '" y2="' + fx(O[1]) + '"/>');
+      o.push('<circle class="dot-ink" cx="' + c[0] + '" cy="' + c[1] + '" r="3.5"/>');
+      // latitude arc at the centre
+      if (phi > 1) {
+        o.push('<path class="ln-acc" d="' + arcPath(c[0], c[1], 50, 0, phi) + '"/>');
+        var lp = pt(c[0], c[1], 74, phi / 2);
+        o.push('<text class="fg-label fg-acc" x="' + fx(lp[0]) + '" y="' + fx(lp[1] + 6) + '" text-anchor="middle">φ</text>');
+      }
+      if (geo && Lr >= 2) {
+        // horizon and up
+        var h1 = [O[0] + 135 * nn[0], O[1] + 135 * nn[1]], h2 = [O[0] - 135 * nn[0], O[1] - 135 * nn[1]];
+        o.push('<line class="ln" x1="' + fx(h1[0]) + '" y1="' + fx(h1[1]) + '" x2="' + fx(h2[0]) + '" y2="' + fx(h2[1]) + '"/>');
+        var ue = [O[0] + 62 * u[0], O[1] + 62 * u[1]];
+        o.push('<line class="ln" x1="' + fx(O[0]) + '" y1="' + fx(O[1]) + '" x2="' + fx(ue[0]) + '" y2="' + fx(ue[1]) + '" marker-end="url(#ar' + uid + ')"/>');
+        o.push('<text class="fg-sub" x="' + fx(ue[0] + 8) + '" y="' + fx(ue[1] + 2) + '">up</text>');
+        o.push('<text class="fg-sub" x="' + fx(Math.min(h2[0] + 8, 560)) + '" y="' + fx(h2[1] + 20) + '">your horizon</text>');
+        var q = 15;
+        o.push('<path class="ln-soft" d="M' + fx(O[0] + q * u[0]) + ' ' + fx(O[1] + q * u[1]) + 'L' + fx(O[0] + q * (u[0] + nn[0])) + ' ' + fx(O[1] + q * (u[1] + nn[1])) + 'L' + fx(O[0] + q * nn[0]) + ' ' + fx(O[1] + q * nn[1]) + '"/>');
+      }
+      if (geo && Lr >= 3) {
+        o.push('<line class="ln-gold" x1="' + c[0] + '" y1="' + c[1] + '" x2="' + c[0] + '" y2="40" stroke-width="1.5" stroke-dasharray="7 6" opacity=".6"/>');
+        o.push('<line class="ln-gold" x1="' + fx(O[0]) + '" y1="' + fx(O[1]) + '" x2="' + fx(O[0]) + '" y2="40" marker-end="url(#ag' + uid + ')"/>');
+        o.push('<text class="fg-label fg-gold" x="' + fx(O[0] + 12) + '" y="58">toward the north</text>');
+        o.push('<text class="fg-label fg-gold" x="' + fx(O[0] + 12) + '" y="80">celestial pole</text>');
+      }
+      if (geo && Lr >= 4) {
+        if (phi > 1) {
+          o.push('<path class="ln-good" d="' + arcPath(O[0], O[1], 52, 90, 90 + phi) + '"/>');
+          var ap = pt(O[0], O[1], 78, 90 + phi / 2);
+          o.push('<text class="fg-label fg-good" x="' + fx(ap[0]) + '" y="' + fx(ap[1] + 5) + '" text-anchor="end">altitude</text>');
+          o.push('<path class="ln-soft" d="' + arcPath(c[0], c[1], 34, phi, 90) + '"/>');
+          var bp = pt(c[0], c[1], 58, phi + (90 - phi) * 0.72);
+          o.push('<text class="fg-sub" x="' + fx(bp[0]) + '" y="' + fx(bp[1] + 4) + '" text-anchor="middle">90° − φ</text>');
+        }
+      }
+      o.push('<circle class="hl-glow" cx="' + fx(O[0]) + '" cy="' + fx(O[1]) + '" r="11"/><circle class="hl-star" cx="' + fx(O[0]) + '" cy="' + fx(O[1]) + '" r="5"/>');
+      if (!geo || Lr < 2) o.push('<text class="fg-label" x="' + fx(O[0] + 14) + '" y="' + fx(O[1] - 10) + '">you</text>');
+    }
+
+    if (mode === "celestial") {
+      var cc = [300, 218], S = 172;
+      var d = st.dec;
+      o.push('<circle class="ln-soft" cx="' + cc[0] + '" cy="' + cc[1] + '" r="' + S + '" fill="none"/>');
+      o.push('<line class="ln-dash" x1="' + cc[0] + '" y1="' + (cc[1] - S - 16) + '" x2="' + cc[0] + '" y2="' + (cc[1] + S + 16) + '"/>');
+      o.push('<line class="ln" x1="' + (cc[0] - S) + '" y1="' + cc[1] + '" x2="' + (cc[0] + S) + '" y2="' + cc[1] + '"/>');
+      o.push('<circle class="earth" cx="' + cc[0] + '" cy="' + cc[1] + '" r="30" fill="url(#eg' + uid + ')"/>');
+      o.push('<text class="fg-sub" x="' + (cc[0] - S + 12) + '" y="' + (cc[1] - 10) + '">celestial equator</text>');
+      o.push('<text class="fg-label fg-gold" x="' + (cc[0] + 12) + '" y="' + (cc[1] - S - 2) + '">north celestial pole</text>');
+      o.push('<text class="fg-label fg-gold" x="' + (cc[0] + 12) + '" y="' + (cc[1] + S + 14) + '">south celestial pole</text>');
+      var P = pt(cc[0], cc[1], S, d);
+      o.push('<line class="ln-acc" x1="' + cc[0] + '" y1="' + cc[1] + '" x2="' + fx(P[0]) + '" y2="' + fx(P[1]) + '"/>');
+      if (Math.abs(d) > 1) {
+        o.push('<path class="ln-acc" d="' + arcPath(cc[0], cc[1], 62, 0, d) + '"/>');
+        var dp = pt(cc[0], cc[1], 86, d / 2);
+        o.push('<text class="fg-label fg-acc" x="' + fx(dp[0]) + '" y="' + fx(dp[1] + 6) + '" text-anchor="middle">δ</text>');
+      }
+      o.push('<circle class="hl-glow" cx="' + fx(P[0]) + '" cy="' + fx(P[1]) + '" r="13"/><circle class="hl-star" cx="' + fx(P[0]) + '" cy="' + fx(P[1]) + '" r="6"/>');
+      o.push('<text class="fg-label" x="' + fx(P[0] + 14) + '" y="' + fx(P[1] - 8) + '">star</text>');
+    }
+    o.push("</svg>");
+    return o.join("");
+  }
+
+  function mountEarth(host, spec) {
+    var uid = ++uidc;
+    var st = { lat: spec.lat, dec: spec.dec, layers: spec.layers || 1 };
+    var ctl = "";
+    if (spec.latControl) ctl += sliderHTML("lat", "Latitude φ", 0, 90, 1, st.lat);
+    if (spec.decControl) ctl += sliderHTML("dec", "Star’s declination δ", -90, 90, 1, st.dec);
+    var sh = figShell(host, spec, ctl);
+    if (!ctl) $(".fig-ctl", host).style.display = "none";
+    var latI = $("#f-lat", host), decI = $("#f-dec", host);
+    function draw() {
+      sh.box.innerHTML = earthMarkup(st, spec, uid);
+      if (latI) $("#o-lat", host).textContent = st.lat + "° N";
+      if (decI) $("#o-dec", host).textContent = sgn(st.dec) + "°";
+      var ro = [];
+      if (spec.mode === "geometry" && st.layers >= 4) ro.push('<p class="ro">φ = ' + st.lat + '°, so the pole’s altitude is 90° − (90° − ' + st.lat + '°) = <b>' + st.lat + '°</b>.</p>');
+      sh.ro.innerHTML = ro.join("");
+    }
+    if (latI) latI.addEventListener("input", function () { st.lat = parseInt(latI.value, 10); draw(); });
+    if (decI) decI.addEventListener("input", function () { st.dec = parseInt(decI.value, 10); draw(); });
+    draw();
+    return { destroy: function () {}, set: function (o) { if (o.layers) { st.layers = o.layers; draw(); } } };
+  }
+
+  /* ---------- altitude of a star ---------- */
+  function altMarkup(a, uid) {
+    var O = [150, 354], len = 290;
+    var s = pt(O[0], O[1], len, a);
+    var o = [];
+    o.push('<svg viewBox="0 0 ' + W + ' ' + H + '" aria-hidden="true" focusable="false">');
+    o.push('<defs><linearGradient id="sg' + uid + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--sky-top)"/><stop offset="1" style="stop-color:var(--sky-bot)"/></linearGradient></defs>');
+    o.push('<rect x="0" y="0" width="' + W + '" height="' + O[1] + '" fill="url(#sg' + uid + ')"/>' + bgStars());
+    o.push('<rect class="sk-ground" x="0" y="' + O[1] + '" width="' + W + '" height="' + (H - O[1]) + '"/>');
+    o.push('<line class="sk-horizon" x1="0" y1="' + O[1] + '" x2="' + W + '" y2="' + O[1] + '"/>');
+    o.push('<line class="ln-dash" x1="' + O[0] + '" y1="' + O[1] + '" x2="' + O[0] + '" y2="36"/>');
+    o.push('<text class="fg-sub" x="' + (O[0] + 12) + '" y="52">zenith, straight overhead: 90°</text>');
+    o.push('<text class="fg-sub" x="' + (W - 14) + '" y="' + (O[1] + 31) + '" text-anchor="end">horizon: 0°</text>');
+    o.push('<line class="ln-dash" x1="' + O[0] + '" y1="' + O[1] + '" x2="' + fx(s[0]) + '" y2="' + fx(s[1]) + '"/>');
+    if (a > 1) {
+      o.push('<path class="ln-good" d="' + arcPath(O[0], O[1], 96, 0, a) + '"/>');
+      var lp = pt(O[0], O[1], 128, a / 2);
+      o.push('<text class="fg-label fg-good" x="' + fx(lp[0]) + '" y="' + fx(lp[1] + 6) + '" text-anchor="middle">' + a + '°</text>');
+    }
+    o.push('<circle class="dot-ink" cx="' + O[0] + '" cy="' + (O[1] - 24) + '" r="8"/><line class="ln" x1="' + O[0] + '" y1="' + (O[1] - 16) + '" x2="' + O[0] + '" y2="' + O[1] + '"/>');
+    o.push('<circle class="hl-glow" cx="' + fx(s[0]) + '" cy="' + fx(s[1]) + '" r="14"/><circle class="hl-star" cx="' + fx(s[0]) + '" cy="' + fx(s[1]) + '" r="6.5"/>');
+    o.push('<text class="fg-label" x="' + fx(s[0] + 16) + '" y="' + fx(s[1] + 5) + '">star</text>');
+    o.push("</svg>");
+    return o.join("");
+  }
+  function mountAltitude(host, spec) {
+    var uid = ++uidc, a = spec.start;
+    var sh = figShell(host, spec, sliderHTML("alt", "Star’s altitude", 0, 90, 1, a));
+    var inp = $("#f-alt", host);
+    function draw() {
+      sh.box.innerHTML = altMarkup(a, uid);
+      $("#o-alt", host).textContent = a + "°";
+      sh.ro.innerHTML = '<p class="ro">The star is <b>' + a + '°</b> above the horizon.</p>';
+    }
+    inp.addEventListener("input", function () { a = parseInt(inp.value, 10); draw(); });
+    draw();
+    return { destroy: function () {}, set: function () {} };
+  }
+
+  /* ---------- Earth seen from above the North Pole ---------- */
+  function spinMarkup(hours, uid) {
+    var c = [210, 225], R = 120;
+    var a = -65 + 15 * hours;
+    var O = pt(c[0], c[1], R, a);
+    var u = [Math.cos(a * D2R), -Math.sin(a * D2R)];
+    var tg = [Math.sin(a * D2R), Math.cos(a * D2R)];
+    var dA = 20, D = [Math.cos(dA * D2R), -Math.sin(dA * D2R)];
+    var vis = Math.cos((a - dA) * D2R) > 0;
+    var o = [];
+    o.push('<svg viewBox="0 0 ' + W + ' ' + H + '" aria-hidden="true" focusable="false">');
+    o.push('<defs><radialGradient id="eg' + uid + '" cx="38%" cy="32%" r="80%"><stop offset="0" style="stop-color:var(--earth-a)"/><stop offset="1" style="stop-color:var(--earth-b)"/></radialGradient>' + markers(uid) + '</defs>');
+    o.push('<rect class="fig-bg" x="0" y="0" width="' + W + '" height="' + H + '"/>' + bgStars());
+    // faint parallel ray from the centre
+    o.push('<line class="ln-dash ln-dim" x1="' + c[0] + '" y1="' + c[1] + '" x2="' + fx(c[0] + 420 * D[0]) + '" y2="' + fx(c[1] + 420 * D[1]) + '"/>');
+    o.push('<circle class="earth" cx="' + c[0] + '" cy="' + c[1] + '" r="' + R + '" fill="url(#eg' + uid + ')"/>');
+    o.push('<circle class="dot-ink" cx="' + c[0] + '" cy="' + c[1] + '" r="4"/>');
+    o.push('<text class="fg-sub" x="' + c[0] + '" y="' + (c[1] - 14) + '" text-anchor="middle">North Pole</text>');
+    o.push('<path class="ln-acc" d="' + arcPath(c[0], c[1], 58, 215, 330) + '" marker-end="url(#aa' + uid + ')"/>');
+    // star direction from the observer
+    var tip = [O[0] + 190 * D[0], O[1] + 190 * D[1]];
+    o.push('<line class="ln-gold' + (vis ? '' : ' ln-dim') + '" x1="' + fx(O[0]) + '" y1="' + fx(O[1]) + '" x2="' + fx(tip[0]) + '" y2="' + fx(tip[1]) + '" stroke-dasharray="8 7" marker-end="url(#ag' + uid + ')"/>');
+    o.push('<circle class="hl-star' + (vis ? '' : ' ln-dim') + '" cx="' + fx(tip[0] + 14 * D[0]) + '" cy="' + fx(tip[1] + 14 * D[1]) + '" r="6"/>');
+    // observer: horizon line and up arrow
+    o.push('<line class="ln" x1="' + fx(O[0] - 40 * tg[0]) + '" y1="' + fx(O[1] - 40 * tg[1]) + '" x2="' + fx(O[0] + 40 * tg[0]) + '" y2="' + fx(O[1] + 40 * tg[1]) + '"/>');
+    o.push('<line class="ln" x1="' + fx(O[0]) + '" y1="' + fx(O[1]) + '" x2="' + fx(O[0] + 34 * u[0]) + '" y2="' + fx(O[1] + 34 * u[1]) + '" marker-end="url(#ar' + uid + ')"/>');
+    o.push('<circle class="hl-glow" cx="' + fx(O[0]) + '" cy="' + fx(O[1]) + '" r="11"/><circle class="dot-gold" cx="' + fx(O[0]) + '" cy="' + fx(O[1]) + '" r="5"/>');
+    o.push('<text class="fg-label" x="' + fx(O[0] + 48 * u[0] + 4) + '" y="' + fx(O[1] + 48 * u[1] + 6) + '" text-anchor="' + (u[0] < -0.3 ? "end" : "start") + '">you</text>');
+    o.push('<text class="fg-sub" x="' + (W - 14) + '" y="30" text-anchor="end">dashed line: direction to a distant star</text>');
+    o.push("</svg>");
+    return { svg: o.join(""), visible: vis };
+  }
+  function mountSpin(host, spec) {
+    var uid = ++uidc;
+    var st = { hours: 0, playing: false };
+    var sh = figShell(host, spec, playRow + sliderHTML("hrs", "Hours", 0, 24, 0.1, 0));
+    var hrs = $("#f-hrs", host), playB = $("[data-play]", host), raf = 0, last = 0;
+    function draw() {
+      var m = spinMarkup(st.hours, uid);
+      sh.box.innerHTML = m.svg;
+      $("#o-hrs", host).textContent = r1(st.hours).toFixed(1) + " h";
+      sh.ro.innerHTML = '<p class="ro pill ' + (m.visible ? "good" : "warn") + '">' + (m.visible ? "The star is above your horizon." : "Earth is between you and the star. It is below your horizon and has set.") + '</p>';
+    }
+    function tick(t) {
+      if (!st.playing) return;
+      var dt = Math.min(0.1, (t - last) / 1000); last = t;
+      st.hours = (st.hours + dt * 2.2) % 24; hrs.value = st.hours; draw();
+      raf = requestAnimationFrame(tick);
+    }
+    function setPlay(on) {
+      st.playing = on; playB.textContent = on ? "Pause" : "Play";
+      if (on) { last = performance.now(); raf = requestAnimationFrame(tick); } else cancelAnimationFrame(raf);
+    }
+    playB.addEventListener("click", function () { setPlay(!st.playing); });
+    $("[data-reset]", host).addEventListener("click", function () { st.hours = 0; hrs.value = 0; draw(); });
+    hrs.addEventListener("input", function () { st.hours = parseFloat(hrs.value); draw(); });
+    draw();
+    if (spec.autoplay && !reduce) setPlay(true);
+    return { destroy: function () { st.playing = false; cancelAnimationFrame(raf); }, set: function () {} };
+  }
+
+  function mountFigure(host, spec) {
+    if (spec.kind === "sky") return mountSky(host, spec);
+    if (spec.kind === "earth") return mountEarth(host, spec);
+    if (spec.kind === "altitude") return mountAltitude(host, spec);
+    if (spec.kind === "spin") return mountSpin(host, spec);
+    return { destroy: function () {}, set: function () {} };
+  }
+
+  /* ---------- lesson content ---------- */
+  var SCREENS = [
+    { id: "course", type: "course" },
+
+    { id: "turning-sky", type: "explain", title: "The turning sky",
+      paras: [
+        "Go outside on a clear night, away from street lights, and give your eyes ten minutes to adjust. At first the sky looks still, a scatter of points pinned in place. Now pick one star above a rooftop or a tree and watch it for an hour. It has crept along a smooth arc, and so has every other star in the sky.",
+        "Face north and the pattern becomes clear. The arcs all curve around one spot, the way the grooves of a record curve around the spindle. Stars close to that spot sweep out small circles, stars further away sweep out big ones, and the circles never cross. The northern sky behaves like a wheel turning slowly about a hub."
+      ],
+      figure: { kind: "sky", lat: 52, circles: true, autoplay: true,
+        alt: "A flat sketch of the northern night sky with stars moving in circles about a common centre.",
+        caption: "A flat sketch of the sky facing north from Amsterdam. The ground is at the bottom, with west on your left and east on your right, and stars below the horizon are hidden. Press Play to watch a day go by." },
+      after: [
+        "That wheel is what this lesson is about. It starts with why the sky turns and what sits at the hub. It ends with a trick sailors used for centuries, reading how far north a ship has sailed from the height of that hub. By the end you’ll be able to predict that height from where you live, and say which stars never set from there. It takes about 12 minutes."
+      ] },
+
+    { id: "earth-spins", type: "explain", title: "The sky turns because Earth does",
+      paras: [
+        "The cause is closer to home than the stars. Earth spins once a day, and you spin with it. Because you share the motion you don’t feel it, just as you don’t feel a train gliding along a smooth, straight track. What you notice is the world outside sliding the other way. From a train window the trees slide backwards while the train carries you forwards.",
+        "The sky does the same thing. Earth carries you round, and the stars seem to rise in the east, climb, and set in the west. One full turn is 360 degrees, and Earth takes about 24 hours to make it.",
+        "The picture shows Earth from high above the North Pole, with you standing on the equator. The dashed line points at one distant star. It keeps the same direction however far Earth turns, because the star is so remote that moving round Earth’s rim makes no visible difference to where it lies."
+      ],
+      figure: { kind: "spin", autoplay: true,
+        alt: "Earth seen from above the North Pole, rotating, with an observer on the equator and a fixed direction to a distant star.",
+        caption: "Press Play or move the slider. The arrow on your dot points straight up and sweeps round with Earth." },
+      after: [
+        "Follow the star from your point of view. It begins just above the horizon, climbs until it passes straight overhead, and sinks towards the opposite horizon. Then Earth’s own bulk comes between you and the star, and it has set. It stays hidden for about twelve hours before you are carried round far enough to see it rise again."
+      ] },
+
+    { id: "rate", type: "question", kind: "numeric",
+      prompt: "If the sky makes one full turn of 360° in 24 hours, through how many degrees does it turn in one hour?",
+      unit: "°", answer: 15,
+      hints: ["The turning is steady, so every hour gets an equal share.", "Share the 360° equally between the 24 hours.", "Work out 360 ÷ 24."],
+      misc: [{ v: 360, t: "That is the whole circle, turned in a day. The question asks about one hour." }, { v: 24, t: "That is the number of hours. The answer is an angle." }],
+      good: "15°. A steady full turn shared across 24 hours gives 15° every hour.",
+      note: "Stars come back to the same place after 23 h 56 min, not 24 h, so a star rises about four minutes earlier each night. 24 hours is accurate enough for a night’s observing.",
+      worked: "360° ÷ 24 hours = 15° per hour.", label: "The sky turns 15° an hour" },
+
+    { id: "poles", type: "explain", title: "The hub of the wheel",
+      paras: [
+        "That turning has a centre. Every wheel turns about an axle, and the sky’s axle is Earth’s own axis, the line that runs through the North Pole and the South Pole. Extend that line far out into space and it meets the sky at two spots, the <dfn>north celestial pole</dfn> and the <dfn>south celestial pole</dfn>.",
+        "Earth’s axis keeps pointing the same way through the night, so those two spots stay where they are while everything else turns around them. A turntable gives the picture: the spindle in the middle stays put while the record spins around it. From the northern hemisphere you can see the north celestial pole, and it is the hub of the wheel you watched on the first screen."
+      ],
+      figure: { kind: "earth", mode: "axis",
+        alt: "Earth in cross-section with its axis extended to the sky, marking the north and south celestial poles.",
+        caption: "Earth in cross-section, with its axis extended out to the sky." },
+      after: [
+        "A star sits almost exactly on the north celestial pole. Polaris, the North Star, lies within a degree of it, so it barely moves all night, and people have used it for centuries to find north. It is often assumed to be the brightest star in the sky. It is only moderately bright, and its use comes from where it sits.",
+        "One more name before moving on. The point straight above your head is the <dfn>zenith</dfn>. It is a different spot from the celestial pole, and as Earth turns it slides across the stars."
+      ] },
+
+    { id: "pole-word", type: "question", kind: "choice",
+      prompt: "Which describes a celestial pole?",
+      choices: [
+        { id: "a", label: "The spot the whole sky seems to turn about" },
+        { id: "b", label: "The brightest star in the northern sky" },
+        { id: "c", label: "The point straight above your head" }
+      ], correct: "a",
+      hints: ["Think about what Earth’s axis points at."],
+      misc: [{ c: "b", t: "A pole is a point in the sky, not a star. Polaris lies close to the north one, but it is only moderately bright." }, { c: "c", t: "Straight overhead is the zenith. The pole is overhead only at the North Pole." }],
+      good: "A celestial pole is where Earth’s axis points. The stars wheel about it, so it never moves.",
+      worked: "A celestial pole is the spot the whole sky seems to turn about.", label: "What a celestial pole is" },
+
+    { id: "walk-north", type: "explain", title: "Walking north",
+      paras: [
+        "The next few screens work on one puzzle. The north celestial pole is a fixed spot among the stars, yet its height above your horizon depends on where on Earth you stand.",
+        "Suppose you start on the equator on a clear night and look north. The pole sits right on the horizon, so low that a hill or a row of trees would hide it. Now start walking north. With every day’s travel the pole stands a little higher. Keep going, and when you reach the North Pole itself you look up and find it straight overhead, with the whole sky wheeling around the spot above your head."
+      ],
+      figure: { kind: "sky", lat: 0, circles: true, poleLabel: true,
+        presets: [{ label: "On the equator", lat: 0 }, { label: "At the North Pole", lat: 90 }],
+        alt: "The northern sky sketch from the equator, where the pole sits on the horizon, and from the North Pole, where it is overhead.",
+        caption: "Choose a place, then press Play. On the equator the pole sits on the horizon and stars rise and set. At the North Pole it stands overhead and every star circles without setting." },
+      after: [
+        "Somewhere between those two places is your own, and the pole stands at some height there. To work out that height we need two ways of measuring: one for how far north you have walked, and one for how high up in the sky something is. The next two screens supply them."
+      ] },
+
+    { id: "latitude", type: "explain", title: "Latitude: how far north you are",
+      paras: [
+        "The first measure is <dfn>latitude</dfn>. It is the angle, taken at Earth’s centre, between the equator and the line out to where you stand. The equator is at 0°, the North Pole is at 90° N, and Amsterdam, which this lesson uses as its example, is at about 52° N. Astronomers write latitude as φ, the Greek letter phi."
+      ],
+      figure: { kind: "earth", mode: "latitude", lat: 52, latControl: true,
+        alt: "Earth in cross-section with an observer on the surface and the angle of latitude drawn at the centre.",
+        caption: "Move the slider to walk the observer north. The angle at the centre is the latitude." },
+      after: [
+        "A degree of latitude is about 111 km of ground, so the walk from the equator to Amsterdam is roughly 5,800 km."
+      ] },
+
+    { id: "altitude", type: "explain", title: "Altitude: how high in the sky",
+      paras: [
+        "The second measure is <dfn>altitude</dfn>, the angle between the horizon and whatever you are looking at. Something sitting on the horizon has an altitude of 0°. Something straight overhead, at the zenith, has an altitude of 90°, and everything else falls in between.",
+        "Because altitude is an angle, it says nothing about distance. A star and an aircraft in the same direction have the same altitude. You can estimate it with your own hand: held at arm’s length, a fist covers about 10° of sky, so a star two fists above the horizon is at roughly 20°."
+      ],
+      figure: { kind: "altitude", start: 35,
+        alt: "An observer under the sky with a star whose altitude is drawn as an angle above the horizon.",
+        caption: "Drag the slider to raise the star and watch the angle grow." },
+      after: [
+        "Now the walk can be put into numbers. On the equator, at latitude 0°, the north celestial pole stands at altitude 0°. At the North Pole, at latitude 90°, it stands at altitude 90°. What remains is everything in between."
+      ] },
+
+    { id: "pole-alt", type: "question", kind: "numeric",
+      lead: ["Along the walk north, the pole’s altitude rises steadily from 0° to 90°, just as the latitude does."],
+      prompt: "Amsterdam is at latitude 52° N. What is the altitude of the north celestial pole there, in degrees?",
+      unit: "°", answer: 52,
+      hints: ["Compare the two ends of the walk: at each, what is the latitude and what is the pole’s altitude?", "At both ends the pole’s altitude has the same value as the latitude.", "If that stays true all the way along, what is the altitude at 52° N?"],
+      misc: [{ v: 90, t: "That is the pole’s altitude at the North Pole, latitude 90°. Amsterdam is much further south." }, { v: 38, t: "38° is 90° − 52°, the angle between the pole and the point straight overhead. The question asks for the angle above the horizon." }],
+      good: "52°. The pole stands as high above the horizon as your latitude. The next screen shows why.",
+      worked: "The pole’s altitude equals the latitude: 52°.", label: "Pole altitude from Amsterdam" },
+
+    { id: "why-equal", type: "explain", title: "The pole stands as high as your latitude",
+      beats: [
+        { layers: 1, html: "The numbers matched, and a slice through Earth along its axis shows why. You stand on the surface at latitude φ. Draw a line from Earth’s centre to your feet and it makes an angle φ with the equator. That is what latitude means." },
+        { layers: 2, html: "Now think about your horizon. It is the flat line you see at your feet, where the ground meets the sky. It touches Earth at the spot where you stand and meets the line to Earth’s centre at a right angle. The arrow pointing straight up from your head is that same line carried outwards." },
+        { layers: 3, html: "The pole is the last piece. It is so far away that it lies in the same direction from every place on Earth, parallel to the axis. Wherever you stand, you find it by looking along an arrow parallel to the axis. In the picture that is the gold arrow." },
+        { layers: 4, html: "Now compare angles. The line to Earth’s centre is 90° − φ from the axis, and your horizon is 90° from that line, so the angle between your horizon and the gold arrow is 90° − (90° − φ) = φ. That angle is the pole’s altitude. In the northern hemisphere the pole stands as many degrees above your horizon as your latitude, wherever you walk. Try other latitudes with the slider." }
+      ],
+      figure: { kind: "earth", mode: "geometry", lat: 52, latControl: true, layers: 1,
+        alt: "Earth in cross-section showing the observer, their horizon, the direction to the north celestial pole and the angle that equals the latitude.",
+        caption: "Earth in cross-section. Step through the diagram, then move the slider." } },
+
+    { id: "navigator", type: "question", kind: "numeric",
+      lead: ["For centuries sailors relied on exactly this fact. With a simple instrument for measuring angles and a clear night, a navigator could read the ship’s latitude from the height of the pole star."],
+      prompt: "A navigator measures Polaris 41° above the horizon. Taking Polaris to be at the north celestial pole, what is the ship’s latitude, in degrees north?",
+      unit: "°", answer: 41,
+      hints: ["Which angle did the last screen say equals the latitude?", "The pole’s altitude equals the observer’s latitude.", "The navigator measured the pole’s altitude directly."],
+      misc: [{ v: 49, t: "49° is 90° − 41°, the angle from Polaris up to the point overhead. The latitude equals the altitude itself." }],
+      good: "41° N. Measure the pole star’s altitude and you have your latitude.",
+      worked: "The pole’s altitude equals the latitude: 41° N.", label: "Latitude from Polaris" },
+
+    { id: "declination", type: "explain", title: "Declination: latitude on the sky",
+      paras: [
+        "So far we have followed the hub of the wheel. The stars that circle it need an address too, and astronomers borrow the idea from the map. Extend Earth’s equator out into space and you get the <dfn>celestial equator</dfn>, a circle in the sky halfway between the two celestial poles.",
+        "A star’s <dfn>declination</dfn>, written δ (delta), is its latitude on that sky: the angle between the celestial equator and the star, measured at Earth’s centre. A star on the celestial equator has declination 0°. A star at the north celestial pole has +90°, and one at the south celestial pole −90°. Stars north of the celestial equator carry a plus sign and stars south of it a minus sign."
+      ],
+      figure: { kind: "earth", mode: "celestial", dec: 40, decControl: true,
+        alt: "Earth at the centre of the sky, with the celestial equator and a star whose declination is the angle above the equator.",
+        caption: "Drag the slider to move the star north or south of the celestial equator." },
+      after: [
+        "A star keeps the same declination as Earth turns, which makes it a dependable address."
+      ] },
+
+    { id: "circle-size", type: "explain", title: "Declination sets the size of a star’s circle",
+      paras: [
+        "Declination also tells you how big a star’s circle is. A star at declination δ lies 90° − δ from the north celestial pole, and as Earth turns it carries the star round the sky in a circle about the pole with exactly that radius.",
+        "Compare two stars. A star at declination +70° is 20° from the pole and traces a small circle. A star at declination 0° is 90° from the pole and traces the largest circle of all. Both complete their circle in the same 24 hours, so the second star has much further to travel and moves faster across the sky, the way a child at the edge of a roundabout covers more ground than one near the middle."
+      ],
+      figure: { kind: "sky", lat: 52, dec: 70, decControl: true, showCircle: true, showDist: true, poleLabel: true,
+        alt: "The northern sky sketch with one highlighted star tracing a circle about the north celestial pole.",
+        caption: "Drag the slider to compare stars, and press Play to watch the highlighted star go round." } },
+
+    { id: "dec90", type: "question", kind: "choice",
+      prompt: "A star has a declination of +90°. Where is it in the sky?",
+      choices: [
+        { id: "a", label: "At the north celestial pole" },
+        { id: "b", label: "On the celestial equator" },
+        { id: "c", label: "At the south celestial pole" }
+      ], correct: "a",
+      hints: ["Think about what +90° means for latitude on Earth."],
+      misc: [{ c: "b", t: "The celestial equator is at declination 0°. +90° is as far north as the sky goes." }, { c: "c", t: "The south celestial pole is at −90°. The plus sign means north of the celestial equator." }],
+      good: "+90° is the north celestial pole, the point the whole sky turns about, so a star there does not circle at all.",
+      worked: "+90° is the north celestial pole.", label: "Declination +90°" },
+
+    { id: "never-sets", type: "explain", title: "Which stars never set",
+      beats: [
+        { html: "Go back to your place on the walk, at latitude φ, where the pole stands φ above your horizon, and follow one star as it circles the pole. The lowest point of its circle lies directly below the pole, a distance 90° − δ lower, so the star’s lowest altitude is φ − (90° − δ). Move both sliders and watch the marker on the circle." },
+        { html: "Whether the star ever sets depends on the sign of that number. If the lowest point is above 0°, the whole circle clears the horizon and the star stays in the sky all night, every night of the year. Astronomers call a star like that <dfn>circumpolar</dfn>, meaning “around the pole”. Setting φ − (90° − δ) greater than 0° and rearranging gives δ > 90° − φ. At latitude 60° N, for example, every star north of declination +30° is circumpolar. The further north you walk, the lower that limit falls, and by the North Pole it has reached 0°." }
+      ],
+      figure: { kind: "sky", lat: 52, dec: 60, decControl: true, latControl: true, showCircle: true, showLowest: true, poleLabel: true,
+        alt: "The northern sky sketch with latitude and declination sliders, showing whether the lowest point of a star’s circle clears the horizon.",
+        caption: "The marker on the circle shows its lowest point. It turns green when the point is above the horizon." } },
+
+    { id: "circum40", type: "question", kind: "numeric",
+      prompt: "From latitude 40° N, what is the smallest declination, in degrees, that makes a star circumpolar?",
+      unit: "°", answer: 50,
+      hints: ["The star’s lowest point has to stay above the horizon.", "The condition was δ > 90° − φ.", "Put φ = 40° into the right-hand side."],
+      misc: [{ v: 40, t: "That is the latitude itself. The limit is 90° minus the latitude." }, { v: 130, t: "Adding gives 130°, which no star reaches. The rule subtracts the latitude from 90°." }],
+      good: "50°. From 40° N, every star north of declination +50° stays above the horizon all night.",
+      worked: "90° − 40° = 50°.", label: "Circumpolar limit from 40° N" },
+
+    { id: "check-intro", type: "explain", title: "Skill check",
+      paras: ["That completes the walk north. Three questions will show what stuck. There are no hints and no figures, and you get one try at each. After each answer you’ll see the reasoning."] },
+
+    { id: "c-turn", type: "check", kind: "numeric",
+      prompt: "At 15° an hour, how many hours does the sky take to turn through 135°?",
+      unit: "h", answer: 9,
+      misc: [{ v: 2025, t: "That multiplies the two numbers. The time is the angle divided by the rate." }],
+      good: "9 hours. 135° ÷ 15° per hour = 9 h.", worked: "135° ÷ 15° per hour = 9 h.", label: "Time to turn 135°" },
+
+    { id: "c-circ", type: "check", kind: "numeric",
+      prompt: "From latitude 30° N, what is the smallest declination, in degrees, that makes a star circumpolar?",
+      unit: "°", answer: 60,
+      misc: [{ v: 30, t: "That is the latitude itself. The limit is 90° minus the latitude." }],
+      good: "60°. The limit is 90° − φ = 90° − 30° = 60°.", worked: "90° − 30° = 60°.", label: "Circumpolar limit from 30° N" },
+
+    { id: "c-equator", type: "check", kind: "choice",
+      prompt: "On the equator the north celestial pole sits on the horizon. How many stars are circumpolar there?",
+      choices: [
+        { id: "a", label: "About half of them" },
+        { id: "b", label: "Only the stars very near the north celestial pole" },
+        { id: "c", label: "None" }
+      ], correct: "c",
+      misc: [
+        { c: "a", t: "Half the sky is above the horizon at any moment, but every star still spends part of each day below it." },
+        { c: "b", t: "A star near the pole has a small circle, but that circle is centred on the horizon here, so half of it is below the horizon." }
+      ],
+      good: "None. At latitude 0° a star would need a declination above 90°, and none has one. Every star rises and sets.",
+      worked: "None: the limit is 90° − 0° = 90°, which no star exceeds.", label: "Circumpolar stars at the equator" },
+
+    { id: "close", type: "close" }
+  ];
+
+  var QIDS = SCREENS.filter(function (s) { return s.type === "question" || s.type === "check"; }).map(function (s) { return s.id; });
+  var LESSON_LEN = SCREENS.length - 1;
+
+  /* ---------- state and chrome ---------- */
+  var app = { i: 0, q: {}, beat: {}, fig: null };
+  var main = $("#main"), dock = $("#dock"), backB = $("#back"), bar = $("#bar"), countEl = $("#count");
+  var prog = $(".progress");
+
+  function parseNum(s) {
+    s = String(s).trim().replace(/[−–]/g, "-").replace(",", ".");
+    var m = s.match(/^(-?\d+(?:\.\d+)?)\s*(°|deg|degrees?|h|hr|hrs|hours?)?\s*$/i);
+    return m ? parseFloat(m[1]) : null;
+  }
+  function setDock(opts) {
+    dock.className = "dock-in" + (opts.fb ? "" : " dock-end");
+    dock.innerHTML = (opts.fb ? '<div class="fb ' + (opts.fb.cls || "") + '" aria-live="polite">' + opts.fb.html + "</div>" : "") +
+      '<button type="button" class="btn" id="primary"' + (opts.disabled ? " disabled" : "") + ">" + opts.label + "</button>";
+    var b = $("#primary");
+    b.addEventListener("click", opts.onClick);
+    return b;
+  }
+  function updateTop() {
+    var i = app.i;
+    var pct = Math.round(i / LESSON_LEN * 100);
+    bar.style.width = pct + "%";
+    prog.setAttribute("aria-valuenow", pct);
+    countEl.textContent = i > 0 ? i + " / " + LESSON_LEN : "";
+    backB.disabled = i === 0;
+  }
+  function go(n) {
+    if (n < 0 || n >= SCREENS.length) return;
+    app.i = n; render();
+  }
+
+  function render() {
+    if (app.fig) { app.fig.destroy(); app.fig = null; }
+    var s = SCREENS[app.i];
+    main.className = "screen";
+    void main.offsetWidth;
+    if (s.type === "course") renderCourse(s);
+    else if (s.type === "explain") renderExplain(s);
+    else if (s.type === "question" || s.type === "check") renderQuestion(s);
+    else if (s.type === "close") renderClose(s);
+    updateTop();
+    window.scrollTo(0, 0);
+    try { if (!main.contains(document.activeElement)) main.focus({ preventScroll: true }); } catch (e) {}
+  }
+
+  function renderCourse() {
+    main.innerHTML =
+      '<h1 class="display">Astronomy: From Sky to Cosmos</h1>' +
+      "<p>Astronomy starts with what you can see from your own garden. The stars wheel round the sky through the night, and the Sun climbs higher in summer than in winter. The first lessons explain these with a little geometry. Later lessons move out to orbits, starlight and the age of the universe, using real numbers throughout.</p>" +
+      "<p>You’ll need to be comfortable with algebra, ratios and powers of ten. No astronomy is assumed.</p>" +
+      '<ul class="modules">' +
+      "<li><b>The sky in motion</b>The turning sky, the seasons, the Moon’s phases and eclipses.</li>" +
+      "<li><b>Gravity and orbits</b>Kepler’s laws, Newton’s gravitation, orbital and escape speed, tides.</li>" +
+      "<li><b>Reading starlight</b>Brightness, parallax, colour, Doppler shifts and the H-R diagram.</li>" +
+      "<li><b>Stars and the cosmos</b>Stellar lifetimes and fates, Hubble’s law and the Big Bang.</li>" +
+      "</ul>" +
+      '<p class="muted small">12 lessons, about 10 minutes each. This page is a prototype of the proposed lesson format, and only lesson 1 is written.</p>';
+    setDock({ label: "Start lesson 1: The turning sky", onClick: function () { go(1); } });
+  }
+
+  function renderExplain(s) {
+    var beats = s.beats, last = beats ? beats.length - 1 : 0;
+    var cur = beats ? Math.min(app.beat[s.id] || 0, last) : 0;
+    var html = '<h1>' + s.title + "</h1>" + (s.paras || []).map(function (p) { return "<p>" + p + "</p>"; }).join("");
+    html += '<div id="figure"></div>';
+    if (beats) html += '<div id="beats"></div>';
+    html += (s.after || []).map(function (p) { return "<p>" + p + "</p>"; }).join("");
+    main.innerHTML = html;
+    if (s.figure) app.fig = mountFigure($("#figure"), s.figure);
+    function paintBeats(animateNew) {
+      if (!beats) return;
+      $("#beats").innerHTML = beats.slice(0, cur + 1).map(function (b, k) {
+        return '<p class="beat' + (k < cur ? " old" : "") + '"' + (animateNew && k === cur ? "" : ' style="animation:none"') + ">" + b.html + "</p>";
+      }).join("");
+      if (app.fig && beats[cur].layers) app.fig.set({ layers: beats[cur].layers });
+    }
+    paintBeats(false);
+    function dockFor() {
+      if (beats && cur < last) {
+        return setDock({ label: "Next step", onClick: function () {
+          cur++; app.beat[s.id] = cur; paintBeats(true);
+          dockFor().focus({ preventScroll: true });
+          var nb = $("#beats .beat:last-child");
+          if (nb && nb.scrollIntoView) nb.scrollIntoView({ block: "nearest", behavior: reduce ? "auto" : "smooth" });
+        } });
+      }
+      return setDock({ label: "Continue", onClick: function () { go(app.i + 1); } });
+    }
+    dockFor();
+  }
+  function renderQuestion(s) {
+    var st = app.q[s.id];
+    if (!st) st = app.q[s.id] = { status: "open", attempts: 0, hints: 0, auto: 0, first: null, value: "", fb: null, order: null };
+    var isCheck = s.type === "check";
+    var html = (s.lead || []).map(function (p) { return "<p>" + p + "</p>"; }).join("");
+    html += '<h1 class="prompt">' + s.prompt + "</h1>";
+    if (s.kind === "numeric") {
+      html += '<div class="answer"><input id="ans" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" aria-label="Your answer"><span class="unit">' + (s.unit || "") + "</span></div>";
+    } else {
+      if (!st.order) st.order = shuffle(s.choices.map(function (c) { return c.id; }));
+      var byId = {}; s.choices.forEach(function (c) { byId[c.id] = c; });
+      html += '<div class="choices" role="radiogroup" aria-label="Answer choices">' + st.order.map(function (id, k) {
+        return '<label class="choice" data-id="' + id + '"><input type="radio" name="c" value="' + id + '"><span class="key">' + "ABCD".charAt(k) + "</span><span>" + byId[id].label + "</span></label>";
+      }).join("") + "</div>";
+    }
+    if (!isCheck && s.hints) html += '<div class="hintbox" id="hintbox"></div><button type="button" class="chip" id="hintBtn">Show a hint</button>';
+    main.innerHTML = html;
+
+    var input = $("#ans");
+    function locked() { return st.status !== "open"; }
+    function selectedId() { var r = $("input[name=c]:checked"); return r ? r.value : null; }
+    function hasAnswer() { return input ? input.value.trim() !== "" : selectedId() !== null; }
+
+    function paintHint() {
+      var hb = $("#hintbox"); if (!hb) return;
+      var shown = st.hints;
+      hb.innerHTML = s.hints.slice(0, shown).map(function (h) { return "<p>" + h + "</p>"; }).join("");
+      var hbtn = $("#hintBtn");
+      if (hbtn) { hbtn.disabled = locked() || shown >= s.hints.length; hbtn.textContent = shown ? "Show another hint" : "Show a hint"; if (shown >= s.hints.length) hbtn.style.display = "none"; else hbtn.style.display = ""; }
+    }
+    function lockInputs() {
+      if (input) input.disabled = true;
+      document.querySelectorAll(".choice").forEach(function (c) { c.classList.add("locked"); $("input", c).disabled = true; });
+    }
+    function markChoices() {
+      document.querySelectorAll(".choice").forEach(function (c) {
+        var id = c.getAttribute("data-id");
+        c.classList.toggle("sel", id === st.value);
+        if (st.status !== "open") {
+          if (id === s.correct) c.classList.add("is-right");
+          else if (id === st.value && st.status === "revealed") c.classList.add("is-wrong");
+        }
+      });
+    }
+    function answerText() { return s.kind === "numeric" ? s.answer + (s.unit && s.unit !== "h" ? s.unit : (s.unit ? " " + s.unit : "")) : s.choices.filter(function (c) { return c.id === s.correct; })[0].label; }
+
+    function paintDock() {
+      if (st.status === "correct") {
+        var fbhtml = "<strong>Correct.</strong>" + s.good + (s.note ? '<span class="note">' + s.note + "</span>" : "");
+        var b = setDock({ fb: { cls: "good", html: fbhtml }, label: app.i === LESSON_LEN - 1 ? "See results" : "Continue", onClick: function () { go(app.i + 1); } });
+        b.focus({ preventScroll: true });
+      } else if (st.status === "revealed") {
+        var rev = isCheck ? "<strong>Not quite.</strong>" + s.good : "<strong>The answer is " + answerText() + ".</strong>" + s.worked;
+        var b2 = setDock({ fb: { cls: "warn", html: rev }, label: app.i === LESSON_LEN - 1 ? "See results" : "Continue", onClick: function () { go(app.i + 1); } });
+        b2.focus({ preventScroll: true });
+      } else {
+        var fb = st.fb ? { cls: "warn", html: "<strong>" + st.fb.head + "</strong>" + st.fb.text } : null;
+        setDock({ fb: fb, label: "Check", disabled: !hasAnswer(), onClick: submit });
+      }
+    }
+    function submit() {
+      if (locked()) return;
+      var ok = false, text = null;
+      if (s.kind === "numeric") {
+        var n = parseNum(input.value);
+        if (n === null) { st.fb = { head: "That isn’t a number I can read.", text: "Type digits only, for example 15." }; paintDock(); input.focus(); return; }
+        st.value = input.value;
+        ok = Math.abs(n - s.answer) <= 1e-6;
+        if (!ok) { var m = (s.misc || []).filter(function (x) { return Math.abs(x.v - n) < 1e-6; })[0]; text = m ? m.t : null; }
+      } else {
+        var id = selectedId(); if (id === null) return;
+        st.value = id; ok = id === s.correct;
+        if (!ok) { var mc = (s.misc || []).filter(function (x) { return x.c === id; })[0]; text = mc ? mc.t : null; }
+      }
+      st.attempts++;
+      if (ok) {
+        st.status = "correct";
+        if (st.first === null) st.first = st.attempts === 1 && st.hints === 0;
+        st.fb = null;
+      } else {
+        if (st.first === null) st.first = false;
+        var limit = isCheck ? 1 : 2;
+        if (st.attempts >= limit) { st.status = "revealed"; st.fb = null; }
+        else {
+          if (!text && s.hints) { text = s.hints[Math.min(st.auto, s.hints.length - 1)]; st.auto++; }
+          st.fb = { head: "Not quite.", text: (text || "Have another look.") + " You can try again." };
+        }
+      }
+      if (locked()) lockInputs();
+      markChoices(); paintHint(); paintDock();
+    }
+
+    if (input) {
+      input.value = st.value || "";
+      input.addEventListener("input", function () { st.fb = st.status === "open" ? null : st.fb; paintDock(); });
+      input.addEventListener("keydown", function (e) { if (e.key === "Enter" && hasAnswer()) { e.preventDefault(); submit(); } });
+    }
+    document.querySelectorAll(".choice").forEach(function (c) {
+      var r = $("input", c);
+      r.addEventListener("change", function () { st.value = r.value; st.fb = null; markChoices(); paintDock(); });
+      r.addEventListener("focus", function () { c.classList.add("focus"); });
+      r.addEventListener("blur", function () { c.classList.remove("focus"); });
+      r.addEventListener("keydown", function (e) { if (e.key === "Enter" && hasAnswer()) { e.preventDefault(); submit(); } });
+      if (r.value === st.value) r.checked = true;
+    });
+    var hbtn = $("#hintBtn");
+    if (hbtn) hbtn.addEventListener("click", function () { if (st.hints < s.hints.length) { st.hints++; paintHint(); } });
+    markChoices(); paintHint(); if (locked()) lockInputs(); paintDock();
+    if (input && !locked()) { try { input.focus({ preventScroll: true }); } catch (e) {} }
+  }
+
+  function renderClose() {
+    var rows = QIDS.map(function (id) {
+      var s = SCREENS.filter(function (x) { return x.id === id; })[0], st = app.q[id];
+      var res = !st || st.status === "open" ? "Not answered" : st.status === "revealed" ? "Answer shown" : st.first ? "Right first time" : "Right after a hint or a retry";
+      return '<li><span>' + s.label + '</span><span class="muted">' + res + "</span></li>";
+    }).join("");
+    var first = QIDS.filter(function (id) { return app.q[id] && app.q[id].first === true && app.q[id].status === "correct"; }).length;
+    main.innerHTML =
+      "<h1>What you can now do</h1>" +
+      "<p>You began on a dark hillside watching the stars turn. You can now say why they turn, what they turn about, and how high that hub stands from any latitude.</p>" +
+      "<p>Earth’s steady spin turns the sky 15° an hour about the celestial poles. The north celestial pole stands as high above the horizon as your latitude, and a star never sets if its declination is greater than 90° − φ.</p>" +
+      "<p>The lesson worked through three results. From Amsterdam the pole stands 52° up. A ship that sees Polaris at 41° is at 41° N. From 40° N every star north of +50° never sets. You got " + first + " of " + QIDS.length + " questions right on the first try.</p>" +
+      '<ul class="modules results">' + rows + "</ul>" +
+      '<p class="muted">Next lesson: why the Sun’s path across the sky changes through the year.</p>';
+    setDock({ label: "Start again", onClick: function () { app.q = {}; app.beat = {}; go(0); } });
+  }
+
+  backB.addEventListener("click", function () { go(app.i - 1); });
+  document.addEventListener("keydown", function (e) {
+    if (e.key !== "Enter") return;
+    var tag = document.activeElement && document.activeElement.tagName;
+    if (tag === "INPUT" || tag === "BUTTON" || tag === "A" || tag === "TEXTAREA") return;
+    var b = $("#primary");
+    if (b && !b.disabled) { e.preventDefault(); b.click(); }
+  });
+
+  // A link ending in #s14 opens that screen, so a single screen can be revisited.
+  try {
+    var jump = /^#s(\d{1,2})$/.exec(window.location.hash);
+    if (jump && +jump[1] < SCREENS.length) app.i = +jump[1];
+  } catch (e) {}
+  render();
+})();
+</script>

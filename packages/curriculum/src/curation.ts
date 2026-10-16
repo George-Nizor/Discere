@@ -97,9 +97,7 @@ export function scaffoldTopicMap(map: TopicMap): Record<string, unknown> {
  */
 export function assertLessonsPublishable(bundle: CourseBundle): void {
   for (const lesson of bundle.lessons) {
-    const metadata = bundle.authoringMetadata?.find(
-      (item) => item.lessonId === lesson.id,
-    );
+    const metadata = bundle.authoringMetadata?.find((item) => item.lessonId === lesson.id);
     if (!metadata)
       throw new Error(`Lesson '${lesson.id}' needs claim citations and prerequisite metadata.`);
     // Every question the lesson asks, wherever it is asked: quiz, step, opener, worked line.
@@ -112,11 +110,12 @@ export function assertLessonsPublishable(bundle: CourseBundle): void {
       throw new Error(`Lesson '${lesson.id}' needs a rendered visual.`);
     if (isV2Lesson(lesson)) {
       // v2 (spec §3): a figure where it earns its place, not on every screen; every screen
-      // except a worked example's reading asks the learner something.
+      // except a worked example's reading and a teaching screen asks the learner something.
       if (
         lesson.steps.length < 5 ||
         lesson.steps.some(
           (step) =>
+            step.kind !== "explain" &&
             !step.checkQuestionId &&
             !step.activityId &&
             !step.workedSteps?.some((line) => line.blank || line.selfExplain),

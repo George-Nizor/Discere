@@ -29,6 +29,17 @@ export const ModuleSchema = z
   .strict();
 export type CourseModule = z.infer<typeof ModuleSchema>;
 
+/** The page a learner reads before lesson 1: story-format courses (docs/learning-experience/story-brief.md). */
+export const CourseIntroductionSchema = z
+  .object({
+    paragraphs: z.array(z.string().min(1)).min(1).max(4),
+    outcomes: z.array(z.string().min(1)).min(1).max(6),
+    prerequisites: z.string().min(1),
+    length: z.string().min(1),
+  })
+  .strict();
+export type CourseIntroduction = z.infer<typeof CourseIntroductionSchema>;
+
 export const CourseSchema = z
   .object({
     id: z.string().min(1),
@@ -60,6 +71,8 @@ export const CourseSchema = z
     status: z.enum(["available", "coming_soon"]).default("available"),
     /** Archived prototypes remain addressable for saved history but leave discovery. */
     catalogueVisibility: z.enum(["listed", "archived"]).optional(),
+    /** What the subject is, what the learner will be able to do and what they need first. */
+    introduction: CourseIntroductionSchema.optional(),
     /** Authored library subjects, used for discovery rather than inferred from titles. */
     subjects: z.array(z.string().trim().min(1).max(40)).max(5).optional(),
   })
@@ -741,8 +754,16 @@ export const LessonStepSchema = z
     eyebrow: z.string().min(1).max(60).optional(),
     /** v2, `explain` only: the key idea as a sentence, set as the screen's headline. */
     headline: z.string().min(1).max(160).optional(),
-    /** v2: always shown before the interaction; at most 60 words. */
+    /**
+     * v2: always shown before the interaction. At most 60 words on a step that asks something; an
+     * `explain` step is a screen of teaching in its own right and may run to a few paragraphs.
+     */
     lead: z.array(RichTextBlockSchema).optional(),
+    /**
+     * v2, `explain` steps with no check question: prose shown after the figure, so a screen can
+     * set the scene, show the figure and then say what to take from it.
+     */
+    afterFigure: z.array(RichTextBlockSchema).optional(),
     /** v2: shown with the verdict after a recorded response. */
     reveal: z.array(RichTextBlockSchema).optional(),
     /** v2: `worked_example` and `faded_example` lines, revealed one at a time. */

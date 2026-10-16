@@ -11,29 +11,139 @@
     "title": "Compose matrix maps",
     "steps": [
       {
-        "id": "two-maps-in-a-row",
+        "id": "one-machine-after-another",
         "kind": "explain",
         "blocks": [],
-        "headline": "A B means do B first, then A. Entry (i, j) of A B is row i of A dotted with column j of B.",
+        "headline": "Two machines in a row",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "Applying one map and then another is composing them. The matrix of the composed map is the product A B."
+            "text": "The order in which you use machines changes what comes out. Take a machine R that triples a number and a machine S that subtracts 2. Start at 4 and send it through R first: 4 becomes 12, and S then turns that into 10. Now send 4 through S first: it becomes 2, and R then turns that into 6."
           },
           {
-            "kind": "callout",
-            "tone": "key",
-            "text": "A B v means A(B v). The inner matrix acts first, and the order of the two matrices matters."
+            "kind": "paragraph",
+            "text": "The two runs end at 10 and 6, so the order matters. Running one machine on the output of another is called composing them. A composition is itself a machine, because every input still produces exactly one output. When the machines are matrices the composition has a matrix as well, called the product of the two matrices."
+          },
+          {
+            "kind": "paragraph",
+            "text": "Two things need settling: which matrix in a written product runs first, and how to find the entries of the product. The next screens take them in that order."
           }
         ],
-        "reveal": [],
         "introducesTerms": [
           "composition",
           "matrix product"
         ],
         "visualStateId": "",
-        "checkQuestionId": "lin-compose-matrix-maps-8",
+        "checkQuestionId": "",
         "activityId": ""
+      },
+      {
+        "id": "two-runs",
+        "kind": "try",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Work through each run in full, then compare the two final numbers."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "P then Q gives 5 × 2 + 3 = 13. Q then P gives (5 + 3) × 2 = 16. The same two machines in a different order end at different numbers."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "lin-compose-matrix-maps-7",
+        "activityId": ""
+      },
+      {
+        "id": "which-matrix-runs-first",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "Which matrix runs first",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Matrices follow the same pattern. Let A and B be matrices and v a vector. Applying B to v gives the vector B v, and applying A to that gives A(B v). The product A B is the single matrix that does both jobs, so A B v means A(B v)."
+          },
+          {
+            "kind": "paragraph",
+            "text": "That fixes the order. The matrix written nearest the vector runs first, so in A B v it is B that acts first and A that acts second. It reads backwards, the way f(g(x)) means apply g first and then f. Writing B A instead gives a different machine, and the two orders usually give different results."
+          }
+        ],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "In the picture, A slides each point sideways by its up value and B doubles the across values. The same two matrices multiplied in opposite orders give two different products."
+          }
+        ],
+        "introducesTerms": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "diagram": {
+          "type": "linear_algebra_explorer",
+          "cases": [
+            {
+              "id": "first",
+              "label": "A B: A slides, B doubles",
+              "model": {
+                "kind": "matrix",
+                "operation": "multiply",
+                "matrix": [
+                  [
+                    1,
+                    1
+                  ],
+                  [
+                    0,
+                    1
+                  ]
+                ],
+                "second": [
+                  [
+                    2,
+                    0
+                  ],
+                  [
+                    0,
+                    1
+                  ]
+                ]
+              }
+            },
+            {
+              "id": "second",
+              "label": "B A: the order swapped",
+              "model": {
+                "kind": "matrix",
+                "operation": "multiply",
+                "matrix": [
+                  [
+                    2,
+                    0
+                  ],
+                  [
+                    0,
+                    1
+                  ]
+                ],
+                "second": [
+                  [
+                    1,
+                    1
+                  ],
+                  [
+                    0,
+                    1
+                  ]
+                ]
+              }
+            }
+          ],
+          "initialCaseId": "first"
+        }
       },
       {
         "id": "who-goes-first",
@@ -42,7 +152,7 @@
         "lead": [
           {
             "kind": "paragraph",
-            "text": "The expression A B v is short for A(B v)."
+            "text": "The expression A B v asks for two maps to be applied to v, one after the other."
           }
         ],
         "reveal": [
@@ -53,6 +163,50 @@
         ],
         "visualStateId": "",
         "checkQuestionId": "lin-compose-matrix-maps-4",
+        "activityId": ""
+      },
+      {
+        "id": "where-the-entries-come-from",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "Where the entries come from",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "To find the matrix A B, ask what it does to the two points one step along each axis. Take A with rows (1, 1) and (0, 1), and B with rows (2, 0) and (0, 1). The point (1, 0) goes through B first, and B sends it to its own first column, which is (2, 0). Then A turns (2, 0) into (2, 0)."
+          },
+          {
+            "kind": "paragraph",
+            "text": "The point (0, 1) goes to the second column of B, which is (0, 1), and A turns that into (1, 1). So the columns of A B are (2, 0) and (1, 1), and the product has rows (2, 1) and (0, 1)."
+          },
+          {
+            "kind": "paragraph",
+            "text": "Look at how each column was made: it is A applied to a column of B. Applying a matrix means dotting each of its rows with the input, so entry (i, j) of A B is row i of A dotted with column j of B. Entry (1, 2) here is (1, 1) dotted with (0, 1), which is 1."
+          }
+        ],
+        "introducesTerms": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
+      },
+      {
+        "id": "pairing-a-row-with-a-column",
+        "kind": "predict",
+        "blocks": [],
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Entry (i, j) of a product pairs one line of the left matrix with one line of the right matrix."
+          }
+        ],
+        "reveal": [
+          {
+            "kind": "paragraph",
+            "text": "You paired a row of the left matrix with a column of the right one. The left matrix gives the row and the right matrix gives the column."
+          }
+        ],
+        "visualStateId": "",
+        "checkQuestionId": "lin-compose-matrix-maps-8",
         "activityId": ""
       },
       {
@@ -185,6 +339,30 @@
         "activityId": ""
       },
       {
+        "id": "the-shape-of-a-product",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "The shape of a product",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "A row can only be dotted with a column of the same length. A row of A has as many entries as A has columns, and a column of B has as many entries as B has rows. So A B exists only when A has as many columns as B has rows. These two numbers have to match."
+          },
+          {
+            "kind": "paragraph",
+            "text": "Take A with 2 rows and 3 columns, which is a 2 × 3 matrix, and B with 3 rows and 2 columns, a 3 × 2 matrix. The inner numbers are both 3, so every row of A pairs with every column of B. The product has one entry for each row of A and each column of B, so its shape is given by the outer numbers: 2 × 2."
+          },
+          {
+            "kind": "paragraph",
+            "text": "Swap the order and the inner numbers change. B A is 3 × 2 times 2 × 3, which also exists. Its shape is 3 × 3, a different size from A B, so the order matters here too."
+          }
+        ],
+        "introducesTerms": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": ""
+      },
+      {
         "id": "shops-products-months",
         "kind": "transfer",
         "blocks": [],
@@ -197,6 +375,30 @@
         "reveal": [],
         "visualStateId": "",
         "checkQuestionId": "lin-compose-matrix-maps-3",
+        "activityId": ""
+      },
+      {
+        "id": "a-product-turned-over",
+        "kind": "explain",
+        "blocks": [],
+        "headline": "A product turned over",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Transposing a product raises a small puzzle. The obvious guess is that (A B)ᵀ equals Aᵀ Bᵀ, and the shapes show that it cannot."
+          },
+          {
+            "kind": "paragraph",
+            "text": "Keep A as 2 × 3 and B as 3 × 2. The product A B is 2 × 2, so (A B)ᵀ is 2 × 2 as well. Now look at Aᵀ Bᵀ. Aᵀ is 3 × 2 and Bᵀ is 2 × 3, so their product is 3 × 3. A 3 × 3 matrix cannot equal a 2 × 2 one. Reversing the order gives Bᵀ Aᵀ, which is 2 × 3 times 3 × 2. That has shape 2 × 2, as required."
+          },
+          {
+            "kind": "paragraph",
+            "text": "The rule is (A B)ᵀ = Bᵀ Aᵀ, with the order reversed. Everyday life has the same pattern. If you put on socks and then shoes, undoing it means taking the shoes off first and the socks second."
+          }
+        ],
+        "introducesTerms": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
         "activityId": ""
       }
     ],
@@ -229,23 +431,30 @@
         "blocks": [
           {
             "kind": "paragraph",
-            "text": "Machine P doubles a number and machine Q adds 3 to it. You start with 5. In one run you use P and then Q. In another you use Q and then P."
+            "text": "Two machines sit side by side on a workbench. Machine P doubles any number you give it, and machine Q adds 3. You have the number 5, and there are two ways to use the machines. You can send it through P first and then through Q, or through Q first and then through P."
+          },
+          {
+            "kind": "paragraph",
+            "text": "Machines on the plane work the same way. Stretch the grid with one matrix and turn it with another, and the two steps together do a single job. That raises two puzzles: whether one matrix can do both jobs at once, and whether the order of the machines matters."
+          },
+          {
+            "kind": "paragraph",
+            "text": "This lesson settles both. We start with plain numbers to see why order can change the result. Then we move to matrices, find the single matrix that stands for two in a row, and learn the rule for working out each of its entries."
           }
-        ],
-        "questionId": "lin-compose-matrix-maps-7"
+        ]
       },
       "promise": "By the end you'll multiply two matrices entry by entry, and say which map acts first in a product.",
-      "estimatedMinutes": 10
+      "estimatedMinutes": 12
     },
     "recap": {
-      "keyIdea": "A matrix product is two maps in a row, and B acts first. Swap the order and the result usually changes. Entry (i, j) is row i of A dotted with column j of B.",
+      "keyIdea": "A matrix product is two maps in a row, and the matrix nearest the vector acts first. Entry (i, j) of A B is row i of A dotted with column j of B, and swapping the order usually changes the result.",
       "blocks": [
         {
           "kind": "paragraph",
-          "text": "You found that entry (1, 2) of A B is 6 while the reversed product gives 4, and that a 2 × 3 matrix times a 3 × 2 matrix gives a 2 × 2 matrix."
+          "text": "Back at the two machines, you now know why the order matters. You found that entry (1, 2) of A B is 6 where B A gives 4, and that a 2 × 3 matrix times a 3 × 2 matrix gives a 2 × 2 matrix."
         }
       ],
-      "nextHook": "Some maps can be undone. Next: the identity matrix, and when an inverse exists."
+      "nextHook": "Two maps in a row can cancel, so that the plane ends up exactly where it began. The next lesson looks at the matrix that does nothing at all, and at the map that undoes another."
     },
     "calculator": "available",
     "taughtSkills": [
@@ -268,11 +477,11 @@
         "kind": "numeric",
         "value": 3,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "First run: 5 × 2 + 3 = 13. Second run: (5 + 3) × 2 = 16. The difference is 3."
       },
-      "prompt": "How much bigger is the final number of the second run than the first?",
+      "prompt": "Machine P doubles a number and machine Q adds 3. Start with 5. How much bigger is the final number when you use Q first and then P than when you use P first and then Q?",
       "responseType": "numeric",
       "hints": [
         "Work out each run in full.",
@@ -468,7 +677,7 @@
         "kind": "numeric",
         "value": 6,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The dot product is 1 × 0 + 2 × 3 = 6."
       },
@@ -505,7 +714,7 @@
         "kind": "numeric",
         "value": 1,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "Row (1, 0) dotted with column (1, 2) gives 1 × 1 + 0 × 2 = 1."
       },
@@ -599,7 +808,7 @@
         "kind": "numeric",
         "value": 4,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "The first row (2, 0) and second column (2, 1) give 4."
       },
@@ -677,7 +886,7 @@
         "kind": "numeric",
         "value": 4,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-06,
         "relativeTolerance": 0,
         "workedAnswer": "Row (2, 1) dotted with column (1, 2) gives 2 + 2 = 4."
       },
@@ -704,11 +913,25 @@
   ],
   "citations": [
     {
-      "claim": "A B means do B first, then A. Entry (i, j) of A B is row i of A dotted with column j of B.",
+      "claim": "Composing maps in different orders can give different results, and the composition of matrix maps has a matrix, the product.",
       "sourceId": "lin-product",
       "section": "3.4, Matrix Multiplication",
       "targetKind": "step",
-      "targetId": "two-maps-in-a-row"
+      "targetId": "one-machine-after-another"
+    },
+    {
+      "claim": "P then Q gives 5 × 2 + 3 = 13. Q then P gives (5 + 3) × 2 = 16. The same two machines in a different order end at different numbers.",
+      "sourceId": "lin-product",
+      "section": "3.4, Matrix Multiplication",
+      "targetKind": "step",
+      "targetId": "two-runs"
+    },
+    {
+      "claim": "In A B v the matrix nearest the vector acts first, so A B v means A(B v).",
+      "sourceId": "lin-product",
+      "section": "3.4, Matrix Multiplication",
+      "targetKind": "step",
+      "targetId": "which-matrix-runs-first"
     },
     {
       "claim": "The expression A B v is short for A(B v).",
@@ -716,6 +939,20 @@
       "section": "3.4, Matrix Multiplication",
       "targetKind": "step",
       "targetId": "who-goes-first"
+    },
+    {
+      "claim": "Column j of A B is A applied to column j of B, so entry (i, j) is row i of A dotted with column j of B.",
+      "sourceId": "lin-product",
+      "section": "3.4, Matrix Multiplication",
+      "targetKind": "step",
+      "targetId": "where-the-entries-come-from"
+    },
+    {
+      "claim": "You paired a row of the left matrix with a column of the right one. The left matrix gives the row and the right matrix gives the column.",
+      "sourceId": "lin-product",
+      "section": "3.4, Matrix Multiplication",
+      "targetKind": "step",
+      "targetId": "pairing-a-row-with-a-column"
     },
     {
       "claim": "Compare A B v with B A v for A = $\\begin{pmatrix}1&2\\\\0&1\\end{pmatrix}$, B = $\\begin{pmatrix}2&0\\\\0&3\\end{pmatrix}$ and v = (1, 1).",
@@ -739,11 +976,25 @@
       "targetId": "your-own-entry"
     },
     {
+      "claim": "A B exists when A has as many columns as B has rows, and its shape is A's rows by B's columns.",
+      "sourceId": "lin-product",
+      "section": "3.4, Matrix Multiplication",
+      "targetKind": "step",
+      "targetId": "the-shape-of-a-product"
+    },
+    {
       "claim": "Matrix A holds the prices of 3 products in 2 shops, so it is 2 × 3. Matrix B holds the sales of those 3 products in 2 months, so it is 3 × 2.",
       "sourceId": "lin-product",
       "section": "3.4, Matrix Multiplication",
       "targetKind": "step",
       "targetId": "shops-products-months"
+    },
+    {
+      "claim": "The transpose of a product reverses the order: (A B)ᵀ = Bᵀ Aᵀ.",
+      "sourceId": "lin-product",
+      "section": "3.4, Matrix Multiplication",
+      "targetKind": "step",
+      "targetId": "a-product-turned-over"
     },
     {
       "claim": "3. Doing the same two operations in a different order gave different results. That is why the order of a matrix product matters.",

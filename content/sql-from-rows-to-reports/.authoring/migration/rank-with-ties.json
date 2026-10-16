@@ -2,22 +2,8 @@
   "lessonId": "rank-with-ties",
   "courseId": "sql-from-rows-to-reports",
   "migrationNotes": [
-    "step 'predict': the old title \"Keep the individual records\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
-    "step 'predict': kind hook → predict; check the order of teaching and asking still fits (style guide §2).",
-    "step 'work': the old title \"Equal values share a rank\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
-    "step 'work': 1 block(s) moved to reveal because they state the answer; make the reveal refer to the learner's attempt.",
-    "step 'work': write workedSteps from the worked answer (one line per move, one self-explanation prompt), a headline naming the problem, and recompute every number.",
-    "step 'check': the old title \"Choose whether ranks have gaps\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
-    "step 'check': kind check → try; check the order of teaching and asking still fits (style guide §2).",
-    "step 'check': 1 block(s) moved to reveal because they state the answer; make the reveal refer to the learner's attempt.",
-    "step 'transfer': the old title \"A tie-breaker changes a rank's meaning\" was dropped. If it names the idea, it may become the onCorrect line or an explain headline; never a headline above a question.",
-    "intro: write the hook (a puzzle the learner can do from what they bring, never a definition), the promise (≤ 25 words, “By the end you'll …”) and the time.",
-    "recap: write the key idea (the promise, kept), the learner's own results, and the one-line bridge to the next lesson.",
-    "skill check: the lesson has 2 quiz item(s); it needs exactly 3, each on something this lesson taught.",
-    "questions: replace every TODO onCorrect (≤ 25 words, states the idea), tag each skill, add misconceptions for predictable wrong answers (the feedback must not state the key).",
-    "vocabulary: give each explain step introducesTerms; no prompt may use a term before the step that introduces it.",
-    "add an explain step before any question that needs a new word or symbol; add a transfer if the lesson has none.",
-    "citations: retarget the seeded citations to the new step and question ids, and give every step, question and flashcard at least one (same sourceIds; the claim is what that screen asserts)."
+    "Spine: an organiser's results board has to say what a tie means, so a race with a joint winner is followed from numbering every row, to sharing a place, to ranks with and without gaps, to breaking the tie with a second column.",
+    "Left out of the lesson (still in the course): sql-rank-with-ties-1 (what a window calculation preserves) and -9 (why order 103 gets rank 3). The first screen teaches the first and the second screen teaches the second."
   ],
   "lesson": {
     "id": "rank-with-ties",
@@ -28,48 +14,34 @@
     "title": "Rank rows without collapsing them",
     "steps": [
       {
-        "id": "a-value-beside-each-row",
+        "id": "a-number-beside-every-row",
         "kind": "explain",
         "blocks": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "headline": "A number beside every row",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "GROUP BY collapses rows into groups. A window function does not: it adds a value beside each row."
+            "text": "Earlier lessons collapsed rows. GROUP BY turns a table of orders into one line for each customer, and the individual orders disappear into their totals. A results board can't work like that, because every runner needs a line of their own with a position beside it. What the board needs is a calculation that adds a value to each row and leaves the rows where they are."
           },
           {
             "kind": "paragraph",
-            "text": "OVER (ORDER BY ...) sets the order it uses. ROW_NUMBER numbers each row separately. RANK and DENSE_RANK give tied rows the same number."
+            "text": "That is what a window function does. The window is the set of rows the calculation is allowed to look at, and the function works out its value for one row at a time. You write it as the function followed by OVER, with the order to use in brackets. The simplest is ROW_NUMBER, which hands out 1, 2, 3 down the rows in the stated order."
           }
         ],
-        "reveal": [],
-        "visualStateId": "",
-        "checkQuestionId": "sql-rank-with-ties-8",
-        "activityId": "",
-        "headline": "A window function adds a value to each row and keeps every row.",
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "The figure sets the two side by side on the shop's orders. The grouped query returns three lines, one for each customer. The window query returns all six orders, each with its position. The ORDER BY inside the brackets decides which row counts as first, so the numbering is only as sensible as that order is. A different ORDER BY would number the same rows differently."
+          }
+        ],
         "introducesTerms": [
           "window function",
-          "OVER"
-        ]
-      },
-      {
-        "id": "grouped-or-windowed",
-        "kind": "predict",
-        "blocks": [],
-        "lead": [
-          {
-            "kind": "paragraph",
-            "text": "One query groups the known amounts. The other adds a window calculation. Compare what each does to the rows."
-          }
+          "OVER",
+          "ROW_NUMBER"
         ],
-        "reveal": [
-          {
-            "kind": "paragraph",
-            "text": "You saw what the window version kept: the individual rows. The grouped version collapsed them into one row per amount."
-          }
-        ],
-        "visualStateId": "",
-        "checkQuestionId": "sql-rank-with-ties-1",
-        "activityId": "",
         "diagram": {
           "type": "relational_query",
           "inputs": [
@@ -156,33 +128,33 @@
           "queries": [
             {
               "id": "query-0",
-              "label": "Query A",
-              "sql": "SELECT amount, COUNT(*) AS orders FROM orders WHERE amount IS NOT NULL GROUP BY amount ORDER BY amount DESC;",
+              "label": "Grouped",
+              "sql": "SELECT customer_id, COUNT(*) AS orders FROM orders GROUP BY customer_id ORDER BY customer_id;",
               "result": {
                 "name": "Result",
                 "columns": [
-                  "amount",
+                  "customer_id",
                   "orders"
                 ],
                 "rows": [
                   {
                     "id": "result-0",
                     "cells": [
-                      80,
+                      1,
                       2
                     ]
                   },
                   {
                     "id": "result-1",
                     "cells": [
-                      40,
-                      1
+                      2,
+                      2
                     ]
                   },
                   {
                     "id": "result-2",
                     "cells": [
-                      20,
+                      3,
                       2
                     ]
                   }
@@ -191,225 +163,8 @@
             },
             {
               "id": "query-1",
-              "label": "Query B",
-              "sql": "SELECT id, amount, ROW_NUMBER() OVER (ORDER BY amount DESC, id ASC) AS position FROM orders WHERE amount IS NOT NULL ORDER BY amount DESC, id ASC;",
-              "result": {
-                "name": "Result",
-                "columns": [
-                  "id",
-                  "amount",
-                  "position"
-                ],
-                "rows": [
-                  {
-                    "id": "result-0",
-                    "cells": [
-                      101,
-                      80,
-                      1
-                    ]
-                  },
-                  {
-                    "id": "result-1",
-                    "cells": [
-                      103,
-                      80,
-                      2
-                    ]
-                  },
-                  {
-                    "id": "result-2",
-                    "cells": [
-                      104,
-                      40,
-                      3
-                    ]
-                  },
-                  {
-                    "id": "result-3",
-                    "cells": [
-                      102,
-                      20,
-                      4
-                    ]
-                  },
-                  {
-                    "id": "result-4",
-                    "cells": [
-                      105,
-                      20,
-                      5
-                    ]
-                  }
-                ]
-              }
-            }
-          ],
-          "initialQueryId": "query-0"
-        },
-        "answerVisibility": "hidden-until-response"
-      },
-      {
-        "id": "ranking-by-customer",
-        "kind": "worked_example",
-        "blocks": [],
-        "lead": [],
-        "reveal": [],
-        "visualStateId": "",
-        "checkQuestionId": "",
-        "activityId": "",
-        "headline": "Rank the orders by customer_id with RANK.",
-        "diagram": {
-          "type": "relational_query",
-          "inputs": [
-            {
-              "name": "orders",
-              "columns": [
-                "id",
-                "customer_id",
-                "item",
-                "amount",
-                "status",
-                "day"
-              ],
-              "rows": [
-                {
-                  "id": "orders-0",
-                  "cells": [
-                    101,
-                    1,
-                    "Desk",
-                    80,
-                    "paid",
-                    "2026-09-01"
-                  ]
-                },
-                {
-                  "id": "orders-1",
-                  "cells": [
-                    102,
-                    1,
-                    "Book",
-                    20,
-                    "paid",
-                    "2026-09-02"
-                  ]
-                },
-                {
-                  "id": "orders-2",
-                  "cells": [
-                    103,
-                    2,
-                    "Desk",
-                    80,
-                    "paid",
-                    "2026-09-02"
-                  ]
-                },
-                {
-                  "id": "orders-3",
-                  "cells": [
-                    104,
-                    2,
-                    "Lamp",
-                    40,
-                    "pending",
-                    "2026-09-03"
-                  ]
-                },
-                {
-                  "id": "orders-4",
-                  "cells": [
-                    105,
-                    3,
-                    "Book",
-                    20,
-                    "paid",
-                    "2026-09-03"
-                  ]
-                },
-                {
-                  "id": "orders-5",
-                  "cells": [
-                    106,
-                    3,
-                    "Lamp",
-                    null,
-                    "pending",
-                    "2026-09-04"
-                  ]
-                }
-              ]
-            }
-          ],
-          "queries": [
-            {
-              "id": "query-0",
-              "label": "Rank with RANK",
-              "sql": "SELECT id, customer_id, RANK() OVER (ORDER BY customer_id) AS position FROM orders ORDER BY customer_id, id;",
-              "result": {
-                "name": "Result",
-                "columns": [
-                  "id",
-                  "customer_id",
-                  "position"
-                ],
-                "rows": [
-                  {
-                    "id": "result-0",
-                    "cells": [
-                      101,
-                      1,
-                      1
-                    ]
-                  },
-                  {
-                    "id": "result-1",
-                    "cells": [
-                      102,
-                      1,
-                      1
-                    ]
-                  },
-                  {
-                    "id": "result-2",
-                    "cells": [
-                      103,
-                      2,
-                      3
-                    ]
-                  },
-                  {
-                    "id": "result-3",
-                    "cells": [
-                      104,
-                      2,
-                      3
-                    ]
-                  },
-                  {
-                    "id": "result-4",
-                    "cells": [
-                      105,
-                      3,
-                      5
-                    ]
-                  },
-                  {
-                    "id": "result-5",
-                    "cells": [
-                      106,
-                      3,
-                      5
-                    ]
-                  }
-                ]
-              }
-            },
-            {
-              "id": "query-1",
-              "label": "Number with ROW_NUMBER",
-              "sql": "SELECT id, customer_id, ROW_NUMBER() OVER (ORDER BY customer_id, id) AS position FROM orders ORDER BY customer_id, id;",
+              "label": "Windowed",
+              "sql": "SELECT id, customer_id, ROW_NUMBER() OVER (ORDER BY id) AS position FROM orders ORDER BY id;",
               "result": {
                 "name": "Result",
                 "columns": [
@@ -471,23 +226,200 @@
             }
           ],
           "initialQueryId": "query-0"
-        },
-        "answerVisibility": "hidden-until-response",
-        "workedSteps": [
+        }
+      },
+      {
+        "id": "who-comes-first",
+        "kind": "try",
+        "blocks": [],
+        "visualStateId": "",
+        "checkQuestionId": "sql-rank-with-ties-8",
+        "activityId": "",
+        "lead": [
           {
-            "text": "Order the rows by customer_id.",
-            "math": "1, 1, 2, 2, 3, 3"
+            "kind": "paragraph",
+            "text": "The ORDER BY inside OVER decides who counts as first."
+          }
+        ]
+      },
+      {
+        "id": "sharing-a-place",
+        "kind": "explain",
+        "blocks": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "headline": "Sharing a place",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "ROW_NUMBER always separates the rows. When two rows are equal it still gives one of them the smaller number, and the choice between them is arbitrary. A results board wants something different for a tie: equal rows should get equal positions."
           },
           {
-            "text": "Tied rows share a rank.",
-            "math": "orders 101 and 102: rank 1"
-          },
+            "kind": "paragraph",
+            "text": "RANK does that. Rows that tie get the same rank, and the next row's rank is one more than the number of rows ahead of it. Picture a diving contest in which Eve, Fay and Gus all score 9 and Hal scores 7. The three at the top share first place. Three divers are ahead of Hal, which makes him fourth. Nobody is second or third, and the gap is deliberate, because the rank says how many divers finished ahead."
+          }
+        ],
+        "afterFigure": [
           {
-            "text": "The next rank is one more than the number of rows before it.",
-            "math": "order 103: two rows before, so rank 3",
-            "selfExplain": {
-              "questionId": "sql-rank-with-ties-9"
+            "kind": "paragraph",
+            "text": "The figure gives the same contest both ways. ROW_NUMBER splits the three top scorers into 1, 2 and 3, while RANK puts all three on 1 and then jumps to 4. Counting the rows ahead is the whole rule, so you can check any rank by counting how many rows have a better value and adding one."
+          }
+        ],
+        "introducesTerms": [
+          "RANK"
+        ],
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "divers",
+              "columns": [
+                "name",
+                "points"
+              ],
+              "rows": [
+                {
+                  "id": "divers-0",
+                  "cells": [
+                    "Eve",
+                    9
+                  ]
+                },
+                {
+                  "id": "divers-1",
+                  "cells": [
+                    "Fay",
+                    9
+                  ]
+                },
+                {
+                  "id": "divers-2",
+                  "cells": [
+                    "Gus",
+                    9
+                  ]
+                },
+                {
+                  "id": "divers-3",
+                  "cells": [
+                    "Hal",
+                    7
+                  ]
+                }
+              ]
             }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Every row numbered",
+              "sql": "SELECT name, points, ROW_NUMBER() OVER (ORDER BY points DESC, name) AS position FROM divers ORDER BY position;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "name",
+                  "points",
+                  "position"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      "Eve",
+                      9,
+                      1
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      "Fay",
+                      9,
+                      2
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      "Gus",
+                      9,
+                      3
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      "Hal",
+                      7,
+                      4
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "Tied rows share a rank",
+              "sql": "SELECT name, points, RANK() OVER (ORDER BY points DESC) AS position FROM divers ORDER BY position, name;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "name",
+                  "points",
+                  "position"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      "Eve",
+                      9,
+                      1
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      "Fay",
+                      9,
+                      1
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      "Gus",
+                      9,
+                      1
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      "Hal",
+                      7,
+                      4
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        }
+      },
+      {
+        "id": "the-finish-line",
+        "kind": "try",
+        "blocks": [],
+        "visualStateId": "",
+        "checkQuestionId": "sql-rank-with-ties-7",
+        "activityId": "",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Use the rule from the diving contest. Count the runners who finished ahead."
           }
         ]
       },
@@ -495,10 +427,13 @@
         "id": "rank-of-forty",
         "kind": "try",
         "blocks": [],
+        "visualStateId": "",
+        "checkQuestionId": "sql-rank-with-ties-2",
+        "activityId": "",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "Order the amounts largest first. For RANK, count the rows that come before the amount you are asked about."
+            "text": "Order the amounts largest first, then count the rows that come before the 40."
           }
         ],
         "reveal": [
@@ -507,9 +442,6 @@
             "text": "You counted the rows ahead and added one. Ties are part of that count, which is why RANK can leave gaps."
           }
         ],
-        "visualStateId": "",
-        "checkQuestionId": "sql-rank-with-ties-2",
-        "activityId": "",
         "diagram": {
           "type": "relational_query",
           "inputs": [
@@ -710,13 +642,183 @@
         "answerVisibility": "hidden-until-response"
       },
       {
-        "id": "no-gaps",
-        "kind": "try",
+        "id": "ranks-without-gaps",
+        "kind": "explain",
         "blocks": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "headline": "Ranks without gaps",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "DENSE_RANK also gives tied rows the same rank. It never skips: the next different amount takes the next integer."
+            "text": "RANK's jump from 1 to 4 suits a results board, because a place says how many finished ahead. A table of prizes can need the opposite. If prizes go to first and second place, a diver behind the three joint leaders should still take second, with no missing positions."
+          },
+          {
+            "kind": "paragraph",
+            "text": "DENSE_RANK does that. Tied rows share a rank, as they do under RANK, but the next rank is just one more than the previous rank, whatever the size of the tie. It counts different values ahead and adds one, where RANK counts rows ahead and adds one. Hal is second, because only one different score, 9, is higher than his 7."
+          }
+        ],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "The figure puts the two side by side. The top three get 1 under both. Under RANK Hal is 4th, and under DENSE_RANK he is 2nd. Neither rule is wrong, since the right choice depends on what a position should mean in the report."
+          }
+        ],
+        "introducesTerms": [
+          "DENSE_RANK"
+        ],
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "divers",
+              "columns": [
+                "name",
+                "points"
+              ],
+              "rows": [
+                {
+                  "id": "divers-0",
+                  "cells": [
+                    "Eve",
+                    9
+                  ]
+                },
+                {
+                  "id": "divers-1",
+                  "cells": [
+                    "Fay",
+                    9
+                  ]
+                },
+                {
+                  "id": "divers-2",
+                  "cells": [
+                    "Gus",
+                    9
+                  ]
+                },
+                {
+                  "id": "divers-3",
+                  "cells": [
+                    "Hal",
+                    7
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Ranks with gaps",
+              "sql": "SELECT name, points, RANK() OVER (ORDER BY points DESC) AS position FROM divers ORDER BY position, name;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "name",
+                  "points",
+                  "position"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      "Eve",
+                      9,
+                      1
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      "Fay",
+                      9,
+                      1
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      "Gus",
+                      9,
+                      1
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      "Hal",
+                      7,
+                      4
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "Ranks without gaps",
+              "sql": "SELECT name, points, DENSE_RANK() OVER (ORDER BY points DESC) AS position FROM divers ORDER BY position, name;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "name",
+                  "points",
+                  "position"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      "Eve",
+                      9,
+                      1
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      "Fay",
+                      9,
+                      1
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      "Gus",
+                      9,
+                      1
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      "Hal",
+                      7,
+                      2
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        }
+      },
+      {
+        "id": "dense-rank-of-forty",
+        "kind": "try",
+        "blocks": [],
+        "visualStateId": "",
+        "checkQuestionId": "sql-rank-with-ties-3",
+        "activityId": "",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "Count the different amounts above the 40, then add one."
           }
         ],
         "reveal": [
@@ -725,9 +827,6 @@
             "text": "You counted different amounts, not rows. Choose RANK or DENSE_RANK by what the report should mean."
           }
         ],
-        "visualStateId": "",
-        "checkQuestionId": "sql-rank-with-ties-3",
-        "activityId": "",
         "diagram": {
           "type": "relational_query",
           "inputs": [
@@ -928,19 +1027,182 @@
         "answerVisibility": "hidden-until-response"
       },
       {
-        "id": "breaking-the-tie",
-        "kind": "transfer",
+        "id": "breaking-a-tie",
+        "kind": "explain",
         "blocks": [],
+        "visualStateId": "",
+        "checkQuestionId": "",
+        "activityId": "",
+        "headline": "Breaking a tie",
         "lead": [
           {
             "kind": "paragraph",
-            "text": "The window ranks by everything inside OVER (ORDER BY ...). Think about what a second column does to a tie."
+            "text": "A tie is only a tie while the window can't tell two rows apart. The window compares rows using everything inside its ORDER BY, so a second column can separate rows that the first leaves level. Eve, Fay and Gus all scored 9, but their names differ, and putting the name after the score tells the window how to put them in order."
+          },
+          {
+            "kind": "paragraph",
+            "text": "With that second column in place the three are no longer equal. RANK now gives them 1, 2 and 3, because each has a different number of divers ahead of it, and Hal stays fourth. The result looks just like ROW_NUMBER's, which gives a useful rule of thumb. If the ORDER BY puts every row in a different place in the line, the ties are gone and ROW_NUMBER, RANK and DENSE_RANK all agree."
           }
         ],
-        "reveal": [],
+        "afterFigure": [
+          {
+            "kind": "paragraph",
+            "text": "The figure ranks the contest twice. The first query orders by points alone, so the three scores of 9 tie. The second adds the name, and the tie breaks into three separate places. Add a tie-breaker when a report must pick exactly one winner, and leave it out when equal values really should share a place."
+          }
+        ],
+        "diagram": {
+          "type": "relational_query",
+          "inputs": [
+            {
+              "name": "divers",
+              "columns": [
+                "name",
+                "points"
+              ],
+              "rows": [
+                {
+                  "id": "divers-0",
+                  "cells": [
+                    "Eve",
+                    9
+                  ]
+                },
+                {
+                  "id": "divers-1",
+                  "cells": [
+                    "Fay",
+                    9
+                  ]
+                },
+                {
+                  "id": "divers-2",
+                  "cells": [
+                    "Gus",
+                    9
+                  ]
+                },
+                {
+                  "id": "divers-3",
+                  "cells": [
+                    "Hal",
+                    7
+                  ]
+                }
+              ]
+            }
+          ],
+          "queries": [
+            {
+              "id": "query-0",
+              "label": "Points only",
+              "sql": "SELECT name, points, RANK() OVER (ORDER BY points DESC) AS position FROM divers ORDER BY position, name;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "name",
+                  "points",
+                  "position"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      "Eve",
+                      9,
+                      1
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      "Fay",
+                      9,
+                      1
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      "Gus",
+                      9,
+                      1
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      "Hal",
+                      7,
+                      4
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "query-1",
+              "label": "Points, then name",
+              "sql": "SELECT name, points, RANK() OVER (ORDER BY points DESC, name) AS position FROM divers ORDER BY position;",
+              "result": {
+                "name": "Result",
+                "columns": [
+                  "name",
+                  "points",
+                  "position"
+                ],
+                "rows": [
+                  {
+                    "id": "result-0",
+                    "cells": [
+                      "Eve",
+                      9,
+                      1
+                    ]
+                  },
+                  {
+                    "id": "result-1",
+                    "cells": [
+                      "Fay",
+                      9,
+                      2
+                    ]
+                  },
+                  {
+                    "id": "result-2",
+                    "cells": [
+                      "Gus",
+                      9,
+                      3
+                    ]
+                  },
+                  {
+                    "id": "result-3",
+                    "cells": [
+                      "Hal",
+                      7,
+                      4
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "initialQueryId": "query-0"
+        }
+      },
+      {
+        "id": "breaking-the-tie",
+        "kind": "transfer",
+        "blocks": [],
         "visualStateId": "",
         "checkQuestionId": "sql-rank-with-ties-4",
         "activityId": "",
+        "lead": [
+          {
+            "kind": "paragraph",
+            "text": "The window compares rows by everything in its ORDER BY. Think about what an extra column does to two rows that are level."
+          }
+        ],
         "diagram": {
           "type": "relational_query",
           "inputs": [
@@ -1170,23 +1432,30 @@
         "blocks": [
           {
             "kind": "paragraph",
-            "text": "Four runners finish in 10, 10, 12 and 14 seconds. Runners with equal times share a place."
+            "text": "Four runners cross the finish line in 10, 10, 12 and 14 seconds. The two fastest reach it together, so the organiser's results board has to say something about the tie. The rule is that runners with equal times share a place."
+          },
+          {
+            "kind": "paragraph",
+            "text": "That is easy to say and awkward to write down. If two runners share first place, the next runner is third by some ways of counting and second by others, and the board has to follow a single rule for everyone. The last runner's place depends on which rule it is."
+          },
+          {
+            "kind": "paragraph",
+            "text": "Ranking the rows of a table raises the same choice. A report that lists every row with a position beside it needs a rule for equal values, and SQL offers several. This lesson numbers the rows first and then follows the race's tie through each rule."
           }
-        ],
-        "questionId": "sql-rank-with-ties-7"
+        ]
       },
-      "promise": "By the end you'll rank rows with ROW_NUMBER, RANK or DENSE_RANK and say what happens to ties.",
-      "estimatedMinutes": 10
+      "promise": "By the end you'll put a position beside every row and say how each way of numbering treats ties.",
+      "estimatedMinutes": 12
     },
     "recap": {
       "keyIdea": "A window function ranks rows without collapsing them. ROW_NUMBER never ties. RANK leaves gaps after ties, and DENSE_RANK does not.",
       "blocks": [
         {
           "kind": "paragraph",
-          "text": "You placed the 14-second runner 4th, then ranked the amount 40 as 3 with RANK and 2 with DENSE_RANK."
+          "text": "You placed the 14-second runner 4th, then ranked the amount 40 as 3 with RANK and 2 with DENSE_RANK. Adding id to the ordering split the tie at 80."
         }
       ],
-      "nextHook": "Next, restart the numbering inside each partition."
+      "nextHook": "Every ranking so far treated the table as one race. Often the rows belong to separate groups that should each be ranked or totalled on their own, like the pupils of different classes on one mark sheet. The next lesson splits a window into groups."
     },
     "calculator": "off",
     "taughtSkills": [
@@ -1260,7 +1529,7 @@
       "conceptIds": [
         "sql-rank-with-ties"
       ],
-      "prompt": "Under RANK() OVER (ORDER BY amount DESC), what rank does the amount 40 receive?",
+      "prompt": "The shop's known order amounts are 80, 20, 80, 40 and 20. Under RANK() OVER (ORDER BY amount DESC), what rank does the amount 40 receive?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -1272,7 +1541,7 @@
         "kind": "numeric",
         "value": 3,
         "unit": "",
-        "absoluteTolerance": 1e-06,
+        "absoluteTolerance": 0.000001,
         "relativeTolerance": 0,
         "workedAnswer": "Two 80 rows share rank 1, so the next row's rank is 3."
       },
@@ -1305,7 +1574,7 @@
       "conceptIds": [
         "sql-rank-with-ties"
       ],
-      "prompt": "Under DENSE_RANK() OVER (ORDER BY amount DESC), what rank does the amount 40 receive?",
+      "prompt": "The shop's known order amounts are 80, 20, 80, 40 and 20. Under DENSE_RANK() OVER (ORDER BY amount DESC), what rank does the amount 40 receive?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -1317,7 +1586,7 @@
         "kind": "numeric",
         "value": 2,
         "unit": "",
-        "absoluteTolerance": 1e-06,
+        "absoluteTolerance": 0.000001,
         "relativeTolerance": 0,
         "workedAnswer": "80 is the first distinct amount; 40 is the second."
       },
@@ -1342,7 +1611,7 @@
       "conceptIds": [
         "sql-rank-with-ties"
       ],
-      "prompt": "What happens to the 80 tie if id is added inside the ranking window's ORDER BY?",
+      "prompt": "On the shop's amounts, orders 101 and 103 tie at 80. What happens to that tie if id is added inside the ranking window's ORDER BY?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -1411,7 +1680,7 @@
         "kind": "numeric",
         "value": 3,
         "unit": "",
-        "absoluteTolerance": 1e-06,
+        "absoluteTolerance": 0.000001,
         "relativeTolerance": 0,
         "workedAnswer": "Two higher rows precede 70, so its ordinary rank is 3."
       },
@@ -1480,7 +1749,7 @@
       "conceptIds": [
         "sql-rank-with-ties"
       ],
-      "prompt": "What place does the 14-second runner get?",
+      "prompt": "Four runners finish in 10, 10, 12 and 14 seconds. Runners with equal times share a place. What place does the 14-second runner get?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -1492,7 +1761,7 @@
         "kind": "numeric",
         "value": 4,
         "unit": "",
-        "absoluteTolerance": 1e-09,
+        "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
         "workedAnswer": "Two runners tie for first, and one more finishes ahead of the 14-second runner. Three runners are ahead, so fourth place."
       },
@@ -1530,7 +1799,7 @@
         "kind": "numeric",
         "value": 30,
         "unit": "",
-        "absoluteTolerance": 1e-09,
+        "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
         "workedAnswer": "DESC puts the largest amount first, so 30 is numbered 1."
       },
@@ -1626,7 +1895,7 @@
         "kind": "numeric",
         "value": 2,
         "unit": "",
-        "absoluteTolerance": 1e-09,
+        "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
         "workedAnswer": "One different amount, 90, is greater than 70. Dense rank counts values, so it is one plus one."
       },
@@ -1649,55 +1918,6 @@
     }
   ],
   "citations": [
-    {
-      "claim": "A window function adds a value to each row and keeps every row.",
-      "sourceId": "sqlite-window",
-      "section": "Window Functions 3: row_number(), rank(), dense_rank() and peer ordering",
-      "targetKind": "step",
-      "targetId": "a-value-beside-each-row"
-    },
-    {
-      "claim": "One query groups the known amounts. The other adds a window calculation. Compare what each does to the rows.",
-      "sourceId": "sqlite-window",
-      "section": "Window Functions 3: row_number(), rank(), dense_rank() and peer ordering",
-      "targetKind": "step",
-      "targetId": "grouped-or-windowed"
-    },
-    {
-      "claim": "Rank the orders by customer_id with RANK.",
-      "sourceId": "sqlite-window",
-      "section": "Window Functions 3: row_number(), rank(), dense_rank() and peer ordering",
-      "targetKind": "step",
-      "targetId": "ranking-by-customer"
-    },
-    {
-      "claim": "Order the amounts largest first. For RANK, count the rows that come before the amount you are asked about.",
-      "sourceId": "sqlite-window",
-      "section": "Window Functions 3: row_number(), rank(), dense_rank() and peer ordering",
-      "targetKind": "step",
-      "targetId": "rank-of-forty"
-    },
-    {
-      "claim": "DENSE_RANK also gives tied rows the same rank. It never skips: the next different amount takes the next integer.",
-      "sourceId": "sqlite-window",
-      "section": "Window Functions 3: row_number(), rank(), dense_rank() and peer ordering",
-      "targetKind": "step",
-      "targetId": "no-gaps"
-    },
-    {
-      "claim": "The window ranks by everything inside OVER (ORDER BY ...). Think about what a second column does to a tie.",
-      "sourceId": "sqlite-window",
-      "section": "Window Functions 3: row_number(), rank(), dense_rank() and peer ordering",
-      "targetKind": "step",
-      "targetId": "breaking-the-tie"
-    },
-    {
-      "claim": "A window calculation adds a result to each retained order row. Unlike GROUP BY aggregation, it does not collapse the rows into one row per group.",
-      "sourceId": "sqlite-window",
-      "section": "Window Functions 3: row_number(), rank(), dense_rank() and peer ordering",
-      "targetKind": "question",
-      "targetId": "sql-rank-with-ties-1"
-    },
     {
       "claim": "Two 80 rows share rank 1, so the next row's rank is 3.",
       "sourceId": "sqlite-window",
@@ -1748,13 +1968,6 @@
       "targetId": "sql-rank-with-ties-8"
     },
     {
-      "claim": "Orders 101 and 102 come before it, so its rank is two plus one.",
-      "sourceId": "sqlite-window",
-      "section": "Window Functions 3: row_number(), rank(), dense_rank() and peer ordering",
-      "targetKind": "question",
-      "targetId": "sql-rank-with-ties-9"
-    },
-    {
       "claim": "One different amount, 90, is greater than 70. Dense rank counts values, so it is one plus one.",
       "sourceId": "sqlite-window",
       "section": "Window Functions 3: row_number(), rank(), dense_rank() and peer ordering",
@@ -1774,6 +1987,69 @@
       "section": "Window Functions 3: row_number(), rank(), dense_rank() and peer ordering",
       "targetKind": "flashcard",
       "targetId": "sql-rank-with-ties-card-2"
+    },
+    {
+      "claim": "A window function adds a value to each row without collapsing rows, and ROW_NUMBER numbers rows in the order given inside OVER.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 3: row_number(), rank(), dense_rank() and peer ordering",
+      "targetKind": "step",
+      "targetId": "a-number-beside-every-row"
+    },
+    {
+      "claim": "ROW_NUMBER gives number 1 to the first row in the window's stated order, so with DESC the largest amount is first.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 3: row_number(), rank(), dense_rank() and peer ordering",
+      "targetKind": "step",
+      "targetId": "who-comes-first"
+    },
+    {
+      "claim": "RANK gives tied rows the same rank and the next rank is one more than the number of rows ahead, which leaves gaps.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 3: row_number(), rank(), dense_rank() and peer ordering",
+      "targetKind": "step",
+      "targetId": "sharing-a-place"
+    },
+    {
+      "claim": "Two runners share first place and three are ahead of the 14-second runner, so fourth place.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 3: row_number(), rank(), dense_rank() and peer ordering",
+      "targetKind": "step",
+      "targetId": "the-finish-line"
+    },
+    {
+      "claim": "Two 80 rows share rank 1, so the next row's rank is 3.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 3: row_number(), rank(), dense_rank() and peer ordering",
+      "targetKind": "step",
+      "targetId": "rank-of-forty"
+    },
+    {
+      "claim": "DENSE_RANK gives tied rows the same rank and the next rank is one more than the previous, counting different values ahead.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 3: row_number(), rank(), dense_rank() and peer ordering",
+      "targetKind": "step",
+      "targetId": "ranks-without-gaps"
+    },
+    {
+      "claim": "80 is the first different amount and 40 the second, so its dense rank is 2.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 3: row_number(), rank(), dense_rank() and peer ordering",
+      "targetKind": "step",
+      "targetId": "dense-rank-of-forty"
+    },
+    {
+      "claim": "Window ties depend on every expression in ORDER BY, so a second column can split rows that tie on the first.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 3: row_number(), rank(), dense_rank() and peer ordering",
+      "targetKind": "step",
+      "targetId": "breaking-a-tie"
+    },
+    {
+      "claim": "Adding distinct ids to the window's ORDER BY makes the two 80 rows different ordering keys, so they no longer tie.",
+      "sourceId": "sqlite-window",
+      "section": "Window Functions 3: row_number(), rank(), dense_rank() and peer ordering",
+      "targetKind": "step",
+      "targetId": "breaking-the-tie"
     }
   ]
 }

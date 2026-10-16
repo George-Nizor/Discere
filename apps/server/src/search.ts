@@ -99,6 +99,7 @@ export function buildSearchIndex(bundles: CourseBundle[]): IndexedLesson[] {
           ...step.blocks.map(blockText),
           step.headline ?? "",
           ...(step.lead ?? []).map(blockText),
+          ...(step.afterFigure ?? []).map(blockText),
           ...(step.workedSteps ?? []).filter((line) => !line.blank).map((line) => line.text),
         ]),
         lesson.recap?.keyIdea ?? "",

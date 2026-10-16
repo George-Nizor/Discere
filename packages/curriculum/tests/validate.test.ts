@@ -11,11 +11,6 @@ async function seedBundle(): Promise<unknown> {
   return JSON.parse(await readFile(file, "utf8")) as unknown;
 }
 
-async function romanBundle(): Promise<unknown> {
-  const file = path.resolve(import.meta.dirname, "../../../content/roman-empire/bundle.json");
-  return JSON.parse(await readFile(file, "utf8")) as unknown;
-}
-
 describe("course validation", () => {
   it("accepts the seed electronics course", async () => {
     const result = validateCourseBundle(await seedBundle());
@@ -35,12 +30,6 @@ describe("course validation", () => {
         (item) => item.path === "course.sourceIds" && item.code === "MISSING_REFERENCE",
       ),
     ).toBe(true);
-  });
-
-  it("accepts the history course, which shares nothing with electronics but the schema", async () => {
-    const result = validateCourseBundle(await romanBundle());
-    expect(result.issues.filter((item) => item.severity === "error")).toEqual([]);
-    expect(result.passed).toBe(true);
   });
 
   it("rejects a selectable question that no option can answer", async () => {
@@ -76,19 +65,29 @@ describe("course validation", () => {
   });
 
   it("rejects an image whose licence does not permit bundling it", async () => {
-    const bundle = (await romanBundle()) as {
-      lessons: Array<{ image?: { licence: string } }>;
+    const bundle = (await seedBundle()) as {
+      lessons: Array<{ image?: Record<string, string> }>;
     };
-    const lesson = bundle.lessons.find((item) => item.image !== undefined);
-    if (!lesson?.image) throw new Error("The history course should bundle an image.");
-    lesson.image.licence = "CC BY-NC-SA 4.0";
+    const lesson = bundle.lessons[0];
+    if (!lesson) throw new Error("The seed course should have a lesson.");
+    lesson.image = {
+      file: "circuit-photo.png",
+      alt: "A photograph of a battery, a switch and a bulb wired in one loop.",
+      caption: "A single loop with one bulb.",
+      creator: "Example Photographer",
+      licence: "CC BY-NC-SA 4.0",
+      landingPageUrl: "https://example.org/circuit-photo",
+      attribution: "Circuit photo by Example Photographer, CC BY-NC-SA 4.0",
+      retrievedAt: "2026-08-18",
+      contentHash: "0123456789abcdef",
+    };
     const result = validateCourseBundle(bundle);
     expect(result.passed).toBe(false);
     expect(result.issues.some((item) => item.code === "LICENCE_NOT_REDISTRIBUTABLE")).toBe(true);
   });
 
   it("rejects a course where more than 35% of the questions are multiple choice", async () => {
-    const bundle = (await romanBundle()) as {
+    const bundle = (await seedBundle()) as {
       questions: Array<{ choices?: Array<{ id: string; label: string }> }>;
     };
     bundle.questions = bundle.questions.filter((item) => item.choices !== undefined);

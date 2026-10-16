@@ -243,7 +243,10 @@ function audit(): { code: string[]; content: string[] } {
 
 describe("answer-leak audit", () => {
   it("finds graded steps with diagrams", () => {
-    expect(gradedSteps().length).toBeGreaterThan(500);
+    // Floor, not a target: it only has to prove the audit still sees the graded figures. Story
+    // lessons have more teaching screens and fewer graded figures (about 414 today; it was over
+    // 500 before the rewrite), so the minimum sits just under the current count.
+    expect(gradedSteps().length).toBeGreaterThan(400);
   });
   it("masks every computed answer until the learner has answered", () => {
     const { code, content } = audit();

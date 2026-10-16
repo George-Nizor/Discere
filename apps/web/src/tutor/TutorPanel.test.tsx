@@ -1,4 +1,4 @@
-import type { RomanReferenceQuestionId, TutoringMode } from "@discere/contracts";
+import type { TutoringMode } from "@discere/contracts";
 import { act, fireEvent, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -180,64 +180,64 @@ describe("tutor panel", () => {
             accepted: true,
             issues: [],
             reply: {
-              answer: `Reference answer ${responseCount}.`,
+              answer: `Tutor answer ${responseCount}.`,
               followUpQuestion: "What should we examine next?",
               sourceIds: [],
               uncertainty: [],
             },
-            sessionId: `reference-session-${responseCount}`,
+            sessionId: `question-session-${responseCount}`,
           },
         };
       },
     });
-    const panel = (mode: TutoringMode, referenceQuestionId: RomanReferenceQuestionId) => (
+    const panel = (mode: TutoringMode, questionId: string) => (
       <TutorPanel
-        conceptIds={["roman-turning-points"]}
-        lessonId="roman-reference"
+        conceptIds={["ohms-law"]}
+        lessonId="ohms-law-lesson"
         mode={mode}
         onClose={vi.fn()}
-        referenceQuestionId={referenceQuestionId}
+        questionId={questionId}
       />
     );
     const user = userEvent.setup();
-    const rendered = renderWithProviders(panel("coach", "turning-points"));
+    const rendered = renderWithProviders(panel("coach", "loop-current"));
 
-    await user.type(screen.getByLabelText("Your question"), "Help with the turning points.");
+    await user.type(screen.getByLabelText("Your question"), "Help with the loop current.");
     await user.click(screen.getByRole("button", { name: "Ask the tutor" }));
-    expect(await screen.findByText("Reference answer 1.")).toBeInTheDocument();
+    expect(await screen.findByText("Tutor answer 1.")).toBeInTheDocument();
     expect(calls.at(-1)?.body).toMatchObject({
       mode: "coach",
-      referenceQuestionId: "turning-points",
+      questionId: "loop-current",
     });
 
-    rendered.rerender(panel("assisted", "turning-points"));
-    expect(screen.getByText("Help with the turning points.")).toBeInTheDocument();
+    rendered.rerender(panel("assisted", "loop-current"));
+    expect(screen.getByText("Help with the loop current.")).toBeInTheDocument();
     await user.type(screen.getByLabelText("Your question"), "Now use Assisted mode.");
     await user.click(screen.getByRole("button", { name: "Ask a follow-up" }));
-    expect(await screen.findByText("Reference answer 2.")).toBeInTheDocument();
+    expect(await screen.findByText("Tutor answer 2.")).toBeInTheDocument();
     expect(calls.at(-1)?.body).toMatchObject({
       mode: "assisted",
-      referenceQuestionId: "turning-points",
+      questionId: "loop-current",
     });
     expect(calls.at(-1)?.body).not.toHaveProperty("sessionId");
 
-    rendered.rerender(panel("assisted", "476-continuity"));
-    expect(screen.getByText("Reference answer 1.")).toBeInTheDocument();
-    expect(screen.getByText("Reference answer 2.")).toBeInTheDocument();
-    await user.type(screen.getByLabelText("Your question"), "Move to the 476 question.");
+    rendered.rerender(panel("assisted", "series-resistance"));
+    expect(screen.getByText("Tutor answer 1.")).toBeInTheDocument();
+    expect(screen.getByText("Tutor answer 2.")).toBeInTheDocument();
+    await user.type(screen.getByLabelText("Your question"), "Move to the series question.");
     await user.click(screen.getByRole("button", { name: "Ask a follow-up" }));
-    expect(await screen.findByText("Reference answer 3.")).toBeInTheDocument();
+    expect(await screen.findByText("Tutor answer 3.")).toBeInTheDocument();
     expect(calls.at(-1)?.body).toMatchObject({
       mode: "assisted",
-      referenceQuestionId: "476-continuity",
+      questionId: "series-resistance",
     });
     expect(calls.at(-1)?.body).not.toHaveProperty("sessionId");
     await waitFor(() =>
-      expect(loadTutorConversation("roman-reference")).toMatchObject({
-        sessionContext: "476-continuity:assisted",
-        sessionId: "reference-session-3",
+      expect(loadTutorConversation("ohms-law-lesson")).toMatchObject({
+        sessionContext: "series-resistance:assisted",
+        sessionId: "question-session-3",
         exchanges: expect.arrayContaining([
-          expect.objectContaining({ question: "Help with the turning points." }),
+          expect.objectContaining({ question: "Help with the loop current." }),
         ]),
       }),
     );
@@ -317,11 +317,11 @@ describe("tutor panel", () => {
     });
     renderWithProviders(
       <TutorPanel
-        conceptIds={["roman-geography"]}
-        lessonId="roman-reference"
+        conceptIds={["ohms-law"]}
+        lessonId="ohms-law-lesson"
         mode="coach"
         onClose={vi.fn()}
-        referenceQuestionId="map-117"
+        questionId="loop-current"
       />,
     );
     await userEvent.type(screen.getByLabelText("Your question"), "Explain resistance");
@@ -334,7 +334,7 @@ describe("tutor panel", () => {
     expect(packetBody).toBeVisible();
     await userEvent.click(screen.getByText("Preview the request"));
     expect(packetBody).not.toBeVisible();
-    expect(calls.at(-1)?.body).toMatchObject({ referenceQuestionId: "map-117" });
+    expect(calls.at(-1)?.body).toMatchObject({ questionId: "loop-current" });
 
     fireEvent.change(screen.getByLabelText("Paste the reply here"), {
       target: { value: '{"protocolVersion":"0.2"}' },
@@ -344,64 +344,7 @@ describe("tutor panel", () => {
     expect(calls.at(-1)?.body).toMatchObject({
       expectedRequestId: requestId,
       mode: "coach",
-      referenceQuestionId: "map-117",
-    });
-  });
-
-  it("binds the ask and the import to the essay when the essay opened the drawer", async () => {
-    const { calls } = stubFetch({
-      "POST /api/tutor/ask": {
-        body: {
-          status: "packet_required",
-          provider: "companion",
-          operation: "tutor_reply",
-          requestId,
-          packet: { filename: "discere-tutor.json", text: "PACKET BODY" },
-          message: "Copy the packet into ChatGPT and import the reply.",
-        },
-      },
-      "POST /api/tutor/companion/import": {
-        body: {
-          accepted: true,
-          operation: "tutor_reply",
-          requestId,
-          issues: [],
-          reply: {
-            answer: "The third-century crisis ran from 235 to 284 CE.",
-            followUpQuestion: "Which of those pressures does your claim rest on?",
-            sourceIds: [],
-            uncertainty: [],
-          },
-        },
-      },
-    });
-    renderWithProviders(
-      <TutorPanel
-        conceptIds={["fall-and-legacy"]}
-        lessonId="rise-of-the-roman-empire"
-        mode="coach"
-        onClose={vi.fn()}
-        referenceEssayId="transformation"
-      />,
-    );
-    await userEvent.type(screen.getByLabelText("Your question"), "What counts as a complication?");
-    await userEvent.click(screen.getByRole("button", { name: "Ask the tutor" }));
-    expect(await screen.findByText("PACKET BODY")).toBeInTheDocument();
-    expect(calls.at(-1)?.body).toMatchObject({ referenceEssayId: "transformation" });
-    // The essay is not a reference question, and the server rejects a request claiming both.
-    expect(calls.at(-1)?.body).not.toHaveProperty("referenceQuestionId");
-
-    fireEvent.change(screen.getByLabelText("Paste the reply here"), {
-      target: { value: '{"protocolVersion":"0.2"}' },
-    });
-    await userEvent.click(screen.getByRole("button", { name: "Import the reply" }));
-    expect(
-      await screen.findByText("The third-century crisis ran from 235 to 284 CE."),
-    ).toBeInTheDocument();
-    expect(calls.at(-1)?.body).toMatchObject({
-      expectedRequestId: requestId,
-      mode: "coach",
-      referenceEssayId: "transformation",
+      questionId: "loop-current",
     });
   });
 

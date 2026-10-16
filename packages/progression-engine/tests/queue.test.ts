@@ -21,14 +21,14 @@ describe("review queue interleaving", () => {
       card("e1", "electronics", due),
       card("e2", "electronics", due),
       card("e3", "electronics", due),
-      card("r1", "roman", due),
-      card("r2", "roman", due),
+      card("r1", "physics", due),
+      card("r2", "physics", due),
     ]);
     expect(queue.map((entry) => entry.courseId)).toEqual([
       "electronics",
-      "roman",
+      "physics",
       "electronics",
-      "roman",
+      "physics",
       "electronics",
     ]);
   });
@@ -36,10 +36,10 @@ describe("review queue interleaving", () => {
   it("starts with the course that was studied longest ago", () => {
     const recency = new Map([
       ["electronics", "2026-08-19T07:59:00.000Z"],
-      ["roman", "2026-08-10T00:00:00.000Z"],
+      ["physics", "2026-08-10T00:00:00.000Z"],
     ]);
     const queue = interleaveByCourse(
-      [card("e1", "electronics", due), card("r1", "roman", due)],
+      [card("e1", "electronics", due), card("r1", "physics", due)],
       recency,
     );
     expect(queue.map((entry) => entry.cardId)).toEqual(["r1", "e1"]);
@@ -48,10 +48,10 @@ describe("review queue interleaving", () => {
   it("puts a course that has never been reviewed before one that has", () => {
     const recency = new Map<string, string | null>([
       ["electronics", "2026-08-19T07:59:00.000Z"],
-      ["roman", null],
+      ["physics", null],
     ]);
     const queue = interleaveByCourse(
-      [card("e1", "electronics", due), card("r1", "roman", due)],
+      [card("e1", "electronics", due), card("r1", "physics", due)],
       recency,
     );
     expect(queue.map((entry) => entry.cardId)).toEqual(["r1", "e1"]);
@@ -61,12 +61,12 @@ describe("review queue interleaving", () => {
     const cards = [
       card("e1", "electronics", due),
       card("e2", "electronics", due),
-      card("r1", "roman", due),
-      card("r2", "roman", due),
+      card("r1", "physics", due),
+      card("r2", "physics", due),
     ];
     const recency = new Map<string, string | null>([
       ["electronics", null],
-      ["roman", null],
+      ["physics", null],
     ]);
     const first = interleaveByCourse(cards, recency)[0];
     expect(first?.courseId).toBe("electronics");
@@ -77,7 +77,7 @@ describe("review queue interleaving", () => {
       cards.filter((entry) => entry.cardId !== first?.cardId),
       recency,
     )[0];
-    expect(second?.courseId).toBe("roman");
+    expect(second?.courseId).toBe("physics");
   });
 
   it("finishes the remaining course once the other runs out", () => {
@@ -85,7 +85,7 @@ describe("review queue interleaving", () => {
       card("e1", "electronics", due),
       card("e2", "electronics", due),
       card("e3", "electronics", due),
-      card("r1", "roman", due),
+      card("r1", "physics", due),
     ]);
     expect(queue.map((entry) => entry.cardId)).toEqual(["e1", "r1", "e2", "e3"]);
   });

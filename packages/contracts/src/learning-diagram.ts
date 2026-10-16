@@ -14,6 +14,7 @@ import { PhilosophyDiagramSchema } from "./philosophy-diagram.js";
 import { LanguageDiagramSchema } from "./language-diagram.js";
 import { AstronomyDiagramSchema } from "./astronomy-diagram.js";
 import { PsychologyDiagramSchema } from "./psychology-diagram.js";
+import { SvgFigureSchema } from "./svg-figure.js";
 
 const ControlSchema = z
   .object({
@@ -80,6 +81,7 @@ export const LearningDiagramSchema = z.discriminatedUnion("type", [
   LanguageDiagramSchema,
   AstronomyDiagramSchema,
   PsychologyDiagramSchema,
+  SvgFigureSchema,
   z
     .object({
       type: z.literal("relational_query"),

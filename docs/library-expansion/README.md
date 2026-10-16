@@ -10,8 +10,8 @@ material and app features. A topic or resource link alone is not an implemented 
 
 The earlier uncommitted learning, review and reward work is preserved. George's 1 October
 Brilliant references now govern the active experience; see [experience notes](../brilliant-experience/README.md).
-Roman and Electronics prototypes are archived from active discovery while retaining saved
-history and routes.
+The Electronics prototype is archived from active discovery while keeping its saved history and
+routes. The Roman prototype was removed on 2026-10-16.
 
 ## Source authority
 

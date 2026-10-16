@@ -34,7 +34,7 @@ async function start(options: Partial<AppOptions> = {}) {
 async function introduceLessons() {
   for (const [courseId, lessonId, response] of [
     ["maths-foundations", "what-a-letter-stands-for", "7"],
-    ["probability-statistics", "counting-outcomes", "36"],
+    ["probability-statistics", "counting-outcomes", "0.5"],
   ]) {
     const journey = (
       await app.inject({
@@ -42,8 +42,10 @@ async function introduceLessons() {
         url: "/api/courses/" + courseId + "/lessons/" + lessonId + "/journey",
       })
     ).json();
-    const question = journey.stages.find((stage: { type: string }) => stage.type === "explainer")
-      .steps[0].question;
+    // Story lessons open with teaching screens; the first question is on the first step that asks one.
+    const question = journey.stages
+      .find((stage: { type: string }) => stage.type === "explainer")
+      .steps.find((step: { question?: unknown }) => step.question).question;
     const attempt = await app.inject({
       method: "POST",
       url: "/api/attempts",
