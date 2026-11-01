@@ -13,6 +13,7 @@ const lesson = JSON.parse(readFileSync(input, "utf8"));
 const esc = (t) => String(t ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const rich = (t) =>
   esc(t)
+    .replace(/\[\[([^|\]]+)\|([^\]]+)\]\]/g, '<span class="term" tabindex="0">$1<span class="tip" role="tooltip">$2</span></span>')
     .replace(/\*\*([^*\n]+?)\*\*/g, "<strong>$1</strong>")
     .replace(/(?<![\w*])\*(?=\S)([^*\n]+?)(?<=\S)\*(?![\w*])/g, "<em>$1</em>")
     .replace(/\$([^$\n]+)\$/g, '<span class="math">$1</span>');
@@ -94,6 +95,10 @@ h1 { font-size:1.8rem; margin:0; text-wrap:balance; }
 .after { margin-top:12px; }
 .plan summary { cursor:pointer; font:650 0.95rem var(--ui); color:var(--accent); }
 .plan { background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:14px 18px; }
+.term { text-decoration:underline dotted var(--accent); text-decoration-thickness:2px; text-underline-offset:4px; position:relative; cursor:help; }
+.term .tip { display:none; position:absolute; bottom:calc(100% + 8px); left:50%; transform:translateX(-50%); width:max-content; max-width:min(17rem,78vw); background:var(--fg); color:var(--bg); font:500 0.86rem/1.45 var(--ui); padding:9px 12px; border-radius:10px; z-index:5; text-align:left; }
+.term:hover .tip, .term:focus .tip { display:block; }
+.term:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
 .sr { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); }
 </style>
 <div class="wrap">
@@ -106,7 +111,7 @@ h1 { font-size:1.8rem; margin:0; text-wrap:balance; }
 (function(){
   function norm(v){return String(v).trim().toLowerCase().replace(/\\s+/g,' ').replace(/−/g,'-');}
   function num(v){var n=parseFloat(String(v).replace(/−/g,'-').replace(/[^0-9.\\-\\/]/g,''));if(/^\\s*-?\\d+\\s*\\/\\s*\\d+\\s*$/.test(v)){var p=v.split('/');n=parseFloat(p[0])/parseFloat(p[1]);}return n;}
-  function rich(t){var d=document.createElement('div');d.textContent=t;return d.innerHTML.replace(/\\*\\*([^*]+?)\\*\\*/g,'<strong>$1</strong>');}
+  function rich(t){var d=document.createElement('div');d.textContent=t;return d.innerHTML.replace(/\\[\\[([^|\\]]+)\\|([^\\]]+)\\]\\]/g,'<span class="term" tabindex="0">$1<span class="tip" role="tooltip">$2</span></span>').replace(/\\*\\*([^*]+?)\\*\\*/g,'<strong>$1</strong>').replace(/(^|[^\\w*])\\*(?=\\S)([^*]+?)\\*(?![\\w*])/g,'$1<em>$2</em>');}
   document.querySelectorAll('.question').forEach(function(q){
     var r=JSON.parse(q.getAttribute('data-replies')),out=q.querySelector('.reply');
     function show(value,isRight){

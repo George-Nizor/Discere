@@ -111,14 +111,22 @@ and repetitive. Principles 8 and 9 are the correction.
 
 ## Emphasis
 
-- **Bold** a term at the moment it is defined, and only there.
-- *Italics* for stress that changes meaning ("salmon would *have* to fly", "*half* the angle
-  means *twice* the distance"). Use at most one or two per screen.
-- **Hover terms.** Underline a term that was defined earlier and attach a short note that relates
-  it back, naming the lesson where it was met ("Met in 'Reconstructing arguments'"). Use one or two
-  per screen, and only for terms a learner might have forgotten. The schema mark and player
-  component for this are not built yet, so record the notes in the lesson authoring notes until
-  they are.
+George wants emphasis visible on every teaching screen, so that a learner skimming back over a
+screen can pick out its terms and its key point. In the first curriculum pilot it was too sparse,
+with three bold terms in ten screens.
+
+- **Bold** has two uses. Use it for a term at the moment it is defined, and for the one phrase
+  that carries the screen's key point ("the letter stands for **the same number wherever it
+  appears**"). Expect one to three bold spans on a teaching screen, and never a whole sentence.
+- *Italics* mark stress that changes or sharpens the meaning ("salmon would *have* to fly",
+  "*half* the angle means *twice* the distance", "it is a *claim*"), and titles of works. Most
+  teaching screens should have one or two.
+- **Hover terms.** Write `[[term|short note]]` on a term defined in an earlier lesson or screen
+  that a learner might have forgotten. The note says what it means and, where it helps, where it
+  was met ("A letter standing for a number. Met in 'What a letter stands for'."). Use one or two
+  per screen, only where they help. The player support is not built yet, so preview pages render
+  them now and the app will follow.
+- Never emphasise for decoration. If every sentence has something bold, nothing stands out.
 
 ## Facts are fixed
 
