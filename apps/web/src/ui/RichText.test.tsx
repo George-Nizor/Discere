@@ -46,3 +46,18 @@ describe("emphasis", () => {
     expect(stripEmphasis("the **parallax angle** and *half*")).toBe("the parallax angle and half");
   });
 });
+
+describe("hover terms", () => {
+  it("shows a term with its note described for assistive technology, and strips it for speech", async () => {
+    const { render, screen } = await import("@testing-library/react");
+    const { InlineRichText, stripEmphasis } = await import("./RichText.js");
+    render(
+      <p>
+        <InlineRichText text="Now [[substitute|Replace the letter with a number.]] 4 for x." />
+      </p>,
+    );
+    const term = screen.getByText("substitute");
+    expect(term).toHaveAccessibleDescription("Replace the letter with a number.");
+    expect(stripEmphasis("Now [[substitute|Replace it.]] and **solve**.")).toBe("Now substitute and solve.");
+  });
+});

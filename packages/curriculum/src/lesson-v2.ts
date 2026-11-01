@@ -38,6 +38,7 @@ export const SKILL_CHECK_SIZE = 3;
 
 function words(text: string): number {
   return text
+    .replace(/\[\[([^|\]]+)\|[^\]]+\]\]/gu, "$1")
     .replace(/\$[^$]*\$/gu, "x")
     .split(/\s+/u)
     .filter(Boolean).length;
