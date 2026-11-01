@@ -47,6 +47,16 @@ function missingReference(issues: ContentIssue[], path: string, kind: string, id
   });
 }
 
+/**
+ * Rules that protect facts and hidden answers. Style is set by the discere-lesson-voice skill
+ * (.claude/skills), not by pattern bans, so the writing engine's style rules are not reported here.
+ */
+const FACT_RULES = new Set([
+  "ANS001_FINAL_ANSWER_IN_HINT",
+  "ANS005_EQUIVALENT_NUMERIC_ANSWER",
+  "QLT001_PLACEHOLDER_CONTENT",
+]);
+
 function lintField(
   issues: ContentIssue[],
   path: string,
@@ -59,6 +69,7 @@ function lintField(
     ...(hiddenAnswer === undefined ? {} : { hiddenAnswer }),
   });
   for (const violation of lint.violations) {
+    if (!FACT_RULES.has(violation.ruleId) && !violation.ruleId.startsWith("ANS")) continue;
     issues.push({
       path,
       code: violation.ruleId,

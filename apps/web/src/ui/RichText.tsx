@@ -1,3 +1,4 @@
+import type React from "react";
 import { useEffect, useRef } from "react";
 
 export interface TextSegment {
@@ -63,6 +64,38 @@ export function InlineMath({ expression }: { expression: string }) {
   return <span className="math" ref={host} role="math" aria-label={expression} />;
 }
 
+/**
+ * `**term**` is bold (a term at its definition) and `*word*` is italic (stress), as the
+ * discere-lesson-voice skill writes them. A lone asterisk, as in "3 * 4", is left alone.
+ */
+const EMPHASIS_PATTERN = /\*\*([^*\n]+?)\*\*|(?<![\w*])\*(?=\S)([^*\n]+?)(?<=\S)\*(?![\w*])/g;
+
+function Emphasis({ text }: { text: string }) {
+  const parts: React.ReactNode[] = [];
+  let last = 0;
+  for (const match of text.matchAll(EMPHASIS_PATTERN)) {
+    const start = match.index ?? 0;
+    if (start > last) parts.push(text.slice(last, start));
+    parts.push(
+      match[1] !== undefined ? (
+        <strong key={start}>{match[1]}</strong>
+      ) : (
+        <em key={start}>{match[2]}</em>
+      ),
+    );
+    last = start + match[0].length;
+  }
+  if (last < text.length) parts.push(text.slice(last));
+  return <>{parts}</>;
+}
+
+/** The same text without emphasis marks, for speech and plain-text uses. */
+export function stripEmphasis(text: string): string {
+  return text.replace(EMPHASIS_PATTERN, (_whole, bold?: string, italic?: string) =>
+    String(bold ?? italic ?? ""),
+  );
+}
+
 export function InlineRichText({ text }: { text: string }) {
   const segments = splitMath(text);
   return (
@@ -71,7 +104,9 @@ export function InlineRichText({ text }: { text: string }) {
         segment.type === "math" ? (
           <InlineMath expression={segment.value} key={`math-${segment.start}`} />
         ) : (
-          <span key={`text-${segment.start}`}>{segment.value}</span>
+          <span key={`text-${segment.start}`}>
+            <Emphasis text={segment.value} />
+          </span>
         ),
       )}
     </>

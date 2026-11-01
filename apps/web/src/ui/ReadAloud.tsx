@@ -1,4 +1,5 @@
 import { emitMascot } from "../mascot/bus.js";
+import { stripEmphasis } from "./RichText.js";
 import { AudioLines } from "../brand/icon-set.js";
 import { useEffect, useState } from "react";
 
@@ -39,7 +40,7 @@ export function useReadAloud(text: string): {
       setSpeaking(false);
       return;
     }
-    const utterance = new SpeechSynthesisUtterance(text);
+    const utterance = new SpeechSynthesisUtterance(stripEmphasis(text));
     utterance.rate = 0.95;
     utterance.addEventListener("end", () => setSpeaking(false));
     utterance.addEventListener("error", () => setSpeaking(false));

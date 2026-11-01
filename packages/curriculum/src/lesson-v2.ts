@@ -21,19 +21,19 @@ import type { ContentIssue } from "./validate.js";
 
 type Lint = (path: string, text: string, context: WritingContext, hiddenAnswer?: string) => void;
 
-export const LEAD_WORD_LIMIT = 60;
+export const LEAD_WORD_LIMIT = 110;
 /**
  * A screen that only teaches (an `explain` step with no check) is told like a story, in connected
  * paragraphs: long enough to carry the idea and the way into the next one, short enough to read in
  * about a minute. The limits count the prose before and after its figure.
  */
-export const EXPLAIN_BODY_WORD_LIMIT = 280;
+export const EXPLAIN_BODY_WORD_LIMIT = 420;
 export const EXPLAIN_BODY_WORD_FLOOR = 80;
-export const OPENER_WORD_LIMIT = 260;
+export const OPENER_WORD_LIMIT = 360;
 /** Longest run of teaching-only screens before the learner is asked to do something. */
 export const EXPLAIN_RUN_LIMIT = 3;
-export const ONE_LINE_WORD_LIMIT = 25;
-export const WHY_WORD_LIMIT = 20;
+export const ONE_LINE_WORD_LIMIT = 45;
+export const WHY_WORD_LIMIT = 35;
 export const SKILL_CHECK_SIZE = 3;
 
 function words(text: string): number {

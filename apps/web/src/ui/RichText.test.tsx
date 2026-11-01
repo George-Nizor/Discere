@@ -30,3 +30,19 @@ describe("rich learning text", () => {
     await waitFor(() => expect(math.querySelector(".katex")).not.toBeNull());
   });
 });
+
+describe("emphasis", () => {
+  it("renders bold terms and italic stress, and leaves a lone asterisk alone", async () => {
+    const { render, screen } = await import("@testing-library/react");
+    const { InlineRichText, stripEmphasis } = await import("./RichText.js");
+    render(
+      <p>
+        <InlineRichText text="This is the **parallax angle**, and *half* the angle; 3 * 4 stays." />
+      </p>,
+    );
+    expect(screen.getByText("parallax angle").tagName).toBe("STRONG");
+    expect(screen.getByText("half").tagName).toBe("EM");
+    expect(screen.getByText(/3 \* 4 stays/)).toBeInTheDocument();
+    expect(stripEmphasis("the **parallax angle** and *half*")).toBe("the parallax angle and half");
+  });
+});
