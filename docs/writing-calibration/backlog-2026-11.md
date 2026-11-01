@@ -96,3 +96,48 @@ should not repeat each other.
   Frontend; React; Node.js; Backend; API design; PostgreSQL (extends SQL); Docker; Kubernetes;
   DevOps; AWS; System Design; Software Architecture; Cyber Security; Data Analyst (extends Python
   and statistics); Data Engineer; Machine Learning; MLOps; AI Engineer; Prompt engineering.
+
+## Status at the end of the 1 November 2026 session
+
+### Courses written from the curriculum (committed, not yet read in full by George)
+
+Maths Foundations, Logic and Reasoning, Probability and Statistics, Philosophy, Electronics
+Foundations, CS Basics, Psychology, and Economics: 68 lessons. Each was written by a Sonnet agent
+to `docs/writing-calibration/authoring-brief.md`. For each, the lead (Opus):
+
+- ran `scripts/voice-check.ts` (0 errors);
+- recomputed the answers by hand;
+- checked flagged historical facts against its own knowledge (sources were unreachable from the
+  cloud session);
+- rebound `review/publication.json` with `scripts/rebind-review.ts`, with a note of exactly what
+  was checked.
+
+Review pages are in `docs/writing-calibration/courses/`.
+
+A cross-check of every reused question id against its earlier answer
+caught dropped units (now restored); repeat it for each new course.
+
+### Still to write (12 courses)
+
+Astronomy, Biology, Calculus, Chemistry, Engineering, English, Geometry, Linear algebra, Physics,
+Python, Rust and SQL. Run one Sonnet agent per course with the prompt pattern used for the eight
+above (follow the authoring brief; include schema defaults; voice from `PRIMARY_VOICE` in
+`scripts/voice-rewrite.mjs`). Then:
+
+1. Run `voice-check`, recompute the answers, and cross-check reused ids for changed answers or
+   units.
+2. Run `rebind-review`.
+3. Run that course's curriculum and server tests, and re-point any test that asserts old lesson
+   details without weakening it.
+4. Build its page with `scripts/voice-review-page.mjs`.
+
+Run the server suite only when no course is mid-write, because it loads every course.
+
+### Known gaps
+
+- Figures and hover terms have not been seen in the running player, and no screenshots have been
+  taken.
+- Each course's `*-v2.test.ts` that reads `.authoring/candidate.json` cannot run in the cloud,
+  because that file exists only on George's machine.
+- Flashcards were not rewritten; a few use terms the new lessons do not teach (noted in the agents'
+  reports).
