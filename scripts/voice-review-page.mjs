@@ -12,7 +12,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
-const [course, out] = process.argv.slice(2);
+const [course, out, subtitle = "Every lesson in this course, screen by screen as the learner meets it. Open \"Previous text\" under a screen to compare it with what the app says now; a screen that is new has none."] = process.argv.slice(2);
 const now = JSON.parse(readFileSync(path.join(ROOT, "content", course, "bundle.json"), "utf8"));
 const before = JSON.parse(
   execSync(`git show HEAD:content/${course}/bundle.json`, { cwd: ROOT, maxBuffer: 1e8 }).toString(),
@@ -21,6 +21,7 @@ const before = JSON.parse(
 const esc = (t) => String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 const rich = (t) =>
   esc(t)
+    .replace(/\[\[([^|\]]+)\|([^\]]+)\]\]/g, '<span class="term" tabindex="0">$1<span class="tip" role="tooltip">$2</span></span>')
     .replace(/\*\*([^*\n]+?)\*\*/g, "<strong>$1</strong>")
     .replace(/(?<![\w*])\*(?=\S)([^*\n]+?)(?<=\S)\*(?![\w*])/g, "<em>$1</em>")
     .replace(/\$([^$\n]+)\$/g, '<span class="math">$1</span>');
@@ -70,15 +71,15 @@ if (now.course.introduction) {
   panels.push(`<section class="panel" id="about" role="tabpanel"><div class="screen"><h2 class="kind">About this course</h2><div class="prose">${now.course.introduction.paragraphs.map((p) => `<p>${rich(p)}</p>`).join("")}<ul>${now.course.introduction.outcomes.map((o) => `<li>${rich(o)}</li>`).join("")}</ul></div>${old(before.course.introduction.paragraphs.map((p) => `<p>${rich(p)}</p>`).join(""))}</div></section>`);
 }
 now.lessons.forEach((lesson, i) => {
-  const was = before.lessons[i];
+  const was = before.lessons.find((l) => l.id === lesson.id) ?? { steps: [] };
   const id = `l${i + 1}`;
   tabs.push([id, `${i + 1}. ${lesson.title}`]);
   const screens = [];
   if (lesson.intro) {
-    screens.push(`<div class="screen"><h2 class="kind">Opener</h2><div class="prose">${blocks(lesson.intro.hook.blocks)}<p class="promise">${rich(lesson.intro.promise)}</p></div>${old(blocks(was.intro.hook.blocks) + `<p class="promise">${rich(was.intro.promise)}</p>`)}</div>`);
+    screens.push(`<div class="screen"><h2 class="kind">Opener</h2><div class="prose">${blocks(lesson.intro.hook.blocks)}<p class="promise">${rich(lesson.intro.promise)}</p></div>${was.intro ? old(blocks(was.intro.hook.blocks) + `<p class="promise">${rich(was.intro.promise)}</p>`) : ""}</div>`);
   }
   lesson.steps.forEach((step, s) => {
-    const w = was.steps[s];
+    const w = was.steps.find((x) => x.id === step.id);
     const lines = step.workedSteps?.length
       ? `<ol class="lines">${step.workedSteps.map((l) => `<li>${rich(l.text ?? "")}${l.math ? ` <span class="math">${esc(l.math)}</span>` : ""}</li>`).join("")}</ol>`
       : "";
@@ -92,13 +93,13 @@ now.lessons.forEach((lesson, i) => {
       lines +
       questionHtml(q) +
       (step.reveal?.length ? `<div class="reveal"><span>Shown after answering:</span>${blocks(step.reveal)}</div>` : "");
-    const oldBody =
+    const oldBody = !w ? "" :
       (w.headline ? `<h3 class="headline">${rich(w.headline)}</h3>` : "") +
       blocks(w.lead) + blocks(w.afterFigure) + oldQuestion(wq) + blocks(w.reveal);
     screens.push(`<div class="screen"><h2 class="kind">${KIND[step.kind] ?? step.kind}</h2><div class="prose">${body}</div>${old(oldBody)}</div>`);
   });
   if (lesson.recap) {
-    screens.push(`<div class="screen"><h2 class="kind">Recap</h2><div class="prose"><h3 class="headline">${rich(lesson.recap.keyIdea)}</h3>${blocks(lesson.recap.blocks)}${lesson.recap.nextHook ? `<p class="next">${rich(lesson.recap.nextHook)}</p>` : ""}</div>${old(`<h3 class="headline">${rich(was.recap.keyIdea)}</h3>${blocks(was.recap.blocks)}${was.recap.nextHook ? `<p>${rich(was.recap.nextHook)}</p>` : ""}`)}</div>`);
+    screens.push(`<div class="screen"><h2 class="kind">Recap</h2><div class="prose"><h3 class="headline">${rich(lesson.recap.keyIdea)}</h3>${blocks(lesson.recap.blocks)}${lesson.recap.nextHook ? `<p class="next">${rich(lesson.recap.nextHook)}</p>` : ""}</div>${!was.recap ? "" : old(`<h3 class="headline">${rich(was.recap.keyIdea)}</h3>${blocks(was.recap.blocks)}${was.recap.nextHook ? `<p>${rich(was.recap.nextHook)}</p>` : ""}`)}</div>`);
   }
   panels.push(`<section class="panel" id="${id}" role="tabpanel" hidden><h2 class="lesson-title">${esc(lesson.title)}</h2>${screens.join("")}</section>`);
 });
@@ -139,13 +140,16 @@ h1 { font-size:1.8rem; margin:0; text-wrap:balance; }
 .fb span, .reveal span { display:block; font:650 0.8rem var(--ui); color:var(--muted); }
 .reveal { border-left:3px solid var(--accent); padding-left:12px; margin-top:8px; }
 .lines { padding-left:1.3em; }
+.term { text-decoration:underline dotted var(--accent); text-decoration-thickness:2px; text-underline-offset:4px; position:relative; cursor:help; }
+.term .tip { display:none; position:absolute; bottom:calc(100% + 8px); left:50%; transform:translateX(-50%); width:max-content; max-width:min(17rem,78vw); background:var(--fg); color:var(--bg); font:500 0.86rem/1.45 var(--ui); padding:9px 12px; border-radius:10px; z-index:5; }
+.term:hover .tip, .term:focus .tip { display:block; }
 .old summary { cursor:pointer; font:600 0.88rem var(--ui); color:var(--muted); }
 .old .prose { font-size:1rem; color:var(--muted); margin-top:8px; }
 </style>
 <div class="wrap">
   <header class="intro">
     <h1>${esc(now.course.title)}: the rewrite</h1>
-    <p>Every lesson in this course rewritten in voice A, screen by screen as the learner meets it. Questions, choices, numbers and answers are unchanged; only the prose is new. Open "Previous text" under any screen to compare it with what the app says now.</p>
+    <p>${esc(subtitle)}</p>
   </header>
   <nav class="tabs" role="tablist" aria-label="Lessons">${tabs.map(([id, t], n) => `<button role="tab" id="tab-${id}" aria-controls="${id}" aria-selected="${n === 0}">${esc(t)}</button>`).join("")}</nav>
   ${panels.join("\n")}
