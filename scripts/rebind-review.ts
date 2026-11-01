@@ -6,12 +6,16 @@
  */
 import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import { CourseBundleSchema } from "../packages/contracts/src/index.js";
 import { bundleDigest, validateCourseBundle } from "../packages/curriculum/src/index.js";
 
 const [course, note] = process.argv.slice(2);
 if (!course || !note) throw new Error('Usage: npx tsx scripts/rebind-review.ts <course-id> "<note>"');
 const dir = path.resolve(import.meta.dirname, "..", "content", course);
-const bundle = JSON.parse(readFileSync(path.join(dir, "bundle.json"), "utf8"));
+// An author may omit fields that have defaults; the bundle is stored complete, so the hash the
+// review binds is the one the app and tests compute after parsing.
+const bundle = CourseBundleSchema.parse(JSON.parse(readFileSync(path.join(dir, "bundle.json"), "utf8")));
+writeFileSync(path.join(dir, "bundle.json"), `${JSON.stringify(bundle, null, 2)}\n`);
 const file = path.join(dir, "review", "publication.json");
 const review = JSON.parse(readFileSync(file, "utf8"));
 const validation = validateCourseBundle(bundle);
