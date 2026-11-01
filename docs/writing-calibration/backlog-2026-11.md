@@ -16,6 +16,21 @@ is written down so it can be picked up in depth later.
 
 ## 1. Lesson voice (in progress, top priority)
 
+Decisions so far (round 3):
+
+- Voice A ("blend, led by the book", `round-3-voices.html`) is the default lesson voice.
+- Voice B ("blend, led by the lecturer") is the alternative, and a candidate primary voice for less
+  quantitative subjects such as philosophy and psychology. Round 4 tests both on astronomy,
+  philosophy and psychology.
+- Voice C ("explain, then think aloud", built on Claude's learn skill) is for the dialogue tutor,
+  not for lessons. Round 4 shows a tutor session with its guardrails.
+- The writing engine's style bans no longer constrain lesson prose. Keep only the checks that
+  protect facts: numbers, equations, units and citations kept exactly, and no answer leaks.
+- Emphasis, prototyped in round 4: bold for a term at its definition, italics for stress, and
+  dotted-underline terms with a hover or tap note that links back to an earlier lesson. If George
+  approves it, it needs a rich-text mark in the lesson schema and a component in the player
+  (`InlineRichText`).
+
 1. Round 1: pick a voice from `round-1-voices.html` (four candidates plus today's text).
 2. Round 2: the chosen voice applied to a different subject, checked against the same lesson.
 3. Write the voice guide per text type: lesson screens, course "About" paragraphs, recaps,
