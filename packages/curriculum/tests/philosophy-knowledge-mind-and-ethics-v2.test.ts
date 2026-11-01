@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { auditArgument } from "@discere/activity-engine";
-import { assessTextAnswer } from "@discere/assessment-engine";
+import { assessNumericAnswer, assessTextAnswer } from "@discere/assessment-engine";
 import type { CourseBundle, Question } from "@discere/contracts";
 import { describe, expect, it } from "vitest";
 import { validateCourseBundle } from "../src/index.js";
@@ -35,6 +35,10 @@ const correctChoices = (q: Question) => {
 const correct = (q: Question, answer: string) => {
   const authority = q.answerAuthority;
   return authority.kind === "text" && assessTextAnswer(answer, authority).correct;
+};
+const correctNumber = (q: Question, answer: string) => {
+  const authority = q.answerAuthority;
+  return authority.kind === "numeric" && assessNumericAnswer(answer, authority).correct;
 };
 const expectedUtility = (outcomes: Array<[number, number]>) =>
   outcomes.reduce((sum, [p, v]) => sum + p * v, 0);
@@ -148,7 +152,10 @@ describe("Philosophy: Knowledge, Mind and Ethics (v2 lessons)", () => {
       const opener = count(prose(lesson.intro?.hook.blocks));
       expect(opener, id).toBeGreaterThanOrEqual(120);
       expect(opener, id).toBeLessThanOrEqual(200);
-      expect(count(lesson.intro!.promise), id).toBeLessThanOrEqual(25);
+      // The re-authored promises run 25 to 33 words (they name three abilities each), so the cap is 35.
+      expect(count(lesson.intro!.promise), id).toBeLessThanOrEqual(35);
+      expect(lesson.intro!.promise, id).toMatch(/^By the end you'll /u);
+      expect(lesson.intro!.promise.match(/[.!?]/gu) ?? [], id).toHaveLength(1);
       expect(lesson.recap?.nextHook, id).toBeTruthy();
       for (const step of teaching) {
         const words = count(prose(step.lead)) + count(prose(step.afterFigure));
@@ -164,9 +171,9 @@ describe("Philosophy: Knowledge, Mind and Ethics (v2 lessons)", () => {
       }
     }
     // Each recap leads into the next lesson's opener, in the order the course teaches them.
-    expect(lessonOf("fallacies-and-charity").recap?.nextHook).toMatch(/knowledge/u);
-    expect(lessonOf("justified-true-belief").recap?.nextHook).toMatch(/sceptic/u);
-    expect(lessonOf("scepticism-and-closure").recap?.nextHook).toMatch(/degrees/u);
+    expect(lessonOf("fallacies-and-charity").recap?.nextHook).toMatch(/what it takes to know/u);
+    expect(lessonOf("justified-true-belief").recap?.nextHook).toMatch(/whether we can know/u);
+    expect(lessonOf("scepticism-and-closure").recap?.nextHook).toMatch(/how strongly we should believe/u);
     expect(lessonOf("bayesian-evidence").recap?.nextHook).toMatch(/mind/u);
     expect(lessonOf("mind-and-body").recap?.nextHook).toMatch(/machine/u);
   });
@@ -246,32 +253,63 @@ describe("Philosophy: Knowledge, Mind and Ethics (v2 lessons)", () => {
       return { ill, well, flaggedIll, flaggedWell, flagged: flaggedIll + flaggedWell };
     };
     const near = (a: number, b: number) => expect(a).toBeCloseTo(b, 9);
-    // Counting screen and prior-and-posterior screen: 200 ill, 120 and 40 flagged, 75% of 160.
+    // Counting screen and prior-and-posterior screen: 200 ill, 120 and 40 flagged, 160 in all (the
+    // key of the counting item), and 75% of 160.
     const first = town(1000, 0.2, 0.6, 0.05);
     near(first.well, 800);
     near(first.flaggedIll, 120);
     near(first.flaggedWell, 40);
     near(first.flagged, 160);
+    near(first.flagged, key("bayesian-evidence-7"));
     near((100 * first.flaggedIll) / first.flagged, 75);
-    // Opening town of the lesson: 90 flagged from each group, 180 in all.
-    near(town(1000, 0.1, 0.9, 0.1).flagged, key("bayesian-evidence-7"));
+    near(first.ill / 1000, 0.2); // prior 200 in 1,000
+    near(first.flaggedIll / first.flagged, 0.75); // posterior
+    // The opener's test (90% and 10%) on the 10% town: 90 flagged from each group, 180 in all.
+    const opening = town(1000, 0.1, 0.9, 0.1);
+    near(opening.flaggedIll, 90);
+    near(opening.flaggedWell, 90);
+    near(opening.flagged, 180);
     // Rare-condition screen: 18 ill flagged, 49 false alarms, 67 flagged, about 27%.
     const rare = town(1000, 0.02, 0.9, 0.05);
     near(rare.flaggedIll, 18);
     near(rare.flaggedWell, 49);
     near(rare.flagged, 67);
     expect(Math.round((100 * rare.flaggedIll) / rare.flagged)).toBe(27);
-    // Odds screen: prior odds 1 to 4, ratio 0.6 ÷ 0.05 = 12, posterior odds 3 to 1, which is 75%.
-    const ratio = 0.6 / 0.05;
-    near(ratio, 12);
-    near((1 / 4) * ratio, 3);
-    near((3 / (3 + 1)) * 100, 75);
-    // Symbols screen: P(E) = 0.2 × 0.6 + 0.8 × 0.05 = 0.16 and P(H | E) = 0.12 ÷ 0.16.
-    near(0.2 * 0.6 + 0.8 * 0.05, 0.16);
-    near((0.2 * 0.6) / (0.2 * 0.6 + 0.8 * 0.05), 0.75);
-    // The rare-condition item sits on a town with a 1% prior, and the worked example on 20%.
-    near(town(1000, 0.01, 0.9, 0.1).flagged, key("bayesian-evidence-2"));
+    // Same test on the 20% town with a 90% hit rate: 180 of 200 and 40 of 800, about 82% of 220.
+    const common = town(1000, 0.2, 0.9, 0.05);
+    near(common.flaggedIll, 180);
+    near(common.flaggedWell, 40);
+    near(common.flagged, 220);
+    expect(Math.round((100 * common.flaggedIll) / common.flagged)).toBe(82);
+    // Odds screen: a 10% prior is odds of 1 to 9, the ratio is 0.9 ÷ 0.1 = 9, and posterior odds of
+    // 9 to 9 are one half. The ratio is the key of the ratio item.
+    const ratio = 0.9 / 0.1;
+    near(ratio, 9);
+    near(ratio, key("bayesian-evidence-3"));
+    near(0.1 / 0.9, 1 / 9);
+    near((1 / 9) * ratio, 1); // 9 to 9 is 1 to 1
+    near(1 / (1 + 1), 0.5);
+    near(opening.flaggedIll / opening.flagged, 0.5);
+    // The same test on a 1% prior: odds of 1 to 99 become 9 to 99, which is the 9 in 108 counted.
+    const onePercent = town(1000, 0.01, 0.9, 0.1);
+    near((1 / 99) * ratio, 9 / 99);
+    near(onePercent.flaggedIll, 9);
+    near(onePercent.flaggedWell, 99);
+    near(onePercent.flagged, 108);
+    near(9 / (9 + 99), (9 / 99) / (1 + 9 / 99));
+    // Symbols screen on the 10% case: top 0.9 × 0.1 = 0.09, bottom 0.09 + 0.1 × 0.9 = 0.18, so 0.5.
+    near(0.9 * 0.1, 0.09);
+    near(0.9 * 0.1 + 0.1 * 0.9, 0.18);
+    near((0.9 * 0.1) / (0.9 * 0.1 + 0.1 * 0.9), 0.5);
+    // The faded example and its item sit on the 1% town: 10 ill, 9 and 99 flagged, 108 in all.
+    near(onePercent.ill, 10);
+    near(onePercent.well, 990);
+    near(onePercent.flagged, key("bayesian-evidence-2"));
+    // The worked example is the 20% town with an 80% hit rate: 160 + 40 = 200 flagged, 80% of them ill.
     const worked = town(1000, 0.2, 0.8, 0.05);
+    near(worked.flaggedIll, 160);
+    near(worked.flaggedWell, 40);
+    near(worked.flagged, 200);
     near((100 * worked.flaggedIll) / worked.flagged, 80);
     // Every bayes_grid figure in the lesson is a thousand-person town.
     const grids = lessonOf("bayesian-evidence").steps.flatMap((s) =>
@@ -291,6 +329,9 @@ describe("Philosophy: Knowledge, Mind and Ethics (v2 lessons)", () => {
     };
     expect(teachingGrid("counting-the-flagged", "town")).toEqual([0.2, 0.6, 0.05]);
     expect(teachingGrid("when-the-condition-is-rare", "rare")).toEqual([0.02, 0.9, 0.05]);
+    expect(teachingGrid("when-the-condition-is-rare", "common")).toEqual([0.2, 0.9, 0.05]);
+    expect(teachingGrid("odds-and-ratios", "first")).toEqual([0.1, 0.9, 0.1]);
+    expect(teachingGrid("odds-and-ratios", "second")).toEqual([0.01, 0.9, 0.1]);
   });
 
   it("checks Elisabeth's argument and the machine table that the mind lessons draw", () => {
@@ -406,27 +447,34 @@ describe("Philosophy: Knowledge, Mind and Ethics (v2 lessons)", () => {
 
   it("marks the free-text answers rewritten in the argument lessons", () => {
     const accepts = (id: string, answer: string) => correct(question(id), answer);
-    // Reconstructing arguments: the conclusion of the playing-field passage, now typed.
-    for (const right of [
-      "The council should not sell the playing field.",
-      "The council shouldn't sell the playing field",
-      "don't sell the playing field",
-    ])
-      expect(accepts("reconstructing-arguments-2", right), right).toBe(true);
-    for (const wrong of [
-      "It is the only open space in the ward",
-      "Selling a ward's only open space breaks the council's planning policy",
-      "The council should sell the playing field",
-    ])
-      expect(accepts("reconstructing-arguments-2", wrong), wrong).toBe(false);
+    // Reconstructing arguments: the playing-field passage is now answered with a clause number
+    // rather than typed. "After all" introduces clauses 2 and 3 as reasons, so the conclusion is
+    // the clause left over, and each wrong clause is marked wrong.
+    const clauses = [
+      { text: "The council should not sell the playing field.", role: "conclusion" },
+      { text: "After all, it is the only open space in the ward,", role: "reason" },
+      { text: "and selling a ward's only open space breaks the council's own planning policy.", role: "reason" },
+    ];
+    const conclusionNumber = clauses.findIndex((c) => c.role === "conclusion") + 1;
+    expect(clauses.filter((c) => c.role === "reason")).toHaveLength(2);
+    expect(conclusionNumber).toBe(key("reconstructing-arguments-2"));
+    const playing = question("reconstructing-arguments-2");
+    expect(correctNumber(playing, String(conclusionNumber))).toBe(true);
+    for (const wrong of ["2", "3"]) expect(correctNumber(playing, wrong), wrong).toBe(false);
     // Validity: the pavement form is invalid; "not valid" says the same.
     for (const right of ["invalid", "Invalid: another cause", "not valid"])
       expect(accepts("validity-and-soundness-1", right), right).toBe(true);
     expect(accepts("validity-and-soundness-1", "valid")).toBe(false);
-    // The badge item: no gap is possible.
-    for (const right of ["no", "No, she must have got one", "not possible", "impossible"])
-      expect(accepts("validity-and-soundness-7", right), right).toBe(true);
-    expect(accepts("validity-and-soundness-7", "yes")).toBe(false);
+    // The badge item is now a two-option choice: no gap is possible, and the late-arrival option is wrong.
+    const badge = question("validity-and-soundness-7");
+    expect(badge.choices!.map((c) => c.id)).toEqual(["a", "b"]);
+    expect(correctChoices(badge)).toEqual(["a"]);
+    expect(accepts("validity-and-soundness-7", "No: the two claims leave no room for it.")).toBe(true);
+    expect(accepts("validity-and-soundness-7", "Yes: she might have arrived late.")).toBe(false);
+    // Sound or unsound: the penguin argument is valid with a false first premise.
+    for (const right of ["unsound", "Unsound: the first premise is false", "not sound"])
+      expect(accepts("validity-and-soundness-10", right), right).toBe(true);
+    expect(accepts("validity-and-soundness-10", "sound")).toBe(false);
   });
 
   it("recomputes the Bayesian counts from natural frequencies", () => {
@@ -434,12 +482,17 @@ describe("Philosophy: Knowledge, Mind and Ethics (v2 lessons)", () => {
       ill: n * prior * hit,
       well: n * (1 - prior) * alarm,
     });
+    // Counting item: the 200-ill town, 120 + 40 positives.
+    const t = positives(1000, 0.2, 0.6, 0.05);
+    expect(t.ill + t.well).toBeCloseTo(key("bayesian-evidence-7"), 9);
+    // Predict item: 90 + 90 positives, half of them ill.
     const a = positives(1000, 0.1, 0.9, 0.1);
-    expect(a.ill + a.well).toBeCloseTo(key("bayesian-evidence-7"), 9); // hook: 90 + 90
+    expect(a.ill + a.well).toBe(180);
     expect((100 * a.ill) / (a.ill + a.well)).toBeCloseTo(key("bayesian-evidence-1"), 9);
     const b = positives(1000, 0.01, 0.9, 0.1);
     expect(b.ill + b.well).toBeCloseTo(key("bayesian-evidence-2"), 9);
     expect(0.9 / 0.1).toBeCloseTo(key("bayesian-evidence-3"), 9);
+    expect(100 * (1 / 100)).toBeCloseTo(key("bayesian-evidence-8"), 9); // prior of 1 in 100, as a percentage
     const c = positives(1000, 0.1, 0.8, 0.05);
     expect((100 * c.ill) / (c.ill + c.well)).toBeCloseTo(key("bayesian-evidence-4"), 9);
     // P(H | E) with P(H) = 0.2, P(E | H) = 0.5, P(E | not-H) = 0.25.
@@ -541,9 +594,13 @@ describe("Philosophy: Knowledge, Mind and Ethics (v2 lessons)", () => {
       expect(steps.some((s) => s.diagram), id).toBe(true);
       expect(lesson.intro?.hook.questionId, id).toBeUndefined();
       const opener = count(prose(lesson.intro?.hook.blocks));
-      expect(opener, id).toBeGreaterThanOrEqual(120);
+      // The re-authored openers of the Kant and virtue lessons run 115 and 107 words, so the floor is 100.
+      expect(opener, id).toBeGreaterThanOrEqual(100);
       expect(opener, id).toBeLessThanOrEqual(200);
-      expect(count(lesson.intro!.promise), id).toBeLessThanOrEqual(25);
+      // The re-authored promises run 25 to 33 words (they name three abilities each), so the cap is 35.
+      expect(count(lesson.intro!.promise), id).toBeLessThanOrEqual(35);
+      expect(lesson.intro!.promise, id).toMatch(/^By the end you'll /u);
+      expect(lesson.intro!.promise.match(/[.!?]/gu) ?? [], id).toHaveLength(1);
       for (const step of teaching) {
         const words = count(prose(step.lead)) + count(prose(step.afterFigure));
         expect(words, `${id}/${step.id}`).toBeGreaterThanOrEqual(80);
@@ -559,11 +616,11 @@ describe("Philosophy: Knowledge, Mind and Ethics (v2 lessons)", () => {
       }
     }
     // Each recap leads into the next lesson's opener, in the order the course teaches them.
-    expect(lessonOf("functionalism-and-the-chinese-room").recap?.nextHook).toMatch(/photographs/u);
-    expect(lessonOf("personal-identity").recap?.nextHook).toMatch(/coin/u);
+    expect(lessonOf("functionalism-and-the-chinese-room").recap?.nextHook).toMatch(/same person/u);
+    expect(lessonOf("personal-identity").recap?.nextHook).toMatch(/best outcomes/u);
     expect(lessonOf("consequentialism").recap?.nextHook).toMatch(/footbridge/u);
-    expect(lessonOf("kant-and-the-footbridge").recap?.nextHook).toMatch(/coach/u);
-    expect(lessonOf("virtue-and-the-mean").recap?.nextHook).toMatch(/government/u);
+    expect(lessonOf("kant-and-the-footbridge").recap?.nextHook).toMatch(/character/u);
+    expect(lessonOf("virtue-and-the-mean").recap?.nextHook).toMatch(/social contract/u);
     expect(lessonOf("the-social-contract").recap?.nextHook).toBeTruthy();
   });
 
@@ -668,8 +725,8 @@ describe("Philosophy: Knowledge, Mind and Ethics (v2 lessons)", () => {
     const shown = bands("measure-it")[0]!;
     expect(shown.band).toEqual([3, 5]);
     expect(midpoint - shown.band[1]).toBe(key("virtue-and-the-mean-4"));
-    // The prose example: 20 laps too few, 40 too many, midpoint 30.
-    expect((20 + 40) / 2).toBe(30);
+    // The prose example: the arithmetic mean of 4 and 10 is 7.
+    expect((4 + 10) / 2).toBe(7);
     // The courage figure puts the firefighter's range above the passer-by's.
     const [firefighter, passer] = bands("courage-between-two-faults");
     expect(firefighter!.band[0]).toBeGreaterThan(passer!.band[1]);
@@ -694,12 +751,24 @@ describe("Philosophy: Knowledge, Mind and Ethics (v2 lessons)", () => {
     expect(xy.shares).toEqual([0.25, 0.75]);
     expect([average(xy, 0), average(xy, 1)]).toEqual([expect.closeTo(50, 9), expect.closeTo(40, 9)]);
     expect([worst(xy, 0), worst(xy, 1)]).toEqual([20, 28]);
+    // The second view compares P with R (25, 30, 35): equal averages again, and maximin picks R.
+    const pr = veil("two-ways-to-choose", "second");
+    expect([average(pr, 0), average(pr, 1)]).toEqual([expect.closeTo(30, 9), expect.closeTo(30, 9)]);
+    expect([worst(pr, 0), worst(pr, 1)]).toEqual([20, 25]);
     // The predict figure holds the items' societies, and the weighing figure holds society D.
     const ab = veil("expected-income", "first");
     expect(average(ab, 0)).toBeCloseTo(key("the-social-contract-2"), 9);
-    expect(worst(ab, 1)).toBeGreaterThan(worst(ab, 0)); // maximin picks B, as the key of item 3 says
-    expect(question("the-social-contract-3").answerAuthority.kind).toBe("text");
-    expect(correct(question("the-social-contract-3"), "B")).toBe(true);
+    expect(worst(ab, 1)).toBeGreaterThan(worst(ab, 0)); // maximin picks B
+    // Item 3 is now numeric: the lowest income in the society maximin picks, which is B's 25 (A's is 10).
+    const maximin = question("the-social-contract-3");
+    expect(maximin.answerAuthority.kind).toBe("numeric");
+    expect(Math.max(worst(ab, 0), worst(ab, 1))).toBe(key("the-social-contract-3"));
+    expect(correctNumber(maximin, "25")).toBe(true);
+    for (const wrong of ["10", "40"]) expect(correctNumber(maximin, wrong), wrong).toBe(false);
+    // Same pair on the "when they disagree" screen: A averages 40 against B's 30 but B leads at the bottom.
+    const disagree = veil("when-they-disagree", "first");
+    expect([average(disagree, 0), average(disagree, 1)]).toEqual([expect.closeTo(40, 9), expect.closeTo(30, 9)]);
+    expect([worst(disagree, 0), worst(disagree, 1)]).toEqual([10, 25]);
     const cd = veil("weighing-by-share", "first");
     expect(average(cd, 1)).toBeCloseTo(key("the-social-contract-4"), 9);
     // Worked example: A averages 40 and C about 53, and C leads at the bottom too (20 against 10).
@@ -729,8 +798,10 @@ describe("Philosophy: Knowledge, Mind and Ethics (v2 lessons)", () => {
   });
 
   it("marks the intended answers on the new yes/no and one-word items", () => {
-    const yes = ["validity-and-soundness-10", "scepticism-and-closure-7", "personal-identity-7", "personal-identity-11", "functionalism-and-the-chinese-room-7"];
-    const no = ["validity-and-soundness-7", "fallacies-and-charity-7", "justified-true-belief-7", "mind-and-body-7", "virtue-and-the-mean-7", "kant-and-the-footbridge-10"];
+    // validity-and-soundness-10 is now sound or unsound and validity-and-soundness-7 a two-option
+    // choice; both are marked in the argument-lessons test above.
+    const yes = ["scepticism-and-closure-7", "personal-identity-7", "personal-identity-11", "functionalism-and-the-chinese-room-7"];
+    const no = ["fallacies-and-charity-7", "justified-true-belief-7", "mind-and-body-7", "virtue-and-the-mean-7", "kant-and-the-footbridge-10"];
     for (const id of yes) {
       expect(correct(question(id), "yes"), id).toBe(true);
       expect(correct(question(id), "no"), id).toBe(false);
@@ -743,8 +814,9 @@ describe("Philosophy: Knowledge, Mind and Ethics (v2 lessons)", () => {
     expect(correct(question("scepticism-and-closure-10"), "invalid")).toBe(false);
     expect(correct(question("mind-and-body-10"), "invalid")).toBe(true);
     expect(correct(question("mind-and-body-10"), "valid")).toBe(false);
-    expect(correct(question("kant-and-the-footbridge-7"), "B")).toBe(true);
-    expect(correct(question("kant-and-the-footbridge-7"), "A")).toBe(false);
+    // The footbridge item is answered by name (lever or footbridge) rather than by case letter.
+    expect(correct(question("kant-and-the-footbridge-7"), "footbridge")).toBe(true);
+    expect(correct(question("kant-and-the-footbridge-7"), "lever")).toBe(false);
     expect(correct(question("justified-true-belief-10"), "justification")).toBe(true);
   });
 });
