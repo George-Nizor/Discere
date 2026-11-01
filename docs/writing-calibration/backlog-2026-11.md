@@ -102,7 +102,7 @@ should not repeat each other.
 ### Courses written from the curriculum (committed, not yet read in full by George)
 
 Maths Foundations, Logic and Reasoning, Probability and Statistics, Philosophy, Electronics
-Foundations, CS Basics, Psychology, and Economics: 68 lessons. Each was written by a Sonnet agent
+Foundations, CS Basics, Psychology, Economics and Astronomy: 80 lessons. Each was written by a Sonnet agent
 to `docs/writing-calibration/authoring-brief.md`. For each, the lead (Opus):
 
 - ran `scripts/voice-check.ts` (0 errors);
@@ -117,9 +117,9 @@ Review pages are in `docs/writing-calibration/courses/`.
 A cross-check of every reused question id against its earlier answer
 caught dropped units (now restored); repeat it for each new course.
 
-### Still to write (12 courses)
+### Still to write (11 courses)
 
-Astronomy, Biology, Calculus, Chemistry, Engineering, English, Geometry, Linear algebra, Physics,
+Biology, Calculus, Chemistry, Engineering, English, Geometry, Linear algebra, Physics,
 Python, Rust and SQL. Run one Sonnet agent per course with the prompt pattern used for the eight
 above (follow the authoring brief; include schema defaults; voice from `PRIMARY_VOICE` in
 `scripts/voice-rewrite.mjs`). Then:
