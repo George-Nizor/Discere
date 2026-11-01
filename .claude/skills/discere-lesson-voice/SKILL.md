@@ -73,6 +73,18 @@ a question, an argument or an interpretation.
 7. **No verdict words in feedback.** State the fact and the reason in one or two connected
    sentences. Do not write "Correct!", "Not quite", "Great job" or "Here's the explanation".
 
+8. **Talk to the reader.** Address the learner as "you" (and, in voice B, "we"), as the approved
+   examples do. Do not slide into the impersonal passive ("a number was tested", "machines were
+   run"). Every sentence should be one you could say aloud to a learner beside you.
+9. **Concrete before abstract.** Open a screen on the actual thing (an equation, a number, a
+   star), not on a generalisation about it ("Arithmetic often runs in a direction that hides the
+   number being sought" is the rejected style). Say each point once: a paragraph that restates the
+   previous one should be cut.
+
+The first full-course pilot (Maths Foundations, Sonnet, November 2026) was rejected as "kind of
+bad to read" next to the approved examples, because it was stiff, impersonal, abstract in places
+and repetitive. Principles 8 and 9 are the correction.
+
 ## Each kind of text
 
 - **Opener.** One or two paragraphs. Start from the subject's own material or, in voice B, the

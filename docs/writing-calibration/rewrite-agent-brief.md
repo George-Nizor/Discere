@@ -19,6 +19,9 @@ for the "About this course" paragraphs.
   `emphasisAllowed`.
 - Each field is one paragraph, or a single line such as a headline. Rewrite it in place. Within one
   screen you may move material between adjacent paragraphs, but every field must stay non-empty.
+- Question prompts (`questions.N.prompt`) are editable, so that a question can match the new prose
+  (for example, removing a framing story). Keep the question asking exactly the same thing, with the
+  same numbers, so that its choices and answer still fit it exactly.
 - `context` tells you each step's kind, its question (prompt, choices, answer authority and
   misconception matches) and its worked lines, so that your feedback and reveals stay accurate.
   Never put a step's answer into a lead or headline that the learner sees before answering.

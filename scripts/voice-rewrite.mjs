@@ -89,6 +89,8 @@ function proseFields(bundle, lessonIndex) {
   ]);
   bundle.questions.forEach((question, q) => {
     if (!questionIds.has(question.id)) return;
+    // The prompt's wording may change; its numbers, choices and answer authority may not.
+    fields.push({ path: `questions.${q}.prompt`, emphasis: true });
     if (question.onCorrect) fields.push({ path: `questions.${q}.onCorrect`, emphasis: false });
     (question.misconceptions ?? []).forEach((_m, m) =>
       fields.push({ path: `questions.${q}.misconceptions.${m}.feedback`, emphasis: false }),
