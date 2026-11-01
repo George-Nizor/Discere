@@ -6,6 +6,8 @@ This file is the operating contract for coding agents working in this repository
 
 Every learning beat should contain one useful visual, one direct explanation, one meaningful interaction, and one learner response. Keep the interface visually focused and keep generated prose natural.
 
+Learner-facing prose follows the `discere-lesson-voice` skill (`.claude/skills/`), and the tutor follows `discere-tutor-voice`. Read the skill and its reference examples before writing or rewriting any lesson text.
+
 ## Information economy
 
 Every visible word must do work.
@@ -36,7 +38,7 @@ A reusable test is: **Does the screen say something the interface already makes 
 - Do not add OpenAI API calls. The intended ChatGPT integration is a companion or MCP adapter that uses the user's supported ChatGPT surface.
 - Keep authoritative answers on the server. Learner-facing lesson payloads must omit answer keys.
 - Enforce Coach, Assisted, Direct, and Exam permissions on the server.
-- Run generated prose through `@discere/writing-engine` before accepting it.
+- Write learner prose to `.claude/skills/discere-lesson-voice`. `@discere/writing-engine` still protects facts and hidden answers, but its style rules do not override the skill.
 - Preserve numbers, equations, units, labels, and citations during style edits.
 - Prefer deterministic SVG or simulation-backed visuals for technical facts.
 - Treat generated images as reviewed illustrations, never as the authority for a technical diagram.

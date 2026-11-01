@@ -16,7 +16,10 @@ is written down so it can be picked up in depth later.
 
 ## 1. Lesson voice (in progress, top priority)
 
-Decisions so far (round 3):
+Decisions so far (rounds 3 to 5). The voices are stored as skills in `.claude/skills/discere-lesson-voice` (with approved examples) and `.claude/skills/discere-tutor-voice`.
+
+- Round 4 result: A was best for astronomy, with B a good variation; B was clearly better for philosophy; A and B were equal for psychology. The rule for assigning voices to courses is in the lesson-voice skill.
+- The voice C tutor was rejected as slop. The trial replacement is voice B made more concise, with lists for steps (`round-5-tutor.html`).
 
 - Voice A ("blend, led by the book", `round-3-voices.html`) is the default lesson voice.
 - Voice B ("blend, led by the lecturer") is the alternative, and a candidate primary voice for less
