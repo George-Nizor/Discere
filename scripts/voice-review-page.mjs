@@ -75,8 +75,11 @@ now.lessons.forEach((lesson, i) => {
   const id = `l${i + 1}`;
   tabs.push([id, `${i + 1}. ${lesson.title}`]);
   const screens = [];
+  const shown = new Set(lesson.steps.map((st) => st.checkQuestionId).filter(Boolean));
   if (lesson.intro) {
-    screens.push(`<div class="screen"><h2 class="kind">Opener</h2><div class="prose">${blocks(lesson.intro.hook.blocks)}<p class="promise">${rich(lesson.intro.promise)}</p></div>${was.intro ? old(blocks(was.intro.hook.blocks) + `<p class="promise">${rich(was.intro.promise)}</p>`) : ""}</div>`);
+    const hookQ = lesson.intro.hook.questionId ? qById(now, lesson.intro.hook.questionId) : null;
+    if (hookQ) shown.add(hookQ.id);
+    screens.push(`<div class="screen"><h2 class="kind">Opener</h2><div class="prose">${blocks(lesson.intro.hook.blocks)}${questionHtml(hookQ)}<p class="promise">${rich(lesson.intro.promise)}</p></div>${was.intro ? old(blocks(was.intro.hook.blocks) + `<p class="promise">${rich(was.intro.promise)}</p>`) : ""}</div>`);
   }
   lesson.steps.forEach((step, s) => {
     const w = was.steps.find((x) => x.id === step.id);
@@ -98,6 +101,9 @@ now.lessons.forEach((lesson, i) => {
       blocks(w.lead) + blocks(w.afterFigure) + oldQuestion(wq) + blocks(w.reveal);
     screens.push(`<div class="screen"><h2 class="kind">${KIND[step.kind] ?? step.kind}</h2><div class="prose">${body}</div>${old(oldBody)}</div>`);
   });
+  const checks = (lesson.questionIds ?? []).filter((qid) => !shown.has(qid)).map((qid) => qById(now, qid)).filter(Boolean);
+  if (checks.length)
+    screens.push(`<div class="screen"><h2 class="kind">Skill check</h2><div class="prose">${checks.map(questionHtml).join("")}</div></div>`);
   if (lesson.recap) {
     screens.push(`<div class="screen"><h2 class="kind">Recap</h2><div class="prose"><h3 class="headline">${rich(lesson.recap.keyIdea)}</h3>${blocks(lesson.recap.blocks)}${lesson.recap.nextHook ? `<p class="next">${rich(lesson.recap.nextHook)}</p>` : ""}</div>${!was.recap ? "" : old(`<h3 class="headline">${rich(was.recap.keyIdea)}</h3>${blocks(was.recap.blocks)}${was.recap.nextHook ? `<p>${rich(was.recap.nextHook)}</p>` : ""}`)}</div>`);
   }
