@@ -211,9 +211,11 @@ function apply(course) {
   for (const problem of problems) console.log(`  ${problem}`);
 }
 
-const [command, course] = process.argv.slice(2);
-if (!course || !["extract", "apply"].includes(command)) {
-  console.error("Usage: node scripts/voice-rewrite.mjs extract|apply <course-id>");
-  process.exit(1);
+if (import.meta.url === `file://${process.argv[1]}`) {
+  const [command, course] = process.argv.slice(2);
+  if (!course || !["extract", "apply"].includes(command)) {
+    console.error("Usage: node scripts/voice-rewrite.mjs extract|apply <course-id>");
+    process.exit(1);
+  }
+  (command === "extract" ? extract : apply)(course);
 }
-(command === "extract" ? extract : apply)(course);
