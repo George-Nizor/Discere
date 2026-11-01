@@ -56,8 +56,10 @@ export function TimelineTrack({ activity, year }: { activity: TimelineActivity; 
       <div aria-live="polite" className="timeline-latest">
         {latest ? (
           <>
-            <p className="eyebrow">
-              {formatTimelineYear(latest.year)} · {latest.label}
+            <p>
+              <strong>
+                {formatTimelineYear(latest.year)}, {latest.label}
+              </strong>
             </p>
             <p>{latest.detail}</p>
           </>

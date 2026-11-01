@@ -66,7 +66,7 @@ it("offers the available mixed check as the final lesson's next action", async (
       nextLesson={null}
     />,
   );
-  expect(await screen.findByRole("link", { name: "Start Bring it together" })).toHaveAttribute(
+  expect(await screen.findByRole("link", { name: "Start the check" })).toHaveAttribute(
     "href",
     "/courses/maths-foundations/checks/mixed-challenge",
   );
@@ -87,7 +87,7 @@ it("uses the roadmap while the server still requires earlier lessons", async () 
     "href",
     "/courses/maths-foundations",
   );
-  expect(screen.queryByRole("link", { name: /Start Bring/ })).not.toBeInTheDocument();
+  expect(screen.queryByRole("link", { name: "Start the check" })).not.toBeInTheDocument();
 });
 it("resumes an existing mixed check without creating another session", async () => {
   setup("in_progress");
@@ -99,7 +99,7 @@ it("resumes an existing mixed check without creating another session", async () 
       nextLesson={null}
     />,
   );
-  expect(await screen.findByRole("link", { name: "Continue Bring it together" })).toHaveAttribute(
+  expect(await screen.findByRole("link", { name: "Continue the check" })).toHaveAttribute(
     "href",
     "/courses/maths-foundations/checks/mixed-challenge",
   );
@@ -137,6 +137,6 @@ it("refreshes a recently cached locked check after the final lesson", async () =
       </MemoryRouter>
     </QueryClientProvider>,
   );
-  expect(await screen.findByRole("link", { name: "Start Bring it together" })).toBeInTheDocument();
+  expect(await screen.findByRole("link", { name: "Start the check" })).toBeInTheDocument();
   client.clear();
 });

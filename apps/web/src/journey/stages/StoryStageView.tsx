@@ -4,7 +4,6 @@ import type {
   LearnerStep,
   LearnerWorkedStep,
   LessonFeedbackRequest,
-  LessonStepKind,
 } from "@discere/contracts";
 import { ArrowRight, ChevronDown } from "lucide-react";
 import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
@@ -28,7 +27,7 @@ import { StoryVisual } from "./StoryVisual.js";
 
 /**
  * Brings the top of a new screen under the header. The canvas is the scroll container, so a
- * step taller than the window opens at its eyebrow, never pre-scrolled past its question
+ * step taller than the window opens at its top, never pre-scrolled past its question
  * (audit M3). The window is reset too, for layouts where the page itself scrolls.
  */
 export function scrollStageToTop(): void {
@@ -41,23 +40,6 @@ export function scrollStageToTop(): void {
       // jsdom does not implement scrolling; nothing to bring into view there.
     }
   }
-}
-
-const KIND_LABELS: Partial<Record<LessonStepKind, string>> = {
-  explore: "Explore",
-  predict: "Predict",
-  explain: "New idea",
-  worked_example: "Worked example",
-  faded_example: "Your turn, with help",
-  try: "Try it",
-  transfer: "Use it",
-};
-
-/** "3 of 7 · Try it" for a v2 step; "Step 2 of 4 · <old heading>" for a legacy one. */
-function eyebrowFor(step: LearnerStep, position: number, total: number, v2: boolean): string {
-  const label = v2 ? (step.eyebrow ?? KIND_LABELS[step.kind]) : step.eyebrow;
-  const count = v2 ? `${position} of ${total}` : `Step ${position} of ${total}`;
-  return label ? `${count} · ${label}` : count;
 }
 
 /** The attempt policy a step kind asks for (spec §3.4). */
@@ -224,21 +206,15 @@ function WorkedLines({
 }
 
 /**
- * One question-led screen, in the order the spec sets (§4.3): eyebrow, lead, headline, figure,
+ * One question-led screen, in the order the spec sets (§4.3): lead, headline, figure,
  * response, with the verdict in the footer. An `explain` screen puts its key idea first.
  */
 function StepScreen({
   step,
-  position,
-  total,
-  v2,
   context,
   onReady,
 }: {
   step: LearnerStep;
-  position: number;
-  total: number;
-  v2: boolean;
   context: LessonFeedbackRequest | undefined;
   onReady: () => void;
 }) {
@@ -263,13 +239,11 @@ function StepScreen({
     }
   }, [ready, onReady]);
 
-  const eyebrow = eyebrowFor(step, position, total, v2);
   // A worked or explain screen keeps its headline; its question is then secondary.
   const headline = step.headline;
   const figureAnswered = hasLines ? linesState.blanksDone : questionReady;
   return (
     <article className="step-screen" data-kind={step.kind}>
-      <p className="step-eyebrow">{eyebrow}</p>
       {headline ? (
         <h1 className="step-headline">
           <InlineRichText text={headline} />
@@ -432,9 +406,6 @@ export function StoryStageView({
         <StepScreen
           key={active.id}
           step={active}
-          position={activeIndex + 1}
-          total={steps.length}
-          v2={v2}
           context={context(active.id)}
           onReady={markSolved(active.id)}
         />
@@ -479,9 +450,6 @@ function LegacyProseStory({
   return (
     <div className={hasVisual ? "story story-split" : "story"}>
       <div className="story-flow">
-        <p className="story-progress" aria-live="polite">
-          Step {activeIndex + 1} of {steps.length}
-        </p>
         <ol className="story-steps">
           {views
             .filter((view) => view.active)

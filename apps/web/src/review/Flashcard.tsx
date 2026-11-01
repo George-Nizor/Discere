@@ -22,12 +22,13 @@ const RATINGS: Array<{ id: ReviewRating; label: string; meaning: string }> = [
 
 /**
  * The back stays server-side until a response is committed or the learner chooses a reveal.
- * Ratings follow the explanation; the server decides whether recall happened without help.
+ * A numeric card is typed and marked; a worded card is recalled in the head, revealed and
+ * rated by the learner, since no keyword match can fairly mark free wording.
  */
 export function Flashcard({
   sessionId,
   front,
-  conceptTitles = [],
+  recall = "typed",
   position,
   total,
   onRated,
@@ -37,7 +38,9 @@ export function Flashcard({
 }: {
   sessionId: string;
   front: string;
+  /** Kept for callers that still pass it; the card itself shows only its question. */
   conceptTitles?: string[] | undefined;
+  recall?: "typed" | "self";
   position: number;
   total: number;
   /** `recalled` is the server's verdict on the typed recall: true, false, or null when unmarked. */
@@ -117,9 +120,10 @@ export function Flashcard({
     setBusy(true);
     setFailure(null);
     try {
+      const recalled = recall === "self" ? rating !== "again" : correct === true;
       const rated = await rateReviewSession(sessionId, {
         rating,
-        recalled: correct === true && mode !== "direct",
+        recalled: recalled && mode !== "direct",
       });
       setResult(rated);
       if ((rated.xpGained ?? 0) > 0) {
@@ -131,7 +135,7 @@ export function Flashcard({
       void queryClient.invalidateQueries({ queryKey: queryKeys.study });
       void queryClient.invalidateQueries({ queryKey: queryKeys.home });
       void queryClient.invalidateQueries({ queryKey: queryKeys.reviewHome });
-      onRated(rated, correct);
+      onRated(rated, recall === "self" ? recalled : correct);
     } catch (error) {
       setFailure(errorMessage(error, "The rating could not be saved."));
     } finally {
@@ -161,10 +165,6 @@ export function Flashcard({
         </span>
       </div>
 
-      {conceptTitles.length > 0 ? (
-        <p className="flashcard-concepts">{conceptTitles.join(" · ")}</p>
-      ) : null}
-
       <div
         className={`flashcard${back ? " is-revealed" : ""}${correct === true ? " is-correct" : correct === false ? " is-incorrect" : ""}`}
       >
@@ -175,7 +175,7 @@ export function Flashcard({
         >
           {back ?? front}
         </p>
-        {!back && response === null ? (
+        {recall === "self" ? null : !back && response === null ? (
           <div className="flashcard-response">
             <label htmlFor="recall-response">Your answer</label>
             <textarea
@@ -210,7 +210,7 @@ export function Flashcard({
 
       {!back ? (
         <div className="button-row flashcard-actions">
-          {response === null ? (
+          {recall === "typed" && response === null ? (
             <button
               className="button button-primary"
               disabled={busy || !draft.trim()}
@@ -220,10 +220,10 @@ export function Flashcard({
               Check
             </button>
           ) : null}
-          {mode !== "exam" || response !== null ? (
+          {recall === "self" || mode !== "exam" || response !== null ? (
             <button
               aria-busy={busy}
-              className={`button ${response === null ? "button-quiet" : "button-primary"} flashcard-reveal`}
+              className={`button ${recall === "typed" && response === null ? "button-quiet" : "button-primary"} flashcard-reveal`}
               disabled={busy}
               onClick={() => void reveal()}
               type="button"
@@ -232,7 +232,7 @@ export function Flashcard({
               Reveal answer
             </button>
           ) : null}
-          {response === null && draft.trim() ? (
+          {recall === "typed" && response === null && draft.trim() ? (
             <p className="flashcard-reveal-note">Revealing checks what you typed first.</p>
           ) : null}
           {/* Only the front is ever spoken; the back is not in the browser until it is revealed. */}

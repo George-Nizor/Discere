@@ -22,7 +22,6 @@ function AssessmentBody({ assessment }: { assessment: EssayAssessmentResponse })
   if (!detail) return null;
   return (
     <div className="assessment-body">
-      <p className="eyebrow">Judgement: {detail.assessment.replaceAll("_", " ")}</p>
       <p>{detail.summary}</p>
       {detail.firstMeaningfulError ? (
         <p>
@@ -34,7 +33,7 @@ function AssessmentBody({ assessment }: { assessment: EssayAssessmentResponse })
       </p>
       {detail.uncertainty.length > 0 ? (
         <div>
-          <p className="eyebrow">Stated uncertainty</p>
+          <h3 className="panel-subhead">The tutor wasn’t sure about</h3>
           <ul className="plain-list">
             {detail.uncertainty.map((item) => (
               <li key={item}>{item}</li>
@@ -44,7 +43,7 @@ function AssessmentBody({ assessment }: { assessment: EssayAssessmentResponse })
       ) : null}
       {assessment.issues.length > 0 ? (
         <div>
-          <p className="eyebrow">Accountability findings</p>
+          <h3 className="panel-subhead">Worth checking</h3>
           <ul className="plain-list">
             {assessment.issues.map((issue) => (
               <li key={`${issue.field}-${issue.code}`}>

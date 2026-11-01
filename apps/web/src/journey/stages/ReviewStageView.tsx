@@ -63,6 +63,7 @@ export function ReviewStageView({
         <Flashcard
           key={session.sessionId}
           front={session.card.front}
+          recall={session.card.recall}
           onRated={() => setRated(true)}
           position={index + 1}
           sessionId={session.sessionId}

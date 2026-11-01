@@ -890,6 +890,13 @@ export const FlashcardRecordSchema = z
     /** The question this card rehearses, when it was written alongside one. */
     questionId: z.string().min(1).optional(),
     answerAuthority: AnswerAuthoritySchema.optional(),
+    /**
+     * `self`: the learner recalls the answer, reveals the back and rates themselves, with no
+     * typed answer marked. Required when a worded card asks for an explanation rather than a
+     * name, since keyword matching cannot fairly mark free wording. A numeric card is always
+     * typed; a worded card without this flag is a naming card and is typed.
+     */
+    recall: z.enum(["typed", "self"]).optional(),
   })
   .strict();
 export type FlashcardRecord = z.infer<typeof FlashcardRecordSchema>;

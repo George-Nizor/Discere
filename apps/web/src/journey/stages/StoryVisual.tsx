@@ -67,7 +67,6 @@ export function StoryVisual({
         <img alt={visual.alt} src={visual.src} />
       ) : (
         <div className="visual-described">
-          <p className="eyebrow">Described in words</p>
           <p>{visual.alt}</p>
           <p className="muted">{visual.reason}</p>
         </div>

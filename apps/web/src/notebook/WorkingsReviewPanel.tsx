@@ -162,7 +162,7 @@ export function WorkingsReviewPanel({
 
           {result.accepted ? (
             <section className="workings-transcription">
-              <p className="eyebrow">What the tutor read from your page</p>
+              <h3 className="panel-subhead">What the tutor read from your page</h3>
               <p>{result.review.transcription || "Nothing legible."}</p>
               <p className="muted">
                 Read with {Math.round(result.review.transcriptionConfidence * 100)}% confidence.
@@ -173,7 +173,7 @@ export function WorkingsReviewPanel({
 
           {result.review.uncertainty.length > 0 ? (
             <section className="workings-uncertainty">
-              <p className="eyebrow">The tutor was unsure about</p>
+              <h3 className="panel-subhead">The tutor wasn’t sure about</h3>
               <ul>
                 {result.review.uncertainty.map((item) => (
                   <li key={item}>{item}</li>
@@ -184,7 +184,7 @@ export function WorkingsReviewPanel({
 
           {result.issues.length > 0 ? (
             <section className="workings-issues">
-              <p className="eyebrow">Accountability findings</p>
+              <h3 className="panel-subhead">Worth checking</h3>
               <ul>
                 {result.issues.map((issue) => (
                   <li key={`${issue.field}:${issue.code}`}>

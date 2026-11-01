@@ -3,7 +3,18 @@ import type { CompletionStage } from "@discere/contracts";
 import { levelProgress, levelTitle } from "@discere/progression-engine";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight } from "lucide-react";
-import { Award, BookCheck, Flame, Gem, Gift, Lightbulb, Repeat2, Sparkles, Star, Target } from "../../brand/icon-set.js";
+import {
+  Award,
+  BookCheck,
+  Flame,
+  Gem,
+  Gift,
+  Lightbulb,
+  Repeat2,
+  Sparkles,
+  Star,
+  Target,
+} from "../../brand/icon-set.js";
 import { type CSSProperties, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router";
 import { getLessonResult } from "../../api/endpoints.js";
@@ -278,13 +289,12 @@ export function CompletionStageView({
       <div className="button-row">
         {nextLesson ? (
           <Link className="button button-primary" to={paths.lesson(courseId, nextLesson.id)}>
-            Start {nextLesson.title}
+            Next lesson
             <ArrowRight aria-hidden="true" size={16} />
           </Link>
         ) : nextCheck ? (
           <Link className="button button-primary" to={checkPath(courseId, nextCheck.id)}>
-            {nextCheck.status === "in_progress" ? "Continue " : "Start "}
-            {nextCheck.title}
+            {nextCheck.status === "in_progress" ? "Continue the check" : "Start the check"}
             <ArrowRight aria-hidden="true" size={16} />
           </Link>
         ) : (

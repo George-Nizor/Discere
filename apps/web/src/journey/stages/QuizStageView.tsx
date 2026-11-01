@@ -111,7 +111,6 @@ function LegacyQuizStageView({
 
       {revealed ? (
         <section className="revealed-answer">
-          <p className="eyebrow">Worked answer</p>
           <p>{revealed.answer}</p>
         </section>
       ) : null}

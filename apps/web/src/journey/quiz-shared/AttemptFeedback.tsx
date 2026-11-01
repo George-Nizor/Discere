@@ -13,9 +13,6 @@ export function HintLadder({ hints }: { hints: readonly HintResponse[] }) {
     <ol aria-label="Hints used" className="hint-ladder">
       {hints.map((hint) => (
         <li key={hint.level}>
-          <p className="eyebrow">
-            Hint {hint.level} of {hint.level + hint.remaining}
-          </p>
           <p>{hint.hint}</p>
         </li>
       ))}

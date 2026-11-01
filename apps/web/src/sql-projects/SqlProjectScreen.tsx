@@ -266,7 +266,6 @@ function SqlTaskScreen({
       </header>
       <RuntimeSetup runtime="python" />
       <div className="sql-task-heading">
-        <span className="sql-eyebrow">{session.mode} · SQLite</span>
         {session.mode === "exam" ? (
           <button
             className="text-button sql-end-exam"
@@ -589,7 +588,6 @@ export function SqlProjectSessionScreen() {
         <LearningCompanion />
         <Check size={52} aria-hidden="true" />
       </div>
-      <span className="sql-eyebrow">Project complete</span>
       <h1>{session.title}</h1>
       <p>
         {results.filter((r) => r.correct).length} of {results.length} queries matched all datasets.{" "}
