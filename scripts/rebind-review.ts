@@ -27,6 +27,8 @@ const validation = validateCourseBundle(bundle);
 const errors = validation.issues.filter((issue) => issue.severity === "error");
 if (errors.length) throw new Error(`${errors.length} validation errors; fix them first.`);
 const REASONS: Record<string, string> = {
+  TERM_BEFORE_INTRODUCTION:
+    "The lesson opener names its subject (for example 'enzyme' or 'mitosis') before the teaching screen that defines it; the opener sets up the question the lesson answers, and the definition follows.",
   UNREACHABLE_CONTENT:
     "The curriculum-first rewrite no longer asks this question. Its id stays so learner history that points at it still resolves.",
 };
