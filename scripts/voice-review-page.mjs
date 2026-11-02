@@ -68,7 +68,7 @@ const tabs = [];
 const panels = [];
 if (now.course.introduction) {
   tabs.push(["about", "About this course"]);
-  panels.push(`<section class="panel" id="about" role="tabpanel"><div class="screen"><h2 class="kind">About this course</h2><div class="prose">${now.course.introduction.paragraphs.map((p) => `<p>${rich(p)}</p>`).join("")}<ul>${now.course.introduction.outcomes.map((o) => `<li>${rich(o)}</li>`).join("")}</ul></div>${old(before.course.introduction.paragraphs.map((p) => `<p>${rich(p)}</p>`).join(""))}</div></section>`);
+  panels.push(`<section class="panel" id="about" role="tabpanel"><div class="screen"><h2 class="kind">About this course</h2><div class="prose">${now.course.introduction.paragraphs.map((p) => `<p>${rich(p)}</p>`).join("")}<ul>${now.course.introduction.outcomes.map((o) => `<li>${rich(o)}</li>`).join("")}</ul></div>${before.course.introduction ? old(before.course.introduction.paragraphs.map((p) => `<p>${rich(p)}</p>`).join("")) : ""}</div></section>`);
 }
 now.lessons.forEach((lesson, i) => {
   const was = before.lessons.find((l) => l.id === lesson.id) ?? { steps: [] };

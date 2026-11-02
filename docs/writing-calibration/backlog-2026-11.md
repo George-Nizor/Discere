@@ -141,3 +141,6 @@ Run the server suite only when no course is mid-write, because it loads every co
   because that file exists only on George's machine.
 - Flashcards were not rewritten; a few use terms the new lessons do not teach (noted in the agents'
   reports).
+- Rust Foundations was re-authored in the bundle, but `content/rust-foundations/authoring/course.ts`
+  still holds the old text, and `scripts/prepare-rust.ts` builds the bundle from it. Port the new
+  lessons into that file, or stop the script overwriting authored prose, before running it again.

@@ -25,7 +25,21 @@
     "subjects": [
       "Computer science",
       "Programming"
-    ]
+    ],
+    "introduction": {
+      "paragraphs": [
+        "Rust is a systems programming language whose compiler examines a program far more thoroughly than most before it will let the program run, and a beginner meets that compiler early and often. This course treats it as a teacher: the programs are short, you say what each one does before running it, and when rustc refuses one, its message shows which rule was broken and usually how to mend it.",
+        "The first lesson covers how a program prints values, how a name is attached to a value with let, and why Rust keeps a name unchangeable unless it is declared with mut. The second covers whole and decimal number types, the rule that stops them being mixed by accident, and functions that take and return values of stated types. Every exercise that asks for code is compiled and run for real, and the same tools are open to you in the playground and in the Rust projects."
+      ],
+      "outcomes": [
+        "You'll be able to read a short Rust program and say what it prints.",
+        "You'll be able to name a value with let and decide whether it may change with mut.",
+        "You'll be able to choose between i32 and f64 and predict the result of dividing whole numbers.",
+        "You'll be able to write a function with typed parameters and a return type."
+      ],
+      "prerequisites": "Some programming in another language helps, but nothing beyond everyday arithmetic is assumed.",
+      "length": "2 lessons, about 10 to 12 minutes each"
+    }
   },
   "modules": [
     {
@@ -73,22 +87,56 @@
           "id": "main-and-println",
           "kind": "explain",
           "blocks": [],
-          "headline": "A Rust program starts at fn main and runs its lines from top to bottom.",
+          "headline": "A Rust program starts at fn main, and println! prints a line of text.",
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The code inside fn main() { } runs first. println! prints one line. Each {} in its text is replaced by the next value after the comma."
+              "text": "Every Rust program that you run begins at a function called **fn main**, whose body is the pair of braces that follows it. The lines inside are carried out in order from the top, and when the last one has finished the program ends, which is why the programs in this lesson share the same outer shape and differ only in what is written between the braces."
             },
             {
-              "kind": "callout",
-              "tone": "key",
-              "text": "The ! marks println! as a macro. You call it like a function, but its name always ends in !."
+              "kind": "paragraph",
+              "text": "The line that produces output is **println!**, which prints its text and then starts a new line. The exclamation mark shows that println! is a *macro* and not an ordinary function, a difference that does not matter yet, and the text it prints is written between double quotation marks. Wherever the text contains a pair of braces, Rust fills the gap with one of the values listed after the text, taking the values in order, so that the first {} receives the first value, the second {} the second, and so on."
+            }
+          ],
+          "afterFigure": [
+            {
+              "kind": "paragraph",
+              "text": "In the figure the three pairs of braces are filled by 6, 7 and 6 * 7. The last of these was never written out as a number, because Rust works out 6 * 7 before printing, so **any calculation placed after the text is carried out first and its result is printed**. Both the order of the values and this use of a calculation are needed in the next two exercises."
             }
           ],
           "reveal": [],
           "introducesTerms": [
             "fn main",
             "println!"
+          ],
+          "visualStateId": "",
+          "checkQuestionId": "",
+          "activityId": "",
+          "diagram": {
+            "type": "rust_program",
+            "runtime": "Rust 1.93.1",
+            "code": "fn main() {\n    println!(\"{} times {} is {}\", 6, 7, 6 * 7);\n}",
+            "outcome": {
+              "kind": "output",
+              "stdout": "6 times 7 is 42"
+            }
+          }
+        },
+        {
+          "id": "swap-values",
+          "kind": "try",
+          "blocks": [],
+          "lead": [
+            {
+              "kind": "paragraph",
+              "text": "The program below prints 2 and 5. Rust fills the braces in the order in which the values are listed, and the exercise is to make the same text come out with the numbers the other way round."
+            }
+          ],
+          "reveal": [
+            {
+              "kind": "paragraph",
+              "text": "Matching braces to values by position works for two values and becomes tedious for six, which is one reason the next idea is to give each value a name."
+            }
           ],
           "visualStateId": "",
           "checkQuestionId": "print-and-bind-swap",
@@ -101,7 +149,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Now write a whole program yourself. Run it as often as you like before you check it."
+              "text": "This time the body of main is empty, so the lines are yours to write. Each println! ends its line, which means that two lines of output need two calls."
             }
           ],
           "reveal": [],
@@ -111,18 +159,57 @@
         },
         {
           "id": "let-names-a-value",
+          "kind": "explain",
+          "blocks": [],
+          "headline": "let gives a value a name, and later lines can use the name in place of the value.",
+          "lead": [
+            {
+              "kind": "paragraph",
+              "text": "Writing 3 + 4 after the text is enough for a single sum, but a program soon needs the same value in several places, and repeating a number would mean changing every copy whenever the number changed. Rust avoids this by letting you attach a name to a value with **let**: the line let price = 4; creates the name price, gives it the value 4, and from that line onwards price can be written wherever 4 could."
+            },
+            {
+              "kind": "paragraph",
+              "text": "A name can be defined from other names, because the right-hand side of a let is a calculation like any other. In the figure, cost is given the value price * quantity, which Rust works out when it reaches that line, and the final println! then prints all three names. Inside the braces of the text a name may be written directly, as in {cost}, and Rust fills the gap with the value that the name stands for."
+            }
+          ],
+          "afterFigure": [
+            {
+              "kind": "paragraph",
+              "text": "Each line can use only names that were created *above* it, because the program is carried out from the top and a name that has not yet been created has no value to offer. That is why cost, which depends on price and quantity, comes after both of them. A name made in this way is called a **variable**, although, as the next screens show, in Rust it does not vary unless you ask it to."
+            }
+          ],
+          "reveal": [],
+          "introducesTerms": [
+            "let",
+            "variable"
+          ],
+          "visualStateId": "",
+          "checkQuestionId": "",
+          "activityId": "",
+          "diagram": {
+            "type": "rust_program",
+            "runtime": "Rust 1.93.1",
+            "code": "fn main() {\n    let price = 4;\n    let quantity = 5;\n    let cost = price * quantity;\n    println!(\"{quantity} at {price} costs {cost}\");\n}",
+            "outcome": {
+              "kind": "output",
+              "stdout": "5 at 4 costs 20"
+            }
+          }
+        },
+        {
+          "id": "area-of-a-rectangle",
           "kind": "predict",
           "blocks": [],
           "lead": [
             {
               "kind": "paragraph",
-              "text": "let gives a value a name. Writing a name inside the braces, as in {area}, prints that variable."
+              "text": "Read the program from the top, keeping track of the value each name holds, and say what number follows area = in the output before running anything."
             }
           ],
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "Each let named a value, and later lines used the names. Rust worked out from 6 and 4 that these are whole numbers."
+              "text": "Edit the program and run it to check. Changing the 4 in the second line changes the answer without touching any other line, which is the advantage of keeping a value under one name."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -146,14 +233,17 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "This program tries to add 5 to score after creating it. Decide whether rustc accepts it, then run it to see what the compiler says."
+              "text": "Line 3 of this program tries to give score a second value with =. Read it as rustc, the Rust compiler, will, and decide whether the compiler accepts it."
             }
           ],
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "A variable made with plain let keeps its first value. Rust makes you say up front which values will change, so a reader knows where to look."
+              "text": "The message points at line 3 for the new assignment and at line 2 for the let that created score, because the fault lies in how the name was made. A name created with a plain let is **immutable**: it receives one value and keeps it, so that anyone reading let score = 10; can rely on score being 10 everywhere below that line."
             }
+          ],
+          "introducesTerms": [
+            "immutable"
           ],
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
@@ -170,19 +260,57 @@
           }
         },
         {
+          "id": "mut",
+          "kind": "explain",
+          "blocks": [],
+          "headline": "Writing mut after let allows a variable to be given a new value later.",
+          "lead": [
+            {
+              "kind": "paragraph",
+              "text": "The repair that rustc suggested is a single word. Writing the word **mut**, short for *mutable*, after let tells Rust at the moment a name is created that it will be given new values later, and with that permission an assignment such as lives = lives - 1 is accepted. The right-hand side is worked out first from the old value and the result then replaces it, so that after the assignment lives holds 2 and the 3 is gone."
+            },
+            {
+              "kind": "paragraph",
+              "text": "Rust asks for the permission at the start, and not for the change at the moment it happens, for a reason that grows with the size of a program. When every name is unchangeable unless it is marked, a reader can see at once which names are able to change, and the ones without mut can be set aside when hunting for a value that has gone wrong. The cost to the writer is one word."
+            }
+          ],
+          "afterFigure": [
+            {
+              "kind": "paragraph",
+              "text": "Only the creation of the variable is marked, and only once: the later assignments are plain lines such as lives = lives - 1, with no let and no mut. Writing let again would do something else, which is the subject of the last idea in this lesson."
+            }
+          ],
+          "reveal": [],
+          "introducesTerms": [
+            "mut"
+          ],
+          "visualStateId": "",
+          "checkQuestionId": "",
+          "activityId": "",
+          "diagram": {
+            "type": "rust_program",
+            "runtime": "Rust 1.93.1",
+            "code": "fn main() {\n    let mut lives = 3;\n    println!(\"{lives}\");\n    lives = lives - 1;\n    println!(\"{lives}\");\n}",
+            "outcome": {
+              "kind": "output",
+              "stdout": "3\n2"
+            }
+          }
+        },
+        {
           "id": "fix-it",
           "kind": "try",
           "blocks": [],
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Here is the same program. Make it compile. Run it first and read what rustc suggests."
+              "text": "The program from the last question is below, still with its error. The repair touches only one line, and the quickest way to find it is to run the program and read what rustc says."
             }
           ],
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "rustc often tells you the fix. Here it pointed at line 2 and suggested let mut score."
+              "text": "The edit was made on line 2, where the name is created, and not on line 3, where the change happens: the permission belongs to the let."
             }
           ],
           "visualStateId": "",
@@ -191,18 +319,56 @@
         },
         {
           "id": "shadowing",
+          "kind": "explain",
+          "blocks": [],
+          "headline": "A second let with the same name creates a new variable that hides the first.",
+          "lead": [
+            {
+              "kind": "paragraph",
+              "text": "A different value can also arrive under the same name without mut. If a program writes let amount = 4; and later let amount = amount * 3;, the second line is not an assignment to the first amount. It creates a *new* variable that happens to share the name, calculated from the old one, and from that line onwards the name refers to the new variable. This is called **shadowing**, because the new variable casts a shadow over the old one."
+            },
+            {
+              "kind": "paragraph",
+              "text": "Since the second amount is a new variable, nothing obliges it to resemble the first. In the figure it holds the number 12 and then, after a third let, the text twelve, which no assignment to a single variable could do, because an assignment must keep the type of value the variable was created with (the next lesson explains types properly). Shadowing is therefore the tool for building a value in stages, while mut suits a value that is updated again and again in place, such as a counter."
+            }
+          ],
+          "afterFigure": [
+            {
+              "kind": "paragraph",
+              "text": "Each let leaves the earlier variable unchanged and merely out of reach by name, whereas an assignment overwrites the one variable that exists. When it is unclear which of the two a line is, check whether the line begins with **let**."
+            }
+          ],
+          "reveal": [],
+          "introducesTerms": [
+            "shadowing"
+          ],
+          "visualStateId": "",
+          "checkQuestionId": "",
+          "activityId": "",
+          "diagram": {
+            "type": "rust_program",
+            "runtime": "Rust 1.93.1",
+            "code": "fn main() {\n    let amount = 4;\n    let amount = amount * 3;\n    println!(\"{amount}\");\n    let amount = \"twelve\";\n    println!(\"{amount}\");\n}",
+            "outcome": {
+              "kind": "output",
+              "stdout": "12\ntwelve"
+            }
+          }
+        },
+        {
+          "id": "shadow-level",
           "kind": "transfer",
           "blocks": [],
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A second let with the same name makes a new variable that hides the first. This is called shadowing, and it needs no mut."
+              "text": "The program below changes level twice with plain assignments, and rustc rejects both. The repair this time is to shadow level, not to make it mutable."
             }
           ],
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "Shadowing makes a new variable each time. mut changes the same one. Shadowing also lets the new variable have a different type."
+              "text": "Both approaches print 7, so the choice between them depends on the job: shadowing when each step produces a fresh value, possibly of another type, and mut when one variable is updated repeatedly."
             }
           ],
           "visualStateId": "",
@@ -210,7 +376,7 @@
           "activityId": ""
         }
       ],
-      "orientation": "Write a program that prints values, and choose which of its variables may change.",
+      "orientation": "Read and write small programs that print values, and decide which of their variables are allowed to change.",
       "visualStates": [],
       "visualKind": "none",
       "activityId": "",
@@ -243,7 +409,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "Here is a complete Rust program. You haven't learned any Rust yet, but try reading it anyway."
+              "text": "Here is a complete Rust program, and you can probably say what it prints without having been told a single rule of the language. Two names, apples and pears, are each given a number, and the last line writes out something calculated from them."
+            },
+            {
+              "kind": "paragraph",
+              "text": "Some of what you can see will be unfamiliar, such as the exclamation mark after println and the pair of braces, and those details are set out over the next few screens. The larger subject is how a program holds values: a name is attached to a value, the name is used wherever the value is needed, and Rust requires you to say *in advance* which names may change later. That requirement is the first thing that separates Rust from most languages you may have used, and it is the reason the compiler will sometimes refuse a program that looks perfectly reasonable."
             }
           ],
           "diagram": {
@@ -257,18 +427,22 @@
           },
           "questionId": "print-and-bind-hook"
         },
-        "promise": "By the end you'll write Rust that prints values, and you'll decide which variables may change.",
+        "promise": "By the end you'll be able to write a program that prints values, and say which of its variables may change.",
         "estimatedMinutes": 10
       },
       "recap": {
-        "keyIdea": "let names a value, and that value stays fixed unless you write let mut. A second let makes a new variable instead.",
+        "keyIdea": "A name made with let keeps its value unless it was made with let mut, and println! fills its braces with the values or names you give it.",
         "blocks": [
           {
             "kind": "paragraph",
-            "text": "You wrote your first two programs and fixed rustc's E0384 error twice: once with mut, once with shadowing."
+            "text": "A Rust program starts at fn main, and **println!** fills each pair of braces with the next value, or with a name written inside the braces. A name created with **let** keeps its value, and only one created with **let mut** may be assigned a new one later, whereas a second let with the same name makes a *new* variable and leaves the old one untouched."
+          },
+          {
+            "kind": "paragraph",
+            "text": "For a rejected assignment, rustc's message ends with the repair itself, so running the program is the quickest way to find out what is wrong with it. A name that never needs to change should be left without mut, because the missing word tells every later reader that its value can be trusted, and a [[shadowing|A second let that reuses a name and creates a new variable. Met earlier in this lesson.]] let is the way to build a value in stages when each stage is a new variable."
           }
         ],
-        "nextHook": "So far Rust guessed every type. Next you'll write the types yourself and put a calculation in a function."
+        "nextHook": "The next lesson looks at the two kinds of number a variable can hold, whole numbers and decimals, and at putting a calculation inside a function of your own."
       },
       "calculator": "off",
       "taughtSkills": [
@@ -292,21 +466,31 @@
           "id": "integers-and-floats",
           "kind": "explain",
           "blocks": [],
-          "headline": "Every value has a type: i32 for whole numbers, f64 for numbers with a decimal point.",
+          "headline": "Rust has whole-number types and decimal types, and dividing one whole number by another gives a whole number.",
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Rust works out the type from the value. 7 is an i32, a 32-bit integer, and 7.0 is an f64. Dividing two i32 values drops the remainder. Dividing two f64 values keeps it."
+              "text": "Every value in a Rust program has a **type**, which says what kind of value it is and therefore what can be done with it. Numbers come in two families that are used constantly. The whole numbers, written with no decimal point, have types such as **i32**, a 32-bit integer that holds any whole number from about −2 billion to +2 billion, and the numbers with a decimal point have types such as **f64**, a 64-bit floating-point number. When you write a number and nothing else in the program says which type it has, Rust chooses i32 for a whole number and f64 for a number with a decimal point."
+            },
+            {
+              "kind": "paragraph",
+              "text": "The distinction matters most for division. When both numbers are whole, the result is whole as well: Rust divides, discards the remainder and keeps the quotient, so 9 / 4 is 2 and not 2.25. Writing both numbers with a decimal point, as in 9.0 / 4.0, makes them f64 values, and the division keeps its fraction."
+            }
+          ],
+          "afterFigure": [
+            {
+              "kind": "paragraph",
+              "text": "The figure prints both results side by side. The whole-number result is not 2.25 rounded: the remainder is simply dropped, so that 9 / 4 and 11 / 4 both give 2. A decimal point therefore changes the answer and not merely its appearance, because **9 and 9.0 are values of different types**."
             }
           ],
           "reveal": [],
-          "answerVisibility": "hidden-until-response",
           "introducesTerms": [
+            "type",
             "i32",
             "f64"
           ],
           "visualStateId": "",
-          "checkQuestionId": "types-and-functions-exact",
+          "checkQuestionId": "",
           "activityId": "",
           "diagram": {
             "type": "rust_program",
@@ -319,19 +503,39 @@
           }
         },
         {
+          "id": "exact-division",
+          "kind": "try",
+          "blocks": [],
+          "lead": [
+            {
+              "kind": "paragraph",
+              "text": "The program below shares 7 between 2 with whole numbers, so the .5 is discarded. What it needs is a different type of number, and not a different calculation."
+            }
+          ],
+          "reveal": [
+            {
+              "kind": "paragraph",
+              "text": "Only the numbers changed. The name, the division and the println! stayed as they were, because the type of the result follows from the types of the numbers divided."
+            }
+          ],
+          "visualStateId": "",
+          "checkQuestionId": "types-and-functions-exact",
+          "activityId": ""
+        },
+        {
           "id": "no-mixing",
           "kind": "try",
           "blocks": [],
           "lead": [
             {
               "kind": "paragraph",
-              "text": "You can write a type yourself after a colon, as in let price: f64 = 2.5. Rust never converts between number types on its own. Does this compile?"
+              "text": "A type can be written after a variable's name with a colon, as in price: f64, and the program below does this for both of its variables. One holds a decimal number and the other a whole number, and the last line multiplies them. Decide whether rustc accepts that."
             }
           ],
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "Write price * count as f64 to convert count first. as converts one number type into another, and you choose where it happens."
+              "text": "Rust leaves the conversion to you, because a silent change between whole and decimal numbers could alter a result without leaving any sign in the code. The next screen shows the one word that makes the conversion explicit."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -350,18 +554,50 @@
         },
         {
           "id": "convert-with-as",
+          "kind": "explain",
+          "blocks": [],
+          "headline": "The word as converts a value from one number type to another.",
+          "lead": [
+            {
+              "kind": "paragraph",
+              "text": "To combine a whole number with a decimal one, you convert one of them, and the word **as** does so: total as f64 takes the whole number held in total and produces the same number as an f64. The variable total is unchanged, since as makes a converted value and does not alter its source, and the new value can then be used in any calculation that needs an f64."
+            },
+            {
+              "kind": "paragraph",
+              "text": "In the figure the whole number 9 is converted before the division, which is why the result keeps its fraction. The conversion belongs to total alone, because as binds more tightly than /: the line is read as (total as f64) / 2.0, a decimal divided by a decimal, and no mixing is left for the compiler to object to."
+            }
+          ],
+          "afterFigure": [
+            {
+              "kind": "paragraph",
+              "text": "Conversion in the other direction is also possible, but it can lose something. Writing 9.7 as i32 gives 9, because the part after the decimal point is discarded and not rounded, whereas converting a whole number to f64 keeps its value. **The word as marks the place in a program where you decide which of these you want.**"
+            }
+          ],
+          "reveal": [],
+          "visualStateId": "",
+          "checkQuestionId": "",
+          "activityId": "",
+          "diagram": {
+            "type": "rust_program",
+            "runtime": "Rust 1.93.1",
+            "code": "fn main() {\n    let total: i32 = 9;\n    let share = total as f64 / 2.0;\n    println!(\"{share}\");\n}",
+            "outcome": {
+              "kind": "output",
+              "stdout": "4.5"
+            }
+          }
+        },
+        {
+          "id": "convert-the-count",
           "kind": "try",
           "blocks": [],
           "lead": [
             {
               "kind": "paragraph",
-              "text": "as converts one number type into another, as in count as f64. Use it to fix the program you just saw."
+              "text": "Here is the failing program again. Rust accepts the multiplication once both sides have the same type, so the exercise is to convert the right one of them and nothing else."
             }
           ],
           "reveal": [],
-          "introducesTerms": [
-            "as"
-          ],
           "visualStateId": "",
           "checkQuestionId": "types-and-functions-fix-as",
           "activityId": ""
@@ -370,21 +606,30 @@
           "id": "functions",
           "kind": "explain",
           "blocks": [],
-          "headline": "A function names a calculation. Its parameters and its return value all have types.",
+          "headline": "A function names a calculation, states the types it takes and returns, and gives back its last expression.",
           "lead": [
             {
               "kind": "paragraph",
-              "text": "fn double(n: i32) -> i32 takes an i32 called n and returns an i32. The type after -> is the return type. The last line of the body, written without a semicolon, is the value the function returns."
+              "text": "The programs so far have contained one function, main. You write others with the same word fn, followed by a name, a list of **parameters** in brackets, and an arrow and a **return type** before the braces. In fn double(n: i32) -> i32, the function double takes one parameter, n, which must be an i32, and the arrow says that it hands back an i32. Every parameter and the result have their types written out in this way, because Rust does not guess the types at the edges of a function."
+            },
+            {
+              "kind": "paragraph",
+              "text": "The body is the code between the braces, and the value that the function returns is simply its last line, written *without* a semicolon. In the figure that line is n * 2, so double(21) is 42, and main stores the value in result before printing it. A function is called by writing its name with the values to use for its parameters, and each call runs the body again with the parameters set to those values."
+            }
+          ],
+          "afterFigure": [
+            {
+              "kind": "paragraph",
+              "text": "The first line of a function can be read as a contract: it says what must be supplied and what will come back, and the compiler checks every call against it. A call that supplies an f64 to double, or that treats its result as text, is rejected before the program runs, which is the same strictness about types as on the earlier screens."
             }
           ],
           "reveal": [],
-          "answerVisibility": "hidden-until-response",
           "introducesTerms": [
             "parameter",
             "return type"
           ],
           "visualStateId": "",
-          "checkQuestionId": "types-and-functions-return-type",
+          "checkQuestionId": "",
           "activityId": "",
           "diagram": {
             "type": "rust_program",
@@ -397,13 +642,33 @@
           }
         },
         {
+          "id": "read-the-signature",
+          "kind": "try",
+          "blocks": [],
+          "lead": [
+            {
+              "kind": "paragraph",
+              "text": "Read the first line of a function before its body, because it already states what goes in and what comes out."
+            }
+          ],
+          "reveal": [
+            {
+              "kind": "paragraph",
+              "text": "Both parameters here are i32 as well, which makes the answer easy to confuse with theirs, but a function could equally take two i32 values and return an f64."
+            }
+          ],
+          "visualStateId": "",
+          "checkQuestionId": "types-and-functions-return-type",
+          "activityId": ""
+        },
+        {
           "id": "write-triple",
           "kind": "try",
           "blocks": [],
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Write a function of your own. The checker calls it with several numbers, so it has to work for any i32."
+              "text": "Now write a function yourself. Its first line is given, and the body needs a single expression as its last line."
             }
           ],
           "reveal": [],
@@ -418,13 +683,13 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "add_tax adds a tenth of the price. main calls it twice and adds the results."
+              "text": "A function can be called more than once, and each call starts afresh with its own value for price. Work out what the two calls hand back and what the program prints."
             }
           ],
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "Each call gets its own price. price / 10 is integer division, so add_tax(20) adds 2, not 2.0."
+              "text": "The same body served two different prices. That is the purpose of a parameter: the calculation is written once, each call supplies its own value, and nothing has to be copied."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -448,13 +713,13 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "This is double again, with one change: a semicolon after n * 2."
+              "text": "Here is double again, with one change: a semicolon after n * 2. Decide whether rustc accepts this version."
             }
           ],
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "A line ending in a semicolon is a statement and produces no value. The body now ends without a value, but the signature promised an i32."
+              "text": "A semicolon turns an expression into a *statement*, which is carried out and produces no value, so the body ends without an i32 to return. rustc reports that it expected an i32 and found (), the empty value, points at the semicolon and suggests removing it."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -478,13 +743,13 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Now the parameters are f64 values. Write the function from its signature and the example."
+              "text": "Finally, combine the pieces: a function whose parameters and result are all decimals, and whose body must add before it divides."
             }
           ],
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "The brackets add first, then the sum is divided by 2.0. With i32 parameters the same calculation would drop the .5."
+              "text": "The brackets make the addition happen first. Without them, a + b / 2.0 would divide only b by 2.0 and then add a, which is a different calculation."
             }
           ],
           "visualStateId": "",
@@ -524,7 +789,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "Seven cookies shared between two people is three and a half each. Here is the same sum in Rust."
+              "text": "Here is another short program: seven cookies are shared between two people, and the last line prints the result of dividing the one number by the other. On a calculator the quotient would be 3.5, and in Rust what is printed depends on something that the program never states outright, which is the *kind* of number that cookies and people hold."
+            },
+            {
+              "kind": "paragraph",
+              "text": "That makes the kind of a number part of what a program means, and Rust keeps track of it more strictly than most languages do. This lesson covers the two families of number you will use first, whole numbers and decimals, the rule that stops them being mixed carelessly, and the function, which gives a calculation a name, inputs of stated kinds and a result of a stated kind."
             }
           ],
           "diagram": {
@@ -538,18 +807,21 @@
           },
           "questionId": "types-and-functions-hook"
         },
-        "promise": "By the end you'll write functions with typed parameters and return values, and know when division drops a remainder.",
+        "promise": "By the end you'll be able to choose between whole and decimal numbers, and write a function that takes and returns typed values.",
         "estimatedMinutes": 12
       },
       "recap": {
-        "keyIdea": "Every value has a type that Rust won't change for you, and a function returns its last expression.",
+        "keyIdea": "Rust keeps whole numbers and decimals apart, and a function returns its last expression, so a semicolon there turns the result into nothing.",
         "blocks": [
           {
             "kind": "paragraph",
-            "text": "You made 7 / 2 print 3.5, fixed E0277 with as, and wrote functions that the checker called with numbers you never saw."
+            "text": "Rust treats whole numbers (**i32**) and decimals (**f64**) as different types, so 9 / 4 is 2 while 9.0 / 4.0 is 2.25, and a calculation that mixes the two is rejected until one side is converted with **as**. A function states the types it takes and the type it returns, and what it returns is its last expression, which is why a semicolon at the end of that line leaves the function with no value."
+          },
+          {
+            "kind": "paragraph",
+            "text": "Together with printing, variables and mut from the previous lesson, these are the pieces that most small Rust programs are built from, and the Rust projects ask you to use them side by side."
           }
-        ],
-        "nextHook": "You can now read and fix small programs. The projects ask you to write them."
+        ]
       },
       "calculator": "off",
       "taughtSkills": [
@@ -582,7 +854,7 @@
         "kind": "numeric",
         "value": 7,
         "unit": "",
-        "absoluteTolerance": 1e-9,
+        "absoluteTolerance": 1e-09,
         "relativeTolerance": 0,
         "workedAnswer": "3 + 4 is 7, and println! prints it."
       },
@@ -593,7 +865,7 @@
         "rbe-bindings",
         "rustlings"
       ],
-      "onCorrect": "7. You read a Rust program without being told any of its rules.",
+      "onCorrect": "7. Rust added apples and pears before printing, and the braces received the sum.",
       "skill": "read-program",
       "calculator": "off"
     },
@@ -637,7 +909,7 @@
           "expected": "5 and 2"
         }
       ],
-      "onCorrect": "The braces take the values in order, so swapping the values swaps the output.",
+      "onCorrect": "The braces are filled in the order the values are listed, so swapping the values swaps the output.",
       "skill": "use-println"
     },
     {
@@ -645,7 +917,7 @@
       "conceptIds": [
         "rust-bindings"
       ],
-      "prompt": "Write a program that prints two lines: Hello, Rust! and then 3 + 4 = 7. Let Rust work out the 7 by putting 3 + 4 after the text.",
+      "prompt": "Write a program that prints two lines: Hello, Rust! and then 3 + 4 = 7. Have Rust work out the 7 by putting 3 + 4 after the text.",
       "responseType": "code",
       "difficulty": 1,
       "hints": [
@@ -680,7 +952,7 @@
           "expected": "Hello, Rust!\n3 + 4 = 7"
         }
       ],
-      "onCorrect": "Two println! calls, two lines. The {} took the value of 3 + 4.",
+      "onCorrect": "Two println! calls make two lines, and the {} in the second receives the value of 3 + 4.",
       "skill": "use-println"
     },
     {
@@ -700,7 +972,7 @@
         "kind": "numeric",
         "value": 24,
         "unit": "",
-        "absoluteTolerance": 1e-9,
+        "absoluteTolerance": 1e-09,
         "relativeTolerance": 0,
         "workedAnswer": "area is width * height, which is 6 * 4 = 24."
       },
@@ -711,7 +983,7 @@
         "rbe-bindings",
         "rustlings"
       ],
-      "onCorrect": "24. Each let gave a value a name the later lines could use.",
+      "onCorrect": "24. Each let gave a value a name that the later lines could use.",
       "misconceptions": [
         {
           "match": {
@@ -719,7 +991,7 @@
               10
             ]
           },
-          "feedback": "That adds the two sides. area multiplies them."
+          "feedback": "Adding 6 and 4 gives 10, but area is defined on the third line as width * height, which is 6 * 4."
         }
       ],
       "skill": "use-let",
@@ -765,7 +1037,7 @@
           "label": "No. Every let needs a type such as i32."
         }
       ],
-      "onCorrect": "rustc stops with error E0384 and suggests the fix itself: let mut score.",
+      "onCorrect": "rustc stops with error E0384 and ends its message with the repair itself: let mut score.",
       "misconceptions": [
         {
           "match": {
@@ -773,7 +1045,7 @@
               "b"
             ]
           },
-          "feedback": "It would print 15 if Rust allowed the change. Line 3 gives score a second value, and score never asked for that."
+          "feedback": "The program would print 15 if Rust allowed the change, but line 3 gives score a second value and score was not created to accept one."
         },
         {
           "match": {
@@ -781,7 +1053,7 @@
               "c"
             ]
           },
-          "feedback": "Rust works out the type from 10, so no type is needed here. The problem is on line 3."
+          "feedback": "Rust works out the type from the 10, so no type has to be written here. The fault is on line 3."
         }
       ],
       "skill": "spot-immutable"
@@ -827,7 +1099,7 @@
           "expected": "15"
         }
       ],
-      "onCorrect": "let mut score said up front that score will change, so line 3 is allowed.",
+      "onCorrect": "let mut score declares up front that score will change, so the assignment on line 3 is allowed.",
       "skill": "use-mut"
     },
     {
@@ -991,7 +1263,7 @@
               "b"
             ]
           },
-          "feedback": "That would be true if line 2 assigned to the same x. A second let makes a new variable."
+          "feedback": "That would hold if line 2 assigned to the same x, but a second let makes a new variable, which is free to hold text."
         },
         {
           "match": {
@@ -999,7 +1271,7 @@
               "c"
             ]
           },
-          "feedback": "mut is for assigning to the same variable. A second let does not need it."
+          "feedback": "mut is needed only to assign to the same variable. A second let creates a new one and needs no permission."
         }
       ],
       "skill": "use-shadowing"
@@ -1021,7 +1293,7 @@
         "kind": "numeric",
         "value": 3,
         "unit": "",
-        "absoluteTolerance": 1e-9,
+        "absoluteTolerance": 1e-09,
         "relativeTolerance": 0,
         "workedAnswer": "7 / 2 with two whole numbers gives 3. The remainder of 1 is dropped."
       },
@@ -1031,7 +1303,7 @@
         "rbe-cast",
         "rustlings"
       ],
-      "onCorrect": "3. Rust divided two whole numbers and dropped the remainder.",
+      "onCorrect": "3. Dividing two whole numbers gives a whole number, so Rust dropped the remainder of 1.",
       "misconceptions": [
         {
           "match": {
@@ -1039,7 +1311,7 @@
               3.5
             ]
           },
-          "feedback": "That is the exact answer, but these are whole numbers. Rust keeps the result whole."
+          "feedback": "That is the exact quotient, but cookies and people are whole numbers, and Rust keeps only the whole part of their quotient."
         }
       ],
       "skill": "integer-division",
@@ -1126,7 +1398,7 @@
           "label": "Yes, and it prints 10.0."
         }
       ],
-      "onCorrect": "rustc reports E0277: cannot multiply f64 by i32. Writing count as f64 fixes it.",
+      "onCorrect": "rustc reports E0277: it has no multiplication that takes an f64 and an i32.",
       "misconceptions": [
         {
           "match": {
@@ -1134,7 +1406,7 @@
               "b"
             ]
           },
-          "feedback": "Many languages would do that conversion for you. Rust stops and asks you to choose."
+          "feedback": "Many languages would convert for you and print 10, but Rust stops and asks you to choose the conversion."
         },
         {
           "match": {
@@ -1142,7 +1414,7 @@
               "c"
             ]
           },
-          "feedback": "It would, if count were an f64. Rust does not convert it on its own."
+          "feedback": "The result would be 10.0 if count were an f64, but Rust does not convert it on its own."
         }
       ],
       "skill": "spot-type-mismatch"
@@ -1186,7 +1458,7 @@
           "expected": "10"
         }
       ],
-      "onCorrect": "count as f64 turned 4 into 4.0, so both sides of * are f64.",
+      "onCorrect": "count as f64 turned 4 into 4.0, so both sides of the * are f64.",
       "skill": "spot-type-mismatch"
     },
     {
@@ -1214,7 +1486,7 @@
         "rbe-cast",
         "rustlings"
       ],
-      "onCorrect": "i32. The type after -> is what the function hands back.",
+      "onCorrect": "i32. The type after the arrow is what the function hands back.",
       "skill": "read-signature"
     },
     {
@@ -1284,7 +1556,7 @@
           "expected": "-15"
         }
       ],
-      "onCorrect": "n * 3 with no semicolon is the value triple returns.",
+      "onCorrect": "n * 3, with no semicolon, is the value that triple returns.",
       "skill": "write-function"
     },
     {
@@ -1304,7 +1576,7 @@
         "kind": "numeric",
         "value": 77,
         "unit": "",
-        "absoluteTolerance": 1e-9,
+        "absoluteTolerance": 1e-09,
         "relativeTolerance": 0,
         "workedAnswer": "add_tax(50) is 50 + 5 = 55 and add_tax(20) is 20 + 2 = 22. 55 + 22 = 77."
       },
@@ -1322,7 +1594,7 @@
               70
             ]
           },
-          "feedback": "That is 50 + 20 without the tax. Each call adds a tenth of its price."
+          "feedback": "That is 50 + 20 with no tax added. Each call adds a tenth of its own price to that price."
         }
       ],
       "skill": "call-function",
@@ -1367,7 +1639,7 @@
           "label": "No. A function body must use the word return."
         }
       ],
-      "onCorrect": "rustc reports E0308 (mismatched types) and suggests removing the semicolon.",
+      "onCorrect": "rustc reports E0308, mismatched types, and its help line says to remove the semicolon.",
       "misconceptions": [
         {
           "match": {
@@ -1375,7 +1647,7 @@
               "b"
             ]
           },
-          "feedback": "Without the semicolon it would. With it, n * 2 is calculated and thrown away."
+          "feedback": "Without the semicolon it would print 42. With it, n * 2 is calculated and then thrown away."
         },
         {
           "match": {
@@ -1383,7 +1655,7 @@
               "c"
             ]
           },
-          "feedback": "return is allowed but not required. The last expression, with no semicolon, is the return value."
+          "feedback": "The word return is allowed but not required. The last expression, written without a semicolon, is the return value."
         }
       ],
       "skill": "spot-semicolon"
@@ -1710,7 +1982,7 @@
         "kind": "numeric",
         "value": 4,
         "unit": "",
-        "absoluteTolerance": 1e-9,
+        "absoluteTolerance": 1e-09,
         "relativeTolerance": 0,
         "workedAnswer": "9 / 2 is 4 with remainder 1, which is dropped."
       }
