@@ -9,8 +9,13 @@ import path from "node:path";
 import { CourseBundleSchema } from "../packages/contracts/src/index.js";
 import { bundleDigest, validateCourseBundle } from "../packages/curriculum/src/index.js";
 
-const [course, note] = process.argv.slice(2);
-if (!course || !note) throw new Error('Usage: npx tsx scripts/rebind-review.ts <course-id> "<note>"');
+const [course, note, ...flags] = process.argv.slice(2);
+if (!course || !note)
+  throw new Error('Usage: npx tsx scripts/rebind-review.ts <course-id> "<note>" [--resolve "<resolution>"]');
+// `--resolve "<text>"` records one resolution for every authoring uncertainty not yet resolved,
+// such as facts an author wrote from memory. Say exactly what was and was not checked.
+const resolveAt = flags.indexOf("--resolve");
+const resolution = resolveAt >= 0 ? flags[resolveAt + 1] : undefined;
 const dir = path.resolve(import.meta.dirname, "..", "content", course);
 // An author may omit fields that have defaults; the bundle is stored complete, so the hash the
 // review binds is the one the app and tests compute after parsing.
@@ -30,6 +35,17 @@ for (const warning of validation.issues.filter((issue) => issue.severity === "wa
   const reason = REASONS[warning.code];
   if (!reason) throw new Error(`Explain warning ${warning.code} at ${warning.path}: ${warning.message}`);
   review.acceptedWarnings.push({ code: warning.code, path: warning.path, reason });
+}
+for (const metadata of bundle.authoringMetadata ?? []) {
+  for (const concern of metadata.uncertainty) {
+    const done = review.resolvedUncertainty.some(
+      (item: { lessonId: string; concern: string }) =>
+        item.lessonId === metadata.lessonId && item.concern === concern,
+    );
+    if (done) continue;
+    if (!resolution) throw new Error(`Resolve '${concern}' in ${metadata.lessonId}, or pass --resolve.`);
+    review.resolvedUncertainty.push({ lessonId: metadata.lessonId, concern, resolution });
+  }
 }
 review.bundleSha256 = bundleDigest(bundle);
 review.reviewedAt = new Date().toISOString();
