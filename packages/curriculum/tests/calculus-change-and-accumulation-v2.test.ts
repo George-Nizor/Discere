@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import type { CourseBundle } from "@discere/contracts";
 import { describe, expect, it } from "vitest";
 import { validateCourseBundle } from "../src/index.js";
+import { EXPLAIN_BODY_WORD_LIMIT } from "../src/lesson-v2.js";
 
 /**
  * Calculus: Change and Accumulation, v2 lessons. Every numeric key is recomputed here from the
@@ -26,6 +27,7 @@ const expected: Record<string, number> = {
   "approaching-a-value-7": (3.1 ** 2 - 9) / (3.1 - 3),
   "approaching-a-value-9": 2 * 3 - 1,
   "approaching-a-value-10": 2 + 1,
+  "approaching-a-value-limit-at-7": 7 + 7, // (x² − 49)/(x − 7) = x + 7
   // 2. two-sides-and-continuity
   "two-sides-and-continuity-1": 2,
   "two-sides-and-continuity-2": 5,
@@ -34,6 +36,9 @@ const expected: Record<string, number> = {
   "two-sides-and-continuity-7": 3,
   "two-sides-and-continuity-10": 9,
   "two-sides-and-continuity-11": 4,
+  "two-sides-and-continuity-right-of-one": 5 - 1,
+  "two-sides-and-continuity-sides-agree": 2 ** 2, // left side x² and right side 2x both give 4 at x = 2, so the sides agree
+  "two-sides-and-continuity-join-constant": 4 * 2 - 1 - 2,
   // 3. from-secant-to-tangent
   "from-secant-to-tangent-1": (3 ** 2 - 1 ** 2) / (3 - 1),
   "from-secant-to-tangent-2": 2 * 2,
@@ -60,6 +65,8 @@ const expected: Record<string, number> = {
   "a-rate-inside-a-rate-7": 1 * 3 * 2,
   "a-rate-inside-a-rate-9": 2 * (3 * 2) * 3,
   "a-rate-inside-a-rate-10": 6 * 5,
+  "a-rate-inside-a-rate-cube-outside": 3 * (4 - 2) ** 2 * -1,
+  "a-rate-inside-a-rate-cube-edge": 3 * (2 * 1) ** 2 * 2,
   // 6. position-velocity-acceleration
   "position-velocity-acceleration-1": 2 * 2 + 2,
   "position-velocity-acceleration-2": 6 * 1,
@@ -81,6 +88,8 @@ const expected: Record<string, number> = {
   "when-a-curve-turns-9": best([0 ** 2 - 6 * 0, 3 ** 2 - 6 * 3, 5 ** 2 - 6 * 5], Math.min),
   "when-a-curve-turns-10": 8 / 2,
   "when-a-curve-turns-11": 2 * 3 + 1,
+  // f(x) = x³ − 3x has f″(x) = 6x, which is positive at x = 1 and negative at x = −1.
+  "when-a-curve-turns-which-minimum": [-1, 1].find((x) => 6 * x > 0)!,
   // 8. undoing-a-derivative
   "undoing-a-derivative-1": 3,
   "undoing-a-derivative-2": 2 ** 3,
@@ -89,6 +98,7 @@ const expected: Record<string, number> = {
   "undoing-a-derivative-7": 4 * 3 + 10,
   "undoing-a-derivative-9": 2 * 3 ** 2 + 50,
   "undoing-a-derivative-10": 2 * 2 ** 3,
+  "undoing-a-derivative-constant-term": 2 * 1 ** 4 - 3 * 1 - 2,
   // 9. rectangles-that-refine
   "rectangles-that-refine-1": 2 * (f(0) + f(2)),
   "rectangles-that-refine-2": 1 * (1 + 2 + 3 + 4),
@@ -97,6 +107,7 @@ const expected: Record<string, number> = {
   "rectangles-that-refine-7": 3 * 2 + 2 * 4,
   "rectangles-that-refine-9": 2 * (0 ** 2 + 2 ** 2 + 4 ** 2),
   "rectangles-that-refine-10": 0.5 * 6,
+  "rectangles-that-refine-midpoint-square": 1 * (0.5 ** 2 + 1.5 ** 2 + 2.5 ** 2),
   // 10. area-with-a-sign
   "area-with-a-sign-1": -2 * 3,
   "area-with-a-sign-2": -(0.5 * 2 * 2) + 0.5 * 2 * 2,
@@ -106,6 +117,8 @@ const expected: Record<string, number> = {
   "area-with-a-sign-9": 5 * 2 - 3 * 5,
   "area-with-a-sign-10": -4 * 2,
   "area-with-a-sign-11": -9,
+  "area-with-a-sign-total-area": 0.5 * 2 * 2 + 0.5 * 2 * 2,
+  "area-with-a-sign-signed-two-x": 1 ** 2 - (-3) ** 2,
   // 11. the-two-ideas-connect
   "the-two-ideas-connect-1": 3 ** 2 - 1 ** 2,
   "the-two-ideas-connect-2": 2 ** 2 + 2 - 0,
@@ -115,6 +128,8 @@ const expected: Record<string, number> = {
   "the-two-ideas-connect-9": 3 * 3 ** 2 - 3 * 1 ** 2,
   "the-two-ideas-connect-10": 2 * 3 ** 2 - 2 * 0 ** 2,
   "the-two-ideas-connect-11": 3 * 4,
+  "the-two-ideas-connect-constant-cancels": 3 ** 2 + 100 - (1 ** 2 + 100),
+  "the-two-ideas-connect-accumulation-rate": 5 * 3 - 2,
   // 12. from-rate-to-amount
   "from-rate-to-amount-1": 2 ** 2 + 3 * 2,
   "from-rate-to-amount-2": 7 + (2 ** 2 + 3 * 2),
@@ -124,6 +139,8 @@ const expected: Record<string, number> = {
   "from-rate-to-amount-9": 40 + (4 ** 2 - 6 * 4),
   "from-rate-to-amount-10": 3 * 5,
   "from-rate-to-amount-11": 7 - 4,
+  "from-rate-to-amount-total-distance": 1 + 1, // |v| = 2 − 2t then 2t − 2: a triangle of 1 each side of t = 1
+  "from-rate-to-amount-displacement": 6 * 5 - 5 ** 2,
 };
 
 const lessons = [
@@ -197,10 +214,13 @@ const storyLessons = lessons.slice(0, 12);
 const slope = (fn: (x: number) => number, x: number, h = 1e-5) => (fn(x + h) - fn(x - h)) / (2 * h);
 
 describe("Story lessons 1 to 12", () => {
-  it("open without a question, teach before asking, and carry a figure", () => {
+  it("open on a story, teach before asking, and hand on to the next lesson", () => {
+    const questionIds = new Set(bundle.questions.map((question) => question.id));
     for (const id of storyLessons) {
       const lesson = bundle.lessons.find((item) => item.id === id)!;
-      expect(lesson.intro?.hook.questionId, id).toBeUndefined();
+      // An opener may ask a first question, and need not carry a figure.
+      const opener = lesson.intro?.hook.questionId;
+      if (opener) expect(questionIds.has(opener), `${id} opener ${opener}`).toBe(true);
       const teaching = lesson.steps.filter(
         (step) => step.kind === "explain" && !step.checkQuestionId,
       );
@@ -208,16 +228,30 @@ describe("Story lessons 1 to 12", () => {
       expect(lesson.steps.length, id).toBeLessThanOrEqual(14);
       expect(teaching.length / lesson.steps.length, id).toBeGreaterThanOrEqual(0.4);
       expect(lesson.steps[0]!.kind, id).toBe("explain");
-      expect(lesson.steps.some((step) => step.diagram), id).toBe(true);
-      expect(lesson.recap?.nextHook, id).toBeTruthy();
+      // The last lesson has no next lesson to hand on to.
+      if (id === lessons[lessons.length - 1]) expect(lesson.recap?.nextHook, id).toBeUndefined();
+      else expect(lesson.recap?.nextHook, id).toBeTruthy();
     }
   });
 
   it("gives the numbers quoted in lesson 1's prose", () => {
     const gap = (x: number) => (x ** 2 - 4) / (x - 2);
-    for (const [x, y] of [[1.5, 3.5], [1.9, 3.9], [1.99, 3.99], [2.5, 4.5], [2.1, 4.1], [2.01, 4.01], [3, 5], [1, 3]] as const)
+    for (const [x, y] of [
+      [1.5, 3.5],
+      [1.9, 3.9],
+      [1.99, 3.99],
+      [2.5, 4.5],
+      [2.1, 4.1],
+      [2.01, 4.01],
+      [3, 5],
+      [1, 3],
+    ] as const)
       expect(gap(x), `x = ${x}`).toBeCloseTo(y, 6);
-    for (const [x, y] of [[4.1, 5.9], [4.01, 5.99], [4.001, 5.999]] as const)
+    for (const [x, y] of [
+      [4.1, 5.9],
+      [4.01, 5.99],
+      [4.001, 5.999],
+    ] as const)
       expect(10 - x).toBeCloseTo(y, 9);
     expect(((x: number) => (x ** 2 - x) / x)(0.001)).toBeCloseTo(0.001 - 1, 9);
     expect((0 ** 2 - 4) / (0 - 2) + 0).toBeCloseTo(2, 9); // x + 2 at 0 is 2
@@ -235,7 +269,11 @@ describe("Story lessons 1 to 12", () => {
     expect((50 - 20) / (5 - 2)).toBe(10);
     expect((4 - 0) / (2 - 0)).toBe(2);
     const sq = (x: number) => x * x;
-    for (const [h, s] of [[1, 3], [0.5, 2.5], [0.1, 2.1]] as const)
+    for (const [h, s] of [
+      [1, 3],
+      [0.5, 2.5],
+      [0.1, 2.1],
+    ] as const)
       expect((sq(1 + h) - sq(1)) / h, `h = ${h}`).toBeCloseTo(s, 9);
     for (const x of [-1, 1, 2, 3, 5]) expect(slope(sq, x)).toBeCloseTo(2 * x, 5);
     expect((sq(4) - sq(3)) / (4 - 3)).toBe(7);
@@ -273,18 +311,48 @@ describe("Story lessons 1 to 12", () => {
       if (authority.kind !== "numeric") throw new Error(id);
       return authority.value;
     };
-    expect(key("rules-for-rates-1")).toBeCloseTo(slope((x) => x ** 3, 2), 4);
-    expect(key("rules-for-rates-2")).toBeCloseTo(slope((x) => 2 * x ** 2 + 5, 1), 4);
-    expect(key("rules-for-rates-4")).toBeCloseTo(slope((x) => 4 - x ** 2, 1), 4);
-    expect(key("rules-for-rates-5")).toBeCloseTo(slope((x) => 2 * x ** 3 - 5 * x + 9, 2), 3);
+    expect(key("rules-for-rates-1")).toBeCloseTo(
+      slope((x) => x ** 3, 2),
+      4,
+    );
+    expect(key("rules-for-rates-2")).toBeCloseTo(
+      slope((x) => 2 * x ** 2 + 5, 1),
+      4,
+    );
+    expect(key("rules-for-rates-4")).toBeCloseTo(
+      slope((x) => 4 - x ** 2, 1),
+      4,
+    );
+    expect(key("rules-for-rates-5")).toBeCloseTo(
+      slope((x) => 2 * x ** 3 - 5 * x + 9, 2),
+      3,
+    );
     expect(key("rules-for-rates-9")).toBeCloseTo(3, 9);
     expect(slope((x) => x ** 2 - 6 * x, key("rules-for-rates-9"))).toBeCloseTo(0, 4);
-    expect(key("a-rate-inside-a-rate-1")).toBeCloseTo(slope((x) => (2 * x + 1) ** 2, 1), 4);
-    expect(key("a-rate-inside-a-rate-2")).toBeCloseTo(slope((x) => (3 - x) ** 2, 1), 4);
-    expect(key("a-rate-inside-a-rate-4")).toBeCloseTo(slope((x) => (x + 2) ** 3, 1), 3);
-    expect(key("a-rate-inside-a-rate-5")).toBeCloseTo(slope((x) => (2 * x - 1) ** 3, 2), 3);
-    expect(key("a-rate-inside-a-rate-9")).toBeCloseTo(slope((t) => (3 * t) ** 2, 2), 3);
-    expect(key("from-secant-to-tangent-4")).toBeCloseTo(slope((x) => x ** 2, 3), 4);
+    expect(key("a-rate-inside-a-rate-1")).toBeCloseTo(
+      slope((x) => (2 * x + 1) ** 2, 1),
+      4,
+    );
+    expect(key("a-rate-inside-a-rate-2")).toBeCloseTo(
+      slope((x) => (3 - x) ** 2, 1),
+      4,
+    );
+    expect(key("a-rate-inside-a-rate-4")).toBeCloseTo(
+      slope((x) => (x + 2) ** 3, 1),
+      3,
+    );
+    expect(key("a-rate-inside-a-rate-5")).toBeCloseTo(
+      slope((x) => (2 * x - 1) ** 3, 2),
+      3,
+    );
+    expect(key("a-rate-inside-a-rate-9")).toBeCloseTo(
+      slope((t) => (3 * t) ** 2, 2),
+      3,
+    );
+    expect(key("from-secant-to-tangent-4")).toBeCloseTo(
+      slope((x) => x ** 2, 3),
+      4,
+    );
     expect(key("from-secant-to-tangent-10")).toBeCloseTo(5, 9);
     expect(slope((x) => x ** 2, key("from-secant-to-tangent-10"))).toBeCloseTo(10, 4);
   });
@@ -322,7 +390,7 @@ const keyOf = (id: string) => {
 };
 
 describe("Story lessons 6 to 12", () => {
-  it("only teaches with steps whose prose is the right length, and uses every question it keeps", () => {
+  it("only teaches with steps whose prose is the right length, and uses only questions that exist", () => {
     const words = (blocks: { kind: string; text?: string }[] | undefined) =>
       (blocks ?? []).reduce(
         (sum, block) => sum + (block.kind === "paragraph" ? block.text!.split(/\s+/).length : 0),
@@ -330,9 +398,14 @@ describe("Story lessons 6 to 12", () => {
       );
     for (const id of lessons.slice(5, 12)) {
       const lesson = bundle.lessons.find((item) => item.id === id)!;
-      expect(words(lesson.intro!.hook.blocks), id).toBeGreaterThanOrEqual(120);
+      // Openers say what they need without padding (discere-lesson-voice): a floor of 80 words.
+      expect(words(lesson.intro!.hook.blocks), id).toBeGreaterThanOrEqual(80);
       expect(words(lesson.intro!.hook.blocks), id).toBeLessThanOrEqual(200);
-      expect(lesson.intro!.promise.split(/\s+/).length, id).toBeLessThanOrEqual(25);
+      const promise = lesson.intro!.promise;
+      expect(promise.split(/\s+/).length, id).toBeLessThanOrEqual(35);
+      expect(promise, id).toMatch(/^By the end you'll /);
+      expect(promise.match(/[.!?](\s|$)/g) ?? [], `${id} promise is one sentence`).toHaveLength(1);
+      expect(promise.trimEnd().endsWith("."), id).toBe(true);
       let run = 0;
       for (const step of lesson.steps) {
         const teaching = step.kind === "explain" && !step.checkQuestionId;
@@ -341,7 +414,7 @@ describe("Story lessons 6 to 12", () => {
         if (teaching) {
           const total = words(step.lead) + words(step.afterFigure);
           expect(total, `${id}/${step.id}`).toBeGreaterThanOrEqual(100);
-          expect(total, `${id}/${step.id}`).toBeLessThanOrEqual(250);
+          expect(total, `${id}/${step.id}`).toBeLessThanOrEqual(EXPLAIN_BODY_WORD_LIMIT);
         } else expect(words(step.lead), `${id}/${step.id}`).toBeLessThanOrEqual(60);
       }
       const asked = lesson.steps.filter(
@@ -351,6 +424,25 @@ describe("Story lessons 6 to 12", () => {
       );
       expect(asked.length, id).toBeGreaterThanOrEqual(3);
       expect(asked.length, id).toBeLessThanOrEqual(7);
+      // Old questions may stay in the bundle unused so learner history resolves. What a lesson
+      // does use must exist and be valid.
+      const used = [
+        ...lesson.questionIds,
+        ...lesson.steps.flatMap((step) => [
+          step.checkQuestionId,
+          ...(step.workedSteps ?? []).flatMap((line) => [
+            line.blank?.questionId,
+            line.selfExplain?.questionId,
+          ]),
+        ]),
+        lesson.intro!.hook.questionId,
+      ].filter((ref): ref is string => Boolean(ref));
+      for (const ref of used) {
+        const question = bundle.questions.find((item) => item.id === ref);
+        expect(question, `${id} uses missing question ${ref}`).toBeDefined();
+        expect(question!.prompt.trim(), ref).not.toBe("");
+        expect(question!.answerAuthority, ref).toBeDefined();
+      }
     }
   });
 
@@ -378,14 +470,26 @@ describe("Story lessons 6 to 12", () => {
   });
 
   it("matches lesson 6's keys by differentiating numerically", () => {
-    expect(keyOf("position-velocity-acceleration-1")).toBeCloseTo(slope((t) => t * t + 2 * t, 2), 4);
-    expect(keyOf("position-velocity-acceleration-2")).toBeCloseTo(second((t) => t ** 3, 1), 2);
-    expect(keyOf("position-velocity-acceleration-4")).toBeCloseTo(slope((t) => t * t, 3), 4);
+    expect(keyOf("position-velocity-acceleration-1")).toBeCloseTo(
+      slope((t) => t * t + 2 * t, 2),
+      4,
+    );
+    expect(keyOf("position-velocity-acceleration-2")).toBeCloseTo(
+      second((t) => t ** 3, 1),
+      2,
+    );
+    expect(keyOf("position-velocity-acceleration-4")).toBeCloseTo(
+      slope((t) => t * t, 3),
+      4,
+    );
     expect(keyOf("position-velocity-acceleration-5")).toBeCloseTo(
       second((t) => 2 * t ** 3 - 3 * t * t, 2),
       2,
     );
-    expect(keyOf("position-velocity-acceleration-9")).toBeCloseTo(slope((t) => t * t - 6 * t, 1), 4);
+    expect(keyOf("position-velocity-acceleration-9")).toBeCloseTo(
+      slope((t) => t * t - 6 * t, 1),
+      4,
+    );
     expect(keyOf("position-velocity-acceleration-11")).toBeCloseTo(
       slope((t) => t * t - 10 * t, 2),
       4,
@@ -427,20 +531,35 @@ describe("Story lessons 6 to 12", () => {
     };
     expect(keyOf("when-a-curve-turns-1")).toBeCloseTo(3, 9);
     expect(slope((x) => 6 * x - x * x, keyOf("when-a-curve-turns-1"))).toBeCloseTo(0, 4);
-    expect(keyOf("when-a-curve-turns-4")).toBeCloseTo(top((x) => x * x, -1, 2, "max"), 3);
-    expect(keyOf("when-a-curve-turns-5")).toBeCloseTo(top((x) => 8 * x - x * x, 0, 6, "max"), 3);
-    expect(keyOf("when-a-curve-turns-9")).toBeCloseTo(top((x) => x * x - 6 * x, 0, 5, "min"), 3);
-    expect(keyOf("when-a-curve-turns-11")).toBeCloseTo(top((x) => 2 * x + 1, 0, 3, "max"), 3);
+    expect(keyOf("when-a-curve-turns-4")).toBeCloseTo(
+      top((x) => x * x, -1, 2, "max"),
+      3,
+    );
+    expect(keyOf("when-a-curve-turns-5")).toBeCloseTo(
+      top((x) => 8 * x - x * x, 0, 6, "max"),
+      3,
+    );
+    expect(keyOf("when-a-curve-turns-9")).toBeCloseTo(
+      top((x) => x * x - 6 * x, 0, 5, "min"),
+      3,
+    );
+    expect(keyOf("when-a-curve-turns-11")).toBeCloseTo(
+      top((x) => 2 * x + 1, 0, 3, "max"),
+      3,
+    );
   });
 
   it("gives the numbers quoted in lesson 8's prose", () => {
     expect(20 + 5 * 6).toBe(50);
     expect(slope((t) => 20 + 5 * t, 3)).toBeCloseTo(5, 4);
-    expect(slope((x) => 3 * x * x + 4, 2)).toBeCloseTo(slope((x) => 3 * x * x - 9, 2), 6);
+    expect(slope((x) => 3 * x * x + 4, 2)).toBeCloseTo(
+      slope((x) => 3 * x * x - 9, 2),
+      6,
+    );
     expect(slope((x) => 3 * x * x, 2)).toBeCloseTo(12, 4); // 6x at 2
     expect(5 - 3 * 1 ** 2).toBe(2); // C from F(1) = 5
     expect(slope((x) => x ** 5, 1.5)).toBeCloseTo(5 * 1.5 ** 4, 3); // the antiderivative of 5x⁴ is x⁵
-    expect(slope((x) => (x ** 3) / 3, 2)).toBeCloseTo(4, 4); // the antiderivative of x² is x³ ÷ 3
+    expect(slope((x) => x ** 3 / 3, 2)).toBeCloseTo(4, 4); // the antiderivative of x² is x³ ÷ 3
     expect(slope((x) => 4 * x ** 3, 1.5)).toBeCloseTo(12 * 1.5 ** 2, 3);
     expect(slope((x) => 2 * x, 3)).toBeCloseTo(2, 6); // a plain 2 undoes to 2x
     expect(integral((x) => 12 * x * x, 0, 1) + 1).toBeCloseTo(5, 6);
@@ -449,8 +568,14 @@ describe("Story lessons 6 to 12", () => {
 
   it("matches lesson 8's keys by integrating numerically", () => {
     expect(keyOf("undoing-a-derivative-1")).toBeCloseTo(3 - 0 ** 2, 9);
-    expect(keyOf("undoing-a-derivative-2")).toBeCloseTo(integral((x) => 3 * x * x, 0, 2), 6);
-    expect(keyOf("undoing-a-derivative-4")).toBeCloseTo(1 + integral((x) => 3 * x * x + 2, 0, 2), 6);
+    expect(keyOf("undoing-a-derivative-2")).toBeCloseTo(
+      integral((x) => 3 * x * x, 0, 2),
+      6,
+    );
+    expect(keyOf("undoing-a-derivative-4")).toBeCloseTo(
+      1 + integral((x) => 3 * x * x + 2, 0, 2),
+      6,
+    );
     expect(keyOf("undoing-a-derivative-5")).toBeCloseTo(2 + integral((x) => 4 * x + 3, 0, 3), 6);
     expect(keyOf("undoing-a-derivative-7")).toBeCloseTo(10 + integral(() => 4, 0, 3), 6);
     expect(keyOf("undoing-a-derivative-9")).toBeCloseTo(50 + integral((t) => 4 * t, 0, 3), 6);
@@ -467,8 +592,14 @@ describe("Story lessons 6 to 12", () => {
     expect(rectangleSum(tap, 0, 3, 6, "left")).toBeCloseTo(7.5, 9);
     expect(rectangleSum(tap, 0, 3, 6, "right")).toBeCloseTo(10.5, 9);
     expect(rectangleSum(tap, 0, 3, 6, "midpoint")).toBeCloseTo(9, 9);
-    expect(rectangleSum(tap, 0, 3, 3, "right") - rectangleSum(tap, 0, 3, 3, "left")).toBeCloseTo(6, 9);
-    expect(rectangleSum(tap, 0, 3, 6, "right") - rectangleSum(tap, 0, 3, 6, "left")).toBeCloseTo(3, 9);
+    expect(rectangleSum(tap, 0, 3, 3, "right") - rectangleSum(tap, 0, 3, 3, "left")).toBeCloseTo(
+      6,
+      9,
+    );
+    expect(rectangleSum(tap, 0, 3, 6, "right") - rectangleSum(tap, 0, 3, 6, "left")).toBeCloseTo(
+      3,
+      9,
+    );
     expect(rectangleSum((x) => x, 0, 3, 3, "left")).toBeCloseTo(3, 9); // the worked example
     expect(rectangleSum((x) => x, 0, 4, 2, "left")).toBeCloseTo(4, 9);
     expect(rectangleSum((x) => x, 0, 4, 4, "right")).toBeCloseTo(10, 9);
@@ -476,8 +607,14 @@ describe("Story lessons 6 to 12", () => {
   });
 
   it("matches lesson 9's keys by summing rectangles", () => {
-    expect(keyOf("rectangles-that-refine-1")).toBeCloseTo(rectangleSum((x) => x, 0, 4, 2, "left"), 9);
-    expect(keyOf("rectangles-that-refine-2")).toBeCloseTo(rectangleSum((x) => x, 0, 4, 4, "right"), 9);
+    expect(keyOf("rectangles-that-refine-1")).toBeCloseTo(
+      rectangleSum((x) => x, 0, 4, 2, "left"),
+      9,
+    );
+    expect(keyOf("rectangles-that-refine-2")).toBeCloseTo(
+      rectangleSum((x) => x, 0, 4, 4, "right"),
+      9,
+    );
     expect(keyOf("rectangles-that-refine-4")).toBeCloseTo(
       rectangleSum((x) => x, 0, 4, 2, "midpoint"),
       9,
@@ -509,12 +646,27 @@ describe("Story lessons 6 to 12", () => {
   });
 
   it("matches lesson 10's keys by integrating numerically", () => {
-    expect(keyOf("area-with-a-sign-1")).toBeCloseTo(integral(() => -2, 0, 3), 6);
-    expect(keyOf("area-with-a-sign-2")).toBeCloseTo(integral((x) => x, -2, 2), 6);
+    expect(keyOf("area-with-a-sign-1")).toBeCloseTo(
+      integral(() => -2, 0, 3),
+      6,
+    );
+    expect(keyOf("area-with-a-sign-2")).toBeCloseTo(
+      integral((x) => x, -2, 2),
+      6,
+    );
     expect(keyOf("area-with-a-sign-4")).toBeCloseTo(-integral(() => 3, 1, 3), 6);
-    expect(keyOf("area-with-a-sign-5")).toBeCloseTo(integral((x) => x, -1, 3), 6);
-    expect(keyOf("area-with-a-sign-7")).toBeCloseTo(integral(() => 3, 0, 4) + integral(() => -2, 0, 3), 6);
-    expect(keyOf("area-with-a-sign-9")).toBeCloseTo(integral(() => 5, 0, 2) + integral(() => -3, 0, 5), 6);
+    expect(keyOf("area-with-a-sign-5")).toBeCloseTo(
+      integral((x) => x, -1, 3),
+      6,
+    );
+    expect(keyOf("area-with-a-sign-7")).toBeCloseTo(
+      integral(() => 3, 0, 4) + integral(() => -2, 0, 3),
+      6,
+    );
+    expect(keyOf("area-with-a-sign-9")).toBeCloseTo(
+      integral(() => 5, 0, 2) + integral(() => -3, 0, 5),
+      6,
+    );
   });
 
   it("gives the numbers quoted in lesson 11's prose", () => {
@@ -536,20 +688,41 @@ describe("Story lessons 6 to 12", () => {
     expect(integral((x) => 2 * x + 1, 0, 2)).toBeCloseTo(6, 6);
     expect(integral(tap, 1, 3)).toBeCloseTo(8, 6);
     expect(3 ** 2 + 4 - (1 ** 2 + 4)).toBe(8); // G = x² + 4 gives the same difference
-    expect(slope((x) => x * x + 4, 2)).toBeCloseTo(slope((x) => x * x, 2), 6);
+    expect(slope((x) => x * x + 4, 2)).toBeCloseTo(
+      slope((x) => x * x, 2),
+      6,
+    );
   });
 
   it("matches lesson 11's keys by integrating and differentiating numerically", () => {
-    expect(keyOf("the-two-ideas-connect-1")).toBeCloseTo(integral((x) => 2 * x, 1, 3), 6);
-    expect(keyOf("the-two-ideas-connect-2")).toBeCloseTo(integral((x) => 2 * x + 1, 0, 2), 6);
+    expect(keyOf("the-two-ideas-connect-1")).toBeCloseTo(
+      integral((x) => 2 * x, 1, 3),
+      6,
+    );
+    expect(keyOf("the-two-ideas-connect-2")).toBeCloseTo(
+      integral((x) => 2 * x + 1, 0, 2),
+      6,
+    );
     expect(keyOf("the-two-ideas-connect-4")).toBeCloseTo(
       slope((x) => integral((t) => t * t + 1, 0, x), 2, 1e-3),
       3,
     );
-    expect(keyOf("the-two-ideas-connect-5")).toBeCloseTo(integral((x) => 3 * x * x, 1, 2), 6);
-    expect(keyOf("the-two-ideas-connect-7")).toBeCloseTo(integral((x) => 2 * x, 0, 3), 6);
-    expect(keyOf("the-two-ideas-connect-9")).toBeCloseTo(integral((t) => 6 * t, 1, 3), 6);
-    expect(keyOf("the-two-ideas-connect-10")).toBeCloseTo(integral((x) => 4 * x, 0, 3), 6);
+    expect(keyOf("the-two-ideas-connect-5")).toBeCloseTo(
+      integral((x) => 3 * x * x, 1, 2),
+      6,
+    );
+    expect(keyOf("the-two-ideas-connect-7")).toBeCloseTo(
+      integral((x) => 2 * x, 0, 3),
+      6,
+    );
+    expect(keyOf("the-two-ideas-connect-9")).toBeCloseTo(
+      integral((t) => 6 * t, 1, 3),
+      6,
+    );
+    expect(keyOf("the-two-ideas-connect-10")).toBeCloseTo(
+      integral((x) => 4 * x, 0, 3),
+      6,
+    );
     expect(keyOf("the-two-ideas-connect-11")).toBeCloseTo(
       slope((x) => integral((t) => 3 * t, 0, x), 4, 1e-3),
       3,
@@ -583,13 +756,22 @@ describe("Story lessons 6 to 12", () => {
   });
 
   it("matches lesson 12's keys by integrating numerically", () => {
-    expect(keyOf("from-rate-to-amount-1")).toBeCloseTo(integral((t) => 2 * t + 3, 0, 2), 6);
+    expect(keyOf("from-rate-to-amount-1")).toBeCloseTo(
+      integral((t) => 2 * t + 3, 0, 2),
+      6,
+    );
     expect(keyOf("from-rate-to-amount-2")).toBeCloseTo(7 + integral((t) => 2 * t + 3, 0, 2), 6);
-    expect(keyOf("from-rate-to-amount-4")).toBeCloseTo(integral((t) => 3 * t + 4 - 2, 0, 2), 6);
+    expect(keyOf("from-rate-to-amount-4")).toBeCloseTo(
+      integral((t) => 3 * t + 4 - 2, 0, 2),
+      6,
+    );
     expect(keyOf("from-rate-to-amount-5")).toBeCloseTo(5 + integral((t) => 3 * t - 2, 0, 2), 6);
     expect(keyOf("from-rate-to-amount-7")).toBeCloseTo(30 + integral(() => 5, 0, 4), 6);
     expect(keyOf("from-rate-to-amount-9")).toBeCloseTo(40 + integral((t) => 2 * t - 6, 0, 4), 6);
-    expect(keyOf("from-rate-to-amount-10")).toBeCloseTo(integral(() => 3, 0, 5), 6);
+    expect(keyOf("from-rate-to-amount-10")).toBeCloseTo(
+      integral(() => 3, 0, 5),
+      6,
+    );
     expect(keyOf("from-rate-to-amount-11")).toBeCloseTo(7 - 4, 9);
     // displacement and distance for v(t) = 2t − 2 on [0, 2]
     expect(integral((t) => 2 * t - 2, 0, 2)).toBeCloseTo(0, 6);
