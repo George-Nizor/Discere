@@ -2,6 +2,22 @@
 
 Updated: 2026-11-03
 
+Release 1.9.0 completes the expansion: every course in `docs/expansion-plan-2026-11.md` is
+written, so Discere has 66 courses. This release adds Reading and Research, Linguistics, Writing
+Longer Pieces, Decision Theory, Speaking, Argument and Debate, Creative and Game Writing, Music
+Theory, Sound and Audio Fundamentals, Drawing and Visual-Art Fundamentals, and First Aid. First
+Aid was checked against the IFRC 2025 guidelines, the ERC 2025 guidance, AHA 2025 abstracts and
+the British Red Cross, with page references; where they differ the lesson names both.
+
+Known gaps found while writing, for later:
+
+- The new lessons have not been played in the running app.
+- The text matcher drops sharp and flat signs, so Music Theory writes accidentals as words.
+- The figure palette has five greys, so a nine-step value scale shares fills.
+- `language_explorer`, `inference_explorer` and `timeline_explorer` figures are untested in the
+  new courses; most writers drew `svg_figure` instead.
+- The review-card pass (expansion plan, section 1) is still to do.
+
 Release 1.8.0 completes the Making wave with Small Buildings and Architectural Design and brings
 the maths and science wave: Trigonometry, Statistical and Causal Inference, Earth and
 Environmental Science, Physics II: Waves, Electricity and Heat, and Calculus II: Series and

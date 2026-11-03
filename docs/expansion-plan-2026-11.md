@@ -1,6 +1,6 @@
 # Expansion plan, November 2026
 
-Status: approved 3 November 2026. George kept every course in A to D, and from E only First aid,
+Status: written and released, 3 November 2026 (Discere 1.4.0 to 1.9.0). Approved 3 November 2026. George kept every course in A to D, and from E only First aid,
 using freely available Red Cross materials. Chess is covered by another app. The card pass
 (section 1) is deferred to after the first expansion wave. Curricula are researched in
 `docs/curricula/`.
