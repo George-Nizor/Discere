@@ -57,7 +57,8 @@ last lesson names what the learner can now do).
   `worked_example`, `faded_example`, `explore` and `transfer`. Teach an idea on an `explain` screen
   (80 to 420 words in `lead` and `afterFigure`, with a `headline` that states the idea), then have
   the learner act on it. Never more than three teaching screens in a row. Every non-`explain`
-  screen asks something (`checkQuestionId`, or a worked line with a `blank`). A `predict` comes
+  screen asks something: a `checkQuestionId`, or, on a worked or faded example, a line with a
+  `blank` or a `selfExplain` question. A `predict` comes
   *before* the idea it tests, a `try` after it, and at least one `transfer` applies the idea to a
   changed case. Include at least one `worked_example` or `faded_example` wherever the lesson
   teaches a procedure. A step's `lead` that comes before a question is at most 110 words.
@@ -146,7 +147,8 @@ only what you can confirm, and leave out a detail you cannot.
 2. Draw the cover, `content/<course>/assets/cover.svg`, in the house style of the existing covers:
    read one, such as `content/cs-basics/assets/cover.svg`, and draw an object for this subject
    with the same `viewBox`, gradients, shadow and palette.
-3. `npx tsx scripts/voice-check.ts <course>` reports 0 errors with no unwritten lessons. Do not
+3. `npx tsx scripts/voice-check.ts <course>` reports 0 errors with no unwritten lessons, and
+   `npx tsx scripts/check-course.ts <course>` loads the course as the server does. Do not
    run `pnpm validate:content` or the test suites: other courses are being written at the same
    time and are incomplete.
 4. Do not commit and do not edit code. Touch only `content/<course>/` and `.author/<course>/`.
