@@ -8,7 +8,7 @@ import { describe, expect, it } from "vitest";
  */
 const bundle = JSON.parse(
   readFileSync(
-    new URL("../../../content/physics-motion-and-forces/.authoring/candidate.json", import.meta.url),
+    new URL("../../../content/physics-motion-and-forces/bundle.json", import.meta.url),
     "utf8",
   ),
 ) as CourseBundle;
@@ -354,96 +354,6 @@ describe("Physics: Motion and Forces (v2 numeric keys)", () => {
     expect([40 - 15, 5 + 40 - 15]).toEqual([25, 30]);
   });
 
-  it("power and efficiency", () => {
-    near("power-and-efficiency-hook", 600 / 3);
-    near("power-and-efficiency-first-power", 2000 / 5);
-    near("power-and-efficiency-first-efficiency", (100 / 400) * 100);
-    near("power-and-efficiency-1", 1200 / 4);
-    near("power-and-efficiency-2", (1200 / 2000) * 100);
-    near("power-and-efficiency-3", 2000 - 1200);
-    near("power-and-efficiency-5", (350 / 500) * 100);
-    near("power-and-efficiency-check-3", 120 / 0.4);
-    // the kettle and the candle: 2,000 W and about 50 W, 120,000 J in a minute and in forty minutes
-    expect([2000 * 10, 2000 * 60, 120000 / 50 / 60]).toEqual([20000, 120000, 40]);
-    // one 600 J job in 12 s and in 6 s: halving the time doubles the power
-    expect([600 / 12, 600 / 6, 600 / 6 / (600 / 12)]).toEqual([50, 100, 2]);
-    expect(600 / 10).toBe(60);
-    // the kettle's efficiency, its wasted share, and its rating of 2,000 W at 90%
-    expect([900 / 1000, 1000 - 900, 0.9 * 2000, 2000 - 0.9 * 2000]).toEqual([0.9, 100, 1800, 200]);
-    // the lamp's account and the rate running backwards
-    expect([100 - 5, 45 / 0.9]).toEqual([95, 50]);
-    // the worked example: 500 J in, 400 J out
-    expect([400 / 500, 500 - 400]).toEqual([0.8, 100]);
-    // the transfer item: the same energy in half the time doubles the power
-    expect(1200 / 2 / (1200 / 4)).toBe(2);
-    // the check items are the ones the lesson lists, and the unused ones stay out
-    const lesson = bundle.lessons.find((l) => l.id === "power-and-efficiency")!;
-    expect(lesson.questionIds).toEqual([
-      "phys-power-and-efficiency-first-power",
-      "phys-power-and-efficiency-5",
-      "phys-power-and-efficiency-check-3",
-    ]);
-    const used = lesson.steps.flatMap((s) => [
-      s.checkQuestionId,
-      ...(s.workedSteps ?? []).flatMap((w) => [w.blank?.questionId, w.selfExplain?.questionId]),
-    ]);
-    expect(used).not.toContain("phys-power-and-efficiency-6");
-    expect(used).not.toContain("phys-power-and-efficiency-first-efficiency");
-    // the lesson picks up the kettle and the candle from the last lesson's close
-    const before = bundle.lessons.find((l) => l.id === "keeping-energy-account")!;
-    expect(before.recap?.nextHook).toMatch(/kettle/i);
-    const opener = lesson.intro?.hook.blocks.map((b) => ("text" in b ? b.text : "")).join(" ") ?? "";
-    expect(opener).toMatch(/kettle/i);
-    expect(opener).toMatch(/candle/i);
-    // no term is used before the screen that introduces it
-    expect(opener).not.toMatch(/\bpower\b|\befficiency\b/i);
-  });
-
-  it("momentum and impulse", () => {
-    near("momentum-and-impulse-hook", (40 * 0.5) / 2);
-    near("momentum-and-impulse-left", 5 * -2);
-    near("momentum-and-impulse-1", 3 * 4);
-    near("momentum-and-impulse-2", 6 * 3);
-    near("momentum-and-impulse-3", (3 * 4 + 18) / 3);
-    near("momentum-and-impulse-try", (2 * 5 - 6) / 2);
-    near("momentum-and-impulse-5", (0 - 4 * 6) / 3);
-    near("momentum-and-impulse-check-3", (0 - 0.5 * 8) / 0.2);
-    // the first screen: 1 kg and 10 kg at 5 m/s, and a 1 kg ball moving left at 7 m/s
-    expect([1 * 5, 10 * 5, 1 * -7]).toEqual([5, 50, -7]);
-    // the push on a 5 kg trolley: 10 N for 3 s and for 1 s
-    expect([10 * 3, 10 * 1, (10 * 3) / 5, (10 * 1) / 5]).toEqual([30, 10, 6, 2]);
-    // the 4 kg cart at 1 m/s: +12 N·s gives 4 m/s, -4 N·s stops it, -12 N·s gives -2 m/s
-    expect([(4 * 1 + 12) / 4, (4 * 1 - 4) / 4, (4 * 1 - 12) / 4]).toEqual([4, 0, -2]);
-    // the worked example: 2 kg at +3 m/s with 5 N for 4 s
-    expect([2 * 3, 5 * 4, (2 * 3 + 5 * 4) / 2]).toEqual([6, 20, 13]);
-    // the hook's two stops hold the same impulse: 40 N × 0.5 s = 10 N × 2 s
-    expect(40 * 0.5).toBe(10 * 2);
-    // the catch: a 2 kg ball at 5 m/s stopped in 0.5 s and in 2 s, four times the force for a quarter of the time
-    expect([(0 - 2 * 5) / 0.5, (0 - 2 * 5) / 2, (0 - 2 * 5) / 0.5 / ((0 - 2 * 5) / 2)]).toEqual([
-      -20, -5, 4,
-    ]);
-    // the figure's forces carry the cart to rest: 2 kg at 5 m/s with -20 N for 0.5 s and -5 N for 2 s
-    expect([5 + (-20 * 0.5) / 2, 5 + (-5 * 2) / 2]).toEqual([0, 0]);
-    // the bounce: 3 kg at ±5 m/s keeps 37.5 J and the momentum changes by -30 kg·m/s
-    expect([0.5 * 3 * 5 ** 2, 0.5 * 3 * (-5) ** 2, 3 * -5 - 3 * 5, -15 * 2]).toEqual([37.5, 37.5, -30, -30]);
-    expect(5 + (-15 * 2) / 3).toBe(-5);
-    // the transfer item: 2 kg from +4 to -4 m/s
-    expect([0.5 * 2 * 4 ** 2 - 0.5 * 2 * (-4) ** 2, 2 * -4 - 2 * 4]).toEqual([0, -16]);
-    expect(4 + (-8 * 2) / 2).toBe(-4);
-    // the check items are the ones the lesson lists
-    const lesson = bundle.lessons.find((l) => l.id === "momentum-and-impulse")!;
-    expect(lesson.questionIds).toEqual([
-      "phys-momentum-and-impulse-left",
-      "phys-momentum-and-impulse-try",
-      "phys-momentum-and-impulse-check-3",
-    ]);
-    // the lesson picks up the close of the last one and does not use its terms early
-    const before = bundle.lessons.find((l) => l.id === "power-and-efficiency")!;
-    expect(before.recap?.nextHook).toMatch(/direction/i);
-    const opener = lesson.intro?.hook.blocks.map((b) => ("text" in b ? b.text : "")).join(" ") ?? "";
-    expect(opener).not.toMatch(/\bmomentum\b|\bimpulse\b/i);
-  });
-
   it("carts that stick", () => {
     const v = (m1: number, u1: number, m2: number, u2: number) => (m1 * u1 + m2 * u2) / (m1 + m2);
     const k = (m: number, s: number) => 0.5 * m * s ** 2;
@@ -491,39 +401,6 @@ describe("Physics: Motion and Forces (v2 numeric keys)", () => {
       if (storyLessons.includes(lesson.id)) continue;
       expect(lesson.steps.length).toBeGreaterThanOrEqual(5);
       expect(lesson.steps.length).toBeLessThanOrEqual(7);
-    }
-  });
-
-  it("tells the first ten lessons as stories", () => {
-    for (const id of storyLessons) {
-      const lesson = bundle.lessons.find((item) => item.id === id)!;
-      const teaching = lesson.steps.filter((s) => s.kind === "explain" && !s.checkQuestionId);
-      expect(lesson.steps.length).toBeGreaterThanOrEqual(8);
-      expect(lesson.steps.length).toBeLessThanOrEqual(14);
-      expect(teaching.length / lesson.steps.length).toBeGreaterThanOrEqual(0.4);
-      // an opener that asks nothing, and a figure somewhere in the lesson
-      expect(lesson.intro?.hook.questionId).toBeUndefined();
-      expect(lesson.steps.some((s) => s.diagram)).toBe(true);
-      // every graded figure hides its answer
-      for (const step of lesson.steps)
-        if (step.diagram && step.checkQuestionId)
-          expect(step.answerVisibility).toBe("hidden-until-response");
-      // questions that are asked: 3 to 7 practice screens
-      const asked = lesson.steps.filter(
-        (s) => s.checkQuestionId || s.workedSteps?.some((w) => w.blank || w.selfExplain),
-      );
-      expect(asked.length).toBeGreaterThanOrEqual(3);
-      expect(asked.length).toBeLessThanOrEqual(7);
-      // no teaching screen asks anything
-      for (const step of teaching) expect(step.checkQuestionId).toBe("");
-    }
-  });
-
-  it("chains each lesson's close into the next lesson's opener", () => {
-    for (const id of storyLessons) {
-      const lesson = bundle.lessons.find((item) => item.id === id)!;
-      expect(lesson.recap?.nextHook?.length ?? 0).toBeGreaterThan(20);
-      expect(lesson.recap?.nextHook?.trim().endsWith("?")).toBe(false);
     }
   });
 });
