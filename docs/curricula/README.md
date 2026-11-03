@@ -29,7 +29,8 @@ and how to check that they learned it. That is your job.
   must need only what came before it, in this course or in a stated prerequisite course.
 - **Audience.** A capable adult. Say what they already know, and link existing Discere courses as
   prerequisites by id (listed below).
-- **Answers.** Every question plan is markable without free text: numeric, choice, single term, a
+- **Answers.** Every question plan is markable without free text: numeric, choice, single term, an
+  ordering (`order_sequence`, the answer is the correct order), a
   self-rated recall, or code (Python, SQL and Rust can run in the app's sandbox; other languages
   are code-reading questions until runners exist). Give two or three sample items per lesson with
   their answers, worked out exactly.
@@ -71,7 +72,7 @@ and how to check that they learned it. That is your job.
         { "type": "svg_figure", "shows": "…", "learnerAction": "… or none", "placement": "which idea it serves" }
       ],
       "questionPlan": [
-        { "kind": "numeric|choice|single-term|self|code-run-python|code-run-sql|code-run-rust|code-reading",
+        { "kind": "numeric|choice|single-term|order_sequence|self|code-run-python|code-run-sql|code-run-rust|code-reading",
           "targets": "skill or misconception", "sample": "Prompt text", "answer": "Exact answer", "choices": ["only for choice"] }
       ],
       "sourceIds": ["sre-book"],
