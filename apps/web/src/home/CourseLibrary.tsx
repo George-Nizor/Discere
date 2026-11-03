@@ -5,10 +5,14 @@ import {
   BookOpenText,
   BrainCircuit,
   Cog,
+  Database,
   Feather,
+  HeartPulse,
   Lightbulb,
+  Music,
   Orbit,
   Search,
+  Server,
   Shapes,
   X,
 } from "lucide-react";
@@ -54,73 +58,160 @@ export function CourseLibrary({ courses }: { courses: CourseSummary[] }) {
     setParams(next);
   };
 
-  const pathDefinitions = [
+  // Each group lists its courses in the order a learner would take them. A course missing from
+  // every group still appears, under "More courses".
+  const groups: Array<{
+    id: string;
+    title: string;
+    description: string;
+    icon: typeof Shapes;
+    courseIds: string[];
+  }> = [
     {
       id: "foundations",
-      title: "Foundations for thinking",
-      description: "Explore number, pattern, logic and chance.",
+      title: "Mathematics and logic",
+      description: "Algebra, geometry, calculus, probability and reasoning, from the basics up.",
       icon: Shapes,
-      courses: [
+      courseIds: [
         "maths-foundations",
         "geometry-shape-and-space",
+        "trigonometry",
         "linear-algebra-vectors-and-maps",
         "calculus-change-and-accumulation",
+        "calculus-series-and-differential-equations",
         "logic-and-reasoning",
         "probability-statistics",
-      ].flatMap((id) => visible.filter((course) => course.id === id)),
+        "statistical-and-causal-inference",
+      ],
     },
     {
       id: "computing",
-      title: "Computing and data",
-      description: "Follow an algorithm. Ask a better question of your data.",
+      title: "Programming and computer science",
+      description: "How programs and computers work, and the languages and tools for writing them.",
       icon: Binary,
-      courses: visible.filter((course) =>
-        ["cs-basics", "sql-from-rows-to-reports", "python-for-data-analysis"].includes(course.id),
-      ),
+      courseIds: [
+        "cs-basics",
+        "computers-and-networks",
+        "data-structures-and-algorithms",
+        "linux-and-the-command-line",
+        "git-and-version-control",
+        "rust-foundations",
+        "systems-programming",
+        "the-web-html-css-javascript",
+        "typescript-and-node",
+        "game-design-and-programming-patterns",
+      ],
+    },
+    {
+      id: "software",
+      title: "Building software",
+      description: "Designing, testing, securing and running software that other people rely on.",
+      icon: Server,
+      courseIds: [
+        "backend-and-api-design",
+        "databases-and-data-modelling",
+        "software-testing-and-quality",
+        "software-design-and-architecture",
+        "system-design",
+        "devops-and-delivery",
+        "cloud-fundamentals",
+        "cybersecurity",
+        "ai-assisted-engineering",
+        "ux-and-hci",
+        "technical-writing",
+      ],
+    },
+    {
+      id: "data",
+      title: "Data and AI",
+      description: "Querying and analysing data, and building with machine learning and language models.",
+      icon: Database,
+      courseIds: [
+        "sql-from-rows-to-reports",
+        "python-for-data-analysis",
+        "data-engineering",
+        "analytics-engineering-and-governance",
+        "machine-learning-and-mlops",
+        "ai-engineering",
+        "ai-agents",
+      ],
     },
     {
       id: "science",
-      title: "Explore the natural world",
-      description: "Predict motion, follow a reaction and explore living systems.",
+      title: "Science",
+      description: "Physics, astronomy, chemistry, biology and the Earth.",
       icon: Orbit,
-      courses: visible.filter((course) =>
-        [
-          "physics-motion-and-forces",
-          "astronomy-sky-to-cosmos",
-          "chemistry-atoms-to-reactions",
-          "biology-cells-to-ecosystems",
-        ].includes(course.id),
-      ),
+      courseIds: [
+        "physics-motion-and-forces",
+        "physics-waves-electricity-heat",
+        "astronomy-sky-to-cosmos",
+        "chemistry-atoms-to-reactions",
+        "biology-cells-to-ecosystems",
+        "earth-and-environmental-science",
+      ],
     },
     {
       id: "engineering",
-      title: "Build and design",
-      description: "Load a beam, balance a truss, gear a machine.",
+      title: "Engineering and making",
+      description: "Structures, circuits, machines, materials and the design of products and buildings.",
       icon: Cog,
-      courses: visible.filter((course) =>
-        ["engineering-structures-and-machines"].includes(course.id),
-      ),
+      courseIds: [
+        "engineering-structures-and-machines",
+        "electronics-foundations",
+        "mechanisms-and-machine-design",
+        "materials-and-manufacturing",
+        "control-theory",
+        "mechatronics-and-robotics",
+        "industrial-and-product-design",
+        "small-buildings-and-architectural-design",
+      ],
     },
     {
       id: "society",
-      title: "Minds and markets",
+      title: "Mind, society and decisions",
       description: "How people think, choose, trade and compete.",
       icon: BrainCircuit,
-      courses: ["psychology-how-minds-work", "economics-markets-and-strategy"].flatMap((id) =>
-        visible.filter((course) => course.id === id),
-      ),
+      courseIds: [
+        "psychology-how-minds-work",
+        "economics-markets-and-strategy",
+        "decision-theory",
+      ],
     },
     {
       id: "humanities",
-      title: "Ideas and words",
-      description: "Argue precisely, read closely, write with force.",
+      title: "History, language and writing",
+      description: "Philosophy, history and language, and reading, writing and speaking well.",
       icon: Feather,
-      courses: [
+      courseIds: [
         "philosophy-knowledge-mind-and-ethics",
+        "history",
+        "linguistics",
         "english-reading-writing-and-rhetoric",
-      ].flatMap((id) => visible.filter((course) => course.id === id)),
+        "reading-and-research",
+        "writing-longer-pieces",
+        "speaking-argument-and-debate",
+        "creative-and-game-writing",
+      ],
+    },
+    {
+      id: "arts",
+      title: "Music and art",
+      description: "Music theory, sound, and drawing.",
+      icon: Music,
+      courseIds: ["music-theory", "sound-and-audio-fundamentals", "drawing-and-visual-art-fundamentals"],
+    },
+    {
+      id: "life",
+      title: "First aid",
+      description: "What to do in an emergency until help arrives.",
+      icon: HeartPulse,
+      courseIds: ["first-aid"],
     },
   ];
+  const pathDefinitions = groups.map(({ courseIds, ...group }) => ({
+    ...group,
+    courses: courseIds.flatMap((id) => visible.filter((course) => course.id === id)),
+  }));
   const assigned = new Set(
     pathDefinitions.flatMap((path) => path.courses.map((course) => course.id)),
   );
@@ -128,8 +219,8 @@ export function CourseLibrary({ courses }: { courses: CourseSummary[] }) {
   if (remaining.length)
     pathDefinitions.push({
       id: "explore",
-      title: "Explore more",
-      description: "Discover your next idea.",
+      title: "More courses",
+      description: "Courses not yet placed in a group.",
       icon: Shapes,
       courses: remaining,
     });
