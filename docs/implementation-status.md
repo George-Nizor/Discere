@@ -2,6 +2,10 @@
 
 Updated: 2026-11-03
 
+Release 1.9.2 archives Drawing and Visual Art Fundamentals, because Delineare already teaches
+drawing; the course stays in `content/` for saved history and leaves the library. The plan for
+testing the courses with learner agents is `docs/learner-agent-testing-plan.md`, ready to start.
+
 Release 1.9.1 adds two controls George asked for while trying the new lessons. A course he has
 started can be started again from its page: every lesson forgets its place and its finished
 stages, and course checks are cleared, while XP, review cards and past answers are kept
@@ -19,7 +23,6 @@ Known gaps found while writing, for later:
 
 - The new lessons have not been played in the running app.
 - The text matcher drops sharp and flat signs, so Music Theory writes accidentals as words.
-- The figure palette has five greys, so a nine-step value scale shares fills.
 - `language_explorer`, `inference_explorer` and `timeline_explorer` figures are untested in the
   new courses; most writers drew `svg_figure` instead.
 - The review-card pass (expansion plan, section 1) is still to do.
