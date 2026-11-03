@@ -5,7 +5,7 @@ import type {
   LearnerWorkedStep,
   LessonFeedbackRequest,
 } from "@discere/contracts";
-import { ArrowRight, ChevronDown } from "lucide-react";
+import { ArrowLeft, ArrowRight, ChevronDown } from "lucide-react";
 import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { RichBlocks } from "../../ui/RichBlocks.js";
 import { InlineRichText } from "../../ui/RichText.js";
@@ -373,16 +373,39 @@ export function StoryStageView({
     window.requestAnimationFrame(scrollStageToTop);
   }
 
-  const continueButton = ready ? (
-    <PlayerFooterSlot kind="actions">
-      <div className="button-row story-actions">
-        <button className="button button-primary" onClick={advance} type="button">
-          {onOpener && !stage.intro?.hook.question ? "Start" : isLast ? "Finish" : "Continue"}
-          <ArrowRight aria-hidden="true" size={16} strokeWidth={1.8} />
-        </button>
-      </div>
-    </PlayerFooterSlot>
-  ) : null;
+  // Going back is always allowed. A screen answered during this visit stays in `solved`, so the
+  // learner can step forward again past it without answering a second time.
+  function goBack(): void {
+    if (position === 0) return;
+    const previous = position - 1;
+    setPosition(previous);
+    const previousId = screens[previous] ?? "";
+    onStepChange(
+      previousId,
+      steps.findIndex((step) => step.id === previousId),
+    );
+    window.requestAnimationFrame(scrollStageToTop);
+  }
+
+  const continueButton =
+    ready || position > 0 ? (
+      <PlayerFooterSlot kind="actions">
+        <div className="button-row story-actions">
+          {position > 0 ? (
+            <button className="button button-quiet" onClick={goBack} type="button">
+              <ArrowLeft aria-hidden="true" size={16} strokeWidth={1.8} />
+              Back
+            </button>
+          ) : null}
+          {ready ? (
+            <button className="button button-primary" onClick={advance} type="button">
+              {onOpener && !stage.intro?.hook.question ? "Start" : isLast ? "Finish" : "Continue"}
+              <ArrowRight aria-hidden="true" size={16} strokeWidth={1.8} />
+            </button>
+          ) : null}
+        </div>
+      </PlayerFooterSlot>
+    ) : null;
 
   if (onOpener && stage.intro) {
     return (

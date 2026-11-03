@@ -275,3 +275,40 @@ describe("v2 anatomy", () => {
     expect(await screen.findByRole("button", { name: /Finish/ })).toBeInTheDocument();
   });
 });
+
+describe("going back within a lesson", () => {
+  const teaching: ExplainerStage = {
+    ...legacy,
+    steps: [
+      {
+        id: "first",
+        kind: "explain",
+        questionLed: true,
+        visualStateId: "",
+        headline: "The first idea",
+        blocks: [{ kind: "paragraph", text: "A letter stands for a number." }],
+      },
+      {
+        id: "second",
+        kind: "explain",
+        questionLed: true,
+        visualStateId: "",
+        headline: "The second idea",
+        blocks: [{ kind: "paragraph", text: "The same letter means the same number." }],
+      },
+    ],
+  };
+
+  it("offers Back from the second screen and saves the earlier place", async () => {
+    stubFetch({});
+    const { onStepChange } = render(teaching, { stepId: "second" });
+    expect(screen.getByRole("heading", { name: "The second idea" })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: /Back/ }));
+    expect(screen.getByRole("heading", { name: "The first idea" })).toBeInTheDocument();
+    expect(onStepChange).toHaveBeenLastCalledWith("first", 0);
+    // The first screen has nothing before it, and Continue still moves forward.
+    expect(screen.queryByRole("button", { name: /Back/ })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: /Continue/ }));
+    expect(screen.getByRole("heading", { name: "The second idea" })).toBeInTheDocument();
+  });
+});
