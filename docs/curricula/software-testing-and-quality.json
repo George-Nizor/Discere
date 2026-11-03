@@ -1,0 +1,1151 @@
+{
+  "id": "software-testing-and-quality",
+  "title": "Software Testing and Quality",
+  "family": "A",
+  "voice": "A",
+  "description": "How to decide what to test, write tests that can fail for the right reasons, and judge a suite and a release by evidence instead of habit.",
+  "audience": "A capable adult who can read and write basic Python, as taught in the existing courses, and has built or maintained small programs.",
+  "prerequisites": [
+    "python-for-data-analysis",
+    "cs-basics"
+  ],
+  "outcomes": [
+    "You'll be able to say what a passing test does and does not show.",
+    "You'll be able to write a small deterministic unit test and run it.",
+    "You'll be able to choose inputs by partitions and boundaries.",
+    "You'll be able to compute coverage, mutation score, flake probability and defect detection percentage.",
+    "You'll be able to place tests at the right level and read percentiles and Little's law for performance."
+  ],
+  "sources": [
+    {
+      "id": "python-unittest",
+      "title": "Python documentation: unittest and the assert statement",
+      "url": "https://docs.python.org/3/library/unittest.html",
+      "licence": "PSF licence for docs (Python docs under PSF/Zero-Clause BSD for code samples)",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "swe-google",
+      "title": "Software Engineering at Google, Part III: Testing (chapters 11 to 14)",
+      "url": "https://abseil.io/resources/swe-book",
+      "licence": "CC BY-NC-ND 4.0 (online edition); confirm",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "owasp-wstg",
+      "title": "OWASP Web Security Testing Guide",
+      "url": "https://owasp.org/www-project-web-security-testing-guide/",
+      "licence": "CC BY-SA 4.0",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "istqb-glossary",
+      "title": "ISTQB Glossary of testing terms",
+      "url": "https://glossary.istqb.org/",
+      "licence": "ISTQB copyright; free to read, reference only",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "swebok",
+      "title": "SWEBOK Guide v4, Software Testing and Software Quality chapters",
+      "url": "https://www.computer.org/education/bodies-of-knowledge/software-engineering",
+      "licence": "IEEE copyright; reference only",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "hypothesis-docs",
+      "title": "Hypothesis documentation (property-based testing)",
+      "url": "https://hypothesis.readthedocs.io/",
+      "licence": "MPL-2.0 (software); docs licence to confirm",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "sre-book",
+      "title": "Site Reliability Engineering (Google), chapters on testing and release",
+      "url": "https://sre.google/sre-book/table-of-contents/",
+      "licence": "CC BY-NC-ND 4.0",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "fowler-pyramid",
+      "title": "Martin Fowler: The Practical Test Pyramid (Ham Vocke)",
+      "url": "https://martinfowler.com/articles/practical-test-pyramid.html",
+      "licence": "Author copyright; reference only",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "dora",
+      "title": "DORA research programme",
+      "url": "https://dora.dev/",
+      "licence": "Site copyright Google; reference only",
+      "use": "reference",
+      "verified": false
+    }
+  ],
+  "modules": [
+    {
+      "id": "foundations",
+      "title": "What testing can tell you",
+      "summary": "What a test claims, how to write one, and how to choose inputs that matter."
+    },
+    {
+      "id": "techniques",
+      "title": "Techniques",
+      "summary": "Measuring what tests exercise, isolating what they test, and finding what example-based tests miss."
+    },
+    {
+      "id": "strategy",
+      "title": "Strategy and non-functional quality",
+      "summary": "Balancing test levels, testing data, speed and load, and measuring quality and process."
+    }
+  ],
+  "lessons": [
+    {
+      "id": "what-a-test-shows",
+      "moduleId": "foundations",
+      "title": "What a test can and cannot show",
+      "objective": "State what a passing test establishes, separate verification from validation, and identify the oracle in a test.",
+      "prerequisiteLessonIds": [],
+      "concepts": [
+        {
+          "id": "oracle",
+          "title": "Test oracle",
+          "summary": "The source of the expected result against which actual behaviour is compared."
+        },
+        {
+          "id": "verify-validate",
+          "title": "Verification versus validation",
+          "summary": "Verification asks whether we built it right against the specification; validation asks whether we built the right thing."
+        },
+        {
+          "id": "coverage-limit",
+          "title": "Limits of testing",
+          "summary": "Testing can reveal defects but cannot prove their absence, because inputs are too many to try."
+        }
+      ],
+      "skills": [
+        "identify-oracle",
+        "tell-verify-validate"
+      ],
+      "misconceptions": [
+        "A passing suite proves the software correct; it shows only that the tried inputs behaved as expected.",
+        "Testing is for finding bugs at the end; it also builds confidence, documents behaviour and guards change.",
+        "A test needs a program to run; a review of a requirement is also a test of the idea."
+      ],
+      "sequence": [
+        "Begin with a function and five passing tests that still hide a bug.",
+        "Name the parts of a test: setup, action, expected result (oracle).",
+        "Count inputs: a function of two 32-bit integers has 2^64 input pairs.",
+        "Separate verification and validation with a spreadsheet that follows its spec but solves the wrong problem.",
+        "Say what tests are for: confidence, regression protection, documentation, design feedback."
+      ],
+      "examples": [
+        "A function taking two 32-bit integers has 2^32 x 2^32 = 2^64 = 18,446,744,073,709,551,616 input pairs; at a billion tests a second exhaustive checking takes about 585 years.",
+        "A tax form that matches its specification but asks the wrong question passes verification and fails validation."
+      ],
+      "figures": [
+        {
+          "type": "table",
+          "shows": "Rows of a test: input, action, expected, actual, verdict.",
+          "learnerAction": "Fill in a missing expected value.",
+          "placement": "oracle"
+        },
+        {
+          "type": "number_machine",
+          "shows": "Bits of input on one side, number of combinations and years on the other.",
+          "learnerAction": "Raise the input width.",
+          "placement": "exhaustive limits"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "coverage-limit",
+          "sample": "A function takes two 32-bit integers. How many input pairs are there, written as a power of two? Give the exponent.",
+          "answer": "64"
+        },
+        {
+          "kind": "choice",
+          "targets": "tell-verify-validate",
+          "sample": "A product meets every line of its specification, but users do not want it. Which check failed?",
+          "answer": "Validation",
+          "choices": [
+            "Verification",
+            "Validation",
+            "Unit testing",
+            "Static analysis"
+          ]
+        },
+        {
+          "kind": "single-term",
+          "targets": "identify-oracle",
+          "sample": "What is the name for the source of the expected result in a test?",
+          "answer": "oracle"
+        }
+      ],
+      "sourceIds": [
+        "istqb-glossary",
+        "swe-google",
+        "swebok"
+      ],
+      "historyNotes": [
+        "Edsger Dijkstra's remark that testing shows the presence, not the absence, of bugs dates from around 1969 to 1970; check the exact source before quoting."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "writing-unit-tests",
+      "moduleId": "foundations",
+      "title": "Writing a good unit test",
+      "objective": "Write a small, readable, deterministic unit test with arrange-act-assert, and run it.",
+      "prerequisiteLessonIds": [
+        "what-a-test-shows"
+      ],
+      "concepts": [
+        {
+          "id": "aaa",
+          "title": "Arrange, act, assert",
+          "summary": "Set up the inputs, call the unit, check one behaviour."
+        },
+        {
+          "id": "deterministic",
+          "title": "Deterministic test",
+          "summary": "Given the same code it always gives the same result, independent of time, order or network."
+        },
+        {
+          "id": "behaviour-name",
+          "title": "Behaviour naming",
+          "summary": "A test name states the situation and the expected result, so a failure explains itself."
+        }
+      ],
+      "skills": [
+        "write-assert",
+        "run-tests"
+      ],
+      "misconceptions": [
+        "A test should cover as many things as possible; one reason to fail per test is easier to diagnose.",
+        "Tests of internals are thorough; they break when code is refactored without behaviour change.",
+        "A passing test is trustworthy; a test that cannot fail checks nothing."
+      ],
+      "sequence": [
+        "Show a function and a first test with assert.",
+        "Name the test by behaviour.",
+        "Show a failing test and read the message.",
+        "Make a test fail on purpose to prove it can (the red step).",
+        "Remove sources of non-determinism: clocks, random numbers, order."
+      ],
+      "examples": [
+        "is_leap(1900) is False and is_leap(2000) is True: two tests, two different rules.",
+        "A test that reads today's date passes today and fails on 1 January."
+      ],
+      "figures": [
+        {
+          "type": "python_execution",
+          "shows": "A function and its tests, editable.",
+          "learnerAction": "Run, break the function, read the failure.",
+          "placement": "running tests"
+        },
+        {
+          "type": "program_trace",
+          "shows": "Step through arrange, act and assert.",
+          "learnerAction": "Step.",
+          "placement": "aaa"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "code-run-python",
+          "targets": "run-tests",
+          "sample": "Run: def is_leap(y): return y%4==0 and (y%100!=0 or y%400==0)\nprint(sum(is_leap(y) for y in range(1896,1905)))  What is printed?",
+          "answer": "2"
+        },
+        {
+          "kind": "code-run-python",
+          "targets": "write-assert",
+          "sample": "Run: try:\n    assert 2 + 2 == 5, 'sum wrong'\nexcept AssertionError as e:\n    print(e)\nWhat is printed?",
+          "answer": "sum wrong"
+        },
+        {
+          "kind": "choice",
+          "targets": "write-assert",
+          "sample": "Which test name best states behaviour?",
+          "answer": "rejects_negative_quantity",
+          "choices": [
+            "test1",
+            "rejects_negative_quantity",
+            "checks_function",
+            "quantity"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "python-unittest",
+        "swe-google"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "choosing-inputs",
+      "moduleId": "foundations",
+      "title": "Choosing inputs: partitions and boundaries",
+      "objective": "Divide an input domain into equivalence classes and pick boundary values.",
+      "prerequisiteLessonIds": [
+        "writing-unit-tests"
+      ],
+      "concepts": [
+        {
+          "id": "equivalence",
+          "title": "Equivalence partitioning",
+          "summary": "Group inputs that the program should treat the same and test one from each group."
+        },
+        {
+          "id": "boundary",
+          "title": "Boundary value analysis",
+          "summary": "Test at and next to the edges of each partition, where off-by-one errors live."
+        },
+        {
+          "id": "decision-table",
+          "title": "Decision table",
+          "summary": "A grid of condition combinations and the expected action for each."
+        }
+      ],
+      "skills": [
+        "partition-input",
+        "pick-boundaries"
+      ],
+      "misconceptions": [
+        "More random inputs mean better tests; representative inputs from each class and boundary find more bugs per test.",
+        "Valid inputs are enough; invalid classes expose most defects.",
+        "Boundaries are the edges of the valid range only; they are every place behaviour changes."
+      ],
+      "sequence": [
+        "Present a rule: ages 18 to 65 inclusive pay the standard rate.",
+        "Partition: below 18, 18 to 65, above 65 (three classes).",
+        "Add boundary tests: 17, 18, 65, 66 (two-value), or 17, 18, 19, 64, 65, 66 (three-value).",
+        "Add invalid classes: negative, non-numeric, empty.",
+        "Use a decision table for combined rules."
+      ],
+      "examples": [
+        "Two-value boundary tests for 18 to 65 inclusive: 17, 18, 65, 66, so 4 tests; three-value gives 6.",
+        "Three equivalence classes need at least 3 tests, one each; with the four boundary tests added, 4 plus one mid-range value is 5."
+      ],
+      "figures": [
+        {
+          "type": "coordinate_plane",
+          "shows": "A number line 0 to 100 with partitions shaded.",
+          "learnerAction": "Drag the boundaries and see the test set update.",
+          "placement": "partitions"
+        },
+        {
+          "type": "table",
+          "shows": "Decision table with true/false conditions and actions.",
+          "learnerAction": "Fill missing actions.",
+          "placement": "decision table"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "pick-boundaries",
+          "sample": "Ages 18 to 65 inclusive are valid. How many boundary tests do the two-value method give (just below and at each edge)?",
+          "answer": "4"
+        },
+        {
+          "kind": "numeric",
+          "targets": "pick-boundaries",
+          "sample": "The same rule with the three-value method (below, at and above each edge, without duplicates)?",
+          "answer": "6"
+        },
+        {
+          "kind": "numeric",
+          "targets": "partition-input",
+          "sample": "Ages are classed as under 18, 18 to 65, and over 65. How many equivalence classes of valid-or-not ages are there for valid numbers?",
+          "answer": "3"
+        }
+      ],
+      "sourceIds": [
+        "istqb-glossary",
+        "swebok"
+      ],
+      "historyNotes": [
+        "Equivalence partitioning and boundary value analysis were popularised by Glenford Myers' The Art of Software Testing (1979)."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "coverage-and-mutation",
+      "moduleId": "techniques",
+      "title": "Coverage and mutation testing",
+      "objective": "Compute line and branch coverage, say why 100 per cent does not mean well tested, and read a mutation score.",
+      "prerequisiteLessonIds": [
+        "choosing-inputs"
+      ],
+      "concepts": [
+        {
+          "id": "line-branch",
+          "title": "Line and branch coverage",
+          "summary": "Line coverage counts statements run; branch coverage counts decision outcomes taken."
+        },
+        {
+          "id": "mutation",
+          "title": "Mutation testing",
+          "summary": "Small deliberate faults (mutants) are planted; tests that fail on them kill them."
+        },
+        {
+          "id": "goodhart",
+          "title": "Coverage as a target",
+          "summary": "A number used as a target stops measuring quality, because tests can run code without checking anything."
+        }
+      ],
+      "skills": [
+        "compute-coverage",
+        "compute-mutation-score"
+      ],
+      "misconceptions": [
+        "100 per cent coverage means no bugs; assertion-free tests reach it.",
+        "Branch coverage and line coverage are equal; a single test can run every line and take half the branches.",
+        "Coverage is useless; low coverage reliably flags untested code, even if high coverage proves little."
+      ],
+      "sequence": [
+        "Show a function with two independent ifs and one test.",
+        "Count lines hit and branch outcomes taken.",
+        "Show a test with no assertion reaching full coverage.",
+        "Introduce mutation testing: change > to >= and see whether any test fails.",
+        "Compute a mutation score and discuss survivors."
+      ],
+      "examples": [
+        "f(a, b) with two ifs; the single call f(True, True) executes every line (100% line) but takes only the true outcome of each if: 2 of 4 branch outcomes, 50%.",
+        "20 mutants and 15 killed give a mutation score of 75%."
+      ],
+      "figures": [
+        {
+          "type": "program_trace",
+          "shows": "A function with highlighted lines and branch outcomes as tests are added.",
+          "learnerAction": "Add a test and watch coverage update.",
+          "placement": "coverage"
+        },
+        {
+          "type": "table",
+          "shows": "Mutants with the changed line and killed or survived.",
+          "learnerAction": "Write a test that kills a survivor.",
+          "placement": "mutation"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "code-reading",
+          "targets": "compute-coverage",
+          "sample": "def f(a,b):\n r=0\n if a: r+=1\n if b: r+=2\n return r\nA single test calls f(True, True). What percentage of branch outcomes is covered?",
+          "answer": "50"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-mutation-score",
+          "sample": "20 mutants are generated and tests kill 15. What is the mutation score as a percentage?",
+          "answer": "75"
+        },
+        {
+          "kind": "choice",
+          "targets": "compute-coverage",
+          "sample": "A suite reaches 100% line coverage with no assertions. What does that tell you?",
+          "answer": "The code ran, not that it behaved correctly",
+          "choices": [
+            "The code is correct",
+            "The code ran, not that it behaved correctly",
+            "All branches are covered",
+            "No mutants survive"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "swe-google",
+        "istqb-glossary"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "isolation-and-test-doubles",
+      "moduleId": "techniques",
+      "title": "Isolation and test doubles",
+      "objective": "Replace a slow or unpredictable dependency with a stub, fake or mock, and say what each is for.",
+      "prerequisiteLessonIds": [
+        "coverage-and-mutation"
+      ],
+      "concepts": [
+        {
+          "id": "double",
+          "title": "Test double",
+          "summary": "A stand-in for a real dependency; kinds include stub, fake, mock and spy."
+        },
+        {
+          "id": "injection",
+          "title": "Dependency injection",
+          "summary": "The unit receives its dependencies as arguments, so a test can supply doubles."
+        },
+        {
+          "id": "overmock",
+          "title": "Over-mocking",
+          "summary": "Tests that restate the implementation break on refactoring and prove little."
+        }
+      ],
+      "skills": [
+        "choose-double",
+        "inject-dependency"
+      ],
+      "misconceptions": [
+        "Mock and stub are the same; a stub returns canned answers, a mock also checks the calls made.",
+        "Use real services in unit tests for realism; they are slow, flaky and hard to control.",
+        "Mock everything for isolation; prefer a fake or the real thing when cheap, as in Google's guidance."
+      ],
+      "sequence": [
+        "Show a function that calls the clock and the network.",
+        "Pass them in as parameters.",
+        "Define stub, fake, mock and spy with a one-line example each.",
+        "Show a fake in-memory repository.",
+        "Warn against asserting internals."
+      ],
+      "examples": [
+        "A function takes now() as a parameter; the test passes a fixed time so the result is stable.",
+        "An in-memory dictionary behaving like a user repository is a fake."
+      ],
+      "figures": [
+        {
+          "type": "python_execution",
+          "shows": "A function with an injected clock.",
+          "learnerAction": "Run with real and fixed time.",
+          "placement": "injection"
+        },
+        {
+          "type": "diagram_choice",
+          "shows": "Four doubles and four definitions.",
+          "learnerAction": "Match them.",
+          "placement": "kinds"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "choice",
+          "targets": "choose-double",
+          "sample": "A dependency always returns the same canned value so the unit can be tested. This is a:",
+          "answer": "Stub",
+          "choices": [
+            "Stub",
+            "Mock",
+            "Spy",
+            "Fixture"
+          ]
+        },
+        {
+          "kind": "choice",
+          "targets": "choose-double",
+          "sample": "An in-memory dictionary behaving like a database table is a:",
+          "answer": "Fake",
+          "choices": [
+            "Fake",
+            "Stub",
+            "Mock",
+            "Driver"
+          ]
+        },
+        {
+          "kind": "single-term",
+          "targets": "inject-dependency",
+          "sample": "What is the name of passing a unit's dependencies in as arguments?",
+          "answer": "dependency injection"
+        }
+      ],
+      "sourceIds": [
+        "swe-google",
+        "python-unittest"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "properties-and-fuzzing",
+      "moduleId": "techniques",
+      "title": "Properties, fuzzing and exploratory testing",
+      "objective": "State properties that must hold for all inputs, and explain how generated inputs and human exploration find what examples miss.",
+      "prerequisiteLessonIds": [
+        "isolation-and-test-doubles"
+      ],
+      "concepts": [
+        {
+          "id": "property",
+          "title": "Property",
+          "summary": "A statement that holds for every valid input, such as reversing a list twice returns it."
+        },
+        {
+          "id": "shrink",
+          "title": "Shrinking",
+          "summary": "A generator reduces a failing input to a minimal one that still fails."
+        },
+        {
+          "id": "exploratory",
+          "title": "Exploratory testing",
+          "summary": "Simultaneous learning, test design and execution guided by the tester's judgement."
+        }
+      ],
+      "skills": [
+        "write-property",
+        "compare-approaches"
+      ],
+      "misconceptions": [
+        "Property-based tests replace example tests; they complement them, because properties are hard to find for some code.",
+        "Random input means no repeatability; seeds make runs reproducible.",
+        "Exploratory means unplanned; it is structured by charters and time boxes."
+      ],
+      "sequence": [
+        "Show an example test of sort and ask what it misses.",
+        "State properties: output ordered, same length, same elements, idempotent.",
+        "Describe generators and shrinking.",
+        "Add fuzzing as unstructured input at parsers.",
+        "Add exploratory sessions with a charter."
+      ],
+      "examples": [
+        "Property: sorted(sorted(x)) == sorted(x).",
+        "Property: reversing a list twice returns the original."
+      ],
+      "figures": [
+        {
+          "type": "python_execution",
+          "shows": "A property run over a list of cases.",
+          "learnerAction": "Edit the cases and break the property.",
+          "placement": "property"
+        },
+        {
+          "type": "table",
+          "shows": "Failing input before and after shrinking.",
+          "learnerAction": "Step through a shrink.",
+          "placement": "shrinking"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "code-run-python",
+          "targets": "write-property",
+          "sample": "Run: x=[3,1,2]; print(sorted(sorted(x)) == sorted(x)). What is printed?",
+          "answer": "True"
+        },
+        {
+          "kind": "code-run-python",
+          "targets": "write-property",
+          "sample": "Run: x=[3,1,2]; print(x[::-1][::-1] == x). What is printed?",
+          "answer": "True"
+        },
+        {
+          "kind": "choice",
+          "targets": "compare-approaches",
+          "sample": "What does shrinking do?",
+          "answer": "Reduces a failing input to a minimal one",
+          "choices": [
+            "Removes failing tests",
+            "Reduces a failing input to a minimal one",
+            "Compresses logs",
+            "Speeds the run"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "hypothesis-docs",
+        "swe-google",
+        "swebok"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "tdd-and-refactoring",
+      "moduleId": "techniques",
+      "title": "Test-driven development and refactoring",
+      "objective": "Follow red, green, refactor on a small function and explain what refactoring tests protect.",
+      "prerequisiteLessonIds": [
+        "properties-and-fuzzing"
+      ],
+      "concepts": [
+        {
+          "id": "tdd",
+          "title": "Red, green, refactor",
+          "summary": "Write a failing test, make it pass in the simplest way, then improve the design with tests green."
+        },
+        {
+          "id": "refactor",
+          "title": "Refactoring",
+          "summary": "Changing structure without changing behaviour, which tests must confirm."
+        },
+        {
+          "id": "regression",
+          "title": "Regression test",
+          "summary": "A test written for a fixed bug so it cannot return."
+        }
+      ],
+      "skills": [
+        "apply-tdd",
+        "write-regression"
+      ],
+      "misconceptions": [
+        "TDD means writing all tests first; it is one small test at a time.",
+        "Refactoring may change behaviour a little; any behaviour change is a different task.",
+        "Skipping the red step is harmless; a test never seen to fail may never fail."
+      ],
+      "sequence": [
+        "Write a failing test for FizzBuzz n=3.",
+        "Make it pass with the simplest code.",
+        "Add the next case, then generalise.",
+        "Refactor with tests green.",
+        "Fix a bug by first writing the failing test, then the fix."
+      ],
+      "examples": [
+        "fizz(3) returns 'Fizz'; for n = 1 to 6 the outputs are 1, 2, Fizz, 4, 5, Fizz.",
+        "A bug report 'discount applied twice' becomes a failing test, then a fix, then a permanent regression test."
+      ],
+      "figures": [
+        {
+          "type": "python_execution",
+          "shows": "Tests and code in two panes.",
+          "learnerAction": "Run red, edit code, run green.",
+          "placement": "cycle"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A three-stage loop: red, green, refactor.",
+          "learnerAction": "Step.",
+          "placement": "loop"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "code-run-python",
+          "targets": "apply-tdd",
+          "sample": "Run: def fizz(n): return 'Fizz' if n%3==0 else str(n)\nprint([fizz(i) for i in range(1,7)])  What is printed?",
+          "answer": "['1', '2', 'Fizz', '4', '5', 'Fizz']"
+        },
+        {
+          "kind": "choice",
+          "targets": "apply-tdd",
+          "sample": "What is the first step of TDD?",
+          "answer": "Write a failing test",
+          "choices": [
+            "Write the code",
+            "Write a failing test",
+            "Refactor",
+            "Deploy"
+          ]
+        },
+        {
+          "kind": "choice",
+          "targets": "write-regression",
+          "sample": "A bug is reported and fixed. What stops it returning?",
+          "answer": "A regression test that fails before the fix",
+          "choices": [
+            "A comment",
+            "A regression test that fails before the fix",
+            "A manual check",
+            "A code owner"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "swe-google",
+        "swebok"
+      ],
+      "historyNotes": [
+        "Kent Beck described test-driven development in Test-Driven Development: By Example (2002) after its roots in Extreme Programming."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "levels-and-the-pyramid",
+      "moduleId": "strategy",
+      "title": "Test levels and the pyramid",
+      "objective": "Place tests at unit, integration and end-to-end levels by cost and speed, and compute the effect of flakiness.",
+      "prerequisiteLessonIds": [
+        "tdd-and-refactoring"
+      ],
+      "concepts": [
+        {
+          "id": "levels",
+          "title": "Test levels",
+          "summary": "Unit tests check one piece, integration tests check pieces together, end-to-end tests check a user journey."
+        },
+        {
+          "id": "pyramid",
+          "title": "Test pyramid",
+          "summary": "Many fast low-level tests and few slow high-level ones keep feedback fast and failures local."
+        },
+        {
+          "id": "flaky",
+          "title": "Flaky test",
+          "summary": "A test that sometimes passes and sometimes fails on the same code."
+        }
+      ],
+      "skills": [
+        "balance-suite",
+        "compute-flake-impact"
+      ],
+      "misconceptions": [
+        "End-to-end tests are the most realistic and so best; they are slow, brittle and hard to diagnose.",
+        "A flaky test is a nuisance; at scale it destroys trust, because a pass no longer means anything.",
+        "Rerun until green is a fix; it hides signal."
+      ],
+      "sequence": [
+        "Show a suite of 1,000 unit and 50 end-to-end tests with their times.",
+        "Contrast what each level catches.",
+        "Describe the inverted pyramid (ice-cream cone) and its cost.",
+        "Quantify flakiness across a suite.",
+        "Fix flakiness: remove sleeps, isolate state, quarantine and repair."
+      ],
+      "examples": [
+        "1,000 unit tests at 5 ms take 5 seconds; 50 end-to-end tests at 20 seconds take 1,000 seconds, about 16.7 minutes.",
+        "If each of 50 tests independently fails by chance 1% of the time, the chance that a run has at least one false failure is 1 - 0.99^50 = 0.395, about 39.5%."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Pyramid with tests per level and run time bars.",
+          "learnerAction": "Move tests between levels and see total time.",
+          "placement": "pyramid"
+        },
+        {
+          "type": "graph_plot",
+          "shows": "Probability of a false failure against number of tests for flake rates.",
+          "learnerAction": "Slide the flake rate.",
+          "placement": "flaky"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "balance-suite",
+          "sample": "50 end-to-end tests each take 20 seconds. How many minutes do they take in total, to one decimal place?",
+          "answer": "16.7"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-flake-impact",
+          "sample": "Each of 50 independent tests has a 1% chance of a false failure. What is the chance of at least one false failure in a run, as a percentage to one decimal place?",
+          "answer": "39.5"
+        },
+        {
+          "kind": "choice",
+          "targets": "balance-suite",
+          "sample": "Which test level should have the most tests in a healthy suite?",
+          "answer": "Unit",
+          "choices": [
+            "Unit",
+            "Integration",
+            "End-to-end",
+            "Manual"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "fowler-pyramid",
+        "swe-google"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "testing-data-and-apis",
+      "moduleId": "strategy",
+      "title": "Testing data, queries and APIs",
+      "objective": "Test a query and a data set with checks, and use contract tests at service boundaries.",
+      "prerequisiteLessonIds": [
+        "levels-and-the-pyramid"
+      ],
+      "concepts": [
+        {
+          "id": "data-check",
+          "title": "Data quality check",
+          "summary": "A query that asserts a rule about data, such as uniqueness, non-null or valid range."
+        },
+        {
+          "id": "contract",
+          "title": "Contract test",
+          "summary": "A test that a provider and a consumer agree on the shape and meaning of messages."
+        },
+        {
+          "id": "test-data",
+          "title": "Test data",
+          "summary": "Small, deliberate, independent data created per test, never shared mutable data."
+        }
+      ],
+      "skills": [
+        "write-data-check",
+        "spot-contract-break"
+      ],
+      "misconceptions": [
+        "Testing against a copy of production data is realistic; it may contain personal data and hides the case under test.",
+        "A UI test covers the API; the API deserves its own tests of status, shape and errors.",
+        "Tests may share a database state to save time; shared mutable state causes order-dependent failures."
+      ],
+      "sequence": [
+        "Show a table with a duplicate email.",
+        "Write a SQL check for uniqueness.",
+        "Define API tests: status code, schema, error cases, idempotence.",
+        "Explain consumer-driven contracts.",
+        "Create test data in each test with builders."
+      ],
+      "examples": [
+        "For emails a@x, b@x, a@x, c@x, COUNT(*) - COUNT(DISTINCT email) = 4 - 3 = 1 duplicate row.",
+        "Provider renames field total to amount; the consumer's contract test fails, catching it before release."
+      ],
+      "figures": [
+        {
+          "type": "relational_query",
+          "shows": "A customers table with a duplicate email.",
+          "learnerAction": "Run the check query and fix the data.",
+          "placement": "data check"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "Consumer, contract, provider.",
+          "learnerAction": "Change a field name and see which side fails.",
+          "placement": "contract"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "code-run-sql",
+          "targets": "write-data-check",
+          "sample": "Table c(email) holds a@x, b@x, a@x, c@x. Run: SELECT COUNT(*) - COUNT(DISTINCT email) FROM c; What is returned?",
+          "answer": "1"
+        },
+        {
+          "kind": "choice",
+          "targets": "spot-contract-break",
+          "sample": "A provider renames a response field. Which test catches this before release?",
+          "answer": "A contract test",
+          "choices": [
+            "A unit test of the consumer's logic only",
+            "A contract test",
+            "A load test",
+            "A usability test"
+          ]
+        },
+        {
+          "kind": "choice",
+          "targets": "write-data-check",
+          "sample": "Why should each test create its own data?",
+          "answer": "To avoid order-dependent failures from shared state",
+          "choices": [
+            "It is faster",
+            "To avoid order-dependent failures from shared state",
+            "It uses less storage",
+            "It needs no cleanup"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "swe-google",
+        "owasp-wstg"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "performance-and-non-functional",
+      "moduleId": "strategy",
+      "title": "Performance and other non-functional tests",
+      "objective": "Read percentiles, apply Little's law, and say what load, stress and accessibility tests each answer.",
+      "prerequisiteLessonIds": [
+        "testing-data-and-apis"
+      ],
+      "concepts": [
+        {
+          "id": "percentile",
+          "title": "Percentile",
+          "summary": "The p-th percentile is the value at or below which p per cent of observations fall; the mean can hide the slow tail."
+        },
+        {
+          "id": "littles-law",
+          "title": "Little's law",
+          "summary": "Average concurrency L equals arrival rate lambda times average time in system W."
+        },
+        {
+          "id": "nfr",
+          "title": "Non-functional tests",
+          "summary": "Tests of performance, security, accessibility, reliability and usability, which have thresholds rather than exact answers."
+        }
+      ],
+      "skills": [
+        "read-percentile",
+        "apply-littles-law"
+      ],
+      "misconceptions": [
+        "The average response time describes users; a few very slow requests hide behind it.",
+        "A load test and a stress test are the same; load tests expected demand, stress tests beyond it to find the breaking point.",
+        "Accessibility can be checked entirely by a tool; automation finds only part and needs manual checks."
+      ],
+      "sequence": [
+        "Show 20 response times with two extreme ones.",
+        "Compute mean, median and the 90th and 95th percentiles by nearest rank.",
+        "Apply Little's law to find concurrency.",
+        "Define load, stress, soak and spike tests.",
+        "Cover security and accessibility testing as further non-functional kinds."
+      ],
+      "examples": [
+        "Twenty sorted times in ms: 12,13,13,14,15,15,16,17,18,19,21,22,24,26,29,33,41,58,120,450. Mean 48.8, median (10th by nearest rank) 19, p90 (18th) 58, p95 (19th) 120.",
+        "200 requests a second with an average time of 0.25 seconds means 200 x 0.25 = 50 requests in flight."
+      ],
+      "figures": [
+        {
+          "type": "data_distribution",
+          "shows": "The twenty response times as a histogram with mean and percentiles marked.",
+          "learnerAction": "Drag a slow request to the tail and watch mean versus median.",
+          "placement": "percentiles"
+        },
+        {
+          "type": "graph_plot",
+          "shows": "Latency against load rising to a knee.",
+          "learnerAction": "Raise load and find the knee.",
+          "placement": "stress"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "read-percentile",
+          "sample": "Twenty response times sorted ascending in ms: 12,13,13,14,15,15,16,17,18,19,21,22,24,26,29,33,41,58,120,450. By nearest rank, what is the 90th percentile?",
+          "answer": "58"
+        },
+        {
+          "kind": "numeric",
+          "targets": "read-percentile",
+          "sample": "Using the same twenty times, what is the mean in ms?",
+          "answer": "48.8"
+        },
+        {
+          "kind": "numeric",
+          "targets": "apply-littles-law",
+          "sample": "A service handles 200 requests per second with an average time in system of 0.25 s. How many requests are in flight on average?",
+          "answer": "50"
+        }
+      ],
+      "sourceIds": [
+        "swe-google",
+        "sre-book",
+        "owasp-wstg"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "quality-measures-and-process",
+      "moduleId": "strategy",
+      "title": "Defects, quality measures and testing in delivery",
+      "objective": "Write a useful bug report, compute defect detection effectiveness, and place tests in a delivery pipeline.",
+      "prerequisiteLessonIds": [
+        "performance-and-non-functional"
+      ],
+      "concepts": [
+        {
+          "id": "severity-priority",
+          "title": "Severity versus priority",
+          "summary": "Severity is the impact of a defect; priority is the order in which it should be fixed."
+        },
+        {
+          "id": "ddp",
+          "title": "Defect detection percentage",
+          "summary": "Defects found before release as a share of all defects found before and after."
+        },
+        {
+          "id": "shift",
+          "title": "Shift left and right",
+          "summary": "Test early (reviews, unit tests) and also observe production (monitoring, canaries), since neither alone finds everything."
+        }
+      ],
+      "skills": [
+        "compute-ddp",
+        "write-bug-report"
+      ],
+      "misconceptions": [
+        "Severity and priority are the same; a typo on the home page may be low severity and high priority.",
+        "More bugs found means better testing; it may mean worse code or better testing, so read it with context.",
+        "Testing ends at release; production monitoring and canary releases are part of quality."
+      ],
+      "sequence": [
+        "Write a bug report: steps, expected, actual, environment, evidence.",
+        "Separate severity from priority with examples.",
+        "Compute defect detection percentage.",
+        "Connect to delivery: tests in the pipeline, test levels per stage, flaky-test policy.",
+        "Close with risk-based testing: spend effort where failure costs most."
+      ],
+      "examples": [
+        "45 defects found before release and 5 after: 45 / (45 + 5) = 90%.",
+        "A crash in a rarely used admin report is high severity, low priority; a misspelt company name on the landing page is low severity, high priority."
+      ],
+      "figures": [
+        {
+          "type": "table",
+          "shows": "A bug report template with annotated good and bad entries.",
+          "learnerAction": "Spot missing fields in a bad report.",
+          "placement": "report"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A delivery pipeline with test types at each stage and production monitors.",
+          "learnerAction": "Place tests at stages.",
+          "placement": "pipeline"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-ddp",
+          "sample": "45 defects were found before release and 5 after. What is the defect detection percentage?",
+          "answer": "90"
+        },
+        {
+          "kind": "choice",
+          "targets": "write-bug-report",
+          "sample": "Which element is most essential to a useful bug report?",
+          "answer": "Steps that reproduce it",
+          "choices": [
+            "The reporter's opinion of the developer",
+            "Steps that reproduce it",
+            "A screenshot of the desktop",
+            "A fix suggestion"
+          ]
+        },
+        {
+          "kind": "choice",
+          "targets": "compute-ddp",
+          "sample": "A misspelt company name on the landing page is best described as:",
+          "answer": "Low severity, high priority",
+          "choices": [
+            "High severity, high priority",
+            "Low severity, high priority",
+            "High severity, low priority",
+            "Low severity, low priority"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "swebok",
+        "istqb-glossary",
+        "dora",
+        "sre-book"
+      ],
+      "estimatedMinutes": 13
+    }
+  ],
+  "courseCheck": "Mixed check: oracle and verification, runnable Python and SQL tests, boundary counts, branch coverage and mutation score, test double kinds, properties, TDD steps, flake probability, percentiles and Little's law, and defect detection percentage.",
+  "platformNeeds": [
+    "A test_runner widget for Python: a function pane, a tests pane and a pass/fail list, using the existing sandbox. Code-run-python with printed output works today as a fallback.",
+    "A coverage_viewer figure highlighting lines and branch outcomes as tests are added. Fallback: program_trace.",
+    "A percentile figure on data_distribution that marks mean, median and nearest-rank percentiles. Fallback: data_distribution plus table.",
+    "code-run-sql prompts need the table definitions loaded with the question; they are described in the sample text, so the item author must supply the schema."
+  ],
+  "unverified": [
+    "No external site could be reached from the authoring session, so every source has verified false; check URLs and licences.",
+    "Dijkstra's remark dated to 1969 to 1970 and Beck's 2002 book are recalled from memory.",
+    "Myers' book year (1979) and its role in popularising boundary analysis.",
+    "Google's guidance on preferring fakes over mocks, recalled from the book's test doubles chapter.",
+    "The nearest-rank percentile method is one of several; the lesson must state which is used."
+  ]
+}

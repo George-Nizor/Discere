@@ -1,0 +1,1334 @@
+{
+  "id": "devops-and-delivery",
+  "title": "DevOps and Delivery",
+  "family": "A",
+  "voice": "A",
+  "description": "How software is built, packaged, shipped and run reliably: CI/CD, containers, Kubernetes and infrastructure as code.",
+  "audience": "A capable adult who can write and read code and use a terminal, and who wants to understand how changes reach production and stay running. No prior operations experience.",
+  "prerequisites": [
+    "cs-basics"
+  ],
+  "outcomes": [
+    "You'll be able to measure delivery performance and explain why small batches reduce risk.",
+    "You'll be able to design a pipeline and choose a rollout strategy for a given risk.",
+    "You'll be able to explain what a container is, build an efficient image and read a run command.",
+    "You'll be able to describe Kubernetes as a reconciliation system and compute rolling-update and autoscaling numbers.",
+    "You'll be able to read declarative infrastructure code, an error budget and the main supply-chain risks."
+  ],
+  "sources": [
+    {
+      "id": "dora",
+      "title": "DORA research programme: software delivery performance metrics",
+      "url": "https://dora.dev/guides/dora-metrics-four-keys/",
+      "licence": "Site copyright Google; reference only",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "k8s-docs",
+      "title": "Kubernetes documentation (Concepts, Tasks, Tutorials)",
+      "url": "https://kubernetes.io/docs/concepts/",
+      "licence": "CC BY 4.0 (documentation text)",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "docker-docs",
+      "title": "Docker documentation: Get started, Build, Dockerfile reference",
+      "url": "https://docs.docker.com/",
+      "licence": "Docs repository Apache-2.0 per its repo; confirm before adapting",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "oci",
+      "title": "Open Container Initiative specifications (image and runtime)",
+      "url": "https://opencontainers.org/",
+      "licence": "Apache-2.0 (specifications)",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "sre-book",
+      "title": "Site Reliability Engineering (Google)",
+      "url": "https://sre.google/sre-book/table-of-contents/",
+      "licence": "CC BY-NC-ND 4.0",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "sre-workbook",
+      "title": "The Site Reliability Workbook (Google), chapters on SLOs and alerting",
+      "url": "https://sre.google/workbook/table-of-contents/",
+      "licence": "CC BY-NC-ND 4.0",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "progit",
+      "title": "Pro Git (Chacon and Straub)",
+      "url": "https://git-scm.com/book/en/v2",
+      "licence": "CC BY-NC-SA 3.0",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "opengitops",
+      "title": "OpenGitOps principles v1.0",
+      "url": "https://opengitops.dev/",
+      "licence": "Apache-2.0 (project repository); confirm",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "twelve-factor",
+      "title": "The Twelve-Factor App",
+      "url": "https://12factor.net/",
+      "licence": "MIT (site repository); confirm",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "opentofu",
+      "title": "OpenTofu documentation (configuration language, state)",
+      "url": "https://opentofu.org/docs/",
+      "licence": "MPL-2.0 (repository); confirm doc licence",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "slsa",
+      "title": "SLSA specification (supply-chain levels)",
+      "url": "https://slsa.dev/spec/v1.0/",
+      "licence": "CC BY 4.0 (specification, per OpenSSF); confirm",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "owasp-cicd",
+      "title": "OWASP Top 10 CI/CD Security Risks",
+      "url": "https://owasp.org/www-project-top-10-ci-cd-security-risks/",
+      "licence": "CC BY-SA 4.0",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "otel",
+      "title": "OpenTelemetry documentation: concepts and signals",
+      "url": "https://opentelemetry.io/docs/concepts/",
+      "licence": "CC BY 4.0 (docs repo); confirm",
+      "use": "reference",
+      "verified": false
+    }
+  ],
+  "modules": [
+    {
+      "id": "delivery",
+      "title": "Delivering change safely",
+      "summary": "Why small, frequent, automated change is safer than rare, large release, and how pipelines and rollout strategies make it so."
+    },
+    {
+      "id": "containers",
+      "title": "Containers",
+      "summary": "What a container is, how images are built in layers, and how containers are run and wired together."
+    },
+    {
+      "id": "kubernetes",
+      "title": "Kubernetes",
+      "summary": "Declared desired state, the objects that run and expose workloads, and how they scale and take configuration."
+    },
+    {
+      "id": "operate",
+      "title": "Infrastructure as code and operation",
+      "summary": "Describing infrastructure in files, reconciling it from Git, observing it, and keeping the supply chain trustworthy."
+    }
+  ],
+  "lessons": [
+    {
+      "id": "why-delivery-is-hard",
+      "moduleId": "delivery",
+      "title": "Why shipping is the hard part",
+      "objective": "Measure a team's delivery performance with the four DORA metrics and explain why smaller batches lower risk.",
+      "prerequisiteLessonIds": [],
+      "concepts": [
+        {
+          "id": "lead-time",
+          "title": "Lead time for changes",
+          "summary": "The time from a commit being made to that commit running in production."
+        },
+        {
+          "id": "cfr",
+          "title": "Change failure rate",
+          "summary": "The share of deployments to production that cause a failure needing remediation, such as a rollback or hotfix."
+        },
+        {
+          "id": "batch-size",
+          "title": "Batch size",
+          "summary": "The amount of change shipped together; larger batches make failures harder to locate and to undo."
+        }
+      ],
+      "skills": [
+        "compute-delivery-metrics",
+        "explain-batch-risk"
+      ],
+      "misconceptions": [
+        "Frequent deployment is reckless: in the data speed and stability rise together, because small changes are easy to understand and to reverse.",
+        "DevOps is a job title or a toolchain; it is a way of working in which the team that builds a change also owns running it.",
+        "Lead time means the time to write the code; it begins at commit and ends in production."
+      ],
+      "sequence": [
+        "Start from a Friday release that takes forty changes at once and ask which one broke checkout.",
+        "Define the four measures: deployment frequency, lead time for changes, change failure rate and time to restore service.",
+        "Show that the measures pair a speed with a stability, so one cannot be gamed alone.",
+        "Argue from batch size: with one change in a release the cause of a failure is known; with forty it must be searched for.",
+        "Name the cultural point: the people who write the change share responsibility for how it runs."
+      ],
+      "examples": [
+        "12 deployments in 4 weeks is 3 a week; 6 failing of 48 deployments is a 12.5 per cent change failure rate.",
+        "A commit at Monday 09:00 reaching production on Wednesday 15:00 has a lead time of 54 hours."
+      ],
+      "figures": [
+        {
+          "type": "table",
+          "shows": "Four rows (frequency, lead time, failure rate, restore time), each with a team's number and a speed or stability tag.",
+          "learnerAction": "Fill a team's figures and watch which pairs move together.",
+          "placement": "the four measures"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "Two timelines: one release of 40 changes with a failure, one of 40 single-change releases with a failure marked on one.",
+          "learnerAction": "Tap the failing release and mark the candidate causes remaining.",
+          "placement": "batch size"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-delivery-metrics",
+          "sample": "A team makes 12 production deployments in 4 weeks. How many deployments a week is that?",
+          "answer": "3"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-delivery-metrics",
+          "sample": "6 of a team's 48 deployments needed a rollback or hotfix. What is the change failure rate as a percentage?",
+          "answer": "12.5"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-delivery-metrics",
+          "sample": "A commit is made Monday 09:00 and reaches production Wednesday 15:00. What is the lead time in hours?",
+          "answer": "54"
+        }
+      ],
+      "sourceIds": [
+        "dora",
+        "sre-book"
+      ],
+      "historyNotes": [
+        "The DORA programme began as the State of DevOps reports (first published 2014) and was later led by DORA at Google Cloud; the 2024 reports renamed time to restore service as failed deployment recovery time. Check the current wording before quoting."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "trunk-and-branches",
+      "moduleId": "delivery",
+      "title": "Version control for continuous change",
+      "objective": "Choose a branching approach that keeps integration frequent, and say what a merge conflict is a symptom of.",
+      "prerequisiteLessonIds": [
+        "why-delivery-is-hard"
+      ],
+      "concepts": [
+        {
+          "id": "commit-graph",
+          "title": "Commit graph",
+          "summary": "Git stores history as a graph of commits, each identified by a hash of its content and its parents."
+        },
+        {
+          "id": "trunk-based",
+          "title": "Trunk-based development",
+          "summary": "Developers integrate small changes into one shared branch at least daily, keeping other branches short-lived."
+        },
+        {
+          "id": "merge-conflict",
+          "title": "Merge conflict",
+          "summary": "Two changes edit the same lines, so the tool cannot decide which to keep."
+        }
+      ],
+      "skills": [
+        "pick-branching-model",
+        "read-commit-graph"
+      ],
+      "misconceptions": [
+        "A branch is a copy of the files; it is a movable pointer to a commit.",
+        "Long-lived feature branches are safer because they isolate risk; they defer the integration problem and make it larger.",
+        "Merge conflicts mean someone did something wrong; they are the cost of delaying integration."
+      ],
+      "sequence": [
+        "Draw four commits and two branch pointers to show that branching copies nothing.",
+        "Contrast a branch alive for three weeks with one alive for a day: how many other commits land meanwhile.",
+        "Introduce trunk-based development and feature flags as the way to merge unfinished work safely.",
+        "Cover pull requests and review as a gate on the shared branch, with small diffs.",
+        "Link back to batch size from the previous lesson."
+      ],
+      "examples": [
+        "A branch that lives 15 working days while 6 developers each merge 2 commits a day has fallen behind by 6 x 2 x 15 = 180 commits.",
+        "A pointer moved with git switch -c fix creates no new commit."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A commit graph with main and two branches, labelled with hashes.",
+          "learnerAction": "Drag the branch pointer to a different commit and see which commits become reachable.",
+          "placement": "commit graph"
+        },
+        {
+          "type": "timeline_explorer",
+          "shows": "Two weeks of merges by day for long-lived versus short-lived branches.",
+          "learnerAction": "Slide the branch lifetime and read the commits behind.",
+          "placement": "trunk-based"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "read-commit-graph",
+          "sample": "A feature branch lives 15 working days. 6 other developers each merge 2 commits a day to main. How many commits has main gained by the time the branch merges?",
+          "answer": "180"
+        },
+        {
+          "kind": "choice",
+          "targets": "read-commit-graph",
+          "sample": "What does creating a branch in Git do?",
+          "answer": "It creates a new movable pointer to a commit",
+          "choices": [
+            "It copies every file to a new folder",
+            "It creates a new movable pointer to a commit",
+            "It locks the main branch",
+            "It uploads the code to a server"
+          ]
+        },
+        {
+          "kind": "choice",
+          "targets": "pick-branching-model",
+          "sample": "Which practice best lets unfinished work be merged to the shared branch daily?",
+          "answer": "Hide it behind a feature flag",
+          "choices": [
+            "Keep the branch private until it is finished",
+            "Hide it behind a feature flag",
+            "Skip code review",
+            "Rebase once a month"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "progit",
+        "dora"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "continuous-integration",
+      "moduleId": "delivery",
+      "title": "Continuous integration and the pipeline",
+      "objective": "Design a pipeline whose stages give the fastest useful feedback and compute its wall-clock time.",
+      "prerequisiteLessonIds": [
+        "trunk-and-branches"
+      ],
+      "concepts": [
+        {
+          "id": "ci",
+          "title": "Continuous integration",
+          "summary": "Every change is built and tested automatically, on a clean machine, as soon as it is pushed."
+        },
+        {
+          "id": "pipeline",
+          "title": "Pipeline",
+          "summary": "An ordered set of stages, some running in parallel, that a change passes through before release."
+        },
+        {
+          "id": "artifact",
+          "title": "Build artifact",
+          "summary": "A versioned, immutable output of the build that every later stage and environment reuses unchanged."
+        }
+      ],
+      "skills": [
+        "compute-pipeline-time",
+        "order-stages"
+      ],
+      "misconceptions": [
+        "The pipeline should run the slowest tests first; cheap, fast checks should come first so failure is reported early.",
+        "Rebuilding the code for each environment is fine; it breaks the guarantee that what was tested is what ships.",
+        "Green CI means the software is correct; it means only that the checks that exist passed."
+      ],
+      "sequence": [
+        "Show a failed push at minute 1 versus minute 28 and what each costs the author's focus.",
+        "Separate the commit stage (build, unit tests, lint) from slower stages (integration, deploy).",
+        "Introduce parallelism and sharding as ways to cut wall-clock time without cutting checks.",
+        "Build once, promote the same artifact through environments.",
+        "Mention a pipeline defined as code in the repository, with a current example such as GitHub Actions or GitLab CI."
+      ],
+      "examples": [
+        "Sequential: lint 2, build 5, unit 8, integration 12, deploy to staging 3 is 30 minutes. Build first, then lint, unit and integration in parallel, then deploy: 5 + 12 + 3 = 20 minutes.",
+        "A 32-minute test suite split into 4 equal shards takes 8 minutes if the shards are balanced."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A pipeline as boxes with durations, with parallel lanes.",
+          "learnerAction": "Drag stages between sequential and parallel lanes; the total time updates.",
+          "placement": "pipeline time"
+        },
+        {
+          "type": "order_sequence",
+          "shows": "Six stages to put in order of feedback speed.",
+          "learnerAction": "Arrange them.",
+          "placement": "ordering stages"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-pipeline-time",
+          "sample": "Build takes 5 minutes. Then lint (2), unit tests (8) and integration tests (12) run in parallel. Then deploy to staging takes 3. How many minutes does the pipeline take?",
+          "answer": "20"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-pipeline-time",
+          "sample": "A 32-minute test suite is split into 4 equal shards that run in parallel. How many minutes does it take, ignoring set-up time?",
+          "answer": "8"
+        },
+        {
+          "kind": "choice",
+          "targets": "order-stages",
+          "sample": "Which check belongs first in a pipeline?",
+          "answer": "The cheapest check that catches the most common failures",
+          "choices": [
+            "The slowest end-to-end test",
+            "The cheapest check that catches the most common failures",
+            "Production deployment",
+            "Manual approval"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "dora",
+        "twelve-factor"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "release-strategies",
+      "moduleId": "delivery",
+      "title": "Releasing without fear",
+      "objective": "Select a rollout strategy for a given risk and explain how feature flags separate deploying from releasing.",
+      "prerequisiteLessonIds": [
+        "continuous-integration"
+      ],
+      "concepts": [
+        {
+          "id": "deploy-release",
+          "title": "Deploy versus release",
+          "summary": "Deploying puts code on servers; releasing exposes it to users, and a flag can separate the two."
+        },
+        {
+          "id": "canary",
+          "title": "Canary release",
+          "summary": "A new version receives a small share of traffic while its error rate is compared with the old version."
+        },
+        {
+          "id": "blue-green",
+          "title": "Blue-green deployment",
+          "summary": "Two full environments exist; traffic is switched from the live one to the idle one, and back to roll back."
+        }
+      ],
+      "skills": [
+        "choose-rollout",
+        "compute-traffic-share"
+      ],
+      "misconceptions": [
+        "Rolling back is always possible; a migration that drops a column cannot be reversed by redeploying old code.",
+        "Blue-green is free; it needs capacity for two environments at the switch.",
+        "A canary tests the code; it tests the code under real traffic, only if someone watches the right metric."
+      ],
+      "sequence": [
+        "Describe the three: rolling replaces instances in batches, blue-green switches whole environments, canary shifts a percentage.",
+        "Work the traffic arithmetic for a canary.",
+        "Show why database changes need an expand-then-contract sequence to stay reversible.",
+        "Introduce feature flags and their cost: stale flags are debt.",
+        "Tie to change failure rate and restore time."
+      ],
+      "examples": [
+        "5 per cent of 2,000 requests a second is 100 requests a second to the canary; if it returns errors on 2 per cent of them that is 2 errors a second.",
+        "A rolling update of 10 instances, 2 at a time, takes 5 batches."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Three small diagrams of traffic between old and new versions, one per strategy.",
+          "learnerAction": "Switch views and move a traffic slider on the canary.",
+          "placement": "strategies"
+        },
+        {
+          "type": "data_series",
+          "shows": "Error rate of old and new version over 30 minutes of a canary.",
+          "learnerAction": "Choose the minute at which to abort.",
+          "placement": "canary judgement"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-traffic-share",
+          "sample": "A service receives 2,000 requests a second. A canary gets 5 per cent. How many requests a second reach the canary?",
+          "answer": "100"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-traffic-share",
+          "sample": "10 instances are replaced 2 at a time. How many batches does the rolling update need?",
+          "answer": "5"
+        },
+        {
+          "kind": "choice",
+          "targets": "choose-rollout",
+          "sample": "Which strategy needs capacity for two full production environments?",
+          "answer": "Blue-green",
+          "choices": [
+            "Rolling",
+            "Blue-green",
+            "Canary",
+            "Feature flag"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "dora",
+        "sre-book"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "what-a-container-is",
+      "moduleId": "containers",
+      "title": "What a container is",
+      "objective": "Explain a container as an isolated process on a shared kernel and distinguish an image from a container.",
+      "prerequisiteLessonIds": [
+        "continuous-integration"
+      ],
+      "concepts": [
+        {
+          "id": "container",
+          "title": "Container",
+          "summary": "An ordinary process started with its own view of processes, network and files, and with limits on resources."
+        },
+        {
+          "id": "image",
+          "title": "Image",
+          "summary": "A read-only, layered filesystem and metadata from which containers are started."
+        },
+        {
+          "id": "namespace-cgroup",
+          "title": "Namespaces and cgroups",
+          "summary": "Linux features that limit what a process can see (namespaces) and what it can use (cgroups)."
+        }
+      ],
+      "skills": [
+        "distinguish-image-container",
+        "contrast-vm"
+      ],
+      "misconceptions": [
+        "A container is a lightweight virtual machine; it shares the host kernel, which is why it starts in milliseconds and why a kernel flaw affects all of them.",
+        "An image is a running thing; it is a stored template, and many containers can start from one image.",
+        "Deleting a container deletes its image; the image remains."
+      ],
+      "sequence": [
+        "Start from the problem: it works on my machine, because the libraries differ.",
+        "Show a process list on the host that includes the container's process.",
+        "Introduce namespaces for what is visible and cgroups for how much may be used.",
+        "Contrast with a virtual machine, which runs its own kernel.",
+        "Define image versus container, and a registry as the place images are stored."
+      ],
+      "examples": [
+        "One image started three times gives three containers, each with its own writable layer.",
+        "A container limited to 512 MiB that tries to use 600 MiB is killed by the kernel for exceeding its memory limit."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Layered stack for a VM (hardware, hypervisor, guest OS, app) beside a container (hardware, host OS, runtime, app).",
+          "learnerAction": "Toggle views; tap a layer to see what it isolates.",
+          "placement": "vm contrast"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "One image box with three container boxes each holding a thin writable layer.",
+          "learnerAction": "Start and stop containers.",
+          "placement": "image versus container"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "single-term",
+          "targets": "contrast-vm",
+          "sample": "Which part of the system do all containers on a host share?",
+          "answer": "kernel"
+        },
+        {
+          "kind": "choice",
+          "targets": "distinguish-image-container",
+          "sample": "You run one image three times. How many containers exist?",
+          "answer": "3",
+          "choices": [
+            "1",
+            "3",
+            "Depends on the image size",
+            "0 until committed"
+          ]
+        },
+        {
+          "kind": "choice",
+          "targets": "distinguish-image-container",
+          "sample": "Which Linux feature limits how much memory a container may use?",
+          "answer": "cgroups",
+          "choices": [
+            "namespaces",
+            "cgroups",
+            "chroot",
+            "iptables"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "docker-docs",
+        "oci"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "building-images",
+      "moduleId": "containers",
+      "title": "Building images well",
+      "objective": "Order a Dockerfile to use the layer cache, shrink the image with a multi-stage build and avoid baking secrets in.",
+      "prerequisiteLessonIds": [
+        "what-a-container-is"
+      ],
+      "concepts": [
+        {
+          "id": "layer-cache",
+          "title": "Layer cache",
+          "summary": "A build step is reused if its instruction and everything before it are unchanged."
+        },
+        {
+          "id": "multi-stage",
+          "title": "Multi-stage build",
+          "summary": "A build uses one stage with compilers to produce files, and copies only those files into a small final stage."
+        },
+        {
+          "id": "image-secrets",
+          "title": "Secrets in layers",
+          "summary": "Anything written in any layer stays in the image history, even if a later step deletes it."
+        }
+      ],
+      "skills": [
+        "order-dockerfile",
+        "predict-cache"
+      ],
+      "misconceptions": [
+        "Deleting a file in a later RUN removes it from the image; the earlier layer still holds it.",
+        "COPY . . first is simplest and so best; it invalidates the cache on every edit, including dependencies.",
+        "Latest is a version; the tag moves, so builds differ over time."
+      ],
+      "sequence": [
+        "Show a Dockerfile as a list of layers, each cached by its inputs.",
+        "Reorder so dependency files are copied and installed before the source.",
+        "Introduce multi-stage builds and the effect on size and attack surface.",
+        "Explain tags versus digests, and pinning base images.",
+        "Show why a secret copied then deleted is still recoverable."
+      ],
+      "examples": [
+        "Changing only src/app.js with COPY package.json, RUN npm ci, COPY src reuses the npm ci layer; reversing the order reruns it.",
+        "Build stage 1,200 MB, final stage 180 MB: the shipped image is 180 MB, a saving of 1,020 MB."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Dockerfile lines beside stacked layers coloured cached or rebuilt.",
+          "learnerAction": "Edit a file and see which layers turn from cached to rebuilt.",
+          "placement": "layer cache"
+        },
+        {
+          "type": "program_trace",
+          "shows": "Step through the Dockerfile as the builder reads it.",
+          "learnerAction": "Step.",
+          "placement": "layer order"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "code-reading",
+          "targets": "predict-cache",
+          "sample": "Dockerfile: FROM node:22 / COPY package.json . / RUN npm ci / COPY src ./src / CMD [\"node\",\"src/app.js\"]. After editing only src/app.js, how many of the five instructions are rebuilt rather than cached?",
+          "answer": "2"
+        },
+        {
+          "kind": "numeric",
+          "targets": "order-dockerfile",
+          "sample": "A build stage image is 1,200 MB and the final stage copied from it is 180 MB. How many MB smaller is the shipped image than the build stage?",
+          "answer": "1020"
+        },
+        {
+          "kind": "single-term",
+          "targets": "order-dockerfile",
+          "sample": "Which Dockerfile keyword begins a stage that can be copied from later, as in FROM golang AS build?",
+          "answer": "AS"
+        }
+      ],
+      "sourceIds": [
+        "docker-docs"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "running-containers",
+      "moduleId": "containers",
+      "title": "Running and connecting containers",
+      "objective": "Read a run command and compose file to say what is published, what persists and which containers can reach each other.",
+      "prerequisiteLessonIds": [
+        "building-images"
+      ],
+      "concepts": [
+        {
+          "id": "port-publish",
+          "title": "Published port",
+          "summary": "A mapping from a host port to a container port, written host:container."
+        },
+        {
+          "id": "volume",
+          "title": "Volume",
+          "summary": "Storage managed outside the container's writable layer, which survives the container."
+        },
+        {
+          "id": "user-network",
+          "title": "User-defined network",
+          "summary": "A virtual network on which containers reach each other by service name."
+        }
+      ],
+      "skills": [
+        "read-run-command",
+        "decide-persistence"
+      ],
+      "misconceptions": [
+        "Data written inside a container is saved; it disappears with the container unless it is on a volume.",
+        "-p 8080:80 means container port 8080; the host port comes first.",
+        "Containers should be treated as pets that are logged into and repaired; they should be disposable, replaced rather than fixed."
+      ],
+      "sequence": [
+        "Run a web server container and publish a port.",
+        "Show the writable layer and what is lost when the container is removed.",
+        "Add a volume and prove the data survives.",
+        "Connect an app and database by service name on one network.",
+        "Introduce environment variables for configuration, as in the twelve-factor approach."
+      ],
+      "examples": [
+        "docker run -p 8080:80 nginx makes the server answer on host port 8080, while inside the container it listens on 80.",
+        "A database writing to /var/lib/db with no volume loses all rows when the container is removed."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Host and container boxes with port arrows and a volume cylinder.",
+          "learnerAction": "Change the -p mapping and see which URL reaches the app.",
+          "placement": "ports"
+        },
+        {
+          "type": "table",
+          "shows": "A small compose file beside the resulting services and networks.",
+          "learnerAction": "Remove a volume line and see which data becomes transient.",
+          "placement": "persistence"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "code-reading",
+          "targets": "read-run-command",
+          "sample": "docker run -p 8080:80 nginx. On which host port can you reach the server?",
+          "answer": "8080"
+        },
+        {
+          "kind": "choice",
+          "targets": "decide-persistence",
+          "sample": "A database container is removed and recreated with no volume. What happens to its rows?",
+          "answer": "They are lost",
+          "choices": [
+            "They are kept in the image",
+            "They are lost",
+            "They move to the registry",
+            "They are kept in the network"
+          ]
+        },
+        {
+          "kind": "single-term",
+          "targets": "decide-persistence",
+          "sample": "What is the name of Docker storage that survives container removal?",
+          "answer": "volume"
+        }
+      ],
+      "sourceIds": [
+        "docker-docs",
+        "twelve-factor"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "the-kubernetes-model",
+      "moduleId": "kubernetes",
+      "title": "Desired state and the control loop",
+      "objective": "Explain how Kubernetes keeps a declared state true through reconciliation, and name the control plane and node components.",
+      "prerequisiteLessonIds": [
+        "running-containers"
+      ],
+      "concepts": [
+        {
+          "id": "desired-state",
+          "title": "Desired state",
+          "summary": "The object you submit describes what should exist; controllers act until observed state matches it."
+        },
+        {
+          "id": "pod",
+          "title": "Pod",
+          "summary": "The smallest deployable unit: one or more containers sharing a network namespace and storage."
+        },
+        {
+          "id": "control-plane",
+          "title": "Control plane",
+          "summary": "The API server, etcd, scheduler and controller manager, which store and act on cluster state."
+        }
+      ],
+      "skills": [
+        "describe-reconciliation",
+        "name-components"
+      ],
+      "misconceptions": [
+        "Kubernetes runs your containers directly; it asks the kubelet on each node to run them, via a container runtime.",
+        "A pod is a container; a pod may hold several tightly coupled containers.",
+        "A pod that dies is restarted in place; a controller creates a replacement pod, which is a new object with a new IP."
+      ],
+      "sequence": [
+        "Contrast imperative commands with a declared manifest.",
+        "Walk through the loop: observe, compare, act, repeat.",
+        "Name the control plane parts and what each stores or decides.",
+        "Name node parts: kubelet, container runtime, kube-proxy.",
+        "Trace kubectl apply from request to a running pod."
+      ],
+      "examples": [
+        "Desired 3 replicas with 2 running: the controller creates 1; with 4 running it deletes 1.",
+        "A pod spec with two containers shares one IP address and can reach each other on localhost."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Cluster diagram: control plane box (API server, etcd, scheduler, controller manager) and two nodes (kubelet, runtime, pods).",
+          "learnerAction": "Tap a component to see which request it handles; step through an apply.",
+          "placement": "architecture"
+        },
+        {
+          "type": "order_sequence",
+          "shows": "Steps from kubectl apply to a running pod.",
+          "learnerAction": "Put them in order.",
+          "placement": "reconciliation"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "describe-reconciliation",
+          "sample": "A Deployment declares 5 replicas and 3 pods are running. How many pods will the controller create?",
+          "answer": "2"
+        },
+        {
+          "kind": "single-term",
+          "targets": "name-components",
+          "sample": "Which control plane component stores all cluster state?",
+          "answer": "etcd"
+        },
+        {
+          "kind": "choice",
+          "targets": "name-components",
+          "sample": "Which component on each node ensures the pod's containers are running?",
+          "answer": "kubelet",
+          "choices": [
+            "scheduler",
+            "kubelet",
+            "etcd",
+            "controller manager"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "k8s-docs"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "workloads-and-services",
+      "moduleId": "kubernetes",
+      "title": "Deployments, labels and Services",
+      "objective": "Use labels and selectors to connect Services to pods, and compute the pod counts of a rolling update.",
+      "prerequisiteLessonIds": [
+        "the-kubernetes-model"
+      ],
+      "concepts": [
+        {
+          "id": "deployment",
+          "title": "Deployment",
+          "summary": "An object that manages ReplicaSets so a set of identical pods can be updated gradually."
+        },
+        {
+          "id": "selector",
+          "title": "Label selector",
+          "summary": "A query on labels; Services and ReplicaSets use it to find their pods."
+        },
+        {
+          "id": "service",
+          "title": "Service",
+          "summary": "A stable virtual address and name that load-balances to the ready pods matching a selector."
+        }
+      ],
+      "skills": [
+        "trace-selector",
+        "compute-rolling-update"
+      ],
+      "misconceptions": [
+        "Pod IPs are stable addresses to use; they change when pods are replaced, which is the reason Services exist.",
+        "A Service sends traffic to every pod with matching labels, whether ready or not; only ready pods receive it.",
+        "maxSurge and maxUnavailable are counts only; each can be a percentage."
+      ],
+      "sequence": [
+        "Show pods churning and breaking direct IP use.",
+        "Introduce a Service with a selector, and readiness.",
+        "Show a Deployment owning a ReplicaSet, and a new ReplicaSet created on image change.",
+        "Explain the rolling update parameters and rounding.",
+        "Compare Service types briefly: ClusterIP, NodePort, LoadBalancer."
+      ],
+      "examples": [
+        "10 replicas, maxSurge 25 per cent rounds up to 3, maxUnavailable 25 per cent rounds down to 2: at most 13 pods exist and at least 8 are available.",
+        "3 replicas with maxSurge 1 and maxUnavailable 0: at most 4 pods, at least 3 ready."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Pods as coloured boxes with labels; a Service arrow reaching those matching.",
+          "learnerAction": "Edit a pod's label and watch the Service endpoints change.",
+          "placement": "selectors"
+        },
+        {
+          "type": "table",
+          "shows": "Old and new ReplicaSet pod counts at each step of a rolling update.",
+          "learnerAction": "Change surge and unavailable values.",
+          "placement": "rolling update"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-rolling-update",
+          "sample": "A Deployment has 10 replicas, maxSurge 25% and maxUnavailable 25%. What is the greatest number of pods that may exist during the update? (Surge rounds up.)",
+          "answer": "13"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-rolling-update",
+          "sample": "Same Deployment. What is the fewest pods that must be available? (Unavailable rounds down.)",
+          "answer": "8"
+        },
+        {
+          "kind": "choice",
+          "targets": "trace-selector",
+          "sample": "A Service has selector app=web. Which pods receive traffic?",
+          "answer": "Ready pods labelled app=web",
+          "choices": [
+            "All pods in the namespace",
+            "Ready pods labelled app=web",
+            "Pods named web",
+            "Pods on the same node"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "k8s-docs"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "config-and-scaling",
+      "moduleId": "kubernetes",
+      "title": "Configuration, resources and scaling",
+      "objective": "Separate configuration from images, set requests and limits sensibly, and compute what the autoscaler will do.",
+      "prerequisiteLessonIds": [
+        "workloads-and-services"
+      ],
+      "concepts": [
+        {
+          "id": "configmap-secret",
+          "title": "ConfigMap and Secret",
+          "summary": "Objects that supply configuration to pods; a Secret is base64-encoded by default, not encrypted."
+        },
+        {
+          "id": "requests-limits",
+          "title": "Requests and limits",
+          "summary": "A request is what the scheduler reserves; a limit is the most a container may use."
+        },
+        {
+          "id": "hpa",
+          "title": "Horizontal Pod Autoscaler",
+          "summary": "Adjusts replica count with desiredReplicas = ceil(currentReplicas x currentMetric / targetMetric)."
+        }
+      ],
+      "skills": [
+        "compute-hpa",
+        "fit-pods-on-node"
+      ],
+      "misconceptions": [
+        "A Secret is encrypted; by default it is only base64 encoded, so access control and encryption at rest must be configured.",
+        "Setting a CPU limit equal to the request is always right; limits throttle CPU and kill on memory, so they need measurement.",
+        "More replicas always help; the autoscaler cannot add capacity beyond node supply or a database bottleneck."
+      ],
+      "sequence": [
+        "Show config injected as environment variables and files.",
+        "Decode a base64 Secret to show it is not secret.",
+        "Explain requests for scheduling and limits for enforcement; CPU in millicores.",
+        "Derive the autoscaler formula and apply it.",
+        "Note autoscaling limits: min and max, stabilisation, node capacity."
+      ],
+      "examples": [
+        "4 replicas at 80 per cent CPU with a target of 50: ceil(4 x 80 / 50) = ceil(6.4) = 7.",
+        "A node with 4,000m allocatable CPU hosts 16 pods that each request 250m."
+      ],
+      "figures": [
+        {
+          "type": "data_series",
+          "shows": "CPU per pod and replica count over time as load rises.",
+          "learnerAction": "Move the target and see replicas change.",
+          "placement": "hpa"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A node bar of 4,000m filled with pod requests.",
+          "learnerAction": "Add pods until none more is schedulable.",
+          "placement": "requests"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-hpa",
+          "sample": "4 replicas run at an average 80% CPU against a target of 50%. How many replicas does the autoscaler ask for?",
+          "answer": "7"
+        },
+        {
+          "kind": "numeric",
+          "targets": "fit-pods-on-node",
+          "sample": "A node has 4,000m allocatable CPU. Each pod requests 250m. How many pods fit by CPU?",
+          "answer": "16"
+        },
+        {
+          "kind": "choice",
+          "targets": "compute-hpa",
+          "sample": "What protects the contents of a Kubernetes Secret by default?",
+          "answer": "Nothing beyond access control; it is only base64-encoded",
+          "choices": [
+            "AES encryption",
+            "Nothing beyond access control; it is only base64-encoded",
+            "A hash",
+            "The container runtime"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "k8s-docs",
+        "twelve-factor"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "infrastructure-as-code",
+      "moduleId": "operate",
+      "title": "Infrastructure as code",
+      "objective": "Read a declarative configuration, explain state, plan and drift, and predict what an apply will change.",
+      "prerequisiteLessonIds": [
+        "config-and-scaling"
+      ],
+      "concepts": [
+        {
+          "id": "declarative",
+          "title": "Declarative description",
+          "summary": "Files state what infrastructure should exist; the tool works out the steps."
+        },
+        {
+          "id": "state",
+          "title": "State",
+          "summary": "The tool's record of which real resources correspond to which declarations."
+        },
+        {
+          "id": "drift",
+          "title": "Drift",
+          "summary": "A difference between the real infrastructure and its recorded or declared form, usually caused by manual change."
+        }
+      ],
+      "skills": [
+        "read-plan",
+        "explain-drift"
+      ],
+      "misconceptions": [
+        "Running apply twice creates everything twice; a declarative tool compares and makes zero changes if nothing differs.",
+        "State is a cache you can delete; losing it makes the tool forget what it owns.",
+        "Console changes are fine if quick; they cause drift that the next apply may revert."
+      ],
+      "sequence": [
+        "Contrast a shell script of commands with a declaration of the end result.",
+        "Walk the plan-then-apply cycle and read plan output.",
+        "Explain state, locking and why it is stored remotely and kept secret.",
+        "Show modules and variables as reuse, and environments as parameters.",
+        "Treat drift and review of plans in pull requests."
+      ],
+      "examples": [
+        "count = 3 on a server resource declares 3 servers; raising it to 5 plans '2 to add, 0 to change, 0 to destroy'.",
+        "Changing a server's instance type that forces replacement plans '1 to add, 0 to change, 1 to destroy'."
+      ],
+      "figures": [
+        {
+          "type": "table",
+          "shows": "Left: declared resources; middle: state; right: real resources, with differences highlighted.",
+          "learnerAction": "Make a manual change and see drift appear.",
+          "placement": "drift"
+        },
+        {
+          "type": "program_trace",
+          "shows": "Plan output with symbols + - ~ and -/+.",
+          "learnerAction": "Match each symbol to its meaning.",
+          "placement": "plan"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "code-reading",
+          "targets": "read-plan",
+          "sample": "A configuration declares count = 3 servers and 3 already exist and match. Plan reports 'X to add, Y to change, Z to destroy'. Give X,Y,Z as three digits.",
+          "answer": "0,0,0"
+        },
+        {
+          "kind": "code-reading",
+          "targets": "read-plan",
+          "sample": "Count is raised from 3 to 5. How many resources does the plan add?",
+          "answer": "2"
+        },
+        {
+          "kind": "single-term",
+          "targets": "explain-drift",
+          "sample": "What is the term for real infrastructure differing from its declared form after a manual change?",
+          "answer": "drift"
+        }
+      ],
+      "sourceIds": [
+        "opentofu",
+        "opengitops"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "gitops-and-observability",
+      "moduleId": "operate",
+      "title": "GitOps, observability and reliability targets",
+      "objective": "Explain a GitOps reconciler, distinguish metrics, logs and traces, and compute an error budget.",
+      "prerequisiteLessonIds": [
+        "infrastructure-as-code"
+      ],
+      "concepts": [
+        {
+          "id": "gitops",
+          "title": "GitOps",
+          "summary": "The desired state is stored in Git, and an agent in the cluster pulls and reconciles it continuously."
+        },
+        {
+          "id": "signals",
+          "title": "Metrics, logs and traces",
+          "summary": "Numbers over time, discrete events, and the path of one request across services."
+        },
+        {
+          "id": "error-budget",
+          "title": "Error budget",
+          "summary": "The allowed unreliability, equal to 1 minus the SLO, spent by outages and risky changes."
+        }
+      ],
+      "skills": [
+        "compute-error-budget",
+        "pick-signal"
+      ],
+      "misconceptions": [
+        "Pull-based deployment is slower; it removes cluster credentials from CI and corrects drift automatically.",
+        "Monitoring and observability are synonyms; monitoring checks known failures, observability supports asking new questions of the system.",
+        "A 100 per cent SLO is the safe target; it leaves no budget for change and costs disproportionately."
+      ],
+      "sequence": [
+        "Show CI pushing to the cluster versus an agent pulling from Git.",
+        "Introduce the three signals and the question each answers.",
+        "Define SLI, SLO and the error budget.",
+        "Work the budget in minutes and a burn example.",
+        "Close with alerting on symptoms and on budget burn."
+      ],
+      "examples": [
+        "99.9 per cent over 30 days allows 30 x 24 x 60 x 0.001 = 43.2 minutes; 99.95 per cent allows 21.6; 99.99 per cent allows 4.32.",
+        "A 5.4-minute outage against a 21.6-minute budget spends 25 per cent."
+      ],
+      "figures": [
+        {
+          "type": "graph_plot",
+          "shows": "Allowed downtime per 30 days against SLO from 99 to 99.99 per cent.",
+          "learnerAction": "Drag the SLO and read the minutes.",
+          "placement": "error budget"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "Request through three services with a trace waterfall, a latency graph and a log line.",
+          "learnerAction": "Click a signal to see what it reveals.",
+          "placement": "signals"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-error-budget",
+          "sample": "An SLO of 99.9% over 30 days. How many minutes of downtime does the error budget allow?",
+          "answer": "43.2"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-error-budget",
+          "sample": "The budget is 21.6 minutes and an outage lasts 5.4 minutes. What percentage of the budget is spent?",
+          "answer": "25"
+        },
+        {
+          "kind": "choice",
+          "targets": "pick-signal",
+          "sample": "Which signal shows how one request travelled through several services?",
+          "answer": "Trace",
+          "choices": [
+            "Metric",
+            "Log",
+            "Trace",
+            "Alert"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "sre-book",
+        "sre-workbook",
+        "otel",
+        "opengitops"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "pipeline-and-supply-chain-security",
+      "moduleId": "operate",
+      "title": "Securing the pipeline and the supply chain",
+      "objective": "Identify where a build can be attacked, and apply pinning, least-privilege credentials, scanning and signing.",
+      "prerequisiteLessonIds": [
+        "gitops-and-observability"
+      ],
+      "concepts": [
+        {
+          "id": "supply-chain",
+          "title": "Software supply chain",
+          "summary": "Everything that enters a build: source, dependencies, base images, build tools and the pipeline itself."
+        },
+        {
+          "id": "digest-pin",
+          "title": "Digest pinning",
+          "summary": "Referring to an image by the SHA-256 of its content, so the reference cannot silently change."
+        },
+        {
+          "id": "sbom",
+          "title": "SBOM",
+          "summary": "A machine-readable list of the components in a built artifact."
+        }
+      ],
+      "skills": [
+        "pin-dependencies",
+        "spot-secret-leak"
+      ],
+      "misconceptions": [
+        "Scanning images once is enough; new vulnerabilities are published against unchanged software.",
+        "A secret removed in a later commit is gone; it stays in history and must be rotated.",
+        "The CI system is trusted by default; it holds credentials and runs others' code, so it is a prime target."
+      ],
+      "sequence": [
+        "Map the stages where an attacker can insert code: source, dependency, build, registry, deploy.",
+        "Pin by digest and lock files, with automated updates.",
+        "Keep secrets out of repositories and give pipelines short-lived, scoped credentials.",
+        "Scan dependencies and images, and produce an SBOM.",
+        "Sign artifacts and verify at deploy; mention SLSA levels as provenance maturity."
+      ],
+      "examples": [
+        "A SHA-256 digest is 256 bits, written as 64 hexadecimal characters since each hex digit is 4 bits.",
+        "A tag such as node:22 can point to a different image next month; a digest cannot."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Pipeline stages with attack points numbered.",
+          "learnerAction": "Place a control on each attack point.",
+          "placement": "threat map"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "pin-dependencies",
+          "sample": "A SHA-256 digest is written in hexadecimal. How many hexadecimal characters is it?",
+          "answer": "64"
+        },
+        {
+          "kind": "choice",
+          "targets": "spot-secret-leak",
+          "sample": "An access key was committed, then deleted in the next commit. What should be done?",
+          "answer": "Revoke and rotate it",
+          "choices": [
+            "Nothing, it is deleted",
+            "Revoke and rotate it",
+            "Rename the file",
+            "Make the repository private only"
+          ]
+        },
+        {
+          "kind": "single-term",
+          "targets": "pin-dependencies",
+          "sample": "What kind of list of components in an artifact is abbreviated SBOM?",
+          "answer": "software bill of materials"
+        }
+      ],
+      "sourceIds": [
+        "slsa",
+        "owasp-cicd",
+        "docker-docs"
+      ],
+      "estimatedMinutes": 13
+    }
+  ],
+  "courseCheck": "Mixed check: DORA arithmetic, pipeline wall-clock time, canary traffic, layer-cache prediction, port mapping, rolling-update bounds, HPA replicas, plan output and error-budget minutes, plus choice questions on selectors, Secrets, drift and digests.",
+  "platformNeeds": [
+    "A pipeline_stages figure type: stages with durations that can be dragged between serial and parallel lanes, with the total computed. Fallback: svg_figure with switchable views for fixed layouts.",
+    "A manifest_viewer figure: YAML or Dockerfile lines with a coloured annotation per line and a stepping cursor, for cache and rolling-update walkthroughs. Fallback: program_trace over the file's lines.",
+    "code-reading questions need a multi-line prompt that preserves Dockerfile and YAML layout (monospace block). No runner is needed.",
+    "A canary/rollout slider widget (traffic split with live error rate) would clearly help; fallback is data_series with a choice question."
+  ],
+  "unverified": [
+    "No external site could be reached from the authoring session (network blocked), so every source has verified false: URLs and licences are from memory and must be checked.",
+    "Kubernetes rounding rule (maxSurge rounds up, maxUnavailable rounds down) and the HPA formula are recalled from the official docs and must be rechecked.",
+    "DORA 2024 rename of time to restore service to failed deployment recovery time, and 2014 as the first report year.",
+    "Docker, OpenGitOps, SLSA, OpenTofu and twelve-factor licences.",
+    "Version tag node:22 is only an example."
+  ]
+}

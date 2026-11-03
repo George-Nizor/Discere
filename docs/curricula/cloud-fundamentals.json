@@ -1,0 +1,1258 @@
+{
+  "id": "cloud-fundamentals",
+  "title": "Cloud Fundamentals",
+  "family": "A",
+  "voice": "A",
+  "description": "The ideas behind every cloud provider, from regions and IAM to networks, storage, cost and recovery, with AWS as the worked example.",
+  "audience": "A capable adult who has used web applications and knows basic computing and networking from CS basics. No cloud experience needed. Useful groundwork for the AWS Solutions Architect Associate, without being exam prep.",
+  "prerequisites": [
+    "cs-basics"
+  ],
+  "outcomes": [
+    "You'll be able to place any task on the shared-responsibility line.",
+    "You'll be able to compute availability, address space, cost and queue sizing from stated numbers.",
+    "You'll be able to read an IAM-style policy and apply least privilege.",
+    "You'll be able to choose compute, storage and database types and map them to AWS names.",
+    "You'll be able to review a design against the six Well-Architected pillars and choose a recovery strategy."
+  ],
+  "sources": [
+    {
+      "id": "nist-145",
+      "title": "NIST SP 800-145: The NIST Definition of Cloud Computing",
+      "url": "https://csrc.nist.gov/pubs/sp/800/145/final",
+      "licence": "US government work, public domain",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "aws-wa",
+      "title": "AWS Well-Architected Framework",
+      "url": "https://docs.aws.amazon.com/wellarchitected/latest/framework/welcome.html",
+      "licence": "AWS documentation, all rights reserved; check terms",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "aws-docs",
+      "title": "AWS documentation: VPC, IAM, EC2, S3, RDS, Lambda, SQS, ELB user guides",
+      "url": "https://docs.aws.amazon.com/",
+      "licence": "AWS documentation, all rights reserved; check terms",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "aws-whitepapers",
+      "title": "AWS whitepaper: Disaster Recovery of Workloads on AWS",
+      "url": "https://docs.aws.amazon.com/whitepapers/latest/disaster-recovery-workloads-on-aws/disaster-recovery-workloads-on-aws.html",
+      "licence": "AWS content, all rights reserved",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "aws-shared",
+      "title": "AWS Shared Responsibility Model",
+      "url": "https://aws.amazon.com/compliance/shared-responsibility-model/",
+      "licence": "AWS content, all rights reserved",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "azure-docs",
+      "title": "Microsoft Azure Architecture Center and Learn fundamentals",
+      "url": "https://learn.microsoft.com/en-us/azure/architecture/",
+      "licence": "Microsoft docs; text often CC BY 4.0 on GitHub, confirm per page",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "gcp-docs",
+      "title": "Google Cloud Architecture Framework",
+      "url": "https://cloud.google.com/architecture/framework",
+      "licence": "CC BY 4.0 for Google Cloud docs text (confirm)",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "rfc4632",
+      "title": "RFC 4632: Classless Inter-domain Routing (CIDR)",
+      "url": "https://www.rfc-editor.org/rfc/rfc4632",
+      "licence": "IETF Trust, reproduce with attribution",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "sre-book",
+      "title": "Site Reliability Engineering (Google)",
+      "url": "https://sre.google/sre-book/table-of-contents/",
+      "licence": "CC BY-NC-ND 4.0",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "finops",
+      "title": "FinOps Foundation framework",
+      "url": "https://www.finops.org/framework/",
+      "licence": "CC BY 4.0 (confirm)",
+      "use": "reference",
+      "verified": false
+    }
+  ],
+  "modules": [
+    {
+      "id": "model",
+      "title": "The cloud model",
+      "summary": "What the cloud is, where it physically sits, who is responsible for what, and who may do what."
+    },
+    {
+      "id": "build",
+      "title": "Building blocks",
+      "summary": "Networks, compute, storage and databases, the pieces every design uses, with AWS names as the worked example."
+    },
+    {
+      "id": "design",
+      "title": "Designing for the cloud",
+      "summary": "Scaling, decoupling, cost, the Well-Architected view, security and recovery."
+    }
+  ],
+  "lessons": [
+    {
+      "id": "what-the-cloud-is",
+      "moduleId": "model",
+      "title": "What the cloud is",
+      "objective": "State the five essential characteristics and three service models, and place a task on the shared-responsibility line.",
+      "prerequisiteLessonIds": [],
+      "concepts": [
+        {
+          "id": "essentials",
+          "title": "Five characteristics",
+          "summary": "On-demand self-service, broad network access, resource pooling, rapid elasticity and measured service."
+        },
+        {
+          "id": "service-models",
+          "title": "IaaS, PaaS, SaaS",
+          "summary": "The three models differ by how much of the stack the provider runs for you."
+        },
+        {
+          "id": "shared-resp",
+          "title": "Shared responsibility",
+          "summary": "The provider secures the cloud itself; the customer secures what they put in it and how they configure it."
+        }
+      ],
+      "skills": [
+        "classify-service-model",
+        "place-responsibility"
+      ],
+      "misconceptions": [
+        "The cloud is someone else's computer and nothing more; the difference is the API-driven, metered, elastic delivery.",
+        "Moving to the cloud makes security the provider's problem; configuration and data remain the customer's.",
+        "SaaS, PaaS and IaaS are quality tiers; they are different splits of responsibility."
+      ],
+      "sequence": [
+        "Begin with ordering a server in weeks versus in seconds.",
+        "State the NIST definition and its five characteristics.",
+        "Lay out the stack (facility, hardware, hypervisor, OS, runtime, application, data) and show how IaaS, PaaS and SaaS move the line.",
+        "Map to AWS examples: EC2, Elastic Beanstalk, a hosted email product, as current illustrations.",
+        "Show the responsibility line and who patches what."
+      ],
+      "examples": [
+        "A virtual machine on EC2: the customer patches the guest OS. A managed database such as RDS: the provider patches the engine, the customer configures access.",
+        "Public, private, hybrid and community deployment models, as in NIST."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A seven-layer stack with a movable line for IaaS, PaaS, SaaS.",
+          "learnerAction": "Switch the model; layers recolour to customer or provider.",
+          "placement": "service models"
+        },
+        {
+          "type": "diagram_choice",
+          "shows": "Four tasks (patch guest OS, encrypt bucket data, replace failed disk, set firewall rule).",
+          "learnerAction": "Drag each task to provider or customer for a chosen service.",
+          "placement": "shared responsibility"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "choice",
+          "targets": "classify-service-model",
+          "sample": "You rent a virtual machine and install your own database on it. Which service model is this?",
+          "answer": "IaaS",
+          "choices": [
+            "IaaS",
+            "PaaS",
+            "SaaS",
+            "FaaS"
+          ]
+        },
+        {
+          "kind": "single-term",
+          "targets": "place-responsibility",
+          "sample": "In EC2, who patches the guest operating system, the provider or the customer?",
+          "answer": "customer"
+        },
+        {
+          "kind": "numeric",
+          "targets": "classify-service-model",
+          "sample": "How many essential characteristics does the NIST definition list?",
+          "answer": "5"
+        }
+      ],
+      "sourceIds": [
+        "nist-145",
+        "aws-shared"
+      ],
+      "historyNotes": [
+        "NIST published its definition as SP 800-145 in September 2011."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "regions-zones-and-availability",
+      "moduleId": "model",
+      "title": "Regions, zones and availability",
+      "objective": "Explain why designs span availability zones and compute availability for serial and redundant components.",
+      "prerequisiteLessonIds": [
+        "what-the-cloud-is"
+      ],
+      "concepts": [
+        {
+          "id": "region-az",
+          "title": "Region and availability zone",
+          "summary": "A region is a geographic area; an availability zone is one or more discrete data centres within it, isolated for fault tolerance."
+        },
+        {
+          "id": "availability",
+          "title": "Availability",
+          "summary": "The proportion of time a system is able to serve requests, often written as nines."
+        },
+        {
+          "id": "redundancy",
+          "title": "Redundancy",
+          "summary": "Independent copies of a component, so one failure does not remove the function."
+        }
+      ],
+      "skills": [
+        "compute-availability",
+        "choose-placement"
+      ],
+      "misconceptions": [
+        "Two servers in one zone give high availability; a zone failure removes both.",
+        "Availability multiplies for dependencies in series; each extra required component lowers the whole.",
+        "Higher nines are always worth buying; each costs more and needs a justification."
+      ],
+      "sequence": [
+        "Show a region map in outline with zones as separate buildings.",
+        "Define availability and the nines table.",
+        "Multiply for two required components in series.",
+        "Compute for a redundant pair assuming independent failure.",
+        "Add latency and data-residency as reasons to choose a region, and why zones, not regions, are the usual redundancy unit."
+      ],
+      "examples": [
+        "Two 99.9% components in series: 0.999 x 0.999 = 0.998001, i.e. 99.8001%.",
+        "A redundant independent pair of 99.9% components: 1 - 0.001 x 0.001 = 0.999999, i.e. 99.9999%.",
+        "99.99% allows 525,600 x 0.0001 = 52.56 minutes a year; 99.9% allows 525.6 minutes, 8.76 hours."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Region with three zones, a web tier, and a database; failed-zone toggle.",
+          "learnerAction": "Fail one zone; the diagram shows what survives.",
+          "placement": "zones"
+        },
+        {
+          "type": "table",
+          "shows": "Nines against allowed downtime per year.",
+          "learnerAction": "Select a row to see the minutes.",
+          "placement": "nines"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-availability",
+          "sample": "Two required components each have 99.9% availability and fail independently. What is the availability of the pair in series, as a percentage?",
+          "answer": "99.8001"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-availability",
+          "sample": "A service must have 99.99% availability over a year of 525,600 minutes. How many minutes of downtime are allowed?",
+          "answer": "52.56"
+        },
+        {
+          "kind": "choice",
+          "targets": "choose-placement",
+          "sample": "Where should two web servers be placed to survive the loss of one data centre?",
+          "answer": "In two availability zones of one region",
+          "choices": [
+            "Two servers in one zone",
+            "In two availability zones of one region",
+            "On one larger server",
+            "In one zone with backups"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "aws-docs",
+        "aws-wa",
+        "sre-book"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "identity-and-access",
+      "moduleId": "model",
+      "title": "Identity and access management",
+      "objective": "Evaluate a policy to decide whether a request is allowed, and apply least privilege.",
+      "prerequisiteLessonIds": [
+        "what-the-cloud-is"
+      ],
+      "concepts": [
+        {
+          "id": "principal",
+          "title": "Principal and role",
+          "summary": "A principal is an entity that can make requests; a role is an identity assumed temporarily, with short-lived credentials."
+        },
+        {
+          "id": "policy",
+          "title": "Policy",
+          "summary": "A document that allows or denies actions on resources, optionally under conditions."
+        },
+        {
+          "id": "eval-logic",
+          "title": "Policy evaluation",
+          "summary": "Requests are denied by default; an explicit deny always overrides any allow."
+        }
+      ],
+      "skills": [
+        "evaluate-policy",
+        "apply-least-privilege"
+      ],
+      "misconceptions": [
+        "An allow in one policy wins over a deny in another; an explicit deny always wins.",
+        "The account's root user is a handy everyday login; it should be locked away with MFA and not used for daily work.",
+        "Long-lived access keys on a server are fine; roles with temporary credentials remove the key to steal."
+      ],
+      "sequence": [
+        "Show a request arriving with who, what and which resource.",
+        "Present default deny, then allow, then explicit deny overriding.",
+        "Read a JSON policy line by line.",
+        "Introduce roles and temporary credentials for services.",
+        "Explain least privilege and how to widen it only as needed."
+      ],
+      "examples": [
+        "Policy A allows s3:GetObject on bucket reports; policy B denies s3:GetObject on reports/secret/*. A request for reports/secret/q3.csv is denied.",
+        "No policy mentions ec2:StopInstances; a request to stop one is denied by default."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A request card (principal, action, resource) passing a decision flow: explicit deny? allow? else deny.",
+          "learnerAction": "Edit the request and the policies and watch the path.",
+          "placement": "evaluation"
+        },
+        {
+          "type": "table",
+          "shows": "A JSON policy beside plain-language rows.",
+          "learnerAction": "Highlight a row to see the matching clause.",
+          "placement": "reading policy"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "choice",
+          "targets": "evaluate-policy",
+          "sample": "One policy allows s3:GetObject on a bucket and another explicitly denies it. The request is:",
+          "answer": "Denied",
+          "choices": [
+            "Allowed",
+            "Denied",
+            "Allowed if the user is an admin",
+            "Logged only"
+          ]
+        },
+        {
+          "kind": "choice",
+          "targets": "evaluate-policy",
+          "sample": "No policy mentions an action. What happens to a request for it?",
+          "answer": "Denied by default",
+          "choices": [
+            "Allowed by default",
+            "Denied by default",
+            "Allowed for administrators",
+            "Queued"
+          ]
+        },
+        {
+          "kind": "single-term",
+          "targets": "apply-least-privilege",
+          "sample": "What is the name of an identity assumed temporarily, with short-lived credentials?",
+          "answer": "role"
+        }
+      ],
+      "sourceIds": [
+        "aws-docs",
+        "aws-wa"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "virtual-networks",
+      "moduleId": "build",
+      "title": "Virtual networks",
+      "objective": "Size a CIDR block and subnets, and say what makes a subnet public.",
+      "prerequisiteLessonIds": [
+        "identity-and-access"
+      ],
+      "concepts": [
+        {
+          "id": "cidr",
+          "title": "CIDR block",
+          "summary": "A prefix such as 10.0.0.0/16 whose length n leaves 2^(32-n) addresses."
+        },
+        {
+          "id": "subnet-route",
+          "title": "Subnet and route table",
+          "summary": "A subnet is a slice of the network in one zone; its route table decides where traffic goes."
+        },
+        {
+          "id": "sg-nacl",
+          "title": "Security group versus network ACL",
+          "summary": "A security group is stateful and attached to a resource; a network ACL is stateless and attached to a subnet."
+        }
+      ],
+      "skills": [
+        "size-cidr",
+        "make-subnet-public"
+      ],
+      "misconceptions": [
+        "A subnet is public by name; it is public when its route table sends internet traffic to an internet gateway and its resources have public addresses.",
+        "All addresses in a subnet are usable; AWS reserves 5 in each subnet.",
+        "Stateful and stateless filters behave alike; a stateless one must allow return traffic explicitly."
+      ],
+      "sequence": [
+        "Revisit IP addresses and prefix lengths from CS basics.",
+        "Count addresses: /16, /24, /28.",
+        "Carve a /16 into /24 subnets across zones.",
+        "Show public versus private routing, with NAT for outbound-only access.",
+        "Contrast security groups and network ACLs."
+      ],
+      "examples": [
+        "A /16 has 2^16 = 65,536 addresses; a /24 has 256, so a /16 holds 2^8 = 256 /24 subnets.",
+        "On AWS a /24 subnet has 256 - 5 = 251 usable addresses; a /28 has 16 - 5 = 11.",
+        "10.0.1.37 is inside 10.0.1.0/24; 10.0.2.5 is not."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A VPC with two zones, public and private subnets, internet gateway and NAT.",
+          "learnerAction": "Toggle a route on and off and watch a server gain or lose internet access.",
+          "placement": "routing"
+        },
+        {
+          "type": "number_machine",
+          "shows": "Prefix length in, address count out.",
+          "learnerAction": "Change the prefix.",
+          "placement": "cidr"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "size-cidr",
+          "sample": "How many addresses are in a /24 block?",
+          "answer": "256"
+        },
+        {
+          "kind": "numeric",
+          "targets": "size-cidr",
+          "sample": "On AWS, 5 addresses in each subnet are reserved. How many are usable in a /28 subnet?",
+          "answer": "11"
+        },
+        {
+          "kind": "choice",
+          "targets": "make-subnet-public",
+          "sample": "What makes a subnet public?",
+          "answer": "Its route table sends internet traffic to an internet gateway",
+          "choices": [
+            "Its name",
+            "Its route table sends internet traffic to an internet gateway",
+            "A larger CIDR block",
+            "A network ACL"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "rfc4632",
+        "aws-docs"
+      ],
+      "historyNotes": [
+        "CIDR was introduced in 1993 to slow growth of routing tables and address exhaustion; RFC 4632 (2006) is the current description."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "compute-options",
+      "moduleId": "build",
+      "title": "Compute: machines, containers and functions",
+      "objective": "Choose between virtual machines, containers and functions for a workload, and compare their costs.",
+      "prerequisiteLessonIds": [
+        "virtual-networks"
+      ],
+      "concepts": [
+        {
+          "id": "vm",
+          "title": "Virtual machine",
+          "summary": "A rented slice of a server with its own operating system, billed by time."
+        },
+        {
+          "id": "function",
+          "title": "Function as a service",
+          "summary": "Code run per event, with no server to manage, billed by requests and duration."
+        },
+        {
+          "id": "autoscaling",
+          "title": "Auto scaling",
+          "summary": "A group that adds or removes instances according to a metric or schedule."
+        }
+      ],
+      "skills": [
+        "choose-compute",
+        "cost-compute"
+      ],
+      "misconceptions": [
+        "Serverless means no servers; servers exist and the provider manages them.",
+        "Functions are always cheaper; at steady high load a VM can cost less.",
+        "More instances always means more resilience; instances in one zone share fate."
+      ],
+      "sequence": [
+        "List the options along a control-versus-effort axis.",
+        "Describe instance families as ratios of CPU, memory and network.",
+        "Explain auto scaling with a minimum, maximum and metric.",
+        "Introduce functions and cold starts.",
+        "Compare costs with illustrative prices."
+      ],
+      "examples": [
+        "Illustrative prices: 3 instances x $0.10 an hour x 730 hours = $219.00 a month; a commitment discount of 40% brings that to $131.40.",
+        "5 million function invocations at $0.20 per million is $1.00 for requests, before duration charges."
+      ],
+      "figures": [
+        {
+          "type": "table",
+          "shows": "Four workloads against VM, container service, function with a suitability mark.",
+          "learnerAction": "Choose a workload to see why.",
+          "placement": "choice"
+        },
+        {
+          "type": "graph_plot",
+          "shows": "Monthly cost of a VM versus a function against requests per month; they cross.",
+          "learnerAction": "Move the load and see the crossover.",
+          "placement": "cost"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "cost-compute",
+          "sample": "Three instances cost $0.10 an hour each. Over 730 hours, what is the monthly cost in dollars?",
+          "answer": "219"
+        },
+        {
+          "kind": "numeric",
+          "targets": "cost-compute",
+          "sample": "A 40% commitment discount applies to $219.00. What is the new price in dollars?",
+          "answer": "131.4"
+        },
+        {
+          "kind": "choice",
+          "targets": "choose-compute",
+          "sample": "A job runs for 3 seconds a few times an hour and needs no servers kept warm. Which fits best?",
+          "answer": "A function",
+          "choices": [
+            "A large always-on VM",
+            "A function",
+            "A dedicated host",
+            "A container cluster"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "aws-docs",
+        "aws-wa",
+        "finops"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "storage-types",
+      "moduleId": "build",
+      "title": "Storage: object, block and file",
+      "objective": "Match a need to object, block or file storage and interpret durability figures.",
+      "prerequisiteLessonIds": [
+        "compute-options"
+      ],
+      "concepts": [
+        {
+          "id": "object",
+          "title": "Object storage",
+          "summary": "Whole objects addressed by key in a flat namespace, accessed over HTTP, with very high durability."
+        },
+        {
+          "id": "block",
+          "title": "Block storage",
+          "summary": "A raw disk attached to one machine, for operating systems and databases."
+        },
+        {
+          "id": "durability",
+          "title": "Durability versus availability",
+          "summary": "Durability is the chance data is not lost; availability is the chance it can be read now."
+        }
+      ],
+      "skills": [
+        "match-storage",
+        "interpret-durability"
+      ],
+      "misconceptions": [
+        "An object store is a file system; there is no real directory tree, no partial in-place edit.",
+        "Durability and availability are one number; data can be safe but briefly unreachable.",
+        "Replication is a backup; it copies corruption and deletion too."
+      ],
+      "sequence": [
+        "Contrast three access patterns.",
+        "Describe object keys, prefixes, versioning and lifecycle rules.",
+        "Give durability as annual loss probability.",
+        "Explain storage classes as a price for access speed.",
+        "State that replication does not replace versioned backups."
+      ],
+      "examples": [
+        "Durability of 99.999999999% (eleven nines) is an annual loss chance of 10^-11 per object; for 10,000,000 objects expected loss is 10^-4 a year, about once in 10,000 years.",
+        "Moving rarely read data to a cheaper class trades lower storage price for retrieval fees and delay."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Three icons (bucket, disk attached to a VM, shared file mount) with request styles.",
+          "learnerAction": "Drag a workload onto the matching type.",
+          "placement": "match"
+        },
+        {
+          "type": "table",
+          "shows": "Storage classes by price per GB, retrieval time and fee.",
+          "learnerAction": "Pick a class for a data age.",
+          "placement": "classes"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "choice",
+          "targets": "match-storage",
+          "sample": "Which storage suits a database engine's data volume on one VM?",
+          "answer": "Block",
+          "choices": [
+            "Object",
+            "Block",
+            "Archive",
+            "Tape"
+          ]
+        },
+        {
+          "kind": "numeric",
+          "targets": "interpret-durability",
+          "sample": "Annual loss chance per object is 10^-11. For 10,000,000 objects, what is the expected number of objects lost in a year? Give a decimal.",
+          "answer": "0.0001"
+        },
+        {
+          "kind": "single-term",
+          "targets": "match-storage",
+          "sample": "What type of storage addresses whole items by key over HTTP?",
+          "answer": "object"
+        }
+      ],
+      "sourceIds": [
+        "aws-docs"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "managed-databases",
+      "moduleId": "build",
+      "title": "Databases and recovery objectives",
+      "objective": "Choose a database model, tell multi-AZ from read replicas, and apply RPO and RTO.",
+      "prerequisiteLessonIds": [
+        "storage-types"
+      ],
+      "concepts": [
+        {
+          "id": "rpo-rto",
+          "title": "RPO and RTO",
+          "summary": "RPO is the most data, as time, you can afford to lose; RTO is the longest outage you can afford."
+        },
+        {
+          "id": "multi-az",
+          "title": "Multi-AZ versus read replica",
+          "summary": "A multi-AZ standby is for failover; a read replica serves extra reads."
+        },
+        {
+          "id": "db-models",
+          "title": "Relational, key-value and document",
+          "summary": "The model is chosen by access patterns, consistency need and scale."
+        }
+      ],
+      "skills": [
+        "apply-rpo",
+        "choose-database"
+      ],
+      "misconceptions": [
+        "A read replica gives high availability; it is for scaling reads and has replication lag.",
+        "A backup taken at midnight gives an RPO of nothing; its RPO is up to the interval.",
+        "Managed databases need no administration; the customer still owns schema, queries, access and sizing."
+      ],
+      "sequence": [
+        "Show what the provider manages and what remains.",
+        "Match models to access patterns.",
+        "Define RPO and RTO with a timeline of a failure.",
+        "Contrast standby and replica, with lag.",
+        "Cover backups, point-in-time recovery and testing restores."
+      ],
+      "examples": [
+        "Backups every 6 hours give a worst-case RPO of 6 hours.",
+        "Failure at 10:00 and service restored at 10:45 is an actual recovery time of 45 minutes, against an RTO of 30 that is missed by 15."
+      ],
+      "figures": [
+        {
+          "type": "timeline_explorer",
+          "shows": "A timeline with last backup, failure and restore marked.",
+          "learnerAction": "Move the failure time to see data lost.",
+          "placement": "rpo"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "Primary with synchronous standby in another zone, and a replica serving reads.",
+          "learnerAction": "Fail the primary and see which node takes over.",
+          "placement": "multi-az"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "apply-rpo",
+          "sample": "Backups run every 6 hours. What is the worst-case RPO in hours?",
+          "answer": "6"
+        },
+        {
+          "kind": "numeric",
+          "targets": "apply-rpo",
+          "sample": "A failure happens at 10:00 and service returns at 10:45. The RTO is 30 minutes. By how many minutes was it missed?",
+          "answer": "15"
+        },
+        {
+          "kind": "choice",
+          "targets": "choose-database",
+          "sample": "Which feature exists mainly to survive an availability-zone failure?",
+          "answer": "Multi-AZ standby",
+          "choices": [
+            "Read replica",
+            "Multi-AZ standby",
+            "Larger instance",
+            "Query cache"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "aws-docs",
+        "aws-whitepapers",
+        "aws-wa"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "scaling-and-decoupling",
+      "moduleId": "design",
+      "title": "Scaling and decoupling",
+      "objective": "Size a worker pool from arrival and service rates, and use queues and load balancers to remove coupling.",
+      "prerequisiteLessonIds": [
+        "managed-databases"
+      ],
+      "concepts": [
+        {
+          "id": "load-balancer",
+          "title": "Load balancer",
+          "summary": "Spreads requests across healthy targets and removes unhealthy ones."
+        },
+        {
+          "id": "queue",
+          "title": "Queue",
+          "summary": "A buffer between producer and consumer that lets each run at its own pace."
+        },
+        {
+          "id": "stateless",
+          "title": "Stateless tier",
+          "summary": "A tier that keeps no per-user data locally, so any instance can serve any request."
+        }
+      ],
+      "skills": [
+        "size-workers",
+        "predict-backlog"
+      ],
+      "misconceptions": [
+        "Scale up is always enough; vertical scaling has a ceiling and is a single point of failure.",
+        "A queue fixes a slow consumer; it hides it until the backlog grows without bound.",
+        "Sessions kept in server memory scale fine behind a load balancer; they tie users to one instance."
+      ],
+      "sequence": [
+        "Contrast scaling up with scaling out.",
+        "Make the tier stateless: sessions to a shared store.",
+        "Place a load balancer and health checks.",
+        "Insert a queue and explain backlog growth.",
+        "Compute workers needed."
+      ],
+      "examples": [
+        "Arrivals 120 a second, one worker handles 50 a second: 120 / 50 = 2.4, so 3 workers.",
+        "With 2 workers (100 a second) against 120 arriving, backlog grows by 20 a second: 6,000 messages in 5 minutes."
+      ],
+      "figures": [
+        {
+          "type": "data_series",
+          "shows": "Queue depth over time for different worker counts.",
+          "learnerAction": "Add workers until depth stops rising.",
+          "placement": "backlog"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "Producers, queue and consumers; load balancer in front of stateless servers.",
+          "learnerAction": "Kill a consumer and watch.",
+          "placement": "decoupling"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "size-workers",
+          "sample": "120 messages arrive per second and each worker handles 50 per second. What is the least number of workers that keeps up?",
+          "answer": "3"
+        },
+        {
+          "kind": "numeric",
+          "targets": "predict-backlog",
+          "sample": "Arrivals are 120 a second and 2 workers handle 100 a second in total. How many messages does the backlog gain in 5 minutes?",
+          "answer": "6000"
+        },
+        {
+          "kind": "choice",
+          "targets": "size-workers",
+          "sample": "What must a tier be to sit behind a load balancer with any instance serving any request?",
+          "answer": "Stateless",
+          "choices": [
+            "Stateful",
+            "Stateless",
+            "Single-threaded",
+            "Encrypted"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "aws-docs",
+        "aws-wa"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "cost-and-pricing",
+      "moduleId": "design",
+      "title": "Cost and pricing",
+      "objective": "Estimate a monthly bill from usage, spot the cost drivers that surprise teams, and apply basic cost controls.",
+      "prerequisiteLessonIds": [
+        "scaling-and-decoupling"
+      ],
+      "concepts": [
+        {
+          "id": "pay-per-use",
+          "title": "Pay per use",
+          "summary": "Charges track consumption, so cost is a function of design."
+        },
+        {
+          "id": "egress",
+          "title": "Data transfer out",
+          "summary": "Data leaving the provider's network, or crossing regions, is charged per GB; data in is usually free."
+        },
+        {
+          "id": "commitment",
+          "title": "Commitment pricing",
+          "summary": "A lower rate in return for a promise of steady usage over a term."
+        }
+      ],
+      "skills": [
+        "estimate-bill",
+        "find-cost-driver"
+      ],
+      "misconceptions": [
+        "The cloud is cheaper; it is cheaper when elasticity is used and idle resources are removed.",
+        "Costs are mostly compute; storage, transfer, NAT and idle resources add up.",
+        "Cost is finance's job; architectural choices set it, so engineers must see it."
+      ],
+      "sequence": [
+        "Break a bill into compute, storage, transfer and requests.",
+        "Compute worked examples.",
+        "Show common surprises: egress, NAT gateways, orphaned volumes, logging volume.",
+        "Introduce tagging, budgets and alerts.",
+        "Explain on-demand, commitment and interruptible capacity."
+      ],
+      "examples": [
+        "Illustrative prices: 500 GB stored at $0.023 per GB-month is $11.50; 2,000 GB out at $0.09 per GB is $180.00; together $191.50.",
+        "Stopping a VM does not stop charges for its attached volume."
+      ],
+      "figures": [
+        {
+          "type": "table",
+          "shows": "A bill by line item with a bar for each.",
+          "learnerAction": "Change usage and see the total.",
+          "placement": "estimate"
+        },
+        {
+          "type": "graph_plot",
+          "shows": "Cost against utilisation for on-demand and committed.",
+          "learnerAction": "Move utilisation; find the break-even.",
+          "placement": "commitment"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "estimate-bill",
+          "sample": "500 GB is stored at $0.023 per GB-month. What is the monthly cost in dollars?",
+          "answer": "11.5"
+        },
+        {
+          "kind": "numeric",
+          "targets": "estimate-bill",
+          "sample": "2,000 GB leaves the provider at $0.09 per GB. What is the cost in dollars?",
+          "answer": "180"
+        },
+        {
+          "kind": "choice",
+          "targets": "find-cost-driver",
+          "sample": "A team stops a VM to save money. Which charge continues?",
+          "answer": "Its attached storage volume",
+          "choices": [
+            "Compute",
+            "Its attached storage volume",
+            "Nothing",
+            "Data transfer in"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "finops",
+        "aws-wa"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "well-architected-thinking",
+      "moduleId": "design",
+      "title": "The Well-Architected view",
+      "objective": "Name the six pillars and evaluate a design against them, stating the trade-off a choice makes.",
+      "prerequisiteLessonIds": [
+        "cost-and-pricing"
+      ],
+      "concepts": [
+        {
+          "id": "pillars",
+          "title": "Pillars",
+          "summary": "Operational excellence, security, reliability, performance efficiency, cost optimisation and sustainability."
+        },
+        {
+          "id": "tradeoff",
+          "title": "Trade-off",
+          "summary": "Strengthening one pillar usually costs another, so a design records what it chose."
+        },
+        {
+          "id": "review",
+          "title": "Architecture review",
+          "summary": "A structured set of questions that finds risks before they cause incidents."
+        }
+      ],
+      "skills": [
+        "name-pillars",
+        "spot-tradeoff"
+      ],
+      "misconceptions": [
+        "There is one best architecture; the right one depends on the workload's goals.",
+        "Well-Architected is a certification checklist; it is a method for asking about risks.",
+        "Reliability and cost always oppose; some practices, such as removing idle resources, help both."
+      ],
+      "sequence": [
+        "Present the six pillars with one design principle each.",
+        "Show a design and ask which pillar each choice serves.",
+        "Name the trade-offs: multi-region costs more but reduces blast radius.",
+        "Practise reviewing a small design.",
+        "Link to other frameworks: Azure and Google Cloud have comparable ones."
+      ],
+      "examples": [
+        "Adding a second region improves reliability and raises cost and operational complexity.",
+        "Using a managed database serves operational excellence and reliability, with less control over tuning."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A radial chart of six pillars with a design's scores.",
+          "learnerAction": "Change a design choice and watch two pillars move.",
+          "placement": "tradeoffs"
+        },
+        {
+          "type": "diagram_choice",
+          "shows": "A design with five labelled choices.",
+          "learnerAction": "Assign each choice to the pillar it mainly serves.",
+          "placement": "pillars"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "name-pillars",
+          "sample": "How many pillars does the current AWS Well-Architected Framework have?",
+          "answer": "6"
+        },
+        {
+          "kind": "choice",
+          "targets": "spot-tradeoff",
+          "sample": "Adding a second region mainly raises which pillar and costs which?",
+          "answer": "Reliability, at higher cost",
+          "choices": [
+            "Cost, at higher reliability",
+            "Reliability, at higher cost",
+            "Performance, at lower security",
+            "Security, at lower reliability"
+          ]
+        },
+        {
+          "kind": "single-term",
+          "targets": "name-pillars",
+          "sample": "Which pillar covers running and monitoring systems and improving procedures?",
+          "answer": "operational excellence"
+        }
+      ],
+      "sourceIds": [
+        "aws-wa",
+        "azure-docs",
+        "gcp-docs"
+      ],
+      "historyNotes": [
+        "Sustainability was added as a sixth pillar in 2021."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "cloud-security-and-governance",
+      "moduleId": "design",
+      "title": "Security and governance in the cloud",
+      "objective": "Apply encryption at rest and in transit, key management, audit logging and account structure.",
+      "prerequisiteLessonIds": [
+        "well-architected-thinking"
+      ],
+      "concepts": [
+        {
+          "id": "encryption",
+          "title": "Encryption at rest and in transit",
+          "summary": "Data is encrypted on disk with managed keys, and on the wire with TLS."
+        },
+        {
+          "id": "audit-log",
+          "title": "Audit logging",
+          "summary": "An append-only record of API calls, answering who did what, when and from where."
+        },
+        {
+          "id": "account-structure",
+          "title": "Accounts and guardrails",
+          "summary": "Separate accounts limit blast radius; organisation-wide policies stop the worst actions."
+        }
+      ],
+      "skills": [
+        "pick-control",
+        "read-audit-event"
+      ],
+      "misconceptions": [
+        "Encrypting a bucket stops a public bucket leaking; encryption does not help if access policy lets everyone read.",
+        "Logging is optional until there is an incident; without it there is nothing to investigate.",
+        "One big account is simplest and so safest; separate accounts contain mistakes and attackers."
+      ],
+      "sequence": [
+        "Start with a leaked public bucket and ask what control would have stopped it.",
+        "Explain encryption layers and who holds the keys.",
+        "Show an audit event and read who, what, where.",
+        "Introduce account separation and guardrail policies.",
+        "Return to shared responsibility with the customer's checklist."
+      ],
+      "examples": [
+        "Block public access, encrypt, and log access: three controls, each stopping a different failure.",
+        "An audit event records the principal, the action, the time, the source IP and whether it succeeded."
+      ],
+      "figures": [
+        {
+          "type": "table",
+          "shows": "A sample audit log line broken into fields.",
+          "learnerAction": "Mark the field that answers 'who'.",
+          "placement": "audit"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "Organisation with production, development and security accounts and a guardrail.",
+          "learnerAction": "Try an action blocked by the guardrail.",
+          "placement": "accounts"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "choice",
+          "targets": "pick-control",
+          "sample": "A bucket is encrypted but readable by anyone on the internet. Which control actually fixes the exposure?",
+          "answer": "Restrict access with policy or block public access",
+          "choices": [
+            "More encryption",
+            "Restrict access with policy or block public access",
+            "A larger bucket",
+            "A second region"
+          ]
+        },
+        {
+          "kind": "single-term",
+          "targets": "read-audit-event",
+          "sample": "Which kind of log records who called which provider API and when?",
+          "answer": "audit log"
+        },
+        {
+          "kind": "choice",
+          "targets": "pick-control",
+          "sample": "Why use separate accounts for production and development?",
+          "answer": "To limit the blast radius of mistakes and compromise",
+          "choices": [
+            "It is cheaper",
+            "To limit the blast radius of mistakes and compromise",
+            "It speeds up networks",
+            "It removes the need for IAM"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "aws-docs",
+        "aws-shared",
+        "aws-wa"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "designing-for-failure",
+      "moduleId": "design",
+      "title": "Designing for failure and disaster recovery",
+      "objective": "Pick a recovery strategy for stated RTO and RPO and design a three-tier system across zones.",
+      "prerequisiteLessonIds": [
+        "cloud-security-and-governance"
+      ],
+      "concepts": [
+        {
+          "id": "dr-strategies",
+          "title": "Recovery strategies",
+          "summary": "Backup and restore, pilot light, warm standby and multi-site active/active, in rising cost and falling recovery time."
+        },
+        {
+          "id": "three-tier",
+          "title": "Three-tier design",
+          "summary": "Load-balanced stateless web tier, application tier, and a replicated data tier across zones."
+        },
+        {
+          "id": "game-day",
+          "title": "Failure testing",
+          "summary": "Recovery that has not been rehearsed is only a hope."
+        }
+      ],
+      "skills": [
+        "choose-dr",
+        "trace-failure"
+      ],
+      "misconceptions": [
+        "Backups mean recovery; an untested restore can fail, and restoring from nothing takes the longest.",
+        "Multi-region active/active is the default answer; it costs the most and is justified only by strict RTO and RPO.",
+        "A single zone failure should cause an outage; a well-built design rides through it."
+      ],
+      "sequence": [
+        "Describe the four strategies in order.",
+        "Match each to RTO and RPO ranges.",
+        "Design a three-tier app across two zones.",
+        "Fail a zone, then a region, and trace.",
+        "Plan the rehearsal."
+      ],
+      "examples": [
+        "Order by recovery time, slowest first: backup and restore, pilot light, warm standby, multi-site active/active.",
+        "A system with a 4-hour RTO and 1-hour RPO and a modest budget suits pilot light or warm standby, not active/active."
+      ],
+      "figures": [
+        {
+          "type": "order_sequence",
+          "shows": "Four strategies to sort by cost and recovery time.",
+          "learnerAction": "Order them.",
+          "placement": "dr"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "Three-tier diagram across two zones with a fail switch.",
+          "learnerAction": "Fail a zone, then the database primary.",
+          "placement": "three-tier"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "choice",
+          "targets": "choose-dr",
+          "sample": "Which strategy keeps only core data and minimal infrastructure running, scaling up at disaster time?",
+          "answer": "Pilot light",
+          "choices": [
+            "Backup and restore",
+            "Pilot light",
+            "Warm standby",
+            "Multi-site active/active"
+          ]
+        },
+        {
+          "kind": "choice",
+          "targets": "choose-dr",
+          "sample": "Which strategy has the shortest recovery time and the highest cost?",
+          "answer": "Multi-site active/active",
+          "choices": [
+            "Backup and restore",
+            "Pilot light",
+            "Warm standby",
+            "Multi-site active/active"
+          ]
+        },
+        {
+          "kind": "numeric",
+          "targets": "trace-failure",
+          "sample": "A two-zone web tier runs 4 servers per zone and each zone alone must carry full peak load. How many servers in total are needed?",
+          "answer": "8"
+        }
+      ],
+      "sourceIds": [
+        "aws-whitepapers",
+        "aws-wa",
+        "sre-book"
+      ],
+      "estimatedMinutes": 13
+    }
+  ],
+  "courseCheck": "Mixed check: shared-responsibility placement, availability arithmetic, CIDR sizing, policy evaluation, storage and database matching, RPO and RTO, queue sizing, bill estimation, pillar trade-offs and DR strategy order.",
+  "platformNeeds": [
+    "A cloud_architecture figure type: drag service icons into regions, zones and subnets, with fail toggles and a live status of what stays up. Fallback: svg_figure with switchable views.",
+    "A policy_evaluator widget: edit allow and deny statements and a request and see the decision path. Fallback: table plus choice questions.",
+    "A cost_calculator figure: sliders for usage and a live bill. Fallback: number_machine.",
+    "A vendor-name mapping table (AWS, Azure, Google Cloud) as a reusable component for glossary rows. Fallback: table."
+  ],
+  "unverified": [
+    "No external site could be reached from the authoring session, so every source has verified false; check URLs and licences.",
+    "All prices are illustrative, not current AWS prices; the writer must say so in the lesson.",
+    "The 'five reserved addresses per AWS subnet' figure and eleven-nines S3 durability are recalled from AWS docs.",
+    "Sustainability added as a sixth Well-Architected pillar in 2021, and DR strategy names, recalled from the AWS whitepaper.",
+    "CIDR introduced 1993; NIST 800-145 dated September 2011.",
+    "The course does not map every Associate exam domain; the writer should not claim exam coverage."
+  ]
+}
