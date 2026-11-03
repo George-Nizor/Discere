@@ -149,7 +149,7 @@ only what you can confirm, and leave out a detail you cannot.
    with the same `viewBox`, gradients, shadow and palette. Draw a thing from the subject itself
    (a gear train, a lighthouse, a stave of notes, a terminal prompt, a padlock), not a computer
    monitor: several software covers already use one. Check it with
-   `LD_LIBRARY_PATH=/tmp/claude-1000/libs/ex/usr/lib/x86_64-linux-gnu node /tmp/claude-1000/-workspace-dev-projects-master--PersonalProjects-Instrumenta/4cd5d7ee-90b3-49ea-82be-6c5139119304/scratchpad/covers.mjs .author/<course>/cover.png <course>`
+   `LD_LIBRARY_PATH=/tmp/claude-1000/libs/ex/usr/lib/x86_64-linux-gnu node scripts/render-covers.mjs .author/<course>/cover.png <course>`
    and look at the PNG.
 3. `npx tsx scripts/voice-check.ts <course>` reports 0 errors with no unwritten lessons, and
    `npx tsx scripts/check-course.ts <course>` loads the course as the server does. Do not
