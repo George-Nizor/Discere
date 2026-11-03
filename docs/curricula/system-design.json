@@ -1,0 +1,1558 @@
+{
+  "id": "system-design",
+  "title": "System Design",
+  "family": "A",
+  "voice": "A",
+  "description": "Learn to design a system the way a working engineer does: state the requirements, estimate the load, and justify every component with a number, from caches and shards to retries and error budgets.",
+  "audience": "A capable adult who can read code and has met databases and web requests. Assumes How Computers and Networks Work (latency, TCP, HTTP, DNS) and the SQL course for basic queries. Software Design and Architecture covers how code inside a service is structured and how styles such as microservices are chosen, and this course does not repeat it; the two meet at the lesson on availability and at the architecture-style trade-offs.",
+  "prerequisites": [
+    "cs-basics",
+    "computers-and-networks",
+    "sql-from-rows-to-reports",
+    "probability-statistics"
+  ],
+  "outcomes": [
+    "You'll be able to turn a vague request into measurable requirements.",
+    "You'll be able to estimate load, storage and bandwidth from user numbers.",
+    "You'll be able to use percentiles, Little's law and fan-out arithmetic.",
+    "You'll be able to size a fleet and predict how delay grows with utilisation.",
+    "You'll be able to compute the effect of a cache, an index and a shard key.",
+    "You'll be able to choose quorum sizes and explain what CAP does and does not say.",
+    "You'll be able to design retries, queues and redundancy that fail safely.",
+    "You'll be able to define an SLO and compute an error budget."
+  ],
+  "sources": [
+    {
+      "id": "sre-book",
+      "title": "Site Reliability Engineering: How Google Runs Production Systems (2016)",
+      "url": "https://sre.google/sre-book/table-of-contents/",
+      "licence": "CC BY-NC-ND 4.0 (no derivatives: reference only)",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "sre-workbook",
+      "title": "The Site Reliability Workbook (2018)",
+      "url": "https://sre.google/workbook/table-of-contents/",
+      "licence": "CC BY-NC-ND 4.0 (no derivatives: reference only)",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "tail-at-scale",
+      "title": "The Tail at Scale (Dean and Barroso, Communications of the ACM, February 2013)",
+      "url": "https://research.google/pubs/the-tail-at-scale/",
+      "licence": "Copyright the authors and ACM; free to read",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "dynamo",
+      "title": "Dynamo: Amazon's Highly Available Key-value Store (DeCandia et al., SOSP 2007)",
+      "url": "https://www.allthingsdistributed.com/2007/10/amazons_dynamo.html",
+      "licence": "Copyright the authors and ACM; free to read",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "raft",
+      "title": "In Search of an Understandable Consensus Algorithm (Ongaro and Ousterhout, USENIX ATC 2014)",
+      "url": "https://raft.github.io/raft.pdf",
+      "licence": "Copyright the authors; free to read",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "karger",
+      "title": "Consistent Hashing and Random Trees (Karger et al., STOC 1997)",
+      "url": "https://dl.acm.org/doi/10.1145/258533.258660",
+      "licence": "Copyright ACM; may be paywalled",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "cap-gilbert-lynch",
+      "title": "Brewer's Conjecture and the Feasibility of Consistent, Available, Partition-Tolerant Web Services (Gilbert and Lynch, 2002)",
+      "url": "https://dl.acm.org/doi/10.1145/564585.564601",
+      "licence": "Copyright ACM; may be paywalled",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "system-design-primer",
+      "title": "The System Design Primer (Donne Martin)",
+      "url": "https://github.com/donnemartin/system-design-primer",
+      "licence": "CC BY 4.0 per the repository licence file (confirm)",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "azure-patterns",
+      "title": "Azure Architecture Center: cloud design patterns (cache-aside, retry, circuit breaker, queue-based load levelling)",
+      "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/",
+      "licence": "CC BY 4.0 for the documentation text",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "aws-builders-retries",
+      "title": "Amazon Builders' Library: Timeouts, retries and backoff with jitter",
+      "url": "https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/",
+      "licence": "Copyright Amazon; reference only",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "postgres-indexes",
+      "title": "PostgreSQL documentation, Chapter 11: Indexes",
+      "url": "https://www.postgresql.org/docs/current/indexes.html",
+      "licence": "PostgreSQL Licence (permissive)",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "kafka-docs",
+      "title": "Apache Kafka documentation: design and delivery semantics",
+      "url": "https://kafka.apache.org/documentation/#design",
+      "licence": "Apache License 2.0",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "mit-6824",
+      "title": "MIT 6.5840 Distributed Systems lecture notes",
+      "url": "https://pdos.csail.mit.edu/6.824/",
+      "licence": "Course materials copyright MIT/the instructors; free to read",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "k8s-docs-lb",
+      "title": "Kubernetes documentation: Services, load balancing and networking",
+      "url": "https://kubernetes.io/docs/concepts/services-networking/",
+      "licence": "CC BY 4.0",
+      "use": "adapt",
+      "verified": false
+    }
+  ],
+  "modules": [
+    {
+      "id": "method-and-numbers",
+      "title": "Method and numbers",
+      "summary": "A repeatable way to approach a design, and the arithmetic of load, storage and delay that decides what is needed."
+    },
+    {
+      "id": "serving-and-storing",
+      "title": "Serving traffic and storing data",
+      "summary": "Load balancing, caching, indexes, replication, partitioning and consistency, each with the numbers that justify it."
+    },
+    {
+      "id": "asynchrony-failure-operation",
+      "title": "Asynchrony, failure and operation",
+      "summary": "Queues, retries and timeouts, redundancy, and the measurements that tell you whether a system is healthy."
+    },
+    {
+      "id": "worked-designs",
+      "title": "Worked designs",
+      "summary": "Two complete designs and a review of a flawed one, using every earlier tool."
+    }
+  ],
+  "lessons": [
+    {
+      "id": "requirements-and-scope",
+      "moduleId": "method-and-numbers",
+      "title": "Requirements and scope",
+      "objective": "Turn a vague request into functional requirements, measurable quality targets and a read/write profile before choosing any component.",
+      "prerequisiteLessonIds": [],
+      "concepts": [
+        {
+          "id": "functional-requirement",
+          "title": "Functional requirement",
+          "summary": "A behaviour the system must provide, such as 'a user can shorten a URL'."
+        },
+        {
+          "id": "quality-attribute",
+          "title": "Quality target",
+          "summary": "A measurable property such as 'p99 latency under 200 ms' or '99.9% available', which usually decides the design."
+        },
+        {
+          "id": "read-write-ratio",
+          "title": "Read/write ratio",
+          "summary": "How many reads occur per write, which determines whether to optimise for reads, as caches do, or for writes."
+        },
+        {
+          "id": "design-method",
+          "title": "Design method",
+          "summary": "Clarify scope, estimate load, define the interface and data, sketch the components, then probe bottlenecks and failures."
+        }
+      ],
+      "skills": [
+        "classify-a-requirement",
+        "derive-load-from-ratio"
+      ],
+      "misconceptions": [
+        "Believing system design is choosing technologies from a list: the requirements choose them.",
+        "Treating 'fast' and 'scalable' as requirements: without numbers they cannot be tested.",
+        "Starting to draw boxes before knowing the read/write ratio."
+      ],
+      "sequence": [
+        "Assumes computers-and-networks: one-page-load-end-to-end (a request crosses several steps).",
+        "Take the vague request 'build a service that shortens links'.",
+        "Separate what it does from how well it must do it.",
+        "Make quality targets measurable: latency percentile, availability, durability, consistency.",
+        "Find the read/write ratio: 100 reads per write at 10 writes/s means 1,000 reads/s.",
+        "The method as an order of work, and why each step comes before the next.",
+        "State assumptions and non-goals out loud."
+      ],
+      "examples": [
+        "'Users can create and open short links' is functional; 'redirects complete in under 100 ms for 99% of requests' is a quality target.",
+        "A 100:1 read/write ratio at 10 writes/s gives 1,000 reads/s.",
+        "A chat system and a link shortener differ in consistency needs, even if the loads match."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A requirements sheet with two columns, behaviours and measurable targets, and a ruler for the read/write ratio.",
+          "learnerAction": "Sort statements into the two columns and set the ratio.",
+          "placement": "requirements"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "The six-step method as a horizontal path with a note beneath each step.",
+          "learnerAction": "Click a step to see its output.",
+          "placement": "method"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "choice",
+          "targets": "classify-a-requirement",
+          "sample": "Which statement is a measurable quality target?",
+          "answer": "99% of redirects complete in under 100 ms",
+          "choices": [
+            "The service should be fast",
+            "99% of redirects complete in under 100 ms",
+            "Users can create short links",
+            "The service should scale"
+          ]
+        },
+        {
+          "kind": "numeric",
+          "targets": "derive-load-from-ratio",
+          "sample": "A service has a 100:1 read/write ratio and receives 10 writes per second. How many reads per second does it receive?",
+          "answer": "1000"
+        },
+        {
+          "kind": "self",
+          "targets": "classify-a-requirement",
+          "sample": "Recall in a sentence why you ask for the read/write ratio before choosing components.",
+          "answer": "It decides whether the design should favour fast reads, with caches and replicas, or fast writes."
+        }
+      ],
+      "sourceIds": [
+        "system-design-primer",
+        "sre-book",
+        "mit-6824"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "back-of-the-envelope-estimation",
+      "moduleId": "method-and-numbers",
+      "title": "Back-of-the-envelope estimation",
+      "objective": "Estimate requests per second, storage and bandwidth from user numbers, and decide whether one machine could carry them.",
+      "prerequisiteLessonIds": [
+        "requirements-and-scope"
+      ],
+      "concepts": [
+        {
+          "id": "qps",
+          "title": "Queries per second",
+          "summary": "Total requests in a period divided by the seconds in it; a day has 86,400 seconds."
+        },
+        {
+          "id": "peak-factor",
+          "title": "Peak factor",
+          "summary": "Traffic is not flat, so peak load is commonly assumed to be two to three times the average."
+        },
+        {
+          "id": "storage-estimate",
+          "title": "Storage estimate",
+          "summary": "Records per period times bytes per record times retention."
+        },
+        {
+          "id": "bandwidth-estimate",
+          "title": "Bandwidth estimate",
+          "summary": "Requests per second times bytes per response times 8 bits."
+        }
+      ],
+      "skills": [
+        "estimate-qps",
+        "estimate-storage",
+        "estimate-bandwidth"
+      ],
+      "misconceptions": [
+        "Believing precision matters: an estimate is judged by its order of magnitude.",
+        "Forgetting that rates are in bits and sizes in bytes.",
+        "Using the average when the peak sets the number of machines."
+      ],
+      "sequence": [
+        "Assumes computers-and-networks: latency-bandwidth-and-distance (bits and bytes).",
+        "Round numbers on purpose: 86,400 s per day is close to 100,000.",
+        "10 million daily users at 20 requests each is 200 million requests a day, about 2,300 per second.",
+        "Storage: 100 million records a month at 500 bytes is 50 GB a month.",
+        "Bandwidth: 2,000 requests/s at 100 KB each is 200 MB/s, or 1.6 Gbit/s.",
+        "Compare with what one machine can do, and note which resource runs out first."
+      ],
+      "examples": [
+        "10,000,000 users x 20 requests / 86,400 s = 2,314.8, about 2,300 QPS.",
+        "100,000,000 x 500 B = 50 GB a month, 600 GB a year.",
+        "2,000 x 100,000 B x 8 = 1.6 Gbit/s, which a 1 Gbit/s link cannot carry."
+      ],
+      "figures": [
+        {
+          "type": "number_machine",
+          "shows": "A calculator panel with the estimate laid out as a chain of multiplications and unit labels.",
+          "learnerAction": "Edit the inputs and watch the results and units.",
+          "placement": "estimation"
+        },
+        {
+          "type": "table",
+          "shows": "A table of powers of ten for bytes, with a bar chart of storage from KB to PB.",
+          "learnerAction": "Place an estimate on the scale.",
+          "placement": "scale"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "estimate-qps",
+          "sample": "10 million daily users each make 20 requests a day. To the nearest hundred, how many requests per second is the average load? Use 86,400 seconds in a day.",
+          "answer": "2300"
+        },
+        {
+          "kind": "numeric",
+          "targets": "estimate-storage",
+          "sample": "100 million new records a month at 500 bytes each add how many GB a month? Use 1 GB = 1,000,000,000 bytes.",
+          "answer": "50"
+        },
+        {
+          "kind": "numeric",
+          "targets": "estimate-bandwidth",
+          "sample": "2,000 responses per second of 100,000 bytes each need how many Gbit/s? One byte is 8 bits.",
+          "answer": "1.6"
+        }
+      ],
+      "sourceIds": [
+        "system-design-primer",
+        "sre-book"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "latency-throughput-and-tails",
+      "moduleId": "method-and-numbers",
+      "title": "Latency, throughput and tails",
+      "objective": "Use percentiles instead of averages, apply Little's law, and compute how fan-out turns a rare slow call into a common one.",
+      "prerequisiteLessonIds": [
+        "back-of-the-envelope-estimation"
+      ],
+      "concepts": [
+        {
+          "id": "percentile",
+          "title": "Percentile",
+          "summary": "The value below which a given share of requests fall; p99 is the latency that 99% of requests beat."
+        },
+        {
+          "id": "littles-law",
+          "title": "Little's law",
+          "summary": "The average number of requests in the system equals the arrival rate times the average time each spends there."
+        },
+        {
+          "id": "tail-amplification",
+          "title": "Tail amplification",
+          "summary": "A request that waits for n parallel calls is slow if any one is, so the chance of a slow response is 1 − (1 − p)^n."
+        }
+      ],
+      "skills": [
+        "compute-mean",
+        "apply-littles-law",
+        "compute-fan-out-tail"
+      ],
+      "misconceptions": [
+        "Believing the average describes what users feel.",
+        "Believing that a service with 1% slow calls will be slow 1% of the time once it fans out to 100 backends.",
+        "Believing throughput and latency are one measurement."
+      ],
+      "sequence": [
+        "Assumes computers-and-networks: latency-bandwidth-and-distance.",
+        "A sample of 100 requests: 98 took 10 ms and 2 took 1,000 ms; the mean is 29.8 ms, and the p99 by nearest rank is 1,000 ms.",
+        "Why percentiles: the mean hides the tail.",
+        "Little's law: 200 requests/s at 50 ms means 10 requests in flight.",
+        "Tail at scale: 100 parallel backends, each slow 1% of the time, give 63.4% slow responses.",
+        "Mitigations: hedged requests, timeouts, fewer fan-out calls."
+      ],
+      "examples": [
+        "Mean 29.8 ms against p99 1,000 ms from the same 100 requests.",
+        "L = lambda x W: 200/s x 0.05 s = 10.",
+        "1 − 0.99^100 = 0.634; with 10 backends it is 1 − 0.99^10 = 0.0956."
+      ],
+      "figures": [
+        {
+          "type": "data_distribution",
+          "shows": "A latency histogram with the mean, p50 and p99 marked.",
+          "learnerAction": "Drag the slow tail up and watch which markers move.",
+          "placement": "percentiles"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A grid of 100 backend boxes, each with a 1% chance of being slow, sampled for a request.",
+          "learnerAction": "Sample many requests and watch the share that are slow.",
+          "placement": "fan-out"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-mean",
+          "sample": "100 requests: 98 take 10 ms and 2 take 1,000 ms. What is the mean latency in ms?",
+          "answer": "29.8"
+        },
+        {
+          "kind": "numeric",
+          "targets": "apply-littles-law",
+          "sample": "Requests arrive at 200 per second and each spends 50 ms in the system. How many are in the system on average?",
+          "answer": "10"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-fan-out-tail",
+          "sample": "A request calls 100 backends in parallel and each is slow 1% of the time, independently. To the nearest percent, how often is the whole request slow?",
+          "answer": "63"
+        }
+      ],
+      "sourceIds": [
+        "tail-at-scale",
+        "sre-book",
+        "mit-6824"
+      ],
+      "historyNotes": [
+        "John Little proved L = lambda W in 1961. Dean and Barroso's 'The Tail at Scale' appeared in Communications of the ACM in February 2013."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "scaling-and-load-balancing",
+      "moduleId": "serving-and-storing",
+      "title": "Scaling and load balancing",
+      "objective": "Size a fleet from peak load, explain why stateless servers scale out, and predict how queueing delay grows with utilisation.",
+      "prerequisiteLessonIds": [
+        "latency-throughput-and-tails"
+      ],
+      "concepts": [
+        {
+          "id": "horizontal-scaling",
+          "title": "Horizontal and vertical scaling",
+          "summary": "Vertical scaling buys a bigger machine, horizontal scaling adds more machines behind a load balancer."
+        },
+        {
+          "id": "stateless-service",
+          "title": "Stateless service",
+          "summary": "A server that keeps nothing between requests, so any server can handle any request and a failed one can simply be replaced."
+        },
+        {
+          "id": "utilisation",
+          "title": "Utilisation and delay",
+          "summary": "In a simple single-server queue the mean time in system is 1 / (service rate − arrival rate), which grows without bound as utilisation approaches 100%."
+        },
+        {
+          "id": "load-balancer",
+          "title": "Load balancer",
+          "summary": "A component that spreads requests across servers by round robin, least connections or hashing, and removes servers that fail health checks."
+        }
+      ],
+      "skills": [
+        "size-a-fleet",
+        "predict-queueing-delay",
+        "explain-statelessness"
+      ],
+      "misconceptions": [
+        "Believing a service at 90% utilisation is efficient: delay is already ten times the service time.",
+        "Believing you can scale out a service that keeps sessions in memory without sticky routing or a shared store.",
+        "Believing the load balancer is never a single point of failure."
+      ],
+      "sequence": [
+        "Assumes computers-and-networks: processes-and-the-kernel; http-requests-and-responses (statelessness).",
+        "Peak load 6,000 QPS, each server handles 500 QPS, and you plan for 70% utilisation: 6,000 / (500 x 0.7) = 17.1, so 18 servers.",
+        "Why the 70%: a queue with service rate 100/s has mean delay 20 ms at 50/s but 100 ms at 90/s and 200 ms at 95/s.",
+        "Statelessness: where session state goes (cookie, shared cache, database).",
+        "Load balancer algorithms, health checks and layers (layer 4 versus layer 7).",
+        "The balancer itself needs redundancy.",
+        "Autoscaling follows measured saturation, with lag."
+      ],
+      "examples": [
+        "18 servers for 6,000 QPS at 500 QPS each and 70% target utilisation.",
+        "Mean time in the system at 90 requests/s against a capacity of 100/s is 1 / (100 − 90) = 0.1 s.",
+        "Moving a session from server memory to a shared store lets any server answer any request."
+      ],
+      "figures": [
+        {
+          "type": "graph_plot",
+          "shows": "A load balancer with N servers drawn as bars whose fill is utilisation, and a chart of delay against utilisation.",
+          "learnerAction": "Drag the arrival rate and watch the delay curve.",
+          "placement": "queueing delay"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "Requests arriving at a balancer and routed round robin to three servers, with one failing a health check.",
+          "learnerAction": "Fail a server.",
+          "placement": "balancing"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "size-a-fleet",
+          "sample": "Peak load is 6,000 requests/s and each server handles 500 requests/s. You plan for 70% utilisation at peak. How many servers do you need, rounded up?",
+          "answer": "18"
+        },
+        {
+          "kind": "numeric",
+          "targets": "predict-queueing-delay",
+          "sample": "A server handles 100 requests/s in a simple single-queue model. At 90 requests/s arrival, what is the mean time in the system in ms, using 1 / (rate − arrival)?",
+          "answer": "100"
+        },
+        {
+          "kind": "choice",
+          "targets": "explain-statelessness",
+          "sample": "Why can a stateless service be scaled out by adding servers?",
+          "answer": "Any server can answer any request",
+          "choices": [
+            "Any server can answer any request",
+            "Each server remembers its own users",
+            "Servers share one processor",
+            "Requests are never repeated"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "sre-book",
+        "k8s-docs-lb",
+        "system-design-primer"
+      ],
+      "historyNotes": [
+        "Agner Erlang's queueing work for telephone exchanges (1909 onward) underlies the delay formulas."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "caching",
+      "moduleId": "serving-and-storing",
+      "title": "Caching",
+      "objective": "Compute the effect of a hit rate on latency and backend load, and choose where to cache and how to keep entries fresh.",
+      "prerequisiteLessonIds": [
+        "scaling-and-load-balancing"
+      ],
+      "concepts": [
+        {
+          "id": "hit-rate",
+          "title": "Hit rate",
+          "summary": "The fraction of lookups answered from the cache."
+        },
+        {
+          "id": "cache-aside",
+          "title": "Cache-aside",
+          "summary": "The application checks the cache, on a miss reads the database, then stores the result in the cache."
+        },
+        {
+          "id": "invalidation",
+          "title": "Invalidation",
+          "summary": "Entries expire after a time to live or are removed when the data changes, and the choice trades freshness against load."
+        },
+        {
+          "id": "stampede",
+          "title": "Stampede",
+          "summary": "Many requests miss on the same expired key at once and all hit the database."
+        }
+      ],
+      "skills": [
+        "compute-average-latency",
+        "compute-backend-load",
+        "handle-a-stampede"
+      ],
+      "misconceptions": [
+        "Believing a cache always helps: a low hit rate adds a lookup to every request.",
+        "Believing a cache can be made always fresh and always fast.",
+        "Believing a cache is a source of truth."
+      ],
+      "sequence": [
+        "Assumes computers-and-networks: memory-and-storage (locality); http-requests-and-responses (Cache-Control).",
+        "Where caches sit: browser, CDN, application, database.",
+        "The arithmetic: 1 ms lookup, 20 ms database, 95% hit rate gives an average of 1 + 0.05 x 20 = 2 ms; at 80% it is 1 + 0.2 x 20 = 5 ms.",
+        "Load: 10,000 requests/s with a 95% hit rate send 500 requests/s to the database.",
+        "Keeping entries fresh: TTL, write-through, explicit invalidation.",
+        "Stampede and its remedies: request coalescing, jittered TTLs, serving stale.",
+        "CDN as a cache close to users: propagation delay falls."
+      ],
+      "examples": [
+        "Average latency 2 ms at a 95% hit rate and 5 ms at 80%.",
+        "Database load 500 requests/s at a 95% hit rate, 2,000 at 80%.",
+        "A product page cached 60 s: price change shows up late by at most 60 s."
+      ],
+      "figures": [
+        {
+          "type": "number_machine",
+          "shows": "A request flow through browser, CDN, cache and database with hit rates on each arrow.",
+          "learnerAction": "Set hit rates and read the average latency and database load.",
+          "placement": "hit rate"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A timeline of a key expiring and 1,000 requests arriving together.",
+          "learnerAction": "Add TTL jitter.",
+          "placement": "stampede"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-average-latency",
+          "sample": "A cache lookup takes 1 ms and a database read 20 ms. The hit rate is 95%, and every request does the lookup. What is the average latency in ms?",
+          "answer": "2"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-backend-load",
+          "sample": "10,000 requests/s arrive and 95% hit the cache. How many requests/s reach the database?",
+          "answer": "500"
+        },
+        {
+          "kind": "choice",
+          "targets": "handle-a-stampede",
+          "sample": "Which measure reduces a stampede when a popular key expires?",
+          "answer": "Letting one request refresh the key while others wait or use the stale value",
+          "choices": [
+            "Making the TTL shorter",
+            "Letting one request refresh the key while others wait or use the stale value",
+            "Clearing the whole cache",
+            "Adding more databases"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "azure-patterns",
+        "system-design-primer",
+        "sre-book"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "databases-and-indexes",
+      "moduleId": "serving-and-storing",
+      "title": "Databases and indexes",
+      "objective": "Choose a store from the access pattern, and explain how an index turns a scan into a few page reads.",
+      "prerequisiteLessonIds": [
+        "caching"
+      ],
+      "concepts": [
+        {
+          "id": "access-pattern",
+          "title": "Access pattern",
+          "summary": "How data is read and written: by key, by range, by join or by traversal, which decides the store."
+        },
+        {
+          "id": "index",
+          "title": "Index",
+          "summary": "A sorted structure such as a B-tree that finds rows without scanning the table, at the cost of space and slower writes."
+        },
+        {
+          "id": "btree-depth",
+          "title": "B-tree depth",
+          "summary": "With a fan-out of f, a tree of n keys needs about log base f of n levels, so 1,000,000 keys at a fan-out of 100 need 3."
+        },
+        {
+          "id": "n-plus-one",
+          "title": "N+1 queries",
+          "summary": "Fetching a list and then querying once per item costs 1 + N queries instead of one or two."
+        }
+      ],
+      "skills": [
+        "compute-btree-levels",
+        "count-queries",
+        "read-a-query-result"
+      ],
+      "misconceptions": [
+        "Believing the choice is SQL against NoSQL as a matter of fashion.",
+        "Believing indexes are free.",
+        "Believing a query that is fast with 1,000 rows will be fast with 100 million."
+      ],
+      "sequence": [
+        "Assumes sql-from-rows-to-reports and computers-and-networks: memory-and-storage (blocks and seeks).",
+        "Four common access patterns and stores that fit: key-value, document, wide-column, graph, relational.",
+        "A scan reads every row; an index reads about log(n) pages.",
+        "B-tree depth: 100^3 = 1,000,000, so 3 levels.",
+        "Index costs: write amplification and storage; composite indexes and column order.",
+        "N+1 in practice: 50 orders plus 50 customer lookups is 51 queries.",
+        "Transactions in one paragraph: the transfer must happen entirely or not at all (details belong to a databases course)."
+      ],
+      "examples": [
+        "A 1,000,000-row table at 100 keys per page needs 3 page reads through an index, against 10,000 pages for a scan.",
+        "Listing 50 orders and fetching each customer separately costs 51 queries; a join costs 1.",
+        "In a table of orders, SELECT SUM(total) WHERE customer_id = 7 sums only customer 7's rows."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A B-tree three levels deep with a search path highlighted and a counter of page reads, beside a table scan counter.",
+          "learnerAction": "Search for a key and compare counts.",
+          "placement": "index vs scan"
+        },
+        {
+          "type": "relational_query",
+          "shows": "A table with rows and a query box, showing the result set.",
+          "learnerAction": "Run the query.",
+          "placement": "query result"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-btree-levels",
+          "sample": "A B-tree has a fan-out of 100. How many levels does it need to index 1,000,000 keys?",
+          "answer": "3"
+        },
+        {
+          "kind": "numeric",
+          "targets": "count-queries",
+          "sample": "A page lists 50 orders and then queries for each order's customer separately. How many queries run in total?",
+          "answer": "51"
+        },
+        {
+          "kind": "code-run-sql",
+          "targets": "read-a-query-result",
+          "sample": "Given CREATE TABLE orders(id INTEGER PRIMARY KEY, customer_id INT, total INT); INSERT INTO orders VALUES (1,7,30),(2,8,20),(3,7,50),(4,9,10),(5,7,5); what does SELECT SUM(total) FROM orders WHERE customer_id = 7; return?",
+          "answer": "85"
+        }
+      ],
+      "sourceIds": [
+        "postgres-indexes",
+        "system-design-primer",
+        "mit-6824"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "replication-and-partitioning",
+      "moduleId": "serving-and-storing",
+      "title": "Replication and partitioning",
+      "objective": "Explain leader-follower replication and its lag, and show why hash-mod sharding moves most keys when a shard is added.",
+      "prerequisiteLessonIds": [
+        "databases-and-indexes"
+      ],
+      "concepts": [
+        {
+          "id": "replication",
+          "title": "Replication",
+          "summary": "Keeping copies of the data on several machines for availability and read capacity."
+        },
+        {
+          "id": "replication-lag",
+          "title": "Replication lag",
+          "summary": "Followers apply changes after the leader, so a read from a follower may return older data."
+        },
+        {
+          "id": "sharding",
+          "title": "Sharding",
+          "summary": "Splitting data across machines by a key so that each holds a part."
+        },
+        {
+          "id": "consistent-hashing",
+          "title": "Consistent hashing",
+          "summary": "Placing keys and nodes on a ring so adding a node moves only about 1/N of the keys."
+        }
+      ],
+      "skills": [
+        "count-moved-keys",
+        "fraction-moved",
+        "reason-about-lag"
+      ],
+      "misconceptions": [
+        "Believing replicas make writes faster.",
+        "Believing hash-mod-N is fine until N changes, when almost every key moves.",
+        "Believing the user always reads what they just wrote."
+      ],
+      "sequence": [
+        "Assumes databases-and-indexes.",
+        "Replication: one leader takes writes, followers copy them; reads can go to followers.",
+        "Lag: a write on the leader and a read from a stale follower.",
+        "Sharding by key: hash(key) mod N.",
+        "Adding a shard: keys 0 to 19 with N from 4 to 5; only 4 of 20 stay.",
+        "Consistent hashing: adding a fifth node moves about a fifth of keys.",
+        "Hot keys and skew; choosing a shard key from the access pattern."
+      ],
+      "examples": [
+        "With keys 0 to 19, k mod 4 equals k mod 5 only for k = 0, 1, 2, 3, so 4 keys keep their shard and 16 move (80%).",
+        "Consistent hashing moves about 1/5 = 20% when a fifth node joins.",
+        "A user saves a profile and the next page, served from a follower, shows the old one."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Twenty keys in a grid coloured by shard, switching between 4 and 5 shards.",
+          "learnerAction": "Add a shard and see which keys change colour, under hash-mod and under a ring.",
+          "placement": "resharding"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A leader and two followers with a write travelling at different speeds.",
+          "learnerAction": "Read from a follower at different moments.",
+          "placement": "replication lag"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "count-moved-keys",
+          "sample": "Keys 0 to 19 are placed with k mod 4. The cluster grows to 5 shards and keys are placed with k mod 5. How many of the 20 keys stay on the same shard number?",
+          "answer": "4"
+        },
+        {
+          "kind": "numeric",
+          "targets": "fraction-moved",
+          "sample": "With consistent hashing, about what percentage of keys move when a fifth node joins a four-node cluster?",
+          "answer": "20"
+        },
+        {
+          "kind": "choice",
+          "targets": "reason-about-lag",
+          "sample": "A user updates a profile and immediately sees the old one. Which cause is most likely?",
+          "answer": "The read was served by a follower that had not yet applied the write",
+          "choices": [
+            "The write was lost",
+            "The read was served by a follower that had not yet applied the write",
+            "The disk is full",
+            "The cache is cold"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "karger",
+        "dynamo",
+        "system-design-primer",
+        "mit-6824"
+      ],
+      "historyNotes": [
+        "Karger and colleagues published consistent hashing in 1997 at STOC, and Amazon's Dynamo paper (SOSP 2007) made it widely known in datastore design."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "consistency-and-quorums",
+      "moduleId": "serving-and-storing",
+      "title": "Consistency and quorums",
+      "objective": "State what CAP does and does not say, and compute quorum sizes and fault tolerance for replicated writes and consensus.",
+      "prerequisiteLessonIds": [
+        "replication-and-partitioning"
+      ],
+      "concepts": [
+        {
+          "id": "cap",
+          "title": "CAP",
+          "summary": "When a network partition separates replicas, a system must choose between answering every request, with possibly stale data, and refusing some to stay consistent."
+        },
+        {
+          "id": "quorum",
+          "title": "Quorum",
+          "summary": "With N replicas, W acknowledgements for a write and R replicas read, R + W > N guarantees that a read overlaps the latest write."
+        },
+        {
+          "id": "consensus",
+          "title": "Consensus",
+          "summary": "Agreement among nodes on a value despite failures, which requires a majority: 3 of 5 tolerates 2 failures."
+        }
+      ],
+      "skills": [
+        "compute-read-quorum",
+        "count-tolerated-failures",
+        "apply-cap"
+      ],
+      "misconceptions": [
+        "Believing CAP means 'pick two of three' at all times: partitions are not optional, so the choice arises only during one.",
+        "Believing eventual consistency means 'wrong'.",
+        "Believing a quorum of any size gives a consistent read."
+      ],
+      "sequence": [
+        "Assumes replication-and-partitioning and computers-and-networks: tcp-reliable-delivery (messages can be lost or delayed).",
+        "Strong versus eventual consistency, with read-your-writes between them.",
+        "CAP as Brewer stated it in 2000 and Gilbert and Lynch proved it in 2002.",
+        "Quorums: N=3, W=2, R=2 overlap, because 2 + 2 > 3; N=3, W=1, R=1 may not.",
+        "With N=5 and W=2, reads need R > 3, so R = 4.",
+        "Consensus and Raft intuition: a leader replicates a log to a majority; 5 nodes tolerate 2 failures, 4 tolerate 1.",
+        "Choosing per feature: balances need consistency, 'likes' can be eventual."
+      ],
+      "examples": [
+        "N=5, W=2 requires R=4 since 4 + 2 > 5 and 3 + 2 is not.",
+        "A five-node consensus group tolerates 2 failures because 3 is a majority of 5.",
+        "A shopping-cart service that keeps accepting writes during a partition chooses availability."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Five replicas in a row; the learner picks W and R and sees whether the sets of nodes written and read must overlap.",
+          "learnerAction": "Choose W and R.",
+          "placement": "quorum"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A network split drawing, with one side unable to reach the other, and two policies: refuse or answer.",
+          "learnerAction": "Toggle the policy.",
+          "placement": "CAP"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-read-quorum",
+          "sample": "A store has N = 5 replicas and writes wait for W = 2 acknowledgements. What is the smallest R that guarantees a read overlaps the latest write?",
+          "answer": "4"
+        },
+        {
+          "kind": "numeric",
+          "targets": "count-tolerated-failures",
+          "sample": "A consensus group has 5 nodes and needs a majority to proceed. How many node failures can it tolerate?",
+          "answer": "2"
+        },
+        {
+          "kind": "choice",
+          "targets": "apply-cap",
+          "sample": "During a network partition, a system keeps answering reads and writes on both sides. Which property did it give up?",
+          "answer": "Consistency",
+          "choices": [
+            "Availability",
+            "Consistency",
+            "Partition tolerance",
+            "Durability"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "raft",
+        "cap-gilbert-lynch",
+        "dynamo",
+        "mit-6824"
+      ],
+      "historyNotes": [
+        "Eric Brewer presented the conjecture in a keynote at PODC in 2000; Seth Gilbert and Nancy Lynch published a proof in 2002. Raft was published in 2014."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "queues-and-event-streams",
+      "moduleId": "asynchrony-failure-operation",
+      "title": "Queues and event streams",
+      "objective": "Say when to put a queue between components, what delivery guarantees mean, and how to compute backlog growth and drain time.",
+      "prerequisiteLessonIds": [
+        "consistency-and-quorums"
+      ],
+      "concepts": [
+        {
+          "id": "queue",
+          "title": "Queue",
+          "summary": "A buffer between a producer and consumers that lets the producer continue and the consumers work at their own rate."
+        },
+        {
+          "id": "delivery-semantics",
+          "title": "Delivery semantics",
+          "summary": "At-most-once may lose messages, at-least-once may repeat them, and effectively-once needs an idempotent consumer."
+        },
+        {
+          "id": "backpressure",
+          "title": "Backpressure",
+          "summary": "When consumers fall behind, the system must slow producers or shed work, because an unbounded queue only postpones failure."
+        },
+        {
+          "id": "stream",
+          "title": "Event stream",
+          "summary": "An ordered, retained log of events that many consumers read at their own positions, with order guaranteed within a partition."
+        }
+      ],
+      "skills": [
+        "compute-backlog",
+        "compute-drain-time",
+        "choose-semantics"
+      ],
+      "misconceptions": [
+        "Believing a queue makes a slow consumer fast.",
+        "Believing exactly-once delivery is simple.",
+        "Believing order is global across a partitioned stream."
+      ],
+      "sequence": [
+        "Assumes caching and replication-and-partitioning.",
+        "Why asynchronous: the user need not wait for the email.",
+        "Producer and consumer rates: 120 messages/s in, 100/s out, so backlog grows 20/s; after 10 minutes it is 12,000.",
+        "Draining: with arrivals at 80/s and capacity 100/s, 12,000 / 20 = 600 s.",
+        "At-least-once plus idempotent consumers: a message id recorded in the same transaction as the effect.",
+        "Dead-letter queues for poison messages.",
+        "Streams versus queues: retention, replay, partitions, consumer groups."
+      ],
+      "examples": [
+        "Backlog after 10 minutes is (120 − 100) x 600 = 12,000.",
+        "Drain time is 12,000 / (100 − 80) = 600 s.",
+        "Charging a card twice after a retry is avoided by storing the payment's idempotency key."
+      ],
+      "figures": [
+        {
+          "type": "graph_plot",
+          "shows": "A queue drawn as a tank, with input and output taps and a level gauge.",
+          "learnerAction": "Set the arrival and service rates and run time forward.",
+          "placement": "backlog"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "Three delivery guarantees as arrows with lost and repeated messages marked.",
+          "learnerAction": "Pick a guarantee.",
+          "placement": "delivery semantics"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-backlog",
+          "sample": "Messages arrive at 120 per second and consumers process 100 per second. How many messages are waiting after 10 minutes, starting from empty?",
+          "answer": "12000"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-drain-time",
+          "sample": "The backlog is 12,000, arrivals fall to 80 per second and consumers still process 100 per second. How many seconds until the queue is empty?",
+          "answer": "600"
+        },
+        {
+          "kind": "choice",
+          "targets": "choose-semantics",
+          "sample": "A consumer processes each message at least once. What must it be to avoid double effects?",
+          "answer": "Idempotent",
+          "choices": [
+            "Faster",
+            "Idempotent",
+            "Single-threaded",
+            "Stateless only"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "kafka-docs",
+        "azure-patterns",
+        "sre-book"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "timeouts-retries-and-circuit-breakers",
+      "moduleId": "asynchrony-failure-operation",
+      "title": "Timeouts, retries and circuit breakers",
+      "objective": "Design calls between services that fail safely, and compute how retries amplify load.",
+      "prerequisiteLessonIds": [
+        "queues-and-event-streams"
+      ],
+      "concepts": [
+        {
+          "id": "timeout",
+          "title": "Timeout",
+          "summary": "A limit on how long to wait, without which a slow dependency ties up resources until the caller fails too."
+        },
+        {
+          "id": "retry-amplification",
+          "title": "Retry amplification",
+          "summary": "If each layer in a chain of k layers makes up to a attempts, the last service may see a^k calls."
+        },
+        {
+          "id": "backoff-jitter",
+          "title": "Backoff with jitter",
+          "summary": "Waiting longer after each failure, with a random offset, so that clients do not retry in step."
+        },
+        {
+          "id": "circuit-breaker",
+          "title": "Circuit breaker",
+          "summary": "After repeated failures it stops calling a dependency (open), then lets a trial request through (half-open) before resuming (closed)."
+        }
+      ],
+      "skills": [
+        "compute-amplification",
+        "sum-backoff",
+        "identify-breaker-state"
+      ],
+      "misconceptions": [
+        "Believing retries always improve reliability: during an overload they deepen it.",
+        "Believing a timeout of 30 s is safe.",
+        "Retrying a non-idempotent call, such as a payment, without a key."
+      ],
+      "sequence": [
+        "Assumes queues-and-event-streams: idempotency; computers-and-networks: tcp-reliable-delivery.",
+        "Partial failure: a call that returns nothing may have succeeded.",
+        "Timeouts must be shorter than the caller's own deadline.",
+        "Retries: a chain of 3 services each trying up to 3 times means 3 x 3 x 3 = 27 calls at the bottom.",
+        "Backoff: waits of 100, 200, 400 and 800 ms total 1,500 ms; jitter spreads them.",
+        "Circuit breaker states and bulkheads; load shedding.",
+        "Idempotency keys let a retry be safe."
+      ],
+      "examples": [
+        "Three layers x three attempts: 27 calls reach the database.",
+        "100 + 200 + 400 + 800 = 1,500 ms of waiting over four retries.",
+        "A token bucket holding 10 tokens and refilling 5 per second allows 10 + 5 x 4 = 30 requests in the first 4 seconds."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Three services in a chain with a failing database at the end and a counter of calls at each level.",
+          "learnerAction": "Set attempts per layer.",
+          "placement": "amplification"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A state diagram of the circuit breaker with transition conditions.",
+          "learnerAction": "Feed it successes and failures.",
+          "placement": "breaker states"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-amplification",
+          "sample": "Service A calls B, B calls C and C calls a database. Each caller makes at most 3 attempts per request, and the database always fails. How many calls does the database receive from one request to A?",
+          "answer": "27"
+        },
+        {
+          "kind": "numeric",
+          "targets": "sum-backoff",
+          "sample": "A client retries after waits of 100, 200, 400 and 800 ms. How many ms does it spend waiting in total?",
+          "answer": "1500"
+        },
+        {
+          "kind": "choice",
+          "targets": "identify-breaker-state",
+          "sample": "A circuit breaker has stopped calling a failing service and is now letting a single trial request through. Which state is it in?",
+          "answer": "Half-open",
+          "choices": [
+            "Closed",
+            "Open",
+            "Half-open",
+            "Tripped"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "aws-builders-retries",
+        "azure-patterns",
+        "sre-book"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "availability-and-redundancy",
+      "moduleId": "asynchrony-failure-operation",
+      "title": "Availability and redundancy",
+      "objective": "Translate availability targets into downtime, combine components in series and in parallel, and relate backups to recovery goals.",
+      "prerequisiteLessonIds": [
+        "timeouts-retries-and-circuit-breakers"
+      ],
+      "concepts": [
+        {
+          "id": "availability",
+          "title": "Availability",
+          "summary": "The fraction of time a service works; 99.9% allows 43.2 minutes of downtime in 30 days."
+        },
+        {
+          "id": "series-parallel",
+          "title": "Series and parallel",
+          "summary": "Components that all must work multiply their availabilities; independent replicas fail together only if all fail, so two 99% replicas give 1 − 0.01^2 = 99.99%."
+        },
+        {
+          "id": "failure-domain",
+          "title": "Failure domain",
+          "summary": "The set of things that fail together, such as a machine, rack or region, which limits how independent replicas really are."
+        },
+        {
+          "id": "rpo-rto",
+          "title": "RPO and RTO",
+          "summary": "The recovery point objective is how much data may be lost, and the recovery time objective is how long the outage may last."
+        }
+      ],
+      "skills": [
+        "compute-downtime",
+        "combine-availability",
+        "relate-backup-to-rpo"
+      ],
+      "misconceptions": [
+        "Believing three nines and four nines are close: they differ by a factor of ten in downtime.",
+        "Believing replicas multiply availability even when they share a power supply.",
+        "Believing a backup you have never restored is a backup."
+      ],
+      "sequence": [
+        "Assumes scaling-and-load-balancing.",
+        "From percent to minutes: (1 − 0.999) x 43,200 min = 43.2 min in 30 days.",
+        "A year at 99.99% allows 52.56 minutes.",
+        "Series: three 99.9% components give 0.999^3 = 99.7%.",
+        "Parallel: two independent 99% replicas give 99.99%, if they do not share a failure domain.",
+        "Backups, RPO and RTO: backups every 6 hours mean up to 6 hours of data lost.",
+        "Failover, active-active and active-passive, and testing recovery."
+      ],
+      "examples": [
+        "99.9% over 30 days is 43.2 minutes; 99.99% over a 365-day year is 52.56 minutes.",
+        "Three 99.9% components in series give 99.7% (0.997003).",
+        "Two replicas in different racks and one power supply do not give 99.99%."
+      ],
+      "figures": [
+        {
+          "type": "table",
+          "shows": "A table converting nines into downtime per year, month and day.",
+          "learnerAction": "Select a target.",
+          "placement": "nines"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "Components in series and parallel with an availability calculator and shared-failure-domain toggles.",
+          "learnerAction": "Add replicas and toggle the shared power.",
+          "placement": "series and parallel"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-downtime",
+          "sample": "A service must be 99.9% available over 30 days (43,200 minutes). How many minutes of downtime does that allow?",
+          "answer": "43.2"
+        },
+        {
+          "kind": "numeric",
+          "targets": "combine-availability",
+          "sample": "Two independent replicas are each 99% available and the service works if either does. What is the combined availability, in percent?",
+          "answer": "99.99"
+        },
+        {
+          "kind": "numeric",
+          "targets": "relate-backup-to-rpo",
+          "sample": "Backups run every 6 hours. In the worst case, how many hours of data can be lost?",
+          "answer": "6"
+        }
+      ],
+      "sourceIds": [
+        "sre-book",
+        "sre-workbook",
+        "azure-patterns"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "observability-and-slos",
+      "moduleId": "asynchrony-failure-operation",
+      "title": "Observability and SLOs",
+      "objective": "Choose signals to watch, define an SLO and compute the error budget and burn rate.",
+      "prerequisiteLessonIds": [
+        "availability-and-redundancy"
+      ],
+      "concepts": [
+        {
+          "id": "telemetry",
+          "title": "Logs, metrics and traces",
+          "summary": "Logs record events, metrics record numbers over time, and traces follow one request across services."
+        },
+        {
+          "id": "golden-signals",
+          "title": "Four golden signals",
+          "summary": "Latency, traffic, errors and saturation."
+        },
+        {
+          "id": "slo",
+          "title": "SLI, SLO and error budget",
+          "summary": "An SLI is a measurement, an SLO a target for it, and the error budget the amount of failure the target allows."
+        },
+        {
+          "id": "burn-rate",
+          "title": "Burn rate",
+          "summary": "How fast the budget is being spent compared with spending it evenly over the window."
+        }
+      ],
+      "skills": [
+        "compute-error-budget",
+        "compute-burn-rate",
+        "name-a-signal"
+      ],
+      "misconceptions": [
+        "Believing an SLO should be 100%.",
+        "Believing more alerts means safer operation.",
+        "Believing the average CPU tells you whether users are happy."
+      ],
+      "sequence": [
+        "Assumes latency-throughput-and-tails and availability-and-redundancy.",
+        "What you cannot see you cannot fix: three kinds of telemetry.",
+        "The four golden signals from the SRE book.",
+        "SLI, SLO, SLA: an SLO of 99.9% of 10,000,000 requests allows 10,000 failures.",
+        "Burn rate: 5,000 failures in the first 3 days of 30 against a budget of 10,000 is 5 times the even pace.",
+        "Alert on symptoms and on burn rate; page only when a human must act.",
+        "Postmortems: blameless, with actions."
+      ],
+      "examples": [
+        "SLO 99.9% on 10,000,000 requests: budget 10,000 failed requests.",
+        "Even pace after 3 days is 1,000; 5,000 is 5 times faster, so the budget would be gone in 6 days.",
+        "A trace across three services shows which one added 400 ms."
+      ],
+      "figures": [
+        {
+          "type": "data_series",
+          "shows": "A dashboard with the four golden signals as small charts and an error-budget bar.",
+          "learnerAction": "Drag the failure count and watch the bar and burn rate.",
+          "placement": "error budget"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A trace waterfall across services.",
+          "learnerAction": "Select the slow span.",
+          "placement": "tracing"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-error-budget",
+          "sample": "An SLO says 99.9% of requests must succeed. Over a window with 10,000,000 requests, how many may fail?",
+          "answer": "10000"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-burn-rate",
+          "sample": "The budget for a 30-day window is 10,000 failures. After 3 days, 5,000 have failed. How many times faster than an even pace is the budget being spent?",
+          "answer": "5"
+        },
+        {
+          "kind": "single-term",
+          "targets": "name-a-signal",
+          "sample": "Which of the four golden signals measures how full the service is?",
+          "answer": "saturation"
+        }
+      ],
+      "sourceIds": [
+        "sre-book",
+        "sre-workbook"
+      ],
+      "historyNotes": [
+        "Google's SRE book was published in 2016 and the SRE Workbook in 2018; both are free online."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "design-a-url-shortener",
+      "moduleId": "worked-designs",
+      "title": "Design: a URL shortener",
+      "objective": "Carry a full design from requirements through estimates, identifiers, storage, caching and failure, justifying each choice with a number.",
+      "prerequisiteLessonIds": [
+        "observability-and-slos"
+      ],
+      "concepts": [
+        {
+          "id": "id-space",
+          "title": "Identifier space",
+          "summary": "With 62 characters and length k there are 62^k identifiers, and 62^7 = 3,521,614,606,208."
+        },
+        {
+          "id": "redirect-status",
+          "title": "Redirect status",
+          "summary": "301 may be cached by browsers and so hides repeat visits; 302 is not cached and lets the service count them."
+        },
+        {
+          "id": "worked-design",
+          "title": "A worked design",
+          "summary": "Each decision traces back to a requirement or an estimate."
+        }
+      ],
+      "skills": [
+        "estimate-the-read-load",
+        "size-the-id-space",
+        "choose-a-redirect"
+      ],
+      "misconceptions": [
+        "Believing the interesting part is the hashing: the decisive numbers are the read rate and the retention.",
+        "Believing one design fits all scales.",
+        "Adding components that no number justifies."
+      ],
+      "sequence": [
+        "Assumes every earlier lesson; names each tool as it is used.",
+        "Requirements: create, redirect, 100 million new URLs a month, 100:1 reads, redirects under 100 ms at p99, 99.9% available.",
+        "Estimates: 38.6 writes/s, about 3,900 reads/s, 50 GB a month of records.",
+        "API and data model: a table keyed by short code.",
+        "IDs: 7 base-62 characters give 3.5 trillion codes, enough for 6 billion URLs in 5 years.",
+        "Read path: cache-aside in front of a replicated store.",
+        "Failure and operation: what happens when the cache or a replica fails.",
+        "Redirect status: 301 versus 302."
+      ],
+      "examples": [
+        "100,000,000 / (30 x 86,400) is 38.6 writes/s; x 100 is 3,858 reads/s.",
+        "62^7 = 3,521,614,606,208, comfortably above 100,000,000 x 12 x 5 = 6,000,000,000.",
+        "A 95% hit rate leaves about 193 reads/s for the database."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "The full design as boxes: clients, balancer, app servers, cache, replicated store and a write path with an ID generator.",
+          "learnerAction": "Click a box to see the number that justifies it.",
+          "placement": "design diagram"
+        },
+        {
+          "type": "table",
+          "shows": "The estimate sheet from the lesson as an editable table.",
+          "learnerAction": "Change the user numbers and see which box must change.",
+          "placement": "estimates"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "estimate-the-read-load",
+          "sample": "100 million new URLs a month, 30 days, 86,400 s a day, and 100 reads per write. To the nearest hundred, how many redirects per second on average?",
+          "answer": "3900"
+        },
+        {
+          "kind": "numeric",
+          "targets": "size-the-id-space",
+          "sample": "How many distinct 7-character codes exist with 62 symbols?",
+          "answer": "3521614606208"
+        },
+        {
+          "kind": "choice",
+          "targets": "choose-a-redirect",
+          "sample": "The service wants to count every visit. Which redirect status should it use?",
+          "answer": "302",
+          "choices": [
+            "301",
+            "302",
+            "200",
+            "404"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "system-design-primer",
+        "sre-book",
+        "azure-patterns"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "design-a-feed-and-review",
+      "moduleId": "worked-designs",
+      "title": "Design: a feed, and a design review",
+      "objective": "Compare fan-out on write and fan-out on read for a social feed, then review a flawed design for bottlenecks, single points of failure and missing numbers.",
+      "prerequisiteLessonIds": [
+        "design-a-url-shortener"
+      ],
+      "concepts": [
+        {
+          "id": "fan-out-on-write",
+          "title": "Fan-out on write",
+          "summary": "When a user posts, copy the post into each follower's feed, making reads cheap and writes costly."
+        },
+        {
+          "id": "fan-out-on-read",
+          "title": "Fan-out on read",
+          "summary": "Build the feed at request time from the posts of everyone followed, making writes cheap and reads costly."
+        },
+        {
+          "id": "hybrid",
+          "title": "Hybrid",
+          "summary": "Fan out on write for ordinary accounts and on read for accounts with huge followings."
+        },
+        {
+          "id": "design-review",
+          "title": "Design review",
+          "summary": "Walk a design with failure questions: what is the single point of failure, what is unbounded, what is unmeasured?"
+        }
+      ],
+      "skills": [
+        "compute-fan-out-writes",
+        "find-the-weak-point"
+      ],
+      "misconceptions": [
+        "Believing one strategy is simply better.",
+        "Ignoring the celebrity case: one post can mean twenty million writes.",
+        "Reviewing a design by style rather than by asking what fails first."
+      ],
+      "sequence": [
+        "Assumes design-a-url-shortener and queues-and-event-streams.",
+        "Requirements and the asymmetry: many reads, fewer posts.",
+        "Write fan-out: 200 followers and 5 posts a day is 1,000 feed writes a day for that user.",
+        "A single post by an account with 20,000,000 followers is 20,000,000 writes; queue them and accept delay.",
+        "The hybrid: precompute for most, merge celebrity posts at read time.",
+        "A review of a flawed design: a single database, synchronous calls to an email service, no timeouts, no limits.",
+        "Closing the method: state the trade-offs you accepted."
+      ],
+      "examples": [
+        "200 followers x 5 posts = 1,000 writes a day.",
+        "One post from 20,000,000 followers means 20,000,000 feed writes.",
+        "Flawed design: web servers call the email service synchronously with no timeout, so one slow email provider takes the site down."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A feed pipeline with a toggle between fan-out on write and fan-out on read, with the number of writes and reads per action shown.",
+          "learnerAction": "Pick an account with 200 or 20,000,000 followers.",
+          "placement": "fan-out"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A flawed architecture diagram with unlabelled risks.",
+          "learnerAction": "Mark the single points of failure.",
+          "placement": "review"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-fan-out-writes",
+          "sample": "With fan-out on write, one post by an account with 20,000,000 followers causes how many feed writes?",
+          "answer": "20000000"
+        },
+        {
+          "kind": "choice",
+          "targets": "find-the-weak-point",
+          "sample": "Web servers call an email provider synchronously with no timeout. What is the main risk?",
+          "answer": "A slow provider ties up the web servers and takes the site down",
+          "choices": [
+            "Emails arrive twice",
+            "A slow provider ties up the web servers and takes the site down",
+            "The database grows too fast",
+            "The load balancer rejects requests"
+          ]
+        },
+        {
+          "kind": "self",
+          "targets": "find-the-weak-point",
+          "sample": "Recall one question that finds single points of failure when reviewing a design.",
+          "answer": "What happens if this component fails, and is there another that can take over?"
+        }
+      ],
+      "sourceIds": [
+        "system-design-primer",
+        "sre-book",
+        "azure-patterns"
+      ],
+      "estimatedMinutes": 13
+    }
+  ],
+  "courseCheck": "A mixed check that gives a short problem statement and asks for the numbers: QPS, storage and bandwidth; fleet size; cache hit-rate effect; keys moved by resharding; quorum sizes; retry amplification; downtime from nines; error budget and burn rate. Then one scenario in which a flawed design is described and the learner chooses the likeliest first failure.",
+  "platformNeeds": [
+    "A sequence_diagram figure type (shared with Computers and Networks and Git): lifelines, labelled arrows, time ruler, branches for success and failure. Used for retries, circuit breaker, replication lag and the rejected push.",
+    "An architecture_canvas figure: boxes and arrows with load numbers on each arrow that recompute when the learner edits an input (users, ratio, hit rate, replicas). The svg_figure fallback is a fixed diagram per scenario with switchable numbers.",
+    "A queue_simulator figure (arrival rate, service rate, backlog over time), and a hash_ring figure for resharding, since both rely on moving an input and watching a quantity change; graph_plot and a grid of svg_figure frames can stand in.",
+    "A quorum_explorer figure: N replicas, choose W and R, show overlap.",
+    "Code runners already cover SQL for the index lesson. A Python runner could run small simulations (a token bucket, a hash-mod reshard count) if the app allows longer sample programs."
+  ],
+  "unverified": [
+    "No external site could be opened in this session (network blocked), so every source has verified false. The Notion pages were read (the System design roadmap page, the Architecture course purpose-and-depth page and the 60-module curriculum); the roadmap.sh topic list itself was not opened, and its content is not used.",
+    "All arithmetic in the sample questions was recomputed in Python; the SQL result was run in SQLite.",
+    "The single-queue delay formula 1/(service rate - arrival rate) assumes random arrivals and service times (an M/M/1 queue); writers must state the assumption.",
+    "Percentile definition: the lesson uses nearest rank; other tools interpolate.",
+    "History from memory: Little 1961; Erlang's telephone queueing from 1909; Karger et al. STOC 1997; Dynamo SOSP 2007; Brewer's PODC keynote 2000 and Gilbert-Lynch 2002; Raft 2014; SRE book 2016 and Workbook 2018; The Tail at Scale, CACM February 2013.",
+    "The System Design Primer's licence was recalled as CC BY 4.0 and should be confirmed in the repository before any adaptation.",
+    "301 and 302 caching behaviour: 301 may be cached by browsers by default per RFC 9110; check the current wording."
+  ]
+}

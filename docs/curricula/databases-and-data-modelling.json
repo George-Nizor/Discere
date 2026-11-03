@@ -1,0 +1,1568 @@
+{
+  "id": "databases-and-data-modelling",
+  "title": "Databases and Data Modelling",
+  "family": "A",
+  "voice": "A",
+  "description": "Model data as tables and keys, remove redundancy without losing information, make queries fast with indexes, keep data correct under failure and concurrency, and learn when key-value and document stores fit.",
+  "audience": "Someone who can already write SQL queries with joins, grouping and window functions (SQL: From Rows to Reports) and now wants to design the tables behind them and understand how a database behaves under load and failure. PostgreSQL is the reference system; examples are checked in SQLite where noted.",
+  "prerequisites": [
+    "sql-from-rows-to-reports"
+  ],
+  "outcomes": [
+    "You'll be able to turn a description of a business into entities, keys and relationships.",
+    "You'll be able to normalise a wide table to third normal form and check the decomposition loses nothing.",
+    "You'll be able to explain why an index speeds a lookup and which queries it serves.",
+    "You'll be able to read a query plan and compare join strategies.",
+    "You'll be able to predict the outcome of a failure in the middle of a transaction and name concurrency anomalies.",
+    "You'll be able to say what key-value and document stores trade away, and choose a store for a workload."
+  ],
+  "sources": [
+    {
+      "id": "pg-docs",
+      "title": "PostgreSQL documentation (current): Data Definition, Indexes, Concurrency Control, Using EXPLAIN",
+      "url": "https://www.postgresql.org/docs/current/",
+      "licence": "PostgreSQL Licence (permissive)",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "pg-isolation",
+      "title": "PostgreSQL documentation: Transaction Isolation (chapter 13.2)",
+      "url": "https://www.postgresql.org/docs/current/transaction-iso.html",
+      "licence": "PostgreSQL Licence (permissive)",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "pg-mvcc",
+      "title": "PostgreSQL documentation: Concurrency Control, Introduction (chapter 13.1)",
+      "url": "https://www.postgresql.org/docs/current/mvcc-intro.html",
+      "licence": "PostgreSQL Licence (permissive)",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "pg-wal",
+      "title": "PostgreSQL documentation: Write-Ahead Logging (chapter 28.3)",
+      "url": "https://www.postgresql.org/docs/current/wal-intro.html",
+      "licence": "PostgreSQL Licence (permissive)",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "pg-explain",
+      "title": "PostgreSQL documentation: Using EXPLAIN (chapter 14.1)",
+      "url": "https://www.postgresql.org/docs/current/using-explain.html",
+      "licence": "PostgreSQL Licence (permissive)",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "sqlite-docs",
+      "title": "SQLite documentation: Query Planner, EXPLAIN QUERY PLAN, Foreign Keys, Transactions",
+      "url": "https://www.sqlite.org/docs.html",
+      "licence": "Public domain",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "redis-docs",
+      "title": "Redis documentation: data types and commands",
+      "url": "https://redis.io/docs/latest/",
+      "licence": "CC BY-SA 4.0 for the documentation (check the repository)",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "mongo-docs",
+      "title": "MongoDB Manual: data modelling and BSON document limits",
+      "url": "https://www.mongodb.com/docs/manual/",
+      "licence": "CC BY-NC-SA 3.0",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "use-the-index",
+      "title": "Use The Index, Luke (Markus Winand)",
+      "url": "https://use-the-index-luke.com/",
+      "licence": "CC BY-NC-ND 3.0",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "codd-1970",
+      "title": "E. F. Codd, 'A Relational Model of Data for Large Shared Data Banks', Communications of the ACM 13(6), 1970",
+      "url": "https://doi.org/10.1145/362384.362685",
+      "licence": "Copyright ACM; paper",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "chen-1976",
+      "title": "Peter Chen, 'The Entity-Relationship Model: Toward a Unified View of Data', ACM TODS 1(1), 1976",
+      "url": "https://doi.org/10.1145/320434.320440",
+      "licence": "Copyright ACM; paper",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "berenson-1995",
+      "title": "Berenson et al., 'A Critique of ANSI SQL Isolation Levels', SIGMOD 1995",
+      "url": "https://doi.org/10.1145/223784.223785",
+      "licence": "Copyright ACM; paper",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "dynamo-2007",
+      "title": "DeCandia et al., 'Dynamo: Amazon's Highly Available Key-value Store', SOSP 2007",
+      "url": "https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf",
+      "licence": "Copyright ACM; paper",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "gilbert-lynch-2002",
+      "title": "Gilbert and Lynch, 'Brewer's Conjecture and the Feasibility of Consistent, Available, Partition-Tolerant Web Services', SIGACT News 2002",
+      "url": "https://doi.org/10.1145/564585.564601",
+      "licence": "Copyright ACM; paper",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "ddia",
+      "title": "Designing Data-Intensive Applications (Martin Kleppmann), chapters 2, 3, 5, 6, 7",
+      "url": "https://dataintensive.net/",
+      "licence": "Commercial book, all rights reserved",
+      "use": "reference",
+      "verified": false
+    }
+  ],
+  "modules": [
+    {
+      "id": "modelling",
+      "title": "Modelling and normalisation",
+      "summary": "Turn a described situation into tables, keys and constraints, then remove redundancy that causes errors."
+    },
+    {
+      "id": "indexing",
+      "title": "Indexes and query plans",
+      "summary": "Why an index makes a lookup fast, which queries it serves, and how to read what the database plans to do."
+    },
+    {
+      "id": "transactions",
+      "title": "Transactions and isolation",
+      "summary": "Keep data correct when statements fail halfway and when many users act at once."
+    },
+    {
+      "id": "beyond",
+      "title": "Beyond one relational database",
+      "summary": "Key-value stores, documents, replication and sharding, and how to choose."
+    }
+  ],
+  "lessons": [
+    {
+      "id": "from-a-story-to-entities",
+      "moduleId": "modelling",
+      "title": "From a story to entities",
+      "objective": "Read a short description of a business and list its entities, attributes and relationships with their cardinalities.",
+      "prerequisiteLessonIds": [],
+      "concepts": [
+        {
+          "id": "entity",
+          "title": "Entity",
+          "summary": "An entity is a kind of thing the system must remember and tell apart, such as a patient or an appointment, and it becomes a table."
+        },
+        {
+          "id": "attribute",
+          "title": "Attribute",
+          "summary": "An attribute is a fact about one entity, stored as a column, and a fact about two entities together belongs to the relationship."
+        },
+        {
+          "id": "cardinality",
+          "title": "Cardinality",
+          "summary": "Cardinality states how many of one entity may relate to one of another: one-to-one, one-to-many or many-to-many."
+        }
+      ],
+      "skills": [
+        "extract-entities",
+        "state-cardinality",
+        "separate-entity-from-attribute"
+      ],
+      "misconceptions": [
+        "Making every noun a table. 'City' may just be a column of an address if nothing else is recorded about cities.",
+        "Putting a fact in the wrong place: the date of an appointment belongs to the appointment, not to the patient or the doctor.",
+        "Stating cardinality from one side only. 'A doctor sees many patients' is incomplete until you also ask whether a patient sees many doctors."
+      ],
+      "sequence": [
+        "Start from questions the system must answer and the things it must remember.",
+        "Read a clinic description and underline candidate things: patient, doctor, appointment, room.",
+        "Test each candidate: do we need to identify individual ones, and record facts about them?",
+        "Attributes versus entities: when an attribute grows its own attributes, promote it.",
+        "Relationships with cardinalities: a doctor has many appointments, an appointment has one doctor and one patient.",
+        "Draw the entity-relationship diagram and read it aloud as sentences."
+      ],
+      "examples": [
+        "Clinic: 4 doctors and 30 patients. A patient may see several doctors and a doctor sees many patients, so the pair relationship is many-to-many and needs an appointment entity carrying date and time.",
+        "If each appointment is by exactly one patient with exactly one doctor, appointment is the 'many' side of two one-to-many relationships.",
+        "At most one row per patient-doctor pair would allow up to 4 x 30 = 120 rows."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "An entity-relationship diagram for the clinic with boxes for Patient, Doctor, Appointment and crow's-foot lines.",
+          "learnerAction": "Drag cardinality markers (one, many) onto each line end and check against the description.",
+          "placement": "cardinality"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A short paragraph describing the clinic, split into clauses, each with a tag slot.",
+          "learnerAction": "Tag each clause as entity, attribute or relationship.",
+          "placement": "extract entities"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "choice",
+          "targets": "state-cardinality",
+          "sample": "A clinic records appointments. Each appointment has exactly one patient and one doctor. A patient can have many appointments. Which relationship holds between Patient and Appointment?",
+          "answer": "One-to-many",
+          "choices": [
+            "One-to-one",
+            "One-to-many",
+            "Many-to-one from patient to appointment",
+            "Many-to-many"
+          ]
+        },
+        {
+          "kind": "numeric",
+          "targets": "state-cardinality",
+          "sample": "There are 4 doctors and 30 patients, and a given patient-doctor pair may appear at most once in a table linking them. What is the largest number of rows that table can hold?",
+          "answer": "120"
+        },
+        {
+          "kind": "choice",
+          "targets": "separate-entity-from-attribute",
+          "sample": "Which is best modelled as an attribute of Appointment rather than its own entity?",
+          "answer": "Start time",
+          "choices": [
+            "Doctor",
+            "Patient",
+            "Start time",
+            "Room, if rooms have capacity and equipment"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "ddia",
+        "chen-1976",
+        "codd-1970",
+        "pg-docs"
+      ],
+      "historyNotes": [
+        "Peter Chen introduced the entity-relationship model in 1976; Codd's relational model paper appeared in 1970."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "one-to-many-and-many-to-many",
+      "moduleId": "modelling",
+      "title": "Foreign keys and junction tables",
+      "objective": "Implement one-to-many relationships with foreign keys and many-to-many relationships with junction tables, and query across them.",
+      "prerequisiteLessonIds": [
+        "from-a-story-to-entities"
+      ],
+      "concepts": [
+        {
+          "id": "foreign-key",
+          "title": "Foreign key",
+          "summary": "A foreign key is a column whose values must match a key in another table, which records a relationship and lets the database check it."
+        },
+        {
+          "id": "junction-table",
+          "title": "Junction table",
+          "summary": "A many-to-many relationship is stored as a table of pairs, one row per pair, whose key is the combination of the two foreign keys."
+        },
+        {
+          "id": "relationship-attributes",
+          "title": "Attributes of a relationship",
+          "summary": "A fact that belongs to the pair rather than to either side, such as a grade, is a column of the junction table."
+        }
+      ],
+      "skills": [
+        "place-the-foreign-key",
+        "design-junction-table",
+        "query-through-junction"
+      ],
+      "misconceptions": [
+        "Putting a list of ids in one column (for example '10,11'). The database cannot check, index or join on it.",
+        "Putting the foreign key on the wrong side. In one-to-many the key goes on the 'many' side.",
+        "Forgetting that the junction table's own key is the pair, otherwise the same enrolment can be recorded twice."
+      ],
+      "sequence": [
+        "One-to-many: each order has one customer, so orders gets customer_id.",
+        "Many-to-many: students and courses; two foreign keys in enrollments(student_id, course_id).",
+        "The key of the junction table is (student_id, course_id); grade lives there.",
+        "Reading back through the junction: join students, enrollments, courses.",
+        "A query that depends on the model: students enrolled in both Databases and Algorithms (group by and count distinct).",
+        "Counting: 7 enrolment rows for 4 students and 3 courses."
+      ],
+      "examples": [
+        "students(1 Ana, 2 Ben, 3 Chloe, 4 Dev), courses(10 Databases, 11 Algorithms, 12 Compilers), enrollments with 7 rows: (1,10),(1,11),(2,10),(3,11),(3,10),(3,12),(4,12).",
+        "Students on both Databases and Algorithms: Ana and Chloe.",
+        "Chloe has 3 enrolment rows."
+      ],
+      "figures": [
+        {
+          "type": "relational_query",
+          "shows": "The three tables students, courses, enrollments with a join result beside them.",
+          "learnerAction": "Click a row in enrollments and see the matching student and course highlight.",
+          "placement": "junction table"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "Two diagrams of the same relationship: a list of ids stuffed in one column, and the junction table with one row per pair.",
+          "learnerAction": "Toggle views and try to find 'who takes course 11' in each.",
+          "placement": "why a junction"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "choice",
+          "targets": "place-the-foreign-key",
+          "sample": "Each order belongs to one customer, and a customer has many orders. Where does the foreign key go?",
+          "answer": "orders.customer_id",
+          "choices": [
+            "customers.order_id",
+            "orders.customer_id",
+            "A junction table",
+            "Both tables"
+          ]
+        },
+        {
+          "kind": "numeric",
+          "targets": "design-junction-table",
+          "sample": "With the enrollments rows (1,10),(1,11),(2,10),(3,11),(3,10),(3,12),(4,12), how many rows mention student 3?",
+          "answer": "3"
+        },
+        {
+          "kind": "code-run-sql",
+          "targets": "query-through-junction",
+          "sample": "Using students, courses and enrollments, list the names of students enrolled in both 'Databases' and 'Algorithms', ordered by name. Expected: Ana, Chloe.",
+          "answer": "SELECT s.name FROM students s JOIN enrollments e ON e.student_id = s.student_id JOIN courses c ON c.course_id = e.course_id WHERE c.title IN ('Databases','Algorithms') GROUP BY s.student_id, s.name HAVING COUNT(DISTINCT c.title) = 2 ORDER BY s.name"
+        }
+      ],
+      "sourceIds": [
+        "pg-docs",
+        "sqlite-docs",
+        "ddia"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "keys-and-constraints",
+      "moduleId": "modelling",
+      "title": "Keys and constraints",
+      "objective": "Choose primary keys, and predict which statements a table's constraints accept or refuse.",
+      "prerequisiteLessonIds": [
+        "one-to-many-and-many-to-many"
+      ],
+      "concepts": [
+        {
+          "id": "primary-key",
+          "title": "Primary key",
+          "summary": "A primary key is a column or set of columns that is unique and non-null for every row and identifies it."
+        },
+        {
+          "id": "natural-surrogate",
+          "title": "Natural and surrogate keys",
+          "summary": "A natural key comes from the data, such as an ISBN, while a surrogate key is a meaningless identifier the database generates."
+        },
+        {
+          "id": "constraint",
+          "title": "Constraint",
+          "summary": "A constraint (NOT NULL, UNIQUE, CHECK, FOREIGN KEY) makes the database refuse data that breaks a rule, whichever application sends it."
+        }
+      ],
+      "skills": [
+        "choose-a-key",
+        "predict-constraint-outcome",
+        "choose-delete-action"
+      ],
+      "misconceptions": [
+        "Thinking an application check is enough. Another program, a script or a bug can bypass it; a constraint holds for every writer.",
+        "Using an email address as the primary key because it is unique today. Natural keys change, and a key that changes ripples through every referencing table.",
+        "Thinking UNIQUE and PRIMARY KEY are the same. A table has one primary key; UNIQUE columns may be several and (in standard SQL) may hold NULLs."
+      ],
+      "sequence": [
+        "What makes a good key: unique, never null, stable.",
+        "Natural versus surrogate, with a product code that gets renumbered.",
+        "NOT NULL, UNIQUE, CHECK (price >= 0) and what each rejects.",
+        "Foreign keys: an insert with no matching parent is refused.",
+        "Delete actions: RESTRICT or NO ACTION refuse; CASCADE deletes children; SET NULL clears the reference.",
+        "Walk a set of five statements against a small schema and mark each accepted or refused."
+      ],
+      "examples": [
+        "enrollments has primary key (student_id, course_id). Inserting (1,10,90) when (1,10) exists is refused.",
+        "Inserting (9,10,80) when student 9 does not exist is refused by the foreign key to students.",
+        "Deleting student 3 with ON DELETE CASCADE also removes their 3 enrolment rows; with the default NO ACTION it is refused. In SQLite, foreign keys must be switched on with PRAGMA foreign_keys = ON."
+      ],
+      "figures": [
+        {
+          "type": "table",
+          "shows": "A schema with columns and constraints beside five INSERT/DELETE statements, with an accept/refuse button per statement.",
+          "learnerAction": "Mark each statement then see which constraint fired.",
+          "placement": "constraint walk"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "Parent and child tables with a delete arrow; a selector changes the action (no action, cascade, set null) and shows the child rows afterwards, with the count hidden until chosen.",
+          "learnerAction": "Choose the action and predict the remaining child rows.",
+          "placement": "delete actions"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "choice",
+          "targets": "predict-constraint-outcome",
+          "sample": "enrollments has primary key (student_id, course_id) and row (1,10) exists. What happens to INSERT INTO enrollments VALUES (1,10,90)?",
+          "answer": "It is refused for duplicating the key",
+          "choices": [
+            "It adds a second row",
+            "It replaces the first row silently",
+            "It is refused for duplicating the key",
+            "It is accepted with a warning"
+          ]
+        },
+        {
+          "kind": "numeric",
+          "targets": "choose-delete-action",
+          "sample": "Student 3 has 3 enrolment rows. The foreign key from enrollments to students is ON DELETE CASCADE. How many enrolment rows are deleted when student 3 is deleted?",
+          "answer": "3"
+        },
+        {
+          "kind": "choice",
+          "targets": "choose-a-key",
+          "sample": "Which is the best primary key for a customers table where emails can change?",
+          "answer": "A generated integer id",
+          "choices": [
+            "The email address",
+            "The customer's full name",
+            "A generated integer id",
+            "The signup date"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "pg-docs",
+        "sqlite-docs",
+        "ddia"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "anomalies-and-dependencies",
+      "moduleId": "modelling",
+      "title": "Anomalies and functional dependencies",
+      "objective": "Find update, insert and delete anomalies in a wide table, and write the functional dependencies that explain them.",
+      "prerequisiteLessonIds": [
+        "keys-and-constraints"
+      ],
+      "concepts": [
+        {
+          "id": "anomaly",
+          "title": "Anomaly",
+          "summary": "An anomaly is a data error that the structure of a table invites, such as changing a fact in one row and leaving it unchanged in another."
+        },
+        {
+          "id": "functional-dependency",
+          "title": "Functional dependency",
+          "summary": "A functional dependency X -> Y holds when any two rows with the same X always have the same Y."
+        },
+        {
+          "id": "candidate-key",
+          "title": "Candidate key",
+          "summary": "A candidate key is a minimal set of columns that functionally determines every other column."
+        }
+      ],
+      "skills": [
+        "spot-anomalies",
+        "write-dependencies",
+        "find-candidate-key"
+      ],
+      "misconceptions": [
+        "Believing redundancy is only a storage cost. Its real cost is inconsistency.",
+        "Reading a functional dependency from the sample data alone. Data can happen to satisfy X -> Y; the rule must come from the meaning of the business.",
+        "Thinking a table has one key and everything else is 'extra'. Several candidate keys can exist."
+      ],
+      "sequence": [
+        "The table orders_flat(order_id, customer_name, customer_email, product, product_price, qty) with 4 rows.",
+        "Update anomaly: Ana's email changes; 3 rows must change.",
+        "Delete anomaly: deleting order 2, Ben's only order, deletes Ben altogether.",
+        "Insert anomaly: a new product with no orders has nowhere to go.",
+        "Dependencies: order_id -> customer_email; customer_email -> customer_name; product -> product_price; (order_id, product) -> qty.",
+        "Candidate key: (order_id, product), since together they determine all columns."
+      ],
+      "examples": [
+        "orders_flat rows: (1,Ana,ana@x.io,Pen,2,10), (1,Ana,ana@x.io,Ink,5,2), (2,Ben,ben@x.io,Pen,2,4), (3,Ana,ana@x.io,Pad,4,1). Ana's email appears in 3 rows.",
+        "A price change for Pen to 3 must touch 2 rows (orders 1 and 2).",
+        "Revenue: Ana 2x10 + 5x2 + 4x1 = 34; Ben 2x4 = 8."
+      ],
+      "figures": [
+        {
+          "type": "relational_query",
+          "shows": "The orders_flat table with colour bands on repeated customer and product values.",
+          "learnerAction": "Click a value and see every copy highlighted.",
+          "placement": "redundancy"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "Arrows between column headings drawn as dependencies: order_id to customer_email, product to product_price, the pair to qty.",
+          "learnerAction": "Draw an arrow for the next dependency; the figure checks it against the table meaning.",
+          "placement": "dependencies"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "spot-anomalies",
+          "sample": "In orders_flat, in how many rows must Ana's email be changed if she changes it?",
+          "answer": "3"
+        },
+        {
+          "kind": "numeric",
+          "targets": "spot-anomalies",
+          "sample": "In orders_flat, a price change for Pen must be made in how many rows?",
+          "answer": "2"
+        },
+        {
+          "kind": "choice",
+          "targets": "find-candidate-key",
+          "sample": "Which columns form the candidate key of orders_flat?",
+          "answer": "(order_id, product)",
+          "choices": [
+            "order_id",
+            "product",
+            "(order_id, product)",
+            "customer_email"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "ddia",
+        "pg-docs",
+        "codd-1970"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "normal-forms-and-decomposition",
+      "moduleId": "modelling",
+      "title": "Normal forms and lossless decomposition",
+      "objective": "Decompose a table into second and third normal form and check that joining the pieces gives back exactly the original rows.",
+      "prerequisiteLessonIds": [
+        "anomalies-and-dependencies"
+      ],
+      "concepts": [
+        {
+          "id": "normal-forms",
+          "title": "Normal forms",
+          "summary": "1NF requires atomic values, 2NF removes dependencies on part of a key, 3NF removes dependencies of non-key columns on other non-key columns, and BCNF requires every determinant to be a key."
+        },
+        {
+          "id": "decomposition",
+          "title": "Decomposition",
+          "summary": "Normalising splits a table along its dependencies so that each fact is stored once."
+        },
+        {
+          "id": "lossless-join",
+          "title": "Lossless join",
+          "summary": "A decomposition is lossless when joining the parts returns exactly the original rows, which is guaranteed when the shared columns are a key of one part."
+        }
+      ],
+      "skills": [
+        "decompose-to-3nf",
+        "verify-lossless",
+        "detect-spurious-rows"
+      ],
+      "misconceptions": [
+        "Splitting a table by columns that look tidy. A split that does not follow a dependency can invent rows when rejoined.",
+        "Thinking more tables is always better. Normalising stops where every fact is stored once; joins have a cost.",
+        "Mixing up 2NF and 3NF: 2NF concerns part of a composite key, 3NF concerns non-key columns depending on non-key columns."
+      ],
+      "sequence": [
+        "1NF: one value per cell, with a repeated 'phone1, phone2' example.",
+        "2NF: customer_name depends only on order_id, part of the key. Move it out.",
+        "3NF: customer_name depends on customer_email which depends on order_id. Move customers out.",
+        "Result: customers(2 rows), products(3), orders(3), order_items(4).",
+        "Verify with a join: it returns the original 4 rows and the same revenue (Ana 34, Ben 8).",
+        "A bad split: (employee, project) and (project, skill) joined on project returns 4 rows from 2, two of them spurious."
+      ],
+      "examples": [
+        "Normalised: customers(1 Ana, 2 Ben), products(1 Pen 2, 2 Ink 5, 3 Pad 4), orders(1,1),(2,2),(3,1), order_items(1,1,10),(1,2,2),(2,1,4),(3,3,1). Join returns 4 rows.",
+        "Bad split: ep = {(Ana,P1),(Ben,P1)}, ps = {(P1,SQL),(P1,Rust)}; joining on project returns 4 rows although the original table had 2.",
+        "Ana's name is stored in 1 cell after normalisation instead of 3."
+      ],
+      "figures": [
+        {
+          "type": "relational_query",
+          "shows": "The four normalised tables and a join that rebuilds orders_flat.",
+          "learnerAction": "Toggle each join in turn and watch columns reappear.",
+          "placement": "decomposition"
+        },
+        {
+          "type": "relational_query",
+          "shows": "Two tables ep and ps and their join on project with spurious rows shaded.",
+          "learnerAction": "Compare with the original two-row table.",
+          "placement": "lossy split"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "detect-spurious-rows",
+          "sample": "Original table: (Ana,P1,SQL) and (Ben,P1,Rust). It is split into (employee, project) and (project, skill) and rejoined on project. How many rows does the join return?",
+          "answer": "4"
+        },
+        {
+          "kind": "choice",
+          "targets": "decompose-to-3nf",
+          "sample": "After removing partial dependencies, orders(order_id, customer_email, customer_name) has key order_id and the rule customer_email -> customer_name. Which normal form does it violate?",
+          "answer": "3NF",
+          "choices": [
+            "1NF",
+            "2NF",
+            "3NF",
+            "None; it is in BCNF"
+          ]
+        },
+        {
+          "kind": "code-run-sql",
+          "targets": "verify-lossless",
+          "sample": "From order_items, orders, customers and products, rebuild the rows order_id, customer name, product name, qty ordered by order_id then product name. Expected 4 rows: (1,Ana,Ink,2), (1,Ana,Pen,10), (2,Ben,Pen,4), (3,Ana,Pad,1).",
+          "answer": "SELECT o.order_id, c.name AS customer, p.name AS product, i.qty FROM order_items i JOIN orders o ON o.order_id = i.order_id JOIN customers c ON c.customer_id = o.customer_id JOIN products p ON p.product_id = i.product_id ORDER BY o.order_id, p.name"
+        }
+      ],
+      "sourceIds": [
+        "ddia",
+        "codd-1970",
+        "pg-docs"
+      ],
+      "historyNotes": [
+        "Codd defined first normal form in 1970 and second and third normal forms in 1971; Boyce-Codd normal form followed around 1974. (Check before citing.)"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "reporting-models-and-denormalisation",
+      "moduleId": "modelling",
+      "title": "Reporting models and denormalisation",
+      "objective": "Describe a star schema, and decide when to duplicate data on purpose.",
+      "prerequisiteLessonIds": [
+        "normal-forms-and-decomposition"
+      ],
+      "concepts": [
+        {
+          "id": "fact-table",
+          "title": "Fact table",
+          "summary": "A fact table records events with numeric measures and foreign keys to dimensions, one row per event."
+        },
+        {
+          "id": "dimension",
+          "title": "Dimension table",
+          "summary": "A dimension table describes the who, what and when of facts, and is wide and small compared with the fact table."
+        },
+        {
+          "id": "denormalise",
+          "title": "Denormalisation",
+          "summary": "Denormalising copies data to avoid joins at read time, trading write simplicity and consistency for read speed."
+        }
+      ],
+      "skills": [
+        "read-a-star-schema",
+        "aggregate-over-dimensions",
+        "judge-denormalisation"
+      ],
+      "misconceptions": [
+        "Treating denormalisation as a first move. It follows measurement: normalise first, copy only where a measured read is too slow.",
+        "Thinking a reporting schema must be normalised. Analytics prefers few joins and stable descriptive columns.",
+        "Forgetting that a copy needs a rule to keep it in sync."
+      ],
+      "sequence": [
+        "Two jobs: recording changes safely, and answering questions over many rows.",
+        "Star schema: fact_sales(sale_id, date_id, product_id, units, amount) with dim_date and dim_product.",
+        "A report: revenue by month and category, a join of the fact to two dimensions.",
+        "Why dimensions hold descriptions (category, month) and the fact holds numbers.",
+        "Denormalising on purpose: store order_total on orders; costs a trigger or application rule on every change.",
+        "Decision: copy when reads dominate, the copy is cheap to maintain, and drift can be detected."
+      ],
+      "examples": [
+        "fact_sales has 6 rows; revenue by month and category: 2026-11 Kitchen 16, 2026-11 Stationery 30, 2026-12 Kitchen 8, 2026-12 Stationery 30.",
+        "If product 3's category changes from Kitchen to Home, the star schema changes one dimension row; copying category into every fact row would change three.",
+        "An orders.total column copied from its items must be updated whenever an item changes."
+      ],
+      "figures": [
+        {
+          "type": "relational_query",
+          "shows": "The fact table and two dimension tables with join lines.",
+          "learnerAction": "Select a measure and two dimensions and see the grouped result.",
+          "placement": "star schema"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A star with the fact table at the centre and dimension tables around it.",
+          "learnerAction": "Click a dimension to see its columns.",
+          "placement": "structure"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "code-run-sql",
+          "targets": "aggregate-over-dimensions",
+          "sample": "Join fact_sales, dim_date and dim_product to give total amount by month and category, ordered by month then category. Expected 4 rows: (2026-11, Kitchen, 16), (2026-11, Stationery, 30), (2026-12, Kitchen, 8), (2026-12, Stationery, 30).",
+          "answer": "SELECT d.month, p.category, SUM(f.amount) AS revenue FROM fact_sales f JOIN dim_date d ON d.date_id = f.date_id JOIN dim_product p ON p.product_id = f.product_id GROUP BY d.month, p.category ORDER BY d.month, p.category"
+        },
+        {
+          "kind": "choice",
+          "targets": "judge-denormalisation",
+          "sample": "Which is the best reason to store orders.total as a copy of the sum of its items?",
+          "answer": "Reads are far more frequent than item changes and the total is slow to compute",
+          "choices": [
+            "It makes writes simpler",
+            "Reads are far more frequent than item changes and the total is slow to compute",
+            "It removes the need for foreign keys",
+            "It guarantees the total is always right"
+          ]
+        },
+        {
+          "kind": "numeric",
+          "targets": "read-a-star-schema",
+          "sample": "In fact_sales, the fact rows for product 3 are sales 2 and 5. If category were copied into every fact row, how many fact rows would change when product 3's category is renamed?",
+          "answer": "2"
+        }
+      ],
+      "sourceIds": [
+        "ddia",
+        "pg-docs"
+      ],
+      "historyNotes": [
+        "Ralph Kimball popularised dimensional modelling and the star schema in the 1990s. (Check before citing.)"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "how-an-index-finds-rows",
+      "moduleId": "indexing",
+      "title": "How an index finds rows",
+      "objective": "Estimate the pages read by a table scan and an index lookup from page size and fan-out.",
+      "prerequisiteLessonIds": [
+        "normal-forms-and-decomposition"
+      ],
+      "concepts": [
+        {
+          "id": "page",
+          "title": "Page",
+          "summary": "A database stores rows in fixed-size pages and reads and writes whole pages, so cost is counted in pages."
+        },
+        {
+          "id": "b-tree",
+          "title": "B-tree index",
+          "summary": "A B-tree keeps keys sorted in pages with many children each, so its height grows with the logarithm of the row count in base fan-out."
+        },
+        {
+          "id": "lookup-cost",
+          "title": "Lookup cost",
+          "summary": "A lookup reads one page per tree level plus the table page holding the row, instead of every table page."
+        }
+      ],
+      "skills": [
+        "compute-tree-height",
+        "compare-scan-and-lookup",
+        "find-break-even"
+      ],
+      "misconceptions": [
+        "Thinking an index is a second sorted copy of the table. It holds keys and row locations in a tree.",
+        "Thinking index height is large for big tables. With a fan-out of hundreds, a billion rows needs a handful of levels.",
+        "Thinking an index always helps. When a query matches a large share of rows, reading the table sequentially is cheaper."
+      ],
+      "sequence": [
+        "Counting in pages: a table of 1,000,000 rows at 50 rows per page is 20,000 pages.",
+        "A scan reads 20,000 pages for any lookup.",
+        "A B-tree page holds many keys; assume fan-out 100 for easy arithmetic.",
+        "Height h is the smallest h with 100^h >= number of rows: 3 for 10^6, 5 for 10^9.",
+        "A lookup costs 3 index pages plus 1 table page: 4 reads, 5000 times fewer than the scan.",
+        "Where the index stops winning: with random reads costing 4 times a sequential read, fetching 5,000 rows by index costs about as much as one scan."
+      ],
+      "examples": [
+        "Fan-out 100: 10^6 rows need 3 levels; 10^9 rows need 5 levels (100^4 = 10^8 is too few).",
+        "A scan of 20,000 pages versus 4 page reads for a point lookup: a ratio of 5,000.",
+        "Break-even under the stated model: 20,000 / 4 = 5,000 matching rows, which is 0.5 percent of the table."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A three-level B-tree with a root page, a middle layer and leaf pages, each drawn with a few keys; below the leaves, table pages.",
+          "learnerAction": "Search for a key by clicking the page to read at each level; the figure counts reads.",
+          "placement": "tree descent"
+        },
+        {
+          "type": "graph_plot",
+          "shows": "Cost in page reads against the number of matching rows for a scan (flat line) and an index (rising line).",
+          "learnerAction": "Drag the number of matching rows and find where the lines cross.",
+          "placement": "break-even"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-tree-height",
+          "sample": "Assume each B-tree page has fan-out 100. How many levels are needed to index 1,000,000 rows?",
+          "answer": "3"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compare-scan-and-lookup",
+          "sample": "A table has 1,000,000 rows at 50 rows per page. A point lookup by index reads 3 index pages and 1 table page. How many times fewer pages does it read than a full scan?",
+          "answer": "5000"
+        },
+        {
+          "kind": "numeric",
+          "targets": "find-break-even",
+          "sample": "Under the model where each index-found row costs 4 page reads (random access) and a full scan costs 20,000 sequential page reads, how many matching rows make them equal, ignoring the tree descent?",
+          "answer": "5000"
+        }
+      ],
+      "sourceIds": [
+        "pg-docs",
+        "use-the-index",
+        "sqlite-docs",
+        "ddia"
+      ],
+      "historyNotes": [
+        "Rudolf Bayer and Edward McCreight introduced B-trees at Boeing in 1970. (Check before citing.)"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "composite-indexes-and-selectivity",
+      "moduleId": "indexing",
+      "title": "Composite indexes and selectivity",
+      "objective": "Decide which queries an index on two columns can serve, and estimate rows matched from selectivity.",
+      "prerequisiteLessonIds": [
+        "how-an-index-finds-rows"
+      ],
+      "concepts": [
+        {
+          "id": "leftmost-prefix",
+          "title": "Leftmost prefix",
+          "summary": "An index on (a, b) is sorted by a and then by b within each a, so it can seek on a, or on a and b, but not on b alone."
+        },
+        {
+          "id": "selectivity",
+          "title": "Selectivity",
+          "summary": "Selectivity is the fraction of rows a condition keeps, and an index pays off when that fraction is small."
+        },
+        {
+          "id": "covering-index",
+          "title": "Covering index",
+          "summary": "When an index holds every column a query reads, the database answers from the index without visiting the table."
+        }
+      ],
+      "skills": [
+        "pick-usable-index",
+        "estimate-matching-rows",
+        "read-a-plan-line"
+      ],
+      "misconceptions": [
+        "Believing one index per column is the same as one composite index. Combined with other indexes they can be merged but cost more.",
+        "Thinking column order does not matter. (last_name, first_name) can seek on last_name; (first_name, last_name) cannot.",
+        "Indexing a column with few distinct values, such as a status with three values, and expecting speed."
+      ],
+      "sequence": [
+        "Phone-book intuition: sorted by last name then first name; finding all Smiths is easy, finding all Johns is not.",
+        "The leftmost-prefix rule with five example predicates.",
+        "Range on the first column: last_name >= 'L3' AND last_name < 'L4' can seek.",
+        "Selectivity: 250 evenly spread values over 1,000,000 rows gives 4,000 rows per value; a status flag with 90 percent 'done' keeps 9 in 10 rows.",
+        "Reading the SQLite plan lines: SCAN, SEARCH ... USING INDEX, SEARCH ... USING COVERING INDEX.",
+        "Order by: an index on (dept, salary) delivers rows already ordered within a dept."
+      ],
+      "examples": [
+        "Index on emp(last_name, first_name) in SQLite: where last_name = 'L3' gives SEARCH emp USING INDEX idx_name (last_name=?); where first_name = 'F3' alone gives SCAN emp.",
+        "select first_name where last_name = 'L3' gives SEARCH emp USING COVERING INDEX idx_name (last_name=?).",
+        "Without the index the same query is SCAN emp; id = 5 gives SEARCH emp USING INTEGER PRIMARY KEY (rowid=?)."
+      ],
+      "figures": [
+        {
+          "type": "table",
+          "shows": "A list of eight predicates against an index on (last_name, first_name), with a column for 'can seek'.",
+          "learnerAction": "Mark each predicate seekable or not, then see the rule applied.",
+          "placement": "leftmost prefix"
+        },
+        {
+          "type": "data_distribution",
+          "shows": "Value frequency for a status column with three values and for a country column with 250 values over 1,000,000 rows.",
+          "learnerAction": "Select a value and read the rows matched.",
+          "placement": "selectivity"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "choice",
+          "targets": "pick-usable-index",
+          "sample": "With an index on (last_name, first_name), which query cannot seek on the index?",
+          "answer": "WHERE first_name = 'Ana'",
+          "choices": [
+            "WHERE last_name = 'Shaw'",
+            "WHERE last_name = 'Shaw' AND first_name = 'Ana'",
+            "WHERE first_name = 'Ana'",
+            "WHERE last_name >= 'Sh' AND last_name < 'Si'"
+          ]
+        },
+        {
+          "kind": "numeric",
+          "targets": "estimate-matching-rows",
+          "sample": "A table has 1,000,000 rows and a column with 250 equally common values. About how many rows match an equality on that column?",
+          "answer": "4000"
+        },
+        {
+          "kind": "choice",
+          "targets": "read-a-plan-line",
+          "sample": "A plan line reads SEARCH emp USING COVERING INDEX idx_name (last_name=?). What does COVERING tell you?",
+          "answer": "The query is answered from the index without reading the table",
+          "choices": [
+            "The query reads every row",
+            "The query is answered from the index without reading the table",
+            "The index is being built",
+            "The query was rewritten as a join"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "sqlite-docs",
+        "pg-docs",
+        "use-the-index"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "reading-query-plans",
+      "moduleId": "indexing",
+      "title": "Reading query plans",
+      "objective": "Read a query plan, compare join strategies by counting work, and recognise a bad row estimate.",
+      "prerequisiteLessonIds": [
+        "composite-indexes-and-selectivity"
+      ],
+      "concepts": [
+        {
+          "id": "plan",
+          "title": "Query plan",
+          "summary": "A plan is the tree of steps the planner chose, with an estimated cost and row count at each step."
+        },
+        {
+          "id": "join-strategies",
+          "title": "Join strategies",
+          "summary": "A nested-loop join checks every pair unless the inner side has an index, a hash join builds a hash table on one side and probes it with the other, and a merge join walks two sorted inputs."
+        },
+        {
+          "id": "statistics",
+          "title": "Planner statistics",
+          "summary": "The planner uses stored statistics to estimate rows, and a large gap between estimated and actual rows usually means statistics are stale or missing."
+        }
+      ],
+      "skills": [
+        "count-join-work",
+        "compare-estimate-and-actual",
+        "choose-a-strategy"
+      ],
+      "misconceptions": [
+        "Thinking the planner always picks the same plan for the same query. Plans change with data size and statistics.",
+        "Thinking a sequential scan in a plan is always a mistake. On a small table or for most rows it is the best choice.",
+        "Reading only the top line of a plan. The slow step is often deeper."
+      ],
+      "sequence": [
+        "EXPLAIN shows a plan; EXPLAIN ANALYZE in PostgreSQL also runs it and reports actual rows and time.",
+        "A plan tree read bottom-up: scans first, then joins, then sort or aggregate.",
+        "Join work: 1,000 x 5,000 = 5,000,000 pair checks for a naive nested loop; 1,000 + 5,000 = 6,000 operations for a hash join; 1,000 x 4 = 4,000 page reads for an indexed nested loop with a 3-level index.",
+        "Estimated 10 rows, actual 90,000: planner statistics are wrong, and the chosen join may be a poor fit.",
+        "ANALYZE refreshes statistics.",
+        "When to look at a plan: a query is slow, and you want to know which step."
+      ],
+      "examples": [
+        "SQLite plan for a join: SEARCH e USING INTEGER PRIMARY KEY (rowid=?).",
+        "Join of 1,000 and 5,000 rows: nested loop without an index 5,000,000 comparisons; hash join 6,000 operations; indexed nested loop 4,000 page reads (3 index plus 1 table per outer row).",
+        "A plan that estimates 10 rows and returns 90,000 points to stale statistics."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A plan tree drawn as nested boxes (scan, scan, join, sort) with estimated and actual rows beside each.",
+          "learnerAction": "Click the node where actual rows diverge most from the estimate.",
+          "placement": "reading a plan"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "Three animations of nested loop, hash join and merge join over two small tables.",
+          "learnerAction": "Step each and compare the number of probes.",
+          "placement": "join strategies"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "count-join-work",
+          "sample": "Table R has 1,000 rows and S has 5,000 rows with no index. How many pair comparisons does a naive nested-loop join make?",
+          "answer": "5000000"
+        },
+        {
+          "kind": "numeric",
+          "targets": "count-join-work",
+          "sample": "A hash join builds a hash table from 1,000 rows then probes with 5,000 rows. How many build-plus-probe operations is that?",
+          "answer": "6000"
+        },
+        {
+          "kind": "single-term",
+          "targets": "compare-estimate-and-actual",
+          "sample": "Which command refreshes the statistics a PostgreSQL planner uses?",
+          "answer": "ANALYZE"
+        }
+      ],
+      "sourceIds": [
+        "pg-explain",
+        "pg-docs",
+        "sqlite-docs",
+        "use-the-index"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "transactions-and-acid",
+      "moduleId": "transactions",
+      "title": "Transactions and ACID",
+      "objective": "Explain what atomicity and durability guarantee, and predict the state after a crash in the middle of a transfer.",
+      "prerequisiteLessonIds": [
+        "reading-query-plans"
+      ],
+      "concepts": [
+        {
+          "id": "transaction",
+          "title": "Transaction",
+          "summary": "A transaction groups statements so that they take effect together or not at all."
+        },
+        {
+          "id": "atomicity",
+          "title": "Atomicity",
+          "summary": "Atomicity means that if a transaction does not commit, none of its changes are visible after recovery."
+        },
+        {
+          "id": "durability",
+          "title": "Durability and the log",
+          "summary": "Durability means that once commit returns, a crash will not lose the change, which databases ensure by writing a commit record to a log on stable storage before acknowledging."
+        }
+      ],
+      "skills": [
+        "predict-crash-state",
+        "state-acid-guarantee",
+        "explain-write-ahead-log"
+      ],
+      "misconceptions": [
+        "Thinking each SQL statement is atomic with the next. Without BEGIN each statement commits on its own (autocommit), so a crash between two updates leaves half a transfer.",
+        "Thinking ACID means no two users interfere. Isolation is only one of the four, and it comes in levels.",
+        "Thinking commit means data is written to the table files. The log record must be durable; table pages can be written later."
+      ],
+      "sequence": [
+        "The transfer: debit A 100, credit B 100. A=500 and B=200, total 700.",
+        "Without a transaction: crash after the debit leaves A=400, B=200, total 600.",
+        "With BEGIN ... COMMIT: a crash before the commit rolls everything back; A=500, B=200.",
+        "ACID in one line each: atomicity, consistency (constraints hold before and after), isolation, durability.",
+        "Write-ahead logging: log first, then pages; after a crash, replay committed records and discard the rest.",
+        "Rollback by the application: a failed statement or a CHECK violation aborts the whole transaction."
+      ],
+      "examples": [
+        "A=500, B=200. Autocommit, crash after UPDATE A: A=400, B=200, total 600 (money lost).",
+        "BEGIN; UPDATE A; crash; recovery: A=500, B=200, total 700.",
+        "Commit record on disk before the crash: after recovery A=400, B=300, total 700."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A timeline with two UPDATE boxes, a COMMIT marker and a crash lightning bolt placed at a draggable position.",
+          "learnerAction": "Drag the crash and predict the balances after recovery.",
+          "placement": "crash point"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A log strip with records (begin, update A, update B, commit) and a data-page strip behind it.",
+          "learnerAction": "Step through the commit and then through recovery.",
+          "placement": "write-ahead log"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "predict-crash-state",
+          "sample": "A = 500 and B = 200. A transaction debits A by 100 and credits B by 100. The server crashes after the debit but before COMMIT. What is A after recovery?",
+          "answer": "500"
+        },
+        {
+          "kind": "numeric",
+          "targets": "predict-crash-state",
+          "sample": "The same transfer runs as two separate statements in autocommit mode, and the server crashes between them. What is the total of A and B afterwards?",
+          "answer": "600"
+        },
+        {
+          "kind": "choice",
+          "targets": "explain-write-ahead-log",
+          "sample": "Before COMMIT returns to the client, what must reach stable storage?",
+          "answer": "The commit record in the log",
+          "choices": [
+            "Every modified table page",
+            "The commit record in the log",
+            "The query plan",
+            "A copy of the whole database"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "pg-wal",
+        "pg-docs",
+        "sqlite-docs",
+        "ddia"
+      ],
+      "historyNotes": [
+        "The acronym ACID was coined by Theo Haerder and Andreas Reuter in 1983. (Check before citing.)"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "isolation-anomalies",
+      "moduleId": "transactions",
+      "title": "Isolation levels and anomalies",
+      "objective": "Name the anomaly in an interleaved schedule, and say which isolation levels allow it in PostgreSQL.",
+      "prerequisiteLessonIds": [
+        "transactions-and-acid"
+      ],
+      "concepts": [
+        {
+          "id": "anomaly-types",
+          "title": "Concurrency anomalies",
+          "summary": "Dirty read, non-repeatable read, phantom, lost update and write skew are named patterns of interleaving that produce results no serial order would."
+        },
+        {
+          "id": "isolation-level",
+          "title": "Isolation level",
+          "summary": "An isolation level states which anomalies the database promises to prevent: in PostgreSQL, Read Committed (the default), Repeatable Read and Serializable."
+        },
+        {
+          "id": "write-skew",
+          "title": "Write skew",
+          "summary": "Write skew occurs when two transactions read overlapping data, each updates a different row, and together they break a rule neither broke alone; snapshot isolation allows it and serializable prevents it."
+        }
+      ],
+      "skills": [
+        "name-the-anomaly",
+        "predict-final-value",
+        "choose-isolation-level"
+      ],
+      "misconceptions": [
+        "Thinking Repeatable Read prevents every anomaly. In PostgreSQL it still allows write skew; only Serializable prevents it.",
+        "Thinking higher isolation is free. Serializable may abort a transaction with a serialisation failure that the application must retry.",
+        "Believing PostgreSQL implements dirty reads. Its Read Uncommitted behaves as Read Committed."
+      ],
+      "sequence": [
+        "Two sessions, one table, interleaved steps on a timeline.",
+        "Dirty read: reading another transaction's uncommitted change, which later rolls back. Not possible in PostgreSQL.",
+        "Non-repeatable read: same row read twice, different values (100 then 150).",
+        "Phantom: same range query returns 3 rows then 4.",
+        "Lost update: x=100; both read 100; one writes 110 and the other 120; final 120 where either serial order gives 130.",
+        "Write skew: two doctors on call; each sees 2 on call and takes themselves off; 0 remain.",
+        "Matrix of levels versus anomalies for PostgreSQL, and the retry rule for serialisation failures."
+      ],
+      "examples": [
+        "Lost update: x = 100; T1 and T2 each read 100; T1 writes 110 (+10); T2 writes 120 (+20); final 120, but any serial order gives 130.",
+        "Phantom: count of rows with dept = 'A' is 3, another transaction commits an insert, the same query returns 4.",
+        "Write skew: Alice and Bob both on call; each checks that at least two are on call and leaves; zero remain."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Two parallel lanes (T1, T2) with timeline steps for the lost-update schedule; a bar shows x's value over time.",
+          "learnerAction": "Drag the second read earlier or later and watch the final value.",
+          "placement": "lost update"
+        },
+        {
+          "type": "table",
+          "shows": "A grid of anomalies against the three PostgreSQL levels, empty for the learner to fill with allowed or not allowed.",
+          "learnerAction": "Fill the grid then compare with the documented table.",
+          "placement": "matrix"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "predict-final-value",
+          "sample": "x = 100. T1 and T2 both read x, then T1 writes x + 10 and T2 writes x + 20 (each using the value it read). What is x finally?",
+          "answer": "120"
+        },
+        {
+          "kind": "choice",
+          "targets": "name-the-anomaly",
+          "sample": "T1 runs SELECT COUNT(*) WHERE dept = 'A' and gets 3. T2 inserts a dept A row and commits. T1 runs the same query and gets 4. Which anomaly is this?",
+          "answer": "Phantom read",
+          "choices": [
+            "Dirty read",
+            "Non-repeatable read",
+            "Phantom read",
+            "Lost update"
+          ]
+        },
+        {
+          "kind": "single-term",
+          "targets": "choose-isolation-level",
+          "sample": "What is PostgreSQL's default isolation level?",
+          "answer": "Read Committed"
+        },
+        {
+          "kind": "choice",
+          "targets": "choose-isolation-level",
+          "sample": "Which PostgreSQL isolation level prevents write skew?",
+          "answer": "Serializable",
+          "choices": [
+            "Read Committed",
+            "Repeatable Read",
+            "Serializable",
+            "None; it cannot be prevented"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "pg-isolation",
+        "berenson-1995",
+        "ddia"
+      ],
+      "historyNotes": [
+        "Berenson and colleagues showed in 1995 that the ANSI SQL definitions of isolation levels were ambiguous and missed anomalies such as write skew."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "locks-versions-and-conflicts",
+      "moduleId": "transactions",
+      "title": "Locks, versions and conflicts",
+      "objective": "Say what a transaction sees under multiversion concurrency, resolve a deadlock, and use a version column to detect a conflicting update.",
+      "prerequisiteLessonIds": [
+        "isolation-anomalies"
+      ],
+      "concepts": [
+        {
+          "id": "mvcc",
+          "title": "Multiversion concurrency control",
+          "summary": "MVCC keeps old versions of a row so that readers see a consistent snapshot while writers create new versions, so readers do not block writers."
+        },
+        {
+          "id": "row-lock",
+          "title": "Row lock and deadlock",
+          "summary": "Writers lock the rows they change, and two transactions that each wait for a lock the other holds are in a deadlock that the database resolves by aborting one."
+        },
+        {
+          "id": "optimistic-check",
+          "title": "Optimistic version check",
+          "summary": "An update that includes the expected version in its WHERE clause changes zero rows if someone else got there first."
+        }
+      ],
+      "skills": [
+        "apply-snapshot-visibility",
+        "resolve-deadlock",
+        "detect-conflict"
+      ],
+      "misconceptions": [
+        "Thinking reads need locks. Under MVCC a plain SELECT takes no row locks and sees its snapshot.",
+        "Thinking a deadlock is a bug in the database. It is a property of the access order, and the fix is consistent lock ordering or retry.",
+        "Thinking SELECT then UPDATE is safe. Between them another transaction can change the row; use FOR UPDATE, a version check, or an atomic UPDATE."
+      ],
+      "sequence": [
+        "Why readers blocking writers is unacceptable, and what versions buy.",
+        "Row versions: v1 created by transaction 10 and ended by 20; v2 created by 20. A snapshot taken before 20 committed sees v1.",
+        "Writers: UPDATE locks the row; the second writer waits, or fails under Repeatable Read.",
+        "Deadlock: T1 locks row 1 then wants row 2; T2 locks row 2 then wants row 1. The database aborts one.",
+        "SELECT ... FOR UPDATE to lock rows you are about to change.",
+        "Optimistic: UPDATE ... WHERE id = 7 AND version = 3 returns 0 rows if the version moved; the application re-reads and retries."
+      ],
+      "examples": [
+        "A row balance 100 (v1, created by tx 10, ended by tx 20) and 150 (v2, created by tx 20). A snapshot taken when tx 20 was still running sees 100.",
+        "Two transactions locking two rows in opposite order: after detection exactly one is aborted.",
+        "UPDATE accounts SET balance = 150, version = 4 WHERE id = 7 AND version = 3 reports 0 rows if someone already moved the version to 4."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A row's version chain drawn as boxes (v1 balance 100, v2 balance 150) with the transaction ids that created and ended them, and a snapshot cursor.",
+          "learnerAction": "Slide the snapshot point along a timeline and read which version it sees.",
+          "placement": "versions"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "Two transactions and two rows with lock arrows forming a cycle.",
+          "learnerAction": "Change the order in T2 and watch the cycle disappear.",
+          "placement": "deadlock"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "apply-snapshot-visibility",
+          "sample": "A row's value was 100 in a version created by tx 10 and ended by tx 20, and is 150 in a version created by tx 20. A reader's snapshot was taken while tx 20 was still running. What value does the reader see?",
+          "answer": "100"
+        },
+        {
+          "kind": "numeric",
+          "targets": "resolve-deadlock",
+          "sample": "T1 holds row 1 and waits for row 2. T2 holds row 2 and waits for row 1. How many of the transactions must be aborted to break the deadlock?",
+          "answer": "1"
+        },
+        {
+          "kind": "choice",
+          "targets": "detect-conflict",
+          "sample": "UPDATE accounts SET balance = 150, version = 4 WHERE id = 7 AND version = 3 reports 0 rows updated. What does this mean?",
+          "answer": "Another transaction changed the row since it was read",
+          "choices": [
+            "The balance was already 150",
+            "Another transaction changed the row since it was read",
+            "The row does not exist in any case",
+            "The update succeeded"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "pg-mvcc",
+        "pg-isolation",
+        "ddia"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "key-value-and-document-stores",
+      "moduleId": "beyond",
+      "title": "Key-value and document stores",
+      "objective": "Predict the results of simple key-value commands, and choose between embedding and referencing in a document model from the access pattern.",
+      "prerequisiteLessonIds": [
+        "locks-versions-and-conflicts",
+        "normal-forms-and-decomposition"
+      ],
+      "concepts": [
+        {
+          "id": "key-value",
+          "title": "Key-value store",
+          "summary": "A key-value store maps a key to a value and offers fast get, set and delete by key; it does not search by value."
+        },
+        {
+          "id": "document",
+          "title": "Document model",
+          "summary": "A document store keeps a nested record, usually JSON, under a key and can query its fields, so data read together can be stored together."
+        },
+        {
+          "id": "access-pattern",
+          "title": "Access-pattern design",
+          "summary": "In these stores the schema follows the queries that must be fast, rather than the entities alone."
+        }
+      ],
+      "skills": [
+        "predict-kv-results",
+        "embed-or-reference",
+        "choose-a-store"
+      ],
+      "misconceptions": [
+        "Thinking NoSQL means no schema. The schema moves into the application, and old documents keep their old shape.",
+        "Thinking a key-value store can answer any query. Without the key you scan everything, or you maintain your own index.",
+        "Embedding everything. A document that grows without bound or is shared by many parents should be referenced."
+      ],
+      "sequence": [
+        "What the relational model gives up when the workload is 'fetch one thing by id, very fast'.",
+        "Key-value commands: SET, GET, INCR, DEL, EXPIRE; INCR on a missing key starts at 0 and returns 1.",
+        "Return types: INCR returns an integer, GET returns a string, a missing key returns nil.",
+        "Redis data types beyond strings: hashes, lists, sets, sorted sets; use of a sorted set for a leaderboard.",
+        "Document: an order with three line items embedded is read with one lookup, where normalised tables need an order read plus an items read.",
+        "Reference instead when the child is large, unbounded, or shared (users and posts)."
+      ],
+      "examples": [
+        "SET a 5; INCR a; GET a; DEL a; GET a; INCR n; INCR n; DEL zz gives OK, 6, \"6\", 1, nil, 1, 2, 0.",
+        "Order with 3 embedded line items: 1 lookup. The relational model needs 2 queries (order, items) or one join.",
+        "A page-view counter: INCR visits:home three times on a new key returns 1, 2, 3."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A key-value table on the left and a command console on the right, with the response column hidden.",
+          "learnerAction": "Predict each response, then reveal it.",
+          "placement": "commands"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "The same order shown as three normalised tables and as one nested JSON document.",
+          "learnerAction": "Toggle views and count the lookups needed to render the order page.",
+          "placement": "embed versus reference"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "predict-kv-results",
+          "sample": "On an empty store, INCR visits runs three times. What does the third call return?",
+          "answer": "3"
+        },
+        {
+          "kind": "choice",
+          "targets": "embed-or-reference",
+          "sample": "A blog post has up to 5 comments shown with it, and nobody queries comments on their own. In a document store, which design fits?",
+          "answer": "Embed the comments in the post document",
+          "choices": [
+            "Embed the comments in the post document",
+            "Store each comment under a separate key with no link",
+            "Store comments in a separate database",
+            "Embed the whole user profile in every comment"
+          ]
+        },
+        {
+          "kind": "code-run-python",
+          "targets": "predict-kv-results",
+          "sample": "Write kv(commands) taking tuples like ('SET','a','5'), ('GET','a'), ('INCR','a'), ('DEL','a') and returning the list of replies: SET gives 'OK', GET gives the string or None, INCR gives the new integer (a missing key starts at 0) and stores it as a string, DEL gives 1 if the key existed else 0. kv([('SET','a','5'),('INCR','a'),('GET','a'),('DEL','a'),('GET','a')]) is ['OK', 6, '6', 1, None].",
+          "answer": "def kv(commands):\n    store, out = {}, []\n    for cmd in commands:\n        op = cmd[0]\n        if op == 'SET':\n            store[cmd[1]] = cmd[2]\n            out.append('OK')\n        elif op == 'GET':\n            out.append(store.get(cmd[1]))\n        elif op == 'INCR':\n            v = int(store.get(cmd[1], '0')) + 1\n            store[cmd[1]] = str(v)\n            out.append(v)\n        elif op == 'DEL':\n            out.append(1 if store.pop(cmd[1], None) is not None else 0)\n    return out"
+        }
+      ],
+      "sourceIds": [
+        "redis-docs",
+        "mongo-docs",
+        "ddia",
+        "dynamo-2007"
+      ],
+      "historyNotes": [
+        "Redis was first released in 2009 by Salvatore Sanfilippo. In 2024 its licence changed away from BSD and the Valkey fork under the Linux Foundation followed. (Check before citing; licence terms moved again in 2025.)"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "replication-sharding-and-choosing",
+      "moduleId": "beyond",
+      "title": "Replication, sharding and choosing a store",
+      "objective": "Check a quorum configuration, compute how many keys move when a shard count changes, and choose a store from a workload description.",
+      "prerequisiteLessonIds": [
+        "key-value-and-document-stores",
+        "isolation-anomalies"
+      ],
+      "concepts": [
+        {
+          "id": "replication",
+          "title": "Replication",
+          "summary": "Replication keeps copies of data on several nodes for availability and read capacity, and asynchronous copies lag behind the primary."
+        },
+        {
+          "id": "quorum",
+          "title": "Quorum",
+          "summary": "With N replicas, writes acknowledged by W and reads from R, every read overlaps the latest write when R + W > N."
+        },
+        {
+          "id": "sharding",
+          "title": "Sharding",
+          "summary": "Sharding splits keys across nodes; hashing by key mod the node count is simple but moves most keys when the count changes, which consistent hashing avoids."
+        }
+      ],
+      "skills": [
+        "check-quorum",
+        "count-moved-keys",
+        "choose-by-workload"
+      ],
+      "misconceptions": [
+        "Thinking replicas are backups. A replica copies mistakes too, and lag means it can serve old data.",
+        "Thinking more shards with mod hashing scales smoothly. Going from 3 to 4 nodes moves most keys.",
+        "Reading the CAP theorem as 'pick two of three' at all times. The choice only bites during a network partition: stay consistent or stay available."
+      ],
+      "sequence": [
+        "A single database as a limit: size, read load, one point of failure.",
+        "Replication: primary and replicas; replication lag; read-your-writes problem.",
+        "Quorum arithmetic: N=3, W=2, R=2 overlap (4 > 3); N=5, W=3, R=2 do not (5 is not > 5).",
+        "Sharding by key mod nodes; keys 0 to 11 with 3 then 4 nodes: 9 of 12 move.",
+        "Consistent hashing on a ring: adding a node at 60 to nodes 10, 40, 70 moves keys 41 to 60 only, 20 of 100.",
+        "Choosing: relational for rules and relationships, key-value for fast lookup by key, document for read-together data; start with a relational database unless a measured need says otherwise."
+      ],
+      "examples": [
+        "N=3, W=2, R=2: R + W = 4 > 3 so any read set overlaps the latest write. N=5, W=3, R=2: 5 is not above 5, so a read can miss it. N=5, W=3, R=3: 6 > 5 overlaps.",
+        "Keys 0 to 11 under k mod 3 versus k mod 4: keys 0, 1, 2 stay and 9 move. For keys 0 to 99, 73 move.",
+        "Ring with nodes 10, 40, 70 and key space 0 to 99 (each key goes to the next node clockwise): adding node 60 moves exactly 20 keys, 41 to 60, from node 70 to node 60."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A ring numbered 0 to 99 with three nodes and a key marker; each key is assigned to the next node clockwise.",
+          "learnerAction": "Add a node at a chosen position and see which arc of keys changes owner.",
+          "placement": "consistent hashing"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "N replica boxes with write and read sets highlighted as the learner changes W and R.",
+          "learnerAction": "Adjust W and R and read whether the sets must overlap, with the verdict hidden until a guess is made.",
+          "placement": "quorum"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "choice",
+          "targets": "check-quorum",
+          "sample": "With N = 5 replicas, writes acknowledged by W = 3 and reads from R = 2, is every read guaranteed to see the latest write?",
+          "answer": "No, because R + W = 5 is not greater than N",
+          "choices": [
+            "Yes, because W is a majority",
+            "No, because R + W = 5 is not greater than N",
+            "Yes, because R + W is at least N",
+            "Only if replication is synchronous"
+          ]
+        },
+        {
+          "kind": "numeric",
+          "targets": "count-moved-keys",
+          "sample": "Keys 0 to 11 are placed by key mod 3. The cluster grows to 4 nodes and keys are placed by key mod 4. How many of the 12 keys change node?",
+          "answer": "9"
+        },
+        {
+          "kind": "self",
+          "targets": "recall-acid",
+          "sample": "Without looking back, name the four ACID properties and say in a few words what each guarantees. Rate yourself: all four / three / two or fewer.",
+          "answer": "Atomicity (all or nothing), consistency (constraints hold), isolation (concurrent transactions do not interfere beyond the stated level), durability (committed data survives a crash)"
+        },
+        {
+          "kind": "numeric",
+          "targets": "count-moved-keys",
+          "sample": "Key space 0 to 99 on a ring with nodes at 10, 40 and 70; each key belongs to the first node at or after it, wrapping around. A node is added at 60. How many keys change owner?",
+          "answer": "20"
+        }
+      ],
+      "sourceIds": [
+        "ddia",
+        "dynamo-2007",
+        "gilbert-lynch-2002",
+        "pg-docs"
+      ],
+      "historyNotes": [
+        "Eric Brewer stated the CAP conjecture in 2000, and Gilbert and Lynch proved a formal version in 2002. Consistent hashing was introduced by Karger and colleagues in 1997. (Check before citing.)"
+      ],
+      "estimatedMinutes": 13
+    }
+  ],
+  "courseCheck": "A mixed check: a cardinality and junction-table design question; a constraint outcome walk; an anomaly count and candidate key from a wide table; a join that proves a decomposition lossless and one that shows a lossy split; B-tree height and scan versus lookup pages; a leftmost-prefix question; a join-cost count; a crash in a transfer and the state after recovery; a named anomaly and the isolation level that prevents it; a snapshot visibility question; a key-value command trace; and a quorum and moved-key calculation. Include two SQL tasks (junction query and star-schema aggregate) and one self-rated recall item per module.",
+  "platformNeeds": [
+    "A SQL session runner for schema design and transactions: multi-statement scripts (CREATE TABLE, INSERT, UPDATE, DELETE, BEGIN, COMMIT, ROLLBACK, CREATE INDEX) against a private in-memory SQLite database, with foreign keys on and the result of each statement shown. The current runner (ADR 0004) allows a single read-only SELECT, so constraint, cascade and transaction behaviour are choice and numeric questions today.",
+    "EXPLAIN QUERY PLAN output in the SQL runner so learners can see SCAN versus SEARCH before and after creating an index. The plan lines quoted in lessons were run in SQLite 3.53.1 here; the current runner forbids PRAGMA and system tables and may also refuse EXPLAIN.",
+    "A concurrency_schedule figure type: two or more transaction lanes, steps the learner can reorder, and a database state panel that applies the steps under a chosen isolation level. svg_figure fallbacks are given per lesson.",
+    "A btree_explorer figure: pages, keys, search path and page-read counter, with insert and split.",
+    "An er_diagram figure type with entities, attributes and cardinality markers that the learner can place and check; svg_figure is the fallback.",
+    "A query_plan figure: plan tree with estimated and actual rows, built from a recorded plan; svg_figure is the fallback."
+  ],
+  "unverified": [
+    "No online source could be opened: the session proxy refused every external host (403 on CONNECT), including postgresql.org and sqlite.org. All sources are marked verified false and the chapter numbers I cite (for example PostgreSQL 13.1, 13.2, 14.1, 28.3) are from memory.",
+    "Verified by execution in SQLite 3.53.1: the junction-table query result, the flat-table revenue totals (Ana 34, Ben 8), the normalised join (4 rows), the lossy join (4 rows), the star-schema aggregate, and every EXPLAIN QUERY PLAN line quoted. Numbers for fan-out, join cost, quorum, mod-sharding and ring movement were computed in Python.",
+    "PostgreSQL behaviour is stated from memory: default Read Committed; Read Uncommitted behaving as Read Committed; Repeatable Read being snapshot isolation that prevents phantoms but not write skew; Serializable using serialisable snapshot isolation and raising SQLSTATE 40001; deadlock detection after deadlock_timeout (1 second by default); random_page_cost default 4.0. Check each against the linked documentation before the lesson is written.",
+    "SQLite does not enforce foreign keys unless PRAGMA foreign_keys = ON. Lesson 3 states the standard and PostgreSQL behaviour.",
+    "Assumed fan-out 100 is a teaching simplification; PostgreSQL's real fan-out depends on key size and is typically several hundred on 8 KiB pages.",
+    "The break-even question uses a stated simplified cost model, not the PostgreSQL planner's real costing.",
+    "History notes marked 'check' (B-tree 1970, Haerder and Reuter ACID 1983, Codd normal forms 1970 to 1974, Kimball 1990s, CAP 2000 and 2002, consistent hashing 1997, Redis 2009 and licence changes in 2024 and 2025) are from memory.",
+    "MongoDB's 16 MiB document size limit is not used in any question but may be tempting to cite; confirm it in the manual."
+  ]
+}

@@ -202,17 +202,17 @@
         "read-diagram"
       ],
       "misconceptions": [
-        "Learners add series gains.",
-        "Learners write G/(1-GH) for negative feedback; that is positive feedback.",
-        "Learners drop H when it is 1 and forget it when it is not."
+        "Learners add the gains of blocks in series instead of multiplying.",
+        "Learners write G/(1 - G H) for negative feedback; that is the formula for positive feedback.",
+        "Learners drop H when it is 1 and then forget it when it is not."
       ],
       "sequence": [
-        "Symbols: block, arrow, summing junction, take-off point.",
-        "Series.",
-        "Parallel (sum).",
-        "Feedback derivation by algebra.",
-        "Reduce in steps.",
-        "Spotting the sign."
+        "Show the symbols: a block multiplies, an arrow carries a signal, a circle adds or subtracts, a dot splits.",
+        "Two blocks in series multiply: signal 1 through gains 2 and 3 becomes 6.",
+        "Two blocks in parallel into a summing junction add.",
+        "Derive feedback: y = G e and e = r - H y, so y = G r - G H y, giving y/r = G/(1 + G H).",
+        "Reduce a three-block diagram step by step, inner loop first.",
+        "Check the sign at each junction before trusting the result."
       ],
       "examples": [
         "Series 2 and 3 then unity feedback: 6/7=0.857.",
@@ -543,12 +543,12 @@
         "Learners add 5 percent to the final value for settling."
       ],
       "sequence": [
-        "Define the four specs on a plot.",
-        "Invert Mp for zeta.",
-        "Settling gives zeta wn.",
-        "Rise time about 1.8/wn.",
-        "Trade-offs.",
-        "Worked design."
+        "Mark rise time, overshoot, settling time and steady-state error on a step response plot.",
+        "Overshoot depends only on damping ratio: invert Mp = exp(-pi z/sqrt(1-z^2)) to get z = -ln Mp / sqrt(pi^2 + ln^2 Mp).",
+        "Settling time (2 percent) is about 4/(z wn), so a limit on it sets z wn.",
+        "Rise time is about 1.8/wn for moderate damping, so a limit on it sets wn.",
+        "Combine the limits into a region of acceptable z and wn.",
+        "Meet the box and note what it cost: faster responses ask more of the actuator."
       ],
       "examples": [
         "Mp <= 10 percent: zeta >= 0.591.",
@@ -632,12 +632,12 @@
         "Learners think a disturbance is a different matter. It shifts the offset."
       ],
       "sequence": [
-        "u = Kp e.",
-        "Hold at equilibrium requires nonzero u so nonzero e.",
-        "ess formula.",
-        "Disturbance case.",
-        "Gain limits from noise and stability.",
-        "Motivates integral."
+        "Define u = Kp e: action proportional to the present error.",
+        "Ask what the plant needs to hold the target: a nonzero control u.",
+        "A nonzero u needs a nonzero e, so P-only control must leave an error: e = 1/(1 + Kp G0) for a unit step.",
+        "Raise Kp to shrink the error, and see the cost in noise and overshoot.",
+        "Add a constant disturbance and show it moves the offset.",
+        "Conclude with the question integral action answers."
       ],
       "examples": [
         "G0=5, Kp=3: loop gain 15, ess=1/16=6.25 percent.",
@@ -721,12 +721,12 @@
         "Learners ignore saturation."
       ],
       "sequence": [
-        "Accumulate error over time.",
-        "Offset removal: output settles only when error is zero.",
-        "PI in the heater.",
-        "Rectangle sum.",
-        "Windup.",
-        "Anti-windup."
+        "Define the integral term as Ki times the area under the error curve so far.",
+        "Add up a short list of errors by rectangles.",
+        "Explain why the output can only settle when the error is zero: otherwise the integral still moves.",
+        "Show a PI loop on the heater removing the offset.",
+        "Show windup: actuator at its limit, integral growing.",
+        "Fix windup by stopping the integral at saturation."
       ],
       "examples": [
         "Errors 1.0, 0.6, 0.3, 0.1 at dt 0.5: sum*dt=1.0; Ki=2 gives 2.0.",
@@ -810,12 +810,12 @@
         "Learners think more D is always safe."
       ],
       "sequence": [
-        "u = Kp e + Ki integral e + Kd de/dt.",
-        "D as brake.",
-        "Noise.",
-        "Filter and derivative on measurement.",
-        "Which terms to use where.",
-        "Typical choices: PI common, PID when lag is large."
+        "Add a term on the slope of the error: Kd de/dt.",
+        "Think of it as a brake: it pushes against fast motion before the target is passed.",
+        "Assemble the full u = Kp e + Ki integral(e) + Kd de/dt and compute one value.",
+        "Show noise: a small fast wiggle has a large slope.",
+        "Fix noise with a filter and take the derivative of the measurement.",
+        "Say when each term earns its place."
       ],
       "examples": [
         "Kp=2, Ki=0.5, Kd=0.1, e=1.5, integral=4, de/dt=-3: u=3+2-0.3=4.7.",
@@ -986,17 +986,17 @@
         "judge-tuning"
       ],
       "misconceptions": [
-        "Learners treat Ziegler-Nichols as optimal; it gives about 25 percent overshoot.",
-        "Learners tune D first.",
-        "Learners tune during operation without safety limits."
+        "Learners treat Ziegler-Nichols as optimal; it is a starting point with about 25 percent overshoot.",
+        "Learners tune D first, which amplifies noise.",
+        "Learners tune a live process without limits on the actuator."
       ],
       "sequence": [
-        "Why rules of thumb exist.",
-        "Ultimate gain method.",
-        "Reaction curve method.",
-        "Check the result and detune.",
-        "Manual tuning order: P, then I, then D.",
-        "Auto-tune."
+        "Rules of thumb exist because models are often unavailable.",
+        "Method 1: raise Kp until the output holds a steady oscillation; record Ku and Tu.",
+        "Convert to PID settings with Kp = 0.6 Ku, Ti = Tu/2, Td = Tu/8.",
+        "Method 2: a step test gives gain K, delay L and time constant T; use Kp = 1.2 T/(K L), Ti = 2L, Td = 0.5 L.",
+        "Judge the response: these settings give lively responses, often 25 percent overshoot, so detune.",
+        "Tune by hand: P first, then I, then a little D."
       ],
       "examples": [
         "Ku=6, Tu=4.44: Kp=3.6, Ti=2.22, Td=0.555.",
@@ -1072,17 +1072,17 @@
         "spot-saturation-problem"
       ],
       "misconceptions": [
-        "Learners assume a continuous controller will behave the same when sampled slowly.",
-        "Learners think feedforward replaces feedback.",
-        "Learners ignore actuator limits."
+        "Learners assume a controller tuned in continuous time will behave the same when sampled slowly.",
+        "Learners think feedforward replaces feedback; it handles what the model knows, feedback handles the rest.",
+        "Learners ignore actuator limits until windup appears."
       ],
       "sequence": [
-        "Sample time rule.",
-        "Discrete PID.",
-        "Saturation, windup.",
-        "Feedforward from model.",
-        "Noise, filters.",
-        "Cascade loops."
+        "Controllers run in samples: choose a period of at most a tenth of the rise time.",
+        "Write the discrete PID: error each step, sum for the integral, difference for the derivative.",
+        "Actuators saturate; stop integrating when the output is clamped.",
+        "Feedforward: command the expected control from the setpoint, so feedback only trims.",
+        "Sensor noise: filter the measurement before the derivative.",
+        "Safety: a limit, a timeout and a safe output on sensor failure."
       ],
       "examples": [
         "Rise time 2 s: sample at most every 0.2 s.",

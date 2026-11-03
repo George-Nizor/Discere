@@ -1,0 +1,1543 @@
+{
+  "id": "data-engineering",
+  "title": "Data Engineering: Pipelines, Warehouses and Lakehouses",
+  "family": "A",
+  "voice": "A",
+  "description": "How data moves from sources to analysis: pipelines, file and table formats, warehouses and lakehouses, batch and streaming processing, and running it all reliably.",
+  "audience": "A capable adult who can query a table with SQL and read short Python programs (sql-from-rows-to-reports and python-for-data-analysis), preparing for work as a data engineer or for a certification such as Microsoft DP-700. No previous platform experience is assumed; named products are examples only.",
+  "prerequisites": [
+    "sql-from-rows-to-reports",
+    "python-for-data-analysis"
+  ],
+  "outcomes": [
+    "You'll be able to design a pipeline as a graph and make each step safe to rerun.",
+    "You'll be able to compare file formats, table formats and architectures by what a query must read.",
+    "You'll be able to work through partitions, shuffles, windows and watermarks with numbers.",
+    "You'll be able to decide how to check, monitor, secure and release a data pipeline."
+  ],
+  "sources": [
+    {
+      "id": "fabric-docs",
+      "title": "Microsoft Fabric documentation (lakehouse, warehouse, data engineering, Real-Time Intelligence, deployment pipelines)",
+      "url": "https://learn.microsoft.com/en-us/fabric/",
+      "licence": "CC BY 4.0 (MicrosoftDocs/fabric-docs repository)",
+      "use": "reference",
+      "verified": true
+    },
+    {
+      "id": "dp700-guide",
+      "title": "Study guide for Exam DP-700: Implementing Data Engineering Solutions Using Microsoft Fabric",
+      "url": "https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/dp-700",
+      "licence": "Microsoft; reference for scope only, not for adaptation",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "delta-protocol",
+      "title": "Delta Lake transaction log protocol",
+      "url": "https://github.com/delta-io/delta/blob/master/PROTOCOL.md",
+      "licence": "Apache-2.0",
+      "use": "adapt",
+      "verified": true
+    },
+    {
+      "id": "iceberg-spec",
+      "title": "Apache Iceberg table specification",
+      "url": "https://iceberg.apache.org/spec/",
+      "licence": "Apache-2.0",
+      "use": "adapt",
+      "verified": true
+    },
+    {
+      "id": "parquet-format",
+      "title": "Apache Parquet file format",
+      "url": "https://github.com/apache/parquet-format",
+      "licence": "Apache-2.0",
+      "use": "adapt",
+      "verified": true
+    },
+    {
+      "id": "spark-streaming",
+      "title": "Apache Spark Structured Streaming programming guide",
+      "url": "https://spark.apache.org/docs/latest/streaming/apis-on-dataframes-and-datasets.html",
+      "licence": "Apache-2.0",
+      "use": "adapt",
+      "verified": true
+    },
+    {
+      "id": "spark-sql-tuning",
+      "title": "Apache Spark SQL performance tuning",
+      "url": "https://spark.apache.org/docs/latest/sql-performance-tuning.html",
+      "licence": "Apache-2.0",
+      "use": "adapt",
+      "verified": true
+    },
+    {
+      "id": "airflow-dags",
+      "title": "Apache Airflow: core concepts, DAGs",
+      "url": "https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/dags.html",
+      "licence": "Apache-2.0",
+      "use": "adapt",
+      "verified": true
+    },
+    {
+      "id": "dataflow-model",
+      "title": "Akidau et al., The Dataflow Model (VLDB 2015)",
+      "url": "https://research.google/pubs/the-dataflow-model-a-practical-approach-to-balancing-correctness-latency-and-cost-in-massive-scale-unbounded-out-of-order-data-processing/",
+      "licence": "Paper, all rights reserved; reference only",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "kafka-docs",
+      "title": "Apache Kafka documentation: design, log, consumers and offsets",
+      "url": "https://kafka.apache.org/documentation/#design",
+      "licence": "Apache-2.0",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "kimball-reference",
+      "title": "Kimball Group, The Data Warehouse Toolkit, 3rd ed. (2013)",
+      "url": "https://www.kimballgroup.com/data-warehouse-business-intelligence-resources/books/data-warehouse-dw-toolkit/",
+      "licence": "Copyrighted book; reference only",
+      "use": "reference",
+      "verified": false
+    }
+  ],
+  "modules": [
+    {
+      "id": "moving-data",
+      "title": "Moving data",
+      "summary": "What a pipeline is, the formats it carries, loading without duplicates, capturing changes and running the steps in order."
+    },
+    {
+      "id": "storing-data",
+      "title": "Storing data",
+      "summary": "Warehouses, lakes and lakehouses, the open table formats that make files behave like tables, and how layout decides what a query reads."
+    },
+    {
+      "id": "processing-data",
+      "title": "Processing data",
+      "summary": "Distributed batch processing, cleaning and deduplicating, and streaming with event time and watermarks."
+    },
+    {
+      "id": "running-data",
+      "title": "Running data platforms",
+      "summary": "Checking data as it moves, watching pipelines in production, and promoting and securing them across environments."
+    }
+  ],
+  "lessons": [
+    {
+      "id": "what-a-pipeline-is",
+      "moduleId": "moving-data",
+      "title": "What a pipeline is",
+      "objective": "Describe a pipeline as sources, steps and a sink arranged as a graph, tell batch from streaming and ETL from ELT, and name the property that makes a rerun safe.",
+      "prerequisiteLessonIds": [],
+      "concepts": [
+        {
+          "id": "pipeline",
+          "title": "Pipeline",
+          "summary": "A pipeline is a set of steps that moves data from sources to a destination, with each step reading the output of the one before."
+        },
+        {
+          "id": "batch-stream",
+          "title": "Batch and streaming",
+          "summary": "Batch processes a bounded set of data on a schedule, while streaming processes an unbounded flow record by record or in small groups."
+        },
+        {
+          "id": "etl-elt",
+          "title": "ETL and ELT",
+          "summary": "ETL transforms data before loading it, ELT loads raw data first and transforms it inside the destination."
+        },
+        {
+          "id": "idempotence",
+          "title": "Idempotence",
+          "summary": "A step is idempotent when running it twice leaves the destination in the same state as running it once."
+        }
+      ],
+      "skills": [
+        "classify-a-workload",
+        "choose-etl-or-elt",
+        "spot-non-idempotent-step"
+      ],
+      "misconceptions": [
+        "Learners think pipelines are scripts that run once. In production they rerun, retry and backfill, so every step must tolerate a rerun.",
+        "Learners think streaming is just faster batch. It changes what data means: it never ends, arrives out of order, and results are updates.",
+        "Learners think ELT means no transformation. The transformation still happens, but inside the warehouse or lakehouse where the raw data sits."
+      ],
+      "sequence": [
+        "Follow orders from a shop database to a sales dashboard: extract, land, clean, aggregate, serve.",
+        "Place the same flow on a spectrum from nightly batch through micro-batch to streaming.",
+        "Contrast ETL and ELT by where the cleaning code runs and what is kept.",
+        "Run an append step twice and watch the rows double; name the missing property."
+      ],
+      "examples": [
+        "A nightly job that copies yesterday's orders is batch; a job that updates a fraud score as each card payment arrives is streaming.",
+        "An ELT pipeline lands raw JSON in a lakehouse bronze table and cleans it with SQL into silver; an ETL pipeline cleans in a separate engine first.",
+        "INSERT of 3 rows run twice into an empty table leaves 6 rows; an upsert on a key leaves 3."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A pipeline drawn as a directed graph: two sources, land, clean, join, aggregate, sink. Views: batch (boxes labelled with a schedule), streaming (a continuous flow), ETL and ELT (the transform box moves before or after the load).",
+          "learnerAction": "Switch views and drag a step to see which dependency arrows follow.",
+          "placement": "pipeline, batch-stream and etl-elt"
+        },
+        {
+          "type": "order_sequence",
+          "shows": "Stages of a worked order-to-dashboard flow in scrambled order.",
+          "learnerAction": "Place the stages in order.",
+          "placement": "pipeline"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "choice",
+          "targets": "classify-a-workload",
+          "sample": "A card payment must have a fraud score within a second of arriving. Which processing style fits?",
+          "answer": "Streaming",
+          "choices": [
+            "Nightly batch",
+            "Weekly batch",
+            "Streaming",
+            "Manual export"
+          ]
+        },
+        {
+          "kind": "single-term",
+          "targets": "spot-non-idempotent-step",
+          "sample": "A step appends yesterday's rows to a table. Running it twice doubles the rows. Which property is missing? Give the one word.",
+          "answer": "idempotence"
+        },
+        {
+          "kind": "choice",
+          "targets": "choose-etl-or-elt",
+          "sample": "Which description is ELT?",
+          "answer": "Load raw files into the lakehouse first, then transform them with SQL there.",
+          "choices": [
+            "Clean the data on a separate server, then load only the cleaned result.",
+            "Load raw files into the lakehouse first, then transform them with SQL there.",
+            "Transform data while it is being typed into the source.",
+            "Load the data and never transform it."
+          ]
+        }
+      ],
+      "sourceIds": [
+        "fabric-docs",
+        "airflow-dags",
+        "dp700-guide"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "files-and-formats",
+      "moduleId": "moving-data",
+      "title": "Files and formats",
+      "objective": "Compare row-oriented and columnar formats, compute how many bytes a query must read from each, and explain what Parquet's row groups and footer statistics allow a reader to skip.",
+      "prerequisiteLessonIds": [
+        "what-a-pipeline-is"
+      ],
+      "concepts": [
+        {
+          "id": "row-vs-column",
+          "title": "Row and column layout",
+          "summary": "A row format stores each record together, while a columnar format stores each column together, which suits queries that read few columns of many rows."
+        },
+        {
+          "id": "parquet-structure",
+          "title": "Parquet structure",
+          "summary": "A Parquet file holds row groups, each with a column chunk per column, and a footer with the schema and per-chunk statistics."
+        },
+        {
+          "id": "encoding-compression",
+          "title": "Encoding and compression",
+          "summary": "Similar values stored together compress well, so a column of repeated values shrinks far more than the same values scattered across rows."
+        },
+        {
+          "id": "schema-in-file",
+          "title": "Schema in the file",
+          "summary": "CSV carries no types and JSON carries names but not a fixed schema, while Parquet records column names and types in its footer."
+        }
+      ],
+      "skills": [
+        "compute-scan-bytes",
+        "choose-format",
+        "read-footer-stats"
+      ],
+      "misconceptions": [
+        "Learners think file format is only about size. It decides which bytes a query must read at all.",
+        "Learners think CSV is fine because it opens in a spreadsheet. It has no types, ambiguous quoting and dates, and must be read in full.",
+        "Learners think columnar always wins. Fetching one whole record by key from a row store can be cheaper."
+      ],
+      "sequence": [
+        "Take 100 million rows of 20 eight-byte columns and a query that needs two of them.",
+        "Show the same data as CSV rows and as column chunks.",
+        "Open a Parquet footer and read min and max for a column chunk.",
+        "Choose a format for archive, streaming messages, and analytics."
+      ],
+      "examples": [
+        "100,000,000 rows x 20 columns x 8 bytes is 16,000,000,000 bytes (16 GB); reading 2 columns from a columnar file is 1,600,000,000 bytes (1.6 GB) before compression.",
+        "A table of 50,000,000 rows read for 3 eight-byte columns is 1,200,000,000 bytes (1.2 GB).",
+        "A row group whose order_id column has min 1 and max 300 cannot contain order_id 500, so a filter on 500 skips it."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "The same six-row, four-column table drawn two ways: stored row by row and stored column by column, with the bytes a two-column query touches shaded. Views: row layout, column layout, Parquet file with footer.",
+          "learnerAction": "Pick the columns a query needs and read the shaded byte count.",
+          "placement": "row-vs-column"
+        },
+        {
+          "type": "table",
+          "shows": "A format comparison table (CSV, JSON lines, Avro, Parquet) with rows for types, human-readable, splittable, columnar, typical use.",
+          "learnerAction": "Fill each cell by choosing.",
+          "placement": "schema-in-file"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-scan-bytes",
+          "sample": "A table has 50,000,000 rows. A columnar query reads 3 columns of 8 bytes each. How many gigabytes (10^9 bytes) are read, ignoring compression?",
+          "answer": "1.2"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-scan-bytes",
+          "sample": "A row-oriented file of 100,000,000 rows and 20 eight-byte columns must be read in full for a query that needs 2 columns. How many gigabytes (10^9 bytes) are read?",
+          "answer": "16"
+        },
+        {
+          "kind": "choice",
+          "targets": "choose-format",
+          "sample": "Which format best suits repeated analytical queries that read a few columns of billions of rows?",
+          "answer": "Parquet",
+          "choices": [
+            "CSV",
+            "JSON lines",
+            "Parquet",
+            "Plain text"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "parquet-format",
+        "fabric-docs"
+      ],
+      "historyNotes": [
+        "Parquet began as a joint effort of Twitter and Cloudera and became an Apache project in 2013. Confirm before printing."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "loading-without-duplicates",
+      "moduleId": "moving-data",
+      "title": "Loading without duplicates",
+      "objective": "Choose between full and incremental loads, use a watermark and an upsert, and predict the row count after a load is replayed.",
+      "prerequisiteLessonIds": [
+        "files-and-formats"
+      ],
+      "concepts": [
+        {
+          "id": "full-vs-incremental",
+          "title": "Full and incremental loads",
+          "summary": "A full load replaces the destination from the whole source, while an incremental load moves only rows that changed since the last run."
+        },
+        {
+          "id": "watermark",
+          "title": "Watermark",
+          "summary": "A stored high-water mark, such as the latest updated_at already loaded, marks where the next incremental run starts."
+        },
+        {
+          "id": "upsert",
+          "title": "Upsert (merge)",
+          "summary": "An upsert updates the row when its key exists and inserts it when it does not, so replaying a batch changes nothing."
+        },
+        {
+          "id": "late-rows",
+          "title": "Late-arriving rows",
+          "summary": "A row committed at the source after the watermark has moved past its timestamp is skipped by a strict greater-than filter."
+        }
+      ],
+      "skills": [
+        "count-rows-after-replay",
+        "apply-watermark",
+        "write-upsert"
+      ],
+      "misconceptions": [
+        "Learners think an incremental load is safe to rerun. A plain insert duplicates every row on retry; only a key-based upsert or overwrite of a partition is safe.",
+        "Learners set the watermark to the time the job ran. It must be the maximum change time actually seen in the data, since the clocks differ and rows commit late.",
+        "Learners use > on the watermark and never look back. Rows committed late with an older timestamp are lost, so many loads re-read a small overlap and rely on the upsert."
+      ],
+      "sequence": [
+        "Load three customers, then replay a two-row batch with plain INSERT twice, then with an upsert.",
+        "Apply a watermark of 10:05 to four source rows with > and >=.",
+        "Show a row that arrives late and is missed.",
+        "Explain overwrite-by-partition as another idempotent pattern."
+      ],
+      "examples": [
+        "A table of 3 rows plus a 2-row batch inserted twice without a key ends with 7 rows (4 distinct ids); the same batch as an upsert keyed on id ends with 4 rows after one or two runs.",
+        "Source updated_at values 10:03, 10:05, 10:06, 10:09 with watermark 10:05: > selects 2 rows, >= selects 3.",
+        "Target has max updated_at 2026-05-03; a source row with updated_at 2026-05-02 that committed late is never picked up by updated_at > max(updated_at)."
+      ],
+      "figures": [
+        {
+          "type": "relational_query",
+          "shows": "Tables for a different example (products with id, price, updated_at) and an incoming batch, with an editable INSERT and upsert statement and the result after each run.",
+          "learnerAction": "Run the load once, run it again, and compare counts.",
+          "placement": "upsert"
+        },
+        {
+          "type": "timeline_explorer",
+          "shows": "A time axis of source commits against the watermark line, with a late row appearing behind the line.",
+          "learnerAction": "Move the watermark and see which rows a > filter selects.",
+          "placement": "watermark and late-rows"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "code-run-sql",
+          "targets": "write-upsert",
+          "sample": "Setup: CREATE TABLE customers(id INTEGER PRIMARY KEY, email TEXT, updated_at TEXT); INSERT INTO customers VALUES (1,'a@x.com','2026-01-01'),(2,'b@x.com','2026-01-01'); Run this twice: INSERT INTO customers VALUES (2,'b2@x.com','2026-01-05'),(3,'c@x.com','2026-01-05') ON CONFLICT(id) DO UPDATE SET email=excluded.email, updated_at=excluded.updated_at; Then SELECT COUNT(*) FROM customers. What is the count?",
+          "answer": "3"
+        },
+        {
+          "kind": "numeric",
+          "targets": "count-rows-after-replay",
+          "sample": "A table has 3 rows with ids 1, 2, 3. A 2-row batch (ids 2 and 4) is appended with a plain INSERT, no key, and the job is retried so the same batch is appended again. How many rows are in the table?",
+          "answer": "7"
+        },
+        {
+          "kind": "numeric",
+          "targets": "apply-watermark",
+          "sample": "The previous run's watermark is 10:05. The source has rows updated at 10:03, 10:05, 10:06 and 10:09. How many rows does WHERE updated_at > '10:05' select?",
+          "answer": "2"
+        }
+      ],
+      "sourceIds": [
+        "delta-protocol",
+        "fabric-docs",
+        "dp700-guide"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "capturing-changes",
+      "moduleId": "moving-data",
+      "title": "Capturing changes",
+      "objective": "Apply an ordered change log to a table and explain why log-based change capture sees deletes that a timestamp query cannot.",
+      "prerequisiteLessonIds": [
+        "loading-without-duplicates"
+      ],
+      "concepts": [
+        {
+          "id": "cdc",
+          "title": "Change data capture",
+          "summary": "CDC reads the source's change record, with an operation and a position for each insert, update and delete, instead of repeatedly querying the table."
+        },
+        {
+          "id": "log-order",
+          "title": "Order by log position",
+          "summary": "Changes must be applied in log order, because an update arriving before the insert it follows would be lost or misplaced."
+        },
+        {
+          "id": "soft-delete",
+          "title": "Deletes",
+          "summary": "A timestamp query cannot see a row that has gone, so deletes need the log, a soft-delete flag or a periodic key comparison."
+        },
+        {
+          "id": "mirroring",
+          "title": "Replicated copies",
+          "summary": "A mirrored or replicated copy applies the log to keep a read-only analytic copy near-current without custom code."
+        }
+      ],
+      "skills": [
+        "apply-change-log",
+        "detect-missed-deletes",
+        "order-by-position"
+      ],
+      "misconceptions": [
+        "Learners think updated_at finds every change. A hard delete leaves no row to carry a timestamp.",
+        "Learners apply changes in arrival order. Networks reorder; the log position, not arrival time, defines the order.",
+        "Learners think CDC is only a tool. It is an interface to the database's own record of what happened."
+      ],
+      "sequence": [
+        "Compare polling a table with reading its log, using a delete as the test case.",
+        "Apply a log of inserts, updates and a delete to an empty table.",
+        "Reorder two entries and show the wrong result.",
+        "Name replicated and mirrored copies as managed CDC."
+      ],
+      "examples": [
+        "Log in position order: (1) I id1 'a' (2) I id2 'b' (3) U id1 'a2' (4) D id2 (5) I id3 'c' (6) U id3 'c2' (7) U id1 'a3' (8) I id2 'b-new' leaves id1 'a3', id2 'b-new', id3 'c2': three rows.",
+        "If entry 4 (delete id2) were applied before entry 2 (insert id2) the table would wrongly end with 'b' for id2 before entry 8, which shows why order matters.",
+        "A source that hard-deletes row 2 shows no row 2 to an updated_at query, so the warehouse keeps the stale row."
+      ],
+      "figures": [
+        {
+          "type": "table",
+          "shows": "A change-log table (position, operation, id, value) for a different log from the questions, beside a target table that updates as the learner steps through the log.",
+          "learnerAction": "Step the log and watch the target; drag two entries to reorder them.",
+          "placement": "log-order"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "Two arrows from a source: a polling query that misses a deleted row and a log reader that sees the delete. Views: polling, log.",
+          "learnerAction": "Delete a row at the source in each view.",
+          "placement": "soft-delete"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "single-term",
+          "targets": "apply-change-log",
+          "sample": "Apply this log in position order to an empty table: 1 I id1 'a'; 2 I id2 'b'; 3 U id1 'a2'; 4 D id2; 5 I id3 'c'; 6 U id3 'c2'; 7 U id1 'a3'; 8 I id2 'b-new'. What value does id1 hold at the end?",
+          "answer": "a3"
+        },
+        {
+          "kind": "numeric",
+          "targets": "apply-change-log",
+          "sample": "How many rows does the same table hold at the end?",
+          "answer": "3"
+        },
+        {
+          "kind": "choice",
+          "targets": "detect-missed-deletes",
+          "sample": "Why does a nightly WHERE updated_at > watermark query not reflect rows hard-deleted at the source?",
+          "answer": "A deleted row no longer exists to carry a timestamp.",
+          "choices": [
+            "Deleted rows keep their old timestamp and are filtered out.",
+            "A deleted row no longer exists to carry a timestamp.",
+            "Timestamps are rewritten when a row is deleted.",
+            "The query is too slow to see deletes."
+          ]
+        }
+      ],
+      "sourceIds": [
+        "delta-protocol",
+        "fabric-docs",
+        "dp700-guide"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "orchestrating-dependencies",
+      "moduleId": "moving-data",
+      "title": "Orchestrating dependencies",
+      "objective": "Read a pipeline as a directed acyclic graph, find its valid orders and critical path, and plan retries and a parallel backfill.",
+      "prerequisiteLessonIds": [
+        "capturing-changes"
+      ],
+      "concepts": [
+        {
+          "id": "dag",
+          "title": "Directed acyclic graph",
+          "summary": "Tasks are nodes and dependencies are arrows with no cycles, so there is always an order in which every task runs after its inputs."
+        },
+        {
+          "id": "critical-path",
+          "title": "Critical path",
+          "summary": "The longest chain of dependent task durations sets the minimum time to finish, however many tasks run in parallel."
+        },
+        {
+          "id": "retry-backoff",
+          "title": "Retries and backoff",
+          "summary": "A failed task is retried a limited number of times with growing waits, which only helps if the task is idempotent."
+        },
+        {
+          "id": "backfill",
+          "title": "Backfill",
+          "summary": "Re-running a pipeline for past periods works by giving each run its own period as a parameter, in parallel up to a limit."
+        }
+      ],
+      "skills": [
+        "find-critical-path",
+        "count-orders",
+        "plan-backfill"
+      ],
+      "misconceptions": [
+        "Learners think more workers always shortens a run. The critical path is a floor.",
+        "Learners hard-code today's date inside a task. A rerun for yesterday then produces today's data; the period must be a parameter.",
+        "Learners retry everything. Retrying a non-idempotent step multiplies side effects."
+      ],
+      "sequence": [
+        "A five-task graph with durations A 5, B 10, C 4, D 6, E 2 minutes.",
+        "Count the valid orders and find the longest path.",
+        "Retry waits of 2, 4 and 8 minutes.",
+        "Backfill 30 daily partitions at 4 in parallel."
+      ],
+      "examples": [
+        "A (5 min) feeds B (10) and C (4); both feed D (6); D feeds E (2). The critical path A, B, D, E takes 5+10+6+2 = 23 minutes against 27 minutes of total work.",
+        "There are 2 valid orders: A, B, C, D, E and A, C, B, D, E.",
+        "Thirty daily partitions, each run taking 12 minutes, 4 at a time: ceil(30/4) = 8 waves x 12 = 96 minutes."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A different five-task graph (not the one in the questions) with durations on the nodes, a Gantt strip below showing the schedule, and a worker-count slider. Views: graph, schedule.",
+          "learnerAction": "Change the worker count and read the finish time.",
+          "placement": "critical-path"
+        },
+        {
+          "type": "order_sequence",
+          "shows": "A different seven-task graph, with the learner choosing a valid run order.",
+          "learnerAction": "Drag tasks into a valid order.",
+          "placement": "dag"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "find-critical-path",
+          "sample": "Task A (5 min) feeds B (10) and C (4). B and C both feed D (6). D feeds E (2). With unlimited workers, what is the minimum total time in minutes?",
+          "answer": "23"
+        },
+        {
+          "kind": "numeric",
+          "targets": "count-orders",
+          "sample": "How many different valid run orders does that graph have?",
+          "answer": "2"
+        },
+        {
+          "kind": "numeric",
+          "targets": "plan-backfill",
+          "sample": "A backfill must run 30 daily partitions, 4 at a time, each taking 12 minutes. How many minutes does it take if each batch of 4 starts only when the previous batch is done?",
+          "answer": "96"
+        }
+      ],
+      "sourceIds": [
+        "airflow-dags",
+        "fabric-docs",
+        "dp700-guide"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "warehouses-lakes-and-lakehouses",
+      "moduleId": "storing-data",
+      "title": "Warehouses, lakes and lakehouses",
+      "objective": "Choose between a warehouse, a lake and a lakehouse for a given need, and explain schema-on-write versus schema-on-read and the medallion layers.",
+      "prerequisiteLessonIds": [
+        "orchestrating-dependencies"
+      ],
+      "concepts": [
+        {
+          "id": "warehouse",
+          "title": "Warehouse",
+          "summary": "A warehouse stores structured, modelled data under a schema it enforces on write, and serves SQL analytics with strong consistency."
+        },
+        {
+          "id": "lake",
+          "title": "Data lake",
+          "summary": "A lake keeps files of any kind in cheap object storage with structure applied when they are read."
+        },
+        {
+          "id": "lakehouse",
+          "title": "Lakehouse",
+          "summary": "A lakehouse puts a table format and transactions over lake files so one copy serves both engineering and SQL analytics."
+        },
+        {
+          "id": "medallion",
+          "title": "Medallion layers",
+          "summary": "Bronze holds data as received, silver holds cleaned and conformed data, and gold holds business-ready aggregates."
+        }
+      ],
+      "skills": [
+        "match-architecture",
+        "apply-schema-rule",
+        "place-in-layer"
+      ],
+      "misconceptions": [
+        "Learners think a lake is a dumping ground that needs no design. Without structure, ownership and tables it becomes unusable.",
+        "Learners think warehouse and lakehouse are rivals. They share engines and formats, and many platforms use both.",
+        "Learners think the medallion layers are three copies for their own sake. Each layer has a different contract with its consumers."
+      ],
+      "sequence": [
+        "Describe the same orders data as a warehouse table, a folder of JSON, and a Delta table.",
+        "Separate storage from compute, and show why that lets several engines read one copy.",
+        "Walk raw JSON through bronze, silver and gold.",
+        "Place four requests (raw audit copy, cleaned customers, monthly revenue, ad hoc ML features) in a layer."
+      ],
+      "examples": [
+        "Raw JSON events land in bronze unchanged, silver holds one row per event with typed columns and duplicates removed, and gold holds revenue per day per region.",
+        "In Microsoft Fabric a lakehouse and a warehouse can read the same Delta files in OneLake; Databricks offers a comparable pairing (examples, not requirements).",
+        "A schema-on-write system rejects a row with a text value in a numeric column at load time; a schema-on-read system accepts the file and fails at query time."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Three architectures side by side: warehouse (data and engine together), lake (files plus engines), lakehouse (files plus table format plus engines). Views: architecture, a query path, medallion layers.",
+          "learnerAction": "Pick an architecture and trace a query from the file to the result.",
+          "placement": "warehouse, lake and lakehouse"
+        },
+        {
+          "type": "diagram_choice",
+          "shows": "Five requests with a choice of layer or architecture.",
+          "learnerAction": "Match each request to its best place.",
+          "placement": "medallion"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "choice",
+          "targets": "match-architecture",
+          "sample": "Which system applies a schema when data is read rather than when it is written?",
+          "answer": "A data lake",
+          "choices": [
+            "A warehouse",
+            "A data lake",
+            "A relational OLTP database",
+            "A spreadsheet"
+          ]
+        },
+        {
+          "kind": "choice",
+          "targets": "place-in-layer",
+          "sample": "A table holds one cleaned row per customer, with types fixed and duplicates removed. Which medallion layer is it?",
+          "answer": "Silver",
+          "choices": [
+            "Bronze",
+            "Silver",
+            "Gold",
+            "None; it is a source"
+          ]
+        },
+        {
+          "kind": "choice",
+          "targets": "match-architecture",
+          "sample": "Several engines (SQL and Spark) must read the same single copy of the data with transactions. Which architecture fits?",
+          "answer": "Lakehouse",
+          "choices": [
+            "Warehouse only",
+            "Lakehouse",
+            "Spreadsheet",
+            "Key-value cache"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "fabric-docs",
+        "dp700-guide",
+        "delta-protocol",
+        "iceberg-spec"
+      ],
+      "historyNotes": [
+        "James Dixon, then at Pentaho, is usually credited with the term data lake in 2010, and the lakehouse term was popularised by Databricks around 2020. Confirm before printing."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "open-table-formats",
+      "moduleId": "storing-data",
+      "title": "Open table formats",
+      "objective": "Read a Delta or Iceberg commit history to find which files make up a table at any version, and explain how optimistic commits give readers a consistent snapshot.",
+      "prerequisiteLessonIds": [
+        "warehouses-lakes-and-lakehouses",
+        "files-and-formats"
+      ],
+      "concepts": [
+        {
+          "id": "transaction-log",
+          "title": "Transaction log",
+          "summary": "A table format records each commit as a list of files added and removed, and a table is the set of files not yet removed at a chosen version."
+        },
+        {
+          "id": "snapshot-isolation",
+          "title": "Snapshots and atomic commit",
+          "summary": "A commit becomes visible all at once, so a reader sees a complete earlier version or a complete later one, never half of a write."
+        },
+        {
+          "id": "time-travel",
+          "title": "Time travel",
+          "summary": "Because old versions are recorded, a query can read the table as of a version or time until the old files are removed."
+        },
+        {
+          "id": "maintenance",
+          "title": "Compaction and vacuum",
+          "summary": "Compaction rewrites many small files into fewer large ones, and vacuum deletes files no longer referenced after a retention period."
+        }
+      ],
+      "skills": [
+        "reconstruct-version",
+        "order-metadata-tree",
+        "count-physical-files"
+      ],
+      "misconceptions": [
+        "Learners think a table format is a database. It is metadata over immutable files, and the engines do the work.",
+        "Learners think deleting rows removes data immediately. The commit marks files as removed; the bytes stay until vacuum.",
+        "Learners think concurrent writers lock the table. Writers commit optimistically and one retries if they conflict."
+      ],
+      "sequence": [
+        "Replay five commits and list the live files at each version.",
+        "Read a checkpoint plus the commits after it.",
+        "Draw the Iceberg chain from catalog pointer to metadata file, manifest list, manifest and data file.",
+        "Run a compaction and a vacuum and count the files."
+      ],
+      "examples": [
+        "Delta commit files are named by version, zero-padded to 20 digits, such as 00000000000000000012.json.",
+        "Commits: v0 adds a, b; v1 adds c; v2 removes a and adds d; v3 adds e and removes b; v4 removes c and d and adds f (a compaction). The table at v2 is {b, c, d}, at v3 {c, d, e}, and at v4 {e, f}.",
+        "After v4, six files exist on storage (a to f) but only two are in the current table until a vacuum deletes the rest."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A commit history strip for a different table history from the questions, with a file ledger below showing added and removed files, and a version slider. Views: Delta log, Iceberg metadata tree.",
+          "learnerAction": "Slide to a version and read the live file set.",
+          "placement": "transaction-log and time-travel"
+        },
+        {
+          "type": "order_sequence",
+          "shows": "The Iceberg read path (catalog pointer, metadata file, manifest list, manifest, data file) in scrambled order.",
+          "learnerAction": "Place the layers in order.",
+          "placement": "order-metadata-tree"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "reconstruct-version",
+          "sample": "Commits: v0 adds a, b. v1 adds c. v2 removes a and adds d. v3 adds e and removes b. v4 removes c and d and adds f. How many data files are in the table at version 3?",
+          "answer": "3"
+        },
+        {
+          "kind": "numeric",
+          "targets": "count-physical-files",
+          "sample": "Using the same commits, how many data files exist on storage after v4 and before any vacuum?",
+          "answer": "6"
+        },
+        {
+          "kind": "numeric",
+          "targets": "reconstruct-version",
+          "sample": "The latest checkpoint is at version 10 and the latest commit is version 12. How many JSON commit files must a reader apply after the checkpoint?",
+          "answer": "2"
+        }
+      ],
+      "sourceIds": [
+        "delta-protocol",
+        "iceberg-spec",
+        "fabric-docs",
+        "dp700-guide"
+      ],
+      "historyNotes": [
+        "Iceberg began at Netflix and entered the Apache Incubator in 2018; Delta Lake was open-sourced by Databricks in 2019. Confirm before printing."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "partitioning-and-file-layout",
+      "moduleId": "storing-data",
+      "title": "Partitioning and file layout",
+      "objective": "Estimate how much data a filtered query reads under a partitioning scheme, pick a partition column of the right cardinality and explain the small-files problem.",
+      "prerequisiteLessonIds": [
+        "open-table-formats"
+      ],
+      "concepts": [
+        {
+          "id": "partition-pruning",
+          "title": "Partition pruning",
+          "summary": "When data is split into directories by a column, a filter on that column lets the engine skip every other directory."
+        },
+        {
+          "id": "cardinality",
+          "title": "Partition cardinality",
+          "summary": "A partition column needs a modest number of distinct values, because tens of thousands of tiny partitions cost more to list than they save."
+        },
+        {
+          "id": "small-files",
+          "title": "Small files",
+          "summary": "Many small files add per-file overhead for listing, opening and metadata, so writers target files of hundreds of megabytes."
+        },
+        {
+          "id": "data-skipping",
+          "title": "Data skipping",
+          "summary": "Per-file minimum and maximum statistics let an engine skip files whose range cannot match a filter, and clustering sorts data so the ranges are tight."
+        }
+      ],
+      "skills": [
+        "estimate-bytes-read",
+        "pick-partition-column",
+        "use-min-max"
+      ],
+      "misconceptions": [
+        "Learners partition by the column they filter on most, whatever its cardinality. A column with millions of values creates millions of tiny files.",
+        "Learners think partitioning speeds every query. A query that does not filter on the partition column reads everything.",
+        "Learners think min/max statistics always skip. Random order makes every file's range overlap, so none can be skipped."
+      ],
+      "sequence": [
+        "A 730 GB table partitioned into 365 equal daily partitions and a one-week filter.",
+        "The same table partitioned by customer id across 2 million customers.",
+        "Four files with min/max ranges and a point filter.",
+        "Compaction and clustering as the repair."
+      ],
+      "examples": [
+        "730 GB over 365 daily partitions is 2 GB per partition; a 7-day filter reads 14 GB, which is 1.92% of the table.",
+        "730 GB across 2,000,000 customer partitions is 365,000 bytes (365 KB) per partition, far too small to read efficiently.",
+        "Files with order_id ranges F1 [1,300], F2 [250,600], F3 [601,900], F4 [400,700]: a filter order_id = 500 cannot skip F2 or F4, so 2 files are read."
+      ],
+      "figures": [
+        {
+          "type": "data_distribution",
+          "shows": "A bar chart of partition sizes for date versus customer-id partitioning, with a threshold line for a healthy file size.",
+          "learnerAction": "Switch the partition column and see sizes and file counts.",
+          "placement": "cardinality and small-files"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "Four file range bars on a number line, with ranges different from the questions, and a movable filter line, showing which files are skipped.",
+          "learnerAction": "Move the filter and count the files that remain.",
+          "placement": "data-skipping"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "estimate-bytes-read",
+          "sample": "A 730 GB table has 365 equal daily partitions. A query filters 7 days. How many gigabytes does it read?",
+          "answer": "14"
+        },
+        {
+          "kind": "numeric",
+          "targets": "pick-partition-column",
+          "sample": "730 GB is partitioned by customer id across 2,000,000 customers, evenly. How many kilobytes (1 KB = 1,000 bytes) is one partition?",
+          "answer": "365"
+        },
+        {
+          "kind": "numeric",
+          "targets": "use-min-max",
+          "sample": "Files cover order_id ranges F1 [1,300], F2 [250,600], F3 [601,900], F4 [400,700]. A filter order_id = 500 can skip which files? Give how many files must still be read.",
+          "answer": "2"
+        }
+      ],
+      "sourceIds": [
+        "spark-sql-tuning",
+        "delta-protocol",
+        "iceberg-spec",
+        "parquet-format",
+        "fabric-docs"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "distributed-processing",
+      "moduleId": "processing-data",
+      "title": "Distributed processing",
+      "objective": "Reason about partitions, tasks, narrow and wide transformations and shuffles, and explain why one skewed key can set the run time of a whole stage.",
+      "prerequisiteLessonIds": [
+        "partitioning-and-file-layout"
+      ],
+      "concepts": [
+        {
+          "id": "partition-task",
+          "title": "Partitions and tasks",
+          "summary": "A distributed engine splits data into partitions and runs one task per partition, in waves limited by the number of cores."
+        },
+        {
+          "id": "narrow-wide",
+          "title": "Narrow and wide transformations",
+          "summary": "Narrow steps such as filter and map work within each partition, while wide steps such as group by and join move rows between partitions in a shuffle."
+        },
+        {
+          "id": "lazy",
+          "title": "Lazy evaluation",
+          "summary": "Transformations only build a plan, and an action such as count or write triggers the work, which lets the engine optimise the plan first."
+        },
+        {
+          "id": "skew",
+          "title": "Skew and broadcast",
+          "summary": "A key holding most of the rows makes one task far slower than the rest, and joining a small table can avoid a shuffle by sending it to every executor."
+        }
+      ],
+      "skills": [
+        "count-tasks",
+        "classify-transformation",
+        "estimate-skewed-stage"
+      ],
+      "misconceptions": [
+        "Learners think adding machines speeds up everything. A shuffle moves data across the network and a skewed key keeps one task busy.",
+        "Learners think each line of code runs when written. Transformations are lazy; the work happens at the action.",
+        "Learners think a join is always a shuffle. A small table can be broadcast, avoiding the shuffle."
+      ],
+      "sequence": [
+        "Count tasks: 10 GiB of input in 128 MiB splits.",
+        "Waves: 80 tasks on 20 cores.",
+        "Shuffle blocks: 80 map tasks to 200 reduce partitions.",
+        "A hot key with 60% of 1,000 million rows across 10 reducers.",
+        "Broadcast a 50 MB table instead of shuffling 2 TB."
+      ],
+      "examples": [
+        "10 GiB is 10,240 MiB; in 128 MiB splits that is 80 partitions and so 80 tasks; on 20 cores they run in 4 waves.",
+        "80 map tasks writing to 200 reduce partitions can produce 80 x 200 = 16,000 shuffle blocks.",
+        "With 1,000 million rows, 10 reducers, one key holding 60% and a rate of 1 million rows per second per task, the hot task needs 600 s while a perfectly even split needs 100 s, and the stage ends at 600 s."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A stage diagram with its own default numbers (not those in the questions): partitions entering tasks, a shuffle web of arrows, and a Gantt bar per task. Views: even keys, skewed key, broadcast join.",
+          "learnerAction": "Switch the key distribution and read the stage time.",
+          "placement": "skew"
+        },
+        {
+          "type": "diagram_choice",
+          "shows": "Eight operations (filter, select, group by, join large tables, join small table, distinct, repartition, union) with narrow or wide.",
+          "learnerAction": "Sort each into narrow or wide.",
+          "placement": "narrow-wide"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "count-tasks",
+          "sample": "An input of 10 GiB is read in 128 MiB splits. How many tasks run in the first stage?",
+          "answer": "80"
+        },
+        {
+          "kind": "numeric",
+          "targets": "estimate-skewed-stage",
+          "sample": "1,000 million rows are shuffled to 10 reducers, each processing 1 million rows per second. One key holds 60% of the rows and goes to one reducer. How many seconds until the stage ends?",
+          "answer": "600"
+        },
+        {
+          "kind": "choice",
+          "targets": "classify-transformation",
+          "sample": "Which operation is wide, meaning it needs a shuffle?",
+          "answer": "Group by a key and count",
+          "choices": [
+            "Filter rows where amount > 0",
+            "Select three columns",
+            "Group by a key and count",
+            "Add a constant column"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "spark-sql-tuning",
+        "spark-streaming",
+        "fabric-docs",
+        "dp700-guide"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "cleaning-and-deduplicating",
+      "moduleId": "processing-data",
+      "title": "Cleaning and deduplicating",
+      "objective": "Write the SQL that keeps the latest record per key, cast and trim columns safely, and explain why deduplication must come before aggregation.",
+      "prerequisiteLessonIds": [
+        "distributed-processing"
+      ],
+      "concepts": [
+        {
+          "id": "dedupe-latest",
+          "title": "Keep the latest per key",
+          "summary": "ROW_NUMBER over a partition by the key, ordered by load time descending, then keeping row 1, removes duplicates and keeps the newest record."
+        },
+        {
+          "id": "typing",
+          "title": "Typing and trimming",
+          "summary": "Raw text is trimmed and cast to its true type in the silver step, and values that cannot be cast become explicit nulls or rejects."
+        },
+        {
+          "id": "order-of-steps",
+          "title": "Order of steps",
+          "summary": "Deduplicate before aggregating, because a sum over duplicated rows counts the same event more than once."
+        },
+        {
+          "id": "quarantine-bad",
+          "title": "Rejects",
+          "summary": "Rows that fail typing go to a rejects table with the reason, so nothing disappears silently."
+        }
+      ],
+      "skills": [
+        "dedupe-with-window",
+        "sum-after-dedupe",
+        "explain-order"
+      ],
+      "misconceptions": [
+        "Learners dedupe with SELECT DISTINCT. It only removes rows identical in every column, so a re-sent record with a new load time survives.",
+        "Learners aggregate first and clean later. The totals are already wrong.",
+        "Learners drop bad rows quietly. A reject table keeps the evidence and the count."
+      ],
+      "sequence": [
+        "A bronze table with repeated event ids and padded amounts.",
+        "Rank rows per event_id by loaded_at descending and keep rank 1.",
+        "Sum before and after deduplication and compare.",
+        "Send non-numeric amounts to rejects with the reason."
+      ],
+      "examples": [
+        "Bronze rows: e1 ' 10.50' (loaded 03-01), e1 '10.50' (03-02), e2 '7', e3 'x' (03-01), e3 '4' (03-02), e4 '5'. Keeping the latest per event gives e1 10.5, e2 7, e3 4 and e4 5, a total of 26.5.",
+        "Summing every bronze row after casting (non-numeric 'x' counts as 0 in SQLite) gives 37.0, which overstates the truth by 10.5.",
+        "DISTINCT on all columns would keep both e1 rows because loaded_at differs."
+      ],
+      "figures": [
+        {
+          "type": "relational_query",
+          "shows": "A different bronze table (sensor readings with duplicates), the ranked table with a rn column, and the result after keeping rn = 1.",
+          "learnerAction": "Edit the ORDER BY direction and see which rows survive.",
+          "placement": "dedupe-latest"
+        },
+        {
+          "type": "table",
+          "shows": "A before-and-after view of totals with and without deduplication, with the learner's estimate entered first.",
+          "learnerAction": "Estimate the overcount, then reveal.",
+          "placement": "order-of-steps"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "code-run-sql",
+          "targets": "dedupe-with-window",
+          "sample": "Setup: CREATE TABLE bronze(event_id TEXT, user_id INT, amount TEXT, loaded_at TEXT); INSERT INTO bronze VALUES ('e1',1,' 10.50','2026-03-01 01:00'),('e1',1,'10.50','2026-03-02 01:00'),('e2',2,'7','2026-03-01 01:00'),('e3',1,'x','2026-03-01 01:00'),('e3',1,'4','2026-03-02 01:00'),('e4',3,'5','2026-03-01 01:00'); Keep the latest row per event_id (ordered by loaded_at descending) and return SUM(CAST(TRIM(amount) AS REAL)). What is the result?",
+          "answer": "26.5"
+        },
+        {
+          "kind": "code-run-sql",
+          "targets": "sum-after-dedupe",
+          "sample": "With the same table, what is SUM(CAST(TRIM(amount) AS REAL)) over all six rows without deduplicating?",
+          "answer": "37.0"
+        },
+        {
+          "kind": "choice",
+          "targets": "explain-order",
+          "sample": "Why must deduplication run before the daily revenue aggregate?",
+          "answer": "Duplicated events would be counted more than once in the sums.",
+          "choices": [
+            "Aggregates cannot read duplicate rows.",
+            "Duplicated events would be counted more than once in the sums.",
+            "SQL forbids GROUP BY on raw data.",
+            "Deduplication makes the query faster only."
+          ]
+        }
+      ],
+      "sourceIds": [
+        "spark-sql-tuning",
+        "fabric-docs"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "streaming-and-event-time",
+      "moduleId": "processing-data",
+      "title": "Streaming and event time",
+      "objective": "Assign events to tumbling, sliding and session windows, compute a watermark, and explain what at-least-once delivery means for an idempotent sink.",
+      "prerequisiteLessonIds": [
+        "cleaning-and-deduplicating"
+      ],
+      "concepts": [
+        {
+          "id": "event-vs-processing-time",
+          "title": "Event time and processing time",
+          "summary": "Event time is when something happened, processing time is when the system saw it, and the gap between them is lateness."
+        },
+        {
+          "id": "windows",
+          "title": "Windows",
+          "summary": "A tumbling window is fixed and non-overlapping, a sliding window overlaps when its slide is shorter than its length, and a session window closes after a gap with no events."
+        },
+        {
+          "id": "watermark-stream",
+          "title": "Watermark",
+          "summary": "The watermark is the maximum event time seen minus the allowed lateness, and windows ending before it are finalised and their state dropped."
+        },
+        {
+          "id": "delivery",
+          "title": "Delivery guarantees",
+          "summary": "With at-least-once delivery a failure replays records, so a sink that is idempotent or deduplicates by key makes the result effectively exactly once."
+        }
+      ],
+      "skills": [
+        "assign-windows",
+        "compute-watermark",
+        "count-replays"
+      ],
+      "misconceptions": [
+        "Learners window by arrival time. Results then change with network delay; windows should use event time.",
+        "Learners think a watermark drops every late event at once. It only lets the engine finalise state; the engine does not guarantee dropping data later than the threshold.",
+        "Learners expect exactly-once for free. The sources replay after failure, so the sink must tolerate duplicates."
+      ],
+      "sequence": [
+        "Events at 10:01, 10:04, 10:06, 10:09, 10:10 into 5-minute tumbling windows.",
+        "A 10-minute window sliding every 5 minutes: each event falls in two windows.",
+        "Session windows with a 5-minute gap over minutes 0, 2, 3, 10, 12, 20.",
+        "Maximum event time 10:42 with 10 minutes of allowed lateness.",
+        "A consumer that committed offset 120 and processed 10 more records before a crash."
+      ],
+      "examples": [
+        "Tumbling 5-minute windows: [10:00,10:05) holds 10:01 and 10:04, [10:05,10:10) holds 10:06 and 10:09, and [10:10,10:15) holds 10:10.",
+        "A 10-minute window sliding every 5 minutes puts each event in 10/5 = 2 windows; the sessions over minutes 0, 2, 3, 10, 12, 20 with a 5-minute gap are {0,2,3}, {10,12}, {20}: 3 sessions.",
+        "Max event time 10:42 minus 10 minutes lateness gives watermark 10:32, so the window [10:20,10:30) is closed; a consumer that committed offset 120 and processed offsets 120 to 129 before crashing reprocesses 10 records after restart."
+      ],
+      "figures": [
+        {
+          "type": "timeline_explorer",
+          "shows": "An event-time axis with a different set of events from the questions as dots, window brackets in three styles, and a watermark line that moves as events arrive. Views: tumbling, sliding, session.",
+          "learnerAction": "Drag events and change window size, slide and gap; read which windows contain each event.",
+          "placement": "windows and watermark-stream"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A log of numbered offsets with a committed marker and a crash point, and a sink that either duplicates or deduplicates. Views: non-idempotent sink, idempotent sink.",
+          "learnerAction": "Move the crash point and read the final state.",
+          "placement": "delivery"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "assign-windows",
+          "sample": "Events occur at 10:01, 10:04, 10:06, 10:09 and 10:10. With tumbling windows of 5 minutes starting at 10:00, how many events are in [10:05, 10:10)?",
+          "answer": "2"
+        },
+        {
+          "kind": "single-term",
+          "targets": "compute-watermark",
+          "sample": "The latest event time seen is 10:42 and the allowed lateness is 10 minutes. What is the watermark? Give it as hh:mm.",
+          "answer": "10:32"
+        },
+        {
+          "kind": "numeric",
+          "targets": "assign-windows",
+          "sample": "Events occur at minutes 0, 2, 3, 10, 12 and 20. Session windows close after a 5-minute gap with no events. How many sessions are there?",
+          "answer": "3"
+        }
+      ],
+      "sourceIds": [
+        "spark-streaming",
+        "kafka-docs",
+        "dataflow-model",
+        "fabric-docs",
+        "dp700-guide"
+      ],
+      "historyNotes": [
+        "The idea of separating event time from processing time and of watermarks was set out in Google's Dataflow model paper in 2015."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "checking-data-in-motion",
+      "moduleId": "running-data",
+      "title": "Checking data in motion",
+      "objective": "Place validation gates in a pipeline, classify a schema change as safe or breaking, and decide whether a batch passes a rejection threshold.",
+      "prerequisiteLessonIds": [
+        "streaming-and-event-time"
+      ],
+      "concepts": [
+        {
+          "id": "validation-gate",
+          "title": "Validation gate",
+          "summary": "A gate checks schema, ranges and keys at a layer boundary and decides to pass, quarantine or stop the run."
+        },
+        {
+          "id": "schema-evolution",
+          "title": "Schema evolution",
+          "summary": "Adding a nullable column is usually safe, while removing, renaming or retyping a column breaks readers."
+        },
+        {
+          "id": "quarantine",
+          "title": "Quarantine and dead letters",
+          "summary": "Failing rows are written aside with the reason, so good rows continue and bad rows can be fixed and replayed."
+        },
+        {
+          "id": "fail-fast",
+          "title": "Fail fast on drift",
+          "summary": "If a source changes shape unexpectedly, stopping the run loudly is better than loading wrong data quietly."
+        }
+      ],
+      "skills": [
+        "classify-schema-change",
+        "apply-threshold",
+        "choose-gate-action"
+      ],
+      "misconceptions": [
+        "Learners treat any new column as harmless. A column that changes a join key or a meaning is breaking even if it is added.",
+        "Learners let the pipeline auto-adapt to any schema. Silent adaptation moves a source bug into every downstream table.",
+        "Learners discard failing rows. Without a quarantine there is no count and no way to repair."
+      ],
+      "sequence": [
+        "Five schema changes to classify: add nullable column, drop column, rename column, widen int to bigint, change string to int.",
+        "A batch of 1,000 rows with 30 null keys against a 2% threshold.",
+        "A gate that quarantines rows and one that stops the run.",
+        "Where gates sit: landing, bronze to silver, silver to gold."
+      ],
+      "examples": [
+        "Adding a nullable column is safe; dropping or renaming a column breaks readers; changing string to int breaks parsers.",
+        "30 failing rows of 1,000 is 3%, which exceeds a 2% threshold, so the run stops and alerts instead of publishing.",
+        "A gate that finds 5 of 1,000 rows failing (0.5%) quarantines them and lets the other 995 continue."
+      ],
+      "figures": [
+        {
+          "type": "table",
+          "shows": "A schema diff with old and new columns and a safe/breaking column for the learner to fill in.",
+          "learnerAction": "Classify each change.",
+          "placement": "schema-evolution"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A pipeline with gates between layers and a quarantine table below, with a slider for the failing percentage and a threshold line.",
+          "learnerAction": "Move the slider and see the gate action change.",
+          "placement": "validation-gate and quarantine"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "choice",
+          "targets": "classify-schema-change",
+          "sample": "Which source schema change is most likely to break downstream readers?",
+          "answer": "Renaming a column",
+          "choices": [
+            "Adding a new nullable column",
+            "Renaming a column",
+            "Adding a comment to the table",
+            "Adding a new table"
+          ]
+        },
+        {
+          "kind": "numeric",
+          "targets": "apply-threshold",
+          "sample": "A batch has 1,000 rows and 30 fail the not-null check on the key. What percentage fails?",
+          "answer": "3"
+        },
+        {
+          "kind": "choice",
+          "targets": "choose-gate-action",
+          "sample": "With a 2% rejection threshold and 3% of rows failing, what should the gate do?",
+          "answer": "Stop the run and alert",
+          "choices": [
+            "Publish everything silently",
+            "Stop the run and alert",
+            "Delete the failing rows",
+            "Lower the threshold"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "fabric-docs",
+        "delta-protocol",
+        "dp700-guide"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "monitoring-and-tuning",
+      "moduleId": "running-data",
+      "title": "Monitoring and tuning",
+      "objective": "Compute throughput and freshness against a service target, and diagnose a slow or failing job from its symptoms.",
+      "prerequisiteLessonIds": [
+        "checking-data-in-motion"
+      ],
+      "concepts": [
+        {
+          "id": "freshness",
+          "title": "Freshness",
+          "summary": "Freshness is the age of the newest data in a table, checked against a target such as under six hours."
+        },
+        {
+          "id": "throughput-latency",
+          "title": "Throughput and latency",
+          "summary": "Throughput is rows or bytes per second, and latency is the time from arrival to availability."
+        },
+        {
+          "id": "run-signals",
+          "title": "Run signals",
+          "summary": "Duration, rows in and out, retries and failures per run reveal problems before users do."
+        },
+        {
+          "id": "tuning-causes",
+          "title": "Common slow causes",
+          "summary": "Skew, too many small files, unneeded shuffles, reading unneeded columns and under-sized capacity cause most slow jobs."
+        }
+      ],
+      "skills": [
+        "compute-freshness",
+        "compute-throughput",
+        "diagnose-slow-job"
+      ],
+      "misconceptions": [
+        "Learners monitor only failures. A job that succeeds with half the usual rows is also broken.",
+        "Learners tune by adding capacity first. Layout and skew fixes are cheaper and last.",
+        "Learners measure the schedule, not the data. The pipeline can run on time and still publish stale data."
+      ],
+      "sequence": [
+        "A table last loaded at 02:10 with a six-hour target checked at 09:00.",
+        "A job moving 90 million rows in 30 minutes.",
+        "Match symptoms (one task far slower, thousands of tiny files, a full scan with a filter) to causes.",
+        "Name the four signals worth alerting on."
+      ],
+      "examples": [
+        "Checked at 09:00, a table last loaded at 02:10 is 6 h 50 min old; against a 6-hour target it is 50 minutes late.",
+        "90,000,000 rows in 30 minutes (1,800 seconds) is 50,000 rows per second.",
+        "One task running far longer than its siblings suggests skew; thousands of tiny files suggest a compaction problem."
+      ],
+      "figures": [
+        {
+          "type": "data_series",
+          "shows": "A freshness line for a table over several days with a target band and breach markers.",
+          "learnerAction": "Hover a breach to read its lateness.",
+          "placement": "freshness"
+        },
+        {
+          "type": "diagram_choice",
+          "shows": "Four run dashboards (slow single task, many tiny files, empty output, repeated retries) with candidate causes.",
+          "learnerAction": "Match symptom to cause.",
+          "placement": "tuning-causes"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-freshness",
+          "sample": "A table was last loaded at 02:10 and it is now 09:00. Its freshness target is 6 hours. How many minutes late is it?",
+          "answer": "50"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-throughput",
+          "sample": "A job moves 90,000,000 rows in 30 minutes. How many rows per second?",
+          "answer": "50000"
+        },
+        {
+          "kind": "choice",
+          "targets": "diagnose-slow-job",
+          "sample": "In a shuffle stage, 199 tasks finish in a minute and one runs for twenty minutes. What is the likeliest cause?",
+          "answer": "Data skew on a key",
+          "choices": [
+            "Data skew on a key",
+            "Too few columns",
+            "A late-arriving file",
+            "A small lookup table"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "fabric-docs",
+        "spark-sql-tuning",
+        "dp700-guide"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "environments-security-and-release",
+      "moduleId": "running-data",
+      "title": "Environments, security and release",
+      "objective": "Explain how a pipeline moves from development to production under version control, and choose the access control that fits a data-protection need.",
+      "prerequisiteLessonIds": [
+        "monitoring-and-tuning"
+      ],
+      "concepts": [
+        {
+          "id": "environments",
+          "title": "Environments",
+          "summary": "Development, test and production are separate places with the same structure, and a release promotes tested changes rather than editing production."
+        },
+        {
+          "id": "version-control",
+          "title": "Version control and deployment",
+          "summary": "Pipeline definitions live in a repository, and an automated deployment applies them to each environment with environment-specific parameters."
+        },
+        {
+          "id": "access-control",
+          "title": "Access control",
+          "summary": "Roles grant access to workspaces and items, and finer controls restrict rows, columns or files to the people who need them."
+        },
+        {
+          "id": "secrets",
+          "title": "Secrets and identities",
+          "summary": "Credentials are held in a secret store and used by service identities, never written into code or notebooks."
+        }
+      ],
+      "skills": [
+        "order-a-release",
+        "choose-access-control",
+        "handle-secrets"
+      ],
+      "misconceptions": [
+        "Learners edit production directly to fix a bug quickly. That bypasses testing and leaves no history.",
+        "Learners give everyone workspace admin to avoid access problems. Least privilege limits the harm of a mistake or a stolen account.",
+        "Learners copy connection strings into notebooks. Anyone with the notebook then holds the credential."
+      ],
+      "sequence": [
+        "Trace a change from a branch to dev, test and production, with parameters for each connection.",
+        "Row-level security: a regional manager sees only their region's rows.",
+        "Column-level security or masking: analysts see a masked email.",
+        "Move a password from a notebook to a secret store."
+      ],
+      "examples": [
+        "A change merged to main deploys to test, where the pipeline runs on a sample, then is promoted to production with production connection parameters.",
+        "A regional sales manager who may only see EMEA rows needs row-level security; an analyst who may see orders but not emails needs column-level security or masking.",
+        "In Microsoft Fabric, deployment pipelines and Git integration cover promotion and version control; other platforms use their own CI/CD (an example, not a requirement)."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Three environment lanes (dev, test, prod) joined by promotion arrows, with a repository above and a parameter table below. Views: promotion path, security layers.",
+          "learnerAction": "Step a change through the lanes and read the parameters it uses in each.",
+          "placement": "environments and version-control"
+        },
+        {
+          "type": "diagram_choice",
+          "shows": "Five protection needs (mask emails, limit rows by region, share a read-only table, store a key, restrict a workspace) with access-control options.",
+          "learnerAction": "Match each need to the control.",
+          "placement": "access-control"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "choice",
+          "targets": "choose-access-control",
+          "sample": "A regional manager must see only the rows for their own region in a shared table. Which control fits?",
+          "answer": "Row-level security",
+          "choices": [
+            "Column-level security",
+            "Row-level security",
+            "A bigger capacity",
+            "A longer retention"
+          ]
+        },
+        {
+          "kind": "choice",
+          "targets": "handle-secrets",
+          "sample": "Where should a database password used by a pipeline be kept?",
+          "answer": "In a secret store, read by the pipeline's service identity",
+          "choices": [
+            "In the notebook as a variable",
+            "In the repository README",
+            "In a secret store, read by the pipeline's service identity",
+            "In the pipeline name"
+          ]
+        },
+        {
+          "kind": "choice",
+          "targets": "order-a-release",
+          "sample": "Which release path follows good practice?",
+          "answer": "Branch, review, deploy to test, validate, then promote to production",
+          "choices": [
+            "Edit production directly, then copy to test",
+            "Branch, review, deploy to test, validate, then promote to production",
+            "Deploy to production, then test",
+            "Email the notebook to the owner"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "fabric-docs",
+        "dp700-guide"
+      ],
+      "estimatedMinutes": 13
+    }
+  ],
+  "courseCheck": "A mixed check of: batch/stream and ETL/ELT choices; idempotence and row counts after a replay; bytes scanned under row and column layouts; watermark and upsert behaviour; applying a change log; critical path and backfill time; warehouse/lake/lakehouse and medallion placement; reconstructing a table from a commit log; partition pruning and file skipping arithmetic; tasks, waves and skew; a deduplication query; window assignment and watermark; schema-change classification and thresholds; freshness and throughput; and access-control choice.",
+  "platformNeeds": [
+    "A table_format_log figure: a commit ledger (Delta or Iceberg style) with a version slider that shows the live file set and the physical files, so lessons on time travel, compaction and vacuum can be explored. The svg_figure fallback described per lesson is a static ledger with switchable versions.",
+    "A streaming_windows figure: an event-time axis with events, window brackets, a moving watermark and a late event; timeline_explorer is the stand-in.",
+    "A pipeline_graph figure that computes the critical path and a Gantt strip for a chosen worker count; svg_figure is the fallback.",
+    "SQL practice that supports window functions and ON CONFLICT upsert syntax (SQLite-compatible); MERGE is not used because SQLite lacks it. A Spark-style or Python DataFrame runner is not needed for this course."
+  ],
+  "unverified": [
+    "learn.microsoft.com, iceberg.apache.org and kafka.apache.org were not reachable from the research sandbox. Fabric docs, the Delta PROTOCOL.md, the Iceberg format/spec.md, the Parquet README, Spark's streaming and SQL tuning guides and Airflow's DAG concepts were read from their GitHub repositories (marked verified true). The Kafka page, the DP-700 study guide, the Dataflow paper and Kimball's book were not opened (verified false).",
+    "The DP-700 skills outline (implement and manage an analytics solution, ingest and transform data, monitor and optimise) was written from memory. Re-check the current study guide before claiming coverage of every skill; shortcuts, mirroring, Eventstream, Eventhouse/KQL and Dataflow Gen2 are not taught in depth, because they are tool-specific.",
+    "Spark default behaviour (watermark guarantee wording) was checked in the Structured Streaming guide; the default 128 MiB split size is Spark's usual spark.sql.files.maxPartitionBytes and was not re-checked against the docs.",
+    "Delta default vacuum retention of 7 days was found in the protocol document; the default checkpoint interval was deliberately left out because it was not found in the spec.",
+    "History notes (Parquet 2013, James Dixon 2010, lakehouse term around 2020, Iceberg 2018 and Delta 2019 open sourcing) are from memory.",
+    "SQL answers were run in SQLite 3.53; window functions and ON CONFLICT are supported there, and the app's sandbox must be confirmed to match.",
+    "The skew, shuffle block and backfill figures are arithmetic on stated assumptions, not measurements."
+  ]
+}
