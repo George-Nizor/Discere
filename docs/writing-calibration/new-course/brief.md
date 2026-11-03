@@ -146,7 +146,11 @@ only what you can confirm, and leave out a detail you cannot.
    "Humanities", "Social science") and adding a specific one only where none fits.
 2. Draw the cover, `content/<course>/assets/cover.svg`, in the house style of the existing covers:
    read one, such as `content/cs-basics/assets/cover.svg`, and draw an object for this subject
-   with the same `viewBox`, gradients, shadow and palette.
+   with the same `viewBox`, gradients, shadow and palette. Draw a thing from the subject itself
+   (a gear train, a lighthouse, a stave of notes, a terminal prompt, a padlock), not a computer
+   monitor: several software covers already use one. Check it with
+   `LD_LIBRARY_PATH=/tmp/claude-1000/libs/ex/usr/lib/x86_64-linux-gnu node /tmp/claude-1000/-workspace-dev-projects-master--PersonalProjects-Instrumenta/4cd5d7ee-90b3-49ea-82be-6c5139119304/scratchpad/covers.mjs .author/<course>/cover.png <course>`
+   and look at the PNG.
 3. `npx tsx scripts/voice-check.ts <course>` reports 0 errors with no unwritten lessons, and
    `npx tsx scripts/check-course.ts <course>` loads the course as the server does. Do not
    run `pnpm validate:content` or the test suites: other courses are being written at the same
