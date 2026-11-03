@@ -127,6 +127,13 @@ export async function getCourseDetail(courseId: string): Promise<CourseDetailRes
   );
 }
 
+/** Starts a course over: its lessons forget where the learner was and what they finished. */
+export async function resetCourseProgress(
+  courseId: string,
+): Promise<{ stages: number; checks: number }> {
+  return requestJson(`/api/courses/${encodeURIComponent(courseId)}/progress`, { method: "DELETE" });
+}
+
 export async function getJourney(courseId: string, lessonId: string): Promise<JourneyResponse> {
   return JourneyResponseSchema.parse(
     await requestJson<unknown>(`${journeyBase(courseId, lessonId)}/journey`),

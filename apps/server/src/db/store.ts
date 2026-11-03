@@ -227,6 +227,27 @@ export class DiscereStore {
     return counts;
   }
 
+  /**
+   * Starts a course over: every lesson's saved place and finished stages, and every course
+   * check (which is what marks lessons as already known), are removed. Attempts, XP, review
+   * cards and mastery stay, because they are the learner's history; XP for a stage is keyed to
+   * the stage, so finishing it again does not pay it twice.
+   */
+  resetCourseProgress(courseId: string): { stages: number; checks: number } {
+    const prefix = `${courseId}:`;
+    return this.database.transaction(() => {
+      const stages = this.database
+        .prepare(
+          "DELETE FROM journey_progress WHERE user_id = ? AND substr(journey_id, 1, length(?)) = ?",
+        )
+        .run(LOCAL_USER_ID, prefix, prefix).changes;
+      const checks = this.database
+        .prepare("DELETE FROM course_check_sessions WHERE user_id = ? AND course_id = ?")
+        .run(LOCAL_USER_ID, courseId).changes;
+      return { stages, checks };
+    })();
+  }
+
   /** Journey ids the learner has finished every recorded stage of, as `courseId:lessonId`. */
   completedJourneyIds(): Set<string> {
     const rows = this.database

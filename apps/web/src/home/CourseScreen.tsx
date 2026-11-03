@@ -11,6 +11,7 @@ import { PythonProjects } from "../python-projects/PythonProjects.js";
 import { RustProjects } from "../rust/RustProjects.js";
 import { CourseIntroduction } from "./CourseIntroduction.js";
 import { CourseOverview, CourseRoadmap } from "./CourseRoadmap.js";
+import { CourseReset } from "./CourseReset.js";
 
 export function CourseListScreen() {
   const courses = useCourses();
@@ -72,6 +73,7 @@ export function CourseScreen() {
         <SqlProjects courseId={courseId} />
         <PythonProjects courseId={courseId} />
         <RustProjects courseId={courseId} />
+        <CourseReset detail={course.data} />
       </div>
       <CourseRoadmap key={courseId} detail={course.data} />
     </main>

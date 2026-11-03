@@ -2,6 +2,12 @@
 
 Updated: 2026-11-03
 
+Release 1.9.1 adds two controls George asked for while trying the new lessons. A course he has
+started can be started again from its page: every lesson forgets its place and its finished
+stages, and course checks are cleared, while XP, review cards and past answers are kept
+(`DELETE /api/courses/:courseId/progress`). Inside a lesson, Back returns to the previous screen;
+a screen answered during the visit can be passed again without answering twice.
+
 Release 1.9.0 completes the expansion: every course in `docs/expansion-plan-2026-11.md` is
 written, so Discere has 66 courses. This release adds Reading and Research, Linguistics, Writing
 Longer Pieces, Decision Theory, Speaking, Argument and Debate, Creative and Game Writing, Music

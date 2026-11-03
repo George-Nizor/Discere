@@ -395,6 +395,12 @@ export async function registerRoutes(
       busiestCount: days.reduce((most, day) => Math.max(most, day.completions), 0),
     };
   });
+  // Starts a course over so its lessons can be played again from the beginning.
+  app.delete("/api/courses/:courseId/progress", async (request) => {
+    const { courseId } = CourseParamsSchema.parse(request.params);
+    if (!content.has(courseId)) throw new HttpError(404, "Course not found.", "COURSE_NOT_FOUND");
+    return store.resetCourseProgress(courseId);
+  });
   app.get("/api/courses/:courseId", async (request) => {
     const { courseId } = CourseParamsSchema.parse(request.params);
     const finished = store.completedJourneyIds();
