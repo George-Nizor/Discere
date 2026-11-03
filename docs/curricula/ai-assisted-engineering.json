@@ -1,0 +1,1290 @@
+{
+  "id": "ai-assisted-engineering",
+  "title": "AI-Assisted Engineering and Code Review",
+  "family": "A",
+  "voice": "A",
+  "description": "Work with coding assistants as an engineer who owns the result: instructions and context, specs and tests first, small steps, reading and securing machine-written changes, and measuring the effect.",
+  "audience": "A developer who can read Python and SQL and use git. The ai-engineering and ai-agents courses explain how models and agents work; this one is about using them and reviewing their output.",
+  "prerequisites": [
+    "cs-basics",
+    "python-for-data-analysis",
+    "sql-from-rows-to-reports"
+  ],
+  "outcomes": [
+    "You'll be able to write a specification and tests that an assistant's change must satisfy.",
+    "You'll be able to read a diff against its intent and find unrequested changes.",
+    "You'll be able to spot typical machine-made defects and security faults.",
+    "You'll be able to separate an assistant's claim from evidence.",
+    "You'll be able to write working rules and measure whether assistance helps."
+  ],
+  "sources": [
+    {
+      "id": "claude-bp",
+      "title": "Best practices for Claude Code (Anthropic; the older engineering-blog URL redirects here)",
+      "url": "https://code.claude.com/docs/en/best-practices",
+      "licence": "Copyright Anthropic",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "agents-md",
+      "title": "AGENTS.md, a convention for agent instruction files",
+      "url": "https://agents.md/",
+      "licence": "Open-source site; licence to confirm",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "google-review",
+      "title": "Google Engineering Practices: Code Review Developer Guide",
+      "url": "https://google.github.io/eng-practices/review/",
+      "licence": "CC BY 3.0 (confirm)",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "owasp-top10",
+      "title": "OWASP Top 10:2021",
+      "url": "https://owasp.org/Top10/",
+      "licence": "CC BY-SA 4.0 (confirm)",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "owasp-cheats",
+      "title": "OWASP Cheat Sheet Series (SQL Injection Prevention, Secrets Management)",
+      "url": "https://cheatsheetseries.owasp.org/",
+      "licence": "CC BY-SA 4.0 (confirm)",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "ssdf",
+      "title": "NIST SP 800-218 Secure Software Development Framework (SSDF) 1.1",
+      "url": "https://csrc.nist.gov/pubs/sp/800/218/final",
+      "licence": "US government work, not subject to copyright in the US",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "progit",
+      "title": "Pro Git (Chacon and Straub)",
+      "url": "https://git-scm.com/book/en/v2",
+      "licence": "CC BY-NC-SA 3.0",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "dora",
+      "title": "DORA research programme: the four key software delivery metrics",
+      "url": "https://dora.dev/guides/dora-metrics/",
+      "licence": "Site terms apply (confirm)",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "metr-rct",
+      "title": "Measuring the Impact of Early-2025 AI on Experienced Open-Source Developer Productivity (METR, 2025, arXiv:2507.09089)",
+      "url": "https://arxiv.org/abs/2507.09089",
+      "licence": "arXiv; author-chosen licence (confirm)",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "pearce",
+      "title": "Asleep at the Keyboard? Assessing the Security of GitHub Copilot's Code Contributions (Pearce et al., 2021, arXiv:2108.09293)",
+      "url": "https://arxiv.org/abs/2108.09293",
+      "licence": "arXiv; author-chosen licence (confirm)",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "willison-blog",
+      "title": "Simon Willison's weblog, tagged ai-assisted-programming",
+      "url": "https://simonwillison.net/tags/ai-assisted-programming/",
+      "licence": "Copyright the author",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "nist-rmf",
+      "title": "Artificial Intelligence Risk Management Framework (AI RMF 1.0), NIST AI 100-1",
+      "url": "https://www.nist.gov/itl/ai-risk-management-framework",
+      "licence": "US government work, not subject to copyright in the US",
+      "use": "adapt",
+      "verified": false
+    }
+  ],
+  "modules": [
+    {
+      "id": "working-with-an-assistant",
+      "title": "Working with a coding assistant",
+      "summary": "What an assistant is, how its context and instructions shape its output, and how specs, tests and small steps keep you in control."
+    },
+    {
+      "id": "reviewing",
+      "title": "Reviewing machine-written code",
+      "summary": "How to read a diff for intent, recover your bearings in unfamiliar code, and find the defects and security faults assistants typically produce."
+    },
+    {
+      "id": "practice",
+      "title": "Evidence and professional practice",
+      "summary": "Showing that a change works, owning the licensing and privacy consequences, and setting working rules that you measure."
+    }
+  ],
+  "lessons": [
+    {
+      "id": "what-an-assistant-does",
+      "moduleId": "working-with-an-assistant",
+      "title": "What a coding assistant does and does not do",
+      "objective": "Distinguish completion, chat and agentic assistants and state where responsibility for the change lies.",
+      "prerequisiteLessonIds": [],
+      "concepts": [
+        {
+          "id": "assistant-modes",
+          "title": "Assistant modes",
+          "summary": "Inline completion, chat, and agentic editing in which the tool reads files, runs commands and edits."
+        },
+        {
+          "id": "accountability",
+          "title": "Accountability",
+          "summary": "The person who merges a change owns it, whatever wrote it."
+        },
+        {
+          "id": "acceptance-rate",
+          "title": "Acceptance rate",
+          "summary": "The share of suggested code kept unchanged."
+        }
+      ],
+      "skills": [
+        "classify-mode",
+        "compute-acceptance"
+      ],
+      "misconceptions": [
+        "The assistant knows the codebase; it sees only the files and text placed in its context.",
+        "If tests pass the change is right; tests describe what someone thought to check.",
+        "A suggestion is the assistant's responsibility; the reviewer who merges it owns it."
+      ],
+      "sequence": [
+        "The same task, rename a function, done by completion, chat and an agentic tool.",
+        "What each mode can see and change.",
+        "Where mistakes enter: missing context, plausible code, unverified claims.",
+        "The owner of the change."
+      ],
+      "examples": [
+        "An assistant suggests 200 lines and you keep 130 unchanged: acceptance rate 130/200 = 65%.",
+        "An agentic tool that runs the test suite and reports 'all green' has run the tests it was shown; it has not shown the tests are sufficient."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Three columns for completion, chat and agent with arrows to what each reads and writes.",
+          "learnerAction": "Click a capability to see which modes have it.",
+          "placement": "modes"
+        },
+        {
+          "type": "table",
+          "shows": "A change record with author, reviewer and owner fields.",
+          "learnerAction": "Fill in who owns the change.",
+          "placement": "accountability"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-acceptance",
+          "sample": "An assistant suggests 200 lines and you keep 130 unchanged. What is the acceptance rate as a percentage?",
+          "answer": "65"
+        },
+        {
+          "kind": "choice",
+          "targets": "classify-mode",
+          "sample": "A tool reads your repository, edits three files and runs the tests. This is",
+          "answer": "Agentic editing",
+          "choices": [
+            "Agentic editing",
+            "Inline completion",
+            "Chat only",
+            "Static analysis"
+          ]
+        },
+        {
+          "kind": "choice",
+          "targets": "accountability",
+          "sample": "Who is answerable for a merged change written by an assistant?",
+          "answer": "The person who merged it",
+          "choices": [
+            "The person who merged it",
+            "The vendor",
+            "The model",
+            "Nobody"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "claude-bp",
+        "willison-blog",
+        "metr-rct"
+      ],
+      "historyNotes": [
+        "METR's 2025 randomised trial of experienced open-source developers measured their time on real tasks with and without AI tools; the result was slower, against their own expectation."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "context-and-instructions",
+      "moduleId": "working-with-an-assistant",
+      "title": "Context and instruction files",
+      "objective": "Decide what to put in an assistant's context, write a project instruction file, and estimate whether a codebase fits in the window.",
+      "prerequisiteLessonIds": [
+        "what-an-assistant-does"
+      ],
+      "concepts": [
+        {
+          "id": "context",
+          "title": "Context",
+          "summary": "Everything the model sees on a call: instructions, files, history and tool results."
+        },
+        {
+          "id": "instruction-file",
+          "title": "Instruction file",
+          "summary": "A checked-in text file of commands, conventions and boundaries read at the start of each session."
+        },
+        {
+          "id": "context-rot",
+          "title": "Context pollution",
+          "summary": "Stale, irrelevant or contradictory text in the context that degrades output."
+        }
+      ],
+      "skills": [
+        "estimate-fit",
+        "write-instructions"
+      ],
+      "misconceptions": [
+        "Give the assistant the whole repository; relevant files in a small context beat everything in a huge one.",
+        "An instruction file is documentation for people; it is read by the model on every session and should hold only what changes its behaviour.",
+        "A long conversation is a better context than a fresh start; once it fills with dead ends, start again with a summary."
+      ],
+      "sequence": [
+        "What the assistant can see on a task.",
+        "Estimating size: 40,000 lines at about 10 tokens a line.",
+        "What goes in an instruction file: build and test commands, conventions, forbidden actions.",
+        "Resetting context."
+      ],
+      "examples": [
+        "40,000 lines × 10 tokens = 400,000 tokens, against a 200,000-token window: half the codebase fits.",
+        "Good line: 'Run pnpm check before reporting done.' Weak line: 'Write clean code.'"
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A window bar with repo size laid beside it.",
+          "learnerAction": "Change lines of code and see what fits.",
+          "placement": "fit"
+        },
+        {
+          "type": "table",
+          "shows": "Candidate instruction lines.",
+          "learnerAction": "Sort into keep and drop.",
+          "placement": "instructions"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "estimate-fit",
+          "sample": "A codebase has 40,000 lines at about 10 tokens a line. What share fits in a 200,000-token window, as a percentage?",
+          "answer": "50"
+        },
+        {
+          "kind": "choice",
+          "targets": "write-instructions",
+          "sample": "Which is the best line for an instruction file?",
+          "answer": "Run the tests with pnpm test before reporting done",
+          "choices": [
+            "Run the tests with pnpm test before reporting done",
+            "Write clean code",
+            "Be careful",
+            "Do your best"
+          ]
+        },
+        {
+          "kind": "choice",
+          "targets": "context-rot",
+          "sample": "After many failed attempts the session is cluttered with dead ends. Best action:",
+          "answer": "Start a new session with a short summary",
+          "choices": [
+            "Start a new session with a short summary",
+            "Keep going",
+            "Add more files",
+            "Raise the temperature"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "claude-bp",
+        "agents-md",
+        "willison-blog"
+      ],
+      "historyNotes": [
+        "The AGENTS.md convention gives agents one predictable file name; several tools also read their own names for similar files."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "specification-first",
+      "moduleId": "working-with-an-assistant",
+      "title": "Specification first",
+      "objective": "Write a specification with testable acceptance criteria before asking an assistant to build.",
+      "prerequisiteLessonIds": [
+        "context-and-instructions"
+      ],
+      "concepts": [
+        {
+          "id": "acceptance-criteria",
+          "title": "Acceptance criteria",
+          "summary": "Statements that a test can pass or fail."
+        },
+        {
+          "id": "edge-case",
+          "title": "Edge case",
+          "summary": "Input at a boundary or outside the usual range where behaviour must be stated."
+        },
+        {
+          "id": "non-goal",
+          "title": "Non-goal",
+          "summary": "Something the change must not do."
+        }
+      ],
+      "skills": [
+        "write-criteria",
+        "derive-test-inputs"
+      ],
+      "misconceptions": [
+        "A detailed prompt is a spec; a spec says what is observably true afterwards, and prompts without it get a plausible guess.",
+        "Edge cases are the assistant's job to think of; it tends to implement the main case.",
+        "The spec is finished when the code is generated; the spec is the review checklist."
+      ],
+      "sequence": [
+        "A function slugify(text) with a one-line request.",
+        "Rewriting the request as criteria, edge cases and non-goals.",
+        "Turning each criterion into a test input.",
+        "Using the spec as the review checklist."
+      ],
+      "examples": [
+        "Criteria: lowercase; each run of non-alphanumeric characters becomes one hyphen; no leading or trailing hyphen; empty input returns ''. slugify('  Hello, World! ') is 'hello-world'; slugify('A  B--C') is 'a-b-c'."
+      ],
+      "figures": [
+        {
+          "type": "table",
+          "shows": "Spec lines on the left, test cases generated from each on the right.",
+          "learnerAction": "Pick which lines are testable.",
+          "placement": "criteria"
+        },
+        {
+          "type": "python_execution",
+          "shows": "slugify stub and a list of asserts.",
+          "learnerAction": "Complete and run.",
+          "placement": "code"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "choice",
+          "targets": "write-criteria",
+          "sample": "Which is a testable acceptance criterion?",
+          "answer": "slugify('A  B--C') returns 'a-b-c'",
+          "choices": [
+            "slugify('A  B--C') returns 'a-b-c'",
+            "slugify is fast",
+            "slugify is clean",
+            "slugify is robust"
+          ]
+        },
+        {
+          "kind": "code-run-python",
+          "targets": "derive-test-inputs",
+          "sample": "Write slugify(text) that lowercases, turns each run of non-alphanumerics into one hyphen and strips edge hyphens. Print slugify('  Hello, World! ').",
+          "answer": "hello-world"
+        },
+        {
+          "kind": "single-term",
+          "targets": "derive-test-inputs",
+          "sample": "What do you call an input at a boundary, such as an empty string, that the spec must address?",
+          "answer": "edge case"
+        }
+      ],
+      "sourceIds": [
+        "claude-bp",
+        "google-review",
+        "willison-blog"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "tests-as-the-contract",
+      "moduleId": "working-with-an-assistant",
+      "title": "Tests as the contract",
+      "objective": "Judge whether a test suite would catch a defect, using mutation score and assertions rather than line coverage.",
+      "prerequisiteLessonIds": [
+        "specification-first"
+      ],
+      "concepts": [
+        {
+          "id": "assertion",
+          "title": "Assertion",
+          "summary": "A check inside a test that fails when behaviour is wrong."
+        },
+        {
+          "id": "mutation-score",
+          "title": "Mutation score",
+          "summary": "The share of deliberately injected faults that the tests detect."
+        },
+        {
+          "id": "coverage",
+          "title": "Coverage",
+          "summary": "The share of lines that run during tests, which says nothing about whether outputs are checked."
+        }
+      ],
+      "skills": [
+        "find-weak-test",
+        "compute-mutation-score"
+      ],
+      "misconceptions": [
+        "100% coverage means the code is tested; code can run without anything being checked.",
+        "Letting the assistant write the tests for its own code proves the code does what it does.",
+        "If tests pass, a rule that passes the tests must be right; assistants sometimes special-case the tests."
+      ],
+      "sequence": [
+        "is_leap(year) written as year % 4 == 0 and tests for 2024 and 2023 that pass.",
+        "Which input exposes the bug: 1900.",
+        "Mutation: change an operator and see whether any test fails.",
+        "Writing tests first, from the spec, then watching them fail."
+      ],
+      "examples": [
+        "Century rule: divisible by 100 is not leap unless divisible by 400, so 1900 is not leap and 2000 is.",
+        "20 injected faults, 15 caught by tests: mutation score 15/20 = 75%."
+      ],
+      "figures": [
+        {
+          "type": "program_trace",
+          "shows": "The function and test run line by line with the result of each assert.",
+          "learnerAction": "Step through and add a test year.",
+          "placement": "tests"
+        },
+        {
+          "type": "table",
+          "shows": "Mutants and whether each was killed.",
+          "learnerAction": "Mark survivors.",
+          "placement": "mutation"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-mutation-score",
+          "sample": "20 faults are injected into the code and the tests catch 15. What is the mutation score as a percentage?",
+          "answer": "75"
+        },
+        {
+          "kind": "choice",
+          "targets": "find-weak-test",
+          "sample": "def is_leap(y): return y % 4 == 0 passes tests for 2024 and 2023. Which year exposes the bug?",
+          "answer": "1900",
+          "choices": [
+            "2000",
+            "2023",
+            "1900",
+            "2024"
+          ]
+        },
+        {
+          "kind": "choice",
+          "targets": "find-weak-test",
+          "sample": "A test calls a function and has no assert. Its effect on line coverage and on defect detection is",
+          "answer": "Counts as covered and detects nothing",
+          "choices": [
+            "Counts as covered and detects nothing",
+            "Counts as uncovered",
+            "Detects everything",
+            "Is invalid Python"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "claude-bp",
+        "google-review",
+        "willison-blog"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "small-steps-and-version-control",
+      "moduleId": "working-with-an-assistant",
+      "title": "Small steps and version control",
+      "objective": "Split a large change into reviewable commits and use version control to checkpoint and undo.",
+      "prerequisiteLessonIds": [
+        "tests-as-the-contract"
+      ],
+      "concepts": [
+        {
+          "id": "commit",
+          "title": "Commit",
+          "summary": "A recorded, reversible snapshot of a change."
+        },
+        {
+          "id": "checkpoint",
+          "title": "Checkpoint",
+          "summary": "A commit made before a risky step so that you can return to it."
+        },
+        {
+          "id": "revert",
+          "title": "Revert",
+          "summary": "A new commit that undoes an earlier one without rewriting history."
+        }
+      ],
+      "skills": [
+        "split-change",
+        "choose-undo"
+      ],
+      "misconceptions": [
+        "A single big change is faster to review; large diffs get skimmed.",
+        "Reset and revert are the same; reset rewrites history and revert adds a commit, so only revert is safe on a shared branch.",
+        "The assistant will commit sensibly; you decide the boundaries."
+      ],
+      "sequence": [
+        "A 1,200-line diff arrives at once.",
+        "Break the task into steps each with its own test and commit.",
+        "Checkpoint before letting an agent edit widely.",
+        "Undo options."
+      ],
+      "examples": [
+        "1,200 lines in steps of at most 300 gives 4 commits.",
+        "git reset --soft HEAD~1 undoes the last commit and keeps its changes staged; git revert <sha> adds a commit that reverses it."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A commit graph with a checkpoint and a revert commit.",
+          "learnerAction": "Choose an undo and see the graph.",
+          "placement": "history"
+        },
+        {
+          "type": "table",
+          "shows": "Three task descriptions sized in lines.",
+          "learnerAction": "Split into steps.",
+          "placement": "steps"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "split-change",
+          "sample": "A 1,200-line change is split into steps of at most 300 lines. How many steps at least?",
+          "answer": "4"
+        },
+        {
+          "kind": "single-term",
+          "targets": "choose-undo",
+          "sample": "Which git command makes a new commit that reverses an earlier one?",
+          "answer": "git revert"
+        },
+        {
+          "kind": "choice",
+          "targets": "choose-undo",
+          "sample": "On a branch other people have pulled, to undo a bad commit you should use",
+          "answer": "git revert",
+          "choices": [
+            "git revert",
+            "git reset --hard and force push",
+            "Delete the repository",
+            "Edit history silently"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "progit",
+        "claude-bp",
+        "google-review"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "recovering-an-unfamiliar-codebase",
+      "moduleId": "reviewing",
+      "title": "Recovering your bearings in unfamiliar code",
+      "objective": "Reconstruct the structure of a codebase from entry points, boundaries and dependencies, and verify an assistant's description of it.",
+      "prerequisiteLessonIds": [
+        "small-steps-and-version-control"
+      ],
+      "concepts": [
+        {
+          "id": "entry-point",
+          "title": "Entry point",
+          "summary": "Where execution starts, such as a main function or a route table."
+        },
+        {
+          "id": "module-boundary",
+          "title": "Module boundary",
+          "summary": "The line between parts that other parts reach only through an interface."
+        },
+        {
+          "id": "claim-check",
+          "title": "Claim check",
+          "summary": "Confirming a statement about code by finding the line that makes it true."
+        }
+      ],
+      "skills": [
+        "find-entry-point",
+        "verify-claim"
+      ],
+      "misconceptions": [
+        "The assistant's summary of the codebase is accurate; it can state a convincing structure that the code does not have.",
+        "Reading every file is the only way; reading entry points, boundaries, data access, errors and tests recovers most of the structure.",
+        "The file names tell you the architecture; names show intent and code shows behaviour."
+      ],
+      "sequence": [
+        "A repository the assistant wrote quickly.",
+        "Find the entry points, then follow one request through.",
+        "Locate data access, auth, error handling, configuration and tests.",
+        "Check three claims from the assistant's summary against the code."
+      ],
+      "examples": [
+        "Tree: app/main.py, app/routes/orders.py, app/db.py, tests/. Search shows 3 of 7 modules import app.db, so the data layer is not isolated behind one module.",
+        "Claim: 'all routes check auth.' Searching for the decorator finds it on 4 of 5 routes: the claim is false."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A file tree and an import graph.",
+          "learnerAction": "Click a module to list who imports it.",
+          "placement": "structure"
+        },
+        {
+          "type": "table",
+          "shows": "Five routes with a column for the auth decorator.",
+          "learnerAction": "Tick which routes have it.",
+          "placement": "claims"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "verify-claim",
+          "sample": "An assistant says every route checks auth. A search finds the auth decorator on 4 of 5 routes. How many routes lack it?",
+          "answer": "1"
+        },
+        {
+          "kind": "choice",
+          "targets": "find-entry-point",
+          "sample": "Which file is most likely the entry point?",
+          "answer": "app/main.py",
+          "choices": [
+            "app/utils.py",
+            "app/main.py",
+            "tests/test_db.py",
+            "README.md"
+          ]
+        },
+        {
+          "kind": "single-term",
+          "targets": "verify-claim",
+          "sample": "What do you call confirming a statement about code by finding the line that makes it true?",
+          "answer": "claim check"
+        }
+      ],
+      "sourceIds": [
+        "google-review",
+        "claude-bp",
+        "willison-blog"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "reading-a-diff-for-intent",
+      "moduleId": "reviewing",
+      "title": "Reading a diff for intent",
+      "objective": "Review a diff against its specification in a fixed order and find the changes the specification did not ask for.",
+      "prerequisiteLessonIds": [
+        "recovering-an-unfamiliar-codebase",
+        "specification-first"
+      ],
+      "concepts": [
+        {
+          "id": "scope-creep",
+          "title": "Scope creep",
+          "summary": "Changes beyond what the specification asked for."
+        },
+        {
+          "id": "review-order",
+          "title": "Review order",
+          "summary": "Intent and design first, then interfaces, tests, risky paths, then details."
+        },
+        {
+          "id": "review-comment",
+          "title": "Review comment",
+          "summary": "A specific, actionable note tied to a line and a reason."
+        }
+      ],
+      "skills": [
+        "find-unrequested-changes",
+        "write-comment"
+      ],
+      "misconceptions": [
+        "If the diff looks tidy it is fine; assistants reformat, rename and 'improve' alongside the change.",
+        "Review starts at the first line of the diff; start from what the change was supposed to do.",
+        "Removing a log line is cosmetic; logs and error handling carry operations behaviour."
+      ],
+      "sequence": [
+        "The specification: add an optional limit, default 50, to list_orders.",
+        "A diff that also adds ordering and removes a log line.",
+        "Review order and what to ask for each unrequested change.",
+        "A comment that states the line, the concern and the request."
+      ],
+      "examples": [
+        "Diff adds limit=50 (requested), adds ORDER BY created DESC (not requested) and deletes log.info (not requested): 2 changes beyond the spec."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A diff with hunks coloured by whether the spec mentions them.",
+          "learnerAction": "Click a hunk to tag it requested or not.",
+          "placement": "scope"
+        },
+        {
+          "type": "table",
+          "shows": "Review order checklist.",
+          "learnerAction": "Tick steps in order.",
+          "placement": "order"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "code-reading",
+          "targets": "find-unrequested-changes",
+          "sample": "Spec: add optional limit (default 50) to list_orders. Diff: def list_orders(user_id, limit=50); the SQL gains 'ORDER BY created DESC LIMIT ?'; the line log.info(\"listing orders\", user_id) is deleted. How many changes go beyond the spec?",
+          "answer": "2"
+        },
+        {
+          "kind": "choice",
+          "targets": "write-comment",
+          "sample": "Which review comment is best?",
+          "answer": "Line 12 drops the audit log. Please restore it or explain why it is not needed.",
+          "choices": [
+            "Line 12 drops the audit log. Please restore it or explain why it is not needed.",
+            "This is bad.",
+            "Needs work.",
+            "I would do it differently."
+          ]
+        },
+        {
+          "kind": "choice",
+          "targets": "find-unrequested-changes",
+          "sample": "Where should a reviewer start?",
+          "answer": "With the specification",
+          "choices": [
+            "With the specification",
+            "With the last file",
+            "With formatting",
+            "With the variable names"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "google-review",
+        "claude-bp"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "defects-machines-make",
+      "moduleId": "reviewing",
+      "title": "Defects that assistants typically make",
+      "objective": "Recognise hallucinated APIs, plausible-but-wrong logic, swallowed errors and tests that were bent to pass.",
+      "prerequisiteLessonIds": [
+        "reading-a-diff-for-intent",
+        "tests-as-the-contract"
+      ],
+      "concepts": [
+        {
+          "id": "hallucinated-api",
+          "title": "Hallucinated API",
+          "summary": "A call to a function, method or package that does not exist."
+        },
+        {
+          "id": "swallowed-error",
+          "title": "Swallowed error",
+          "summary": "An exception caught and replaced by a default so the failure disappears."
+        },
+        {
+          "id": "off-by-one",
+          "title": "Off-by-one",
+          "summary": "A boundary error of exactly one element."
+        }
+      ],
+      "skills": [
+        "spot-defect",
+        "trace-off-by-one"
+      ],
+      "misconceptions": [
+        "Code that runs is correct; it can run and return the wrong list.",
+        "A hallucinated API always fails loudly; some are real functions with different behaviour from the one assumed.",
+        "A passing test suite after an assistant's change shows it fixed the bug; check that tests were not edited to pass."
+      ],
+      "sequence": [
+        "A pagination function with 1-indexed pages and a 0-indexed slice.",
+        "A try/except that returns 0.",
+        "A call to a method that is not in the library.",
+        "An assistant that special-cases the failing test input."
+      ],
+      "examples": [
+        "items[page*size:(page+1)*size] with page=1, size=10 over range(25) returns 10..19, skipping 0..9.",
+        "'abc'.reverse() raises AttributeError because str has no reverse; reversed or slicing [::-1] is the real route."
+      ],
+      "figures": [
+        {
+          "type": "program_trace",
+          "shows": "The pagination slice with page and size shown.",
+          "learnerAction": "Step with page=1.",
+          "placement": "off-by-one"
+        },
+        {
+          "type": "table",
+          "shows": "Four snippets with a defect-type column.",
+          "learnerAction": "Match each to a type.",
+          "placement": "taxonomy"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "code-run-python",
+          "targets": "trace-off-by-one",
+          "sample": "def page(items, p, size): return items[p*size:(p+1)*size]. Print page(list(range(25)), 1, 10)[0]. The caller expects pages to start at 1.",
+          "answer": "10"
+        },
+        {
+          "kind": "choice",
+          "targets": "spot-defect",
+          "sample": "except Exception: return 0 inside a billing calculation is a",
+          "answer": "Swallowed error",
+          "choices": [
+            "Swallowed error",
+            "Hallucinated API",
+            "Off-by-one",
+            "Race condition"
+          ]
+        },
+        {
+          "kind": "choice",
+          "targets": "spot-defect",
+          "sample": "'abc'.reverse() in Python is a",
+          "answer": "Hallucinated method",
+          "choices": [
+            "Hallucinated method",
+            "Valid string method",
+            "Slice",
+            "Iterator"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "google-review",
+        "pearce",
+        "willison-blog"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "security-review-of-generated-code",
+      "moduleId": "reviewing",
+      "title": "Security review of generated code",
+      "objective": "Find injection, missing authorisation, committed secrets and risky dependencies in a generated change.",
+      "prerequisiteLessonIds": [
+        "defects-machines-make"
+      ],
+      "concepts": [
+        {
+          "id": "sql-injection",
+          "title": "SQL injection",
+          "summary": "Attacker-controlled text altering the structure of a query."
+        },
+        {
+          "id": "broken-access",
+          "title": "Broken access control",
+          "summary": "A request reaching data its caller should not see."
+        },
+        {
+          "id": "dependency-risk",
+          "title": "Dependency risk",
+          "summary": "Adding a package that is unmaintained, malicious or non-existent in the registry the name was guessed from."
+        }
+      ],
+      "skills": [
+        "detect-injection",
+        "review-dependencies"
+      ],
+      "misconceptions": [
+        "The assistant knows secure patterns; it reproduces common code, including common insecure code.",
+        "Authentication and authorisation are the same; the first asks who you are and the second what you may do.",
+        "An import that resolves is safe; a hallucinated name can be registered by an attacker."
+      ],
+      "sequence": [
+        "A search endpoint building SQL with an f-string.",
+        "The same query parameterised.",
+        "An endpoint that returns /orders/{id} without checking the owner.",
+        "A new dependency: age, maintainers, name check."
+      ],
+      "examples": [
+        "Table users has 4 rows. f\"SELECT * FROM users WHERE name = '{name}'\" with name = x' OR '1'='1 returns all 4 rows; the parameterised form with the same string returns 0.",
+        "A key committed to git is exposed even after deletion because history keeps it; rotate it."
+      ],
+      "figures": [
+        {
+          "type": "relational_query",
+          "shows": "A users table and the query result for a normal and a hostile name.",
+          "learnerAction": "Switch between concatenated and parameterised.",
+          "placement": "injection"
+        },
+        {
+          "type": "table",
+          "shows": "Four endpoints with owner checks.",
+          "learnerAction": "Mark which lack one.",
+          "placement": "access control"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "code-run-sql",
+          "targets": "detect-injection",
+          "sample": "users has 4 rows. The query is SELECT * FROM users WHERE name = 'x' OR '1'='1'. How many rows are returned?",
+          "answer": "4"
+        },
+        {
+          "kind": "choice",
+          "targets": "review-dependencies",
+          "sample": "An assistant adds an import of a package you have never heard of. First step:",
+          "answer": "Check the package exists, its maintainers and its age before installing",
+          "choices": [
+            "Check the package exists, its maintainers and its age before installing",
+            "Install it",
+            "Ignore it",
+            "Vendor it blindly"
+          ]
+        },
+        {
+          "kind": "choice",
+          "targets": "detect-injection",
+          "sample": "The fix for SQL built from request text is",
+          "answer": "Parameterised queries",
+          "choices": [
+            "Parameterised queries",
+            "Longer prompts",
+            "Escaping by hand only",
+            "Lowercasing input"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "owasp-top10",
+        "owasp-cheats",
+        "ssdf",
+        "pearce"
+      ],
+      "historyNotes": [
+        "Pearce et al. (2021) tested an early Copilot on security-relevant prompts and found that a large share of its suggestions contained known weaknesses."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "verifying-behaviour",
+      "moduleId": "practice",
+      "title": "Verifying behaviour",
+      "objective": "Gather evidence that a change works, and distinguish an assistant's claim from an observed result.",
+      "prerequisiteLessonIds": [
+        "security-review-of-generated-code"
+      ],
+      "concepts": [
+        {
+          "id": "evidence-ladder",
+          "title": "Evidence ladder",
+          "summary": "Claim, read code, tests pass, run the feature, check in a realistic environment."
+        },
+        {
+          "id": "property",
+          "title": "Property",
+          "summary": "A statement that must hold for every input, such as the result being a member of the input."
+        },
+        {
+          "id": "done",
+          "title": "Definition of done",
+          "summary": "The evidence you require before merging."
+        }
+      ],
+      "skills": [
+        "read-test-output",
+        "state-property"
+      ],
+      "misconceptions": [
+        "'All tests pass' is the end of verification; check that the tests exercise the change.",
+        "An assistant's report of running the tests is evidence; the log is evidence.",
+        "Properties need a framework; a loop over random inputs also tests one."
+      ],
+      "sequence": [
+        "A test log: 48 passed, 2 failed, 1 skipped.",
+        "my_max returns 0 for all-negative input.",
+        "A property: the maximum is an element of the list and is at least every element.",
+        "The merge checklist."
+      ],
+      "examples": [
+        "48 + 2 + 1 = 51 tests; 3 are not passing. my_max([-3,-1,-2]) with m = 0 returns 0, which is not in the list."
+      ],
+      "figures": [
+        {
+          "type": "table",
+          "shows": "A test log with counts and a skipped list.",
+          "learnerAction": "Total the tests and find the skipped ones.",
+          "placement": "log"
+        },
+        {
+          "type": "python_execution",
+          "shows": "my_max and a loop checking the property on small lists.",
+          "learnerAction": "Run to find a counterexample.",
+          "placement": "property"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "read-test-output",
+          "sample": "A log reads 48 passed, 2 failed, 1 skipped. How many tests were listed?",
+          "answer": "51"
+        },
+        {
+          "kind": "code-run-python",
+          "targets": "state-property",
+          "sample": "def my_max(xs):\n    m = 0\n    for x in xs:\n        if x > m: m = x\n    return m\nPrint my_max([-3,-1,-2]).",
+          "answer": "0"
+        },
+        {
+          "kind": "choice",
+          "targets": "state-property",
+          "sample": "Which property does my_max([-3,-1,-2]) == 0 violate?",
+          "answer": "The result is an element of the list",
+          "choices": [
+            "The result is an element of the list",
+            "The result is an integer",
+            "The result is small",
+            "The function is fast"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "google-review",
+        "claude-bp",
+        "ssdf"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "ownership-licensing-and-privacy",
+      "moduleId": "practice",
+      "title": "Ownership, licensing and privacy",
+      "objective": "Decide what may be pasted into an assistant, and who is responsible for licence and data consequences.",
+      "prerequisiteLessonIds": [
+        "verifying-behaviour"
+      ],
+      "concepts": [
+        {
+          "id": "data-handling",
+          "title": "Data handling",
+          "summary": "What leaves your machine when you prompt, and the vendor's retention and training terms."
+        },
+        {
+          "id": "licence-risk",
+          "title": "Licence risk",
+          "summary": "Generated code may reproduce licensed code; the obligation stays with the shipper."
+        },
+        {
+          "id": "policy",
+          "title": "Team policy",
+          "summary": "Written rules for which tools, data and repositories are allowed."
+        }
+      ],
+      "skills": [
+        "classify-paste",
+        "assess-licence-risk"
+      ],
+      "misconceptions": [
+        "If the tool wrote it, I do not need to check its licence; a verbatim reproduction of copyleft code can still bind your project.",
+        "Private chats with a tool are private; read the retention and training terms of the plan you are on.",
+        "Secrets are safe if deleted from the chat; rotate them."
+      ],
+      "sequence": [
+        "Four things you might paste: a stack trace, a customer export, an API key, a public README.",
+        "What each exposes.",
+        "Where licence questions arise: long verbatim blocks, copied tests, vendored code.",
+        "The written policy."
+      ],
+      "examples": [
+        "A stack trace with no personal data is usually fine; a customer export and an API key are not, and a pasted key must be rotated."
+      ],
+      "figures": [
+        {
+          "type": "table",
+          "shows": "Four items with data classes.",
+          "learnerAction": "Sort into allowed and not.",
+          "placement": "paste"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A data path from editor to vendor to storage with retention labels.",
+          "learnerAction": "none",
+          "placement": "data path"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "choice",
+          "targets": "classify-paste",
+          "sample": "Which may be pasted into a hosted assistant under a typical company policy?",
+          "answer": "A public README",
+          "choices": [
+            "A public README",
+            "A production API key",
+            "A customer export",
+            "An employee file"
+          ]
+        },
+        {
+          "kind": "choice",
+          "targets": "classify-paste",
+          "sample": "You pasted an API key into a chat. Next step:",
+          "answer": "Rotate the key",
+          "choices": [
+            "Rotate the key",
+            "Delete the message and carry on",
+            "Ignore it",
+            "Ask the assistant to forget"
+          ]
+        },
+        {
+          "kind": "self",
+          "targets": "assess-licence-risk",
+          "sample": "Say who is responsible for the licence of code an assistant generated for your project.",
+          "answer": "The team that ships it"
+        }
+      ],
+      "sourceIds": [
+        "nist-rmf",
+        "ssdf",
+        "willison-blog"
+      ],
+      "historyNotes": [
+        "The US Copyright Office has published guidance on AI and copyright, including a 2025 report on copyrightability."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "working-rules-and-measurement",
+      "moduleId": "practice",
+      "title": "Working rules and measurement",
+      "objective": "Write your own working rules and measure whether AI assistance is helping with delivery metrics rather than output volume.",
+      "prerequisiteLessonIds": [
+        "ownership-licensing-and-privacy",
+        "verifying-behaviour"
+      ],
+      "concepts": [
+        {
+          "id": "change-failure-rate",
+          "title": "Change failure rate",
+          "summary": "The share of changes that cause a failure needing a fix."
+        },
+        {
+          "id": "working-rule",
+          "title": "Working rule",
+          "summary": "A short statement of when to use the assistant, what to verify and what never to delegate."
+        },
+        {
+          "id": "skill-atrophy",
+          "title": "Skill atrophy",
+          "summary": "Loss of practice in work you stop doing yourself."
+        }
+      ],
+      "skills": [
+        "compute-change-failure",
+        "write-rule"
+      ],
+      "misconceptions": [
+        "More merged changes means more productivity; failures cancel gains.",
+        "Speed is the measure; DORA pairs throughput with stability.",
+        "The assistant has no downside for learning; skills you never practise fade, so keep some work manual."
+      ],
+      "sequence": [
+        "Before and after: 40 merges and 5% failures, then 60 merges and 10%.",
+        "Failed and successful merges before and after.",
+        "Stability alongside throughput.",
+        "A one-page set of rules."
+      ],
+      "examples": [
+        "Before: 40 × 0.05 = 2 failed, 38 good. After: 60 × 0.10 = 6 failed, 54 good. Good merges rose (54 − 38)/38 ≈ 42%, while failures tripled."
+      ],
+      "figures": [
+        {
+          "type": "data_series",
+          "shows": "Merges per month and change failure rate before and after.",
+          "learnerAction": "Move the failure rate.",
+          "placement": "metrics"
+        },
+        {
+          "type": "table",
+          "shows": "A draft working-rule sheet with blanks.",
+          "learnerAction": "Fill your own.",
+          "placement": "rules"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-change-failure",
+          "sample": "60 merges a month with a 10% change failure rate. How many failed?",
+          "answer": "6"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-change-failure",
+          "sample": "Good merges rise from 38 to 54. What is the increase as a whole-number percentage?",
+          "answer": "42"
+        },
+        {
+          "kind": "self",
+          "targets": "write-rule",
+          "sample": "Name one task you will not delegate to an assistant and why.",
+          "answer": "Any task you must be able to do or explain yourself, with a reason"
+        }
+      ],
+      "sourceIds": [
+        "dora",
+        "metr-rct",
+        "nist-rmf"
+      ],
+      "historyNotes": [
+        "The DORA programme popularised four delivery metrics; change failure rate is one."
+      ],
+      "estimatedMinutes": 12
+    }
+  ],
+  "courseCheck": "A mixed review of one generated change: judge it against a spec, count unrequested changes, find the failing input for a weak test, count rows from an injectable query, read a test log, and compute a change failure rate. Add one self-rated recall asking the learner to state who owns a merged change.",
+  "platformNeeds": [
+    "A diff_review figure: a unified diff with clickable hunks the learner tags as requested or not (svg_figure fallback given).",
+    "Python and SQL runners with a seeded users table for the injection lesson; code items here use only the standard library.",
+    "A repo_tree figure with an import graph (svg_figure fallback).",
+    "Code-reading questions in Python, SQL and shell only; no assistant tool is run live."
+  ],
+  "unverified": [
+    "The METR 2025 trial and the Pearce et al. 2021 findings are described only qualitatively and from memory; do not quote percentages until read.",
+    "Google Engineering Practices licence (CC BY 3.0) is from memory.",
+    "The US Copyright Office 2025 report is cited from memory.",
+    "The code.claude.com best-practices page was not opened; only the redirect from the old engineering URL was seen.",
+    "DORA's four metrics are from memory; the site could not be opened."
+  ]
+}
