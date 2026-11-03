@@ -97,42 +97,47 @@ should not repeat each other.
   DevOps; AWS; System Design; Software Architecture; Cyber Security; Data Analyst (extends Python
   and statistics); Data Engineer; Machine Learning; MLOps; AI Engineer; Prompt engineering.
 
-## Status at the end of the 1 November 2026 session
+## Status, 3 November 2026: every course written from the curriculum
 
-### Courses written from the curriculum (committed, not yet read in full by George)
+All twenty courses are re-authored from their objectives by Sonnet agents to
+`docs/writing-calibration/authoring-brief.md` and the `discere-lesson-voice` skill, and committed.
+Review pages for each are in `docs/writing-calibration/courses/`. George has read the pilot lesson
+and the early review pages, not every course.
 
-Maths Foundations, Logic and Reasoning, Probability and Statistics, Philosophy, Electronics
-Foundations, CS Basics, Psychology, Economics and Astronomy: 80 lessons. Each was written by a Sonnet agent
-to `docs/writing-calibration/authoring-brief.md`. For each, the lead (Opus):
+For each course the lead (Opus):
 
 - ran `scripts/voice-check.ts` (0 errors);
-- recomputed the answers by hand;
-- checked flagged historical facts against its own knowledge (sources were unreachable from the
-  cloud session);
-- rebound `review/publication.json` with `scripts/rebind-review.ts`, with a note of exactly what
+- ran `scripts/check-reused-answers.mjs`, so no reused question id changed how it is marked
+  (dropped units in Probability and Philosophy were caught and restored);
+- recomputed new answers by hand;
+- checked flagged facts against its own knowledge, not the sources, which were unreachable;
+- checked publishability, and restored or added citations where an author's rebuild dropped them
+  (Linear Algebra, SQL and Python);
+- rebound `review/publication.json` with `scripts/rebind-review.ts`, which records exactly what
   was checked.
 
-Review pages are in `docs/writing-calibration/courses/`.
+Final full run on 3 November 2026:
 
-A cross-check of every reused question id against its earlier answer
-caught dropped units (now restored); repeat it for each new course.
+- typecheck: clean;
+- contracts: 86/86;
+- curriculum: 724/724, with 11 files that cannot load `.authoring/candidate.json`, a
+  desktop-only file;
+- web: 392/392;
+- server: 355 passed, with 7 Python project tests failing because the container has no Python
+  sandbox runtime, as on a clean checkout;
+- content validation: all 20 courses.
 
-### Still to write (11 courses)
+### Still open
 
-Biology, Calculus, Chemistry, Engineering, English, Geometry, Linear algebra, Physics,
-Python, Rust and SQL. Run one Sonnet agent per course with the prompt pattern used for the eight
-above (follow the authoring brief; include schema defaults; voice from `PRIMARY_VOICE` in
-`scripts/voice-rewrite.mjs`). Then:
-
-1. Run `voice-check`, recompute the answers, and cross-check reused ids for changed answers or
-   units.
-2. Run `rebind-review`.
-3. Run that course's curriculum and server tests, and re-point any test that asserts old lesson
-   details without weakening it.
-4. Build its page with `scripts/voice-review-page.mjs`.
-
-Run the server suite only when no course is mid-write, because it loads every course.
-
+- **The running app.** Nobody has played the new lessons in it. Figures and hover terms have only
+  been seen in the preview pages, and no desktop, tablet or mobile screenshots exist.
+- **Flashcards** were not rewritten. A few use terms the new lessons do not teach, and one prints
+  Milton's "waite".
+- **Rust** has no citations or review record (see below), and its bundle would be overwritten by
+  `scripts/prepare-rust.ts`.
+- **The `*-v2.test.ts` files** that read `.authoring/candidate.json` should be pointed at
+  `bundle.json`, as the Geometry, Calculus, Philosophy, Economics and Astronomy ones were.
+- **`pnpm check`** still stops at lint, on four old errors in `cs-basics-v2.test.ts`.
 ### Known gaps
 
 - Figures and hover terms have not been seen in the running player, and no screenshots have been
