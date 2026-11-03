@@ -17,6 +17,19 @@ const bundle = JSON.parse(
 const stubs = bundle.lessons.filter((lesson: { steps: unknown[] }) => lesson.steps.length === 0);
 bundle.lessons = bundle.lessons.filter((lesson: { steps: unknown[] }) => lesson.steps.length > 0);
 const errors = validateCourseBundle(bundle).issues.filter((issue) => issue.severity === "error");
+// The voice skill: an opener starts from the subject and never lists what the lesson will cover.
+const ANNOUNCES = /\b(?:this|the rest of this|the second half of this) lesson\b/iu;
+for (const lesson of bundle.lessons as Array<{ id: string; intro?: { hook: { blocks: Array<{ text?: string }> } } }>) {
+  for (const block of lesson.intro?.hook.blocks ?? [])
+    for (const sentence of (block.text ?? "").match(/[^.?!]+[.?!]?/gu) ?? [])
+      if (ANNOUNCES.test(sentence))
+        errors.push({
+          code: "OPENER_ANNOUNCES_LESSON",
+          path: `lessons.${lesson.id}.intro.hook`,
+          severity: "error",
+          message: `The opener announces the lesson ("${sentence.trim().slice(0, 80)}…"). End it on the subject or the question instead.`,
+        });
+}
 for (const issue of errors) console.log(`${issue.code} ${issue.path}: ${issue.message}`);
 console.log(
   `${course}: ${errors.length} error(s)${stubs.length ? `; ${stubs.length} lesson(s) not written yet` : ""}`,

@@ -2,6 +2,13 @@
 
 Updated: 2026-11-03
 
+Release 1.7.0 is the expansion's fourth wave (TypeScript and Node, UX and Human-Computer
+Interaction, Game Design and Programming Patterns, Systems Programming, Technical Writing) and
+most of the fifth (Mechanisms and Machine Design, Materials and Manufacturing, Control Theory,
+Mechatronics and Robotics, Industrial and Product Design). Every course's openers now end on the
+subject: 308 sentences that announced the lesson were deleted or rewritten, and `voice-check`
+rejects them from now on. Review records of the reviewed courses are rebound with a note.
+
 Release 1.6.1 is the expansion's third wave: DevOps and Delivery, Cloud Fundamentals, Software
 Testing and Quality, Data Engineering, and Analytics Engineering and Data Governance, with The
 Web and AI-Assisted Engineering from wave 4. (A v1.6.0 tag was pushed by mistake onto 1.5.0;
