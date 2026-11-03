@@ -10,7 +10,7 @@ import { validateCourseBundle } from "../src/index.js";
  */
 const bundle = JSON.parse(
   readFileSync(
-    new URL("../../../content/probability-statistics/.authoring/candidate.json", import.meta.url),
+    new URL("../../../content/probability-statistics/bundle.json", import.meta.url),
     "utf8",
   ),
 ) as CourseBundle;

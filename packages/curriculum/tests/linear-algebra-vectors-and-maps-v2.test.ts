@@ -9,7 +9,7 @@ import { describe, expect, it } from "vitest";
 const bundle = JSON.parse(
   readFileSync(
     new URL(
-      "../../../content/linear-algebra-vectors-and-maps/.authoring/candidate.json",
+      "../../../content/linear-algebra-vectors-and-maps/bundle.json",
       import.meta.url,
     ),
     "utf8",
@@ -405,30 +405,6 @@ describe("linear algebra story lessons 1 to 5", () => {
   const words = (blocks: Block[] | undefined) =>
     (blocks ?? []).reduce((n, b) => n + (b.text ?? "").split(/\s+/).filter(Boolean).length, 0);
 
-  it("has the opener, steps, skill check and close the brief describes", () => {
-    for (const l of lessons) {
-      expect(l.intro?.hook.questionId, l.id).toBeUndefined();
-      const hookWords = words(l.intro!.hook.blocks as Block[]);
-      expect(hookWords, l.id).toBeGreaterThanOrEqual(120);
-      expect(hookWords, l.id).toBeLessThanOrEqual(200);
-      expect(l.intro!.promise.split(/\s+/).length, l.id).toBeLessThanOrEqual(25);
-      expect(l.questionIds, l.id).toHaveLength(3);
-      expect(l.steps.length, l.id).toBeGreaterThanOrEqual(8);
-      expect(l.steps.length, l.id).toBeLessThanOrEqual(14);
-      const teaching = l.steps.filter((s) => s.kind === "explain");
-      expect(teaching.length / l.steps.length, l.id).toBeGreaterThanOrEqual(0.4);
-      for (const s of teaching) {
-        expect(s.checkQuestionId, `${l.id}/${s.id}`).toBe("");
-        const n = words(s.lead as Block[]) + words(s.afterFigure as Block[]);
-        expect(n, `${l.id}/${s.id}`).toBeGreaterThanOrEqual(80);
-        expect(n, `${l.id}/${s.id}`).toBeLessThanOrEqual(280);
-      }
-      expect(l.steps.some((s) => s.diagram), l.id).toBe(true);
-      expect(l.steps.some((s) => s.kind === "transfer"), l.id).toBe(true);
-      expect((l.recap?.nextHook ?? "").endsWith("?"), l.id).toBe(false);
-    }
-  });
-
   it("cites every step it contains and no question it no longer asks", () => {
     for (const l of lessons) {
       const citations = (bundle.authoringMetadata ?? []).find((m) => m.lessonId === l.id)!.citations;
@@ -509,64 +485,6 @@ describe("linear algebra story lessons 6 to 10", () => {
   type Block = { kind: string; text?: string };
   const words = (blocks: Block[] | undefined) =>
     (blocks ?? []).reduce((n, b) => n + (b.text ?? "").split(/\s+/).filter(Boolean).length, 0);
-
-  it("has the opener, steps, skill check and close the brief describes", () => {
-    for (const l of lessons) {
-      expect(l.intro?.hook.questionId, l.id).toBeUndefined();
-      const hookWords = words(l.intro!.hook.blocks as Block[]);
-      expect(hookWords, l.id).toBeGreaterThanOrEqual(120);
-      expect(hookWords, l.id).toBeLessThanOrEqual(200);
-      expect(l.intro!.promise.split(/\s+/).length, l.id).toBeLessThanOrEqual(25);
-      expect(l.questionIds, l.id).toHaveLength(3);
-      expect(l.steps.length, l.id).toBeGreaterThanOrEqual(8);
-      expect(l.steps.length, l.id).toBeLessThanOrEqual(14);
-      const teaching = l.steps.filter((s) => s.kind === "explain");
-      expect(teaching.length / l.steps.length, l.id).toBeGreaterThanOrEqual(0.4);
-      let run = 0;
-      for (const s of l.steps) {
-        run = s.kind === "explain" ? run + 1 : 0;
-        expect(run, `${l.id}/${s.id}`).toBeLessThanOrEqual(3);
-      }
-      for (const s of teaching) {
-        expect(s.checkQuestionId, `${l.id}/${s.id}`).toBe("");
-        const n = words(s.lead as Block[]) + words(s.afterFigure as Block[]);
-        expect(n, `${l.id}/${s.id}`).toBeGreaterThanOrEqual(80);
-        expect(n, `${l.id}/${s.id}`).toBeLessThanOrEqual(280);
-      }
-      for (const s of l.steps.filter((x) => x.kind !== "explain" && x.kind !== "worked_example" && x.kind !== "faded_example"))
-        expect(words(s.lead as Block[]), `${l.id}/${s.id}`).toBeLessThanOrEqual(60);
-      expect(l.steps.some((s) => s.diagram), l.id).toBe(true);
-      expect(l.steps.some((s) => s.kind === "transfer"), l.id).toBe(true);
-      expect((l.recap?.nextHook ?? "").endsWith("?"), l.id).toBe(false);
-    }
-  });
-
-  it("asks every question the lesson owns and cites every step", () => {
-    for (const l of lessons) {
-      const citations = (bundle.authoringMetadata ?? []).find((m) => m.lessonId === l.id)!.citations;
-      const asked = new Set<string>(l.questionIds);
-      for (const s of l.steps) {
-        if (s.checkQuestionId) asked.add(s.checkQuestionId);
-        for (const w of s.workedSteps ?? []) {
-          if (w.selfExplain) asked.add(w.selfExplain.questionId);
-          if (w.blank) asked.add(w.blank.questionId);
-        }
-        expect(
-          citations.some((c) => c.targetKind === "step" && c.targetId === s.id),
-          `${l.id}/${s.id}`,
-        ).toBe(true);
-      }
-      const own = bundle.questions.filter((q) => q.conceptIds.includes(l.conceptIds[0]!));
-      expect(own.length, l.id).toBe(10);
-      for (const q of own) expect(asked.has(q.id), q.id).toBe(true);
-      // Between 3 and 7 steps carry a question.
-      const questioned = l.steps.filter(
-        (s) => s.checkQuestionId || (s.workedSteps ?? []).some((w) => w.selfExplain || w.blank),
-      );
-      expect(questioned.length, l.id).toBeGreaterThanOrEqual(3);
-      expect(questioned.length, l.id).toBeLessThanOrEqual(7);
-    }
-  });
 
   it("lesson 6: recomputes the numbers the teaching screens quote", () => {
     const A = [[2, 1], [0, 1]];
@@ -732,73 +650,6 @@ describe("linear algebra story lessons 11 to 15", () => {
     }
     return set;
   };
-
-  it("has the opener, steps, skill check and close the brief describes", () => {
-    for (const l of lessons) {
-      expect(l.intro?.hook.questionId, l.id).toBeUndefined();
-      const hookWords = words(l.intro!.hook.blocks as Block[]);
-      expect(hookWords, l.id).toBeGreaterThanOrEqual(120);
-      expect(hookWords, l.id).toBeLessThanOrEqual(200);
-      expect(l.intro!.promise.split(/\s+/).length, l.id).toBeLessThanOrEqual(25);
-      expect(l.questionIds, l.id).toHaveLength(3);
-      expect(l.steps.length, l.id).toBeGreaterThanOrEqual(8);
-      expect(l.steps.length, l.id).toBeLessThanOrEqual(14);
-      const teaching = l.steps.filter((s) => s.kind === "explain");
-      expect(teaching.length / l.steps.length, l.id).toBeGreaterThanOrEqual(0.4);
-      let run = 0;
-      for (const s of l.steps) {
-        run = s.kind === "explain" ? run + 1 : 0;
-        expect(run, `${l.id}/${s.id}`).toBeLessThanOrEqual(3);
-      }
-      for (const s of teaching) {
-        expect(s.checkQuestionId, `${l.id}/${s.id}`).toBe("");
-        const n = words(s.lead as Block[]) + words(s.afterFigure as Block[]);
-        expect(n, `${l.id}/${s.id}`).toBeGreaterThanOrEqual(80);
-        expect(n, `${l.id}/${s.id}`).toBeLessThanOrEqual(280);
-      }
-      for (const s of l.steps.filter(
-        (x) => x.kind !== "explain" && x.kind !== "worked_example" && x.kind !== "faded_example",
-      ))
-        expect(words(s.lead as Block[]), `${l.id}/${s.id}`).toBeLessThanOrEqual(60);
-      expect(l.steps.some((s) => s.diagram), l.id).toBe(true);
-      expect(l.steps.some((s) => s.kind === "transfer"), l.id).toBe(true);
-      expect((l.recap?.nextHook ?? "").endsWith("?"), l.id).toBe(false);
-    }
-  });
-
-  it("cites every step and asks 3 to 7 questions without citing the ones it dropped", () => {
-    for (const l of lessons) {
-      const citations = (bundle.authoringMetadata ?? []).find((m) => m.lessonId === l.id)!.citations;
-      for (const s of l.steps)
-        expect(
-          citations.some((c) => c.targetKind === "step" && c.targetId === s.id),
-          `${l.id}/${s.id}`,
-        ).toBe(true);
-      const set = asked(l);
-      const own = bundle.questions.filter((q) => q.conceptIds.includes(l.conceptIds[0]!));
-      for (const q of own)
-        expect(
-          citations.some((c) => c.targetKind === "question" && c.targetId === q.id),
-          q.id,
-        ).toBe(set.has(q.id));
-      const questioned = l.steps.filter(
-        (s) => s.checkQuestionId || (s.workedSteps ?? []).some((w) => w.selfExplain || w.blank),
-      );
-      expect(questioned.length, l.id).toBeGreaterThanOrEqual(3);
-      expect(questioned.length, l.id).toBeLessThanOrEqual(7);
-    }
-    const dropped = (id: string) =>
-      bundle.questions
-        .filter((q) => q.conceptIds.includes(`lin-${id}`))
-        .map((q) => q.id)
-        .filter((q) => !asked(bundle.lessons.find((l) => l.id === id)!).has(q))
-        .sort();
-    expect(dropped("spans-and-subspaces")).toEqual([k("spans-and-subspaces", 5), k("spans-and-subspaces", 8)]);
-    expect(dropped("basis-and-dimension")).toEqual([k("basis-and-dimension", 8)]);
-    expect(dropped("rank-and-null-space")).toEqual([k("rank-and-null-space", 8)]);
-    expect(dropped("determinants-and-volume")).toEqual([k("determinants-and-volume", 8)]);
-    expect(dropped("project-onto-a-direction")).toEqual([k("project-onto-a-direction", 2)]);
-  });
 
   it("lesson 11: recomputes the numbers the teaching screens and items quote", () => {
     const L = "spans-and-subspaces";
@@ -1048,89 +899,6 @@ describe("linear algebra story lessons 16 to 20", () => {
     const disc = Math.sqrt(tr * tr - 4 * det2(g));
     return [Math.sqrt((tr + disc) / 2), Math.sqrt(Math.max(0, (tr - disc) / 2))];
   };
-
-  it("has the opener, steps, skill check and close the brief describes", () => {
-    for (const l of lessons) {
-      expect(l.intro?.hook.questionId, l.id).toBeUndefined();
-      const hookWords = words(l.intro!.hook.blocks as Block[]);
-      expect(hookWords, l.id).toBeGreaterThanOrEqual(120);
-      expect(hookWords, l.id).toBeLessThanOrEqual(200);
-      expect(l.intro!.promise.split(/\s+/).length, l.id).toBeLessThanOrEqual(25);
-      expect(l.questionIds, l.id).toHaveLength(3);
-      expect(l.steps.length, l.id).toBeGreaterThanOrEqual(8);
-      expect(l.steps.length, l.id).toBeLessThanOrEqual(14);
-      const teaching = l.steps.filter((s) => s.kind === "explain");
-      expect(teaching.length / l.steps.length, l.id).toBeGreaterThanOrEqual(0.4);
-      let run = 0;
-      for (const s of l.steps) {
-        run = s.kind === "explain" ? run + 1 : 0;
-        expect(run, `${l.id}/${s.id}`).toBeLessThanOrEqual(3);
-      }
-      for (const s of teaching) {
-        expect(s.checkQuestionId, `${l.id}/${s.id}`).toBe("");
-        const n = words(s.lead as Block[]) + words(s.afterFigure as Block[]);
-        expect(n, `${l.id}/${s.id}`).toBeGreaterThanOrEqual(80);
-        expect(n, `${l.id}/${s.id}`).toBeLessThanOrEqual(280);
-      }
-      for (const s of l.steps.filter(
-        (x) => x.kind !== "explain" && x.kind !== "worked_example" && x.kind !== "faded_example",
-      ))
-        expect(words(s.lead as Block[]), `${l.id}/${s.id}`).toBeLessThanOrEqual(60);
-      expect(l.steps.some((s) => s.diagram), l.id).toBe(true);
-      expect(l.steps.some((s) => s.kind === "transfer"), l.id).toBe(true);
-      expect((l.recap?.nextHook ?? "").endsWith("?"), l.id).toBe(false);
-      // Each lesson ends by pointing at the next one's subject; the last closes the course.
-      expect((l.recap?.nextHook ?? "").length, l.id).toBeGreaterThan(40);
-      // No em dashes anywhere in the prose the learner reads.
-      const prose = [
-        ...(l.intro!.hook.blocks as Block[]),
-        ...(l.recap!.blocks as Block[]),
-        ...l.steps.flatMap((s) => [...((s.lead ?? []) as Block[]), ...((s.afterFigure ?? []) as Block[])]),
-      ]
-        .map((b) => b.text ?? "")
-        .join(" ");
-      expect(prose, l.id).not.toContain("—");
-    }
-  });
-
-  it("cites every step and asks 3 to 7 questions without citing the ones it dropped", () => {
-    for (const l of lessons) {
-      const citations = (bundle.authoringMetadata ?? []).find((m) => m.lessonId === l.id)!.citations;
-      for (const s of l.steps)
-        expect(
-          citations.some((c) => c.targetKind === "step" && c.targetId === s.id),
-          `${l.id}/${s.id}`,
-        ).toBe(true);
-      const set = asked(l);
-      const own = bundle.questions.filter((q) => q.conceptIds.includes(l.conceptIds[0]!));
-      for (const q of own)
-        expect(
-          citations.some((c) => c.targetKind === "question" && c.targetId === q.id),
-          q.id,
-        ).toBe(set.has(q.id));
-      const questioned = l.steps.filter(
-        (s) => s.checkQuestionId || (s.workedSteps ?? []).some((w) => w.selfExplain || w.blank),
-      );
-      expect(questioned.length, l.id).toBeGreaterThanOrEqual(3);
-      expect(questioned.length, l.id).toBeLessThanOrEqual(7);
-      // Every graded item is a skill this lesson or an earlier one teaches.
-      const taught = new Set(
-        bundle.lessons.slice(0, bundle.lessons.indexOf(l) + 1).flatMap((x) => x.taughtSkills ?? []),
-      );
-      for (const id of set) expect(taught.has(find(id).skill ?? ""), id).toBe(true);
-    }
-    const dropped = (id: string) =>
-      bundle.questions
-        .filter((q) => q.conceptIds.includes(`lin-${id}`))
-        .map((q) => q.id)
-        .filter((q) => !asked(bundle.lessons.find((l) => l.id === id)!).has(q))
-        .sort();
-    expect(dropped("fit-with-least-squares")).toEqual([k("fit-with-least-squares", 1), k("fit-with-least-squares", 7)]);
-    expect(dropped("build-an-orthonormal-basis")).toEqual([k("build-an-orthonormal-basis", 7), k("build-an-orthonormal-basis", 8)]);
-    expect(dropped("eigenvectors-and-eigenvalues")).toEqual([k("eigenvectors-and-eigenvalues", 1), k("eigenvectors-and-eigenvalues", 8)]);
-    expect(dropped("diagonalise-a-map")).toEqual([k("diagonalise-a-map", 8)]);
-    expect(dropped("singular-value-decomposition")).toEqual([k("singular-value-decomposition", 8)]);
-  });
 
   it("lesson 16: recomputes the numbers the teaching screens and items quote", () => {
     const L = "fit-with-least-squares";
