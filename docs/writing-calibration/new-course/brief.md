@@ -51,7 +51,8 @@ naming what the lesson is about) and `nextAction` (one line naming what the next
 last lesson names what the learner can now do).
 
 - **`intro`**: `hook.blocks` (the opener, one or two paragraphs, at most 360 words, from the
-  subject's own material, never a list of what the lesson will cover), an optional `hook.diagram`, `promise` ("By the end you'll …", at most
+  subject's own material; it ends on the subject or the question, never on a sentence about the
+  lesson such as "This lesson covers…", which `voice-check` rejects), an optional `hook.diagram`, `promise` ("By the end you'll …", at most
   45 words), optional `whyItMatters` (at most 35 words) and `estimatedMinutes` (12 to 15).
 - **`steps`**: about 9 to 13 screens, using the v2 kinds `explain`, `predict`, `try`,
   `worked_example`, `faded_example`, `explore` and `transfer`. Teach an idea on an `explain` screen
