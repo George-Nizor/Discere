@@ -191,13 +191,19 @@ try {
         `${apiUrl}/api/courses/${courseId}/lessons/${item.id}/journey`,
       );
       const explainer = delivered.stages.find((stage) => stage.type === "explainer");
-      // A lesson in the newer anatomy has typed steps; worked and faded examples carry their own
-      // steps instead of a single question. The classic shape is four answered visual beats.
+      // A lesson in the newer anatomy has typed steps; explain screens teach without asking, and
+      // worked and faded examples carry their own steps instead of a single question, but at
+      // least one step still asks. The classic shape is four answered visual beats.
       const typed = explainer?.steps.some((step) => step.kind);
       const teaches = typed
         ? explainer.steps.length >= 4 &&
+          explainer.steps.some((step) => step.question) &&
           explainer.steps.every(
-            (step) => step.question || step.kind === "worked_example" || step.kind === "faded_example",
+            (step) =>
+              step.question ||
+              step.kind === "explain" ||
+              step.kind === "worked_example" ||
+              step.kind === "faded_example",
           )
         : explainer?.steps.length === 4 && explainer.steps.every((step) => step.diagram && step.question);
       if (!teaches || JSON.stringify(delivered).includes('"answerAuthority"'))
@@ -223,6 +229,8 @@ try {
     "english-reading-writing-and-rhetoric",
     "astronomy-sky-to-cosmos",
     "psychology-how-minds-work",
+    "electronics-foundations",
+    "rust-foundations",
   ];
   if (
     courseList.courses?.length !== activeIds.length ||
@@ -245,13 +253,13 @@ try {
   if (
     courseDetail.lessons?.find((item) => item.id === lesson.lesson.id)?.stageCount !==
       journey.stages.length ||
-    stageTypes !== "explainer,interactive_visual,quiz,essay,review,completion" ||
+    stageTypes !== "explainer,interactive_visual,quiz,essay,review,recap,completion" ||
     journey.stages.filter((stage) => stage.type === "quiz").length < 2 ||
     journey.stages.some((stage) => stage.answerAuthority !== undefined) ||
     journey.stages.some((stage) => stage.question?.transfer !== undefined)
   ) {
     throw new Error(
-      "The interactive story journey contract was incomplete or leaked answer authority.",
+      `The interactive story journey contract was incomplete or leaked answer authority (${stageTypes}; ${journey.stages.length} stages, ${courseDetail.lessons?.find((item) => item.id === lesson.lesson.id)?.stageCount} listed).`,
     );
   }
   if (!courseDetail.concepts?.every((concept) => concept.title && concept.summary)) {
@@ -260,7 +268,7 @@ try {
 
   // Course assets are served from the course's own directory and nowhere else.
   const assetCourseId = "electronics-foundations";
-  const asset = await fetch(`${apiUrl}/api/content/${assetCourseId}/assets/cover.webp`, {
+  const asset = await fetch(`${apiUrl}/api/content/${assetCourseId}/assets/cover.svg`, {
     signal: AbortSignal.timeout(5_000),
   });
   if (!asset.ok || !asset.headers.get("content-type")?.startsWith("image/")) {
@@ -331,14 +339,16 @@ try {
     throw new Error("Review introduced concepts before the learner answered a lesson question.");
   }
   for (const [courseId, lessonId, response] of [
-    ["maths-foundations", "what-a-letter-stands-for", "x + 5 = 12"],
-    ["probability-statistics", "counting-outcomes", "36"],
+    ["maths-foundations", "what-a-letter-stands-for", "40"],
+    ["probability-statistics", "counting-outcomes", "0.5"],
   ]) {
     const introduced = await requestJson(
       `${apiUrl}/api/courses/${courseId}/lessons/${lessonId}/journey`,
     );
-    const question = introduced.stages.find((stage) => stage.type === "explainer").steps[0]
-      .question;
+    // The first step that asks; explain screens before it teach without a question.
+    const question = introduced.stages
+      .find((stage) => stage.type === "explainer")
+      .steps.find((step) => step.question).question;
     const attempt = await requestJson(`${apiUrl}/api/attempts`, {
       method: "POST",
       body: JSON.stringify({ questionId: question.id, response, mode: "coach" }),
@@ -581,7 +591,7 @@ try {
     method: "POST",
     body: JSON.stringify({
       questionId: lesson.question.id,
-      response: "50 mA",
+      response: "25 mA",
       mode: "coach",
     }),
   });

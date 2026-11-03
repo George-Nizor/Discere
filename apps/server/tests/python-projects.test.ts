@@ -1,4 +1,6 @@
 import { randomUUID } from "node:crypto";
+import { existsSync } from "node:fs";
+import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import type {
   PythonProjectSession,
@@ -13,6 +15,13 @@ import { PythonProjectRepository } from "../src/python-projects/repository.js";
 import { PythonProjectService } from "../src/python-projects/service.js";
 import { IsolatedPythonRuntime, type PythonRuntime } from "../src/python-projects/runtime.js";
 const stores: DiscereStore[] = [];
+/** Tests that run learner code need the isolated runtime from pnpm python:setup, as python-runtime.test.ts does. */
+const runtimeDirectory = path.resolve(import.meta.dirname, "../../../data/python-runtime");
+const pythonReady =
+  process.platform === "linux" &&
+  process.arch === "x64" &&
+  existsSync(path.join(runtimeDirectory, "lib/python3.12/site-packages/pandas")) &&
+  existsSync("/usr/bin/bwrap");
 const collection = pythonProjects,
   project = collection.projects[0]!;
 function setup(runtime: PythonRuntime = new IsolatedPythonRuntime()) {
@@ -76,7 +85,7 @@ describe("saved Python construction", () => {
       await app.close();
     }
   });
-  it("saves drafts, accepts alternative programs and applies rewards idempotently", async () => {
+  it.runIf(pythonReady)("saves drafts, accepts alternative programs and applies rewards idempotently", async () => {
     const { service, store } = setup();
     let s = service.start(collection.courseId, project.id, "coach");
     s = await action(service, s, "save", { code: "result = callout + rate * hours" });
@@ -98,7 +107,7 @@ describe("saved Python construction", () => {
     });
     expect(store.database.prepare("SELECT COUNT(*) AS n FROM attempts").get()).toEqual({ n: 0 });
   });
-  it("rejects hardcoded visible answers, records help and allows corrected work", async () => {
+  it.runIf(pythonReady)("rejects hardcoded visible answers, records help and allows corrected work", async () => {
     const { service } = setup();
     let s = service.start(collection.courseId, project.id, "assisted");
     s = await action(service, s, "check", { code: "result = 95" });
@@ -110,7 +119,7 @@ describe("saved Python construction", () => {
     s = await action(service, s, "next");
     expect(s.xp).toBe(2);
   }, 15_000); // Six isolated program runs can exceed the runner's 5s default under a full-suite load.
-  it("allows a valid mistaken result to continue without correctness credit", async () => {
+  it.runIf(pythonReady)("allows a valid mistaken result to continue without correctness credit", async () => {
     const { service } = setup();
     let s = service.start(collection.courseId, project.id, "coach");
     s = await action(service, s, "check", { code: "result = hours * (rate + callout)" });
@@ -141,7 +150,7 @@ describe("saved Python construction", () => {
     s = await action(service, s, "next");
     expect(s.xp).toBe(0);
   });
-  it("withholds exam correctness, hints and XP until submission, with immutable mode and responses", async () => {
+  it.runIf(pythonReady)("withholds exam correctness, hints and XP until submission, with immutable mode and responses", async () => {
     const { service, store } = setup();
     let s = service.start(collection.courseId, project.id, "exam");
     expect(() => service.start(collection.courseId, project.id, "direct")).toThrow(
@@ -229,7 +238,7 @@ describe("saved Python construction", () => {
       }
     }
   });
-  it.each(["coach", "direct", "exam"] as TutoringMode[])(
+  it.runIf(pythonReady).each(["coach", "direct", "exam"] as TutoringMode[])(
     "completes a real project in %s mode",
     async (mode) => {
       const { service } = setup();

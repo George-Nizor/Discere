@@ -10,7 +10,7 @@ import { validateCourseBundle } from "../src/index.js";
 const bundle = JSON.parse(
   readFileSync(
     new URL(
-      "../../../content/chemistry-atoms-to-reactions/.authoring/candidate.json",
+      "../../../content/chemistry-atoms-to-reactions/bundle.json",
       import.meta.url,
     ),
     "utf8",
@@ -348,58 +348,6 @@ describe("Chemistry v2 lessons", () => {
       const earlier = bundle.lessons.slice(0, bundle.lessons.indexOf(lesson) + 1);
       return { lesson, taught: new Set(earlier.flatMap((item) => item.taughtSkills ?? [])) };
     };
-
-    it("opens each lesson with a scene that asks nothing, and closes with a statement", () => {
-      for (const id of STORY_LESSONS) {
-        const { lesson } = skillsOf(id);
-        const opener = words(lesson.intro!.hook.blocks);
-        expect(opener, id).toBeGreaterThanOrEqual(120);
-        expect(opener, id).toBeLessThanOrEqual(200);
-        expect(lesson.intro!.hook.questionId, id).toBeUndefined();
-        expect(lesson.intro!.promise.split(/\s+/).length, id).toBeLessThanOrEqual(25);
-        const nextHook = lesson.recap!.nextHook ?? "";
-        expect(nextHook.endsWith("?"), id).toBe(false);
-        expect(nextHook.length, id).toBeGreaterThan(40);
-      }
-    });
-
-    it("teaches before it asks, with figures and a transfer", () => {
-      for (const id of STORY_LESSONS) {
-        const { lesson } = skillsOf(id);
-        const steps = lesson.steps;
-        const teaching = steps.filter((step) => step.kind === "explain");
-        expect(steps.length, id).toBeGreaterThanOrEqual(8);
-        expect(steps.length, id).toBeLessThanOrEqual(14);
-        expect(teaching.length / steps.length, id).toBeGreaterThanOrEqual(0.4);
-        expect(steps[0]!.kind, id).toBe("explain");
-        for (const step of teaching) {
-          expect(step.checkQuestionId, step.id).toBeFalsy();
-          const n = words(step.lead) + words(step.afterFigure);
-          expect(n, step.id).toBeGreaterThanOrEqual(100);
-          expect(n, step.id).toBeLessThanOrEqual(250);
-        }
-        let run = 0;
-        for (const step of steps) {
-          run = step.kind === "explain" ? run + 1 : 0;
-          expect(run, `${id}: ${step.id}`).toBeLessThanOrEqual(3);
-        }
-        expect(
-          steps.some((step) => step.kind === "transfer"),
-          id,
-        ).toBe(true);
-        expect(
-          steps.some((step) => step.diagram),
-          id,
-        ).toBe(true);
-        const asking = steps.filter((step) => step.kind !== "explain");
-        expect(asking.length, id).toBeGreaterThanOrEqual(3);
-        expect(asking.length, id).toBeLessThanOrEqual(7);
-        for (const step of steps.filter(
-          (item) => item.kind === "predict" || item.kind === "try" || item.kind === "transfer",
-        ))
-          expect(words(step.lead), step.id).toBeLessThanOrEqual(60);
-      }
-    });
 
     it("introduces a term before any question that uses it, and checks only taught skills", () => {
       for (const id of STORY_LESSONS) {

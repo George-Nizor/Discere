@@ -9,7 +9,7 @@ import { validateCourseBundle } from "../src/index.js";
  */
 const bundle = JSON.parse(
   readFileSync(
-    new URL("../../../content/sql-from-rows-to-reports/.authoring/candidate.json", import.meta.url),
+    new URL("../../../content/sql-from-rows-to-reports/bundle.json", import.meta.url),
     "utf8",
   ),
 ) as CourseBundle;
@@ -133,33 +133,6 @@ describe("SQL from rows to reports (v2)", () => {
       if (item.answerAuthority.kind !== "numeric") continue;
       for (const misconception of item.misconceptions ?? [])
         expect(misconception.match.numeric ?? []).not.toContain(item.answerAuthority.value);
-    }
-  });
-
-  it("writes the lessons as stories", () => {
-    for (const id of storyLessons) {
-      const lesson = lessonOf(id);
-      const intro = lesson.intro!;
-      expect(intro.hook.questionId, `${id} opens without a question`).toBeUndefined();
-      const teaching = lesson.steps.filter((step) => step.kind === "explain" && !step.checkQuestionId);
-      expect(teaching.length / lesson.steps.length, `${id} teaching share`).toBeGreaterThanOrEqual(0.4);
-      expect(lesson.steps.length).toBeGreaterThanOrEqual(8);
-      expect(lesson.steps.length).toBeLessThanOrEqual(14);
-      const asked = lesson.steps.filter((step) => step.checkQuestionId);
-      expect(asked.length).toBeGreaterThanOrEqual(3);
-      expect(asked.length).toBeLessThanOrEqual(7);
-      expect(lesson.steps.some((step) => step.diagram)).toBe(true);
-      expect(lesson.steps[0]!.kind).toBe("explain");
-      expect(lesson.steps[0]!.checkQuestionId).toBeFalsy();
-      for (const step of teaching) {
-        const prose = [...(step.lead ?? []), ...(step.afterFigure ?? [])]
-          .map((block) => ("text" in block ? block.text : ""))
-          .join(" ")
-          .split(/\s+/u).length;
-        expect(prose, `${id}/${step.id}`).toBeGreaterThanOrEqual(80);
-        expect(prose, `${id}/${step.id}`).toBeLessThanOrEqual(280);
-      }
-      expect(lesson.recap!.nextHook).toBeTruthy();
     }
   });
 

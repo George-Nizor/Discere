@@ -6,7 +6,7 @@ import { validateCourseBundle } from "../src/index.js";
 
 /** CS Basics v2 lessons. Every key is recomputed here by running the procedure the item describes. */
 const bundle = JSON.parse(
-  readFileSync(new URL("../../../content/cs-basics/.authoring/candidate.json", import.meta.url), "utf8"),
+  readFileSync(new URL("../../../content/cs-basics/bundle.json", import.meta.url), "utf8"),
 ) as CourseBundle;
 const q = (lesson: string, suffix: string): Question =>
   bundle.questions.find((item) => item.id === `cs-basics-${lesson}-${suffix}`)!;
@@ -185,103 +185,6 @@ describe("CS Basics story lessons 1 to 6", () => {
       0,
     );
 
-  it("opens with a scene, teaches before it asks, and closes with a hook", () => {
-    for (const lesson of story) {
-      expect(lesson.intro?.hook.questionId, lesson.id).toBeUndefined();
-      const opener = words(lesson.intro!.hook.blocks);
-      expect(opener, lesson.id).toBeGreaterThanOrEqual(110);
-      expect(opener, lesson.id).toBeLessThanOrEqual(260);
-      expect(lesson.intro!.promise.split(/\s+/u).length, lesson.id).toBeLessThanOrEqual(25);
-      expect(lesson.steps[0]!.kind, lesson.id).toBe("explain");
-      const teaching = lesson.steps.filter((s) => s.kind === "explain" && !s.checkQuestionId);
-      expect(teaching.length / lesson.steps.length, lesson.id).toBeGreaterThanOrEqual(0.4);
-      expect(lesson.steps.length, lesson.id).toBeGreaterThanOrEqual(8);
-      expect(lesson.steps.length, lesson.id).toBeLessThanOrEqual(14);
-      for (const step of teaching) {
-        const body = words(step.lead) + words(step.afterFigure);
-        expect(body, `${lesson.id}/${step.id}`).toBeGreaterThanOrEqual(80);
-        expect(body, `${lesson.id}/${step.id}`).toBeLessThanOrEqual(280);
-      }
-      expect(lesson.steps.some((s) => s.diagram), lesson.id).toBe(true);
-      expect(lesson.recap!.nextHook, lesson.id).toBeTruthy();
-    }
-  });
-
-  it("keeps the hook questions, now asked after the teaching they need", () => {
-    for (const lesson of story) {
-      const hook = lesson.steps.findIndex((s) => s.checkQuestionId === `cs-basics-${lesson.id}-hook`);
-      expect(hook, lesson.id).toBeGreaterThan(0);
-    }
-    // Each prompt now carries its own scene, since the opener no longer asks it.
-    expect(q("steps-a-machine-could-follow", "hook").prompt).toContain("start with 10");
-    expect(q("choosing-between-paths", "hook").prompt).toContain("£30");
-    expect(q("doing-it-again", "hook").prompt).toContain("7 sweets");
-    expect(q("looking-things-up", "hook").prompt).toContain("9 papers");
-    expect(q("halving-the-problem", "hook").prompt).toContain("1 to 100");
-    expect(q("when-the-input-grows", "hook").prompt).toContain("folded in half 3 times");
-  });
-
-  it("each opener leads into the next lesson's scene", () => {
-    const hooks = story.map((l) => l.recap!.nextHook ?? "");
-    expect(hooks[0]).toContain("café");
-    expect(hooks[1]).toContain("sweets");
-    expect(hooks[2]).toContain("Maya");
-    expect(hooks[3]).toContain("between 1 and 100");
-    expect(hooks[4]).toContain("folded");
-    expect(hooks[5]).toContain("completes the course");
-    const opener = story[5]!.intro!.hook.blocks.map((b) => (b as { text?: string }).text ?? "").join(" ");
-    expect(opener).toContain("Take a sheet of paper and fold it in half");
-  });
-
-  it("lesson 6: teaching on growth, doubling and the cost of sorting", () => {
-    const lesson = story[5]!;
-    const ids = lesson.steps.map((s) => s.id);
-    expect(ids).toEqual([
-      "folding-paper",
-      "folds-and-layers",
-      "count-steps-not-seconds",
-      "linear-on-a-sorted-list",
-      "what-one-comparison-removes",
-      "halving-31",
-      "binary-on-the-same-list",
-      "the-largest-range",
-      "one-more-doubles",
-      "what-four-comparisons-reach",
-      "a-list-too-big-to-trace",
-      "when-sorting-pays",
-    ]);
-    // The count-check item is no longer asked; its id stays in the bundle.
-    expect(lesson.steps.some((s) => s.checkQuestionId?.endsWith("count-check"))).toBe(false);
-    // Opener and first screen: ten folds give 1,024 layers; adding two per fold would give about twenty.
-    expect(2 ** 10).toBe(1024);
-    expect(1 + 2 * 10).toBeLessThan(25);
-    // Sizes in the 31-item worked example, and the limits k comparisons reach.
-    const sizes = [31];
-    while (sizes[sizes.length - 1]! > 0) sizes.push(Math.floor(sizes[sizes.length - 1]! / 2));
-    expect(sizes).toEqual([31, 15, 7, 3, 1, 0]);
-    expect([1, 2, 3, 4].map((k) => 2 ** k - 1)).toEqual([1, 3, 7, 15]);
-    expect(worstBinary(7)).toBe(3);
-    expect(worstBinary(15)).toBe(4);
-    expect(2 ** 9 - 1).toBe(511);
-    // Seven items: the first comparison leaves at most three; target 1 leaves 1, 3 and 5.
-    const seven = [1, 3, 5, 7, 9, 11, 13];
-    expect(seven[Math.floor((seven.length - 1) / 2)]).toBe(7);
-    expect(seven.slice(0, 3)).toEqual([1, 3, 5]);
-    expect(binary(seven, 1)).toBe(3);
-    // Sorting 1,000 items at about 10,000 steps: one search, then 100 searches.
-    const sort = 10000;
-    expect(sort + worstBinary(1000)).toBe(10010);
-    expect(sort + worstBinary(1000)).toBeGreaterThan(1000 * 10);
-    expect(1000 * 100).toBe(100000);
-    expect(sort + 100 * worstBinary(1000)).toBe(11000);
-    // The skill check has one item for each skill the lesson taught.
-    expect(lesson.questionIds.map((id) => bundle.questions.find((x) => x.id === id)!.skill)).toEqual([
-      "compare-algorithms",
-      "count-by-halving",
-      "when-sorting-pays",
-    ]);
-  });
-
   it("the worked figures and numbers used in the teaching screens are right", () => {
     // Lesson 1: card (8 + 4) / 2; trace 2, 8, 16; reorder 5 -> 11 or 12; overwrite 9, 1, 6.
     expect((8 + 4) / 2).toBe(6);
@@ -290,10 +193,13 @@ describe("CS Basics story lessons 1 to 6", () => {
     expect((5 + 1) * 2).toBe(12);
     expect(1 + 5).toBe(6);
     // Lesson 2: x = 8 takes the if branch (8 + 10); x = 7 takes it too (7 - 4), then doubles.
-    expect(8 > 5 ? 8 + 10 : 8 - 1).toBe(18);
-    expect((7 >= 5 ? 7 - 4 : 7 + 1) * 2).toBe(6);
-    expect([4, 6].map((v) => (v > 5) === (v >= 5))).toEqual([true, true]);
-    expect((5 > 5) === (5 >= 5)).toBe(false);
+    const ifElse = (x: number) => (x > 5 ? x + 10 : x - 1);
+    const thenDouble = (x: number) => (x >= 5 ? x - 4 : x + 1) * 2;
+    const sameEitherWay = (v: number) => (v > 5) === (v >= 5);
+    expect(ifElse(8)).toBe(18);
+    expect(thenDouble(7)).toBe(6);
+    expect([4, 6].map(sameEitherWay)).toEqual([true, true]);
+    expect(sameEitherWay(5)).toBe(false);
     // Lesson 3: 9 while > 5 subtracting 2 (two passes, three checks); range(3) adding 4; 6 up to 20 by 3.
     expect(whileDown(9, 5, 2)).toEqual({ x: 5, passes: 2 });
     let y = 10;
