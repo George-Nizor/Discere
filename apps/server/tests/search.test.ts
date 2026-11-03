@@ -34,8 +34,9 @@ describe("library search", () => {
     const content = lessons.filter((lesson) => lesson.match === "content");
     expect(content.length).toBeGreaterThan(0);
     expect(content.every((lesson) => /standard|deviation/i.test(lesson.snippet))).toBe(true);
-    // An idea no course teaches finds nothing rather than something loosely related.
-    expect((await search("entropy")).lessons).toEqual([]);
+    // A word no course uses finds nothing rather than something loosely related. It is made up,
+    // because any real word may be taught by a course added later.
+    expect((await search("zqxwvj")).lessons).toEqual([]);
   });
 
   it("searches a v2 lesson's headlines and leads, never its reveals", () => {
