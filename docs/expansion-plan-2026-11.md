@@ -1,6 +1,9 @@
 # Expansion plan, November 2026
 
-Status: proposal for George to review. Nothing below has started.
+Status: approved 3 November 2026. George kept every course in A to D, and from E only First aid,
+using freely available Red Cross materials. Chess is covered by another app. The card pass
+(section 1) is deferred to after the first expansion wave. Curricula are being researched into
+`docs/curricula/`.
 
 ## 0. Release 1.3.0 first, so George can test in Instrumenta
 
