@@ -2,6 +2,13 @@
 
 Updated: 2026-11-03
 
+Release 1.8.0 completes the Making wave with Small Buildings and Architectural Design and brings
+the maths and science wave: Trigonometry, Statistical and Causal Inference, Earth and
+Environmental Science, Physics II: Waves, Electricity and Heat, and Calculus II: Series and
+Differential Equations. History is the first of the humanities wave. Climate figures in Earth
+science were confirmed against NOAA, IPCC AR6 and USGS, and history dates were confirmed or left
+out.
+
 Release 1.7.0 is the expansion's fourth wave (TypeScript and Node, UX and Human-Computer
 Interaction, Game Design and Programming Patterns, Systems Programming, Technical Writing) and
 most of the fifth (Mechanisms and Machine Design, Materials and Manufacturing, Control Theory,
