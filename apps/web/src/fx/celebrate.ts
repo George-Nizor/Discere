@@ -62,12 +62,17 @@ export function celebrateAnswer({
   if (xp > 0) floatText(`+${xp} XP`, at, { to: xpTarget(), tone: "xp" });
   if (combo >= 2) {
     const meter = document.querySelector('[data-fx-target="combo"]');
-    window.setTimeout(() => embers(centre(meter), 8 + combo, palette), 120);
+    window.setTimeout(() => {
+      // The page may be gone by then, as when a test ends first.
+      if (typeof window === "undefined") return;
+      embers(centre(meter), 8 + combo, palette);
+    }, 120);
   }
   const title = comboTitles[combo];
   if (title) {
     const top = { x: window.innerWidth / 2, y: window.innerHeight * 0.32 };
     window.setTimeout(() => {
+      if (typeof window === "undefined") return;
       floatText(`${combo}× ${title}!`, top, { tone: combo >= 10 ? "hype" : "combo", size: 1.4 });
       stars(top, 8 + combo, combo >= 10 ? "cosmic" : "gold");
       if (combo >= 5) rain({ count: 60 + combo * 6, palette });
