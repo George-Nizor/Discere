@@ -144,3 +144,8 @@ Run the server suite only when no course is mid-write, because it loads every co
 - Rust Foundations was re-authored in the bundle, but `content/rust-foundations/authoring/course.ts`
   still holds the old text, and `scripts/prepare-rust.ts` builds the bundle from it. Port the new
   lessons into that file, or stop the script overwriting authored prose, before running it again.
+- Rust Foundations has never had `authoringMetadata` citations or a `review/publication.json`, so
+  `assertLessonsPublishable` rejects it (unchanged by the rewrite). Add citations and a review record
+  if it is to go through the same publication gate as the other courses.
+- Linear Algebra: one italic per teaching screen was placed by script where a screen had none
+  (`.author/linear-algebra-vectors-and-maps/_tools/italics.log`); worth a read for mechanical ones.
