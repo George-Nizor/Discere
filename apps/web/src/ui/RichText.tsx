@@ -79,6 +79,7 @@ const EMPHASIS_PATTERN =
 function HoverTerm({ term, note }: { term: string; note: string }) {
   const id = useId();
   return (
+    // biome-ignore lint/a11y/noNoninteractiveTabindex: focus is how a keyboard user opens the note.
     <span className="hover-term" tabIndex={0} aria-describedby={id}>
       {term}
       <span className="hover-term-note" id={id} role="tooltip">
