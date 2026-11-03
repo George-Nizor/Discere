@@ -9,7 +9,11 @@ import { archivedContentRoot } from "./helpers/archived-content.js";
 let app: FastifyInstance;
 let store: DiscereStore;
 beforeEach(async () => {
-  ({ app, store } = await createApp({ dbPath: ":memory:", migrate: true, revealDelayMs: 0 }));
+  ({ app, store } = await createApp({
+    dbPath: ":memory:",
+    migrate: true,
+    revealDelayMs: 0,
+  }));
 });
 afterEach(async () => {
   await app.close();
@@ -235,7 +239,10 @@ describe("Discere API", () => {
       contentRoot: fixture.root,
     });
     try {
-      const list = await archived.app.inject({ method: "GET", url: "/api/courses" });
+      const list = await archived.app.inject({
+        method: "GET",
+        url: "/api/courses",
+      });
       expect(list.statusCode).toBe(200);
       const ids = list.json().courses.map((course: { id: string }) => course.id);
       expect(ids).toEqual(["maths-foundations"]);
@@ -293,8 +300,14 @@ describe("Discere API", () => {
 
   it("reaches every lesson of every course, whatever activity it uses", async () => {
     for (const courseId of ["electronics-foundations"]) {
-      const detail = await app.inject({ method: "GET", url: `/api/courses/${courseId}` });
-      for (const lesson of detail.json().lessons as Array<{ id: string; available: boolean }>) {
+      const detail = await app.inject({
+        method: "GET",
+        url: `/api/courses/${courseId}`,
+      });
+      for (const lesson of detail.json().lessons as Array<{
+        id: string;
+        available: boolean;
+      }>) {
         expect(lesson.available).toBe(true);
         const journey = await app.inject({
           method: "GET",
@@ -306,15 +319,18 @@ describe("Discere API", () => {
   });
 
   it("returns a visual-first current lesson without the answer authority", async () => {
-    const response = await app.inject({ method: "GET", url: "/api/lessons/current" });
+    const response = await app.inject({
+      method: "GET",
+      url: "/api/lessons/current",
+    });
     expect(response.statusCode).toBe(200);
     const body = response.json();
-    // Story lessons open with drawn figures; the interactive number machine still follows them.
+    // Story lessons teach with drawn figures; the number machine belongs to the opener, not the steps.
     const types = body.lesson.steps
       .filter((step: { diagram?: unknown }) => step.diagram)
       .map((step: { diagram: { type: string } }) => step.diagram.type);
     expect(types.length).toBeGreaterThan(0);
-    expect(types).toContain("number_machine");
+    expect(types).toContain("svg_figure");
     expect(body.question.answerAuthority).toBeUndefined();
   });
 
@@ -353,7 +369,11 @@ describe("Discere API", () => {
     const response = await app.inject({
       method: "POST",
       url: "/api/attempts",
-      payload: { questionId: "calculate-current-5v-100ohm", response: "50 mA", mode: "coach" },
+      payload: {
+        questionId: "calculate-current-5v-100ohm",
+        response: "50 mA",
+        mode: "coach",
+      },
     });
     expect(response.statusCode).toBe(200);
     expect(response.json().correct).toBe(true);
@@ -378,7 +398,11 @@ describe("Discere API", () => {
     const response = await app.inject({
       method: "POST",
       url: "/api/attempts",
-      payload: { questionId: "calculate-current-5v-100ohm", response: "50 mA", mode: "direct" },
+      payload: {
+        questionId: "calculate-current-5v-100ohm",
+        response: "50 mA",
+        mode: "direct",
+      },
     });
     expect(response.statusCode).toBe(200);
     expect(response.json().correct).toBe(true);
@@ -389,7 +413,11 @@ describe("Discere API", () => {
     const first = await app.inject({
       method: "POST",
       url: "/api/attempts",
-      payload: { questionId: "calculate-current-5v-100ohm", response: "50 mA", mode: "coach" },
+      payload: {
+        questionId: "calculate-current-5v-100ohm",
+        response: "50 mA",
+        mode: "coach",
+      },
     });
     const attemptId = first.json().attemptId as string;
 
@@ -406,7 +434,10 @@ describe("Discere API", () => {
     expect(overwrite.statusCode).toBe(409);
     expect(overwrite.json().code).toBe("ATTEMPT_COMPLETE");
 
-    const hint = await app.inject({ method: "POST", url: `/api/attempts/${attemptId}/hints` });
+    const hint = await app.inject({
+      method: "POST",
+      url: `/api/attempts/${attemptId}/hints`,
+    });
     expect(hint.statusCode).toBe(409);
     expect(hint.json().code).toBe("ATTEMPT_COMPLETE");
     expect(store.getAttempt(attemptId)?.correct).toBe(true);
@@ -441,7 +472,11 @@ describe("Discere API", () => {
     const attempt = await app.inject({
       method: "POST",
       url: "/api/attempts",
-      payload: { questionId: "calculate-current-5v-100ohm", response: "1 A", mode: "coach" },
+      payload: {
+        questionId: "calculate-current-5v-100ohm",
+        response: "1 A",
+        mode: "coach",
+      },
     });
     const response = await app.inject({
       method: "POST",
@@ -461,10 +496,17 @@ describe("Discere API", () => {
     const attempt = await app.inject({
       method: "POST",
       url: "/api/attempts",
-      payload: { questionId: "calculate-current-5v-100ohm", response: "1 A", mode: "exam" },
+      payload: {
+        questionId: "calculate-current-5v-100ohm",
+        response: "1 A",
+        mode: "exam",
+      },
     });
     const attemptId = attempt.json().attemptId as string;
-    const hint = await app.inject({ method: "POST", url: `/api/attempts/${attemptId}/hints` });
+    const hint = await app.inject({
+      method: "POST",
+      url: `/api/attempts/${attemptId}/hints`,
+    });
     expect(hint.statusCode).toBe(403);
     const reveal = await app.inject({
       method: "POST",
@@ -478,7 +520,11 @@ describe("Discere API", () => {
     const attempt = await app.inject({
       method: "POST",
       url: "/api/attempts",
-      payload: { questionId: "calculate-current-5v-100ohm", response: "1 A", mode: "direct" },
+      payload: {
+        questionId: "calculate-current-5v-100ohm",
+        response: "1 A",
+        mode: "direct",
+      },
     });
     const attemptId = attempt.json().attemptId as string;
     const start = await app.inject({

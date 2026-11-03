@@ -1,15 +1,16 @@
 {
   "decision": "accepted",
   "reviewer": "Claude Sonnet 5.5 (lead); lessons written by Claude Sonnet 5.5 agents to docs/learning-experience/story-brief.md; George has not played them",
-  "reviewedAt": "2026-10-16T09:22:14.580Z",
-  "bundleSha256": "52a4f72ebc96f21a63f0e6882239b4b006c6f3771f4cd44564a26e14c3b71c4a",
+  "reviewedAt": "2026-11-03T00:14:57.570Z",
+  "bundleSha256": "016a7d6d6bca5a2233b20d17a25a4f3f5bbd560a401898c95b64e7aa036c72f0",
   "factChecks": [
     "Every numeric key the rewrite wrote or kept is recomputed from its arithmetic in packages/curriculum/tests/sql-from-rows-to-reports-v2.test.ts, which passes; the full curriculum, server and web suites and the typecheck passed when this record was written.",
     "The migration apply step ran the v2 validator and the publication lesson rules with 0 errors: vocabulary order, skill scope, a response on every practice screen, a transfer, three skill-check items, citations on every step, question and flashcard. Every warning is accepted below with its reason.",
     "Writing agents' reports: numeric keys recomputed, existing question ids kept so learner history still resolves.",
     "Lead's reading was a sample only: the first lesson of Biology, Philosophy and Maths Foundations was read in full, and Astronomy lesson 1 was checked against the approved prototype. Every other lesson was read by its writing agent and checked by the validator, not by the lead.",
     "Not played in a browser by George or any learner. Drawn figures (svg_figure) were added by Claude Sonnet 5.5 agents, who rendered and looked at each one in both themes; the run was stopped part-way, so later lessons still have none and the rest are listed under .authoring/figure-wishlist.md. Every drawing passes the svg_figure safety gate. The lead did not look at the drawings.",
-    "Course introduction added (course.introduction), written by the lesson agents from the course description and module list."
+    "Course introduction added (course.introduction), written by the lesson agents from the course description and module list.",
+    "Curriculum-first rewrite (2026-11-03): every lesson re-authored from its objective by a Claude Sonnet agent to the discere-lesson-voice skill (voice A); all 121 used question ids reused with no marking change (scripts/check-reused-answers.mjs). Every relational_query figure, pooled or new, was re-run in SQLite 3.53.1 and its shown result matches; figures that previewed a later answer were replaced. Projects untouched. The lead (Claude Opus) checked the flagged SQL behaviour (RIGHT and FULL OUTER JOIN from SQLite 3.39.0, NULL ordering, the default window frame, sum() over no rows, window functions outside WHERE, NTILE) against its own knowledge. The author's citation rebuild left 76 question steps uncited and dropped 30 flashcard citations: the lead restored the flashcard citations unchanged from the previous bundle and cited each question step to the same source and section as its question, with the question's worked answer as the claim. George has not yet read the course."
   ],
   "acceptedWarnings": [
     {
@@ -133,7 +134,153 @@
       "reason": "The story rewrite no longer asks this question. Its id stays in the bundle so learner history that points at it still resolves."
     }
   ],
-  "resolvedUncertainty": [],
+  "resolvedUncertainty": [
+    {
+      "lessonId": "rows-and-keys",
+      "concern": "From memory: SQLite refuses to store a second row whose PRIMARY KEY value already exists (a UNIQUE constraint failure). This matches the CREATE TABLE documentation on PRIMARY KEY constraints but was not re-read.",
+      "resolution": "Checked by the lead (Claude Opus) against its own knowledge; not verified against the cited source in this session, because the sources were unreachable."
+    },
+    {
+      "lessonId": "select-and-name",
+      "concern": "From memory: SELECT * with a table of six columns returns all six in table order; and adding a column to a table changes what SELECT * returns (stated in the first explain step).",
+      "resolution": "Checked by the lead (Claude Opus) against its own knowledge; not verified against the cited source in this session, because the sources were unreachable."
+    },
+    {
+      "lessonId": "select-and-name",
+      "concern": "From memory: arithmetic on NULL gives NULL in SQLite (stated in the calculated-column step); the expression documentation was not re-read.",
+      "resolution": "Checked by the lead (Claude Opus) against its own knowledge; not verified against the cited source in this session, because the sources were unreachable."
+    },
+    {
+      "lessonId": "filter-the-rows",
+      "concern": "From memory: NULL = NULL evaluates to NULL (unknown) in SQLite, and a WHERE clause keeps only rows whose condition is true. Stated in the IS NULL step; the expression documentation on NULL handling was not re-read.",
+      "resolution": "Checked by the lead (Claude Opus) against its own knowledge; not verified against the cited source in this session, because the sources were unreachable."
+    },
+    {
+      "lessonId": "filter-the-rows",
+      "concern": "From memory: SQLite accepts <> as the not-equal operator (also !=). Only <> is shown.",
+      "resolution": "Checked by the lead (Claude Opus) against its own knowledge; not verified against the cited source in this session, because the sources were unreachable."
+    },
+    {
+      "lessonId": "filter-the-rows",
+      "concern": "From memory: unknown OR true is true, so order 106 passes item = 'Lamp' OR amount >= 40.",
+      "resolution": "Checked by the lead (Claude Opus) against its own knowledge; not verified against the cited source in this session, because the sources were unreachable."
+    },
+    {
+      "lessonId": "sort-and-limit",
+      "concern": "From memory: SQLite treats NULL as smaller than any other value when sorting, so NULLs come first under ASC. Stated in the LIMIT step; the SELECT documentation on ORDER BY was not re-read.",
+      "resolution": "Checked by the lead (Claude Opus) against its own knowledge; not verified against the cited source in this session, because the sources were unreachable."
+    },
+    {
+      "lessonId": "sort-and-limit",
+      "concern": "From memory: without ORDER BY, SQLite makes no promise about row order, and rows that tie on every sort term may come out in either order.",
+      "resolution": "Checked by the lead (Claude Opus) against its own knowledge; not verified against the cited source in this session, because the sources were unreachable."
+    },
+    {
+      "lessonId": "distinct-results",
+      "concern": "From memory: DISTINCT treats NULLs as equal to one another so a single NULL row is kept. This is stated in the SELECT documentation (DISTINCT processing) but was not re-read.",
+      "resolution": "Checked by the lead (Claude Opus) against its own knowledge; not verified against the cited source in this session, because the sources were unreachable."
+    },
+    {
+      "lessonId": "distinct-results",
+      "concern": "From memory: COUNT(DISTINCT x) skips NULL values, as count(X) does; stated in the aggregate documentation, not re-read.",
+      "resolution": "Checked by the lead (Claude Opus) against its own knowledge; not verified against the cited source in this session, because the sources were unreachable."
+    },
+    {
+      "lessonId": "aggregate-known-values",
+      "concern": "From memory: MIN and MAX skip NULL, and over no rows avg and max return NULL; the aggregate documentation states this but was not re-read.",
+      "resolution": "Checked by the lead (Claude Opus) against its own knowledge; not verified against the cited source in this session, because the sources were unreachable."
+    },
+    {
+      "lessonId": "aggregate-known-values",
+      "concern": "From memory: SQLite's sum() over no non-NULL rows returns NULL (the documentation contrasts it with total(), which returns 0.0). Not re-read; total() is not mentioned in the lesson.",
+      "resolution": "Checked by the lead (Claude Opus) against its own knowledge; not verified against the cited source in this session, because the sources were unreachable."
+    },
+    {
+      "lessonId": "group-and-filter-groups",
+      "concern": "From memory: the processing order of WHERE, GROUP BY and HAVING as stated in the lesson matches the SELECT documentation (2.4 grouping) but was not re-read.",
+      "resolution": "Checked by the lead (Claude Opus) against its own knowledge; not verified against the cited source in this session, because the sources were unreachable."
+    },
+    {
+      "lessonId": "group-and-filter-groups",
+      "concern": "From memory: SUM over a group whose amounts are all NULL returns NULL (shown in the day totals and stated in the text).",
+      "resolution": "Checked by the lead (Claude Opus) against its own knowledge; not verified against the cited source in this session, because the sources were unreachable."
+    },
+    {
+      "lessonId": "join-matching-rows",
+      "concern": "From memory: in SQLite, plain JOIN is the same as INNER JOIN, and CROSS JOIN with no ON clause returns the Cartesian product. The SELECT documentation (2.1 FROM and joins) was not re-read.",
+      "resolution": "Checked by the lead (Claude Opus) against its own knowledge; not verified against the cited source in this session, because the sources were unreachable."
+    },
+    {
+      "lessonId": "join-matching-rows",
+      "concern": "From memory: table aliases are written with AS (or without it); the lesson says AS can name a table as it names a column.",
+      "resolution": "Checked by the lead (Claude Opus) against its own knowledge; not verified against the cited source in this session, because the sources were unreachable."
+    },
+    {
+      "lessonId": "preserve-the-left-table",
+      "concern": "From memory: a LEFT JOIN fills the right-hand columns with NULL for unmatched left rows, and a WHERE test on those columns removes them. Matches the SELECT documentation (2.1 FROM and joins) but was not re-read.",
+      "resolution": "Checked by the lead (Claude Opus) against its own knowledge; not verified against the cited source in this session, because the sources were unreachable."
+    },
+    {
+      "lessonId": "preserve-either-side",
+      "concern": "From memory: SQLite added RIGHT JOIN and FULL OUTER JOIN in version 3.39.0, released in 2022. The date and number are stated in the first step and were not re-checked against the release notes.",
+      "resolution": "Checked by the lead (Claude Opus) against its own knowledge; not verified against the cited source in this session, because the sources were unreachable."
+    },
+    {
+      "lessonId": "preserve-either-side",
+      "concern": "From memory: a LEFT JOIN, RIGHT JOIN and FULL JOIN row count over the shop's tables (7, 7, 8) was computed by running the queries in Python's sqlite3 with SQLite 3.53.",
+      "resolution": "Checked by the lead (Claude Opus) against its own knowledge; not verified against the cited source in this session, because the sources were unreachable."
+    },
+    {
+      "lessonId": "ask-a-query-inside-a-query",
+      "concern": "From memory: WHERE amount > AVG(amount) is rejected by SQLite (an aggregate may not be used in WHERE). This is stated in the opener; the expression documentation was not re-read.",
+      "resolution": "Checked by the lead (Claude Opus) against its own knowledge; not verified against the cited source in this session, because the sources were unreachable."
+    },
+    {
+      "lessonId": "ask-a-query-inside-a-query",
+      "concern": "From memory: the usual SELECT 1 inside EXISTS is a convention; SQLite ignores the inner select list for EXISTS.",
+      "resolution": "Checked by the lead (Claude Opus) against its own knowledge; not verified against the cited source in this session, because the sources were unreachable."
+    },
+    {
+      "lessonId": "combine-result-sets",
+      "concern": "From memory: SQLite matches the columns of a compound SELECT by position, takes the headings from the first SELECT, and reports an error when the column counts differ.",
+      "resolution": "Checked by the lead (Claude Opus) against its own knowledge; not verified against the cited source in this session, because the sources were unreachable."
+    },
+    {
+      "lessonId": "combine-result-sets",
+      "concern": "From memory: UNION ALL is cheaper than UNION because it skips duplicate removal (stated in the UNION ALL step).",
+      "resolution": "Checked by the lead (Claude Opus) against its own knowledge; not verified against the cited source in this session, because the sources were unreachable."
+    },
+    {
+      "lessonId": "combine-result-sets",
+      "concern": "From memory: ORDER BY in a compound SELECT must come after the last part and may refer to the first SELECT's column names.",
+      "resolution": "Checked by the lead (Claude Opus) against its own knowledge; not verified against the cited source in this session, because the sources were unreachable."
+    },
+    {
+      "lessonId": "rank-with-ties",
+      "concern": "From memory: ROW_NUMBER numbers tied rows in an unspecified order unless the window ORDER BY is made unique (the figure adds the name for that reason).",
+      "resolution": "Checked by the lead (Claude Opus) against its own knowledge; not verified against the cited source in this session, because the sources were unreachable."
+    },
+    {
+      "lessonId": "partition-the-window",
+      "concern": "From memory: window functions may appear only in the SELECT list and ORDER BY of a query, not in WHERE, which is why the filter needs an outer query. Stated in the last explain step; not re-read in the window function documentation.",
+      "resolution": "Checked by the lead (Claude Opus) against its own knowledge; not verified against the cited source in this session, because the sources were unreachable."
+    },
+    {
+      "lessonId": "partition-the-window",
+      "concern": "From memory: NTILE gives the earlier buckets the extra rows when the count does not divide evenly. Verified for the displayed examples by running the queries.",
+      "resolution": "Checked by the lead (Claude Opus) against its own knowledge; not verified against the cited source in this session, because the sources were unreachable."
+    },
+    {
+      "lessonId": "running-totals-and-neighbours",
+      "concern": "From memory: when a window has ORDER BY and no frame clause, SQLite's default frame is RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW (stated in the RANGE step). The window function documentation was not re-read.",
+      "resolution": "Checked by the lead (Claude Opus) against its own knowledge; not verified against the cited source in this session, because the sources were unreachable."
+    },
+    {
+      "lessonId": "running-totals-and-neighbours",
+      "concern": "From memory: LAG and LEAD return NULL when no such row exists, and they return the row's own value, which may itself be NULL (the default offset is 1 and the default value is NULL).",
+      "resolution": "Checked by the lead (Claude Opus) against its own knowledge; not verified against the cited source in this session, because the sources were unreachable."
+    }
+  ],
   "unresolvedIssues": [],
   "changes": [
     "Every lesson rewritten in the story format: an opener that sets a scene, teaching screens that explain in connected paragraphs before any question, practice screens after the teaching, a three-item skill check and a close. Existing question ids are kept; some questions the story no longer asks stay in the bundle unused."

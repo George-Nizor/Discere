@@ -57,7 +57,6 @@ describe("quiz stage", () => {
 
     await userEvent.click(screen.getByRole("button", { name: /Ask for a hint/ }));
     expect(await screen.findByText("Write Ohm's law as I = V / R.")).toBeInTheDocument();
-    expect(screen.getByText("Hint 1 of 2")).toBeInTheDocument();
 
     await userEvent.clear(screen.getByLabelText("Value"));
     await userEvent.type(screen.getByLabelText("Value"), "0.05");

@@ -242,6 +242,7 @@ export function ReviewSessionScreen() {
           key={session.data.sessionId}
           conceptTitles={session.data.card.conceptTitles}
           front={session.data.card.front}
+          recall={session.data.card.recall}
           onRated={(result, recalled) => {
             queryClient.setQueryData(queryKeys.reviewSession(sessionId), {
               ...session.data,

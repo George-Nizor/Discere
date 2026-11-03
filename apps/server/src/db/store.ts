@@ -781,9 +781,14 @@ export class DiscereStore {
     return result.changes === 1;
   }
 
-  revealReviewSession(sessionId: string): ReviewCardRow | null {
+  /** `selfRated` cards have no typed answer to wait for, so exam mode reveals them directly. */
+  revealReviewSession(sessionId: string, selfRated = false): ReviewCardRow | null {
     const session = this.getReviewSession(sessionId);
-    if (!session || session.rated || (session.mode === "exam" && session.response === null))
+    if (
+      !session ||
+      session.rated ||
+      (session.mode === "exam" && session.response === null && !selfRated)
+    )
       return null;
     this.database
       .prepare("UPDATE review_sessions SET revealed = 1 WHERE id = ? AND user_id = ?")
@@ -794,7 +799,8 @@ export class DiscereStore {
   rateReviewSession(
     sessionId: string,
     rating: ReviewRating,
-    _recalled: boolean,
+    /** The route decides this from the card's authority; a client cannot claim it. */
+    selfRated = false,
   ): { state: ReviewState; evidence: ReviewEvidence; xpGained: number } | null {
     const session = this.getReviewSession(sessionId);
     if (!session || session.rated || !session.revealed) return null;
@@ -809,8 +815,15 @@ export class DiscereStore {
     if (due !== null && card.state.dueAt !== due) return null;
     const outcome: ReviewOutcome =
       session.correct === false || rating === "again" ? "incorrect" : "correct";
-    const evidence: ReviewEvidence =
-      session.correct === true && session.mode !== "direct" ? "independent" : "assisted";
+    // A self-rated card is scheduled on the learner's own honest rating, as in any flashcard
+    // deck; it earns the smaller review reward because nothing marked it.
+    const evidence: ReviewEvidence = selfRated
+      ? session.mode !== "direct" && rating !== "again"
+        ? "independent"
+        : "assisted"
+      : session.correct === true && session.mode !== "direct"
+        ? "independent"
+        : "assisted";
     // The learner's own rating reaches FSRS; assisted recall is capped inside the engine.
     const next = scheduleReview(card.state, {
       outcome,
@@ -821,13 +834,13 @@ export class DiscereStore {
     const updated = this.database.transaction(() => {
       const eventKey = `review:${session.cardId}:${due}`;
       const qualifying =
-        Boolean(session.response?.trim()) &&
+        (selfRated || Boolean(session.response?.trim())) &&
         due !== null &&
         due <= this.now() &&
         card.state.dueAt === due &&
         !this.study.has(eventKey);
       const xpGained = qualifying
-        ? evidence === "independent" && outcome === "correct"
+        ? !selfRated && evidence === "independent" && outcome === "correct"
           ? 8
           : 3
         : 0;

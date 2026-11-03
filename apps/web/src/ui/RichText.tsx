@@ -1,4 +1,5 @@
-import { useEffect, useRef } from "react";
+import type React from "react";
+import { useEffect, useId, useRef } from "react";
 
 export interface TextSegment {
   type: "text" | "math";
@@ -63,6 +64,60 @@ export function InlineMath({ expression }: { expression: string }) {
   return <span className="math" ref={host} role="math" aria-label={expression} />;
 }
 
+/**
+ * `**term**` is bold (a term at its definition, or a screen's key phrase), `*word*` is italic
+ * (stress), and `[[term|note]]` is a hover term whose note recalls a term met earlier, as the
+ * discere-lesson-voice skill writes them. A lone asterisk, as in "3 * 4", is left alone.
+ */
+const EMPHASIS_PATTERN =
+  /\[\[([^|\]\n]+)\|([^\]\n]+)\]\]|\*\*([^*\n]+?)\*\*|(?<![\w*])\*(?=\S)([^*\n]+?)(?<=\S)\*(?![\w*])/g;
+
+/**
+ * A term the learner can hover, focus or tap to see a short reminder. The note is linked with
+ * aria-describedby, so a screen reader announces it with the term.
+ */
+function HoverTerm({ term, note }: { term: string; note: string }) {
+  const id = useId();
+  return (
+    <span className="hover-term" tabIndex={0} aria-describedby={id}>
+      {term}
+      <span className="hover-term-note" id={id} role="tooltip">
+        {note}
+      </span>
+    </span>
+  );
+}
+
+function Emphasis({ text }: { text: string }) {
+  const parts: React.ReactNode[] = [];
+  let last = 0;
+  for (const match of text.matchAll(EMPHASIS_PATTERN)) {
+    const start = match.index ?? 0;
+    if (start > last) parts.push(text.slice(last, start));
+    parts.push(
+      match[1] !== undefined && match[2] !== undefined ? (
+        <HoverTerm key={start} note={match[2]} term={match[1]} />
+      ) : match[3] !== undefined ? (
+        <strong key={start}>{match[3]}</strong>
+      ) : (
+        <em key={start}>{match[4]}</em>
+      ),
+    );
+    last = start + match[0].length;
+  }
+  if (last < text.length) parts.push(text.slice(last));
+  return <>{parts}</>;
+}
+
+/** The same text without emphasis marks, for speech and plain-text uses. */
+export function stripEmphasis(text: string): string {
+  return text.replace(
+    EMPHASIS_PATTERN,
+    (_whole, term?: string, _note?: string, bold?: string, italic?: string) =>
+      String(term ?? bold ?? italic ?? ""),
+  );
+}
+
 export function InlineRichText({ text }: { text: string }) {
   const segments = splitMath(text);
   return (
@@ -71,7 +126,9 @@ export function InlineRichText({ text }: { text: string }) {
         segment.type === "math" ? (
           <InlineMath expression={segment.value} key={`math-${segment.start}`} />
         ) : (
-          <span key={`text-${segment.start}`}>{segment.value}</span>
+          <span key={`text-${segment.start}`}>
+            <Emphasis text={segment.value} />
+          </span>
         ),
       )}
     </>

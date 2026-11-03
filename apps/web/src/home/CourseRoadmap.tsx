@@ -114,7 +114,6 @@ export function CourseRoadmap({ detail }: { detail: CourseDetailResponse }) {
         {groups.map((module, index) => (
           <section className="roadmap-module" key={module.id} aria-label={module.title}>
             <header className="roadmap-module-head">
-              <span>Unit {index + 1}</span>
               <h2>{module.title}</h2>
             </header>
             <ol className="roadmap-nodes">{module.lessons.map(node)}</ol>

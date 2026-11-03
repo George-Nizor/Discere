@@ -200,6 +200,12 @@ export const ReviewCardFrontSchema = z
     front: z.string().min(1),
     conceptIds: z.array(z.string()).min(1),
     conceptTitles: z.array(z.string().min(1)).default([]),
+    /**
+     * `typed`: the learner enters a number and the server marks it. `self`: a card whose answer
+     * is words. Keyword matching cannot fairly mark free wording, so the learner recalls it,
+     * reveals the back and rates themselves.
+     */
+    recall: z.enum(["typed", "self"]).default("typed"),
     revealed: z.literal(false),
   })
   .strict();

@@ -174,7 +174,9 @@ describe("Independent foundation course checks", () => {
       });
   }
   it("gates prose inside statement and dataset givens without rewriting literal code", () => {
-    const banned = "Not only a value, but also a result.";
+    // Style is set by the lesson-voice skill now; the gate still enforces fact rules such as
+    // placeholder text, and must reach prose inside statement and dataset givens.
+    const banned = "TODO write the given here.";
     const examples = [
       { type: "statements", title: banned, statements: [{ label: "A", text: "p" }] },
       { type: "statements", title: "Given", statements: [{ label: "A", text: banned }] },
@@ -192,7 +194,7 @@ describe("Independent foundation course checks", () => {
       base.courseChecks[0].items[0].visual = visual;
       expect(
         validateCourseBundle(base).issues.some(
-          (i) => i.path.endsWith(".visual") && i.code === "NEG001_NOT_ONLY_BUT_ALSO",
+          (i) => i.path.endsWith(".visual") && i.code === "QLT001_PLACEHOLDER_CONTENT",
         ),
       ).toBe(true);
     }

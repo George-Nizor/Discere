@@ -635,6 +635,17 @@ export async function registerRoutes(
           : [];
       });
   }
+  /**
+   * A numeric card and a naming card are typed and marked. A card with no authority, or one
+   * that asks for an explanation (flagged `recall: "self"`), is recalled, revealed and rated by
+   * the learner: keyword matching cannot fairly mark free wording.
+   */
+  function recallKind(cardId: string): "typed" | "self" {
+    const card = content.flashcards.find((item) => item.card.id === cardId)?.card;
+    if (!card?.answerAuthority) return "self";
+    if (card.answerAuthority.kind === "numeric") return "typed";
+    return card.recall === "self" ? "self" : "typed";
+  }
   function safeReviewSession(sessionId: string) {
     const session = store.getReviewSession(sessionId);
     if (!session) throw new HttpError(404, "Review session not found.", "REVIEW_SESSION_NOT_FOUND");
@@ -651,6 +662,7 @@ export async function registerRoutes(
           const concept = content.concepts.find((item) => item.id === id);
           return concept ? [concept.title] : [];
         }),
+        recall: recallKind(card.card.id),
         revealed: false as const,
       },
       rated: session.rated,
@@ -724,25 +736,25 @@ export async function registerRoutes(
       );
     const authority = content.flashcards.find((item) => item.card.id === session.cardId)?.card
       .answerAuthority;
-    const correct = authority
-      ? authority.kind === "numeric"
+    if (!authority || recallKind(session.cardId) === "self")
+      throw new HttpError(
+        409,
+        "This card is recalled in your head and rated after you reveal it.",
+        "REVIEW_RECALL_SELF_RATED",
+      );
+    const correct =
+      authority.kind === "numeric"
         ? assessNumericAnswer(body.response, authority).correct
         : (() => {
             const result = assessTextAnswer(body.response, authority);
             return result.coverage === 1 && result.rejectedIdeasFound.length === 0;
-          })()
-      : null;
+          })();
     if (!store.recordReviewRecall(sessionId, body.response, correct))
       throw new HttpError(409, "The recall could not be recorded.", "REVIEW_RECALL_UNAVAILABLE");
     return {
       response: body.response,
       correct,
-      feedback:
-        correct === null
-          ? "Reveal the answer and compare it with your response."
-          : correct
-            ? "Correct."
-            : "Compare your response with the answer before returning to it.",
+      feedback: correct ? "Correct." : "Compare your response with the answer.",
     };
   });
   app.get("/api/review/sessions/:sessionId", async (request) => {
@@ -751,7 +763,11 @@ export async function registerRoutes(
   });
   app.post("/api/review/sessions/:sessionId/reveal", async (request) => {
     const { sessionId } = z.object({ sessionId: z.string().uuid() }).parse(request.params);
-    const card = store.revealReviewSession(sessionId);
+    const pending = store.getReviewSession(sessionId);
+    const card = store.revealReviewSession(
+      sessionId,
+      pending ? recallKind(pending.cardId) === "self" : false,
+    );
     if (!card)
       throw new HttpError(
         409,
@@ -768,7 +784,12 @@ export async function registerRoutes(
   app.post("/api/review/sessions/:sessionId/rate", async (request) => {
     const { sessionId } = z.object({ sessionId: z.string().uuid() }).parse(request.params);
     const body = ReviewRateRequestSchema.parse(request.body);
-    const result = store.rateReviewSession(sessionId, body.rating, body.recalled);
+    const session = store.getReviewSession(sessionId);
+    const result = store.rateReviewSession(
+      sessionId,
+      body.rating,
+      session ? recallKind(session.cardId) === "self" : false,
+    );
     if (!result)
       throw new HttpError(
         409,

@@ -3,6 +3,7 @@ import { assessTextAnswer } from "@discere/assessment-engine";
 import type { CourseBundle, Question } from "@discere/contracts";
 import { describe, expect, it } from "vitest";
 import { lessonQuestionRefs, validateCourseBundle } from "../src/index.js";
+import { LEAD_WORD_LIMIT } from "../src/lesson-v2.js";
 
 /**
  * Maths Foundations lesson 1: the gold v2 lesson, rewritten in the story format. Every key is
@@ -203,7 +204,7 @@ describe("v2 validator rules", () => {
   it("enforces the anatomy", () => {
     expect(
       mutate((copy) => {
-        step(copy, "play-a-round").lead = [{ kind: "paragraph", text: "word ".repeat(61).trim() }];
+        step(copy, "play-a-round").lead = [{ kind: "paragraph", text: "word ".repeat(LEAD_WORD_LIMIT + 1).trim() }];
       }),
     ).toContain("LEAD_TOO_LONG");
     expect(

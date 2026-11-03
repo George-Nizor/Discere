@@ -158,8 +158,11 @@ describe("Astronomy: Sky to Cosmos (v2)", () => {
         expect(run).toBeLessThanOrEqual(3);
       }
       // Close: a key idea and a bridge that is a statement, not a question.
-      expect(lesson.recap!.nextHook).toBeDefined();
-      expect(lesson.recap!.nextHook).not.toContain("?");
+      // The course's last lesson has nothing to point ahead to.
+      if (lesson !== lessons.at(-1)) {
+        expect(lesson.recap!.nextHook).toBeDefined();
+        expect(lesson.recap!.nextHook).not.toContain("?");
+      }
       // Every graded question the lesson asks is cited, and every step too.
       const cited = new Set(
         bundle.authoringMetadata!.find((item) => item.lessonId === lesson.id)!.citations.map(
@@ -192,7 +195,7 @@ describe("Astronomy: Sky to Cosmos (v2)", () => {
     expect(opening(10)).toMatch(/galaxy/u);
     expect(lessons[10]!.recap!.nextHook).toMatch(/backwards/u);
     expect(opening(11)).toMatch(/backwards/u);
-    expect(lessons[11]!.recap!.nextHook).toMatch(/completes the course/u);
+    expect(lessons[11]!.recap!.nextHook).toBeUndefined();
     // Every question a story lesson asks is cited, and every question it no longer asks has no citation.
     for (const lesson of lessons.slice(3)) {
       const asked = new Set([

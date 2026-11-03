@@ -20,7 +20,6 @@ export function RecapStageView({
 }) {
   return (
     <section className="lesson-close" aria-labelledby="lesson-close-idea">
-      <p className="step-eyebrow">The idea</p>
       <h1 className="close-idea" id="lesson-close-idea">
         <InlineRichText text={stage.keyIdea} />
       </h1>
@@ -45,10 +44,9 @@ export function RecapStageView({
           </ul>
         </div>
       ) : null}
-      {nextLesson ? (
+      {nextLesson && stage.nextHook ? (
         <p className="close-next">
-          <span className="close-label">Next: {nextLesson.title}.</span>{" "}
-          {stage.nextHook ? <InlineRichText text={stage.nextHook} /> : null}
+          <InlineRichText text={stage.nextHook} />
         </p>
       ) : null}
       <PlayerFooterSlot kind="actions">

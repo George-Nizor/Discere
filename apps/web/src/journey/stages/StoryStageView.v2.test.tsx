@@ -92,8 +92,8 @@ describe("question-led steps (audit B1, M2)", () => {
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
       "For x = 2, what is x + 5?",
     );
-    // The old step title is only an eyebrow now.
-    expect(screen.getByText("Step 1 of 2 · One letter, one value").tagName).toBe("P");
+    // Neither the step count nor the old step title is printed above the screen.
+    expect(screen.queryByText(/Step 1 of 2/)).not.toBeInTheDocument();
   });
 });
 
@@ -259,7 +259,7 @@ describe("v2 anatomy", () => {
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
       "A letter stands for a number you haven't been told yet.",
     );
-    expect(screen.getByText("1 of 2 · New idea")).toBeInTheDocument();
+    expect(screen.queryByText(/New idea/)).not.toBeInTheDocument();
     await userEvent.click(await screen.findByRole("button", { name: /Continue/ }));
     expect(onStepChange).toHaveBeenCalledWith("same", 1);
   });

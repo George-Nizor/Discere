@@ -1,0 +1,135 @@
+<title>Tutor Voice Trial</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&family=Figtree:wght@500;650;750&display=swap">
+<style>
+/* Layout: one reading column, a voice switcher on top, the same five moments under each voice so they compare line for line. */
+:root {
+  --bg: #f6f7f4;
+  --surface: #ffffff;
+  --fg: #1c211d;
+  --muted: #5d665f;
+  --line: #dde2dc;
+  --accent: #157a43;
+  --accent-soft: #e3f2e8;
+  --read: "Literata", Georgia, "Times New Roman", serif;
+  --ui: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121513; --surface: #1a1e1b; --fg: #e8ece8; --muted: #9aa49c;
+    --line: #2c332e; --accent: #4fc27f; --accent-soft: #1c2f23; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #121513; --surface: #1a1e1b; --fg: #e8ece8; --muted: #9aa49c;
+  --line: #2c332e; --accent: #4fc27f; --accent-soft: #1c2f23; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--ui);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 32px 64px;
+}
+.wrap { max-width: 44rem; margin: 0 auto; display: grid; gap: 28px; }
+h1 { font-size: 1.9rem; line-height: 1.15; margin: 0; text-wrap: balance; font-weight: 750; }
+.intro p { color: var(--muted); font-size: 1rem; line-height: 1.55; margin: 10px 0 0; max-width: 38rem; }
+.tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+.tabs button {
+  font: 650 0.95rem var(--ui); color: var(--fg); background: var(--surface);
+  border: 1px solid var(--line); border-radius: 999px; padding: 9px 16px; cursor: pointer;
+}
+.tabs button[aria-selected="true"] { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+.tabs button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.voice-note { font-size: 1rem; line-height: 1.5; color: var(--muted); margin: 0; }
+.voice-note strong { color: var(--fg); }
+.moment { display: grid; gap: 10px; }
+.moment h2 { font: 650 0.95rem var(--ui); color: var(--accent); margin: 0; }
+.prose { font-family: var(--read); font-size: 1.14rem; line-height: 1.68; }
+.prose p { margin: 0 0 0.9em; }
+.prose p:last-child { margin-bottom: 0; }
+.eq { font-family: var(--read); font-size: 1.2rem; text-align: center; margin: 0.4em 0 0.9em; }
+.feedback {
+  background: var(--accent-soft); border-radius: 14px; padding: 16px 18px;
+}
+.feedback .ask { font: 500 0.92rem var(--ui); color: var(--muted); margin: 0 0 8px; }
+.recap { font-weight: 600; }
+.panel[hidden] { display: none !important; }
+.reply { border-top: 1px solid var(--line); padding-top: 20px; }
+.reply h2 { font-size: 1.1rem; margin: 0 0 8px; }
+.reply p, .reply li { line-height: 1.55; font-size: 1rem; }
+.reply ul { padding-left: 1.2em; margin: 0; }
+.principles { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; }
+.principles h2 { font-size: 1.05rem; margin: 0 0 8px; }
+.principles ol { margin: 0; padding-left: 1.3em; display: grid; gap: 8px; line-height: 1.5; }
+
+.voice-head { font: 750 1.05rem var(--ui); margin: 8px 0 0; padding-top: 18px; border-top: 1px solid var(--line); }
+.voice-head small { font-weight: 500; color: var(--muted); }
+.prose strong { font-weight: 650; }
+.term { text-decoration: underline dotted var(--accent); text-decoration-thickness: 2px; text-underline-offset: 4px; position: relative; cursor: help; }
+.term:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+.term .tip { display: none; position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); width: max-content; max-width: min(17rem, 78vw); background: var(--fg); color: var(--bg); font: 500 0.86rem/1.45 var(--ui); padding: 9px 12px; border-radius: 10px; z-index: 5; text-align: left; }
+.term:hover .tip, .term:focus .tip { display: block; }
+.turn { display: grid; gap: 4px; }
+.turn .who { font: 650 0.85rem var(--ui); color: var(--muted); }
+.turn.learner .prose { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 16px; }
+.turn .why { font: 500 0.88rem/1.45 var(--ui); color: var(--accent); margin: 2px 0 0; }
+.rules li { line-height: 1.5; }
+
+.turn .prose ul, .turn .prose ol { margin: 0 0 0.9em; padding-left: 1.4em; display: grid; gap: 4px; }
+.turn .prose > *:last-child { margin-bottom: 0; }
+.mode { font: 650 0.85rem var(--ui); color: var(--muted); margin: 0; }
+</style>
+
+<div class="wrap">
+  <header class="intro">
+    <h1>Tutor voice trial</h1>
+    <p>Voice B from the lessons, made somewhat more concise for conversation. Lists are used where a list is clearer (steps, a method, a comparison) and prose everywhere else. The same session as round 4 is rewritten, and two more are added. The notes in green explain each move and would not be shown to the learner.</p>
+  </header>
+  <nav class="tabs" role="tablist" aria-label="Dialogues"><button role="tab" id="tab-maths" aria-controls="maths" aria-selected="true">Maths: stuck on an equation</button><button role="tab" id="tab-philosophy" aria-controls="philosophy" aria-selected="false">Philosophy: validity</button><button role="tab" id="tab-modes" aria-controls="modes" aria-selected="false">Exam and Direct modes</button></nav>
+
+  <section class="panel" id="maths" role="tabpanel" aria-labelledby="tab-maths">
+    <div class="wrap"><div class="turn learner"><span class="who">Learner</span><div class="prose"><p>Just tell me what <i>x</i> is in 5<i>x</i> − 2 = 12. I've been staring at it for ages.</p></div></div><div class="turn tutor"><span class="who">Tutor</span><div class="prose"><p>What have you tried so far? If you tested a value, tell me what the left side came to, because that tells us how close you are.</p></div><p class="why">Why: Diagnose, in one question, using their own work.</p></div><div class="turn learner"><span class="who">Learner</span><div class="prose"><p>I tried 3 and got 13, and 2 gives 8. So it's somewhere in between, but I don't know how to find it. Just give me the answer.</p></div></div><div class="turn tutor"><span class="who">Tutor</span><div class="prose"><p>Those two tests tell us a lot: 3 overshoots 12 and 2 falls short, so <i>x</i> lies between them and probably isn't a whole number. Guessing will be slow from here, so we'll work backwards instead. The left side does two things to <i>x</i>, in this order:</p><ol><li>multiply by 5</li><li>take away 2</li></ol><p>To get back to <i>x</i> we undo them in reverse, doing the same to both sides so they stay equal. What does the equation become once we undo the “take away 2”?</p></div><p class="why">Why: They have the pieces, so this narrows rather than tells. The list makes the order visible.</p></div><div class="turn learner"><span class="who">Learner</span><div class="prose"><p>I don't know. I really don't get what “undo” means here.</p></div></div><div class="turn tutor"><span class="who">Tutor</span><div class="prose"><p>Here's the same method on a different equation, 3<i>x</i> + 4 = 19:</p><ol><li>The last thing done to <i>x</i> was adding 4, so we take 4 from both sides: 3<i>x</i> = 15.</li><li>Before that, <i>x</i> was multiplied by 3, so we divide both sides by 3: <i>x</i> = 5.</li><li>Check: 3 × 5 + 4 = 19.</li></ol><p>Each step undoes one operation, and doing it to both sides keeps the equation true. Now try step 1 on yours: what undoes “take away 2”, and what does 12 become?</p></div><p class="why">Why: Genuinely stuck, so give a foothold: a parallel problem worked as numbered steps, then hand their first step back.</p></div><div class="turn learner"><span class="who">Learner</span><div class="prose"><p>Add 2, so 5<i>x</i> = 14.</p></div></div><div class="turn tutor"><span class="who">Tutor</span><div class="prose"><p>Right, and both sides are still equal. What undoes “multiply by 5”?</p></div><p class="why">Why: Plain confirmation, then one small step.</p></div><div class="turn learner"><span class="who">Learner</span><div class="prose"><p>Divide by 5… so <i>x</i> = 14/5? That's 2.8.</p></div></div><div class="turn tutor"><span class="who">Tutor</span><div class="prose"><p>Yes. It also agrees with your first tests, since 2.8 lies between 2 and 3, and substituting it back confirms it: 5 × 2.8 − 2 = 14 − 2 = 12. The method you just used works for every equation in this module:</p><ul><li>list what was done to <i>x</i>, in order</li><li>undo each step in reverse, on both sides</li><li>substitute the result back to check</li></ul></div><p class="why">Why: Confirm, connect to their own work, give the method as a list, and stop.</p></div></div>
+  </section>
+  <section class="panel" id="philosophy" role="tabpanel" aria-labelledby="tab-philosophy" hidden>
+    <div class="wrap"><div class="turn learner"><span class="who">Learner</span><div class="prose"><p>Is “all fish can fly; salmon are fish; so salmon can fly” valid? I said no, because fish can't fly.</p></div></div><div class="turn tutor"><span class="who">Tutor</span><div class="prose"><p>The first premise is false, as you say, but validity asks a different question: whether the conclusion would follow <em>if</em> the premises were true. So suppose, just for the argument, that every fish could fly. Given that and the second premise, could a salmon fail to fly?</p></div><p class="why">Why: Keeps what is right in their answer, separates the two questions, and asks them to run the test themselves.</p></div><div class="turn learner"><span class="who">Learner</span><div class="prose"><p>No… so it's valid?</p></div></div><div class="turn tutor"><span class="who">Tutor</span><div class="prose"><p>Yes, it's valid, because the conclusion can't be false while both premises are true. What the false premise costs the argument is soundness:</p><ul><li><strong>valid</strong>: the conclusion follows from the premises</li><li><strong>sound</strong>: valid, and the premises are actually true</li></ul><p>So this one is valid but unsound. Can you think of an argument that is the opposite, with true premises but invalid?</p></div><p class="why">Why: A comparison is clearer as a list. The closing question asks them to build their own example, which is the reflective step.</p></div></div>
+  </section>
+  <section class="panel" id="modes" role="tabpanel" aria-labelledby="tab-modes" hidden>
+    <div class="wrap"><p class="mode">Exam mode, before submission</p><div class="turn learner"><span class="who">Learner</span><div class="prose"><p>Can you help me with this one?</p></div></div><div class="turn tutor"><span class="who">Tutor</span><div class="prose"><p>This question is part of a check, so I can't help with it until you've submitted your answer. Once you have, we can go through it step by step, including where it went wrong if it did.</p></div><p class="why">Why: No help on an exam question before submission, said plainly, with what is available afterwards.</p></div><p class="mode">Direct mode, chosen by the learner</p><div class="turn learner"><span class="who">Learner</span><div class="prose"><p>Show me how to solve 5<i>x</i> − 2 = 12.</p></div></div><div class="turn tutor"><span class="who">Tutor</span><div class="prose"><p>Here's the full working, since you've chosen to see answers on this question. It counts as assisted practice rather than independent work.</p><ol><li>Add 2 to both sides: 5<i>x</i> = 14.</li><li>Divide both sides by 5: <i>x</i> = 14/5 = 2.8.</li><li>Check: 5 × 2.8 − 2 = 12.</li></ol><p>The pattern is to undo the operations in reverse order, which is the method the rest of this module builds on.</p></div><p class="why">Why: Direct mode gives the whole answer, as numbered steps, and says how it is recorded.</p></div></div>
+  </section>
+  <section class="reply">
+    <h2>How to reply</h2>
+    <ul>
+      <li>Say whether this still sounds like slop, and quote the lines that do.</li>
+      <li>Say whether the lists help or feel like a chatbot.</li>
+      <li>Say whether the turns are the right length.</li>
+    </ul>
+  </section>
+</div>
+
+<script>
+(function () {
+  var tabs = Array.prototype.slice.call(document.querySelectorAll('[role="tab"]'));
+  function show(id) {
+    tabs.forEach(function (tab) {
+      var on = tab.getAttribute('aria-controls') === id;
+      tab.setAttribute('aria-selected', on ? 'true' : 'false');
+      document.getElementById(tab.getAttribute('aria-controls')).hidden = !on;
+    });
+  }
+  tabs.forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      var id = tab.getAttribute('aria-controls');
+      show(id);
+      if (location.hash !== '#' + id) history.replaceState(null, '', '#' + id);
+    });
+  });
+  function fromHash() {
+    var id = location.hash.slice(1);
+    if (id && document.getElementById(id) && tabs.some(function (t) { return t.getAttribute('aria-controls') === id; })) show(id);
+  }
+  window.addEventListener('hashchange', fromHash);
+  fromHash();
+})();
+</script>

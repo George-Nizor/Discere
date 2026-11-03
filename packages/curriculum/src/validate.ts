@@ -47,6 +47,16 @@ function missingReference(issues: ContentIssue[], path: string, kind: string, id
   });
 }
 
+/**
+ * Rules that protect facts and hidden answers. Style is set by the discere-lesson-voice skill
+ * (.claude/skills), not by pattern bans, so the writing engine's style rules are not reported here.
+ */
+const FACT_RULES = new Set([
+  "ANS001_FINAL_ANSWER_IN_HINT",
+  "ANS005_EQUIVALENT_NUMERIC_ANSWER",
+  "QLT001_PLACEHOLDER_CONTENT",
+]);
+
 function lintField(
   issues: ContentIssue[],
   path: string,
@@ -59,6 +69,7 @@ function lintField(
     ...(hiddenAnswer === undefined ? {} : { hiddenAnswer }),
   });
   for (const violation of lint.violations) {
+    if (!FACT_RULES.has(violation.ruleId) && !violation.ruleId.startsWith("ANS")) continue;
     issues.push({
       path,
       code: violation.ruleId,
@@ -215,7 +226,10 @@ function codeQuestionIssues(question: CourseBundle["questions"][number]): Conten
     message,
   });
   const isCode = question.responseType === "code";
-  if (!isCode) return question.code || question.codeCases ? [issue("Only a code question has code or codeCases.")] : [];
+  if (!isCode)
+    return question.code || question.codeCases
+      ? [issue("Only a code question has code or codeCases.")]
+      : [];
   const { code, codeCases, answerAuthority } = question;
   if (!code || !codeCases) return [issue("A code question needs code and codeCases.")];
   const issues: ContentIssue[] = [];
@@ -228,7 +242,9 @@ function codeQuestionIssues(question: CourseBundle["questions"][number]): Conten
     issues.push(issue(`Its answer authority is text accepting only "${CODE_ANSWER_IDEA}".`));
   if (JSON.stringify(code.example) !== JSON.stringify(codeCases[0]))
     issues.push(issue("The visible example must be the first case."));
-  if (new Set(codeCases.map((c) => JSON.stringify([c.stdin, c.arguments]))).size !== codeCases.length)
+  if (
+    new Set(codeCases.map((c) => JSON.stringify([c.stdin, c.arguments]))).size !== codeCases.length
+  )
     issues.push(issue("Each case needs different input."));
   if (code.kind === "function") {
     if (!code.call) issues.push(issue("A function exercise names its function."));
@@ -267,6 +283,32 @@ function multipleChoiceShareIssues(bundle: CourseBundle): ContentIssue[] {
       message: `${selected} of ${bundle.questions.length} questions are multiple choice (${Math.round(share * 100)}%). The limit is ${Math.round(MULTIPLE_CHOICE_LIMIT * 100)}%.${settled ? "" : " Reported as a warning while the course is small."}`,
     },
   ];
+}
+
+/**
+ * A worded review card that asks for an explanation ("What must be true…", "Why…") cannot be
+ * marked fairly by keyword: "both sides are equivalent" is right and contains no "equal". Such
+ * a card must be self-rated. A naming card ("Which join keeps every left row?") stays typed.
+ */
+export const EXPLANATION_FRONT =
+  /^(why|how)\b|\bwhy\b|^(what (must|does|happens|should)|when is|explain|describe|in your own words)\b/i;
+
+function selfRatedCardIssues(bundle: CourseBundle): ContentIssue[] {
+  return bundle.flashcards.flatMap((card, index) =>
+    card.answerAuthority?.kind === "text" &&
+    card.recall !== "self" &&
+    EXPLANATION_FRONT.test(card.front)
+      ? [
+          {
+            path: `flashcards.${index}.recall`,
+            code: "FREE_TEXT_EXPLANATION_CARD",
+            severity: "error" as const,
+            message:
+              'This card asks for an explanation, which keyword marking cannot judge fairly. Set recall to "self" or rewrite the front to ask for a name.',
+          },
+        ]
+      : [],
+  );
 }
 
 /** Words a learner actually reads in a step, so an equation is not counted as prose. */
@@ -887,6 +929,7 @@ export function validateCourseBundle(input: unknown): ContentValidation {
   }
 
   issues.push(...multipleChoiceShareIssues(bundle));
+  issues.push(...selfRatedCardIssues(bundle));
 
   for (const card of bundle.flashcards) {
     for (const id of card.conceptIds) {

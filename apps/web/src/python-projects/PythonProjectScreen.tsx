@@ -266,7 +266,6 @@ function PythonTaskScreen({
       </header>
       <RuntimeSetup runtime="python" />
       <div className="python-task-heading">
-        <span className="python-eyebrow">{session.mode} · Python 3.12</span>
         {session.mode === "exam" ? (
           <button
             className="text-button python-end-exam"
@@ -608,7 +607,6 @@ export function PythonProjectSessionScreen() {
         <LearningCompanion />
         <Check size={52} aria-hidden="true" />
       </div>
-      <span className="python-eyebrow">Project complete</span>
       <h1>{session.title}</h1>
       <p>
         {results.filter((r) => r.correct).length} of {results.length} programs matched all datasets.{" "}

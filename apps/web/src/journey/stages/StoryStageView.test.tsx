@@ -85,13 +85,11 @@ describe("story stage view", () => {
     stubFetch({});
     const { onStepChange } = render();
 
-    expect(screen.getByText("Step 1 of 4")).toBeInTheDocument();
     expect(screen.getByText("Two points on one loop.")).toBeInTheDocument();
     expect(screen.queryByText("Charge has one route.")).not.toBeInTheDocument();
 
     await userEvent.click(screen.getByRole("button", { name: /Continue/ }));
 
-    expect(screen.getByText("Step 2 of 4")).toBeInTheDocument();
     expect(screen.getByText("Charge has one route.")).toBeInTheDocument();
     // The earlier step stays readable rather than being replaced.
     expect(screen.getByText("Two points on one loop.")).toBeInTheDocument();
@@ -126,7 +124,6 @@ describe("story stage view", () => {
     await userEvent.click(screen.getByRole("button", { name: /Continue/ }));
     await userEvent.click(screen.getByRole("button", { name: /Continue/ }));
 
-    expect(screen.getByText("Step 3 of 4")).toBeInTheDocument();
     // No way forward until the question has been answered.
     expect(screen.queryByRole("button", { name: /Continue/ })).not.toBeInTheDocument();
 
@@ -141,7 +138,6 @@ describe("story stage view", () => {
     stubFetch({});
     render({ savedInteractionState: { stepIndex: 3 } });
 
-    expect(screen.getByText("Step 4 of 4")).toBeInTheDocument();
     expect(screen.getByText("Carry that forward.")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Finish/ })).toBeInTheDocument();
   });

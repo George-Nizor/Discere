@@ -64,7 +64,7 @@ function ReplyView({ exchange, accent }: { exchange: TutorExchange; accent: stri
         </p>
         {exchange.reply.uncertainty.length > 0 ? (
           <div>
-            <p className="eyebrow">Stated uncertainty</p>
+            <h3 className="panel-subhead">The tutor wasn’t sure about</h3>
             <ul className="plain-list">
               {exchange.reply.uncertainty.map((item) => (
                 <li key={item}>{item}</li>
@@ -300,17 +300,17 @@ function TutorPanelConversation({
         tabIndex={-1}
       >
         {docked ? null : (
-        <header className="tutor-header">
-          <h2>Ask the tutor</h2>
-          <button
-            aria-label="Close the tutor"
-            className="icon-button"
-            onClick={onClose}
-            type="button"
-          >
-            <X aria-hidden="true" size={18} strokeWidth={1.6} />
-          </button>
-        </header>
+          <header className="tutor-header">
+            <h2>Ask the tutor</h2>
+            <button
+              aria-label="Close the tutor"
+              className="icon-button"
+              onClick={onClose}
+              type="button"
+            >
+              <X aria-hidden="true" size={18} strokeWidth={1.6} />
+            </button>
+          </header>
         )}
 
         <div className="tutor-body">

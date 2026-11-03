@@ -59,7 +59,7 @@ describe("second learner grading repair", () => {
     expect(assessNumericAnswer("16 protons", sulfur.answerAuthority).correct).toBe(false);
   });
 
-  it("accepts percentages only for the 22 declared probabilities", () => {
+  it("accepts percentages only for the 30 declared probabilities", () => {
     const b = CourseBundleSchema.parse(read("content/probability-statistics/bundle.json"));
     const authorities = [
       ...b.questions,
@@ -69,7 +69,7 @@ describe("second learner grading repair", () => {
     const probabilities = authorities.filter(
       (a) => a?.kind === "numeric" && a.unit === "probability",
     );
-    expect(probabilities).toHaveLength(22);
+    expect(probabilities).toHaveLength(30);
     for (const a of probabilities) {
       if (a?.kind !== "numeric") throw Error("Expected numeric");
       const percentage = Math.round(a.value * 100 * 1e12) / 1e12;

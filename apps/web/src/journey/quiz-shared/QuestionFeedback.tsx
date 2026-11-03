@@ -13,7 +13,6 @@ import type { Attempt } from "./use-attempt.js";
 function WorkedAnswer({ feedback }: { feedback: LessonFeedbackResponse }) {
   return (
     <div className="beat-explanation">
-      <p className="eyebrow">Worked answer</p>
       {/* A code question's worked answer is a whole program, so it keeps its lines. */}
       {feedback.answer.includes("\n") ? (
         <pre className="beat-worked-code">

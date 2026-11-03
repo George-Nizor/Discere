@@ -29,12 +29,6 @@ export function LessonQuestion({
   const [started, setStarted] = useState(false);
   return (
     <div className="quiz lesson-question">
-      <div className="quiz-heading">
-        <p className="quiz-count step-eyebrow">
-          {stage.skillCheck ? "Skill check" : "Skills check"} · {stage.questionIndex} of{" "}
-          {stage.questionCount}
-        </p>
-      </div>
       <QuestionBlock
         question={stage.question}
         context={{ courseId, lessonId }}

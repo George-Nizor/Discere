@@ -16,7 +16,11 @@ afterEach(async () => {
 const lessonId = "what-a-letter-stands-for";
 async function open(mode = "coach") {
   return (
-    await app.inject({ method: "POST", url: "/api/review/sessions", payload: { lessonId, mode } })
+    await app.inject({
+      method: "POST",
+      url: "/api/review/sessions",
+      payload: { lessonId, mode },
+    })
   ).json();
 }
 async function respond(id: string, response: string) {
@@ -27,7 +31,11 @@ async function respond(id: string, response: string) {
   });
 }
 async function reveal(id: string) {
-  return app.inject({ method: "POST", url: `/api/review/sessions/${id}/reveal`, payload: {} });
+  return app.inject({
+    method: "POST",
+    url: `/api/review/sessions/${id}/reveal`,
+    payload: {},
+  });
 }
 async function rate(id: string) {
   return app.inject({
@@ -42,7 +50,11 @@ describe("foundation lessons and recall", () => {
       app.inject({
         method: "PUT",
         url: `/api/courses/maths-foundations/lessons/${lessonId}/progress`,
-        payload: { stageId: `${lessonId}:${suffix}`, state: "completed", interactionState: {} },
+        payload: {
+          stageId: `${lessonId}:${suffix}`,
+          state: "completed",
+          interactionState: {},
+        },
       });
     expect((await save("explainer")).statusCode).toBe(409);
     expect((await save("quiz-1")).statusCode).toBe(409);
@@ -52,13 +64,17 @@ describe("foundation lessons and recall", () => {
   it("binds coaching and pasted replies to a question inside the requested lesson", async () => {
     const body = {
       lessonId,
-      questionId: "maths-what-a-letter-stands-for-order",
+      questionId: "maths-what-a-letter-stands-for-order-in-a-check",
       question: "How should I substitute an input?",
       mode: "coach",
     };
-    const packet = await app.inject({ method: "POST", url: "/api/tutor/ask", payload: body });
+    const packet = await app.inject({
+      method: "POST",
+      url: "/api/tutor/ask",
+      payload: body,
+    });
     expect(packet.statusCode).toBe(200);
-    expect(packet.json().packet.text).toContain("If x = 6, what comes out?");
+    expect(packet.json().packet.text).toContain("Enter the value of the left side when x = 8");
     expect(packet.body).not.toContain("answerAuthority");
     expect(
       (
@@ -75,7 +91,7 @@ describe("foundation lessons and recall", () => {
       requestId: packet.json().requestId,
       generatedAt: new Date().toISOString(),
       payload: {
-        answer: "The final value is 14.",
+        answer: "The final value is 10.",
         followUpQuestion: "Which input did you use?",
         sourceIds: [],
         uncertainty: [],
@@ -96,7 +112,7 @@ describe("foundation lessons and recall", () => {
     expect(imported.json().accepted).toBe(false);
   });
   it("records accepted coaching before a response as assisted evidence", async () => {
-    const questionId = "maths-what-a-letter-stands-for-order";
+    const questionId = "maths-what-a-letter-stands-for-order-in-a-check";
     const requestId = "8dd34e9e-3c12-4fa5-a6e5-43f7f4e1af38";
     const envelope = {
       protocolVersion: "0.2",
@@ -104,7 +120,7 @@ describe("foundation lessons and recall", () => {
       requestId,
       generatedAt: new Date().toISOString(),
       payload: {
-        answer: "Replace the letter with the given input, then apply the addition.",
+        answer: "Replace the letter with the given input, then apply the multiplication.",
         followUpQuestion: "Which input are you testing?",
         sourceIds: [],
         uncertainty: [],
@@ -125,7 +141,7 @@ describe("foundation lessons and recall", () => {
     const answered = await app.inject({
       method: "POST",
       url: "/api/attempts",
-      payload: { questionId, mode: "coach", response: "14" },
+      payload: { questionId, mode: "coach", response: "10" },
     });
     expect(answered.json().correct).toBe(true);
     expect(answered.json().independent).toBe(false);
@@ -139,20 +155,17 @@ describe("foundation lessons and recall", () => {
     expect(result.body).not.toContain("answerAuthority");
     expect(result.body).not.toContain("workedAnswer");
     expect(result.body).not.toContain("acceptedIdeas");
-    const machine = result
+    // The number machine and its question are served together in the opener's hook, keyless.
+    const { hook } = result.json().stages[0].intro;
+    expect(hook.diagram.type).toBe("number_machine");
+    expect(hook.question.expectedUnit).toBe("");
+    expect(hook.question.prompt).toBe("Which whole number x makes 4x + 3 equal 27?");
+    // The steps carry their questions too: a numeric try step serves no unit and no key.
+    const times = result
       .json()
-      .stages[0].steps.find(
-        (step: { diagram?: { type: string }; question?: unknown }) => step.diagram && step.question,
-      );
-    expect(machine.diagram.type).toBe("number_machine");
-    expect(machine.question.expectedUnit).toBe("");
-    // In story lessons the hook is a "try" step of its own, served with its question, keyless.
-    const hook = result
-      .json()
-      .stages[0].steps.find((step: { id: string }) => step.id === "play-a-round");
-    expect(hook.question.prompt).toBe(
-      "I'm thinking of a number. I add 5 to it and get 12. What is my number?",
-    );
+      .stages[0].steps.find((step: { id: string }) => step.id === "the-value-of-5x");
+    expect(times.question.prompt).toBe("What is the value of 5x when x = 8?");
+    expect(times.question.expectedUnit).toBe("");
     expect(result.body).not.toMatch(/onCorrect|misconceptions/);
     expect(result.json().stages.map((stage: { type: string }) => stage.type)).toEqual([
       "explainer",
@@ -212,7 +225,10 @@ describe("foundation lessons and recall", () => {
     expect((await respond(session.sessionId, "-5")).json().correct).toBe(true);
     expect((await respond(session.sessionId, "99")).statusCode).toBe(409);
     const resumed = (
-      await app.inject({ method: "GET", url: `/api/review/sessions/${session.sessionId}` })
+      await app.inject({
+        method: "GET",
+        url: `/api/review/sessions/${session.sessionId}`,
+      })
     ).json();
     expect(resumed.response).toBe("-5");
     expect(resumed.card.back).toBeUndefined();

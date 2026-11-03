@@ -40,7 +40,6 @@ export function TransferChallenge({ attemptId }: { attemptId: string }) {
 
   return (
     <section aria-label="Transfer question" className="transfer">
-      <p className="eyebrow">Apply it to a changed case</p>
       <p className="transfer-prompt">{challenge.prompt}</p>
       <div className="numeric-answer">
         <div className="numeric-answer-value">

@@ -1,6 +1,27 @@
 # Implementation status
 
-Updated: 2026-10-02
+Updated: 2026-11-03
+
+Release 1.3.0 rewrites every course from its curriculum.
+
+- **Lessons:** all twenty courses are re-authored from each lesson's objective in the two lesson
+  voices George approved. The voices are `.claude/skills/discere-lesson-voice`. The writers were
+  Sonnet agents, briefed by `docs/writing-calibration/authoring-brief.md`.
+- **Checking:** the lead validated every course and confirmed that no reused question id
+  changes how it is marked. It recomputed new answers and checked facts written from memory
+  against its own knowledge, because the sources were unreachable from the cloud session. It
+  rebound each review record, saying exactly what was checked.
+- **Player:**
+  - lesson text renders bold, italics and hover terms (`[[term|note]]`);
+  - review cards that ask for an explanation are self-rated;
+  - the finish screen offers "Next lesson";
+  - eyebrow labels are gone;
+  - every probability answer accepts a percentage.
+- **Validator:** it keeps only its fact and answer-leak rules; style comes from the skill.
+- **Not done:** the lessons have not been played in the running app, and the review cards are
+  not rewritten. `docs/writing-calibration/backlog-2026-11.md` lists both, along with the
+  remaining items.
+- **Next:** the expansion plan is `docs/expansion-plan-2026-11.md`.
 
 The second learner pass is complete and running locally. Chemistry, Probability, Computer
 Science, Calculus and a later Maths module were read and completed through rendered UI. It
