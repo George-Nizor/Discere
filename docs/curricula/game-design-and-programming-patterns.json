@@ -1,0 +1,492 @@
+{
+  "id": "game-design-and-programming-patterns",
+  "title": "Game Design and Game Programming Patterns",
+  "family": "A",
+  "voice": "A",
+  "description": "What makes a game work as play, and what makes its code survive growth. Five lessons on loops, feedback, difficulty, balance and testing, then seven on the architecture patterns behind most games, in any engine.",
+  "audience": "A capable adult who plays games and has written some code, and wants to design systems and structure programs the way game developers do. They can read short Python or pseudocode and have met functions, objects and arrays. No engine, editor or art skills are assumed.",
+  "prerequisites": ["cs-basics", "python-for-data-analysis"],
+  "outcomes": [
+    "You'll be able to describe a game as mechanics, dynamics and aesthetics, and find its core loop.",
+    "You'll be able to explain why a control feels good or bad using response, feedback and timing, and measure it in frames.",
+    "You'll be able to tune a number (damage, cost, growth, drop rate) using expected value and growth curves, and predict time-to-kill.",
+    "You'll be able to write a fixed-timestep game loop and say what the accumulator does.",
+    "You'll be able to choose between a state machine, command, component, event queue, object pool and spatial grid for a stated problem and trace each by hand."
+  ],
+  "sources": [
+    { "id": "gpp", "title": "Game Programming Patterns (Robert Nystrom, 2014)", "url": "https://gameprogrammingpatterns.com/contents.html", "licence": "Book text © Robert Nystrom, free to read online; sample code MIT (confirm on the site's about page)", "use": "reference; cite chapter by name, do not copy prose or diagrams", "verified": false },
+    { "id": "fiedler-timestep", "title": "Fix Your Timestep! (Glenn Fiedler, Gaffer On Games, 2004)", "url": "https://gafferongames.com/post/fix_your_timestep/", "licence": "© Glenn Fiedler; free to read", "use": "reference", "verified": false },
+    { "id": "mda", "title": "MDA: A Formal Approach to Game Design and Game Research (Hunicke, LeBlanc, Zubek, 2004)", "url": "https://users.cs.northwestern.edu/~hunicke/MDA.pdf", "licence": "Workshop paper, © authors; freely available", "use": "reference (framework and terms)", "verified": false },
+    { "id": "gdc-ian", "title": "Game Design Concepts (Ian Schreiber and Brenda Romero, online course)", "url": "https://gamedesignconcepts.wordpress.com/", "licence": "CC BY-SA 3.0 (as stated by the author; confirm)", "use": "adapt with share-alike attribution", "verified": false },
+    { "id": "flow", "title": "Csikszentmihalyi, M. Flow: The Psychology of Optimal Experience (1990)", "url": "https://www.harpercollins.com/products/flow-mihaly-csikszentmihalyi", "licence": "Publisher copyright", "use": "reference", "verified": false },
+    { "id": "game-feel", "title": "Swink, S. Game Feel: A Game Designer's Guide to Virtual Sensation (2008)", "url": "https://www.routledge.com/Game-Feel-A-Game-Designers-Guide-to-Virtual-Sensation/Swink/p/book/9780123743282", "licence": "Publisher copyright", "use": "reference (terms: input, response, context, polish)", "verified": false },
+    { "id": "rules-of-play", "title": "Salen, K. and Zimmerman, E. Rules of Play (2003)", "url": "https://mitpress.mit.edu/9780262240451/rules-of-play/", "licence": "Publisher copyright", "use": "reference", "verified": false }
+  ],
+  "modules": [
+    { "id": "design", "title": "Designing play", "summary": "Loops, feedback, difficulty, balance and testing, with the numbers that tune them." },
+    { "id": "structure", "title": "The shape of a game's code", "summary": "The game loop, state machines, commands and components." },
+    { "id": "scale", "title": "Decoupling and speed", "summary": "Events, object pools, flyweights and spatial partitioning." }
+  ],
+  "lessons": [
+    {
+      "id": "mechanics-dynamics-aesthetics", "moduleId": "design", "title": "Mechanics, dynamics and the core loop",
+      "objective": "Describe a game in terms of mechanics, dynamics, aesthetics and a core loop.",
+      "prerequisiteLessonIds": [],
+      "concepts": [
+        { "id": "mda", "title": "MDA", "summary": "Mechanics are the rules and data, dynamics are the behaviour that emerges when play runs, aesthetics are the emotional responses of the player." },
+        { "id": "core-loop", "title": "Core loop", "summary": "The short repeated cycle of action, feedback and reward that the player performs most often." },
+        { "id": "meta-loop", "title": "Outer loops", "summary": "Longer cycles, such as upgrades or unlocks, that give the core loop a reason to repeat." }
+      ],
+      "skills": ["classify-mda", "find-core-loop"],
+      "misconceptions": [
+        "Learners treat 'mechanics' as everything in the game; mechanics are the rules, and fun is an aesthetic that arises from them.",
+        "Learners list features and call it a loop; a loop must return the player to the starting action with changed state."
+      ],
+      "sequence": [
+        "Take a small game, such as Tetris, and list its rules (mechanics).",
+        "Show what emerges when the rules run: stacking, risk, panic (dynamics).",
+        "Name the feelings (aesthetics): challenge, sensation.",
+        "Designer works M to A, player experiences A to M (Hunicke et al., 2004).",
+        "Core loop: action, feedback, reward, repeat.",
+        "Outer loops give meaning to the core loop."
+      ],
+      "examples": [
+        "Tetris: mechanic 'a cleared full row disappears'; dynamic 'players build flat stacks to avoid gaps'; aesthetic 'challenge under time pressure'.",
+        "A platformer core loop: jump, land, collect coin, see score change, jump again."
+      ],
+      "figures": [
+        { "type": "svg_figure", "shows": "Three columns M, D, A with arrows in both directions, labelled 'designer' and 'player' views.", "learnerAction": "Sort sample statements into the three columns.", "placement": "MDA." },
+        { "type": "order_sequence", "shows": "Cards of a core loop out of order.", "learnerAction": "Put them into the loop order.", "placement": "Core loop." }
+      ],
+      "questionPlan": [
+        { "kind": "choice", "targets": "classify-mda", "sample": "'Players hoard a power-up until the last moment.' In MDA, this is a:", "choices": ["Mechanic", "Dynamic", "Aesthetic", "Asset"], "answer": "Dynamic" },
+        { "kind": "choice", "targets": "classify-mda", "sample": "'A jump costs 10 stamina.' In MDA, this is a:", "choices": ["Mechanic", "Dynamic", "Aesthetic", "Narrative"], "answer": "Mechanic" },
+        { "kind": "single-term", "targets": "find-core-loop", "sample": "The short action, feedback and reward cycle a player repeats most often is the ___ loop.", "answer": "core" }
+      ],
+      "sourceIds": ["mda", "rules-of-play"],
+      "historyNotes": ["The MDA paper was presented at the AAAI Game AI workshop in 2004 by Robin Hunicke, Marc LeBlanc and Robert Zubek."],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "feedback-and-game-feel", "moduleId": "design", "title": "Feedback and game feel",
+      "objective": "Judge a control by its response delay in frames and by the layers of feedback it gives.",
+      "prerequisiteLessonIds": ["mechanics-dynamics-aesthetics"],
+      "concepts": [
+        { "id": "game-feel", "title": "Game feel", "summary": "The tactile quality of controlling something in real time, set by input, response and context (Swink)." },
+        { "id": "latency-frames", "title": "Latency in frames", "summary": "Delay from input to visible response, counted in frames: frames = delay in ms ÷ frame time in ms." },
+        { "id": "feedback-layers", "title": "Feedback layers", "summary": "Visual, audio and haptic cues that confirm an action and its result." }
+      ],
+      "skills": ["convert-ms-frames", "audit-feedback"],
+      "misconceptions": [
+        "Learners think more effects always feel better; feedback that hides the state, such as screen shake covering the enemy, makes play worse.",
+        "Learners think smooth means slow; responsive controls begin their response on the very next frame, even if the full motion takes longer."
+      ],
+      "sequence": [
+        "One button press, two versions: response on the next frame, and response after 6 frames.",
+        "Frame time at 60 frames per second: 1000 / 60 = 16.67 ms.",
+        "Layered feedback: anticipation, impact, after-effect (hit-stop, shake, sound).",
+        "Grace windows such as coyote time that forgive timing.",
+        "Feedback must be legible: tell the player what changed."
+      ],
+      "examples": [
+        "100 ms at 60 frames per second is 100 / 16.67 = 6 frames.",
+        "A hit that pauses the game for two frames (about 33 ms) before the enemy flinches makes the blow feel heavier."
+      ],
+      "figures": [
+        { "type": "svg_figure", "shows": "A timeline of frames from input to response for two versions of a jump, switchable.", "learnerAction": "Step through frames in each version.", "placement": "Latency." },
+        { "type": "data_series", "shows": "Bar chart of frame times at 30, 60 and 120 frames per second.", "learnerAction": "none", "placement": "Frame time." }
+      ],
+      "questionPlan": [
+        { "kind": "numeric", "targets": "convert-ms-frames", "sample": "At 60 frames per second, how many whole frames fit in 100 ms?", "answer": "6" },
+        { "kind": "numeric", "targets": "convert-ms-frames", "sample": "At 30 frames per second, how long is one frame in ms, rounded to one decimal place?", "answer": "33.3" },
+        { "kind": "choice", "targets": "audit-feedback", "sample": "A sword hit has a large flash that covers the enemy so the player cannot see its next move. This is a problem of:", "choices": ["Legibility", "Latency", "Balance", "Pooling"], "answer": "Legibility" }
+      ],
+      "sourceIds": ["game-feel"],
+      "historyNotes": ["Steve Swink's Game Feel was published in 2008."],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "challenge-flow-and-difficulty", "moduleId": "design", "title": "Challenge, flow and difficulty",
+      "objective": "Explain how challenge and skill interact and compare fixed, selectable and adaptive difficulty.",
+      "prerequisiteLessonIds": ["feedback-and-game-feel"],
+      "concepts": [
+        { "id": "flow", "title": "Flow", "summary": "A state of absorption that arises when challenge matches skill and goals and feedback are clear (Csikszentmihalyi)." },
+        { "id": "difficulty-curve", "title": "Difficulty curve", "summary": "How challenge rises across a game, usually in waves of tension and relief." },
+        { "id": "dda", "title": "Dynamic difficulty adjustment", "summary": "Changing challenge in response to measured player performance." }
+      ],
+      "skills": ["place-on-flow-channel", "choose-difficulty-approach"],
+      "misconceptions": [
+        "Learners think a smooth ramp is ideal; players need valleys of relief, and a constantly rising line causes fatigue.",
+        "Learners think adaptive difficulty is always invisible and good; rubber-banding can feel unfair when players notice it."
+      ],
+      "sequence": [
+        "Challenge too high gives anxiety; too low gives boredom; the channel between them is flow.",
+        "As skill grows, the same challenge drifts into boredom, so challenge must rise.",
+        "Curves in waves: teach, test, twist, relief.",
+        "Options: fixed levels, player-selected, adaptive.",
+        "Fair failure: the player should know why they lost."
+      ],
+      "examples": [
+        "A first level introduces one jump (teach), a second chains three (test), a third adds a moving platform (twist), then a quiet room gives relief.",
+        "Racing-game rubber-banding speeds trailing AI cars up, and players can feel it."
+      ],
+      "figures": [
+        { "type": "coordinate_plane", "shows": "Skill on the horizontal axis, challenge on the vertical, with a diagonal flow channel and regions marked anxiety and boredom.", "learnerAction": "Place sample players as points and read their region.", "placement": "Flow channel." },
+        { "type": "graph_plot", "shows": "Two difficulty curves: a straight ramp and a sawtooth with a rising trend.", "learnerAction": "Toggle curves.", "placement": "Difficulty curve." }
+      ],
+      "questionPlan": [
+        { "kind": "choice", "targets": "place-on-flow-channel", "sample": "A player of high skill faces low challenge. According to the flow model, they feel:", "choices": ["Boredom", "Anxiety", "Flow", "Arousal only"], "answer": "Boredom" },
+        { "kind": "choice", "targets": "choose-difficulty-approach", "sample": "Which approach changes challenge from measured player performance?", "choices": ["Fixed difficulty", "Selectable difficulty", "Dynamic difficulty adjustment", "Level cap"], "answer": "Dynamic difficulty adjustment" },
+        { "kind": "self", "targets": "place-on-flow-channel", "sample": "Recall: explain why the same level can bore a player who has improved.", "answer": "Skill rose while challenge stayed fixed, moving the player below the flow channel." }
+      ],
+      "sourceIds": ["flow", "gdc-ian"],
+      "historyNotes": ["Mihaly Csikszentmihalyi developed the flow concept from studies in the 1970s and published Flow in 1990."],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "balance-by-the-numbers", "moduleId": "design", "title": "Balance by the numbers",
+      "objective": "Compute expected damage, time-to-kill and cost-growth values to check whether a tuning is sensible.",
+      "prerequisiteLessonIds": ["challenge-flow-and-difficulty"],
+      "concepts": [
+        { "id": "expected-value", "title": "Expected value", "summary": "The probability-weighted average outcome of a random effect." },
+        { "id": "ttk", "title": "Time to kill", "summary": "Target health divided by damage per second." },
+        { "id": "growth-curve", "title": "Growth curve", "summary": "A formula, often exponential, for how cost or power rises with level." },
+        { "id": "sources-sinks", "title": "Sources and sinks", "summary": "Where a resource enters the game and where it leaves; balance means they roughly offset." }
+      ],
+      "skills": ["compute-expected-damage", "compute-ttk", "compute-growth"],
+      "misconceptions": [
+        "Learners average damage ranges without weighting: a 10% chance of triple damage is not the same as a flat multiplier of two.",
+        "Learners expect a single stat to be balanced alone; a stat is balanced relative to its counters, costs and the economy it sits in."
+      ],
+      "sequence": [
+        "One weapon: base damage, hit rate, crit chance, crit multiplier.",
+        "Expected damage = sum of probability times damage.",
+        "Time-to-kill from health and damage per second.",
+        "Growth curves: linear versus exponential cost.",
+        "Sources and sinks in an economy; inflation.",
+        "Validate with playtests; formulas find outliers, not fun."
+      ],
+      "examples": [
+        "Base 50, 10% crit at 3x: 0.9 × 50 + 0.1 × 150 = 45 + 15 = 60.",
+        "Enemy 300 health, 60 expected damage per hit, 2 hits per second: 120 per second, so 300 / 120 = 2.5 s.",
+        "Cost 100 × 1.5^(level − 1): level 3 costs 100 × 2.25 = 225."
+      ],
+      "figures": [
+        { "type": "graph_plot", "shows": "Cost against level for 1.2x, 1.5x and 2x growth on one plane.", "learnerAction": "Choose growth rate and read the cost at level 6.", "placement": "Growth curve." },
+        { "type": "outcome_grid", "shows": "Crit and miss outcomes with probabilities and damage values.", "learnerAction": "Fill in the expected value.", "placement": "Expected value." }
+      ],
+      "questionPlan": [
+        { "kind": "numeric", "targets": "compute-expected-damage", "sample": "A hit does 50 damage. 10% of hits crit for triple damage. What is the expected damage per hit?", "answer": "60" },
+        { "kind": "numeric", "targets": "compute-ttk", "sample": "An enemy has 300 health. You deal 60 per hit, twice per second. How many seconds to kill it?", "answer": "2.5" },
+        { "kind": "numeric", "targets": "compute-growth", "sample": "An upgrade costs 100 × 1.5^(level − 1). What does level 3 cost?", "answer": "225" }
+      ],
+      "sourceIds": ["gdc-ian", "rules-of-play"],
+      "estimatedMinutes": 14
+    },
+    {
+      "id": "prototype-and-playtest", "moduleId": "design", "title": "Prototyping and playtesting",
+      "objective": "Plan a paper prototype and a playtest that tests one question without leading the player.",
+      "prerequisiteLessonIds": ["balance-by-the-numbers"],
+      "concepts": [
+        { "id": "prototype", "title": "Prototype", "summary": "A cheap, quick version built to answer one design question." },
+        { "id": "playtest", "title": "Playtest", "summary": "Observing players who do not know the game, to see where they misunderstand or stall." },
+        { "id": "telemetry", "title": "Telemetry", "summary": "Logged in-game events that show where players fail or quit." }
+      ],
+      "skills": ["frame-test-question", "read-funnel"],
+      "misconceptions": [
+        "Learners ask playtesters 'did you like it?'; opinions are weaker evidence than watching where players hesitate.",
+        "Learners treat a designer's own play as a test; they already know the rules."
+      ],
+      "sequence": [
+        "One question per prototype.",
+        "Paper and card prototypes for rules and economy.",
+        "Silent observation; do not explain.",
+        "Telemetry funnel: how many players reach each step.",
+        "Iterate: change one thing, retest."
+      ],
+      "examples": [
+        "Funnel: 200 players start, 150 finish tutorial, 90 beat level 1, 45 beat level 2; level 2 loses 50% of those who reach it.",
+        "A paper test of an economy: give every player 10 coins, deal cards for 5 rounds, and record whether coins pile up or run out."
+      ],
+      "figures": [
+        { "type": "data_series", "shows": "A funnel bar chart of players reaching each level.", "learnerAction": "Click a step to see the drop-off.", "placement": "Telemetry." }
+      ],
+      "questionPlan": [
+        { "kind": "numeric", "targets": "read-funnel", "sample": "90 players beat level 1 and 45 of those beat level 2. What percentage of those who reached level 2 beat it?", "answer": "50" },
+        { "kind": "choice", "targets": "frame-test-question", "sample": "Which is a testable playtest question?", "choices": ["Is the game fun?", "Can players find the exit in the first room within 2 minutes?", "Do players like it?", "Is it good?"], "answer": "Can players find the exit in the first room within 2 minutes?" }
+      ],
+      "sourceIds": ["gdc-ian", "rules-of-play"],
+      "estimatedMinutes": 12
+    },
+    {
+      "id": "the-game-loop", "moduleId": "structure", "title": "The game loop and the fixed timestep",
+      "objective": "Write a game loop that updates in fixed steps and renders as often as it can, and trace its accumulator.",
+      "prerequisiteLessonIds": ["prototype-and-playtest"],
+      "concepts": [
+        { "id": "game-loop", "title": "Game loop", "summary": "A loop that processes input, updates the world and renders, decoupled from the speed of the machine." },
+        { "id": "fixed-timestep", "title": "Fixed timestep", "summary": "Updates always advance the simulation by the same amount, so results do not depend on frame rate." },
+        { "id": "accumulator", "title": "Accumulator (lag)", "summary": "Unspent real time carried between frames; each update spends one step from it." }
+      ],
+      "skills": ["trace-accumulator", "explain-variable-step-problem"],
+      "misconceptions": [
+        "Learners multiply by delta time and believe that fully fixes physics; variable steps still give different results on different machines, and large steps can tunnel through walls.",
+        "Learners think the loop runs 'at 60 fps'; the update rate and the render rate are separate."
+      ],
+      "sequence": [
+        "A loop with no timing runs at CPU speed.",
+        "Variable delta time and its non-determinism.",
+        "Fixed step plus accumulator: while lag >= step, update.",
+        "Render with the leftover fraction (interpolation).",
+        "Spiral of death if update takes longer than the step; cap the frame time."
+      ],
+      "examples": [
+        "Step is 20 ms (50 updates per second). A frame takes 70 ms: lag = 70 gives 3 updates (60 ms) and leaves 10 ms.",
+        "Next frame takes 25 ms: lag = 35, one update, leaving 15 ms."
+      ],
+      "figures": [
+        { "type": "program_trace", "shows": "Step through the loop with lag, updates and remainder columns.", "learnerAction": "Step frame by frame with chosen frame times.", "placement": "Accumulator." },
+        { "type": "svg_figure", "shows": "A timeline of real frames above fixed update ticks, with the accumulator as a bar.", "learnerAction": "none", "placement": "Fixed step." }
+      ],
+      "questionPlan": [
+        { "kind": "numeric", "targets": "trace-accumulator", "sample": "Step = 20 ms. A frame takes 70 ms and lag starts at 0. How many updates run?", "answer": "3" },
+        { "kind": "numeric", "targets": "trace-accumulator", "sample": "Same setup. How many milliseconds of lag remain after those updates?", "answer": "10" },
+        { "kind": "code-run-python", "targets": "trace-accumulator", "sample": "Write a loop: step = 20, lag = 0, frames = [70, 25, 5, 40]. For each frame add it to lag, then while lag >= step subtract step and count an update. Print the total updates.", "answer": "7" }
+      ],
+      "sourceIds": ["gpp", "fiedler-timestep"],
+      "historyNotes": ["Glenn Fiedler's Fix Your Timestep article dates from 2004."],
+      "estimatedMinutes": 14
+    },
+    {
+      "id": "state-machines", "moduleId": "structure", "title": "State machines",
+      "objective": "Replace tangled boolean flags with a state machine and count its states and transitions.",
+      "prerequisiteLessonIds": ["the-game-loop"],
+      "concepts": [
+        { "id": "fsm", "title": "Finite state machine", "summary": "An object that is in exactly one of a fixed set of states, with transitions between them triggered by events." },
+        { "id": "state-pattern", "title": "State pattern", "summary": "Each state is its own object or function that handles input and update for that state." },
+        { "id": "hsm", "title": "Hierarchical states", "summary": "Substates share behaviour from a parent state, which avoids duplicating transitions." }
+      ],
+      "skills": ["draw-fsm", "count-transitions", "spot-impossible-flags"],
+      "misconceptions": [
+        "Learners add a boolean per behaviour (isJumping, isDucking); n flags allow 2^n combinations, most of them nonsense.",
+        "Learners think a state machine is only for AI; player control, UI screens and animation use them equally."
+      ],
+      "sequence": [
+        "A character with isJumping, isDucking and isDiving flags: 8 combinations, only a few valid.",
+        "One state variable replaces the flags.",
+        "Transition table: states against events.",
+        "State objects with enter, update and exit.",
+        "Hierarchical states and the pushdown stack (return to previous state)."
+      ],
+      "examples": [
+        "Three flags give 2^3 = 8 combinations; the valid ones are standing, jumping, ducking, diving: 4.",
+        "A table with 5 states and 3 events has 5 × 3 = 15 cells."
+      ],
+      "figures": [
+        { "type": "svg_figure", "shows": "A state diagram with states as circles and labelled arrows, switchable between flags and states views.", "learnerAction": "Fire events and watch the active state.", "placement": "State pattern." },
+        { "type": "table", "shows": "Blank transition table of states by events.", "learnerAction": "Fill target states.", "placement": "Transition table." }
+      ],
+      "questionPlan": [
+        { "kind": "numeric", "targets": "spot-impossible-flags", "sample": "A character has 4 boolean flags. How many combinations of values are possible?", "answer": "16" },
+        { "kind": "numeric", "targets": "count-transitions", "sample": "A transition table covers 5 states and 3 events. How many cells does it have?", "answer": "15" },
+        { "kind": "code-reading", "targets": "draw-fsm", "sample": "state = 'idle'; on 'jump' while idle: state = 'jumping'; on 'land' while jumping: state = 'idle'. From idle, after events jump, land, jump, what is the state?", "answer": "jumping" }
+      ],
+      "sourceIds": ["gpp"],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "commands-and-undo", "moduleId": "structure", "title": "Commands, input and undo",
+      "objective": "Turn input into command objects, and trace an undo/redo stack.",
+      "prerequisiteLessonIds": ["state-machines"],
+      "concepts": [
+        { "id": "command", "title": "Command pattern", "summary": "A request wrapped as an object, so it can be stored, queued, replayed or undone." },
+        { "id": "input-binding", "title": "Input binding", "summary": "A table mapping inputs to commands, so keys can be rebound without editing game logic." },
+        { "id": "undo-stack", "title": "Undo stack", "summary": "A list of executed commands; undo pops and reverses the last one, and a new command clears the redo branch." }
+      ],
+      "skills": ["trace-undo-stack", "decouple-input"],
+      "misconceptions": [
+        "Learners think undo means saving the whole state each time; commands can store just what is needed to reverse them.",
+        "Learners forget that executing a new command after an undo discards the redo history."
+      ],
+      "sequence": [
+        "Direct input handling: if key == space then player.jump(), and its problems.",
+        "Command objects with execute.",
+        "Binding table: swap commands without touching the code.",
+        "Undo: each command stores state to reverse itself.",
+        "Replay: record commands with timestamps for deterministic playback."
+      ],
+      "examples": [
+        "Execute A, B, C, D, undo twice (stack A, B), then execute E: the stack is A, B, E and C and D can no longer be redone.",
+        "An AI actor issues the same MoveCommand objects as the player, so the same code runs both."
+      ],
+      "figures": [
+        { "type": "svg_figure", "shows": "A stack of commands with an undo pointer, switchable through the steps of the example.", "learnerAction": "Press undo, redo and new command and watch the stack.", "placement": "Undo stack." }
+      ],
+      "questionPlan": [
+        { "kind": "numeric", "targets": "trace-undo-stack", "sample": "Commands A, B, C, D are executed, then undo twice, then E is executed. How many commands are on the undo stack?", "answer": "3" },
+        { "kind": "choice", "targets": "trace-undo-stack", "sample": "In that situation, can C be redone?", "choices": ["Yes", "No"], "answer": "No" },
+        { "kind": "choice", "targets": "decouple-input", "sample": "Which design lets a player rebind jump from Space to J without changing game logic?", "choices": ["A binding table mapping inputs to commands", "A longer if-else chain", "A global flag", "A singleton"], "answer": "A binding table mapping inputs to commands" }
+      ],
+      "sourceIds": ["gpp"],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "components", "moduleId": "structure", "title": "Components and data layout",
+      "objective": "Compose game objects from components, and explain how data layout affects speed.",
+      "prerequisiteLessonIds": ["commands-and-undo"],
+      "concepts": [
+        { "id": "component", "title": "Component pattern", "summary": "An entity is built from independent components, each handling one concern such as physics or rendering." },
+        { "id": "ecs", "title": "Entity component system", "summary": "Entities are ids, components are plain data stored by type, and systems loop over entities that have the needed components." },
+        { "id": "data-locality", "title": "Data locality", "summary": "Data stored contiguously is fetched in cache lines (commonly 64 bytes) and processed faster than scattered data." }
+      ],
+      "skills": ["choose-composition", "count-cache-lines"],
+      "misconceptions": [
+        "Learners think deep inheritance reuses code well; it forces odd classes (a flying, swimming, poisonous monster) and makes rare combinations expensive.",
+        "Learners think ECS is always faster; locality helps when many entities share the same components, and costs complexity elsewhere."
+      ],
+      "sequence": [
+        "Inheritance trees and the explosion of combinations.",
+        "Components: one concern per object, owned by an entity.",
+        "ECS: entities as ids, components as arrays, systems as loops.",
+        "Cache lines: why arrays beat pointer chasing.",
+        "Array of structs against struct of arrays."
+      ],
+      "examples": [
+        "A position of 3 floats is 12 bytes; a 64-byte cache line holds 64 / 12 = 5 whole positions.",
+        "Three traits (flies, swims, poisons) give 2^3 = 8 monster types by inheritance; with components, each is one component added to a list."
+      ],
+      "figures": [
+        { "type": "svg_figure", "shows": "An entity box with attached component boxes, and a memory strip showing component arrays in contiguous cells.", "learnerAction": "Add or remove components from a sample monster.", "placement": "Component pattern." }
+      ],
+      "questionPlan": [
+        { "kind": "numeric", "targets": "count-cache-lines", "sample": "A position is 3 floats of 4 bytes each. How many whole positions fit in one 64-byte cache line?", "answer": "5" },
+        { "kind": "numeric", "targets": "choose-composition", "sample": "With 3 independent optional traits, how many distinct monster kinds can you form by inheritance if each combination needs its own class?", "answer": "8" },
+        { "kind": "choice", "targets": "choose-composition", "sample": "In an ECS, which is a system?", "choices": ["The position data", "A function that moves every entity having position and velocity", "The entity id", "The monster class"], "answer": "A function that moves every entity having position and velocity" }
+      ],
+      "sourceIds": ["gpp"],
+      "estimatedMinutes": 14
+    },
+    {
+      "id": "events-and-queues", "moduleId": "scale", "title": "Events and queues",
+      "objective": "Use observers and event queues to decouple systems, and trace a ring-buffer queue.",
+      "prerequisiteLessonIds": ["components"],
+      "concepts": [
+        { "id": "observer", "title": "Observer", "summary": "A subject notifies registered listeners when something happens, without knowing what they do." },
+        { "id": "event-queue", "title": "Event queue", "summary": "Events are stored and handled later, decoupling sender from receiver in time as well as in code." },
+        { "id": "ring-buffer", "title": "Ring buffer", "summary": "A fixed array where the write index wraps to zero after reaching the end." }
+      ],
+      "skills": ["trace-ring-buffer", "choose-observer-or-queue"],
+      "misconceptions": [
+        "Learners think observers are always synchronous and cheap; a slow listener blocks the subject, which a queue avoids.",
+        "Learners forget to unregister listeners, which leaves dead objects still being called."
+      ],
+      "sequence": [
+        "Achievements: the physics code should not know about the achievement system.",
+        "Observer: subject, list of listeners, notify.",
+        "Problems: synchronous cost, lapsed listeners.",
+        "Event queue: enqueue now, process in the update loop.",
+        "Ring buffer implementation with head and tail."
+      ],
+      "examples": [
+        "A ring buffer of size 4 with tail 3: enqueue gives tail (3 + 1) mod 4 = 0, another gives 1.",
+        "A 'player died' event can feed audio, UI and analytics without any of them being called from the damage code."
+      ],
+      "figures": [
+        { "type": "svg_figure", "shows": "A circular array of four cells with head and tail markers, steppable.", "learnerAction": "Enqueue and dequeue and watch the markers wrap.", "placement": "Ring buffer." }
+      ],
+      "questionPlan": [
+        { "kind": "numeric", "targets": "trace-ring-buffer", "sample": "A ring buffer has capacity 4 and the tail index is 3. After two enqueues, what is the tail index? (tail = (tail + 1) mod capacity)", "answer": "1" },
+        { "kind": "code-run-python", "targets": "trace-ring-buffer", "sample": "tail = 2; capacity = 5; repeat 4 times: tail = (tail + 1) % capacity. Print tail.", "answer": "1" },
+        { "kind": "choice", "targets": "choose-observer-or-queue", "sample": "A listener takes 50 ms and the subject runs every frame. Which fits better?", "choices": ["A synchronous observer", "An event queue handled outside the hot path", "A global variable", "Inheritance"], "answer": "An event queue handled outside the hot path" }
+      ],
+      "sourceIds": ["gpp"],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "pools-and-sharing", "moduleId": "scale", "title": "Object pools and flyweights",
+      "objective": "Use an object pool to avoid allocation in hot paths and a flyweight to share data, with memory counts.",
+      "prerequisiteLessonIds": ["events-and-queues"],
+      "concepts": [
+        { "id": "object-pool", "title": "Object pool", "summary": "A fixed set of pre-allocated objects reused instead of created and freed during play." },
+        { "id": "flyweight", "title": "Flyweight", "summary": "Shared immutable data kept once and referenced by many instances." },
+        { "id": "fragmentation", "title": "Fragmentation", "summary": "Free memory broken into small gaps that cannot hold a new large object." }
+      ],
+      "skills": ["trace-pool", "compute-flyweight-saving"],
+      "misconceptions": [
+        "Learners think pools are always a win; they cost memory up front and must handle exhaustion.",
+        "Learners store per-instance state in the flyweight; only intrinsic, shared data belongs there."
+      ],
+      "sequence": [
+        "Bullets created and freed every frame: allocation cost and fragmentation.",
+        "Pool: array of objects with an active flag, or a free list.",
+        "When full: skip, overwrite oldest, or grow.",
+        "Flyweight: 10,000 trees sharing one mesh.",
+        "Intrinsic against extrinsic state."
+      ],
+      "examples": [
+        "10,000 trees with a 20,000-byte mesh each use 10,000 × 20,012 = 200,120,000 bytes with 12 bytes of position; sharing the mesh uses 20,000 + 10,000 × 12 = 140,000 bytes.",
+        "A pool of 3 bullets: fire 4 times in a row and the fourth finds none free."
+      ],
+      "figures": [
+        { "type": "svg_figure", "shows": "A row of pool slots coloured active or free, with a free list.", "learnerAction": "Fire and expire bullets and watch slots change.", "placement": "Pool." }
+      ],
+      "questionPlan": [
+        { "kind": "numeric", "targets": "compute-flyweight-saving", "sample": "10,000 trees each have 12 bytes of position, and share one 20,000-byte mesh. What is the total memory in bytes?", "answer": "140000" },
+        { "kind": "numeric", "targets": "trace-pool", "sample": "A pool has 3 slots, all free. 4 bullets are fired with none expiring. How many were refused?", "answer": "1" },
+        { "kind": "choice", "targets": "compute-flyweight-saving", "sample": "Which belongs in the flyweight?", "choices": ["A tree's position", "A tree's mesh", "A tree's current wind sway", "A tree's id"], "answer": "A tree's mesh" }
+      ],
+      "sourceIds": ["gpp"],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "spatial-partitioning", "moduleId": "scale", "title": "Spatial partitioning",
+      "objective": "Use a uniform grid to cut collision checks and compute cell indices and pair counts.",
+      "prerequisiteLessonIds": ["pools-and-sharing"],
+      "concepts": [
+        { "id": "pair-count", "title": "Pairwise checks", "summary": "Checking every entity against every other takes n(n − 1)/2 tests." },
+        { "id": "uniform-grid", "title": "Uniform grid", "summary": "The world is divided into equal cells and each entity is stored in the cell holding its position." },
+        { "id": "tree-partitions", "title": "Quadtrees and BSP", "summary": "Hierarchical partitions that subdivide dense regions further." }
+      ],
+      "skills": ["compute-pairs", "compute-cell"],
+      "misconceptions": [
+        "Learners check only the entity's own cell; entities near a border can touch neighbours in adjacent cells.",
+        "Learners choose cell size at random; cells much smaller than entities cause many cells per entity, much larger ones give little pruning."
+      ],
+      "sequence": [
+        "Count the pairs for 1,000 entities.",
+        "Grid: cell = floor(position / cell size) in each axis.",
+        "Check own cell and neighbours.",
+        "Moving entities: update their cell each frame.",
+        "Quadtrees for uneven density."
+      ],
+      "examples": [
+        "1,000 entities need 1,000 × 999 / 2 = 499,500 pair tests.",
+        "An entity at (250, 730) with 100-unit cells is in cell (2, 7); a 1,000 by 1,000 world has 10 × 10 = 100 cells."
+      ],
+      "figures": [
+        { "type": "svg_figure", "shows": "A grid over a scatter of entities with the cell of one entity and its neighbours highlighted.", "learnerAction": "Drag an entity and see its cell and neighbours.", "placement": "Uniform grid." }
+      ],
+      "questionPlan": [
+        { "kind": "numeric", "targets": "compute-pairs", "sample": "How many pairwise tests do 200 entities need? (n(n − 1)/2)", "answer": "19900" },
+        { "kind": "numeric", "targets": "compute-cell", "sample": "With 100-unit cells, an entity has x = 250. What is its column index (0-based)?", "answer": "2" },
+        { "kind": "code-run-python", "targets": "compute-cell", "sample": "x, y, cell = 250, 730, 100. Print the column and row as 'col,row'.", "answer": "2,7" }
+      ],
+      "sourceIds": ["gpp"],
+      "estimatedMinutes": 13
+    }
+  ],
+  "courseCheck": "A mixed check: classify statements as mechanic, dynamic or aesthetic; convert milliseconds to frames; place a player on the flow channel; compute expected damage, time-to-kill and a growth cost; trace a fixed-timestep accumulator; count flag combinations and transition-table cells; trace an undo stack; count cache-line fits; trace a ring buffer; compute flyweight memory and pairwise test counts; and compute a grid cell.",
+  "platformNeeds": [
+    "A fixed-timestep simulator figure: sliders for step size and frame times, showing lag, updates and an interpolation fraction (fallback: program_trace).",
+    "A state-machine editor figure where the learner adds transitions and fires events (fallback: svg_figure views).",
+    "A spatial grid explorer where entities can be dragged and pair counts are shown live (fallback: svg_figure).",
+    "A small tuning sandbox: a table of weapon stats that recomputes expected damage and time-to-kill.",
+    "A pseudocode or JavaScript runner would let the architecture lessons use code-run questions beyond Python."
+  ],
+  "unverified": [
+    "No source could be opened in this session (network blocked gameprogrammingpatterns.com, gafferongames.com and others), so every source has verified: false. The licence of Game Programming Patterns (text free to read online, code MIT) is from memory and must be checked on the site before any text is adapted.",
+    "The MDA paper's venue (AAAI Game AI workshop 2004), Swink's 2008 date and the Csikszentmihalyi 1990 date are from memory.",
+    "The Game Design Concepts licence (CC BY-SA 3.0) is from memory.",
+    "Cache line size of 64 bytes is typical for common CPUs but not universal; the writer should say 'commonly'.",
+    "Grace-window durations (coyote time, hit-stop frames) vary by game and are not given as fixed numbers."
+  ]
+}

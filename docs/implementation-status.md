@@ -2,6 +2,26 @@
 
 Updated: 2026-11-03
 
+Release 1.4.0 is the first wave of the expansion (`docs/expansion-plan-2026-11.md`).
+
+- **New courses:** How Computers and Networks Work, System Design, Software Design and
+  Architecture, Machine Learning from Models to MLOps, AI Engineering, AI Agents, and Git and
+  Version Control (from wave 2). Each was scaffolded from its curriculum in `docs/curricula/`
+  by `scripts/scaffold-course.mjs` and written by one Sonnet agent following
+  `docs/writing-calibration/new-course/brief.md`.
+- **Rust Foundations** grows from 2 to 16 lessons (`docs/curricula/rust-foundations.json`), with
+  71 code questions and four projects, all compiled and marked in the sandbox by
+  `pnpm rust:prepare`, which now checks the bundle instead of rebuilding it from
+  `authoring/course.ts`.
+- **Checking:** every course passes validation and loads as the server loads it
+  (`scripts/check-course.ts`). The lead read lessons from each course against the voice
+  examples, re-ran the agents' arithmetic and checked the history they stated from memory.
+  Curriculum errors the agents found are corrected in the lessons. Numbers the curricula did not
+  give, such as server capacities and prices, are labelled as assumptions or illustrations.
+- **Library:** courses are grouped by subject area in the order a learner would take them.
+- **Not done:** the new lessons have not been played in the running app. The other 40 courses
+  follow in later waves.
+
 Release 1.3.0 rewrites every course from its curriculum.
 
 - **Lessons:** all twenty courses are re-authored from each lesson's objective in the two lesson

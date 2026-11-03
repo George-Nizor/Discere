@@ -80,7 +80,7 @@ describe("course discovery", () => {
         />
       </MemoryRouter>,
     );
-    const path = screen.getByRole("region", { name: "Foundations for thinking" });
+    const path = screen.getByRole("region", { name: "Mathematics and logic" });
     expect(
       within(path)
         .getAllByRole("link")
@@ -90,7 +90,7 @@ describe("course discovery", () => {
       "/courses/linear-algebra-vectors-and-maps",
       "/courses/calculus-change-and-accumulation",
     ]);
-    expect(screen.queryByRole("region", { name: "Explore more" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "More courses" })).not.toBeInTheDocument();
   });
   it("retains a newly selected subject when search follows before navigation settles", () => {
     show("/courses?source=home");

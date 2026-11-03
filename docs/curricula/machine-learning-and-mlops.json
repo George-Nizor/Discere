@@ -1,0 +1,1318 @@
+{
+  "id": "machine-learning-and-mlops",
+  "title": "Machine Learning, from Models to MLOps",
+  "family": "A",
+  "voice": "A",
+  "description": "Fit, evaluate and ship machine-learning models: loss and gradient descent, honest metrics, generalisation, trees and networks, then pipelines, serving and drift monitoring.",
+  "audience": "A capable adult who can write Python and read basic statistics. No prior machine learning is assumed. Plan to take this before ai-engineering, which uses precision, recall and the idea of a held-out set.",
+  "prerequisites": [
+    "python-for-data-analysis",
+    "probability-statistics",
+    "calculus-change-and-accumulation"
+  ],
+  "outcomes": [
+    "You'll be able to fit a simple model by hand and read its error.",
+    "You'll be able to take gradient descent steps and tune a learning rate.",
+    "You'll be able to compute precision, recall, F1 and AUC and choose among them.",
+    "You'll be able to diagnose overfitting and prevent leakage.",
+    "You'll be able to describe how to reproduce, serve, monitor and govern a model."
+  ],
+  "sources": [
+    {
+      "id": "sklearn-ug",
+      "title": "scikit-learn User Guide",
+      "url": "https://scikit-learn.org/stable/user_guide.html",
+      "licence": "BSD 3-Clause (code); documentation terms not confirmed",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "islp",
+      "title": "An Introduction to Statistical Learning, with Applications in Python (James, Witten, Hastie, Tibshirani, Taylor)",
+      "url": "https://www.statlearning.com/",
+      "licence": "Free PDF from the authors; Springer copyright",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "esl",
+      "title": "The Elements of Statistical Learning (Hastie, Tibshirani, Friedman), 2nd ed.",
+      "url": "https://hastie.su.domains/ElemStatLearn/",
+      "licence": "Free PDF from the authors; Springer copyright",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "mlcc",
+      "title": "Machine Learning Crash Course (Google for Developers)",
+      "url": "https://developers.google.com/machine-learning/crash-course",
+      "licence": "Google Developers site content is CC BY 4.0 (confirm per page)",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "rules-of-ml",
+      "title": "Rules of Machine Learning: Best Practices for ML Engineering (Martin Zinkevich, Google)",
+      "url": "https://developers.google.com/machine-learning/guides/rules-of-ml",
+      "licence": "Google Developers site content is CC BY 4.0 (confirm per page)",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "sculley-debt",
+      "title": "Hidden Technical Debt in Machine Learning Systems (Sculley et al., NeurIPS 2015)",
+      "url": "https://papers.nips.cc/paper/2015/hash/86df7dcfd896fcaf2674f757a2463eba-Abstract.html",
+      "licence": "Proceedings paper, copyright the authors",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "ml-test-score",
+      "title": "The ML Test Score: A Rubric for ML Production Readiness and Technical Debt Reduction (Breck et al., 2017)",
+      "url": "https://research.google/pubs/the-ml-test-score-a-rubric-for-ml-production-readiness-and-technical-debt-reduction/",
+      "licence": "Copyright the authors",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "mlops-gcp",
+      "title": "MLOps: Continuous delivery and automation pipelines in machine learning (Google Cloud Architecture Center)",
+      "url": "https://cloud.google.com/architecture/mlops-continuous-delivery-and-automation-pipelines-in-machine-learning",
+      "licence": "Google Cloud docs are CC BY 4.0 (confirm)",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "fawcett-roc",
+      "title": "An introduction to ROC analysis (Tom Fawcett, Pattern Recognition Letters 27(8), 2006)",
+      "url": "https://doi.org/10.1016/j.patrec.2005.10.010",
+      "licence": "Elsevier copyright",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "breiman-rf",
+      "title": "Random Forests (Leo Breiman, Machine Learning 45, 2001)",
+      "url": "https://doi.org/10.1023/A:1010933404324",
+      "licence": "Springer copyright",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "model-cards",
+      "title": "Model Cards for Model Reporting (Mitchell et al., FAT* 2019, arXiv:1810.03993)",
+      "url": "https://arxiv.org/abs/1810.03993",
+      "licence": "arXiv; author-chosen licence (confirm)",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "nist-rmf",
+      "title": "Artificial Intelligence Risk Management Framework (AI RMF 1.0), NIST AI 100-1, January 2023",
+      "url": "https://www.nist.gov/itl/ai-risk-management-framework",
+      "licence": "US government work, not subject to copyright in the US",
+      "use": "adapt",
+      "verified": false
+    }
+  ],
+  "modules": [
+    {
+      "id": "learning-from-data",
+      "title": "Learning from data",
+      "summary": "A model is a function fitted to examples; loss, gradient descent and honest metrics are the three tools that everything else builds on."
+    },
+    {
+      "id": "generalising",
+      "title": "Models that generalise",
+      "summary": "Why a model that fits its training data can still fail, and the methods that keep it honest: splits, regularisation, good features, trees and networks."
+    },
+    {
+      "id": "mlops",
+      "title": "From notebook to production",
+      "summary": "The work after the model: reproducible pipelines, serving, monitoring drift, and governing a model that real people depend on."
+    }
+  ],
+  "lessons": [
+    {
+      "id": "what-a-model-learns",
+      "moduleId": "learning-from-data",
+      "title": "What a model learns from examples",
+      "objective": "Fit a straight line to four points by least squares and read the result as a model with parameters, predictions and errors.",
+      "prerequisiteLessonIds": [],
+      "concepts": [
+        {
+          "id": "model",
+          "title": "Model",
+          "summary": "A function with adjustable parameters that maps features to a prediction."
+        },
+        {
+          "id": "parameters",
+          "title": "Parameters",
+          "summary": "The numbers a learning procedure adjusts so that predictions match the training examples."
+        },
+        {
+          "id": "residual",
+          "title": "Residual",
+          "summary": "The difference between an observed label and the model's prediction for it."
+        }
+      ],
+      "skills": [
+        "fit-line",
+        "compute-residuals"
+      ],
+      "misconceptions": [
+        "Learners often think the model stores the examples; a fitted line keeps only two numbers and discards the data.",
+        "A good fit is often read as a true law, when it only describes this sample."
+      ],
+      "sequence": [
+        "Four examples (hours studied, score) as points on a plane.",
+        "A rule ŷ = w·x + b, with w and b free.",
+        "Choosing the parameters that make squared residuals smallest, with the closed form w = Sxy/Sxx and b = ȳ − w·x̄.",
+        "Predict for a new input and compute the error on the examples."
+      ],
+      "examples": [
+        "Points (1,2),(2,4),(3,5),(4,8): x̄ = 2.5, ȳ = 4.75, Sxy = 4.125+0.375+0.125+4.875 = 9.5, Sxx = 5, so w = 1.9 and b = 0; ŷ(5) = 9.5.",
+        "Residuals 0.1, 0.2, −0.7, 0.4; squares sum to 0.70; MSE = 0.175."
+      ],
+      "figures": [
+        {
+          "type": "coordinate_plane",
+          "shows": "The four points with an adjustable line and vertical residual segments, using a different dataset from the question so the fitted slope is not shown.",
+          "learnerAction": "Drag the slope and watch the sum of squared residuals change on the demonstration data.",
+          "placement": "fitting the line"
+        },
+        {
+          "type": "table",
+          "shows": "A blank residual table for the learner to fill after the worked example; no filled values before the question.",
+          "learnerAction": "none",
+          "placement": "residuals"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "fit-line",
+          "sample": "For the points (1,2), (2,4), (3,5), (4,8) the least-squares line is y = w·x. What is w?",
+          "answer": "1.9"
+        },
+        {
+          "kind": "numeric",
+          "targets": "predict",
+          "sample": "Using that line, what does the model predict for x = 5?",
+          "answer": "9.5"
+        },
+        {
+          "kind": "numeric",
+          "targets": "residual",
+          "sample": "What is the mean squared error of the line on the four points?",
+          "answer": "0.175"
+        }
+      ],
+      "sourceIds": [
+        "islp",
+        "esl",
+        "sklearn-ug"
+      ],
+      "historyNotes": [
+        "Legendre published least squares in 1805 and Gauss claimed earlier use, in his 1809 work on planetary orbits."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "loss-and-gradient-descent",
+      "moduleId": "learning-from-data",
+      "title": "Loss and gradient descent",
+      "objective": "Take gradient descent steps by hand on a one-parameter model and explain how the learning rate changes the result.",
+      "prerequisiteLessonIds": [
+        "what-a-model-learns"
+      ],
+      "concepts": [
+        {
+          "id": "loss",
+          "title": "Loss function",
+          "summary": "A single number that scores how wrong the model's predictions are on the data."
+        },
+        {
+          "id": "gradient",
+          "title": "Gradient",
+          "summary": "The slope of the loss with respect to a parameter, which points towards increasing loss."
+        },
+        {
+          "id": "learning-rate",
+          "title": "Learning rate",
+          "summary": "The step size multiplier applied to the gradient on each update."
+        }
+      ],
+      "skills": [
+        "gradient-step",
+        "tune-learning-rate"
+      ],
+      "misconceptions": [
+        "The gradient points to the minimum; it points uphill, so the update subtracts it.",
+        "A larger learning rate always trains faster; past a threshold the loss grows."
+      ],
+      "sequence": [
+        "Why closed-form solutions stop working for large models.",
+        "The model ŷ = w·x and loss L(w) = ½·Σ(w·xᵢ − yᵢ)² on points (1,2),(2,4).",
+        "The gradient dL/dw = Σ xᵢ(w·xᵢ − yᵢ) and the update w ← w − η·gradient.",
+        "Too small, about right and too large step sizes."
+      ],
+      "examples": [
+        "At w = 0: L = (4+16)/2 = 10, gradient = 1·(−2)+2·(−4) = −10; with η = 0.1, w becomes 1.0 and L falls to 2.5.",
+        "Next step: gradient −5, w = 1.5, L = 0.625. With η = 1.0 from w = 0, w jumps to 10 and L rises to 160."
+      ],
+      "figures": [
+        {
+          "type": "graph_plot",
+          "shows": "The loss curve L(w) as a parabola with the current w marked and the tangent drawn.",
+          "learnerAction": "Step once at a time and choose the learning rate; see the point walk down or bounce out.",
+          "placement": "learning rate"
+        },
+        {
+          "type": "table",
+          "shows": "Columns for w, gradient and loss, filled only for a demonstration dataset and left empty for the question's data.",
+          "learnerAction": "none",
+          "placement": "worked steps"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "gradient-step",
+          "sample": "Model ŷ = w·x, points (1,2),(2,4), loss ½Σ(w·x−y)². At w = 0 the gradient is −10. With learning rate 0.1, what is w after one step?",
+          "answer": "1"
+        },
+        {
+          "kind": "numeric",
+          "targets": "gradient-step",
+          "sample": "Continue from w = 1. What is the gradient there?",
+          "answer": "-5"
+        },
+        {
+          "kind": "choice",
+          "targets": "tune-learning-rate",
+          "sample": "From w = 0 you use learning rate 1.0 and the loss rises from 10 to 160. What went wrong?",
+          "answer": "The step was so large that it overshot the minimum",
+          "choices": [
+            "The step was so large that it overshot the minimum",
+            "The gradient had the wrong sign",
+            "The loss function is not differentiable",
+            "The data contain outliers"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "mlcc",
+        "esl",
+        "sklearn-ug"
+      ],
+      "historyNotes": [
+        "Augustin-Louis Cauchy described gradient descent in 1847; the stochastic version goes back to Robbins and Monro in 1951."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "classification-and-metrics",
+      "moduleId": "learning-from-data",
+      "title": "Classification and the confusion matrix",
+      "objective": "Compute accuracy, precision, recall and F1 from a confusion matrix and say why accuracy misleads on imbalanced data.",
+      "prerequisiteLessonIds": [
+        "what-a-model-learns"
+      ],
+      "concepts": [
+        {
+          "id": "confusion-matrix",
+          "title": "Confusion matrix",
+          "summary": "A table of true positives, false positives, false negatives and true negatives."
+        },
+        {
+          "id": "precision-recall",
+          "title": "Precision and recall",
+          "summary": "Precision is TP/(TP+FP) and recall is TP/(TP+FN)."
+        },
+        {
+          "id": "base-rate",
+          "title": "Base rate",
+          "summary": "The share of examples that belong to the positive class."
+        }
+      ],
+      "skills": [
+        "read-confusion-matrix",
+        "choose-metric"
+      ],
+      "misconceptions": [
+        "High accuracy means a good model; with 6% positives a model that always says negative scores 94%.",
+        "Precision and recall measure the same thing from two sides."
+      ],
+      "sequence": [
+        "A spam or fraud filter on 1,000 messages.",
+        "The four cells and what each means for a user.",
+        "Accuracy, precision, recall, F1 and which errors cost more.",
+        "A baseline that predicts the majority class."
+      ],
+      "examples": [
+        "TP = 40, FP = 10, FN = 20, TN = 930: accuracy 970/1000 = 0.97, precision 40/50 = 0.80, recall 40/60 ≈ 0.667, F1 = 80/110 ≈ 0.727.",
+        "The all-negative baseline scores 940/1000 = 0.94 accuracy with recall 0."
+      ],
+      "figures": [
+        {
+          "type": "table",
+          "shows": "A 2x2 confusion matrix with cell counts for a demonstration dataset; the question's counts are shown only in the prompt.",
+          "learnerAction": "Click a cell to highlight which metric uses it.",
+          "placement": "the four cells"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "1,000 dots in a grid, 60 positive, coloured by the model's decision.",
+          "learnerAction": "Toggle between model and always-negative baseline.",
+          "placement": "base rate"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "precision",
+          "sample": "TP = 40, FP = 10, FN = 20, TN = 930. What is the precision?",
+          "answer": "0.8"
+        },
+        {
+          "kind": "numeric",
+          "targets": "recall",
+          "sample": "With the same counts, what is the recall, to three decimal places?",
+          "answer": "0.667"
+        },
+        {
+          "kind": "numeric",
+          "targets": "f1",
+          "sample": "With the same counts, what is F1 to three decimal places?",
+          "answer": "0.727"
+        },
+        {
+          "kind": "numeric",
+          "targets": "base-rate",
+          "sample": "The all-negative baseline on the same 1,000 messages: what accuracy does it score?",
+          "answer": "0.94"
+        }
+      ],
+      "sourceIds": [
+        "sklearn-ug",
+        "mlcc",
+        "islp"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "thresholds-and-ranking",
+      "moduleId": "learning-from-data",
+      "title": "Thresholds, ROC and AUC",
+      "objective": "Move a decision threshold, recompute precision and recall, and compute AUC as the fraction of correctly ordered positive-negative pairs.",
+      "prerequisiteLessonIds": [
+        "classification-and-metrics"
+      ],
+      "concepts": [
+        {
+          "id": "threshold",
+          "title": "Decision threshold",
+          "summary": "The score above which a classifier predicts the positive class."
+        },
+        {
+          "id": "roc",
+          "title": "ROC curve",
+          "summary": "True positive rate plotted against false positive rate across all thresholds."
+        },
+        {
+          "id": "auc",
+          "title": "AUC",
+          "summary": "The probability that a random positive scores higher than a random negative."
+        }
+      ],
+      "skills": [
+        "apply-threshold",
+        "compute-auc"
+      ],
+      "misconceptions": [
+        "A classifier has one precision and one recall; both change with the threshold.",
+        "An AUC of 0.9 means 90% accuracy."
+      ],
+      "sequence": [
+        "Six scored examples, three positive.",
+        "A threshold turns scores into decisions and moves cases between cells.",
+        "Sweeping the threshold traces the ROC curve.",
+        "AUC counts correctly ordered pairs."
+      ],
+      "examples": [
+        "Scores 0.9, 0.8, 0.6, 0.55, 0.4, 0.3 with labels 1, 1, 0, 1, 0, 0. Threshold 0.5: TP 3, FP 1, FN 0, precision 0.75, recall 1.0, FPR 1/3. Threshold 0.7: TP 2, FP 0, FN 1, precision 1.0, recall 2/3.",
+        "Positive-negative pairs: 9; ordered correctly: 8 (the 0.55 positive loses to the 0.6 negative), so AUC = 8/9 ≈ 0.889."
+      ],
+      "figures": [
+        {
+          "type": "graph_plot",
+          "shows": "ROC curve with a movable point for the current threshold.",
+          "learnerAction": "Drag the threshold slider; the confusion counts and the ROC point update.",
+          "placement": "threshold"
+        },
+        {
+          "type": "table",
+          "shows": "Sorted scores and labels with the pair-counting grid left blank until the learner has answered.",
+          "learnerAction": "none",
+          "placement": "AUC pairs"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "apply-threshold",
+          "sample": "Scores 0.9, 0.8, 0.6, 0.55, 0.4, 0.3 have labels 1, 1, 0, 1, 0, 0. At threshold 0.5, what is the precision?",
+          "answer": "0.75"
+        },
+        {
+          "kind": "numeric",
+          "targets": "apply-threshold",
+          "sample": "At threshold 0.7 on the same data, what is the recall, to three decimal places?",
+          "answer": "0.667"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-auc",
+          "sample": "What is the AUC of these scores, as a fraction?",
+          "answer": "8/9"
+        }
+      ],
+      "sourceIds": [
+        "fawcett-roc",
+        "sklearn-ug"
+      ],
+      "historyNotes": [
+        "ROC analysis came from radar signal detection in the Second World War; Fawcett's 2006 tutorial is the standard machine-learning introduction."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "generalisation",
+      "moduleId": "generalising",
+      "title": "Generalisation and the test set",
+      "objective": "Split data into training, validation and test sets and diagnose overfitting from the gap between training and validation error.",
+      "prerequisiteLessonIds": [
+        "classification-and-metrics"
+      ],
+      "concepts": [
+        {
+          "id": "overfitting",
+          "title": "Overfitting",
+          "summary": "Fitting noise in the training set so that error on new data is much worse than error on training data."
+        },
+        {
+          "id": "validation-set",
+          "title": "Validation set",
+          "summary": "Held-out data used to choose between models or settings."
+        },
+        {
+          "id": "test-set",
+          "title": "Test set",
+          "summary": "Held-out data used once, at the end, to estimate performance on new data."
+        }
+      ],
+      "skills": [
+        "split-data",
+        "diagnose-overfitting"
+      ],
+      "misconceptions": [
+        "Low training error shows the model is good.",
+        "Using the test set repeatedly while tuning is harmless; each look leaks a little information."
+      ],
+      "sequence": [
+        "Polynomial fits of rising degree to 10 noisy points.",
+        "Training error falls with complexity while validation error falls and then rises.",
+        "Why three splits and what each is for.",
+        "Time-ordered data must be split by time."
+      ],
+      "examples": [
+        "1,000 rows split 70/15/15 gives 700 train, 150 validation, 150 test.",
+        "Training accuracy 0.99, validation accuracy 0.82: a gap of 0.17, overfitting. Training 0.84 and validation 0.82 with both low is underfitting if the target is 0.95."
+      ],
+      "figures": [
+        {
+          "type": "graph_plot",
+          "shows": "Training and validation error against model complexity.",
+          "learnerAction": "Slide the polynomial degree and see the fit curve and both errors.",
+          "placement": "complexity curve"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A bar split into train, validation and test segments.",
+          "learnerAction": "none",
+          "placement": "splits"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "split-data",
+          "sample": "1,000 rows are split 70/15/15. How many rows are in the training set?",
+          "answer": "700"
+        },
+        {
+          "kind": "numeric",
+          "targets": "diagnose-overfitting",
+          "sample": "Training accuracy is 0.99 and validation accuracy is 0.82. What is the gap?",
+          "answer": "0.17"
+        },
+        {
+          "kind": "choice",
+          "targets": "diagnose-overfitting",
+          "sample": "Training error 0.02, validation error 0.31. What is the likeliest problem?",
+          "answer": "Overfitting",
+          "choices": [
+            "Overfitting",
+            "Underfitting",
+            "Label noise only",
+            "A too-small learning rate"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "islp",
+        "mlcc",
+        "sklearn-ug"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "regularisation-and-cross-validation",
+      "moduleId": "generalising",
+      "title": "Regularisation and cross-validation",
+      "objective": "Add an L2 or L1 penalty to a loss, and average a metric over k folds to compare two models.",
+      "prerequisiteLessonIds": [
+        "generalisation",
+        "loss-and-gradient-descent"
+      ],
+      "concepts": [
+        {
+          "id": "regularisation",
+          "title": "Regularisation",
+          "summary": "Adding a penalty on parameter size to the loss so that the fit prefers simpler models."
+        },
+        {
+          "id": "cross-validation",
+          "title": "Cross-validation",
+          "summary": "Rotating which fold is held out so every example is used for validation once."
+        },
+        {
+          "id": "bias-variance",
+          "title": "Bias and variance",
+          "summary": "Bias is error from wrong assumptions; variance is sensitivity to the particular training sample."
+        }
+      ],
+      "skills": [
+        "penalised-loss",
+        "k-fold-average"
+      ],
+      "misconceptions": [
+        "Regularisation always improves accuracy; it trades training fit for stability.",
+        "Cross-validation gives a model; it gives an estimate for choosing among settings."
+      ],
+      "sequence": [
+        "The penalised loss L(w) + λ·w² and what λ controls.",
+        "L1 penalises |w| and tends to zero out parameters.",
+        "Five-fold cross-validation, one fold held out at a time.",
+        "Comparing two settings by mean and spread across folds."
+      ],
+      "examples": [
+        "MSE 3, w = 2, λ = 0.5: L2 loss = 3 + 0.5·4 = 5; L1 loss = 3 + 0.5·2 = 4.",
+        "Fold accuracies 0.82, 0.80, 0.85, 0.78, 0.80 average 0.81. On 1,000 rows five folds train on 800 and validate on 200."
+      ],
+      "figures": [
+        {
+          "type": "coordinate_plane",
+          "shows": "Fitted curves for λ = 0, small and large on the same points.",
+          "learnerAction": "Slide λ and watch the curve smooth.",
+          "placement": "penalty"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "Five rows of five boxes, one shaded as the held-out fold in each row.",
+          "learnerAction": "none",
+          "placement": "k-fold"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "penalised-loss",
+          "sample": "MSE is 3, w = 2, λ = 0.5 and the penalty is λ·w². What is the penalised loss?",
+          "answer": "5"
+        },
+        {
+          "kind": "numeric",
+          "targets": "k-fold-average",
+          "sample": "Five folds score 0.82, 0.80, 0.85, 0.78, 0.80. What is the mean?",
+          "answer": "0.81"
+        },
+        {
+          "kind": "numeric",
+          "targets": "k-fold-average",
+          "sample": "With 1,000 rows and 5-fold cross-validation, how many rows train each model?",
+          "answer": "800"
+        }
+      ],
+      "sourceIds": [
+        "islp",
+        "esl",
+        "sklearn-ug"
+      ],
+      "historyNotes": [
+        "Hoerl and Kennard introduced ridge regression in Technometrics in 1970."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "features-and-leakage",
+      "moduleId": "generalising",
+      "title": "Features, scaling and leakage",
+      "objective": "Prepare features with scaling, encoding and imputation, and spot target leakage and preprocessing leakage.",
+      "prerequisiteLessonIds": [
+        "generalisation"
+      ],
+      "concepts": [
+        {
+          "id": "scaling",
+          "title": "Scaling",
+          "summary": "Rescaling a numeric feature, for example to zero mean and unit variance or to the range 0 to 1."
+        },
+        {
+          "id": "encoding",
+          "title": "One-hot encoding",
+          "summary": "Replacing a category by one 0/1 column per level."
+        },
+        {
+          "id": "leakage",
+          "title": "Leakage",
+          "summary": "Information in training that will not exist at prediction time, or test information used in preparation."
+        }
+      ],
+      "skills": [
+        "scale-feature",
+        "spot-leakage"
+      ],
+      "misconceptions": [
+        "Fitting the scaler on all the data before splitting is harmless.",
+        "A feature that predicts the label almost perfectly is a great find; it is usually a leak."
+      ],
+      "sequence": [
+        "Features [10,20,30,40,50] standardised and min-max scaled.",
+        "Median against mean imputation for a skewed column.",
+        "One-hot encoding a four-level category.",
+        "Leakage examples: a discharge code used to predict admission, scaler fit on test rows."
+      ],
+      "examples": [
+        "Mean 30, population standard deviation √200 ≈ 14.14, so 50 has z ≈ 1.41; min-max of 20 is (20−10)/40 = 0.25.",
+        "Values 4, 6, 10, 100: median 8, mean 30. A four-level colour column becomes four columns."
+      ],
+      "figures": [
+        {
+          "type": "data_distribution",
+          "shows": "The feature before and after scaling.",
+          "learnerAction": "Toggle scaling method.",
+          "placement": "scaling"
+        },
+        {
+          "type": "table",
+          "shows": "Rows with a cancellation_reason column that is only filled after the outcome.",
+          "learnerAction": "Mark which columns would be known at prediction time.",
+          "placement": "leakage"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "scale-feature",
+          "sample": "Values 10, 20, 30, 40, 50: what is the min-max scaled value of 20?",
+          "answer": "0.25"
+        },
+        {
+          "kind": "numeric",
+          "targets": "impute",
+          "sample": "Values 4, 6, 10, 100 have a missing entry to fill with the median. What value?",
+          "answer": "8"
+        },
+        {
+          "kind": "choice",
+          "targets": "spot-leakage",
+          "sample": "A model predicts hospital readmission using a column filled in at discharge review, after the outcome. This is",
+          "answer": "Target leakage",
+          "choices": [
+            "Target leakage",
+            "Class imbalance",
+            "Underfitting",
+            "Covariate shift"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "sklearn-ug",
+        "rules-of-ml",
+        "mlcc"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "trees-and-ensembles",
+      "moduleId": "generalising",
+      "title": "Decision trees and ensembles",
+      "objective": "Choose a split by Gini impurity and explain why a vote of many different trees beats one deep tree.",
+      "prerequisiteLessonIds": [
+        "classification-and-metrics",
+        "generalisation"
+      ],
+      "concepts": [
+        {
+          "id": "gini",
+          "title": "Gini impurity",
+          "summary": "1 minus the sum of squared class proportions in a node."
+        },
+        {
+          "id": "bagging",
+          "title": "Bagging",
+          "summary": "Training models on bootstrap resamples and combining their votes."
+        },
+        {
+          "id": "random-forest",
+          "title": "Random forest",
+          "summary": "Bagged trees that also consider only a random subset of features at each split."
+        }
+      ],
+      "skills": [
+        "compute-gini",
+        "compute-split-gain"
+      ],
+      "misconceptions": [
+        "A deeper tree is always better; a full-depth tree memorises.",
+        "Averaging copies of the same model helps; the models must differ."
+      ],
+      "sequence": [
+        "A node of 10 examples, 6 positive and 4 negative.",
+        "Gini impurity, a candidate split and the weighted child impurity.",
+        "Variance of a single deep tree; bootstrap resamples and voting.",
+        "Out-of-bag rows as a free validation set."
+      ],
+      "examples": [
+        "Parent Gini = 1 − 0.36 − 0.16 = 0.48; left (4 pos, 1 neg) 0.32, right (2 pos, 3 neg) 0.48, weighted 0.40, gain 0.08.",
+        "Five trees vote 1,0,1,1,0 and the forest predicts 1. A row is missed by a 10-row bootstrap with probability 0.9¹⁰ ≈ 0.349."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A tree with a node split and counts at each child.",
+          "learnerAction": "Pick among three candidate splits and see Gini and gain.",
+          "placement": "split choice"
+        },
+        {
+          "type": "coordinate_plane",
+          "shows": "Axis-aligned decision regions of a tree on two features.",
+          "learnerAction": "Raise max depth and watch the boundary overfit.",
+          "placement": "depth"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-gini",
+          "sample": "A node has 6 positive and 4 negative examples. What is its Gini impurity?",
+          "answer": "0.48"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-split-gain",
+          "sample": "Splitting it into (4 pos, 1 neg) and (2 pos, 3 neg), what is the weighted child Gini?",
+          "answer": "0.4"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-split-gain",
+          "sample": "What is the impurity decrease of that split?",
+          "answer": "0.08"
+        }
+      ],
+      "sourceIds": [
+        "breiman-rf",
+        "islp",
+        "sklearn-ug"
+      ],
+      "historyNotes": [
+        "Breiman, Friedman, Olshen and Stone published CART in 1984; Breiman's random forests paper appeared in 2001."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "neural-networks",
+      "moduleId": "generalising",
+      "title": "Neural networks from one neuron up",
+      "objective": "Run a forward pass through one neuron and count the parameters of a small fully connected network.",
+      "prerequisiteLessonIds": [
+        "loss-and-gradient-descent",
+        "features-and-leakage"
+      ],
+      "concepts": [
+        {
+          "id": "neuron",
+          "title": "Neuron",
+          "summary": "A weighted sum of inputs plus a bias, passed through an activation function."
+        },
+        {
+          "id": "activation",
+          "title": "Activation function",
+          "summary": "A nonlinear function such as ReLU or sigmoid applied after the weighted sum."
+        },
+        {
+          "id": "backprop",
+          "title": "Backpropagation",
+          "summary": "Applying the chain rule backwards through a network to get the gradient of the loss for every parameter."
+        }
+      ],
+      "skills": [
+        "forward-pass",
+        "count-parameters"
+      ],
+      "misconceptions": [
+        "Stacking linear layers adds power; without a nonlinearity they collapse to one linear map.",
+        "Backpropagation is a different learning algorithm from gradient descent; it computes the gradients that descent uses."
+      ],
+      "sequence": [
+        "One neuron with two inputs.",
+        "ReLU and sigmoid.",
+        "Layers in sequence and parameter counts.",
+        "The chain rule delivers each weight's gradient."
+      ],
+      "examples": [
+        "w = (0.5, −1), b = 0.5, x = (2, 1): z = 1 − 1 + 0.5 = 0.5; ReLU gives 0.5; sigmoid gives 0.6225.",
+        "A 4-3-2 network has (4·3+3) + (3·2+2) = 15 + 8 = 23 parameters."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A small network with weights on edges and values on nodes.",
+          "learnerAction": "Change an input and see values propagate.",
+          "placement": "forward pass"
+        },
+        {
+          "type": "graph_plot",
+          "shows": "ReLU and sigmoid curves.",
+          "learnerAction": "none",
+          "placement": "activations"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "forward-pass",
+          "sample": "w = (0.5, −1), b = 0.5, x = (2, 1). What is z = w·x + b?",
+          "answer": "0.5"
+        },
+        {
+          "kind": "numeric",
+          "targets": "forward-pass",
+          "sample": "Apply the sigmoid to z = 0.5, to four decimal places.",
+          "answer": "0.6225"
+        },
+        {
+          "kind": "numeric",
+          "targets": "count-parameters",
+          "sample": "A fully connected network has layer sizes 4, 3, 2 with biases. How many parameters?",
+          "answer": "23"
+        },
+        {
+          "kind": "code-run-python",
+          "targets": "forward-pass",
+          "sample": "Print the sigmoid of 0.5 rounded to 4 places using math.exp.",
+          "answer": "0.6225"
+        }
+      ],
+      "sourceIds": [
+        "islp",
+        "mlcc"
+      ],
+      "historyNotes": [
+        "Rumelhart, Hinton and Williams popularised backpropagation in Nature in 1986; Rosenblatt's perceptron dates from 1958."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "pipelines-and-experiments",
+      "moduleId": "mlops",
+      "title": "Pipelines and experiment tracking",
+      "objective": "Say what must be recorded to reproduce a training run and count the fits in a hyperparameter search.",
+      "prerequisiteLessonIds": [
+        "regularisation-and-cross-validation",
+        "features-and-leakage"
+      ],
+      "concepts": [
+        {
+          "id": "pipeline",
+          "title": "Pipeline",
+          "summary": "A fixed sequence of preparation and training steps run the same way every time."
+        },
+        {
+          "id": "experiment-tracking",
+          "title": "Experiment tracking",
+          "summary": "Recording code version, data version, parameters, seed and metrics for every run."
+        },
+        {
+          "id": "reproducibility",
+          "title": "Reproducibility",
+          "summary": "Getting the same result again from the same recorded inputs."
+        }
+      ],
+      "skills": [
+        "count-fits",
+        "reproduce-run"
+      ],
+      "misconceptions": [
+        "Saving the model file is enough; without the data version, nobody can say what it learned from.",
+        "Setting a random seed makes a run reproducible regardless of library or hardware."
+      ],
+      "sequence": [
+        "Two notebook runs with different scores and no record of why.",
+        "What a run record contains.",
+        "Content hashes for data.",
+        "Grid search cost: configurations × folds."
+      ],
+      "examples": [
+        "3 learning rates × 4 depths × 5 folds = 60 fits.",
+        "A run record: commit abc123, data hash, seed 42, parameters, metrics."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Pipeline boxes: data, split, features, train, evaluate, register.",
+          "learnerAction": "Click a box to see what it records.",
+          "placement": "pipeline"
+        },
+        {
+          "type": "table",
+          "shows": "Two runs side by side with the differing field highlighted after the learner picks it.",
+          "learnerAction": "Find the field that explains the score difference.",
+          "placement": "tracking"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "count-fits",
+          "sample": "A search tries 3 learning rates and 4 depths with 5-fold cross-validation. How many model fits?",
+          "answer": "60"
+        },
+        {
+          "kind": "single-term",
+          "targets": "reproduce-run",
+          "sample": "What kind of identifier of a dataset changes whenever a single byte of it changes?",
+          "answer": "hash"
+        },
+        {
+          "kind": "choice",
+          "targets": "reproduce-run",
+          "sample": "A run record lists the code commit, parameters, seed and metrics. What else must it identify to reproduce the result?",
+          "answer": "The data version",
+          "choices": [
+            "The data version",
+            "The author",
+            "The laptop colour",
+            "The Python logo"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "sculley-debt",
+        "mlops-gcp",
+        "ml-test-score"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "serving-and-release",
+      "moduleId": "mlops",
+      "title": "Serving a model and releasing it safely",
+      "objective": "Choose batch or online serving, size replicas for a latency target and describe a canary release.",
+      "prerequisiteLessonIds": [
+        "pipelines-and-experiments"
+      ],
+      "concepts": [
+        {
+          "id": "online-serving",
+          "title": "Online serving",
+          "summary": "Answering one request at a time within a latency budget."
+        },
+        {
+          "id": "train-serve-skew",
+          "title": "Train-serve skew",
+          "summary": "A difference between how features are computed in training and in production."
+        },
+        {
+          "id": "canary",
+          "title": "Canary release",
+          "summary": "Sending a small share of traffic to a new model before a full rollout."
+        }
+      ],
+      "skills": [
+        "size-replicas",
+        "design-release"
+      ],
+      "misconceptions": [
+        "A model that passes offline evaluation is safe to ship; production data and feature code differ.",
+        "Rolling back a model is trivial; features and schemas may have changed with it."
+      ],
+      "sequence": [
+        "Nightly scores versus per-request scores.",
+        "A 200 ms budget split across network, feature lookup and model.",
+        "Replica sizing from peak load and target utilisation.",
+        "Shadow, canary and rollback."
+      ],
+      "examples": [
+        "Peak 400 requests/s, 50 requests/s per replica, 80% target utilisation: 400/(50·0.8) = 10 replicas.",
+        "Budget 200 ms: network 40, features 60, so the model has 100 ms."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A request path with latency boxes summing to the budget.",
+          "learnerAction": "Resize the model box until the budget is blown.",
+          "placement": "latency"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "Traffic split between current and candidate model.",
+          "learnerAction": "Raise the canary share.",
+          "placement": "canary"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "size-replicas",
+          "sample": "Peak load 400 requests/s, 50 requests/s per replica, and you want 80% utilisation at peak. How many replicas?",
+          "answer": "10"
+        },
+        {
+          "kind": "numeric",
+          "targets": "latency-budget",
+          "sample": "Budget 200 ms; network 40 ms, feature lookup 60 ms. How many milliseconds are left for the model?",
+          "answer": "100"
+        },
+        {
+          "kind": "choice",
+          "targets": "design-release",
+          "sample": "Which release step compares a new model on live traffic without affecting any user?",
+          "answer": "Shadow deployment",
+          "choices": [
+            "Shadow deployment",
+            "Canary at 50%",
+            "Full rollout",
+            "Retraining"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "mlops-gcp",
+        "rules-of-ml",
+        "sculley-debt"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "monitoring-and-drift",
+      "moduleId": "mlops",
+      "title": "Monitoring and drift",
+      "objective": "Compute a population stability index and decide what to monitor when labels arrive late.",
+      "prerequisiteLessonIds": [
+        "serving-and-release",
+        "thresholds-and-ranking"
+      ],
+      "concepts": [
+        {
+          "id": "data-drift",
+          "title": "Data drift",
+          "summary": "A change in the distribution of input features."
+        },
+        {
+          "id": "concept-drift",
+          "title": "Concept drift",
+          "summary": "A change in the relation between features and the label."
+        },
+        {
+          "id": "psi",
+          "title": "Population stability index",
+          "summary": "Σ (actual% − expected%)·ln(actual%/expected%) across bins."
+        }
+      ],
+      "skills": [
+        "compute-psi",
+        "choose-monitor"
+      ],
+      "misconceptions": [
+        "Stable accuracy means no drift; labels may be late, and input drift appears first.",
+        "A PSI threshold is a law; 0.1 and 0.25 are industry conventions."
+      ],
+      "sequence": [
+        "A feature binned in training: 50/30/20 percent. This week: 40/30/30.",
+        "The PSI formula.",
+        "Data drift against concept drift against label delay.",
+        "Proxy metrics: input distributions, prediction distribution, business outcomes."
+      ],
+      "examples": [
+        "PSI = (0.4−0.5)ln(0.8) + 0 + (0.3−0.2)ln(1.5) = 0.02231 + 0.04055 ≈ 0.063."
+      ],
+      "figures": [
+        {
+          "type": "data_distribution",
+          "shows": "Reference and live histograms of one feature.",
+          "learnerAction": "Slide the live distribution and watch PSI.",
+          "placement": "drift"
+        },
+        {
+          "type": "data_series",
+          "shows": "Daily PSI and prediction rate over 30 days.",
+          "learnerAction": "Mark the day an alert should fire.",
+          "placement": "monitoring"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-psi",
+          "sample": "Bins expected 0.5, 0.3, 0.2 and actual 0.4, 0.3, 0.3. What is the PSI to three decimals?",
+          "answer": "0.063"
+        },
+        {
+          "kind": "choice",
+          "targets": "choose-monitor",
+          "sample": "Labels arrive 30 days after prediction. What can you monitor today?",
+          "answer": "Input and prediction distributions",
+          "choices": [
+            "Input and prediction distributions",
+            "Accuracy only",
+            "Nothing",
+            "Training loss"
+          ]
+        },
+        {
+          "kind": "choice",
+          "targets": "concept-drift",
+          "sample": "Customers change what they buy so the same features now imply a different outcome. This is",
+          "answer": "Concept drift",
+          "choices": [
+            "Concept drift",
+            "Data drift only",
+            "Overfitting",
+            "Leakage"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "mlops-gcp",
+        "ml-test-score",
+        "sculley-debt"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "responsible-ml",
+      "moduleId": "mlops",
+      "title": "Fairness, documentation and risk",
+      "objective": "Compare a metric across groups, write what a model card must say, and place work under the four NIST AI RMF functions.",
+      "prerequisiteLessonIds": [
+        "monitoring-and-drift",
+        "classification-and-metrics"
+      ],
+      "concepts": [
+        {
+          "id": "demographic-parity",
+          "title": "Demographic parity difference",
+          "summary": "The gap between groups in the rate of positive decisions."
+        },
+        {
+          "id": "model-card",
+          "title": "Model card",
+          "summary": "A short document stating intended use, data, metrics by group and limits."
+        },
+        {
+          "id": "ai-rmf",
+          "title": "AI RMF functions",
+          "summary": "Govern, Map, Measure and Manage."
+        }
+      ],
+      "skills": [
+        "compare-groups",
+        "map-to-rmf"
+      ],
+      "misconceptions": [
+        "Removing a protected attribute removes bias; correlated features carry it.",
+        "One fairness metric is the right one; several are mutually incompatible in general."
+      ],
+      "sequence": [
+        "Selection rates for two groups.",
+        "True positive rate for the same groups.",
+        "What a model card records.",
+        "NIST's four functions as a work breakdown."
+      ],
+      "examples": [
+        "Group A 45 of 100 selected = 0.45; group B 24 of 80 = 0.30; difference 0.15.",
+        "TPR: A 30 of 40 = 0.75; B 10 of 20 = 0.50; gap 0.25."
+      ],
+      "figures": [
+        {
+          "type": "table",
+          "shows": "Group counts for selected, positives and true positives.",
+          "learnerAction": "Fill in rates.",
+          "placement": "group metrics"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "The four AI RMF functions as a cycle.",
+          "learnerAction": "Drag five tasks onto the function they belong to.",
+          "placement": "risk"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compare-groups",
+          "sample": "Group A: 45 of 100 get a positive decision. Group B: 24 of 80. What is the difference in selection rate?",
+          "answer": "0.15"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compare-groups",
+          "sample": "Group A: 30 of 40 true positives found. Group B: 10 of 20. What is the TPR gap?",
+          "answer": "0.25"
+        },
+        {
+          "kind": "single-term",
+          "targets": "map-to-rmf",
+          "sample": "Name the document that records a model's intended use, data and per-group metrics.",
+          "answer": "model card"
+        }
+      ],
+      "sourceIds": [
+        "nist-rmf",
+        "model-cards"
+      ],
+      "historyNotes": [
+        "NIST published AI RMF 1.0 in January 2023."
+      ],
+      "estimatedMinutes": 13
+    }
+  ],
+  "courseCheck": "A mixed set: compute a metric from counts, take two gradient steps, find the leaking column in a feature table, choose the split with the largest Gini gain, size serving replicas, and compute PSI. Include one self-rated recall asking the learner to explain why a test set is used once.",
+  "platformNeeds": [
+    "A threshold slider figure (confusion matrix + ROC point + precision/recall) driven by a small scored-examples table.",
+    "A tree_split_explorer figure showing counts, Gini and gain for candidate splits.",
+    "A training_curves figure with complexity on the x axis (svg_figure fallback given per lesson).",
+    "Confirm the Python sandbox ships numpy; scikit-learn would let learners run pipelines but is not required, so all code items here use math only."
+  ],
+  "unverified": [
+    "Documentation licences for scikit-learn, Google Developers and Google Cloud pages were not opened; the sandbox blocked those hosts.",
+    "The PSI thresholds 0.1 and 0.25 are industry convention, not a standard.",
+    "Dates for Cauchy 1847, Robbins-Monro 1951, Hoerl-Kennard 1970, Rumelhart-Hinton-Williams 1986, Breiman 2001 and Legendre 1805 are from memory.",
+    "The NeurIPS 2015 paper URL hash was written from memory.",
+    "Every source in this course has verified false; none could be opened."
+  ]
+}

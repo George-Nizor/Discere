@@ -1,4 +1,4 @@
-import { existsSync, mkdtempSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import {
@@ -210,28 +210,10 @@ try {
         throw new Error(`${courseId}/${item.id} lost a teaching beat or exposed answers.`);
     }
   }
-  const activeIds = [
-    "maths-foundations",
-    "logic-and-reasoning",
-    "cs-basics",
-    "probability-statistics",
-    "sql-from-rows-to-reports",
-    "python-for-data-analysis",
-    "geometry-shape-and-space",
-    "physics-motion-and-forces",
-    "calculus-change-and-accumulation",
-    "linear-algebra-vectors-and-maps",
-    "chemistry-atoms-to-reactions",
-    "biology-cells-to-ecosystems",
-    "engineering-structures-and-machines",
-    "economics-markets-and-strategy",
-    "philosophy-knowledge-mind-and-ethics",
-    "english-reading-writing-and-rhetoric",
-    "astronomy-sky-to-cosmos",
-    "psychology-how-minds-work",
-    "electronics-foundations",
-    "rust-foundations",
-  ];
+  // Every course directory under content/ is an active course.
+  const activeIds = readdirSync(resolve("content")).filter(
+    (name) => !name.startsWith("_") && existsSync(join(resolve("content"), name, "bundle.json")),
+  );
   if (
     courseList.courses?.length !== activeIds.length ||
     activeIds.some((id) => !courseList.courses.some((item) => item.id === id))

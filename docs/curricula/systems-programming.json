@@ -1,0 +1,1418 @@
+{
+  "id": "systems-programming",
+  "title": "Systems Programming: Memory, Operating Systems, C and Rust",
+  "family": "A",
+  "voice": "A",
+  "description": "See how a program really uses memory, the operating system and the processor, and learn why Rust's ownership rules exist by first meeting the C faults they prevent.",
+  "audience": "Someone who has written small programs in Rust, knows variables, types and functions, and wants to understand what happens underneath: bytes, stacks, processes, threads, virtual memory, caches and the C boundary. No operating systems background is assumed. Rust Foundations is expected to cover enough syntax (let, functions, structs, Vec, String, println!) before lesson 1; this course teaches ownership and borrowing from first principles.",
+  "prerequisites": [
+    "rust-foundations",
+    "cs-basics"
+  ],
+  "outcomes": [
+    "You'll be able to predict how a fixed-width integer, a struct or a Vec is laid out in memory.",
+    "You'll be able to explain a Rust ownership or borrow error and fix it.",
+    "You'll be able to read short C fragments and name the memory fault they contain.",
+    "You'll be able to explain what a process, a file descriptor, a thread and a system call are, and count the effects of fork.",
+    "You'll be able to compute average turnaround for a schedule, translate a virtual address and count cache misses.",
+    "You'll be able to say what unsafe allows and call a C function from Rust."
+  ],
+  "sources": [
+    {
+      "id": "rust-book",
+      "title": "The Rust Programming Language",
+      "url": "https://doc.rust-lang.org/book/",
+      "licence": "MIT OR Apache-2.0",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "rust-ref",
+      "title": "The Rust Reference",
+      "url": "https://doc.rust-lang.org/reference/",
+      "licence": "MIT OR Apache-2.0",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "rustonomicon",
+      "title": "The Rustonomicon",
+      "url": "https://doc.rust-lang.org/nomicon/",
+      "licence": "MIT OR Apache-2.0",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "rust-std",
+      "title": "Rust standard library documentation",
+      "url": "https://doc.rust-lang.org/std/",
+      "licence": "MIT OR Apache-2.0",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "rust-errors",
+      "title": "Rust compiler error index",
+      "url": "https://doc.rust-lang.org/error_codes/",
+      "licence": "MIT OR Apache-2.0",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "ostep",
+      "title": "Operating Systems: Three Easy Pieces (Arpaci-Dusseau and Arpaci-Dusseau)",
+      "url": "https://pages.cs.wisc.edu/~remzi/OSTEP/",
+      "licence": "Free to read online; copyright retained by the authors",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "man-pages",
+      "title": "Linux man-pages project (fork(2), execve(2), open(2), write(2), pipe(7), stdio(3))",
+      "url": "https://man7.org/linux/man-pages/",
+      "licence": "Various; each page states its licence",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "posix",
+      "title": "POSIX.1-2017 (The Open Group Base Specifications Issue 7)",
+      "url": "https://pubs.opengroup.org/onlinepubs/9699919799/",
+      "licence": "Copyright The Open Group; free to read",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "drepper-memory",
+      "title": "What Every Programmer Should Know About Memory (Ulrich Drepper, 2007)",
+      "url": "https://people.freedesktop.org/~drepper/cpumemory.pdf",
+      "licence": "Copyright the author; free to read",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "csapp",
+      "title": "Computer Systems: A Programmer's Perspective (Bryant and O'Hallaron)",
+      "url": "https://csapp.cs.cmu.edu/",
+      "licence": "Commercial textbook",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "c-ref",
+      "title": "C reference (cppreference.com), pages on pointers, sizeof, malloc and undefined behaviour",
+      "url": "https://en.cppreference.com/w/c",
+      "licence": "CC BY-SA 3.0 and GFDL",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "asan",
+      "title": "AddressSanitizer documentation (Clang and GCC)",
+      "url": "https://clang.llvm.org/docs/AddressSanitizer.html",
+      "licence": "Apache-2.0 with LLVM exceptions",
+      "use": "reference",
+      "verified": false
+    }
+  ],
+  "modules": [
+    {
+      "id": "memory",
+      "title": "Memory, from bytes to ownership",
+      "summary": "How values sit in memory, where they live, and how Rust and C decide when memory is released."
+    },
+    {
+      "id": "os",
+      "title": "Processes and the operating system",
+      "summary": "What the kernel gives a running program: processes, files, threads and a share of the processor."
+    },
+    {
+      "id": "hardware",
+      "title": "Memory hardware and the boundary",
+      "summary": "Virtual memory, caches, and the line where safe Rust meets C."
+    }
+  ],
+  "lessons": [
+    {
+      "id": "bytes-integers-and-overflow",
+      "moduleId": "memory",
+      "title": "Bytes, integers and overflow",
+      "objective": "Convert between decimal, hexadecimal and binary, say what bytes a fixed-width integer occupies in little-endian order, and predict what each Rust overflow method returns.",
+      "prerequisiteLessonIds": [],
+      "concepts": [
+        {
+          "id": "byte",
+          "title": "Byte and address",
+          "summary": "Memory is a sequence of bytes, each with a numeric address, and every larger value is stored as consecutive bytes."
+        },
+        {
+          "id": "twos-complement",
+          "title": "Two's complement",
+          "summary": "A signed n-bit integer reuses the same bit patterns as an unsigned one, treating a pattern with the top bit set as its value minus 2^n."
+        },
+        {
+          "id": "endianness",
+          "title": "Endianness",
+          "summary": "Little-endian machines store the least significant byte of a multi-byte integer at the lowest address."
+        }
+      ],
+      "skills": [
+        "convert-hex-and-binary",
+        "reinterpret-signed-unsigned",
+        "predict-overflow-behaviour"
+      ],
+      "misconceptions": [
+        "Believing a number 'is' its decimal digits in memory; the machine stores a bit pattern and the type decides how to read it.",
+        "Thinking an overflowing add always crashes. In Rust it panics in a debug build by default, wraps in a release build unless overflow checks are enabled, and the explicit methods (checked, wrapping, saturating, overflowing) behave the same in both. In C, signed overflow is undefined behaviour.",
+        "Reading hex bytes of a little-endian integer left to right as if they were the number: 258 is bytes 02 01 00 00, not 01 02."
+      ],
+      "sequence": [
+        "Memory as numbered boxes holding 8 bits each; an address is a box number.",
+        "Binary, hex and why hex is convenient (one digit per four bits, two digits per byte).",
+        "Unsigned range 0..2^n-1 and signed range -2^(n-1)..2^(n-1)-1, with u8 and i8 as the worked cases.",
+        "Two's complement: the same pattern 11111111 is 255 as u8 and -1 as i8.",
+        "A four-byte integer across four addresses, and little-endian order with to_le_bytes.",
+        "Overflow: the four method families, and what Rust does for plain + in debug versus release."
+      ],
+      "examples": [
+        "u8 range 0 to 255; 200u8 as i8 is 200-256 = -56; -1i8 as u8 is 255.",
+        "5i8 is 00000101 and -5i8 is 11111011 (invert and add one).",
+        "258u32.to_le_bytes() is [2, 1, 0, 0]; to_be_bytes() is [0, 0, 1, 2]; 500 is 0x1F4.",
+        "255u8.checked_add(1) is None, wrapping_add(1) is 0, saturating_add(1) is 255.",
+        "i32::MAX.checked_add(1) is None."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A row of eight numbered memory boxes with addresses 0x1000 to 0x1007, holding hex bytes for one u16 value (0x0A0B), shown in both byte orders with a switch between little- and big-endian.",
+          "learnerAction": "Switch the byte order and watch which box holds 0A and which holds 0B.",
+          "placement": "little-endian"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A bit-pattern ring for a 3-bit integer showing unsigned values 0..7 on the outside and signed values -4..3 on the inside.",
+          "learnerAction": "Drag a marker around the ring to read both interpretations.",
+          "placement": "two's complement"
+        },
+        {
+          "type": "rust_program",
+          "shows": "A short program printing the four overflow methods for a u8, with real rustc output.",
+          "learnerAction": "Edit the operands and rerun.",
+          "placement": "overflow methods"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "reinterpret-signed-unsigned",
+          "sample": "What is the value of 200u8 as i8?",
+          "answer": "-56"
+        },
+        {
+          "kind": "numeric",
+          "targets": "convert-hex-and-binary",
+          "sample": "A u32 holds 258 and is stored little-endian. What is the byte at the lowest address, in decimal?",
+          "answer": "2"
+        },
+        {
+          "kind": "code-run-rust",
+          "targets": "convert-hex-and-binary",
+          "sample": "Write fn byte_at(value: u32, index: usize) -> u8 returning the byte stored at offset index when value is laid out little-endian. byte_at(0x01020304, 0) is 4 and byte_at(0x01020304, 3) is 1.",
+          "answer": "fn byte_at(value: u32, index: usize) -> u8 { value.to_le_bytes()[index] }"
+        },
+        {
+          "kind": "choice",
+          "targets": "predict-overflow-behaviour",
+          "sample": "Which method returns None instead of a number when 255u8 + 1 does not fit?",
+          "answer": "checked_add",
+          "choices": [
+            "wrapping_add",
+            "saturating_add",
+            "checked_add",
+            "overflowing_add"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "rust-book",
+        "rust-std",
+        "rust-ref",
+        "csapp"
+      ],
+      "historyNotes": [
+        "Two's complement representation became standard in the 1960s; the IBM System/360 (1964) used it. (Check before citing.)"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "layout-size-and-alignment",
+      "moduleId": "memory",
+      "title": "Layout, size and alignment",
+      "objective": "Compute the size, field offsets and padding of a #[repr(C)] struct and explain why reordering its fields can change its size.",
+      "prerequisiteLessonIds": [
+        "bytes-integers-and-overflow"
+      ],
+      "concepts": [
+        {
+          "id": "alignment",
+          "title": "Alignment",
+          "summary": "A value of alignment a must start at an address that is a multiple of a, and primitive types are usually aligned to their own size."
+        },
+        {
+          "id": "padding",
+          "title": "Padding",
+          "summary": "The compiler inserts unused bytes between fields so that each field lands on an aligned offset and the struct size is a multiple of its alignment."
+        },
+        {
+          "id": "repr-c",
+          "title": "repr(C)",
+          "summary": "The repr(C) attribute fixes field order to declaration order so the layout matches what a C compiler would produce."
+        }
+      ],
+      "skills": [
+        "compute-offsets",
+        "reorder-to-shrink",
+        "round-up-to-alignment"
+      ],
+      "misconceptions": [
+        "Assuming a struct's size is the sum of its fields; padding makes it larger.",
+        "Assuming Rust keeps declaration order. Plain Rust structs have an unspecified layout and the compiler may reorder fields; only repr(C) promises C's order.",
+        "Thinking padding is wasted by mistake. Misaligned access is slow or illegal on some processors, so padding is the price of fast loads."
+      ],
+      "sequence": [
+        "Why a CPU prefers to load a 4-byte value from an address divisible by 4.",
+        "Alignment of the primitive types on a typical 64-bit target: u8 1, u16 2, u32 4, u64 8.",
+        "Walk the struct {a: u8, b: u32} field by field: a at 0, three bytes of padding, b at 4, size 8.",
+        "Struct alignment is the largest field alignment and the size is rounded up to it, so trailing padding appears.",
+        "Reordering fields largest-first often removes padding.",
+        "Print real sizes with std::mem::size_of and align_of and compare against the hand calculation."
+      ],
+      "examples": [
+        "#[repr(C)] struct {a: u8, b: u32, c: u8}: a at 0, b at 4, c at 8, end 9, rounded to 12.",
+        "Same fields ordered a, c, b: a at 0, c at 1, b at 4, size 8.",
+        "#[repr(C)] struct {a: u8, b: u64, c: u16}: b at 8, c at 16, end 18 rounded to 24. Ordered b, c, a: offsets 0, 8, 10, end 11, rounded to 16.",
+        "round_up(offset, align): round_up(5,4)=8, round_up(8,8)=8, round_up(13,8)=16."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A byte grid for repr(C) struct {a: u8, b: u32}: eight cells, field a at cell 0, three hatched padding cells, field b across cells 4 to 7. Size 8 is shown for this struct only.",
+          "learnerAction": "Toggle the field order and see the cells move.",
+          "placement": "walk-through of one struct"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "An empty byte grid for the three-field struct in the question; the learner drags each field to its aligned offset and counts padding cells.",
+          "learnerAction": "Drag fields onto the grid; the grid highlights misaligned drops.",
+          "placement": "practice"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-offsets",
+          "sample": "With #[repr(C)], what is size_of::<S>() for struct S { a: u8, b: u32, c: u8 } on a 64-bit target?",
+          "answer": "12"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-offsets",
+          "sample": "With #[repr(C)], what is the byte offset of field c in struct T { a: u8, b: u64, c: u16 }?",
+          "answer": "16"
+        },
+        {
+          "kind": "code-run-rust",
+          "targets": "round-up-to-alignment",
+          "sample": "Write fn round_up(offset: usize, align: usize) -> usize that returns the smallest multiple of align that is at least offset. round_up(5,4) is 8 and round_up(13,8) is 16.",
+          "answer": "fn round_up(offset: usize, align: usize) -> usize { (offset + align - 1) / align * align }"
+        }
+      ],
+      "sourceIds": [
+        "rust-ref",
+        "rustonomicon",
+        "csapp",
+        "c-ref"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "stack-and-heap",
+      "moduleId": "memory",
+      "title": "The stack and the heap",
+      "objective": "Decide whether a value lives on the stack or the heap, and say what happens in memory when a Vec grows.",
+      "prerequisiteLessonIds": [
+        "layout-size-and-alignment"
+      ],
+      "concepts": [
+        {
+          "id": "stack-frame",
+          "title": "Stack frame",
+          "summary": "Each function call gets a frame holding its locals, and the frame disappears when the function returns."
+        },
+        {
+          "id": "heap",
+          "title": "Heap",
+          "summary": "The heap holds allocations whose size or lifetime is not fixed at compile time, obtained and released explicitly or through an owner type."
+        },
+        {
+          "id": "fat-value",
+          "title": "Handle and buffer",
+          "summary": "A Vec, String or Box is a small fixed-size handle on the stack that points at a buffer on the heap."
+        }
+      ],
+      "skills": [
+        "place-values",
+        "size-a-handle",
+        "trace-vec-growth"
+      ],
+      "misconceptions": [
+        "Believing 'the stack is fast and the heap is slow' as a law. Stack allocation is just moving a pointer; heap allocation asks an allocator for a block, which costs more but is not slow in absolute terms.",
+        "Thinking a String stores its text inline. The 24-byte handle (pointer, capacity, length) is on the stack; the text is on the heap.",
+        "Thinking a Vec copies in place when it is full. It allocates a larger buffer, copies the elements across and frees the old one."
+      ],
+      "sequence": [
+        "Calling a function pushes a frame; returning pops it. Draw main calling f calling g.",
+        "Why a stack frame needs sizes known at compile time, and what that rules out.",
+        "Box, Vec and String as handle plus buffer, with the handle sizes measured by size_of.",
+        "Vec growth: length, capacity, and the reallocation when length would exceed capacity.",
+        "Why Rust frees the buffer when the owner leaves scope (previewing the next lesson)."
+      ],
+      "examples": [
+        "size_of::<Vec<i32>>() is 24 and size_of::<String>() is 24 on a 64-bit target; size_of::<&str>() is 16; size_of::<Box<i32>>() is 8.",
+        "A Vec<i32> with capacity 4 and length 4: the fifth push allocates a bigger buffer, copies four elements, frees the old buffer.",
+        "main calls f(3) which calls g(4): three frames exist while g runs, and two remain after g returns."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Two columns, stack and heap. main's frame holds an i32, a Vec handle (ptr, cap 4, len 3) and an arrow to a four-slot buffer on the heap with three slots filled.",
+          "learnerAction": "Step through push calls and watch len change, then see a realloc arrow when capacity is exceeded.",
+          "placement": "handle and buffer"
+        },
+        {
+          "type": "program_trace",
+          "shows": "A program with nested calls f and g, showing the frame stack at each step.",
+          "learnerAction": "Step forward and back.",
+          "placement": "stack frames"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "size-a-handle",
+          "sample": "What is size_of::<Vec<i32>>() in bytes on a 64-bit target?",
+          "answer": "24"
+        },
+        {
+          "kind": "single-term",
+          "targets": "place-values",
+          "sample": "What is the name of the region of memory that holds a function's local variables and is released when the function returns?",
+          "answer": "stack"
+        },
+        {
+          "kind": "choice",
+          "targets": "trace-vec-growth",
+          "sample": "A Vec<i32> has length 4 and capacity 4. What does the next push do?",
+          "answer": "It allocates a larger buffer, copies the elements, and frees the old buffer",
+          "choices": [
+            "It writes past the end of the buffer",
+            "It allocates a larger buffer, copies the elements, and frees the old buffer",
+            "It moves the Vec handle to the heap",
+            "It panics because capacity is fixed"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "rust-book",
+        "rust-std",
+        "ostep",
+        "csapp"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "ownership-moves-and-drop",
+      "moduleId": "memory",
+      "title": "Ownership, moves and drop",
+      "objective": "Predict when a Rust value moves, when it is dropped, and which compiler error appears when a moved value is used.",
+      "prerequisiteLessonIds": [
+        "stack-and-heap"
+      ],
+      "concepts": [
+        {
+          "id": "owner",
+          "title": "Owner",
+          "summary": "Every value has exactly one owner, and when the owner goes out of scope the value is dropped."
+        },
+        {
+          "id": "move",
+          "title": "Move",
+          "summary": "Assigning or passing a value that owns heap data transfers ownership and leaves the source unusable."
+        },
+        {
+          "id": "drop",
+          "title": "Drop",
+          "summary": "Dropping a value runs its destructor and frees what it owns, and locals drop in reverse order of declaration."
+        }
+      ],
+      "skills": [
+        "predict-drop-order",
+        "spot-use-after-move",
+        "choose-clone-or-move"
+      ],
+      "misconceptions": [
+        "Thinking a move copies the heap data. Only the small handle is copied; the buffer stays where it is and the source stops being valid.",
+        "Expecting the compiler to free memory at some unpredictable time as a garbage collector does. Drop points are fixed by scope and are the same on every run.",
+        "Cloning to silence the error without asking whether a borrow would do."
+      ],
+      "sequence": [
+        "The problem ownership solves: two handles to one buffer would free it twice.",
+        "let b = a for a String: handle copied, a invalidated, one owner.",
+        "The compiler message E0382 and how to read it.",
+        "Drop order with a struct that prints in drop: reverse declaration order, inner scopes first.",
+        "Fixes: clone when two independent copies are really wanted; return the value back; borrow (next lesson).",
+        "Copy types such as i32 are not moved because copying them is the whole value."
+      ],
+      "examples": [
+        "let a = String::from(\"x\"); let b = a; println!(\"{}\", a); gives error[E0382]: borrow of moved value: `a`.",
+        "Program with Noisy structs a, b in main and c in an inner block prints: inner, drop c, end, drop b, drop a.",
+        "append_all(String::from(\"a\"), vec![\"b\".to_string(), \"c\".to_string()]) returns \"a,b,c\"."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Two views of let b = a: before the move, a's handle points at the buffer; after, b's handle points at it and a is greyed out with a strike-through.",
+          "learnerAction": "Click 'run the next line' and see which names are live.",
+          "placement": "moves"
+        },
+        {
+          "type": "rust_program",
+          "shows": "A struct with a Drop impl that prints its name, created in nested scopes, with real output.",
+          "learnerAction": "Edit scope boundaries and predict the new order before running.",
+          "placement": "drop order"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "choice",
+          "targets": "predict-drop-order",
+          "sample": "Locals a and b (in that order) and an inner block with local c print in drop. The inner block ends before the final println!(\"end\"). What is the output order?",
+          "answer": "inner-block c first, then end, then b, then a",
+          "choices": [
+            "a, b, c, then end",
+            "inner-block c first, then end, then b, then a",
+            "end, then a, b, c",
+            "c, a, b, end"
+          ]
+        },
+        {
+          "kind": "single-term",
+          "targets": "spot-use-after-move",
+          "sample": "Which compiler error code reports use of a value after it was moved?",
+          "answer": "E0382"
+        },
+        {
+          "kind": "code-run-rust",
+          "targets": "choose-clone-or-move",
+          "sample": "Write fn append_all(mut base: String, parts: Vec<String>) -> String that appends each part to base after a comma and returns base. append_all(\"a\".to_string(), vec![\"b\".to_string(), \"c\".to_string()]) is \"a,b,c\".",
+          "answer": "fn append_all(mut base: String, parts: Vec<String>) -> String { for p in parts { base.push(','); base.push_str(&p); } base }"
+        }
+      ],
+      "sourceIds": [
+        "rust-book",
+        "rust-errors",
+        "rust-ref"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "borrowing-and-lifetimes",
+      "moduleId": "memory",
+      "title": "Borrowing and lifetimes",
+      "objective": "Apply the rule that a value may have many shared borrows or one mutable borrow, and annotate a function so that a returned reference is tied to its inputs.",
+      "prerequisiteLessonIds": [
+        "ownership-moves-and-drop"
+      ],
+      "concepts": [
+        {
+          "id": "borrow",
+          "title": "Borrow",
+          "summary": "A reference lets code use a value without owning it, and the compiler checks that the owner outlives every reference."
+        },
+        {
+          "id": "aliasing-rule",
+          "title": "Shared XOR mutable",
+          "summary": "At any moment a value has either any number of shared references or exactly one mutable reference."
+        },
+        {
+          "id": "lifetime",
+          "title": "Lifetime",
+          "summary": "A lifetime names how long a reference stays valid, and a signature relates the lifetimes of inputs to the output."
+        }
+      ],
+      "skills": [
+        "classify-borrow-errors",
+        "annotate-lifetimes",
+        "explain-dangling"
+      ],
+      "misconceptions": [
+        "Thinking the borrow rules are about threads only. They also prevent a push from reallocating a Vec while someone holds a reference into it.",
+        "Reading a lifetime annotation as extending how long data lives. It only describes a relationship the compiler checks.",
+        "Believing a reference's scope ends at the end of the block. Since non-lexical lifetimes a borrow ends after its last use."
+      ],
+      "sequence": [
+        "A bug that C allows: pointer into a vector, the vector reallocates, the pointer dangles.",
+        "The same program in Rust: let f = &v[0]; v.push(2); use f -> E0502.",
+        "Two mutable borrows -> E0499. A reference to a block-local value escaping -> E0597.",
+        "Why longest(a: &str, b: &str) -> &str is E0106: the compiler cannot tell which input the result comes from.",
+        "Annotating longest<'a> and what it promises the caller.",
+        "A borrow ends at its last use, so reordering two lines can make an error disappear."
+      ],
+      "examples": [
+        "let mut v = vec![1]; let f = &v[0]; v.push(2); println!(\"{}\", f); fails with E0502.",
+        "let mut s = String::new(); let a = &mut s; let b = &mut s; fails with E0499.",
+        "let r; { let x = 5; r = &x; } println!(\"{}\", r); fails with E0597 (`x` does not live long enough).",
+        "fn longest(a: &str, b: &str) -> &str fails with E0106 (missing lifetime specifier)."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A timeline of a program's lines with coloured bars for each borrow, from creation to last use, and a mutation event drawn as a vertical line; overlapping bars with a conflicting mutation turn red.",
+          "learnerAction": "Drag the push line earlier or later and watch the conflict appear and disappear.",
+          "placement": "borrow regions"
+        },
+        {
+          "type": "rust_program",
+          "shows": "The E0502 program with rustc's real message and its labelled spans.",
+          "learnerAction": "Move the println! line above the push and rerun.",
+          "placement": "non-lexical lifetimes"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "choice",
+          "targets": "classify-borrow-errors",
+          "sample": "let mut v = vec![1]; let f = &v[0]; v.push(2); println!(\"{}\", f); Which error does rustc report?",
+          "answer": "E0502",
+          "choices": [
+            "E0382",
+            "E0499",
+            "E0502",
+            "E0597"
+          ]
+        },
+        {
+          "kind": "numeric",
+          "targets": "classify-borrow-errors",
+          "sample": "How many mutable references to one value may be alive at the same time?",
+          "answer": "1"
+        },
+        {
+          "kind": "code-run-rust",
+          "targets": "annotate-lifetimes",
+          "sample": "Write fn longest<'a>(a: &'a str, b: &'a str) -> &'a str returning the longer string, or a if they have equal length. longest(\"pear\", \"fig\") is \"pear\".",
+          "answer": "fn longest<'a>(a: &'a str, b: &'a str) -> &'a str { if a.len() >= b.len() { a } else { b } }"
+        }
+      ],
+      "sourceIds": [
+        "rust-book",
+        "rust-errors",
+        "rustonomicon"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "c-pointers-and-manual-memory",
+      "moduleId": "memory",
+      "title": "C pointers and manual memory",
+      "objective": "Read C pointer arithmetic and array code, and name the memory error in a short C fragment.",
+      "prerequisiteLessonIds": [
+        "stack-and-heap",
+        "layout-size-and-alignment"
+      ],
+      "concepts": [
+        {
+          "id": "pointer",
+          "title": "Pointer",
+          "summary": "A pointer is a variable holding an address, and adding n to a typed pointer moves it by n times the size of the pointed-to type."
+        },
+        {
+          "id": "array-decay",
+          "title": "Array decay",
+          "summary": "In most expressions and in function parameters an array name becomes a pointer to its first element, so sizeof no longer sees the array length."
+        },
+        {
+          "id": "undefined-behaviour",
+          "title": "Undefined behaviour",
+          "summary": "The C standard places no requirement on a program that frees memory twice, reads freed memory, or indexes outside an object."
+        }
+      ],
+      "skills": [
+        "do-pointer-arithmetic",
+        "explain-array-decay",
+        "name-memory-errors"
+      ],
+      "misconceptions": [
+        "Thinking q + 2 adds two bytes. It adds two elements, so for int * it adds eight bytes.",
+        "Thinking sizeof(a) inside f(int a[]) gives the array size. The parameter is really int *.",
+        "Thinking an out-of-bounds write that does not crash is harmless. It is undefined behaviour and may corrupt a neighbouring object silently."
+      ],
+      "sequence": [
+        "Address, value, and the two operators & and *.",
+        "p[i] means *(p + i); pointer arithmetic scales by the element size.",
+        "malloc and free as the pair the programmer must match; sizeof for the request.",
+        "sizeof an array in its own scope versus as a parameter.",
+        "Three classic faults: use after free, double free, buffer overflow, each shown as a three-line fragment.",
+        "How Rust's rules from the last two lessons make each fault a compile error or a panic, and where sanitizers fit for C."
+      ],
+      "examples": [
+        "int arr[10]: sizeof(arr) is 40; sizeof(int *) is 8 on a typical 64-bit Linux target.",
+        "int p[3] = {10,20,30}; int *q = p; *(q+2) is 30 and the byte distance from q to q+2 is 8.",
+        "int *p = malloc(sizeof *p); *p = 7; free(p); printf(\"%d\", *p); is a use after free.",
+        "void f(int a[]) { printf(\"%zu\", sizeof(a)); } prints 8 on that target, and gcc -Wall warns -Wsizeof-array-argument."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A memory strip of twelve byte cells with three int cells labelled p[0], p[1], p[2], and an arrow q that can move; the label under the arrow shows the address, not the value.",
+          "learnerAction": "Click '+1' to advance q and see the address change by the element size.",
+          "placement": "pointer arithmetic"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "Three side-by-side four-line C fragments with the heap drawn beside each: allocated, freed (box greyed), then a stale arrow still pointing at the freed box.",
+          "learnerAction": "Click each fragment to step through.",
+          "placement": "memory faults"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "explain-array-decay",
+          "sample": "On a 64-bit Linux target, void f(int a[]) { printf(\"%zu\", sizeof(a)); } is called with an int[10]. What does it print?",
+          "answer": "8"
+        },
+        {
+          "kind": "numeric",
+          "targets": "do-pointer-arithmetic",
+          "sample": "int p[3] = {10,20,30}; int *q = p; What is *(q+2)?",
+          "answer": "30"
+        },
+        {
+          "kind": "choice",
+          "targets": "name-memory-errors",
+          "sample": "int *p = malloc(sizeof *p); *p = 7; free(p); printf(\"%d\", *p); What is wrong?",
+          "answer": "Use after free",
+          "choices": [
+            "Memory leak",
+            "Use after free",
+            "Double free",
+            "Buffer overflow"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "c-ref",
+        "csapp",
+        "asan",
+        "man-pages"
+      ],
+      "historyNotes": [
+        "C was developed by Dennis Ritchie at Bell Labs, about 1972 to 1973, for rewriting Unix. (Check dates before citing.)"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "processes-and-system-calls",
+      "moduleId": "os",
+      "title": "Processes and system calls",
+      "objective": "Explain what a process is, count the processes a sequence of fork calls creates, and say what crosses from user mode to the kernel in a system call.",
+      "prerequisiteLessonIds": [
+        "c-pointers-and-manual-memory"
+      ],
+      "concepts": [
+        {
+          "id": "process",
+          "title": "Process",
+          "summary": "A process is a running program with its own virtual address space, file descriptors and identity, scheduled by the kernel."
+        },
+        {
+          "id": "system-call",
+          "title": "System call",
+          "summary": "A system call is the controlled entry that lets user code ask the kernel to act, switching the processor from user mode to kernel mode and back."
+        },
+        {
+          "id": "fork-exec",
+          "title": "fork and exec",
+          "summary": "fork creates a near-copy of the calling process, returning 0 in the child and the child's pid in the parent, and exec replaces the current program with another."
+        }
+      ],
+      "skills": [
+        "count-forked-processes",
+        "distinguish-parent-child",
+        "name-syscall-boundary"
+      ],
+      "misconceptions": [
+        "Thinking fork starts a new program. It duplicates the caller; exec is what loads a different program.",
+        "Believing the child and parent share variables after fork. Each has its own copy of the address space (copy-on-write), so a change in one is invisible to the other.",
+        "Thinking library functions such as printf are system calls. printf is user code that eventually calls write."
+      ],
+      "sequence": [
+        "The kernel as the one program allowed to touch hardware; user programs as guests.",
+        "A system call walked through: write(1, buf, n) moves to kernel mode, copies bytes, returns the count.",
+        "fork returns twice; use the return value to tell parent from child.",
+        "Count processes after one, two and n forks in a row.",
+        "fork then exec: how a shell starts ls.",
+        "wait: the parent collects the child's exit status; without it a finished child lingers as a zombie."
+      ],
+      "examples": [
+        "fork(); fork(); printf(\"x\\n\"); prints four lines because there are four processes (1 -> 2 -> 4).",
+        "Five forks in sequence give 2^5 = 32 processes.",
+        "A parent that waits prints 'child' then 'parent'; without wait the order is not guaranteed."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A process tree drawn from one parent box; each fork call is a numbered button that adds children to every existing leaf.",
+          "learnerAction": "Press the fork button n times and count the boxes.",
+          "placement": "fork counting"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A vertical split labelled user mode and kernel mode with a write call crossing it as an arrow and returning.",
+          "learnerAction": "Click the arrow to step through the call.",
+          "placement": "system call"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "count-forked-processes",
+          "sample": "A C program calls fork(); fork(); fork(); once each in a row, with no conditions. How many processes exist afterwards, counting the original?",
+          "answer": "8"
+        },
+        {
+          "kind": "numeric",
+          "targets": "distinguish-parent-child",
+          "sample": "What does fork return in the child process?",
+          "answer": "0"
+        },
+        {
+          "kind": "choice",
+          "targets": "name-syscall-boundary",
+          "sample": "Which of these switches the processor from user mode to kernel mode?",
+          "answer": "A system call such as write",
+          "choices": [
+            "Calling a function in the same program",
+            "A system call such as write",
+            "Reading a local variable",
+            "Using malloc to get a small block"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "ostep",
+        "man-pages",
+        "posix"
+      ],
+      "historyNotes": [
+        "Unix was first written at Bell Labs in 1969 on a PDP-7 by Ken Thompson and Dennis Ritchie; fork is in the earliest versions. (Check dates before citing.)"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "file-descriptors-and-buffering",
+      "moduleId": "os",
+      "title": "File descriptors and buffering",
+      "objective": "Predict file descriptor numbers after opens and closes, and predict how many times output repeats when a buffered process forks.",
+      "prerequisiteLessonIds": [
+        "processes-and-system-calls"
+      ],
+      "concepts": [
+        {
+          "id": "file-descriptor",
+          "title": "File descriptor",
+          "summary": "A file descriptor is a small integer that indexes a per-process table of open files, pipes and sockets."
+        },
+        {
+          "id": "lowest-free",
+          "title": "Lowest unused descriptor",
+          "summary": "open returns the smallest descriptor number not currently in use, which is how redirection works."
+        },
+        {
+          "id": "stdio-buffer",
+          "title": "Stdio buffer",
+          "summary": "C's stdio collects output in a user-space buffer and calls write only when the buffer fills, a newline arrives on a terminal, or the program flushes or exits."
+        }
+      ],
+      "skills": [
+        "predict-descriptor-numbers",
+        "predict-buffered-output",
+        "separate-write-from-printf"
+      ],
+      "misconceptions": [
+        "Thinking descriptor 1 is 'the screen'. It is whatever the process was given: a terminal, a file or a pipe.",
+        "Assuming printf writes immediately. When stdout is a file or pipe it is fully buffered, so buffered text survives into a forked child and is printed twice.",
+        "Confusing the descriptor with the file. Two descriptors can refer to one open file, and a descriptor number can be reused after close."
+      ],
+      "sequence": [
+        "Every process starts with 0 (standard input), 1 (standard output) and 2 (standard error).",
+        "open(\"a\") gives 3; open(\"b\") gives 4; close(3); the next open gives 3.",
+        "Shell redirection as closing 1 and opening a file, or dup2.",
+        "printf versus write: where the buffer sits and why that matters for ordering with stderr.",
+        "printf(\"hi\\n\"); fork(); with output sent to a file: the unflushed buffer is copied, so hi appears twice; at a terminal the newline flushes first.",
+        "Rust's standard output is line buffered; BufWriter adds an explicit buffer and a flush."
+      ],
+      "examples": [
+        "After open A (fd 3), open B (fd 4), close A, the next open returns 3. Verified in C.",
+        "printf(\"hi\"); fork(); printf(\"!\"); piped to od shows h i ! h i !.",
+        "Standard error is descriptor 2 and is unbuffered, which is why error text may appear before earlier buffered output."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A per-process descriptor table of six rows (0 to 5) with arrows to kernel objects: terminal, file a, file b.",
+          "learnerAction": "Press open and close buttons and see which row is filled.",
+          "placement": "descriptor table"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A process with a buffer box between printf and the write arrow; fork duplicates the process including the buffer contents.",
+          "learnerAction": "Choose terminal or file for stdout and step through.",
+          "placement": "buffering and fork"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "predict-descriptor-numbers",
+          "sample": "A process has only 0, 1 and 2 open. It opens file A, then file B, then closes A, then opens file C. What descriptor number does C get?",
+          "answer": "3"
+        },
+        {
+          "kind": "numeric",
+          "targets": "predict-buffered-output",
+          "sample": "A C program runs printf(\"hi\\n\"); fork(); and then both processes exit. Its output is redirected to a file. How many times does hi appear in the file?",
+          "answer": "2"
+        },
+        {
+          "kind": "numeric",
+          "targets": "predict-descriptor-numbers",
+          "sample": "What descriptor number is standard error?",
+          "answer": "2"
+        }
+      ],
+      "sourceIds": [
+        "ostep",
+        "man-pages",
+        "posix",
+        "rust-std"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "threads-and-shared-state",
+      "moduleId": "os",
+      "title": "Threads and shared state",
+      "objective": "Explain why unsynchronised threads lose updates, and share a counter safely with Arc and Mutex in Rust.",
+      "prerequisiteLessonIds": [
+        "borrowing-and-lifetimes",
+        "processes-and-system-calls"
+      ],
+      "concepts": [
+        {
+          "id": "thread",
+          "title": "Thread",
+          "summary": "A thread is an independent flow of execution inside a process, sharing the process's address space with its siblings."
+        },
+        {
+          "id": "data-race",
+          "title": "Data race",
+          "summary": "A data race occurs when two threads access the same location at once, at least one writes, and nothing orders the accesses."
+        },
+        {
+          "id": "arc-mutex",
+          "title": "Arc and Mutex",
+          "summary": "Arc gives shared ownership across threads, and Mutex allows only the holder of its lock to reach the data inside."
+        }
+      ],
+      "skills": [
+        "explain-lost-update",
+        "share-with-arc-mutex",
+        "read-thread-errors"
+      ],
+      "misconceptions": [
+        "Thinking counter += 1 is one indivisible step. It is a load, an add and a store, and two threads can interleave between them.",
+        "Thinking Mutex alone lets threads share the counter. Each thread needs its own owner of the lock, which Arc provides.",
+        "Believing a race is a Rust-only worry. Rust turns data races into compile errors; C accepts them silently."
+      ],
+      "sequence": [
+        "Threads versus processes: shared memory is the benefit and the hazard.",
+        "A trace of two threads each doing load, add, store on a counter starting at 0: both load 0, both store 1, so one update is lost.",
+        "The compiler stops thread::spawn(|| c += 1): E0373, the closure may outlive the borrowed local.",
+        "Move the counter into Arc<Mutex<i32>> and clone the Arc per thread.",
+        "Lock scope: the guard drops at the end of the statement, which is when the lock is released.",
+        "Atomics as the lighter option for a single integer."
+      ],
+      "examples": [
+        "Three threads each add 1 to a Mutex counter 1000 times; the final value is 3000. The sandbox allows at most four threads including main, so lessons spawn three.",
+        "thread::spawn(|| c += 1) on a local c gives error[E0373].",
+        "Summing 1..=1000 with chunks over three scoped threads gives 500500."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Two thread timelines side by side with load, add, store boxes and a shared counter in the middle; a slider chooses the interleaving.",
+          "learnerAction": "Drag the slider to place thread B's load before or after thread A's store and read the final counter.",
+          "placement": "lost update"
+        },
+        {
+          "type": "rust_program",
+          "shows": "The Arc<Mutex<i32>> counter with three threads and real output.",
+          "learnerAction": "Remove the Mutex and read the compiler message.",
+          "placement": "fix"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "share-with-arc-mutex",
+          "sample": "Three threads each increment an Arc<Mutex<i32>> starting at 0 a thousand times. What is the final value?",
+          "answer": "3000"
+        },
+        {
+          "kind": "single-term",
+          "targets": "read-thread-errors",
+          "sample": "Which error code does rustc report when thread::spawn(|| c += 1) borrows a local c?",
+          "answer": "E0373"
+        },
+        {
+          "kind": "code-run-rust",
+          "targets": "share-with-arc-mutex",
+          "sample": "Write fn parallel_sum(v: Vec<u64>) -> u64 that splits v into at most three chunks, sums each in its own thread (std::thread::scope is fine) and adds the results. parallel_sum((1..=1000).collect()) is 500500.",
+          "answer": "fn parallel_sum(v: Vec<u64>) -> u64 { let n = ((v.len() + 2) / 3).max(1); std::thread::scope(|s| { let hs: Vec<_> = v.chunks(n).map(|c| s.spawn(move || c.iter().sum::<u64>())).collect(); hs.into_iter().map(|h| h.join().unwrap()).sum() }) }"
+        }
+      ],
+      "sourceIds": [
+        "rust-book",
+        "ostep",
+        "rust-errors",
+        "rust-std"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "scheduling-and-deadlock",
+      "moduleId": "os",
+      "title": "Scheduling and deadlock",
+      "objective": "Compute average turnaround time for first-come-first-served, shortest-job-first and round-robin schedules, and name the condition that lock ordering removes.",
+      "prerequisiteLessonIds": [
+        "threads-and-shared-state"
+      ],
+      "concepts": [
+        {
+          "id": "turnaround",
+          "title": "Turnaround time",
+          "summary": "A job's turnaround time is its completion time minus its arrival time."
+        },
+        {
+          "id": "round-robin",
+          "title": "Round robin",
+          "summary": "Round robin gives each runnable job a fixed time slice in turn, then puts it at the back of the queue."
+        },
+        {
+          "id": "deadlock",
+          "title": "Deadlock",
+          "summary": "A deadlock needs mutual exclusion, hold-and-wait, no preemption and a circular wait, and removing any one prevents it."
+        }
+      ],
+      "skills": [
+        "compute-turnaround",
+        "compare-policies",
+        "break-deadlock-condition"
+      ],
+      "misconceptions": [
+        "Believing shortest-job-first is always best. It minimises average turnaround when all jobs arrive together but can starve long jobs and needs burst lengths the kernel rarely knows.",
+        "Assuming round robin is faster. It improves responsiveness; here its average turnaround is worse than SJF.",
+        "Thinking deadlock needs many locks. Two threads and two locks acquired in opposite order is enough."
+      ],
+      "sequence": [
+        "Define arrival, burst, completion, turnaround, waiting.",
+        "FCFS on bursts 8, 4, 2 arriving together: completions 8, 12, 14, mean turnaround 34/3.",
+        "SJF on the same jobs: order 2, 4, 8, completions 2, 6, 14, mean 22/3.",
+        "Round robin with a quantum of 2: completions 14, 10, 6, mean 10.",
+        "Two threads, two locks, opposite order: draw the wait-for cycle.",
+        "The four conditions and which fix breaks which one; lock ordering breaks circular wait."
+      ],
+      "examples": [
+        "FCFS bursts 8,4,2: turnaround 8,12,14, average 11.33; waiting 0,8,12, average 6.67.",
+        "SJF: turnaround 2,6,14, average 7.33. RR q=2: completion of job 1 (8) at 14, job 2 (4) at 10, job 3 (2) at 6, average 10.",
+        "average_wait(&[8,4,2]) is 6.666666666666667 and average_wait(&[2,4,8]) is 2.6666666666666665."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A Gantt chart with three coloured bars for jobs of 8, 4 and 2 time units; a switch selects the policy and redraws the order, without printing the averages.",
+          "learnerAction": "Choose a policy, drag the quantum for round robin, then read off completion times.",
+          "placement": "policies"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "Two threads, two locks, arrows showing each holding one and waiting for the other, drawn as a cycle.",
+          "learnerAction": "Click lock-order swap to remove the cycle.",
+          "placement": "deadlock"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-turnaround",
+          "sample": "Jobs with bursts 8, 4 and 2 all arrive at time 0 and run shortest-job-first. What is the mean turnaround time, to two decimal places?",
+          "answer": "7.33"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-turnaround",
+          "sample": "The same jobs under round robin with a quantum of 2, queue order 8, 4, 2. What is the mean turnaround time?",
+          "answer": "10"
+        },
+        {
+          "kind": "code-run-rust",
+          "targets": "compare-policies",
+          "sample": "Write fn average_wait(bursts: &[u32]) -> f64 giving the mean waiting time when jobs run first-come-first-served and all arrive at 0. average_wait(&[8,4,2]) is 6.666666666666667.",
+          "answer": "fn average_wait(bursts: &[u32]) -> f64 { let mut t = 0u32; let mut total = 0u32; for b in bursts { total += t; t += b; } total as f64 / bursts.len() as f64 }"
+        },
+        {
+          "kind": "choice",
+          "targets": "break-deadlock-condition",
+          "sample": "Always acquiring locks in one global order removes which deadlock condition?",
+          "answer": "Circular wait",
+          "choices": [
+            "Mutual exclusion",
+            "Hold and wait",
+            "No preemption",
+            "Circular wait"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "ostep",
+        "csapp"
+      ],
+      "historyNotes": [
+        "Coffman, Elphick and Shoshani described the four deadlock conditions in 'System Deadlocks', ACM Computing Surveys, 1971. (Check before citing.)"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "virtual-memory-and-paging",
+      "moduleId": "hardware",
+      "title": "Virtual memory and paging",
+      "objective": "Split a virtual address into page number and offset, translate it with a page table, and compute effective access time with a TLB.",
+      "prerequisiteLessonIds": [
+        "processes-and-system-calls",
+        "bytes-integers-and-overflow"
+      ],
+      "concepts": [
+        {
+          "id": "virtual-address",
+          "title": "Virtual address",
+          "summary": "A virtual address is what a process uses; hardware translates it to a physical address, so each process sees its own private space."
+        },
+        {
+          "id": "page-table",
+          "title": "Page table",
+          "summary": "A page table maps each virtual page number to a physical frame, and the offset within the page is carried over unchanged."
+        },
+        {
+          "id": "tlb",
+          "title": "TLB",
+          "summary": "The translation lookaside buffer caches recent page translations so that most accesses skip the page table in memory."
+        }
+      ],
+      "skills": [
+        "split-address",
+        "translate-address",
+        "compute-effective-access-time"
+      ],
+      "misconceptions": [
+        "Thinking virtual memory means using the disk. Paging to disk is one use; the central purpose is isolation and a uniform address space.",
+        "Thinking the offset changes during translation. Only the page number is replaced.",
+        "Forgetting that a TLB miss costs an extra memory access for the table walk."
+      ],
+      "sequence": [
+        "Why each process wants its own addresses.",
+        "Cut memory into 4 KiB pages: 12 offset bits, the rest is the page number.",
+        "Worked split of 0x12345: page 0x12, offset 0x345.",
+        "A page table maps 0x12 to frame 0x7; the physical address is 0x7345.",
+        "Size of a flat table for a 32-bit space: 2^20 entries; why real systems use multi-level tables (x86-64 uses four levels of 9 bits).",
+        "TLB hit and miss, and the weighted average access time."
+      ],
+      "examples": [
+        "32-bit address, 4 KiB pages: 12 offset bits, 20 page-number bits, 1,048,576 pages, 4 MiB flat table at 4 bytes per entry.",
+        "0x12345 splits into (0x12, 0x345); with frame 0x7 the physical address is 0x7345.",
+        "TLB lookup 10 ns, memory 100 ns, hit ratio 0.9: 0.9 x 110 + 0.1 x 210 = 120 ns."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "An address drawn as bit boxes split into page number and offset, an arrow into a small page table of four rows, and a physical frame grid.",
+          "learnerAction": "Type a virtual address in hex and see the split without the final physical address.",
+          "placement": "translation"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A flowchart of an access: TLB hit goes straight to memory, TLB miss goes through the page table first, each edge labelled with its cost in ns.",
+          "learnerAction": "Change the hit ratio slider and watch the weighted path widths.",
+          "placement": "effective access time"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "split-address",
+          "sample": "With 4 KiB pages, how many bits of a virtual address are the offset?",
+          "answer": "12"
+        },
+        {
+          "kind": "single-term",
+          "targets": "translate-address",
+          "sample": "A process uses virtual address 0x12345. The page table maps page 0x12 to frame 0x7 and pages are 4 KiB. What is the physical address, in hex?",
+          "answer": "0x7345"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-effective-access-time",
+          "sample": "TLB lookup takes 10 ns, a memory access 100 ns, and the TLB hit ratio is 0.9. A miss costs the lookup plus two memory accesses. What is the effective access time in ns?",
+          "answer": "120"
+        },
+        {
+          "kind": "code-run-rust",
+          "targets": "split-address",
+          "sample": "Write fn split(addr: u32) -> (u32, u32) returning (page number, offset) for 4 KiB pages. split(0x12345) is (18, 837).",
+          "answer": "fn split(addr: u32) -> (u32, u32) { (addr >> 12, addr & 0xfff) }"
+        }
+      ],
+      "sourceIds": [
+        "ostep",
+        "csapp",
+        "drepper-memory"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "caches-and-locality",
+      "moduleId": "hardware",
+      "title": "Caches and locality",
+      "objective": "Count cache-line loads for a memory access pattern and choose the loop order that walks memory in the order it is laid out.",
+      "prerequisiteLessonIds": [
+        "virtual-memory-and-paging",
+        "layout-size-and-alignment"
+      ],
+      "concepts": [
+        {
+          "id": "cache-line",
+          "title": "Cache line",
+          "summary": "Memory moves between levels in fixed blocks, typically 64 bytes, so reading one byte loads its whole line."
+        },
+        {
+          "id": "locality",
+          "title": "Locality",
+          "summary": "Programs that reuse recent data (temporal) or touch nearby addresses (spatial) hit the cache more often."
+        },
+        {
+          "id": "row-major",
+          "title": "Row-major layout",
+          "summary": "A row-major array stores each row contiguously, so walking along a row touches consecutive addresses and walking down a column jumps by the row length."
+        }
+      ],
+      "skills": [
+        "count-line-loads",
+        "choose-loop-order",
+        "reason-about-stride"
+      ],
+      "misconceptions": [
+        "Thinking all memory accesses cost the same. A hit in the first-level cache takes a few cycles; a main-memory access takes hundreds.",
+        "Thinking a column walk is slow because of the extra arithmetic. The cost is in the lines loaded, not the instructions.",
+        "Assuming the loop order does not matter because both visit the same elements."
+      ],
+      "sequence": [
+        "The speed gap between processor and DRAM, and the cache as the remedy.",
+        "A line is 64 bytes: sixteen four-byte integers per line.",
+        "Sequential read of 1024 ints: 64 line loads on a cold cache.",
+        "A 16 x 16 matrix of i32 is exactly one line per row; a cache that holds 8 lines (LRU) loads every line once for row order and every access for column order.",
+        "Stride: touching every 16th int loads a line per access.",
+        "Not every effect is visible in a small program; measure with care, and expect noise."
+      ],
+      "examples": [
+        "1024 ints x 4 bytes = 4096 bytes = 64 lines.",
+        "16 x 16 i32, LRU cache of 8 lines: row order 16 misses, column order 256 misses, simulated and checked.",
+        "lines_touched(&[0,4,60,64,130,200], 64) is 4."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A 16 x 16 grid with each row shaded as one cache line; an animated walker visits cells in either row or column order and a small 8-slot cache strip shows hits and misses as counters hidden until the learner commits an estimate.",
+          "learnerAction": "Choose the traversal order and predict the miss count before revealing.",
+          "placement": "row versus column"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A bar chart of cost per level (register, L1, L2, L3, DRAM) on a log scale with approximate cycle counts.",
+          "learnerAction": "Hover each bar.",
+          "placement": "speed gap"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "count-line-loads",
+          "sample": "A cold cache has 64-byte lines. A program reads 1024 consecutive four-byte integers once. How many cache lines are loaded?",
+          "answer": "64"
+        },
+        {
+          "kind": "numeric",
+          "targets": "choose-loop-order",
+          "sample": "A 16 x 16 i32 matrix is stored row-major, so each row is one 64-byte line. The cache holds 8 lines with LRU replacement. How many misses occur when the program reads the matrix column by column?",
+          "answer": "256"
+        },
+        {
+          "kind": "code-run-rust",
+          "targets": "count-line-loads",
+          "sample": "Write fn lines_touched(addrs: &[u64], line: u64) -> usize returning how many distinct cache lines the byte addresses fall in. lines_touched(&[0,4,60,64,130,200], 64) is 4.",
+          "answer": "fn lines_touched(addrs: &[u64], line: u64) -> usize { addrs.iter().map(|a| a / line).collect::<std::collections::HashSet<_>>().len() }"
+        }
+      ],
+      "sourceIds": [
+        "drepper-memory",
+        "csapp",
+        "ostep"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "unsafe-rust-and-the-c-boundary",
+      "moduleId": "hardware",
+      "title": "Unsafe Rust and the C boundary",
+      "objective": "List what unsafe permits, call a C function from Rust through an extern block, and state the contract the caller must uphold.",
+      "prerequisiteLessonIds": [
+        "borrowing-and-lifetimes",
+        "c-pointers-and-manual-memory",
+        "layout-size-and-alignment"
+      ],
+      "concepts": [
+        {
+          "id": "unsafe-block",
+          "title": "Unsafe block",
+          "summary": "An unsafe block does not switch checks off; it lets the programmer use five extra operations and promises the compiler that the surrounding code upholds their conditions."
+        },
+        {
+          "id": "raw-pointer",
+          "title": "Raw pointer",
+          "summary": "A raw pointer (*const T or *mut T) carries an address without ownership or lifetime, and dereferencing it requires unsafe."
+        },
+        {
+          "id": "ffi",
+          "title": "Foreign function interface",
+          "summary": "Calling C from Rust needs an extern declaration, C-compatible types and layout, and a promise that the C function meets the stated contract."
+        }
+      ],
+      "skills": [
+        "list-unsafe-operations",
+        "declare-extern-function",
+        "state-the-contract"
+      ],
+      "misconceptions": [
+        "Thinking unsafe turns off the borrow checker. It still checks references; it only allows the five listed operations.",
+        "Thinking calling C is safe because C is old and tested. The compiler cannot see C's contract, so every call is unsafe.",
+        "Forgetting the edition: Rust 2024 requires unsafe extern, so a snippet from older text fails to compile."
+      ],
+      "sequence": [
+        "Why a safe language needs an escape hatch: hardware, the operating system and existing C libraries.",
+        "The five operations: dereference a raw pointer, call an unsafe function, access or modify a mutable static, implement an unsafe trait, access a union field.",
+        "Raw pointers: creating them is safe, dereferencing is not (E0133).",
+        "unsafe extern \"C\" { fn abs(x: i32) -> i32; } and calling it in an unsafe block.",
+        "repr(C) from lesson 2 as the reason struct layouts can cross the boundary.",
+        "Wrap the unsafe call in a small safe function that checks its preconditions, so the unsafe code sits in one auditable place."
+      ],
+      "examples": [
+        "let p = &x as *const i32; println!(\"{}\", *p); fails with E0133.",
+        "unsafe { abs(-3) } is 3; unsafe { strlen(b\"hello\\0\".as_ptr() as *const c_char) } is 5.",
+        "extern \"C\" { ... } in edition 2024 gives error: extern blocks must be unsafe."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A wall labelled safe Rust and C with a gate marked unsafe; arrows for a call across it, the type each side expects, and the contract note attached to the C function.",
+          "learnerAction": "Click the contract note to see what the caller must guarantee.",
+          "placement": "boundary"
+        },
+        {
+          "type": "rust_program",
+          "shows": "The abs and strlen calls with real output in edition 2024.",
+          "learnerAction": "Delete the unsafe keyword and read the message.",
+          "placement": "extern blocks"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "choice",
+          "targets": "list-unsafe-operations",
+          "sample": "Which of these needs an unsafe block?",
+          "answer": "Dereferencing a raw pointer",
+          "choices": [
+            "Creating a raw pointer from a reference",
+            "Dereferencing a raw pointer",
+            "Borrowing a value mutably",
+            "Calling a method on a Vec"
+          ]
+        },
+        {
+          "kind": "numeric",
+          "targets": "declare-extern-function",
+          "sample": "With unsafe extern \"C\" { fn abs(x: i32) -> i32; }, what does unsafe { abs(-3) } evaluate to?",
+          "answer": "3"
+        },
+        {
+          "kind": "self",
+          "targets": "list-unsafe-operations",
+          "sample": "Without looking back, list the five operations an unsafe block allows. Rate yourself: all five / three or four / fewer.",
+          "answer": "Dereference a raw pointer; call an unsafe function or method; access or modify a mutable static; implement an unsafe trait; access a union field"
+        },
+        {
+          "kind": "numeric",
+          "targets": "declare-extern-function",
+          "sample": "With C's strlen declared as extern, what does unsafe { strlen(b\"hello\\0\".as_ptr() as *const c_char) } return?",
+          "answer": "5"
+        }
+      ],
+      "sourceIds": [
+        "rust-book",
+        "rustonomicon",
+        "rust-ref",
+        "man-pages"
+      ],
+      "estimatedMinutes": 13
+    }
+  ],
+  "courseCheck": "A mixed check: byte order and overflow results; the size of a repr(C) struct; stack versus heap placement; the error code for a moved value and for a conflicting borrow; a C fragment containing use after free; fork counts; descriptor numbers; the final value of a shared counter and the error for an unsynchronised one; mean turnaround for two policies; a page translation and effective access time; a cache-miss count for row versus column order; and one unsafe-block question. Include two Rust function tasks (round_up, split) and one self-rated recall item per module.",
+  "platformNeeds": [
+    "A C runner in the same Bubblewrap model as the Rust runner (gcc or clang, no network, process limit raised for fork lessons or fork simulated), so C questions can run rather than be code-reading. The README allows code-reading until runners exist.",
+    "A memory_layout figure type: byte grid with typed fields, offsets, padding cells and alignment, driven by a struct description, with drag-to-place fields. svg_figure fallback is described in each figure entry.",
+    "A stack_heap_explorer figure: frames, handles and heap blocks that update as a program_trace steps, including Vec reallocation and drops.",
+    "A borrow_regions figure: lines of a Rust program with lifetime bars from the compiler's analysis, and conflicts highlighted.",
+    "A scheduler_gantt figure with selectable policy and quantum, hiding computed averages until the learner commits.",
+    "An address_translation figure with a page table and optional TLB, and a cache_simulator figure with line size, capacity and replacement policy.",
+    "The Rust runner allows at most four threads including main (ADR 0006), so thread lessons must spawn at most three. fork, exec, files and signals cannot be run in it; those lessons rely on recorded C output or code-reading."
+  ],
+  "unverified": [
+    "None of the online sources could be opened: the session proxy refused every external host (403 on CONNECT), so all sources are marked verified false and chapter or section references are from memory. The writer must open each before citing.",
+    "Checked locally: all Rust and C results in this file were compiled and run here (rustc 1.97.0, gcc 13.3.0, edition 2021 and 2024). The sandbox pins rustc 1.93.1 and edition 2024; messages may differ slightly in wording.",
+    "Vec capacity growth (4, 8, 16 for i32) was observed on rustc 1.97 and is an implementation detail, not a guarantee. The lessons avoid asking it as a question.",
+    "Type sizes assume a 64-bit target with LP64 C (int 4 bytes, pointers 8). Windows 64-bit C has a different long size; the course does not use long in questions apart from a byte-distance example.",
+    "History details marked 'check' (two's complement on System/360, Unix 1969, C 1972 to 1973, Coffman 1971 paper) are from memory.",
+    "x86-64 four-level paging with 9 bits per level and 48-bit virtual addresses, 64-byte cache lines, and the effective-access-time formula follow standard textbooks but were not checked against a source here. The EAT question defines its own miss cost.",
+    "The five unsafe operations list is from the Rust book and Reference as remembered; verify the wording in the edition linked.",
+    "AddressSanitizer: gcc accepted -fsanitize=address here but no faulting program was run under it; the lessons do not quote sanitizer output."
+  ]
+}

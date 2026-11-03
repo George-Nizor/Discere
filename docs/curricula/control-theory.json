@@ -1,0 +1,1152 @@
+{
+  "id": "control-theory",
+  "title": "Control Theory",
+  "family": "B",
+  "voice": "A",
+  "description": "How feedback makes machines hold a target: block diagrams, response shapes, PID, stability and tuning.",
+  "audience": "Adults who have studied introductory calculus and mechanics. No Laplace transforms required.",
+  "prerequisites": [
+    "calculus-change-and-accumulation",
+    "physics-motion-and-forces",
+    "maths-foundations"
+  ],
+  "outcomes": [
+    "You'll be able to reduce a feedback loop to one gain.",
+    "You'll be able to read and compute first and second order responses.",
+    "You'll be able to explain and tune P, I and D terms.",
+    "You'll be able to test a loop for stability."
+  ],
+  "sources": [
+    {
+      "id": "astrom-murray",
+      "title": "Astrom and Murray, Feedback Systems: An Introduction for Scientists and Engineers (2nd ed.)",
+      "url": "https://fbswiki.org/wiki/index.php/Main_Page",
+      "licence": "Free electronic edition; copyright Princeton University Press",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "mit-2-004",
+      "title": "MIT OCW 2.004 Dynamics and Control II",
+      "url": "https://ocw.mit.edu/courses/2-004-dynamics-and-control-ii-spring-2008/",
+      "licence": "CC BY-NC-SA 4.0",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "ctms",
+      "title": "Control Tutorials for MATLAB and Simulink (Michigan, CMU, UCSD); concepts and worked examples, tool-independent parts only",
+      "url": "https://ctms.engin.umich.edu/CTMS/index.php?aux=Home",
+      "licence": "Copyright holders; free to read",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "openstax-up1",
+      "title": "OpenStax University Physics Volume 1 (oscillations, damping)",
+      "url": "https://openstax.org/books/university-physics-volume-1/pages/1-introduction",
+      "licence": "CC BY 4.0",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "zn-1942",
+      "title": "Ziegler and Nichols, Optimum settings for automatic controllers, Trans. ASME 64 (1942)",
+      "url": "https://doi.org/10.1115/1.4019264",
+      "licence": "Copyright ASME",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "wiki-ctl",
+      "title": "Wikipedia: PID controller, Routh-Hurwitz stability criterion, Integral windup, Damping ratio",
+      "url": "https://en.wikipedia.org/wiki/PID_controller",
+      "licence": "CC BY-SA 4.0",
+      "use": "reference",
+      "verified": false
+    }
+  ],
+  "modules": [
+    {
+      "id": "feedback",
+      "title": "Why feedback",
+      "summary": "What closing a loop buys, and how to draw and reduce a loop."
+    },
+    {
+      "id": "responses",
+      "title": "How systems respond",
+      "summary": "First and second order step responses, and the numbers that describe them."
+    },
+    {
+      "id": "pid",
+      "title": "P, I and D",
+      "summary": "What each term does to a response and what it costs."
+    },
+    {
+      "id": "stability-tuning",
+      "title": "Stability, tuning and practice",
+      "summary": "Where loops oscillate, how to set gains, and what real hardware changes."
+    }
+  ],
+  "lessons": [
+    {
+      "id": "open-loop-and-feedback",
+      "moduleId": "feedback",
+      "title": "Why close the loop",
+      "objective": "Explain what feedback buys over open-loop control and compute its effect on gain error.",
+      "prerequisiteLessonIds": [],
+      "concepts": [
+        {
+          "id": "loop-parts",
+          "title": "Loop parts",
+          "summary": "A feedback loop has a plant, a sensor, a comparison with a target and a controller acting on the error."
+        },
+        {
+          "id": "sensitivity",
+          "title": "Sensitivity",
+          "summary": "Feedback shrinks the effect of plant changes and disturbances on the output, at the cost of loop gain being spent."
+        }
+      ],
+      "skills": [
+        "name-loop-parts",
+        "compare-open-and-closed-loop",
+        "compute-closed-loop-gain"
+      ],
+      "misconceptions": [
+        "Learners think feedback removes error. With proportional feedback a finite error remains.",
+        "Learners think a thermostat computes how long to heat. It only compares and switches.",
+        "Learners think open loop is always worse; it is cheaper and fine when the plant is known and disturbances small."
+      ],
+      "sequence": [
+        "A toaster timer versus a thermostat.",
+        "Name plant, sensor, setpoint, error, controller, actuator, disturbance.",
+        "A plant with gain 2 and open-loop scaling 0.5.",
+        "The same plant when its gain falls 20 percent: open loop falls 20 percent.",
+        "Closed loop with controller gain 8: output = KG/(1+KG).",
+        "Loop gain is the currency feedback spends."
+      ],
+      "examples": [
+        "Plant gain 2, controller gain 0.5 open loop: output 1.0. Plant gain falls to 1.6: output 0.8, down 20 percent.",
+        "Closed loop, K=8: 16/17=0.941; with G=1.6: 12.8/13.8=0.9275, down only 1.45 percent.",
+        "The remaining 5.9 percent error is the price of finite gain."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Open-loop chain and closed-loop loop drawn with the same boxes, the sensor path highlighted.",
+          "learnerAction": "Toggle the feedback path.",
+          "placement": "Loop anatomy"
+        },
+        {
+          "type": "graph_plot",
+          "shows": "Output against plant gain for open and closed loop.",
+          "learnerAction": "Drag plant gain.",
+          "placement": "Sensitivity"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "choice",
+          "targets": "name-loop-parts",
+          "sample": "In a home thermostat, the sensor is?",
+          "answer": "The thermometer",
+          "choices": [
+            "The thermometer",
+            "The boiler",
+            "The setpoint dial",
+            "The room"
+          ]
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-closed-loop-gain",
+          "sample": "Plant gain 3, controller gain 9, unity feedback. Closed-loop gain to 3 decimals?",
+          "answer": "0.964"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compare-open-and-closed-loop",
+          "sample": "Open loop plant gain falls from 2 to 1.5. Percent change in output?",
+          "answer": "-25"
+        }
+      ],
+      "sourceIds": [
+        "astrom-murray",
+        "mit-2-004"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "block-diagrams-and-loop-algebra",
+      "moduleId": "feedback",
+      "title": "Block diagrams and reducing a loop",
+      "objective": "Reduce series, parallel and feedback blocks to a single gain.",
+      "prerequisiteLessonIds": [
+        "open-loop-and-feedback"
+      ],
+      "concepts": [
+        {
+          "id": "series-feedback",
+          "title": "Combining blocks",
+          "summary": "Blocks in series multiply; a feedback loop of forward gain G and feedback gain H gives G/(1+GH)."
+        },
+        {
+          "id": "sign",
+          "title": "Sign convention",
+          "summary": "Negative feedback subtracts the measurement at the summing junction."
+        }
+      ],
+      "skills": [
+        "reduce-series",
+        "reduce-feedback",
+        "read-diagram"
+      ],
+      "misconceptions": [
+        "Learners add the gains of blocks in series instead of multiplying.",
+        "Learners write G/(1 - G H) for negative feedback; that is the formula for positive feedback.",
+        "Learners drop H when it is 1 and then forget it when it is not."
+      ],
+      "sequence": [
+        "Show the symbols: a block multiplies, an arrow carries a signal, a circle adds or subtracts, a dot splits.",
+        "Two blocks in series multiply: signal 1 through gains 2 and 3 becomes 6.",
+        "Two blocks in parallel into a summing junction add.",
+        "Derive feedback: y = G e and e = r - H y, so y = G r - G H y, giving y/r = G/(1 + G H).",
+        "Reduce a three-block diagram step by step, inner loop first.",
+        "Check the sign at each junction before trusting the result."
+      ],
+      "examples": [
+        "Series 2 and 3 then unity feedback: 6/7=0.857.",
+        "G=10, H=1: 10/11=0.909; H=0.5: 10/6=1.667.",
+        "Positive feedback with G=0.5, H=1: 0.5/(1-0.5)=1."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A block diagram with draggable blocks and a live reduced expression.",
+          "learnerAction": "Edit gains and see the output.",
+          "placement": "Reduction"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A three-stage reduction animation.",
+          "learnerAction": "Step through.",
+          "placement": "Method"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "reduce-feedback",
+          "sample": "G=10, H=1, negative feedback. Closed-loop gain to 3 decimals?",
+          "answer": "0.909"
+        },
+        {
+          "kind": "numeric",
+          "targets": "reduce-feedback",
+          "sample": "G=10, H=0.5. Closed-loop gain to 3 decimals?",
+          "answer": "1.667"
+        },
+        {
+          "kind": "numeric",
+          "targets": "reduce-series",
+          "sample": "Blocks 2 and 3 in series followed by unity feedback. Gain to 3 decimals?",
+          "answer": "0.857"
+        }
+      ],
+      "sourceIds": [
+        "astrom-murray",
+        "ctms"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "first-order-response",
+      "moduleId": "responses",
+      "title": "First-order response",
+      "objective": "Describe and compute the step response of a first-order system from its time constant.",
+      "prerequisiteLessonIds": [
+        "block-diagrams-and-loop-algebra"
+      ],
+      "concepts": [
+        {
+          "id": "time-constant",
+          "title": "Time constant",
+          "summary": "The time for a first-order step response to cover 63.2 percent of the way to its final value."
+        },
+        {
+          "id": "rate-gap",
+          "title": "Rate proportional to gap",
+          "summary": "tau dy/dt = K u - y says the output closes the gap to its target at a rate proportional to the gap."
+        }
+      ],
+      "skills": [
+        "compute-first-order-response",
+        "find-time-to-fraction",
+        "estimate-time-constant"
+      ],
+      "misconceptions": [
+        "Learners expect the output to reach the final value at time tau. It reaches 63 percent.",
+        "Learners think the response ends. It is never exactly final, so settling is defined by a percent.",
+        "Learners confuse the time constant with the delay."
+      ],
+      "sequence": [
+        "A cooling cup of coffee: rate depends on the gap.",
+        "Write tau dy/dt = K u - y.",
+        "Solve: y = K u (1 - e^(-t/tau)).",
+        "Checkpoints: 63, 86, 95, 98, 99 percent at 1 to 5 tau.",
+        "Initial slope = final/tau.",
+        "RC circuit and thermal examples."
+      ],
+      "examples": [
+        "RC with 10 kilohm and 100 microfarad: tau=1 s.",
+        "Sensor tau=8 s: 90 percent at 8 ln 10=18.4 s; 95 percent at 24.0 s.",
+        "At t=2 tau the response is 1-e^-2=0.865."
+      ],
+      "figures": [
+        {
+          "type": "graph_plot",
+          "shows": "First-order step response with horizontal guide lines at 63 and 95 percent and a tangent at the origin.",
+          "learnerAction": "Drag tau.",
+          "placement": "Time constant"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "RC circuit and its voltage curve.",
+          "learnerAction": "Change R and C.",
+          "placement": "Physical example"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "find-time-to-fraction",
+          "sample": "tau=8 s. Time to 90 percent in seconds to 1 decimal?",
+          "answer": "18.4"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-first-order-response",
+          "sample": "Fraction of final value after t=2 tau, to 3 decimals?",
+          "answer": "0.865"
+        },
+        {
+          "kind": "numeric",
+          "targets": "estimate-time-constant",
+          "sample": "R=10000, C=0.0001. tau in s?",
+          "answer": "1"
+        }
+      ],
+      "sourceIds": [
+        "astrom-murray",
+        "openstax-up1"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "first-order-in-feedback",
+      "moduleId": "responses",
+      "title": "A first-order plant in a loop",
+      "objective": "Compute the closed-loop time constant and final value for proportional control of a first-order plant.",
+      "prerequisiteLessonIds": [
+        "first-order-response"
+      ],
+      "concepts": [
+        {
+          "id": "closed-tau",
+          "title": "Closed-loop time constant",
+          "summary": "tau_cl = tau/(1+K Kp): more gain makes it faster."
+        },
+        {
+          "id": "droop",
+          "title": "Steady-state error",
+          "summary": "The final value is K Kp/(1+K Kp), always less than 1 for finite gain."
+        }
+      ],
+      "skills": [
+        "compute-closed-tau",
+        "compute-final-value",
+        "trade-speed-and-error"
+      ],
+      "misconceptions": [
+        "Learners think more gain only improves things; a lag in the loop can later cause overshoot.",
+        "Learners think the plant's tau is unchangeable; feedback shifts it.",
+        "Learners think zero error is possible with P alone."
+      ],
+      "sequence": [
+        "Start from tau dy/dt = -y + K u with u = Kp (r - y).",
+        "Rearrange to the same form with tau_cl.",
+        "Compute tau_cl and the final value.",
+        "Plot for Kp = 1, 4, 16.",
+        "The error shrinks as 1/(1+L).",
+        "Next: remove the error with integral action."
+      ],
+      "examples": [
+        "tau=10 s, K=2, Kp=4: loop gain 8, tau_cl=10/9=1.11 s, final 8/9=0.889, error 11.1 percent.",
+        "Kp=16: loop gain 32, tau_cl=0.30 s, final 32/33=0.970.",
+        "Kp=0 gives no motion."
+      ],
+      "figures": [
+        {
+          "type": "graph_plot",
+          "shows": "Step responses for several Kp values on the same axes.",
+          "learnerAction": "Drag Kp.",
+          "placement": "Gain effect"
+        },
+        {
+          "type": "python_execution",
+          "shows": "A loop simulation with Euler steps.",
+          "learnerAction": "Edit Kp and run.",
+          "placement": "Simulation"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-closed-tau",
+          "sample": "tau=10, K=2, Kp=4. tau_cl in s to 2 decimals?",
+          "answer": "1.11"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-final-value",
+          "sample": "Loop gain K*Kp = 8. Final value for a unit step, to 3 decimals?",
+          "answer": "0.889"
+        },
+        {
+          "kind": "code-run-python",
+          "targets": "compute-final-value",
+          "sample": "Euler: y=0; repeat 100 times dt=0.1: u=4*(1-y); y += dt*(-y+2*u)/10. Print y rounded to 3 places.",
+          "answer": "0.889"
+        }
+      ],
+      "sourceIds": [
+        "astrom-murray",
+        "ctms"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "second-order-response",
+      "moduleId": "responses",
+      "title": "Second-order response",
+      "objective": "Compute natural frequency, damping ratio, overshoot and timing for a mass-spring-damper.",
+      "prerequisiteLessonIds": [
+        "first-order-in-feedback"
+      ],
+      "concepts": [
+        {
+          "id": "zeta",
+          "title": "Damping ratio",
+          "summary": "zeta = c/(2 sqrt(k m)): below 1 the response overshoots and rings; at 1 it is critical."
+        },
+        {
+          "id": "overshoot",
+          "title": "Overshoot",
+          "summary": "Peak overshoot Mp = exp(-pi zeta / sqrt(1 - zeta^2))."
+        }
+      ],
+      "skills": [
+        "compute-wn-zeta",
+        "compute-overshoot",
+        "compute-settling-time"
+      ],
+      "misconceptions": [
+        "Learners think damping slows the response. A lightly damped system takes longer to settle.",
+        "Learners read frequency as speed. Natural frequency sets the scale; damping shapes the response.",
+        "Learners think critical damping is always best; it is slowest to rise without overshoot."
+      ],
+      "sequence": [
+        "Mass-spring-damper: m x'' + c x' + k x = F.",
+        "wn = sqrt(k/m); zeta.",
+        "Underdamped, critical, overdamped.",
+        "Overshoot depends only on zeta.",
+        "Settling time about 4/(zeta wn).",
+        "Peak time pi/(wn sqrt(1-zeta^2))."
+      ],
+      "examples": [
+        "m=2 kg, k=800 N/m, c=40 N s/m: wn=20 rad/s, zeta=0.5, overshoot 16.3 percent, settling 0.40 s, peak time 0.181 s.",
+        "zeta=0.2: overshoot 52.7 percent.",
+        "Critical damping needs c=2 sqrt(k m)=80 N s/m."
+      ],
+      "figures": [
+        {
+          "type": "graph_plot",
+          "shows": "Second-order step responses for zeta 0.2, 0.5, 1, 2.",
+          "learnerAction": "Drag zeta and wn.",
+          "placement": "Damping"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A mass on a spring with a damper, drawn beside its step response.",
+          "learnerAction": "Drag the damper setting.",
+          "placement": "Physical picture"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-wn-zeta",
+          "sample": "m=2, k=800, c=40. wn in rad/s?",
+          "answer": "20"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-overshoot",
+          "sample": "zeta=0.5. Overshoot percent to 1 decimal?",
+          "answer": "16.3"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-settling-time",
+          "sample": "zeta=0.5, wn=20. 2 percent settling time (4/(zeta wn)) in s?",
+          "answer": "0.4"
+        }
+      ],
+      "sourceIds": [
+        "astrom-murray",
+        "openstax-up1",
+        "mit-2-004"
+      ],
+      "historyNotes": [
+        "Maxwell's 1868 paper 'On Governors' was the first mathematical stability analysis of a feedback device."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "specifications-from-step-response",
+      "moduleId": "responses",
+      "title": "Designing to a specification",
+      "objective": "Turn overshoot and settling limits into limits on damping and frequency.",
+      "prerequisiteLessonIds": [
+        "second-order-response"
+      ],
+      "concepts": [
+        {
+          "id": "specs",
+          "title": "Time-domain specifications",
+          "summary": "Rise time, overshoot, settling time and steady-state error describe a step response."
+        },
+        {
+          "id": "zeta-from-mp",
+          "title": "Damping from overshoot",
+          "summary": "zeta = -ln(Mp) / sqrt(pi^2 + ln^2 Mp)."
+        }
+      ],
+      "skills": [
+        "zeta-from-overshoot",
+        "wn-from-settling",
+        "check-spec"
+      ],
+      "misconceptions": [
+        "Learners try to satisfy all specs at once without trade-offs.",
+        "Learners use overshoot to fix wn; overshoot fixes zeta only.",
+        "Learners add 5 percent to the final value for settling."
+      ],
+      "sequence": [
+        "Mark rise time, overshoot, settling time and steady-state error on a step response plot.",
+        "Overshoot depends only on damping ratio: invert Mp = exp(-pi z/sqrt(1-z^2)) to get z = -ln Mp / sqrt(pi^2 + ln^2 Mp).",
+        "Settling time (2 percent) is about 4/(z wn), so a limit on it sets z wn.",
+        "Rise time is about 1.8/wn for moderate damping, so a limit on it sets wn.",
+        "Combine the limits into a region of acceptable z and wn.",
+        "Meet the box and note what it cost: faster responses ask more of the actuator."
+      ],
+      "examples": [
+        "Mp <= 10 percent: zeta >= 0.591.",
+        "Mp <= 5 percent: zeta >= 0.690.",
+        "Settling <= 2 s with zeta 0.6: wn >= 4/(0.6*2)=3.33 rad/s."
+      ],
+      "figures": [
+        {
+          "type": "graph_plot",
+          "shows": "Step response with spec band and shaded forbidden zone.",
+          "learnerAction": "Drag zeta, wn.",
+          "placement": "Spec region"
+        },
+        {
+          "type": "table",
+          "shows": "Specs to parameters.",
+          "learnerAction": "Fill.",
+          "placement": "Mapping"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "zeta-from-overshoot",
+          "sample": "Overshoot limit 10 percent. Minimum zeta to 2 decimals?",
+          "answer": "0.59"
+        },
+        {
+          "kind": "numeric",
+          "targets": "wn-from-settling",
+          "sample": "Settling 2 s, zeta 0.5. Minimum wn in rad/s?",
+          "answer": "4"
+        },
+        {
+          "kind": "choice",
+          "targets": "check-spec",
+          "sample": "Which spec does zeta control?",
+          "answer": "Overshoot",
+          "choices": [
+            "Overshoot",
+            "Steady-state error",
+            "Only settling",
+            "Sensor noise"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "astrom-murray",
+        "ctms"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "proportional-control",
+      "moduleId": "pid",
+      "title": "Proportional control and droop",
+      "objective": "Compute steady-state error under proportional control and the gain needed for a target.",
+      "prerequisiteLessonIds": [
+        "specifications-from-step-response"
+      ],
+      "concepts": [
+        {
+          "id": "p-term",
+          "title": "Proportional term",
+          "summary": "u = Kp e: action proportional to the current error."
+        },
+        {
+          "id": "ess",
+          "title": "Steady-state error",
+          "summary": "For a plant with DC gain G0, a unit step leaves e = 1/(1 + Kp G0)."
+        }
+      ],
+      "skills": [
+        "compute-ess",
+        "size-kp",
+        "explain-offset"
+      ],
+      "misconceptions": [
+        "Learners expect error to vanish with high gain.",
+        "Learners expect Kp to react to history; it does not.",
+        "Learners think a disturbance is a different matter. It shifts the offset."
+      ],
+      "sequence": [
+        "Define u = Kp e: action proportional to the present error.",
+        "Ask what the plant needs to hold the target: a nonzero control u.",
+        "A nonzero u needs a nonzero e, so P-only control must leave an error: e = 1/(1 + Kp G0) for a unit step.",
+        "Raise Kp to shrink the error, and see the cost in noise and overshoot.",
+        "Add a constant disturbance and show it moves the offset.",
+        "Conclude with the question integral action answers."
+      ],
+      "examples": [
+        "G0=5, Kp=3: loop gain 15, ess=1/16=6.25 percent.",
+        "Target ess <= 2 percent: loop gain >= 49, Kp >= 9.8.",
+        "A heater needs 30 percent power to hold temperature; the error that produces it never goes to zero."
+      ],
+      "figures": [
+        {
+          "type": "graph_plot",
+          "shows": "Setpoint, output and offset band.",
+          "learnerAction": "Drag Kp.",
+          "placement": "Offset"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "Heater with required hold power.",
+          "learnerAction": "Change losses.",
+          "placement": "Why offset"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-ess",
+          "sample": "G0=5, Kp=3. Steady-state error fraction to 4 decimals?",
+          "answer": "0.0625"
+        },
+        {
+          "kind": "numeric",
+          "targets": "size-kp",
+          "sample": "G0=5, ess <= 2 percent. Minimum Kp?",
+          "answer": "9.8"
+        },
+        {
+          "kind": "choice",
+          "targets": "explain-offset",
+          "sample": "Why does P-only control leave offset?",
+          "answer": "Holding output needs nonzero action",
+          "choices": [
+            "Holding output needs nonzero action",
+            "Sensor error",
+            "Noise",
+            "Delay"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "astrom-murray",
+        "ctms"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "integral-action",
+      "moduleId": "pid",
+      "title": "Integral action",
+      "objective": "Compute an integral term, explain why it removes offset, and anticipate windup.",
+      "prerequisiteLessonIds": [
+        "proportional-control"
+      ],
+      "concepts": [
+        {
+          "id": "i-term",
+          "title": "Integral term",
+          "summary": "Ki times the accumulated error, which keeps growing until the error is gone."
+        },
+        {
+          "id": "windup",
+          "title": "Windup",
+          "summary": "When the actuator saturates the integral keeps growing and must be unwound later."
+        }
+      ],
+      "skills": [
+        "compute-integral-term",
+        "explain-zero-offset",
+        "estimate-windup"
+      ],
+      "misconceptions": [
+        "Learners think the integral acts on the current error only.",
+        "Learners think integral action always improves the response; it adds lag and risk of oscillation.",
+        "Learners ignore saturation."
+      ],
+      "sequence": [
+        "Define the integral term as Ki times the area under the error curve so far.",
+        "Add up a short list of errors by rectangles.",
+        "Explain why the output can only settle when the error is zero: otherwise the integral still moves.",
+        "Show a PI loop on the heater removing the offset.",
+        "Show windup: actuator at its limit, integral growing.",
+        "Fix windup by stopping the integral at saturation."
+      ],
+      "examples": [
+        "Errors 1.0, 0.6, 0.3, 0.1 at dt 0.5: sum*dt=1.0; Ki=2 gives 2.0.",
+        "PI on the first-order plant (Kp 4, Ki 0.8): final value 1.000 in 100 s.",
+        "Saturated for 10 s at error 20: integral 200; unwinding at error -10 takes 20 s."
+      ],
+      "figures": [
+        {
+          "type": "graph_plot",
+          "shows": "Output, error and integral term traces.",
+          "learnerAction": "Drag Ki.",
+          "placement": "Offset removal"
+        },
+        {
+          "type": "python_execution",
+          "shows": "PI loop simulation.",
+          "learnerAction": "Edit Ki.",
+          "placement": "Simulation"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-integral-term",
+          "sample": "Errors 1.0,0.6,0.3,0.1 at dt=0.5; Ki=2. Integral term?",
+          "answer": "2.0"
+        },
+        {
+          "kind": "numeric",
+          "targets": "estimate-windup",
+          "sample": "Integral 200 builds up; then error is -10. Seconds to unwind?",
+          "answer": "20"
+        },
+        {
+          "kind": "choice",
+          "targets": "explain-zero-offset",
+          "sample": "The integral term stops growing when?",
+          "answer": "Error is zero",
+          "choices": [
+            "Error is zero",
+            "Output is 1",
+            "Gain is 1",
+            "Time passes"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "astrom-murray",
+        "wiki-ctl"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "derivative-and-pid",
+      "moduleId": "pid",
+      "title": "Derivative action and the full PID",
+      "objective": "Compute a PID output and explain what derivative action buys and costs.",
+      "prerequisiteLessonIds": [
+        "integral-action"
+      ],
+      "concepts": [
+        {
+          "id": "d-term",
+          "title": "Derivative term",
+          "summary": "Kd de/dt acts on the rate of change, damping approach before overshoot."
+        },
+        {
+          "id": "noise",
+          "title": "Noise amplification",
+          "summary": "Derivative action multiplies high-frequency noise by 2 pi f."
+        }
+      ],
+      "skills": [
+        "compute-pid-output",
+        "explain-derivative-benefit",
+        "estimate-noise-gain"
+      ],
+      "misconceptions": [
+        "Learners think D predicts the future accurately; it extrapolates linearly.",
+        "Learners apply derivative to a setpoint step and get a spike.",
+        "Learners think more D is always safe."
+      ],
+      "sequence": [
+        "Add a term on the slope of the error: Kd de/dt.",
+        "Think of it as a brake: it pushes against fast motion before the target is passed.",
+        "Assemble the full u = Kp e + Ki integral(e) + Kd de/dt and compute one value.",
+        "Show noise: a small fast wiggle has a large slope.",
+        "Fix noise with a filter and take the derivative of the measurement.",
+        "Say when each term earns its place."
+      ],
+      "examples": [
+        "Kp=2, Ki=0.5, Kd=0.1, e=1.5, integral=4, de/dt=-3: u=3+2-0.3=4.7.",
+        "Noise 0.01 at 50 Hz: derivative 2 pi 50 0.01=3.14 per s; with Kd=0.1 it adds 0.31.",
+        "Setpoint step in e makes a spike if derivative acts on e."
+      ],
+      "figures": [
+        {
+          "type": "graph_plot",
+          "shows": "Three traces of response with D added.",
+          "learnerAction": "Drag Kd.",
+          "placement": "Damping by D"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "PID block diagram.",
+          "learnerAction": "Toggle terms.",
+          "placement": "Structure"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-pid-output",
+          "sample": "Kp=2, Ki=0.5, Kd=0.1, e=1.5, integral 4, de/dt -3. u?",
+          "answer": "4.7"
+        },
+        {
+          "kind": "numeric",
+          "targets": "estimate-noise-gain",
+          "sample": "Noise 0.01 at 50 Hz. Derivative amplitude per second, 2 decimals?",
+          "answer": "3.14"
+        },
+        {
+          "kind": "choice",
+          "targets": "explain-derivative-benefit",
+          "sample": "D action mainly?",
+          "answer": "Damps the approach",
+          "choices": [
+            "Damps the approach",
+            "Removes offset",
+            "Raises gain",
+            "Reduces noise"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "astrom-murray",
+        "wiki-ctl"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "stability",
+      "moduleId": "stability-tuning",
+      "title": "Stability",
+      "objective": "Decide the range of gain over which a loop is stable and find where it oscillates.",
+      "prerequisiteLessonIds": [
+        "derivative-and-pid"
+      ],
+      "concepts": [
+        {
+          "id": "stable",
+          "title": "Stable",
+          "summary": "Every disturbance dies away: all characteristic roots have negative real parts."
+        },
+        {
+          "id": "routh",
+          "title": "Cubic test",
+          "summary": "s^3 + a2 s^2 + a1 s + a0 is stable if all coefficients are positive and a2 a1 > a0."
+        }
+      ],
+      "skills": [
+        "apply-cubic-test",
+        "find-critical-gain",
+        "relate-roots-to-behaviour"
+      ],
+      "misconceptions": [
+        "Learners think a large gain is always better.",
+        "Learners think instability means the output goes up smoothly; it often oscillates growing.",
+        "Learners think the plant alone being stable makes the loop stable."
+      ],
+      "sequence": [
+        "Solutions e^(st): roots decide decay.",
+        "Negative real part decays; imaginary part rings.",
+        "Quadratic: positive coefficients.",
+        "Cubic condition.",
+        "Example s^3+3s^2+2s+K.",
+        "Critical gain and frequency."
+      ],
+      "examples": [
+        "K: stable for 0 < K < 6; at K=6 roots s=-3 and s=+/-j sqrt 2.",
+        "Ultimate period Tu=2 pi/sqrt 2=4.44 s.",
+        "Quadratic s^2+4s+5: roots -2 +/- j, stable."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Complex plane with draggable root and the matching time response.",
+          "learnerAction": "Drag the root.",
+          "placement": "Root locations"
+        },
+        {
+          "type": "graph_plot",
+          "shows": "Step responses for K = 1, 4, 6, 8.",
+          "learnerAction": "Drag K.",
+          "placement": "Gain and instability"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "find-critical-gain",
+          "sample": "s^3+3s^2+2s+K. Largest stable K (exclusive)?",
+          "answer": "6"
+        },
+        {
+          "kind": "numeric",
+          "targets": "relate-roots-to-behaviour",
+          "sample": "At K=6 the oscillation frequency in rad/s to 3 decimals (sqrt 2)?",
+          "answer": "1.414"
+        },
+        {
+          "kind": "choice",
+          "targets": "relate-roots-to-behaviour",
+          "sample": "Roots -1 +/- 3j give?",
+          "answer": "Decaying oscillation",
+          "choices": [
+            "Decaying oscillation",
+            "Growing oscillation",
+            "Smooth decay",
+            "Steady oscillation"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "astrom-murray",
+        "mit-2-004"
+      ],
+      "historyNotes": [
+        "Edward Routh published his criterion in 1877 and Adolf Hurwitz independently in 1895."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "tuning",
+      "moduleId": "stability-tuning",
+      "title": "Tuning a PID",
+      "objective": "Set PID gains using the closed-loop and reaction-curve methods.",
+      "prerequisiteLessonIds": [
+        "stability"
+      ],
+      "concepts": [
+        {
+          "id": "zn-closed",
+          "title": "Ultimate-gain method",
+          "summary": "Raise Kp until steady oscillation; then P=0.5Ku, PI=0.45Ku, PID=0.6Ku, Ti=Tu/2, Td=Tu/8."
+        },
+        {
+          "id": "zn-open",
+          "title": "Reaction-curve method",
+          "summary": "From a step test fit gain K, delay L and time constant T, then PID Kp=1.2T/(K L), Ti=2L, Td=0.5L."
+        }
+      ],
+      "skills": [
+        "tune-with-ultimate-gain",
+        "tune-from-step-test",
+        "judge-tuning"
+      ],
+      "misconceptions": [
+        "Learners treat Ziegler-Nichols as optimal; it is a starting point with about 25 percent overshoot.",
+        "Learners tune D first, which amplifies noise.",
+        "Learners tune a live process without limits on the actuator."
+      ],
+      "sequence": [
+        "Rules of thumb exist because models are often unavailable.",
+        "Method 1: raise Kp until the output holds a steady oscillation; record Ku and Tu.",
+        "Convert to PID settings with Kp = 0.6 Ku, Ti = Tu/2, Td = Tu/8.",
+        "Method 2: a step test gives gain K, delay L and time constant T; use Kp = 1.2 T/(K L), Ti = 2L, Td = 0.5 L.",
+        "Judge the response: these settings give lively responses, often 25 percent overshoot, so detune.",
+        "Tune by hand: P first, then I, then a little D."
+      ],
+      "examples": [
+        "Ku=6, Tu=4.44: Kp=3.6, Ti=2.22, Td=0.555.",
+        "K=2, T=20 s, L=4 s: Kp=1.2*20/(2*4)=3.0, Ti=8, Td=2.",
+        "PI: Kp=0.9*20/8=2.25, Ti=3.33*4=13.3."
+      ],
+      "figures": [
+        {
+          "type": "graph_plot",
+          "shows": "Open-loop step test with tangent and L, T marks.",
+          "learnerAction": "Drag the tangent.",
+          "placement": "Reaction curve"
+        },
+        {
+          "type": "python_execution",
+          "shows": "PID simulator with gain sliders.",
+          "learnerAction": "Tune.",
+          "placement": "Practice"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "tune-with-ultimate-gain",
+          "sample": "Ku=8. PID Kp?",
+          "answer": "4.8"
+        },
+        {
+          "kind": "numeric",
+          "targets": "tune-from-step-test",
+          "sample": "K=2, T=20, L=4. PID Kp?",
+          "answer": "3"
+        },
+        {
+          "kind": "numeric",
+          "targets": "tune-with-ultimate-gain",
+          "sample": "Tu=4.44 s. PID Ti in s to 2 decimals?",
+          "answer": "2.22"
+        }
+      ],
+      "sourceIds": [
+        "zn-1942",
+        "astrom-murray"
+      ],
+      "historyNotes": [
+        "Ziegler and Nichols published their settings in 1942."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "real-loops",
+      "moduleId": "stability-tuning",
+      "title": "Real loops: limits, sampling and feedforward",
+      "objective": "Handle actuator limits, sample time and feedforward in a working loop.",
+      "prerequisiteLessonIds": [
+        "tuning"
+      ],
+      "concepts": [
+        {
+          "id": "anti-windup",
+          "title": "Anti-windup",
+          "summary": "Stop integrating while the output is saturated."
+        },
+        {
+          "id": "feedforward",
+          "title": "Feedforward",
+          "summary": "Command the expected control from the setpoint so feedback only fixes the remainder."
+        }
+      ],
+      "skills": [
+        "choose-sample-time",
+        "apply-feedforward",
+        "spot-saturation-problem"
+      ],
+      "misconceptions": [
+        "Learners assume a controller tuned in continuous time will behave the same when sampled slowly.",
+        "Learners think feedforward replaces feedback; it handles what the model knows, feedback handles the rest.",
+        "Learners ignore actuator limits until windup appears."
+      ],
+      "sequence": [
+        "Controllers run in samples: choose a period of at most a tenth of the rise time.",
+        "Write the discrete PID: error each step, sum for the integral, difference for the derivative.",
+        "Actuators saturate; stop integrating when the output is clamped.",
+        "Feedforward: command the expected control from the setpoint, so feedback only trims.",
+        "Sensor noise: filter the measurement before the derivative.",
+        "Safety: a limit, a timeout and a safe output on sensor failure."
+      ],
+      "examples": [
+        "Rise time 2 s: sample at most every 0.2 s.",
+        "Plant gain 2, target 6: feedforward u=3.",
+        "Valve limit 100 percent: clamp the integral."
+      ],
+      "figures": [
+        {
+          "type": "python_execution",
+          "shows": "PID with saturation and anti-windup toggle.",
+          "learnerAction": "Toggle.",
+          "placement": "Windup"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "Feedforward and feedback blocks.",
+          "learnerAction": "Switch.",
+          "placement": "Structure"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "choose-sample-time",
+          "sample": "Rise time 2 s, 10 samples per rise. Maximum sample time in s?",
+          "answer": "0.2"
+        },
+        {
+          "kind": "numeric",
+          "targets": "apply-feedforward",
+          "sample": "Plant gain 2. Target 6. Feedforward command?",
+          "answer": "3"
+        },
+        {
+          "kind": "choice",
+          "targets": "spot-saturation-problem",
+          "sample": "An integral still growing while the valve is fully open causes?",
+          "answer": "Windup and overshoot",
+          "choices": [
+            "Windup and overshoot",
+            "Better tracking",
+            "Lower noise",
+            "Nothing"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "astrom-murray",
+        "wiki-ctl"
+      ],
+      "estimatedMinutes": 13
+    }
+  ],
+  "courseCheck": "Mixed check: closed-loop gain; time constant fractions; tau_cl; zeta and overshoot; ess; PID output; cubic stability; Z-N settings; sample time.",
+  "platformNeeds": [
+    "A closed-loop simulator figure: plant (first or second order), controller (P, PI, PID), step input, saturation, with live sliders.",
+    "A pole-location (complex plane) explorer linked to a time response.",
+    "A block-diagram editor figure for loop reduction.",
+    "python_execution examples for PID loops (Python runner exists)."
+  ],
+  "unverified": [
+    "All source URLs unopened (no network). Licences from memory.",
+    "Maxwell 1868, Routh 1877, Hurwitz 1895 and Ziegler-Nichols 1942 dates from memory.",
+    "Rise time 1.8/wn and sample 10 per rise are rules of thumb.",
+    "Closed-loop first-order lesson uses a python_execution figure that assumes the Python runner."
+  ]
+}

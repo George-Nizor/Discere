@@ -1,0 +1,1721 @@
+{
+  "id": "software-design-and-architecture",
+  "title": "Software Design and Architecture",
+  "family": "A",
+  "voice": "A",
+  "description": "Learn how to shape software so that it stays easy to change: hide decisions, draw boundaries, choose between architecture styles, and record why.",
+  "audience": "A capable adult who can read short Python and has written or reviewed some code. Assumes CS Basics and Python for Data Analysis. System Design is the companion course: it sizes systems for load and failure, while this one structures the code and the boundaries between services. This course states architecture-style trade-offs and refers to System Design for their mechanics, and System Design does not repeat the style comparison.",
+  "prerequisites": [
+    "cs-basics",
+    "python-for-data-analysis"
+  ],
+  "outcomes": [
+    "You'll be able to name the decisions that are architectural and state a quality attribute as a testable scenario.",
+    "You'll be able to count dependencies and recognise coupling and cohesion in code.",
+    "You'll be able to apply design principles and say where they stop helping.",
+    "You'll be able to model a domain with entities, value objects and bounded contexts.",
+    "You'll be able to design code so that it can be tested without its dependencies.",
+    "You'll be able to weigh a modular monolith against microservices and classify a change to a contract.",
+    "You'll be able to draw a C4 diagram and write an architecture decision record.",
+    "You'll be able to review a design or a generated change against these criteria."
+  ],
+  "sources": [
+    {
+      "id": "c4",
+      "title": "The C4 model for visualising software architecture (Simon Brown)",
+      "url": "https://c4model.com/",
+      "licence": "CC BY 4.0 (site content; confirm on the site)",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "arc42",
+      "title": "arc42 architecture documentation template",
+      "url": "https://arc42.org/",
+      "licence": "CC BY-SA 4.0 for the template documentation",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "parnas-1972",
+      "title": "On the Criteria To Be Used in Decomposing Systems into Modules (D. L. Parnas, Communications of the ACM, December 1972)",
+      "url": "https://dl.acm.org/doi/10.1145/361598.361623",
+      "licence": "Copyright ACM; free-to-read copies exist",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "conway-1968",
+      "title": "How Do Committees Invent? (Melvin E. Conway, Datamation, April 1968)",
+      "url": "https://www.melconway.com/Home/Committees_Paper.html",
+      "licence": "Copyright the author; free to read",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "hexagonal",
+      "title": "Hexagonal architecture (Alistair Cockburn, 2005)",
+      "url": "https://alistair.cockburn.us/hexagonal-architecture/",
+      "licence": "Copyright the author; free to read",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "nygard-adr",
+      "title": "Documenting Architecture Decisions (Michael Nygard, 2011)",
+      "url": "https://www.cognitect.com/blog/2011/11/15/documenting-architecture-decisions",
+      "licence": "Copyright the author; free to read",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "adr-github",
+      "title": "Architectural Decision Records (adr.github.io)",
+      "url": "https://adr.github.io/",
+      "licence": "Site content CC0 or permissive (confirm)",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "ddd-reference",
+      "title": "Domain-Driven Design Reference (Eric Evans, 2015)",
+      "url": "https://www.domainlanguage.com/ddd/reference/",
+      "licence": "CC BY 4.0",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "azure-arch-guide",
+      "title": "Azure Architecture Center: architecture styles and design principles",
+      "url": "https://learn.microsoft.com/en-us/azure/architecture/guide/architecture-styles/",
+      "licence": "CC BY 4.0 for the documentation text",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "twelve-factor",
+      "title": "The Twelve-Factor App",
+      "url": "https://12factor.net/",
+      "licence": "MIT licence for the site's content",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "python-data-model",
+      "title": "Python documentation: data model, dataclasses and typing.Protocol",
+      "url": "https://docs.python.org/3/reference/datamodel.html",
+      "licence": "PSF Licence; examples 0BSD",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "fowler-articles",
+      "title": "martinfowler.com articles: MonolithFirst, StranglerFigApplication, Microservices (Lewis and Fowler, 2014), TechnicalDebt, CQRS, EventSourcing",
+      "url": "https://martinfowler.com/articles/",
+      "licence": "Copyright the authors; reference only",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "iso-25010",
+      "title": "ISO/IEC 25010 systems and software quality models",
+      "url": "https://www.iso.org/standard/78176.html",
+      "licence": "Paid ISO standard; use only the published list of characteristics as reference",
+      "use": "reference",
+      "verified": false
+    }
+  ],
+  "modules": [
+    {
+      "id": "why-structure-matters",
+      "title": "Why structure matters",
+      "summary": "What architecture decides, and the ideas of coupling, cohesion, hiding and principles that make code cheap to change."
+    },
+    {
+      "id": "building-blocks",
+      "title": "Building blocks of a design",
+      "summary": "Composition, patterns, domain models and testability, shown in small runnable code."
+    },
+    {
+      "id": "architecture-styles",
+      "title": "Architecture styles",
+      "summary": "Layers and ports, monolith and microservices, events, and contracts that can evolve."
+    },
+    {
+      "id": "communicating-and-evolving",
+      "title": "Communicating and evolving",
+      "summary": "Diagrams, decision records, weighing trade-offs and changing a running system safely."
+    }
+  ],
+  "lessons": [
+    {
+      "id": "what-architecture-decides",
+      "moduleId": "why-structure-matters",
+      "title": "What architecture decides",
+      "objective": "Name the decisions that count as architectural, state a quality attribute as a testable scenario, and judge how hard a decision is to reverse.",
+      "prerequisiteLessonIds": [],
+      "concepts": [
+        {
+          "id": "architecture",
+          "title": "Architecture",
+          "summary": "The set of decisions about structure that are costly to change later."
+        },
+        {
+          "id": "quality-attribute",
+          "title": "Quality attribute",
+          "summary": "A property such as performance, security or modifiability that the system must have and that often conflicts with another."
+        },
+        {
+          "id": "quality-scenario",
+          "title": "Quality attribute scenario",
+          "summary": "A requirement written as source, stimulus, artefact, environment, response and response measure, so that it can be tested."
+        },
+        {
+          "id": "reversibility",
+          "title": "Reversibility",
+          "summary": "How much it costs to undo a decision, which tells you how much care it deserves."
+        }
+      ],
+      "skills": [
+        "classify-a-decision",
+        "write-a-scenario"
+      ],
+      "misconceptions": [
+        "Believing architecture is the diagram: it is the decisions, and the diagram only records them.",
+        "Believing a good architecture maximises every quality: they conflict, so it chooses.",
+        "Believing the architect decides everything up front: decisions that are cheap to undo can wait."
+      ],
+      "sequence": [
+        "Assumes cs-basics and python-for-data-analysis (reading short Python).",
+        "Start with two decisions on one project: a variable name and the shape of a public data format; compare the cost of changing each.",
+        "Architecture as the decisions that are expensive to change.",
+        "Quality attributes: performance, availability, security, modifiability, testability and others, and their conflicts (encryption costs time).",
+        "A scenario with a number: 'when 1,000 users order at once, 99% of orders complete in 2 s'.",
+        "Reversibility: choose carefully and early only what is hard to reverse.",
+        "Relation to System Design: that course sizes systems for load; this one shapes the code and the boundaries."
+      ],
+      "examples": [
+        "Renaming a local variable touches one file; changing the field name in a public API touches every client.",
+        "Scenario: source = customer, stimulus = 1,000 simultaneous orders, artefact = checkout, environment = normal operation, response = orders accepted, measure = 99% within 2 s.",
+        "Adding encryption on every message improves security and costs latency."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A line from cheap to costly to change with decisions placed along it.",
+          "learnerAction": "Drag a decision to where you think it belongs.",
+          "placement": "reversibility"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A scenario template with six labelled slots.",
+          "learnerAction": "Fill the slots for a given requirement.",
+          "placement": "scenario"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "write-a-scenario",
+          "sample": "How many parts does a quality attribute scenario have (source, stimulus, artefact, environment, response, response measure)?",
+          "answer": "6"
+        },
+        {
+          "kind": "choice",
+          "targets": "classify-a-decision",
+          "sample": "Which decision is hardest to reverse once clients depend on it?",
+          "answer": "The shape of a public API",
+          "choices": [
+            "The name of a local variable",
+            "The shape of a public API",
+            "The indentation style",
+            "The name of a private helper"
+          ]
+        },
+        {
+          "kind": "self",
+          "targets": "classify-a-decision",
+          "sample": "Recall in a sentence why 'it should be fast' is not an architectural requirement yet.",
+          "answer": "It has no measure, so it cannot be tested or traded against other qualities."
+        }
+      ],
+      "sourceIds": [
+        "iso-25010",
+        "azure-arch-guide",
+        "fowler-articles",
+        "arc42"
+      ],
+      "historyNotes": [
+        "ISO/IEC 25010 first appeared in 2011 and listed eight product quality characteristics; a revision was published in 2023."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "coupling-and-cohesion",
+      "moduleId": "why-structure-matters",
+      "title": "Coupling and cohesion",
+      "objective": "Count dependencies between modules, recognise high and low cohesion in code, and name the smells that show a boundary in the wrong place.",
+      "prerequisiteLessonIds": [
+        "what-architecture-decides"
+      ],
+      "concepts": [
+        {
+          "id": "coupling",
+          "title": "Coupling",
+          "summary": "How much one module must know about, or change with, another."
+        },
+        {
+          "id": "cohesion",
+          "title": "Cohesion",
+          "summary": "How closely the parts of a module belong together; a cohesive module has one purpose."
+        },
+        {
+          "id": "dependency-count",
+          "title": "Dependency count",
+          "summary": "If every one of n modules depends on every other, there are n(n-1)/2 pairs, so 10 modules have 45."
+        },
+        {
+          "id": "change-smells",
+          "title": "Change smells",
+          "summary": "Shotgun surgery means one change edits many modules, and feature envy means a method uses another class's data more than its own."
+        }
+      ],
+      "skills": [
+        "count-dependencies",
+        "name-a-smell"
+      ],
+      "misconceptions": [
+        "Believing less code means less coupling.",
+        "Believing a utilities module is cohesive because everything in it is 'helpful'.",
+        "Believing zero coupling is the goal: modules must communicate."
+      ],
+      "sequence": [
+        "Assumes what-architecture-decides.",
+        "Count: 10 modules, each linked to every other, give 45 links; a hub with 9 spokes gives 9.",
+        "Coupling kinds, from tight to loose: shared internals, shared global data, control flags, passed data, messages.",
+        "Cohesion: a class that formats invoices and also sends email has two reasons to change.",
+        "Show a Python function that reaches through three objects (a.b.c.d) and what a change to c does.",
+        "Smells: shotgun surgery, feature envy, god class.",
+        "Make a boundary: move behaviour next to the data it uses."
+      ],
+      "examples": [
+        "10 modules, all pairs linked: 10 x 9 / 2 = 45. The same 10 modules around one hub: 9.",
+        "A price-format change that edits four modules is shotgun surgery.",
+        "order.customer.address.country reaches through three objects; if address changes, every caller breaks."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Ten modules as nodes with links; a toggle between all-to-all and hub arrangements shows the link count.",
+          "learnerAction": "Drag nodes and toggle the arrangement.",
+          "placement": "dependency count"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A class with methods and the fields each uses, drawn as a matrix.",
+          "learnerAction": "Move a method to another class.",
+          "placement": "cohesion"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "count-dependencies",
+          "sample": "Ten modules each depend directly on every other module. How many distinct pairs of modules are linked?",
+          "answer": "45"
+        },
+        {
+          "kind": "choice",
+          "targets": "name-a-smell",
+          "sample": "Changing the currency format forces edits in four modules. Which smell is this?",
+          "answer": "Shotgun surgery",
+          "choices": [
+            "Feature envy",
+            "Shotgun surgery",
+            "God class",
+            "Dead code"
+          ]
+        },
+        {
+          "kind": "choice",
+          "targets": "name-a-smell",
+          "sample": "Which statement describes high cohesion?",
+          "answer": "The parts of a module all serve one purpose",
+          "choices": [
+            "The module imports many others",
+            "The parts of a module all serve one purpose",
+            "The module is large",
+            "The module has no tests"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "fowler-articles",
+        "parnas-1972",
+        "azure-arch-guide"
+      ],
+      "historyNotes": [
+        "Larry Constantine described coupling and cohesion in the 1960s and they were set out in Stevens, Myers and Constantine's 1974 paper on structured design."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "hiding-decisions",
+      "moduleId": "why-structure-matters",
+      "title": "Hiding decisions behind interfaces",
+      "objective": "Choose module boundaries by the decisions they hide, and say which changes an interface lets you make without breaking callers.",
+      "prerequisiteLessonIds": [
+        "coupling-and-cohesion"
+      ],
+      "concepts": [
+        {
+          "id": "information-hiding",
+          "title": "Information hiding",
+          "summary": "Each module conceals one design decision that may change, behind an interface that does not reveal it."
+        },
+        {
+          "id": "interface",
+          "title": "Interface",
+          "summary": "What callers may rely on; everything else is implementation and may change."
+        },
+        {
+          "id": "leaky-abstraction",
+          "title": "Leaky abstraction",
+          "summary": "An interface that exposes an implementation detail, so callers come to depend on it."
+        }
+      ],
+      "skills": [
+        "trace-a-call",
+        "spot-a-leak"
+      ],
+      "misconceptions": [
+        "Believing modules should follow the order of the program's steps, which was the decomposition Parnas argued against.",
+        "Believing private means hidden in Python: a leading underscore is a convention.",
+        "Believing an interface is only a list of method names, when it includes behaviour such as ordering and errors."
+      ],
+      "sequence": [
+        "Assumes coupling-and-cohesion.",
+        "Parnas's 1972 comparison: decomposition by processing steps versus by hidden decisions, when the data format changed.",
+        "A small Python stack with push and pop: its list is a hidden decision.",
+        "Change the list to another structure without touching callers.",
+        "A leak: a caller that writes len(stack.items) breaks the day the field is renamed.",
+        "What belongs in an interface: operations, ordering, errors and performance promises.",
+        "Applying it: a module per decision likely to change (storage, format, pricing rule)."
+      ],
+      "examples": [
+        "Stack with _items: push 1, 2, 3, pop, then pop prints 2.",
+        "A caller using stack._items[0] breaks if the stack switches to a different structure.",
+        "A pricing rule module hides how discounts are computed from the checkout."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Two decompositions of the same program, by step and by hidden decision, with a changed requirement highlighting which modules must change.",
+          "learnerAction": "Choose the change.",
+          "placement": "Parnas comparison"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A module drawn as a box with a thin interface on the surface and the hidden decision inside.",
+          "learnerAction": "Swap the hidden decision.",
+          "placement": "interface"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "code-run-python",
+          "targets": "trace-a-call",
+          "sample": "class Stack: __init__ sets self._items = []; push appends to it; pop returns self._items.pop(). After s = Stack(); s.push(1); s.push(2); s.push(3); s.pop(), what does print(s.pop()) output?",
+          "answer": "2"
+        },
+        {
+          "kind": "choice",
+          "targets": "spot-a-leak",
+          "sample": "A caller reads stack._items[0]. Why is that a problem?",
+          "answer": "It depends on an implementation detail that may change",
+          "choices": [
+            "It is slower",
+            "It depends on an implementation detail that may change",
+            "It changes the stack",
+            "It needs a new import"
+          ]
+        },
+        {
+          "kind": "self",
+          "targets": "spot-a-leak",
+          "sample": "Recall what Parnas said a module should hide.",
+          "answer": "A design decision that is difficult or likely to change."
+        }
+      ],
+      "sourceIds": [
+        "parnas-1972",
+        "python-data-model",
+        "fowler-articles"
+      ],
+      "historyNotes": [
+        "David Parnas's paper appeared in Communications of the ACM in December 1972."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "principles-as-heuristics",
+      "moduleId": "why-structure-matters",
+      "title": "Principles as heuristics",
+      "objective": "Apply the single-responsibility, open-closed, Liskov, interface-segregation and dependency-inversion principles as rules of thumb, and see where applying them mechanically does harm.",
+      "prerequisiteLessonIds": [
+        "hiding-decisions"
+      ],
+      "concepts": [
+        {
+          "id": "srp",
+          "title": "Single responsibility",
+          "summary": "A module should have one reason to change."
+        },
+        {
+          "id": "lsp",
+          "title": "Liskov substitution",
+          "summary": "Code that works with a base type must keep working when given a subtype, which means the subtype must honour the base type's behaviour."
+        },
+        {
+          "id": "dip",
+          "title": "Dependency inversion",
+          "summary": "High-level code depends on an abstraction that it owns, and low-level code implements that abstraction."
+        },
+        {
+          "id": "yagni-dry",
+          "title": "YAGNI and DRY",
+          "summary": "Do not build for needs you do not have, and do not duplicate knowledge, remembering that code that merely looks alike is not always the same knowledge."
+        }
+      ],
+      "skills": [
+        "detect-an-lsp-violation",
+        "apply-dip"
+      ],
+      "misconceptions": [
+        "Believing the principles are laws: they are heuristics that trade against simplicity.",
+        "Believing a Square is a Rectangle in code because it is in geometry.",
+        "Removing every duplication, even where two pieces of code change for different reasons."
+      ],
+      "sequence": [
+        "Assumes hiding-decisions.",
+        "The five principles in one line each, with the person who named them: Martin gathered them and Feathers made the acronym SOLID.",
+        "Liskov in code: Square(Rectangle) that sets both sides in set_width; stretch(r) sets width 5 and height 2 and returns the area; a Rectangle gives 10 and a Square gives 4.",
+        "Dependency inversion: checkout depends on a Notifier that it defines, and email and SMS implement it.",
+        "YAGNI and the rule of three: wait for a third repetition before abstracting.",
+        "Misuse: an interface per class, abstraction before need."
+      ],
+      "examples": [
+        "stretch(Rectangle(1,1)) returns 10 and stretch(Square(1)) returns 4, so Square cannot stand in for Rectangle.",
+        "Checkout calls notifier.send(); swapping an email notifier for an SMS notifier needs no change to checkout.",
+        "Two functions that format dates in similar ways for invoices and logs may deserve to stay separate if they change for different reasons."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Class diagram of Rectangle and Square with a method call sequence that gives different areas.",
+          "learnerAction": "Switch the object passed to stretch.",
+          "placement": "LSP"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "Before and after diagrams of checkout depending on email directly and depending on an abstraction.",
+          "learnerAction": "Toggle the arrow directions.",
+          "placement": "DIP"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "code-run-python",
+          "targets": "detect-an-lsp-violation",
+          "sample": "A Rectangle has set_width, set_height and area (w x h). Square subclasses it and its setters set both sides. After r = Square(1); r.set_width(5); r.set_height(2), what does print(r.area()) output?",
+          "answer": "4"
+        },
+        {
+          "kind": "choice",
+          "targets": "apply-dip",
+          "sample": "In dependency inversion, who owns the abstraction that checkout depends on?",
+          "answer": "The high-level code",
+          "choices": [
+            "The low-level code",
+            "The high-level code",
+            "The database",
+            "The framework"
+          ]
+        },
+        {
+          "kind": "choice",
+          "targets": "detect-an-lsp-violation",
+          "sample": "A class has to change when billing rules change and when report layout changes. Which principle does it break?",
+          "answer": "Single responsibility",
+          "choices": [
+            "Open-closed",
+            "Single responsibility",
+            "Interface segregation",
+            "Liskov substitution"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "python-data-model",
+        "fowler-articles",
+        "azure-arch-guide"
+      ],
+      "historyNotes": [
+        "Barbara Liskov introduced the substitution idea in a 1987 keynote; Liskov and Wing formalised it in 1994. The SOLID acronym was coined by Michael Feathers around 2004 for principles collected by Robert Martin."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "composition-over-inheritance",
+      "moduleId": "building-blocks",
+      "title": "Composition and polymorphism",
+      "objective": "Choose between inheritance and composition, and trace a polymorphic call through a list of objects.",
+      "prerequisiteLessonIds": [
+        "principles-as-heuristics"
+      ],
+      "concepts": [
+        {
+          "id": "polymorphism",
+          "title": "Polymorphism",
+          "summary": "Calling the same method on different objects and having each do its own work."
+        },
+        {
+          "id": "composition",
+          "title": "Composition",
+          "summary": "Building behaviour by holding other objects and delegating to them."
+        },
+        {
+          "id": "combinatorial-explosion",
+          "title": "Subclass explosion",
+          "summary": "With 3 transports and 3 payload formats, inheritance needs 9 classes, composition needs 3 + 3 = 6."
+        }
+      ],
+      "skills": [
+        "trace-polymorphism",
+        "count-classes"
+      ],
+      "misconceptions": [
+        "Believing inheritance is the main way to reuse code.",
+        "Believing an is-a sentence in English proves an inheritance relationship works in code.",
+        "Believing polymorphism needs inheritance: in Python any object with the method works."
+      ],
+      "sequence": [
+        "Assumes principles-as-heuristics: Liskov.",
+        "Polymorphism by example: a list of Rect and Tri, each with area().",
+        "Inheritance hierarchies grow when two dimensions vary: transports and formats.",
+        "Composition: a Sender holds a transport and a formatter.",
+        "Protocols and duck typing in Python.",
+        "Rule of thumb: inherit for substitutable specialisation, compose for reuse.",
+        "Frameworks that force inheritance."
+      ],
+      "examples": [
+        "sum(s.area() for s in [Rect(2,3), Tri(4,5)]) gives 6 + 10.0 = 16.0.",
+        "3 transports x 3 formats = 9 subclasses against 3 + 3 = 6 composed parts.",
+        "A Sender that takes any object with a send method works with a fake in tests."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A two-axis grid of transports and formats showing subclasses on one side and composed parts on the other.",
+          "learnerAction": "Add a transport and watch the count.",
+          "placement": "subclass explosion"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "Objects in a list with arrows to the method each call dispatches to.",
+          "learnerAction": "Step through the loop.",
+          "placement": "polymorphism"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "code-run-python",
+          "targets": "trace-polymorphism",
+          "sample": "Rect(w, h).area() returns w * h and Tri(b, h).area() returns 0.5 * b * h. What does print(sum(s.area() for s in [Rect(2, 3), Tri(4, 5)])) output?",
+          "answer": "16.0"
+        },
+        {
+          "kind": "numeric",
+          "targets": "count-classes",
+          "sample": "There are 3 transports and 3 payload formats. How many classes does composition need if each transport and each format is one class?",
+          "answer": "6"
+        },
+        {
+          "kind": "numeric",
+          "targets": "count-classes",
+          "sample": "With the same 3 transports and 3 formats, how many subclasses does an inheritance hierarchy need to cover every pair?",
+          "answer": "9"
+        }
+      ],
+      "sourceIds": [
+        "python-data-model",
+        "azure-arch-guide",
+        "fowler-articles"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "patterns-that-earn-their-place",
+      "moduleId": "building-blocks",
+      "title": "Patterns that earn their place",
+      "objective": "Recognise strategy, observer, adapter and factory by the problem each solves, and refuse to apply a pattern that has no problem to solve.",
+      "prerequisiteLessonIds": [
+        "composition-over-inheritance"
+      ],
+      "concepts": [
+        {
+          "id": "design-pattern",
+          "title": "Design pattern",
+          "summary": "A named, reusable solution to a recurring design problem, with its trade-offs."
+        },
+        {
+          "id": "observer",
+          "title": "Observer",
+          "summary": "A subject notifies subscribers of change without knowing what they do."
+        },
+        {
+          "id": "strategy-adapter",
+          "title": "Strategy and adapter",
+          "summary": "A strategy swaps an algorithm behind one interface, and an adapter makes one interface look like another."
+        },
+        {
+          "id": "pattern-misuse",
+          "title": "Pattern misuse",
+          "summary": "Applying a pattern before the problem appears adds indirection without benefit."
+        }
+      ],
+      "skills": [
+        "trace-observer",
+        "match-pattern-to-problem"
+      ],
+      "misconceptions": [
+        "Believing patterns are templates to apply everywhere.",
+        "Believing the name of a pattern is its value, when the value is in the problem it names.",
+        "Believing patterns are object-oriented only: first-class functions make several trivial."
+      ],
+      "sequence": [
+        "Assumes composition-over-inheritance.",
+        "Patterns come from architecture: Alexander's pattern language (1977) and the 1994 book by Gamma, Helm, Johnson and Vlissides.",
+        "Observer: attach two subscribers, notify with 5, and the log is [10, 6].",
+        "Strategy: pass a function instead of a subclass.",
+        "Adapter: wrap a third-party client whose method is named differently.",
+        "Factory: one place that decides which class to create.",
+        "When not to: a one-implementation interface with one caller."
+      ],
+      "examples": [
+        "Subject with subscribers lambda x: log.append(x*2) and lambda x: log.append(x+1): notify(5) gives [10, 6].",
+        "A payment-provider SDK with charge_card(cents) adapted to the application's pay(amount) interface.",
+        "Sorting with a key function is the strategy pattern."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Subject and subscribers as boxes with arrows; notify sends a message along each in order.",
+          "learnerAction": "Add and remove subscribers.",
+          "placement": "observer"
+        },
+        {
+          "type": "diagram_choice",
+          "shows": "Four patterns as problem cards to match with solution cards.",
+          "learnerAction": "Match.",
+          "placement": "matching"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "code-run-python",
+          "targets": "trace-observer",
+          "sample": "A Subject keeps a list subs; attach appends a function; notify(x) calls each in order. With log = [] and subscribers lambda x: log.append(x*2) then lambda x: log.append(x+1), what does print(log) output after notify(5)?",
+          "answer": "[10, 6]"
+        },
+        {
+          "kind": "choice",
+          "targets": "match-pattern-to-problem",
+          "sample": "A third-party library offers charge_card(cents) but your code expects pay(amount). Which pattern fits?",
+          "answer": "Adapter",
+          "choices": [
+            "Observer",
+            "Adapter",
+            "Singleton",
+            "Factory"
+          ]
+        },
+        {
+          "kind": "choice",
+          "targets": "match-pattern-to-problem",
+          "sample": "Several parts of the program must react whenever an order changes state, and the order should not know about them. Which pattern fits?",
+          "answer": "Observer",
+          "choices": [
+            "Observer",
+            "Adapter",
+            "Strategy",
+            "Decorator"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "fowler-articles",
+        "python-data-model",
+        "azure-arch-guide"
+      ],
+      "historyNotes": [
+        "Christopher Alexander's A Pattern Language appeared in 1977; Beck and Cunningham proposed patterns for programming in 1987; Design Patterns (Gamma, Helm, Johnson, Vlissides) was published in 1994 and describes 23 patterns."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "domain-modelling",
+      "moduleId": "building-blocks",
+      "title": "Domain modelling",
+      "objective": "Model a business domain with entities, value objects, aggregates and bounded contexts, using the language the business uses.",
+      "prerequisiteLessonIds": [
+        "patterns-that-earn-their-place"
+      ],
+      "concepts": [
+        {
+          "id": "ubiquitous-language",
+          "title": "Ubiquitous language",
+          "summary": "One vocabulary shared by developers and domain experts, used in the conversation and in the code."
+        },
+        {
+          "id": "entity-value",
+          "title": "Entity and value object",
+          "summary": "An entity is identified by an identity that persists as its data changes, and a value object is defined entirely by its data."
+        },
+        {
+          "id": "aggregate",
+          "title": "Aggregate",
+          "summary": "A cluster of objects changed together through one root, which protects an invariant such as 'an order's lines sum to its total'."
+        },
+        {
+          "id": "bounded-context",
+          "title": "Bounded context",
+          "summary": "A boundary within which a term has one meaning, since 'customer' may mean different things in sales and in shipping."
+        }
+      ],
+      "skills": [
+        "tell-entity-from-value",
+        "find-the-boundary"
+      ],
+      "misconceptions": [
+        "Believing the model is a database schema.",
+        "Believing one model of 'customer' can serve the whole company.",
+        "Believing every noun deserves its own class."
+      ],
+      "sequence": [
+        "Assumes composition-over-inheritance.",
+        "Start from words the business uses: order, line, shipment, refund.",
+        "Value objects: Money(5, 'GBP') equals another Money(5, 'GBP'), but not Money(5, 'USD').",
+        "Entities: two orders with identical contents are still different orders.",
+        "Aggregates and invariants: all changes to lines go through Order.",
+        "Bounded contexts: sales sees a customer as a buyer with a credit limit, shipping as an address.",
+        "Relation to the database: persistence is a separate concern.",
+        "Use the domain model to review generated code: do names match the language?"
+      ],
+      "examples": [
+        "frozen dataclass Money(5,'GBP') == Money(5,'GBP') is True and == Money(5,'USD') is False.",
+        "Two orders with the same lines but different ids are different entities.",
+        "Adding a line to an Order must update its total in one method, so no code can leave them inconsistent."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A context map: sales, billing and shipping as regions, each with its own 'customer' box and different fields.",
+          "learnerAction": "Select a context.",
+          "placement": "bounded contexts"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "An Order aggregate with root and lines, showing the invariant.",
+          "learnerAction": "Try to add a line directly and see the violation.",
+          "placement": "aggregate"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "code-run-python",
+          "targets": "tell-entity-from-value",
+          "sample": "With @dataclass(frozen=True) class Money: amount: int; currency: str, what does print(Money(5, 'GBP') == Money(5, 'USD')) output?",
+          "answer": "False"
+        },
+        {
+          "kind": "choice",
+          "targets": "tell-entity-from-value",
+          "sample": "Two orders contain exactly the same lines but have different ids. In domain modelling, are they the same order?",
+          "answer": "No, an entity is identified by its identity, not its data",
+          "choices": [
+            "Yes, the data is identical",
+            "No, an entity is identified by its identity, not its data",
+            "Only if created on the same day",
+            "Only if the customer is the same"
+          ]
+        },
+        {
+          "kind": "choice",
+          "targets": "find-the-boundary",
+          "sample": "'Customer' means a buyer with a credit limit in sales and a delivery address in shipping. What does domain modelling suggest?",
+          "answer": "Separate bounded contexts with their own models",
+          "choices": [
+            "One shared Customer class for all",
+            "Separate bounded contexts with their own models",
+            "Rename it to User",
+            "Store it in one table"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "ddd-reference",
+        "python-data-model",
+        "fowler-articles"
+      ],
+      "historyNotes": [
+        "Eric Evans published Domain-Driven Design in 2003, and his shorter reference summary (2015) is under a Creative Commons licence."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "designing-for-testability",
+      "moduleId": "building-blocks",
+      "title": "Designing for testability",
+      "objective": "Place seams so that code can be tested without its dependencies, and choose the right kind of test double.",
+      "prerequisiteLessonIds": [
+        "domain-modelling"
+      ],
+      "concepts": [
+        {
+          "id": "seam",
+          "title": "Seam",
+          "summary": "A place where behaviour can be replaced without editing the code, such as an argument that supplies a dependency."
+        },
+        {
+          "id": "test-double",
+          "title": "Test double",
+          "summary": "A stand-in for a dependency: a stub returns canned answers, a fake has a working simple implementation and a mock records calls to check them."
+        },
+        {
+          "id": "pure-function",
+          "title": "Pure function",
+          "summary": "A function whose result depends only on its arguments and which changes nothing else, so it needs no setup."
+        },
+        {
+          "id": "test-pyramid",
+          "title": "Test pyramid",
+          "summary": "Many fast unit tests, fewer integration tests and few end-to-end tests."
+        }
+      ],
+      "skills": [
+        "inject-a-dependency",
+        "pick-boundary-cases"
+      ],
+      "misconceptions": [
+        "Believing hard-to-test code needs a better test tool, when it usually needs a better design.",
+        "Believing mocking everything makes tests safe: they then test the mocks.",
+        "Believing coverage percentage shows the tests are good."
+      ],
+      "sequence": [
+        "Assumes domain-modelling and hiding-decisions.",
+        "Hard-to-test code: a function that reads the clock, calls a database and sends email.",
+        "Inject dependencies: register(name, repo) takes a repository; a FakeRepo stores in a list.",
+        "Run it: register('  ada lovelace ', repo) leaves ['Ada Lovelace'] in the fake.",
+        "Pure core, impure shell: separate decisions from effects.",
+        "Boundary cases: for age >= 18, test 17 and 18.",
+        "Why this matters for generated code: tests are the independent check; if the design cannot be tested, it cannot be reviewed cheaply.",
+        "The pyramid and where each double belongs."
+      ],
+      "examples": [
+        "register('  ada lovelace ', FakeRepo()) leaves ['Ada Lovelace'] in the fake's saved list.",
+        "The condition age >= 18 needs two boundary tests, with 17 and with 18.",
+        "A function that returns today's date cannot be tested for 29 February unless the date is passed in."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A code unit with dependencies drawn as plugs; the learner replaces a real plug with a fake.",
+          "learnerAction": "Swap the dependency.",
+          "placement": "seam"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A pyramid with test counts and run times by layer.",
+          "learnerAction": "Hover for speed and cost.",
+          "placement": "pyramid"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "code-run-python",
+          "targets": "inject-a-dependency",
+          "sample": "FakeRepo has saved = [] and save(x) appends x. register(name, repo) calls repo.save(name.strip().title()). After r = FakeRepo(); register('  ada lovelace ', r), what does print(r.saved) output?",
+          "answer": "['Ada Lovelace']"
+        },
+        {
+          "kind": "numeric",
+          "targets": "pick-boundary-cases",
+          "sample": "A rule allows entry when age >= 18. How many boundary test cases does the rule need at the boundary itself (the value just below and the value at the limit)?",
+          "answer": "2"
+        },
+        {
+          "kind": "choice",
+          "targets": "inject-a-dependency",
+          "sample": "A test double that returns canned answers and records nothing is called what?",
+          "answer": "A stub",
+          "choices": [
+            "A mock",
+            "A stub",
+            "A fake",
+            "A spy"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "python-data-model",
+        "fowler-articles",
+        "azure-arch-guide"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "layers-and-ports",
+      "moduleId": "architecture-styles",
+      "title": "Layers and ports",
+      "objective": "Draw the dependency direction in layered and hexagonal designs, and move a framework detail out of the domain.",
+      "prerequisiteLessonIds": [
+        "designing-for-testability"
+      ],
+      "concepts": [
+        {
+          "id": "layered",
+          "title": "Layered architecture",
+          "summary": "Code is grouped into layers such as presentation, application, domain and data, each depending only on the layer below."
+        },
+        {
+          "id": "hexagonal",
+          "title": "Ports and adapters",
+          "summary": "The domain defines ports, which are the interfaces it needs and offers, and adapters connect them to databases, web frameworks and other systems."
+        },
+        {
+          "id": "dependency-rule",
+          "title": "Dependency rule",
+          "summary": "Source-code dependencies point inward, toward the domain, never outward to frameworks."
+        }
+      ],
+      "skills": [
+        "draw-the-direction",
+        "identify-a-violation"
+      ],
+      "misconceptions": [
+        "Believing layers guarantee low coupling when the data layer sits at the bottom and everything depends on its shapes.",
+        "Believing hexagonal means six parts.",
+        "Believing the framework is the architecture."
+      ],
+      "sequence": [
+        "Assumes designing-for-testability and principles-as-heuristics: dependency inversion.",
+        "Layers: top-down calls, strict or relaxed, and the way database shapes leak upward.",
+        "Invert it: the domain owns a Repository port and the database adapter implements it.",
+        "Pass a port into a domain function: total_with_tax(100, lambda: 0.2) returns 120.0.",
+        "Hexagon: left side drives the application (web, CLI, tests), right side is driven (database, mail).",
+        "Dependency rule check: if the domain imports the web framework, the rule is broken.",
+        "Cost: more files and mapping; worth it where the domain is rich or inputs are varied."
+      ],
+      "examples": [
+        "total_with_tax(100, lambda: 0.2) returns 120.0 and a test can pass lambda: 0.0 for 100.0.",
+        "A domain module that imports sqlalchemy breaks the dependency rule.",
+        "Two adapters (HTTP and a command-line tool) drive the same use case through one port."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Concentric rings with domain at the centre, application around it, adapters on the outside, and arrows only pointing inward.",
+          "learnerAction": "Drag a module between rings and see arrows turn red when they point out.",
+          "placement": "dependency rule"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A layered stack with data-layer types leaking upward.",
+          "learnerAction": "Trace a field.",
+          "placement": "leaks"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "single-term",
+          "targets": "draw-the-direction",
+          "sample": "In ports-and-adapters, what do we call the interface the domain defines for something it needs, such as storing orders?",
+          "answer": "port"
+        },
+        {
+          "kind": "code-run-python",
+          "targets": "identify-a-violation",
+          "sample": "total_with_tax(price, rate_port) returns price + price * rate_port(). What does print(total_with_tax(100, lambda: 0.2)) output?",
+          "answer": "120.0"
+        },
+        {
+          "kind": "choice",
+          "targets": "identify-a-violation",
+          "sample": "Which finding breaks the dependency rule?",
+          "answer": "The domain module imports the web framework",
+          "choices": [
+            "The web adapter imports the domain",
+            "The domain module imports the web framework",
+            "The database adapter imports the domain port",
+            "A test imports the domain"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "hexagonal",
+        "azure-arch-guide",
+        "fowler-articles"
+      ],
+      "historyNotes": [
+        "Alistair Cockburn described the hexagonal architecture in 2005; Jeffrey Palermo's onion architecture (2008) and Robert Martin's clean architecture (2012) share the dependency rule."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "monolith-modules-and-microservices",
+      "moduleId": "architecture-styles",
+      "title": "Monolith, modules and microservices",
+      "objective": "Weigh a modular monolith against microservices using team structure, deployment independence and the cost of network calls.",
+      "prerequisiteLessonIds": [
+        "layers-and-ports"
+      ],
+      "concepts": [
+        {
+          "id": "modular-monolith",
+          "title": "Modular monolith",
+          "summary": "One deployable unit whose code is divided into modules with enforced boundaries."
+        },
+        {
+          "id": "microservices",
+          "title": "Microservices",
+          "summary": "Independently deployable services, each owning its data and communicating over the network."
+        },
+        {
+          "id": "conways-law",
+          "title": "Conway's law",
+          "summary": "A system's structure tends to mirror the communication structure of the organisation that builds it."
+        },
+        {
+          "id": "distribution-cost",
+          "title": "Cost of distribution",
+          "summary": "Every call that crosses the network can fail or be slow, and availability multiplies: five 99.9% services in a chain give about 99.5%."
+        }
+      ],
+      "skills": [
+        "compute-chain-availability",
+        "choose-a-style"
+      ],
+      "misconceptions": [
+        "Believing microservices are the modern version of a monolith.",
+        "Believing a monolith is necessarily a mess: it can have strong internal boundaries.",
+        "Believing services give independence if they all share one database."
+      ],
+      "sequence": [
+        "Assumes layers-and-ports. System Design lessons on availability and timeouts are the mechanics behind the costs listed here.",
+        "Three shapes: tangled monolith, modular monolith, microservices.",
+        "What splitting buys: independent deployment, independent scaling, team autonomy.",
+        "What it costs: network failure, data consistency across services, operational overhead; compute 0.999^5 = 0.995.",
+        "Conway's 1968 observation, and the inverse: shape teams to the architecture you want.",
+        "Start with modules: split a module out when a measurable reason appears.",
+        "The shared database trap: services coupled through tables."
+      ],
+      "examples": [
+        "Five services in a chain, each 99.9% available, give 0.999^5 = 99.5%.",
+        "A team of six building a new product does not need ten services.",
+        "Two services reading the same table cannot change its schema independently."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "The same system drawn as a tangled monolith, a modular monolith and services, with team boundaries overlaid.",
+          "learnerAction": "Switch shapes and see the arrows that cross team boundaries.",
+          "placement": "three shapes"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A chain of services with availabilities multiplied along the path.",
+          "learnerAction": "Add a service.",
+          "placement": "availability"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-chain-availability",
+          "sample": "A request passes through five services in sequence, each 99.9% available and independent. To one decimal place, what is the availability of the chain in percent?",
+          "answer": "99.5"
+        },
+        {
+          "kind": "choice",
+          "targets": "choose-a-style",
+          "sample": "A team of six is building a new product with unclear boundaries. Which is the sensible starting point?",
+          "answer": "A modular monolith",
+          "choices": [
+            "Twenty microservices",
+            "A modular monolith",
+            "One shared database for every product",
+            "A separate service per developer"
+          ]
+        },
+        {
+          "kind": "choice",
+          "targets": "choose-a-style",
+          "sample": "Which statement best expresses Conway's law?",
+          "answer": "System structure tends to mirror the organisation's communication structure",
+          "choices": [
+            "Adding people speeds up late projects",
+            "System structure tends to mirror the organisation's communication structure",
+            "Software gets slower as hardware improves",
+            "Every program grows until it can read mail"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "conway-1968",
+        "fowler-articles",
+        "azure-arch-guide",
+        "twelve-factor"
+      ],
+      "historyNotes": [
+        "Melvin Conway's paper 'How Do Committees Invent?' appeared in Datamation in April 1968; the name 'Conway's law' came later. Lewis and Fowler's article defining microservices was published in 2014."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "events-and-messages",
+      "moduleId": "architecture-styles",
+      "title": "Events, commands and messages",
+      "objective": "Tell commands from events, choose between choreography and orchestration, and replay events to rebuild state.",
+      "prerequisiteLessonIds": [
+        "monolith-modules-and-microservices"
+      ],
+      "concepts": [
+        {
+          "id": "command-event",
+          "title": "Command and event",
+          "summary": "A command asks for something to happen and may be refused, and an event records that something happened and cannot be."
+        },
+        {
+          "id": "choreography-orchestration",
+          "title": "Choreography and orchestration",
+          "summary": "In choreography each service reacts to events; in orchestration a coordinator tells each service what to do."
+        },
+        {
+          "id": "event-sourcing",
+          "title": "Event sourcing",
+          "summary": "State is stored as the sequence of events and rebuilt by replaying them."
+        },
+        {
+          "id": "cqrs",
+          "title": "CQRS",
+          "summary": "Separating the model that changes data (commands) from the model that reads it (queries)."
+        }
+      ],
+      "skills": [
+        "classify-a-message",
+        "replay-events"
+      ],
+      "misconceptions": [
+        "Believing events and commands are two names for a message.",
+        "Believing event-driven means no coupling: services are coupled to event shapes.",
+        "Believing eventual consistency is a bug."
+      ],
+      "sequence": [
+        "Assumes monolith-modules-and-microservices. Queue mechanics (delivery, backlog, backpressure) are in System Design: queues-and-event-streams.",
+        "Name by tense: PlaceOrder is a command, OrderPlaced is an event.",
+        "Choreography versus orchestration on an order that needs payment, stock and shipping.",
+        "Event notification versus event-carried state.",
+        "Event sourcing by replay: deposit 50, withdraw 20, deposit 5 gives a balance of 35.",
+        "CQRS: when reads and writes differ so much that one model hurts both.",
+        "Costs: ordering, duplicates, schema versions, harder debugging."
+      ],
+      "examples": [
+        "Replay of deposit 50, withdraw 20 and deposit 5 gives 35.",
+        "OrderPlaced is an event; ReserveStock is a command.",
+        "An orchestrator knows the steps; in choreography nobody does and the flow is only visible in the events."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "An order flow drawn twice: services reacting to each other's events, and a coordinator calling each service.",
+          "learnerAction": "Toggle the style and trace a failure.",
+          "placement": "choreography and orchestration"
+        },
+        {
+          "type": "program_trace",
+          "shows": "A log of events and a balance that updates as the replay pointer moves.",
+          "learnerAction": "Step the pointer.",
+          "placement": "event sourcing"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "choice",
+          "targets": "classify-a-message",
+          "sample": "Which of these names an event?",
+          "answer": "OrderPlaced",
+          "choices": [
+            "PlaceOrder",
+            "OrderPlaced",
+            "ReserveStock",
+            "CancelOrder"
+          ]
+        },
+        {
+          "kind": "numeric",
+          "targets": "replay-events",
+          "sample": "An account's events are deposit 50, withdraw 20, deposit 5, in that order, starting from 0. What is the balance after replay?",
+          "answer": "35"
+        },
+        {
+          "kind": "choice",
+          "targets": "classify-a-message",
+          "sample": "In which style does a central coordinator tell each service what to do?",
+          "answer": "Orchestration",
+          "choices": [
+            "Choreography",
+            "Orchestration",
+            "Event sourcing",
+            "CQRS"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "fowler-articles",
+        "azure-arch-guide",
+        "ddd-reference"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "contracts-and-evolution",
+      "moduleId": "architecture-styles",
+      "title": "Contracts and evolution",
+      "objective": "Classify a change to an interface as compatible or breaking, and plan a change that clients can adopt gradually.",
+      "prerequisiteLessonIds": [
+        "events-and-messages"
+      ],
+      "concepts": [
+        {
+          "id": "contract",
+          "title": "Contract",
+          "summary": "What a provider promises and a consumer relies on: fields, types, meaning, errors and limits."
+        },
+        {
+          "id": "breaking-change",
+          "title": "Breaking change",
+          "summary": "A change that makes a correct existing client fail: removing or renaming a field, changing a type, or tightening validation."
+        },
+        {
+          "id": "tolerant-reader",
+          "title": "Tolerant reader",
+          "summary": "A consumer that ignores fields it does not know and defaults ones that are missing."
+        },
+        {
+          "id": "expand-contract",
+          "title": "Expand then contract",
+          "summary": "Add the new form alongside the old, move clients across, then remove the old."
+        }
+      ],
+      "skills": [
+        "classify-a-change",
+        "read-tolerantly"
+      ],
+      "misconceptions": [
+        "Believing adding a field is always safe: a strict consumer may reject it.",
+        "Believing the contract is only the schema.",
+        "Believing a version number removes the need to plan migration."
+      ],
+      "sequence": [
+        "Assumes events-and-messages. Version naming follows the Semantic Versioning rules in Git and Version Control: tags-versions-and-messages.",
+        "Provider and consumer: who is hurt by a change.",
+        "Compatible changes: adding an optional field, adding an endpoint; breaking ones: renaming, removing, changing a type, requiring a new field.",
+        "Tolerant reader in Python: json.loads then d.get('qty', 1) * d['price'] ignores the extra field.",
+        "Expand and contract: migration in three releases.",
+        "Consumer-driven contracts: consumers publish the parts they use.",
+        "Events as contracts: old events live for ever in a log."
+      ],
+      "examples": [
+        "read('{\"price\": 4, \"extra\": true}') with qty defaulting to 1 returns 4.",
+        "Renaming 'qty' to 'quantity' breaks every client; adding 'quantity' beside 'qty', migrating clients, then removing 'qty' does not.",
+        "Making 'currency' a required field breaks clients that omit it."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A provider and three consumers with the fields each uses; changing a field turns the affected consumers red.",
+          "learnerAction": "Rename, add or remove a field.",
+          "placement": "impact"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A timeline with three releases: expand, migrate, contract.",
+          "learnerAction": "Move a client across.",
+          "placement": "expand and contract"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "choice",
+          "targets": "classify-a-change",
+          "sample": "Which change is backwards compatible for existing clients?",
+          "answer": "Adding an optional field to a response",
+          "choices": [
+            "Renaming a field",
+            "Removing a field",
+            "Adding an optional field to a response",
+            "Requiring a new field in requests"
+          ]
+        },
+        {
+          "kind": "code-run-python",
+          "targets": "read-tolerantly",
+          "sample": "With import json and def read(msg): d = json.loads(msg); return d.get('qty', 1) * d['price'], what does print(read('{\"price\": 4, \"extra\": true}')) output?",
+          "answer": "4"
+        },
+        {
+          "kind": "choice",
+          "targets": "classify-a-change",
+          "sample": "What is the safe order for renaming a field with expand and contract?",
+          "answer": "Add the new name, migrate clients, then remove the old name",
+          "choices": [
+            "Rename it and tell clients",
+            "Add the new name, migrate clients, then remove the old name",
+            "Remove the old name first",
+            "Wait for clients to fail"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "azure-arch-guide",
+        "fowler-articles",
+        "twelve-factor"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "c4-views",
+      "moduleId": "communicating-and-evolving",
+      "title": "Showing architecture with C4",
+      "objective": "Choose the right C4 level for an audience and draw a diagram whose every box and arrow is labelled.",
+      "prerequisiteLessonIds": [
+        "contracts-and-evolution"
+      ],
+      "concepts": [
+        {
+          "id": "c4-levels",
+          "title": "C4 levels",
+          "summary": "Context, containers, components and code: four zoom levels, each answering a different question for a different audience."
+        },
+        {
+          "id": "container",
+          "title": "Container",
+          "summary": "A separately runnable unit such as a web application, a mobile app or a database; it is not a Docker container."
+        },
+        {
+          "id": "diagram-hygiene",
+          "title": "Diagram hygiene",
+          "summary": "Every element has a name, a type and a short description, every arrow says what it carries, and a key explains shapes and colours."
+        }
+      ],
+      "skills": [
+        "pick-a-level",
+        "critique-a-diagram"
+      ],
+      "misconceptions": [
+        "Believing one diagram can serve everyone.",
+        "Believing a container means a Docker container.",
+        "Believing an unlabelled arrow means 'calls'."
+      ],
+      "sequence": [
+        "Assumes monolith-modules-and-microservices and domain-modelling.",
+        "Why diagrams: shared understanding, onboarding, review.",
+        "Level 1, system context: the system as one box, with its users and neighbouring systems.",
+        "Level 2, containers: web app, API, database, message broker.",
+        "Level 3, components inside one container; level 4, code (rarely drawn by hand).",
+        "Labels on every arrow: 'reads order data over SQL'.",
+        "Supplementary views: dynamic (a sequence) and deployment (where containers run).",
+        "Keep diagrams as text or code so they can be reviewed."
+      ],
+      "examples": [
+        "A diagram showing customers, the shop system and the payment provider is level 1.",
+        "A diagram showing a web app, an API and a database is level 2.",
+        "An unlabelled arrow between two boxes leaves the reader to guess whether it is a request, an event or a copy."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A shop system drawn at levels 1 to 3 with a slider between them.",
+          "learnerAction": "Zoom between levels.",
+          "placement": "levels"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A diagram with deliberately missing labels and a key.",
+          "learnerAction": "Mark the missing labels.",
+          "placement": "hygiene"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "pick-a-level",
+          "sample": "How many levels does the C4 model define?",
+          "answer": "4"
+        },
+        {
+          "kind": "choice",
+          "targets": "pick-a-level",
+          "sample": "Which C4 level shows people and neighbouring systems around the system as one box?",
+          "answer": "System context",
+          "choices": [
+            "System context",
+            "Containers",
+            "Components",
+            "Code"
+          ]
+        },
+        {
+          "kind": "choice",
+          "targets": "critique-a-diagram",
+          "sample": "In C4, what is a container?",
+          "answer": "A separately runnable unit such as a web app or a database",
+          "choices": [
+            "A Docker image only",
+            "A separately runnable unit such as a web app or a database",
+            "A class",
+            "A server rack"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "c4",
+        "arc42",
+        "azure-arch-guide"
+      ],
+      "historyNotes": [
+        "Simon Brown created the C4 model in the 2000s as a response to unstructured box-and-line diagrams; it is described at c4model.com."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "trade-offs-and-decision-records",
+      "moduleId": "communicating-and-evolving",
+      "title": "Trade-offs and decision records",
+      "objective": "Compare options with a weighted matrix and its limits, and record a decision in a short ADR that a later reader can use.",
+      "prerequisiteLessonIds": [
+        "c4-views"
+      ],
+      "concepts": [
+        {
+          "id": "trade-off-analysis",
+          "title": "Trade-off analysis",
+          "summary": "Comparing options against the quality attributes that matter, with weights that reflect the requirements."
+        },
+        {
+          "id": "adr",
+          "title": "Architecture decision record",
+          "summary": "A short document of one decision: title, status, context, decision and consequences."
+        },
+        {
+          "id": "fitness-function",
+          "title": "Fitness function",
+          "summary": "An automated check that a chosen property still holds, such as 'no module in domain imports the web framework'."
+        }
+      ],
+      "skills": [
+        "score-options",
+        "write-an-adr-field"
+      ],
+      "misconceptions": [
+        "Believing the matrix gives the answer: it makes assumptions visible, and the weights are the argument.",
+        "Believing decisions need no record because the code shows them.",
+        "Believing a decision is final: records have a status and can be superseded."
+      ],
+      "sequence": [
+        "Assumes what-architecture-decides and c4-views.",
+        "Two options, three criteria, weights 0.5, 0.3 and 0.2.",
+        "Option A scores 8, 5 and 6, giving 4 + 1.5 + 1.2 = 6.7; option B scores 6, 9 and 9, giving 3 + 2.7 + 1.8 = 7.5.",
+        "Check sensitivity: change the weights and see whether the answer flips.",
+        "The ADR template and statuses: proposed, accepted, deprecated, superseded.",
+        "Context explains the forces; consequences name both gains and costs.",
+        "Fitness functions turn a decision into a test.",
+        "Using the record: review a proposed change, human or generated, against past decisions."
+      ],
+      "examples": [
+        "A scores 0.5 x 8 + 0.3 x 5 + 0.2 x 6 = 6.7 and B scores 0.5 x 6 + 0.3 x 9 + 0.2 x 9 = 7.5.",
+        "An ADR 'Use PostgreSQL for orders' with status accepted and consequences 'we must manage backups'.",
+        "A test that fails the build when domain code imports the web framework is a fitness function."
+      ],
+      "figures": [
+        {
+          "type": "table",
+          "shows": "A weighted decision matrix with sliders for the weights and live totals.",
+          "learnerAction": "Move the weights and watch the ranking.",
+          "placement": "matrix"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "An ADR template with the five fields and an example.",
+          "learnerAction": "Match sentences to fields.",
+          "placement": "ADR"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "score-options",
+          "sample": "Weights are performance 0.5, cost 0.3, simplicity 0.2. Option A scores 8, 5 and 6 on them. What is A's weighted total?",
+          "answer": "6.7"
+        },
+        {
+          "kind": "numeric",
+          "targets": "score-options",
+          "sample": "Option B scores 6, 9 and 9 on the same criteria and weights. What is B's weighted total?",
+          "answer": "7.5"
+        },
+        {
+          "kind": "choice",
+          "targets": "write-an-adr-field",
+          "sample": "An ADR is replaced by a later one. Which status does the old record take?",
+          "answer": "Superseded",
+          "choices": [
+            "Proposed",
+            "Accepted",
+            "Superseded",
+            "Draft"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "nygard-adr",
+        "adr-github",
+        "arc42",
+        "fowler-articles"
+      ],
+      "historyNotes": [
+        "Michael Nygard proposed the architecture decision record in a 2011 post."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "evolving-a-system",
+      "moduleId": "communicating-and-evolving",
+      "title": "Evolving a running system",
+      "objective": "Pay down technical debt deliberately, replace parts of a system gradually with the strangler pattern, and measure which modules are unstable.",
+      "prerequisiteLessonIds": [
+        "trade-offs-and-decision-records"
+      ],
+      "concepts": [
+        {
+          "id": "technical-debt",
+          "title": "Technical debt",
+          "summary": "A shortcut taken to deliver sooner, which accrues interest as every later change costs more until it is repaid."
+        },
+        {
+          "id": "strangler",
+          "title": "Strangler fig pattern",
+          "summary": "Route requests to new code piece by piece until the old system has no work left and can be removed."
+        },
+        {
+          "id": "instability",
+          "title": "Instability",
+          "summary": "I = Ce / (Ca + Ce), where Ce counts outgoing dependencies and Ca incoming ones; a module with many dependents should be stable."
+        },
+        {
+          "id": "refactoring",
+          "title": "Refactoring",
+          "summary": "Changing structure without changing behaviour, protected by tests."
+        }
+      ],
+      "skills": [
+        "compute-instability",
+        "plan-a-migration"
+      ],
+      "misconceptions": [
+        "Believing a rewrite is cheaper than gradual change.",
+        "Believing all debt is bad: some is a sound loan.",
+        "Believing refactoring is a separate project, when it is done in small steps with each feature."
+      ],
+      "sequence": [
+        "Assumes trade-offs-and-decision-records and designing-for-testability.",
+        "Debt as a metaphor: Cunningham's 1992 use of it.",
+        "Interest: a hack that adds an hour to every later change.",
+        "Strangler: put a facade in front, route one slice at a time, retire the old.",
+        "Measure with dependencies: a module with 3 dependents and 1 dependency has I = 1/(3+1) = 0.25, so it is stable.",
+        "Refactor under tests; characterisation tests for code without any.",
+        "Architecture erosion and fitness functions as guards."
+      ],
+      "examples": [
+        "A module with Ca = 3 and Ce = 1 has I = 1 / (3 + 1) = 0.25.",
+        "Migrating checkout first: the facade sends /checkout to the new service and everything else to the old.",
+        "A characterisation test records what the code does today before changing it."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "An old system and a new one behind a router; slices turn from old to new as the learner moves them.",
+          "learnerAction": "Move slices across.",
+          "placement": "strangler"
+        },
+        {
+          "type": "graph_plot",
+          "shows": "Modules plotted by instability and abstraction.",
+          "learnerAction": "Select a module.",
+          "placement": "instability"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-instability",
+          "sample": "A module has 3 incoming dependencies (Ca) and 1 outgoing (Ce). What is its instability Ce / (Ca + Ce)?",
+          "answer": "0.25"
+        },
+        {
+          "kind": "choice",
+          "targets": "plan-a-migration",
+          "sample": "In the strangler pattern, how is the old system replaced?",
+          "answer": "Piece by piece, by routing slices to new code",
+          "choices": [
+            "All at once on a launch day",
+            "Piece by piece, by routing slices to new code",
+            "By deleting it first",
+            "By running both for ever"
+          ]
+        },
+        {
+          "kind": "self",
+          "targets": "plan-a-migration",
+          "sample": "Recall why a characterisation test is written before refactoring code that has no tests.",
+          "answer": "It records current behaviour so that unintended changes can be detected."
+        }
+      ],
+      "sourceIds": [
+        "fowler-articles",
+        "nygard-adr",
+        "azure-arch-guide"
+      ],
+      "historyNotes": [
+        "Ward Cunningham used the debt metaphor in a 1992 OOPSLA experience report; Martin Fowler described the strangler fig application in 2004, after fig trees he saw in Australia."
+      ],
+      "estimatedMinutes": 13
+    }
+  ],
+  "courseCheck": "A mixed check: classify decisions and changes; count dependencies and classes; trace small Python programs that show substitution, observers, value equality, injection and replay; compute chain availability and weighted scores; choose a C4 level; and pick a style for a described team and product.",
+  "platformNeeds": [
+    "A python_execution figure with preloaded multi-class code and a step-by-step object diagram (program_trace shows variables, but these lessons need object references and method dispatch).",
+    "A dependency_graph figure: modules as nodes, arrows as dependencies, coloured red when a rule is broken (dependency rule, layers), with drag-to-move between rings. The svg_figure fallback is a fixed diagram with a switch between before and after.",
+    "A c4_diagram figure with a zoom slider between levels (svg_figure with switchable views can do this by hand).",
+    "Python runs already cover code-run questions, but several samples here define classes in the prompt, so a longer prompt-with-code layout would help writers."
+  ],
+  "unverified": [
+    "No external site could be opened in this session (network blocked), so every source has verified false. The C4 model licence, the adr.github.io licence, the arc42 licence and the DDD Reference licence (CC BY 4.0) were recalled, not checked.",
+    "All Python outputs in the sample questions were run locally on Python 3.13.",
+    "The ISO/IEC 25010 detail was given from memory: eight characteristics in 2011 and a revision in 2023. The writer should not state counts without checking.",
+    "History from memory: Parnas December 1972; Conway April 1968; Liskov 1987 and Liskov-Wing 1994; SOLID acronym by Feathers about 2004; Alexander 1977; Beck and Cunningham 1987; Gang of Four 1994 with 23 patterns; Cockburn 2005; Palermo 2008; Martin 2012; Evans 2003 and the 2015 reference; Lewis and Fowler 2014; Nygard 2011; Cunningham 1992; Fowler strangler fig 2004; Stevens, Myers and Constantine 1974.",
+    "The instability metric I = Ce / (Ca + Ce) is Martin's; the notation Ca and Ce was written from memory.",
+    "The Notion Architecture curriculum was read for scope: its Phase 2 (modularity, interfaces, principles, DDD, patterns, styles), parts of Phase 0 (decisions, quality attributes, C4 and ADRs) and 7.3 to 7.5 (review of generated code) are covered here; its security, agents, games and embedded phases belong to other courses."
+  ]
+}

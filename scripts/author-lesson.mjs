@@ -9,13 +9,15 @@
  * and questions as a pool to reuse, and the lesson's format with every learner-facing string
  * blanked, so the author sees the shape of valid data but none of the old prose.
  *
- * The output is { "lesson": <complete lesson object>, "questions": [<question objects>] }. Apply
+ * The output is { "lesson": <complete lesson object>, "questions": [<question objects>] }, plus
+ * "flashcards" and "activities" for a lesson written from a curriculum. Apply
  * replaces the lesson, adds or replaces the listed questions (a reused id keeps learner history),
  * and keeps questions the lesson no longer uses so old attempts still resolve.
  */
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { PRIMARY_VOICE } from "./voice-rewrite.mjs";
+import { coursePrefix } from "./scaffold-course.mjs";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
 const [command, course, lessonId] = process.argv.slice(2);
@@ -49,7 +51,57 @@ function collectQuestionIds(value, found = new Set()) {
   return found;
 }
 
-if (command === "brief") {
+const curriculumFile = path.join(ROOT, "docs", "curricula", `${course}.json`);
+
+/**
+ * A course scaffolded from docs/curricula has no old lesson to show, so its brief carries the
+ * lesson's plan from the curriculum instead (bundle lesson i is curriculum lesson i), with the
+ * concept ids as the bundle spells them. The format is learnt from
+ * docs/writing-calibration/new-course/example-lesson.json, so it is not repeated per lesson.
+ */
+function curriculumBrief() {
+  const curriculum = JSON.parse(readFileSync(curriculumFile, "utf8"));
+  const plan = curriculum.lessons[index];
+  const conceptIds = Object.fromEntries(
+    plan.concepts.map((concept, i) => [concept.id, lesson.conceptIds[i] ?? concept.id]),
+  );
+  const done = (other) => other.steps.length > 0;
+  return {
+    course: {
+      id: course,
+      title: bundle.course.title,
+      voice: curriculum.voice,
+      audience: curriculum.audience,
+      prerequisiteCourses: curriculum.prerequisites,
+      idPrefix: coursePrefix(course),
+    },
+    lesson: {
+      id: lesson.id,
+      position: `${index + 1} of ${bundle.lessons.length}`,
+      title: lesson.title,
+      conceptIds: lesson.conceptIds,
+      taughtSkills: lesson.taughtSkills,
+      plan: {
+        ...plan,
+        concepts: plan.concepts.map((concept) => ({ ...concept, id: conceptIds[concept.id] })),
+      },
+      sources: bundle.sources.filter((s) => lesson.sourceIds.includes(s.id)),
+    },
+    previousLesson: bundle.lessons[index - 1]
+      ? { id: bundle.lessons[index - 1].id, title: bundle.lessons[index - 1].title, written: done(bundle.lessons[index - 1]) }
+      : null,
+    nextLesson: bundle.lessons[index + 1]
+      ? { id: bundle.lessons[index + 1].id, title: bundle.lessons[index + 1].title, objective: bundle.lessons[index + 1].orientation }
+      : null,
+    otherCourseLessons: bundle.lessons.map((other) => `${other.id}: ${other.title}`),
+  };
+}
+
+if (command === "brief" && existsSync(curriculumFile)) {
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(path.join(dir, "input.json"), `${JSON.stringify(curriculumBrief(), null, 2)}\n`);
+  console.log(`Wrote ${path.relative(ROOT, dir)}/input.json from the curriculum`);
+} else if (command === "brief") {
   const concept = (id) => bundle.concepts.find((item) => item.id === id);
   const used = collectQuestionIds(lesson);
   const neighbour = (other) =>
@@ -95,10 +147,17 @@ if (command === "brief") {
   const output = JSON.parse(readFileSync(path.join(dir, "output.json"), "utf8"));
   if (output.lesson?.id !== lessonId) throw new Error("output.lesson.id must equal the lesson id");
   bundle.lessons[index] = output.lesson;
-  for (const question of output.questions ?? []) {
-    const at = bundle.questions.findIndex((item) => item.id === question.id);
-    if (at >= 0) bundle.questions[at] = question;
-    else bundle.questions.push(question);
+  // A new course's lesson also brings its recall cards and any activities it hands over to.
+  for (const [key, items] of [
+    ["questions", output.questions],
+    ["flashcards", output.flashcards],
+    ["activities", output.activities],
+  ]) {
+    for (const item of items ?? []) {
+      const at = bundle[key].findIndex((existing) => existing.id === item.id);
+      if (at >= 0) bundle[key][at] = item;
+      else bundle[key].push(item);
+    }
   }
   writeFileSync(bundleFile, `${JSON.stringify(bundle, null, 2)}\n`);
   console.log(`Applied ${lessonId}: ${(output.questions ?? []).length} questions written`);

@@ -1,0 +1,1428 @@
+{
+  "id": "linux-and-the-command-line",
+  "title": "Linux and the Command Line",
+  "family": "A",
+  "voice": "A",
+  "description": "Learn to read and write command lines, join small programs with pipes, and understand permissions, processes and services well enough to work on a real Linux machine.",
+  "audience": "A capable adult who uses a computer daily and has met files and programs but not a terminal. Assumes the CS Basics idea of a precise procedure and, from How Computers and Networks Work, the lessons on memory and storage and on processes and the kernel. Git and Version Control assumes the first two lessons here.",
+  "prerequisites": [
+    "cs-basics",
+    "computers-and-networks"
+  ],
+  "outcomes": [
+    "You'll be able to read a command line and say what each word does.",
+    "You'll be able to navigate and change the file tree with absolute and relative paths.",
+    "You'll be able to join commands with pipes to count, filter and summarise text.",
+    "You'll be able to read and set permissions in octal and symbolic form.",
+    "You'll be able to explain what a process, a signal and an environment variable are.",
+    "You'll be able to read a short shell script and predict its output and exit status.",
+    "You'll be able to find out why a service failed."
+  ],
+  "sources": [
+    {
+      "id": "man-pages",
+      "title": "Linux man-pages project",
+      "url": "https://man7.org/linux/man-pages/",
+      "licence": "Each page carries its own free licence (mostly BSD-style or GPL-compatible); no single licence for the set",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "posix-shell",
+      "title": "The Open Group Base Specifications (POSIX.1), Shell and Utilities",
+      "url": "https://pubs.opengroup.org/onlinepubs/9799919799/",
+      "licence": "Copyright The Open Group; free to read, not openly licensed",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "bash-manual",
+      "title": "GNU Bash Reference Manual",
+      "url": "https://www.gnu.org/software/bash/manual/bash.html",
+      "licence": "GNU Free Documentation License 1.3",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "coreutils-manual",
+      "title": "GNU Coreutils manual",
+      "url": "https://www.gnu.org/software/coreutils/manual/coreutils.html",
+      "licence": "GNU Free Documentation License 1.3",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "grep-manual",
+      "title": "GNU Grep manual",
+      "url": "https://www.gnu.org/software/grep/manual/grep.html",
+      "licence": "GNU Free Documentation License 1.3",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "fhs",
+      "title": "Filesystem Hierarchy Standard 3.0",
+      "url": "https://refspecs.linuxfoundation.org/fhs.shtml",
+      "licence": "Freely redistributable with the copyright notice kept (Linux Foundation)",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "systemd-docs",
+      "title": "systemd manual pages",
+      "url": "https://www.freedesktop.org/software/systemd/man/latest/",
+      "licence": "LGPL-2.1-or-later",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "debian-handbook",
+      "title": "The Debian Administrator's Handbook",
+      "url": "https://debian-handbook.info/browse/stable/",
+      "licence": "CC BY-SA 3.0 (check the edition's notice)",
+      "use": "adapt",
+      "verified": false
+    }
+  ],
+  "modules": [
+    {
+      "id": "working-in-the-shell",
+      "title": "Working in the shell",
+      "summary": "What a command is, how the file tree is laid out, and how to look at, change and link files."
+    },
+    {
+      "id": "text-and-pipelines",
+      "title": "Text, streams and pipelines",
+      "summary": "Programs that read and write text, joined by pipes, with search, patterns and transformation."
+    },
+    {
+      "id": "users-processes-and-scripts",
+      "title": "Permissions, processes and scripts",
+      "summary": "Who may do what, what is running, how a command finds its settings, and how to keep a sequence of commands in a script."
+    }
+  ],
+  "lessons": [
+    {
+      "id": "the-shell-and-a-command",
+      "moduleId": "working-in-the-shell",
+      "title": "The shell and a command",
+      "objective": "Read a command line as a program name followed by options and arguments, and say how the shell splits it.",
+      "prerequisiteLessonIds": [],
+      "concepts": [
+        {
+          "id": "shell",
+          "title": "Shell",
+          "summary": "A program that reads a line you type, splits it into words, and starts the program named by the first word."
+        },
+        {
+          "id": "argument",
+          "title": "Argument and option",
+          "summary": "Every word after the program name is passed to it as a separate argument; options are arguments that begin with a dash and change what the program does."
+        },
+        {
+          "id": "manual-page",
+          "title": "Manual page",
+          "summary": "The reference document for a command, organised into numbered sections and read with man."
+        }
+      ],
+      "skills": [
+        "split-a-command-line",
+        "read-an-option",
+        "find-the-right-manual-section"
+      ],
+      "misconceptions": [
+        "Thinking the shell is the terminal window: the terminal only displays text, while the shell is a separate program that interprets it.",
+        "Believing that two spaces make one argument bigger or that spacing is data: the shell splits on runs of blanks and the program never sees the gap.",
+        "Treating options as part of the command name, so that ls -l is imagined to be a different program from ls."
+      ],
+      "sequence": [
+        "Assumes computers-and-networks: processes-and-the-kernel (a command line starts a new process).",
+        "Show one real line: ls -l /etc and mark program, option, argument.",
+        "Show the shell's work: split into words, find the program, start a process, wait, print the prompt.",
+        "Contrast the program (ls) with the shell that read the line.",
+        "Options: short with one dash and long with two; -la equals -l -a for single-letter options.",
+        "Manual pages and their numbered sections: man 1 for commands, man 5 for file formats, man 8 for administration."
+      ],
+      "examples": [
+        "echo one  two   three passes three arguments, and the extra blanks are lost, which can be proved by counting with set -- one  two   three; echo $#, giving 3.",
+        "ls -l -a and ls -la run the same listing; ls --all is the long form of -a.",
+        "man 5 passwd describes the format of the account file, while man 1 passwd describes the command, so the same word names two different pages."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A command line split into coloured boxes: program, options, arguments, with an arrow to the process the shell starts. Switchable view shows the same line with doubled spaces collapsed.",
+          "learnerAction": "Select each word to see its role and toggle the doubled-space view.",
+          "placement": "split into words"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "The numbered manual sections as a shelf: 1 commands, 5 file formats, 8 administration.",
+          "learnerAction": "Pick a section for a named task.",
+          "placement": "manual sections"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "code-reading",
+          "targets": "split-a-command-line",
+          "sample": "How many arguments does the program receive from the line echo one  two   three (the blanks between words are spaces)?",
+          "answer": "3"
+        },
+        {
+          "kind": "single-term",
+          "targets": "read-an-option",
+          "sample": "In cp -r src dst, what is -r called, in one word?",
+          "answer": "option (flag is also accepted)"
+        },
+        {
+          "kind": "choice",
+          "targets": "find-the-right-manual-section",
+          "sample": "Which manual section describes the layout of a configuration file such as /etc/passwd?",
+          "answer": "5",
+          "choices": [
+            "1",
+            "5",
+            "8",
+            "3"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "man-pages",
+        "bash-manual",
+        "posix-shell"
+      ],
+      "historyNotes": [
+        "Ken Thompson wrote the first Unix shell at Bell Labs in the early 1970s; the Bourne shell followed in 1977 and Bash, the GNU shell, in 1989."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "files-and-the-filesystem-tree",
+      "moduleId": "working-in-the-shell",
+      "title": "Files and the filesystem tree",
+      "objective": "Navigate with absolute and relative paths and say where on a Linux system a given kind of file belongs.",
+      "prerequisiteLessonIds": [
+        "the-shell-and-a-command"
+      ],
+      "concepts": [
+        {
+          "id": "path",
+          "title": "Path",
+          "summary": "A string of directory names separated by slashes that names one file; it is absolute if it begins with / and otherwise relative to the current directory."
+        },
+        {
+          "id": "working-directory",
+          "title": "Working directory",
+          "summary": "The directory a process is currently in, which relative paths are resolved against."
+        },
+        {
+          "id": "fhs",
+          "title": "Filesystem hierarchy",
+          "summary": "The conventional layout in which /etc holds configuration, /var holds changing data such as logs, /home holds users' files and /usr holds installed programs."
+        }
+      ],
+      "skills": [
+        "resolve-a-relative-path",
+        "choose-a-standard-location"
+      ],
+      "misconceptions": [
+        "Believing Linux has drive letters: there is a single tree starting at /, and other disks are attached to a directory.",
+        "Reading .. as 'go back to the previous place' instead of 'the parent directory', which is why it does not depend on history.",
+        "Thinking a leading dot hides a file by protection: the dot is only a naming convention that ls respects."
+      ],
+      "sequence": [
+        "Start from one tree on a screen: /, etc, home, var, usr, tmp.",
+        "A path as directions: absolute from the root, relative from where you stand.",
+        "Special names: . is here, .. is the parent, ~ is your home directory (expanded by the shell, not the filesystem).",
+        "pwd, cd, ls: tracing a sequence of cd commands on the tree.",
+        "Where things live, by reading the FHS: etc, var/log, usr/bin, home, tmp, proc.",
+        "Hidden files: names beginning with a dot, shown by ls -a."
+      ],
+      "examples": [
+        "From /var/log, cd ../../etc ends in /etc: .. climbs to /var and then to /, and etc is entered from there.",
+        "From /home/ana/projects, cd ../docs ends in /home/ana/docs.",
+        "ls -a shows .bashrc, which ls alone omits."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A directory tree with a 'you are here' marker that moves as cd commands are applied; the learner types or picks a path and the marker shows where it resolves.",
+          "learnerAction": "Choose a starting directory and a relative path and watch the marker move.",
+          "placement": "absolute and relative paths"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "The top-level directories as labelled tiles (etc, var, usr, home, tmp, proc) each with an icon for its role.",
+          "learnerAction": "Drag a file name onto the directory where it belongs.",
+          "placement": "where things live"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "code-reading",
+          "targets": "resolve-a-relative-path",
+          "sample": "You are in /var/log. After cd ../../etc, what does pwd print?",
+          "answer": "/etc"
+        },
+        {
+          "kind": "code-reading",
+          "targets": "resolve-a-relative-path",
+          "sample": "You are in /home/ana/projects. After cd ../docs, what does pwd print?",
+          "answer": "/home/ana/docs"
+        },
+        {
+          "kind": "choice",
+          "targets": "choose-a-standard-location",
+          "sample": "Where would you expect a program's log files to be written by default?",
+          "answer": "/var/log",
+          "choices": [
+            "/etc",
+            "/var/log",
+            "/usr/bin",
+            "/home"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "fhs",
+        "man-pages",
+        "coreutils-manual"
+      ],
+      "historyNotes": [
+        "The Filesystem Hierarchy Standard grew out of the 1994 FSSTND effort for Linux, and version 3.0 was released in 2015."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "looking-at-files",
+      "moduleId": "working-in-the-shell",
+      "title": "Looking at files",
+      "objective": "Inspect a file's size, type and contents with ls -l, cat, head, tail, wc and less, and read the columns of a long listing.",
+      "prerequisiteLessonIds": [
+        "files-and-the-filesystem-tree"
+      ],
+      "concepts": [
+        {
+          "id": "long-listing",
+          "title": "Long listing",
+          "summary": "The output of ls -l: type and permissions, link count, owner, group, size in bytes, modification time and name."
+        },
+        {
+          "id": "line-count",
+          "title": "Lines, words and bytes",
+          "summary": "wc counts newline characters, whitespace-separated words, and bytes, which can differ from the number of characters."
+        },
+        {
+          "id": "pager",
+          "title": "Pager",
+          "summary": "A program such as less that shows a file one screen at a time and lets you search it."
+        }
+      ],
+      "skills": [
+        "read-a-long-listing",
+        "extract-lines-by-position"
+      ],
+      "misconceptions": [
+        "Thinking wc -l counts the lines you can see: it counts newline characters, so a last line with no newline is missed.",
+        "Believing the size column is in kilobytes: ls -l shows bytes unless -h is given.",
+        "Using cat on a huge file when head or less would do, because cat is the only command the learner knows."
+      ],
+      "sequence": [
+        "Display a fixed file notes.txt of five lines and the same file listed with ls -l.",
+        "Take apart one ls -l line field by field.",
+        "cat, head -n, tail -n: choosing the part you need.",
+        "Chaining head and tail to take line n.",
+        "wc -l, -w, -c, and the trailing-newline caveat.",
+        "less for reading: space, /, q."
+      ],
+      "examples": [
+        "For notes.txt holding alpha, beta, gamma, delta, epsilon on separate lines, head -n 2 notes.txt | tail -n 1 prints beta, wc -l gives 5 and wc -c gives 31 (6+5+6+6+8 bytes including newlines).",
+        "-rw-r--r-- 1 ana staff 2048 Mar 3 10:12 report.txt is a regular file of 2048 bytes with one link.",
+        "tail -n 2 notes.txt | head -n 1 prints delta."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A long listing line with each field in its own labelled box; hovering a field shows its meaning.",
+          "learnerAction": "Select a field to see what it contains.",
+          "placement": "reading ls -l"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "notes.txt drawn as five numbered rows with a window that head and tail slide over.",
+          "learnerAction": "Set head and tail counts and see which rows are selected.",
+          "placement": "taking lines by position"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "read-a-long-listing",
+          "sample": "In -rw-r--r-- 1 ana staff 2048 Mar 3 10:12 report.txt, how many bytes is the file?",
+          "answer": "2048"
+        },
+        {
+          "kind": "code-reading",
+          "targets": "extract-lines-by-position",
+          "sample": "notes.txt contains alpha, beta, gamma, delta, epsilon, one per line. What does head -n 2 notes.txt | tail -n 1 print?",
+          "answer": "beta"
+        },
+        {
+          "kind": "code-reading",
+          "targets": "extract-lines-by-position",
+          "sample": "For the same file, what does wc -c < notes.txt print? Each line ends in a newline.",
+          "answer": "31"
+        }
+      ],
+      "sourceIds": [
+        "coreutils-manual",
+        "man-pages"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "changing-files",
+      "moduleId": "working-in-the-shell",
+      "title": "Changing files",
+      "objective": "Create, copy, move and delete files and directories, and predict what globs and quotes will expand to before a command runs.",
+      "prerequisiteLessonIds": [
+        "looking-at-files"
+      ],
+      "concepts": [
+        {
+          "id": "glob",
+          "title": "Glob",
+          "summary": "A pattern containing * (any run of characters), ? (exactly one character) or [ ] (one from a set) that the shell expands to matching file names before the program starts."
+        },
+        {
+          "id": "quoting",
+          "title": "Quoting",
+          "summary": "Single quotes pass text exactly, double quotes keep it as one word but still allow $ expansion, and a backslash escapes one character."
+        },
+        {
+          "id": "destructive-command",
+          "title": "Destructive commands",
+          "summary": "rm and overwriting redirection remove data immediately, with no rubbish bin to recover from."
+        }
+      ],
+      "skills": [
+        "predict-a-glob",
+        "quote-a-name",
+        "avoid-overwrites"
+      ],
+      "misconceptions": [
+        "Believing the program expands *.txt: the shell does it, so the program sees a list of names, and a pattern that matches nothing is passed through literally.",
+        "Believing ? matches any number of characters, as * does.",
+        "Believing mv asks before overwriting, when by default it silently replaces the target.",
+        "Believing rm sends files to a rubbish bin."
+      ],
+      "sequence": [
+        "Make a directory with mkdir -p, create empty files with touch.",
+        "cp, mv (rename is a move) and rm, with -r for directories.",
+        "Globbing: the shell expands the pattern before the command runs; show the argument list the program really gets.",
+        "Quoting: why touch my file makes two files and touch \"my file\" makes one.",
+        "Safety habits: ls the glob first, use -i, never rm -rf on an unchecked variable."
+      ],
+      "examples": [
+        "In a directory holding file1.txt, file2.txt and file10.txt, file?.txt matches 2 names, file*.txt matches 3 and file[1-2].txt matches 2.",
+        "In an empty directory, touch my file creates 2 files; touch \"my file\" creates 1.",
+        "With a.txt, b.txt and c.log present, ls *.txt | wc -l gives 2."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A directory box with file names; typing a glob highlights which names it matches and shows below it the argument list the program will receive.",
+          "learnerAction": "Edit the glob and see the expansion.",
+          "placement": "globbing"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "The same filename typed with and without quotes split into one or two words.",
+          "learnerAction": "Toggle quotes.",
+          "placement": "quoting"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "predict-a-glob",
+          "sample": "A directory holds file1.txt, file2.txt and file10.txt. How many names does file?.txt match?",
+          "answer": "2"
+        },
+        {
+          "kind": "code-reading",
+          "targets": "quote-a-name",
+          "sample": "In an empty directory, you run touch my file. How many files does ls then list?",
+          "answer": "2"
+        },
+        {
+          "kind": "choice",
+          "targets": "avoid-overwrites",
+          "sample": "final.txt already exists. What does mv draft.txt final.txt do by default?",
+          "answer": "It replaces final.txt without asking",
+          "choices": [
+            "It refuses and prints an error",
+            "It replaces final.txt without asking",
+            "It appends draft.txt to final.txt",
+            "It asks for confirmation"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "coreutils-manual",
+        "bash-manual",
+        "posix-shell"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "links-inodes-and-mounts",
+      "moduleId": "working-in-the-shell",
+      "title": "Links, inodes and mounts",
+      "objective": "Explain what a file name is, how hard and symbolic links differ, and how a second disk appears in the one tree.",
+      "prerequisiteLessonIds": [
+        "changing-files"
+      ],
+      "concepts": [
+        {
+          "id": "inode",
+          "title": "Inode",
+          "summary": "The record that holds a file's metadata and the location of its data; a directory entry is a name that points at an inode."
+        },
+        {
+          "id": "hard-link",
+          "title": "Hard link and symbolic link",
+          "summary": "A hard link is another name for the same inode; a symbolic link is a small file that stores a path and breaks if the target is removed."
+        },
+        {
+          "id": "mount",
+          "title": "Mount",
+          "summary": "Attaching a filesystem to a directory so that its contents appear in the tree at that point."
+        }
+      ],
+      "skills": [
+        "count-links",
+        "predict-a-dangling-link"
+      ],
+      "misconceptions": [
+        "Believing a file is its name, so that rm a deletes the data even when a second name exists.",
+        "Believing a symbolic link is a copy.",
+        "Believing each disk gets its own letter, as in some other systems."
+      ],
+      "sequence": [
+        "Assumes computers-and-networks: memory-and-storage (data lives on a block device).",
+        "A directory as a table of name to inode number; ls -i shows them.",
+        "ln makes a second name: the link count rises to 2, and rm removes one name only.",
+        "ln -s makes a pointer by path; remove the target and it dangles.",
+        "Mounts: df shows disks and where they are attached; /proc and /dev as special filesystems."
+      ],
+      "examples": [
+        "touch ha; ln ha hb gives a link count of 2 on both; rm ha leaves hb readable.",
+        "ln -s hb hc then rm hb leaves hc listed with type l but cat hc fails with 'No such file or directory'.",
+        "A USB stick mounted at /mnt/usb makes /mnt/usb/photo.jpg a path in the same tree."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Directory entries as name tags tied by strings to an inode box holding data; a second hard link adds a second tag, a symbolic link adds a tag to a note that says another path.",
+          "learnerAction": "Add or remove a name and watch whether the data survives.",
+          "placement": "hard versus symbolic"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A tree with a second disk attached at a chosen directory.",
+          "learnerAction": "Choose the mount point.",
+          "placement": "mounts"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "code-reading",
+          "targets": "count-links",
+          "sample": "touch ha; ln ha hb. What link count does ls -l show for ha?",
+          "answer": "2"
+        },
+        {
+          "kind": "choice",
+          "targets": "predict-a-dangling-link",
+          "sample": "After ln -s hb hc and then rm hb, what does cat hc do?",
+          "answer": "It fails because the target no longer exists",
+          "choices": [
+            "It prints the old contents",
+            "It fails because the target no longer exists",
+            "It recreates hb",
+            "It prints the path hb"
+          ]
+        },
+        {
+          "kind": "single-term",
+          "targets": "count-links",
+          "sample": "What does a directory entry map a name to?",
+          "answer": "inode"
+        }
+      ],
+      "sourceIds": [
+        "man-pages",
+        "coreutils-manual",
+        "fhs"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "streams-redirection-and-pipes",
+      "moduleId": "text-and-pipelines",
+      "title": "Streams, redirection and pipes",
+      "objective": "Predict where a command's output goes when it is redirected or piped, and distinguish standard output from standard error.",
+      "prerequisiteLessonIds": [
+        "changing-files"
+      ],
+      "concepts": [
+        {
+          "id": "standard-streams",
+          "title": "Standard streams",
+          "summary": "Every process starts with input (descriptor 0), output (1) and error (2)."
+        },
+        {
+          "id": "redirection",
+          "title": "Redirection",
+          "summary": "> sends output to a file and truncates it, >> appends, < reads input from a file, and 2> redirects the error stream."
+        },
+        {
+          "id": "pipe",
+          "title": "Pipe",
+          "summary": "The | operator connects one command's standard output to the next command's standard input, running both at once."
+        }
+      ],
+      "skills": [
+        "predict-redirection",
+        "combine-streams"
+      ],
+      "misconceptions": [
+        "Believing > appends: it replaces the file's earlier content.",
+        "Believing a pipe carries error messages: only standard output is piped unless 2>&1 is added.",
+        "Believing the second command in a pipe waits for the first to finish."
+      ],
+      "sequence": [
+        "Run ls; the text goes to standard output, so it is a stream, not a screen.",
+        "Redirect to a file: > truncates, >> appends.",
+        "Show that errors take a different path: ls nosuchfile > out.txt leaves out.txt empty.",
+        "Pipe two programs; what flows is bytes.",
+        "2>&1 and 2>/dev/null, and why order matters.",
+        "A small tool philosophy: each program does one job on text."
+      ],
+      "examples": [
+        "echo a > f; echo b > f; echo c >> f leaves f with 2 lines, b and c.",
+        "{ echo out; echo err >&2; } 2>&1 | wc -l gives 2, while the same without 2>&1 gives 1 and err appears on the terminal.",
+        "ls nosuchfile > out.txt 2>/dev/null leaves out.txt with 0 bytes."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Three pipes labelled 0, 1 and 2 coming out of a process box; the learner connects each to the terminal, a file or the next process.",
+          "learnerAction": "Connect streams and run.",
+          "placement": "streams"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "Two process boxes joined by a pipe with a few bytes moving between them.",
+          "learnerAction": "Step through the transfer.",
+          "placement": "pipe"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "code-reading",
+          "targets": "predict-redirection",
+          "sample": "In an empty directory you run echo a > f; echo b > f; echo c >> f. How many lines does wc -l < f print?",
+          "answer": "2"
+        },
+        {
+          "kind": "code-reading",
+          "targets": "combine-streams",
+          "sample": "{ echo out; echo err >&2; } 2>&1 | wc -l prints what?",
+          "answer": "2"
+        },
+        {
+          "kind": "code-reading",
+          "targets": "combine-streams",
+          "sample": "{ echo out; echo err >&2; } 2>/dev/null | wc -l prints what?",
+          "answer": "1"
+        }
+      ],
+      "sourceIds": [
+        "posix-shell",
+        "bash-manual",
+        "man-pages"
+      ],
+      "historyNotes": [
+        "Doug McIlroy proposed connecting programs like garden hoses in a 1964 memo, and pipes entered Unix in 1973."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "searching-with-grep-and-find",
+      "moduleId": "text-and-pipelines",
+      "title": "Searching with grep and find",
+      "objective": "Choose between grep for contents and find for names and attributes, and predict their counts on a small fixed example.",
+      "prerequisiteLessonIds": [
+        "streams-redirection-and-pipes"
+      ],
+      "concepts": [
+        {
+          "id": "grep",
+          "title": "grep",
+          "summary": "Prints the lines of its input that match a pattern; -c counts them, -v inverts, -n numbers them, -i ignores case and -r searches a tree."
+        },
+        {
+          "id": "find",
+          "title": "find",
+          "summary": "Walks a directory tree and tests each entry by name, type, size or age."
+        },
+        {
+          "id": "exit-status-of-search",
+          "title": "Search exit status",
+          "summary": "grep exits 0 when it found a match, 1 when it found none and 2 on error."
+        }
+      ],
+      "skills": [
+        "count-matching-lines",
+        "count-found-entries"
+      ],
+      "misconceptions": [
+        "Believing grep -c counts matches: it counts matching lines.",
+        "Believing find . -type d lists only subdirectories: it includes . itself.",
+        "Choosing a plain substring such as 200 without noticing it also matches other fields, so the count includes lines that were not intended."
+      ],
+      "sequence": [
+        "Take a six-line access log: address, method, path, status.",
+        "grep PATTERN FILE; then -c, -v, -n.",
+        "A substring is not a field: the pattern 0 matches every line here.",
+        "find: start directory, tests (-name, -type, -size, -mtime), actions.",
+        "Always quote the pattern given to find -name, so the shell does not expand it first.",
+        "Combine: find . -name '*.log' | xargs grep -l ERROR."
+      ],
+      "examples": [
+        "With the log of six lines, grep -c 200 gives 4, grep -v 200 | wc -l gives 2, and grep -c 0 gives 6 because every address contains 0.",
+        "In a tree with a/x.log, a/b/y.log and z.txt, find . -name '*.log' | wc -l is 2 and find . -type d | wc -l is 3 (., a and a/b).",
+        "grep -n beta notes.txt prints 2:beta."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "The access log as a table with matching lines highlighted as the learner edits the pattern.",
+          "learnerAction": "Edit the pattern and see which lines match.",
+          "placement": "grep"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A directory tree with a find expression that highlights the entries it selects.",
+          "learnerAction": "Change -name and -type tests.",
+          "placement": "find"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "code-reading",
+          "targets": "count-matching-lines",
+          "sample": "Six log lines hold the statuses 200, 404, 302, 200, 200, 200 and every address starts with 10.0.0. What does grep -c 200 print?",
+          "answer": "4"
+        },
+        {
+          "kind": "code-reading",
+          "targets": "count-matching-lines",
+          "sample": "For the same log, what does grep -c 0 print?",
+          "answer": "6"
+        },
+        {
+          "kind": "code-reading",
+          "targets": "count-found-entries",
+          "sample": "A tree holds a/x.log, a/b/y.log and z.txt. How many lines does find . -type d print?",
+          "answer": "3"
+        }
+      ],
+      "sourceIds": [
+        "grep-manual",
+        "coreutils-manual",
+        "man-pages"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "regular-expressions",
+      "moduleId": "text-and-pipelines",
+      "title": "Regular expressions",
+      "objective": "Read and write a small regular expression using anchors, character classes, repetition and alternation, and say which strings it matches.",
+      "prerequisiteLessonIds": [
+        "searching-with-grep-and-find"
+      ],
+      "concepts": [
+        {
+          "id": "regex",
+          "title": "Regular expression",
+          "summary": "A compact pattern describing a set of strings, built from literal characters and operators."
+        },
+        {
+          "id": "anchor",
+          "title": "Anchor",
+          "summary": "^ matches the start of a line and $ the end, so a pattern with both must match the whole line."
+        },
+        {
+          "id": "character-class",
+          "title": "Character class and repetition",
+          "summary": "[a-z] matches one character from a set, . matches any one character, and * + ? {n} say how many times the previous item repeats."
+        }
+      ],
+      "skills": [
+        "match-a-pattern",
+        "anchor-a-pattern"
+      ],
+      "misconceptions": [
+        "Believing * means 'anything' as in a glob: in a regular expression it repeats the previous item.",
+        "Believing . means a literal dot.",
+        "Forgetting anchors, so that cat matches concatenate."
+      ],
+      "sequence": [
+        "A pattern is a description of a set of strings; show three strings and a pattern.",
+        "Literal characters, then . and classes.",
+        "Repetition: * + ? {n}.",
+        "Anchors and whole-line matching.",
+        "Basic versus extended syntax: grep -E.",
+        "Escape a dot with a backslash when you want a literal dot."
+      ],
+      "examples": [
+        "grep -E '^[a-z]+$' counts cat and cats but not Cat, cat5 or the empty line in that sample.",
+        "a.c matches abc and a.c but not ac.",
+        "grep -E '^10\\.0\\.0\\.[57] ' on the log counts 5 lines."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A pattern drawn as a railway diagram with sample strings sent along it.",
+          "learnerAction": "Pick a string and see whether it reaches the end.",
+          "placement": "reading a pattern"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A list of strings with matching ones highlighted as the pattern is edited.",
+          "learnerAction": "Edit the pattern.",
+          "placement": "anchors"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "code-reading",
+          "targets": "match-a-pattern",
+          "sample": "The input has the five lines cat, Cat, cat5, an empty line, cats. How many lines does grep -Ec '^[a-z]+$' count?",
+          "answer": "2"
+        },
+        {
+          "kind": "choice",
+          "targets": "match-a-pattern",
+          "sample": "Which string does the pattern a.c NOT match?",
+          "answer": "ac",
+          "choices": [
+            "abc",
+            "a.c",
+            "a-c",
+            "ac"
+          ]
+        },
+        {
+          "kind": "code-reading",
+          "targets": "anchor-a-pattern",
+          "sample": "The log has six lines: the address 10.0.0.5 starts three, 10.0.0.7 two, 10.0.0.9 one. How many lines does grep -E '^10\\.0\\.0\\.[57] ' count?",
+          "answer": "5"
+        }
+      ],
+      "sourceIds": [
+        "grep-manual",
+        "posix-shell"
+      ],
+      "historyNotes": [
+        "Stephen Kleene described regular events in 1951; Ken Thompson put regular expressions into the QED editor in the 1960s."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "transforming-text",
+      "moduleId": "text-and-pipelines",
+      "title": "Transforming text",
+      "objective": "Build a pipeline of sort, uniq, cut, tr, sed and awk that turns a log or a table into a count or a summary.",
+      "prerequisiteLessonIds": [
+        "regular-expressions"
+      ],
+      "concepts": [
+        {
+          "id": "sort-order",
+          "title": "Sort order",
+          "summary": "sort orders lines as text by default, so 100 comes before 9, and sort -n orders them as numbers."
+        },
+        {
+          "id": "field",
+          "title": "Field",
+          "summary": "A part of a line separated by a delimiter; cut -d, -f2 and awk -F, '{print $2}' take the second one."
+        },
+        {
+          "id": "count-pipeline",
+          "title": "Count pipeline",
+          "summary": "sort | uniq -c | sort -rn is the standard way to count how often each value occurs and rank them."
+        }
+      ],
+      "skills": [
+        "predict-sort",
+        "count-values",
+        "edit-with-sed"
+      ],
+      "misconceptions": [
+        "Believing sort understands numbers by default.",
+        "Believing uniq removes duplicates anywhere: it only collapses neighbours, so input must be sorted first.",
+        "Believing sed changes the file: it prints the changed text unless -i is used.",
+        "Forgetting the g flag so that only the first match on each line changes."
+      ],
+      "sequence": [
+        "The six-line log again: which address appears most?",
+        "cut or awk to take one column.",
+        "sort, then uniq -c, then sort -rn.",
+        "Why uniq needs sorted input.",
+        "sed s/old/new/ and the g flag; tr for characters.",
+        "awk as a small program: pattern { action }, with END."
+      ],
+      "examples": [
+        "printf '10\\n9\\n100\\n' | sort | head -1 prints 10; with sort -n it prints 9.",
+        "On the log, awk '{print $1}' | sort | uniq -c | sort -rn | head -1 prints a count of 3 against 10.0.0.5.",
+        "printf 'ana,3\\nbo,5\\ncy,4\\n' | awk -F, '{s+=$2} END{print s}' prints 12."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A pipeline of boxes with the intermediate text visible after each stage.",
+          "learnerAction": "Edit a stage and watch the stages after it change.",
+          "placement": "count pipeline"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A column of numbers sorted as text and as numbers side by side.",
+          "learnerAction": "Toggle -n.",
+          "placement": "sort order"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "code-reading",
+          "targets": "predict-sort",
+          "sample": "printf '10\\n9\\n100\\n' | sort | head -1 prints what?",
+          "answer": "10"
+        },
+        {
+          "kind": "code-reading",
+          "targets": "count-values",
+          "sample": "printf 'a\\nb\\na\\n' | uniq | wc -l prints what?",
+          "answer": "3"
+        },
+        {
+          "kind": "code-reading",
+          "targets": "edit-with-sed",
+          "sample": "printf 'ana,3\\nbo,5\\ncy,4\\n' | awk -F, '{s+=$2} END{print s}' prints what?",
+          "answer": "12"
+        }
+      ],
+      "sourceIds": [
+        "coreutils-manual",
+        "posix-shell",
+        "man-pages"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "permissions-and-ownership",
+      "moduleId": "users-processes-and-scripts",
+      "title": "Permissions and ownership",
+      "objective": "Read and write permission modes in symbolic and octal form and predict what a user may do to a file or directory.",
+      "prerequisiteLessonIds": [
+        "looking-at-files",
+        "changing-files"
+      ],
+      "concepts": [
+        {
+          "id": "mode",
+          "title": "Mode",
+          "summary": "Nine permission bits: read, write and execute for the owner, the group and everyone else, written rwx or as three octal digits where r=4, w=2, x=1."
+        },
+        {
+          "id": "directory-permission",
+          "title": "Directory permissions",
+          "summary": "Read lets you list names, write lets you create and remove entries, and execute lets you pass through the directory to reach what is inside."
+        },
+        {
+          "id": "umask",
+          "title": "umask",
+          "summary": "The bits removed from the default mode of new files (666) and directories (777)."
+        }
+      ],
+      "skills": [
+        "convert-mode",
+        "apply-umask",
+        "predict-access"
+      ],
+      "misconceptions": [
+        "Believing the x bit on a directory means 'run it'.",
+        "Believing deleting a file needs write permission on the file: it needs write on the directory.",
+        "Believing octal digits add decimal numbers rather than bits: 7 is rwx, 5 is r-x."
+      ],
+      "sequence": [
+        "Assumes computers-and-networks: processes-and-the-kernel (the kernel checks the permission when a process opens a file).",
+        "ls -l first column: type and nine bits.",
+        "Each triplet as three bits: r=4, w=2, x=1; add to get a digit.",
+        "chmod symbolic and octal.",
+        "Directories mean something different.",
+        "Users, groups and root; chown.",
+        "umask: subtract from 666 and 777."
+      ],
+      "examples": [
+        "rwxr-xr-- is 754, because 4+2+1=7, 4+0+1=5 and 4+0+0=4.",
+        "A file with mode 640 is rw-r-----; with umask 027 new files get 640 and directories get 750.",
+        "chmod u+x on a file with mode 644 gives 744."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Nine toggle boxes for the permission bits with the octal digit and the ls -l string updating beside them.",
+          "learnerAction": "Toggle bits, or type the octal value.",
+          "placement": "modes"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A directory with files and three people with different groups.",
+          "learnerAction": "Choose who can list, enter or delete.",
+          "placement": "directory permissions"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "convert-mode",
+          "sample": "What is the octal mode of rwxr-xr--?",
+          "answer": "754"
+        },
+        {
+          "kind": "single-term",
+          "targets": "convert-mode",
+          "sample": "What is the permission string for mode 640? Write nine characters.",
+          "answer": "rw-r-----"
+        },
+        {
+          "kind": "code-reading",
+          "targets": "apply-umask",
+          "sample": "With umask 027, what octal mode does a new regular file get? Files start from 666.",
+          "answer": "640"
+        }
+      ],
+      "sourceIds": [
+        "man-pages",
+        "coreutils-manual",
+        "posix-shell"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "processes-and-signals",
+      "moduleId": "users-processes-and-scripts",
+      "title": "Processes and signals",
+      "objective": "Explain how to see, suspend, resume and stop processes, and what the common signals do.",
+      "prerequisiteLessonIds": [
+        "permissions-and-ownership"
+      ],
+      "concepts": [
+        {
+          "id": "pid",
+          "title": "Process ID and parent",
+          "summary": "Every process has a number (PID) and a parent that started it; PID 1 starts the rest."
+        },
+        {
+          "id": "signal",
+          "title": "Signal",
+          "summary": "A short numbered message sent to a process; SIGTERM (15) asks it to finish, SIGKILL (9) cannot be caught, SIGINT (2) is what Ctrl-C sends and SIGHUP (1) means the terminal closed."
+        },
+        {
+          "id": "exit-status",
+          "title": "Exit status",
+          "summary": "The number a process returns when it ends: 0 means success and any other value means failure."
+        }
+      ],
+      "skills": [
+        "pick-a-signal",
+        "order-background-output"
+      ],
+      "misconceptions": [
+        "Believing kill always kills: it sends a signal, and the default (SIGTERM) can be handled or ignored.",
+        "Believing a background job (&) runs in a separate shell that cannot be affected when the terminal closes.",
+        "Believing Ctrl-Z ends the program, when it suspends it."
+      ],
+      "sequence": [
+        "Assumes computers-and-networks: processes-and-the-kernel (processes, scheduling and the idea of a signal).",
+        "ps and top: columns for PID, parent, state and CPU use.",
+        "Foreground and background: &, jobs, fg, bg, Ctrl-Z.",
+        "Signals by number: 1, 2, 9, 15; which can be caught.",
+        "kill takes a PID; killall and pkill take a name.",
+        "wait and the exit status $?."
+      ],
+      "examples": [
+        "sleep 1 & echo started; wait; echo done prints started then done.",
+        "kill 4321 sends signal 15; kill -9 4321 sends signal 9.",
+        "Ctrl-Z suspends and sends SIGTSTP; bg resumes it in the background."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A process tree rooted at PID 1 with a shell and its children; a signal can be sent to a chosen node.",
+          "learnerAction": "Choose a signal and a target.",
+          "placement": "process tree"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A timeline of foreground and background jobs.",
+          "learnerAction": "Step through a command sequence.",
+          "placement": "jobs"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "pick-a-signal",
+          "sample": "What signal number does kill -9 send?",
+          "answer": "9"
+        },
+        {
+          "kind": "numeric",
+          "targets": "pick-a-signal",
+          "sample": "What signal number is sent by kill PID with no option?",
+          "answer": "15"
+        },
+        {
+          "kind": "code-reading",
+          "targets": "order-background-output",
+          "sample": "sleep 1 & echo started; wait; echo done prints two lines. What is the first line?",
+          "answer": "started"
+        }
+      ],
+      "sourceIds": [
+        "man-pages",
+        "bash-manual",
+        "coreutils-manual"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "variables-environment-and-path",
+      "moduleId": "users-processes-and-scripts",
+      "title": "Variables, environment and PATH",
+      "objective": "Predict what a command sees in its environment and which program the shell runs when a name appears in several places.",
+      "prerequisiteLessonIds": [
+        "processes-and-signals"
+      ],
+      "concepts": [
+        {
+          "id": "shell-variable",
+          "title": "Shell variable",
+          "summary": "A named string set with name=value and read with $name; it exists only in that shell until exported."
+        },
+        {
+          "id": "environment",
+          "title": "Environment",
+          "summary": "The exported variables copied from a process to each child it starts."
+        },
+        {
+          "id": "path",
+          "title": "PATH",
+          "summary": "A colon-separated list of directories searched from left to right for a command name."
+        }
+      ],
+      "skills": [
+        "predict-inheritance",
+        "resolve-a-command-name"
+      ],
+      "misconceptions": [
+        "Believing a variable set in one shell is seen by programs it starts: only exported variables are copied.",
+        "Believing the shell searches the current directory for commands.",
+        "Believing single quotes expand variables."
+      ],
+      "sequence": [
+        "Set x=5 and echo it; start a new bash -c and show it empty.",
+        "export copies it down to children, and never back up.",
+        "Quoting: '$x' stays literal and \"$x\" expands.",
+        "Command substitution: $(command).",
+        "PATH: leftmost match wins; which and type.",
+        "Why scripts use absolute paths or set their own PATH."
+      ],
+      "examples": [
+        "x=5; bash -c 'echo [$x]' prints []; after export x it prints [5].",
+        "x=3; echo '$x' \"$x\" prints $x 3.",
+        "With PATH=pa:pb and a tool in both, tool runs the one in pa; reversing the order runs the one in pb."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Two shells drawn as nested boxes with variables inside; export draws an arrow into the child.",
+          "learnerAction": "Set and export variables, then start a child.",
+          "placement": "environment"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "PATH as a row of directories with a magnifier moving left to right until it finds a match.",
+          "learnerAction": "Reorder PATH.",
+          "placement": "command lookup"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "code-reading",
+          "targets": "predict-inheritance",
+          "sample": "x=5 is set in the shell without export. What does bash -c 'echo [$x]' print?",
+          "answer": "[]"
+        },
+        {
+          "kind": "code-reading",
+          "targets": "predict-inheritance",
+          "sample": "x=3; echo '$x' \"$x\" prints what?",
+          "answer": "$x 3"
+        },
+        {
+          "kind": "choice",
+          "targets": "resolve-a-command-name",
+          "sample": "PATH is /opt/a:/opt/b and both contain an executable named tool, which one runs?",
+          "answer": "The one in /opt/a",
+          "choices": [
+            "The one in /opt/a",
+            "The one in /opt/b",
+            "Both, in order",
+            "The shell reports an ambiguity"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "bash-manual",
+        "posix-shell",
+        "man-pages"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "shell-scripts",
+      "moduleId": "users-processes-and-scripts",
+      "title": "Shell scripts",
+      "objective": "Read a short script and say what it prints and what exit status it returns, using conditions, loops and arguments.",
+      "prerequisiteLessonIds": [
+        "variables-environment-and-path"
+      ],
+      "concepts": [
+        {
+          "id": "script",
+          "title": "Script",
+          "summary": "A text file of shell commands, begun with a #! line naming the interpreter and made executable."
+        },
+        {
+          "id": "conditional-chain",
+          "title": "Conditional chain",
+          "summary": "cmd1 && cmd2 runs cmd2 only if cmd1 succeeded and cmd1 || cmd2 only if it failed; if tests the exit status of a command."
+        },
+        {
+          "id": "positional-parameter",
+          "title": "Positional parameters",
+          "summary": "$1, $2 and so on hold the arguments, $# their count and \"$@\" all of them as separate words."
+        }
+      ],
+      "skills": [
+        "trace-a-chain",
+        "count-arguments",
+        "read-exit-status"
+      ],
+      "misconceptions": [
+        "Believing && and || behave like if/else: A || B && C runs C even after B.",
+        "Believing a non-zero exit status is an error message: it is only a number.",
+        "Forgetting to quote \"$@\" or a variable, so that names with spaces split."
+      ],
+      "sequence": [
+        "Assumes processes-and-signals: exit status.",
+        "A first script: the #! line, chmod +x, run with ./.",
+        "Test commands: [ -f file ] and exit status; if/then/fi.",
+        "&& and ||: trace the chain.",
+        "for loops over words and over globs, and $(( )) arithmetic.",
+        "Arguments: $#, $1, \"$@\".",
+        "set -e and quoting as habits."
+      ],
+      "examples": [
+        "false || echo A && echo B prints A then B; true || echo A && echo B prints only B.",
+        "for i in 1 2 3 4; do echo $((i*i)); done prints 1 4 9 16; the sum is 30.",
+        "grep -q beta notes.txt exits 0; grep -q zzz notes.txt exits 1; grep -q beta nofile exits 2."
+      ],
+      "figures": [
+        {
+          "type": "program_trace",
+          "shows": "A script drawn as numbered lines with a marker stepping through, and a panel for the exit status of each line.",
+          "learnerAction": "Step through the script.",
+          "placement": "tracing a chain"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A decision tree for A || B && C.",
+          "learnerAction": "Set whether A and B succeed.",
+          "placement": "conditional chain"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "code-reading",
+          "targets": "trace-a-chain",
+          "sample": "false || echo A && echo B prints which letters, in order, separated by a space?",
+          "answer": "A B"
+        },
+        {
+          "kind": "code-reading",
+          "targets": "count-arguments",
+          "sample": "A script s.sh contains only echo $#. What does bash s.sh \"a b\" c print?",
+          "answer": "2"
+        },
+        {
+          "kind": "code-reading",
+          "targets": "read-exit-status",
+          "sample": "grep -q zzz notes.txt, where notes.txt lacks zzz and exists, leaves what exit status in $?",
+          "answer": "1"
+        }
+      ],
+      "sourceIds": [
+        "bash-manual",
+        "posix-shell",
+        "man-pages"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "packages-services-and-logs",
+      "moduleId": "users-processes-and-scripts",
+      "title": "Packages, services and logs",
+      "objective": "Say how software is installed and kept running on a typical distribution, and find out why a service failed.",
+      "prerequisiteLessonIds": [
+        "shell-scripts"
+      ],
+      "concepts": [
+        {
+          "id": "package-manager",
+          "title": "Package manager",
+          "summary": "A tool such as apt or dnf that installs software and its dependencies from signed repositories and tracks what is installed."
+        },
+        {
+          "id": "service",
+          "title": "Service and unit",
+          "summary": "A long-running program managed by systemd through a unit file; systemctl start runs it now and enable runs it at boot."
+        },
+        {
+          "id": "journal",
+          "title": "Journal",
+          "summary": "The systemd log store, read with journalctl; -u selects one unit."
+        }
+      ],
+      "skills": [
+        "choose-a-package-command",
+        "diagnose-a-service"
+      ],
+      "misconceptions": [
+        "Believing sudo apt install downloads from any website: it uses only configured, signed repositories.",
+        "Believing systemctl start also makes a service start at boot.",
+        "Believing logs live only in /var/log text files."
+      ],
+      "sequence": [
+        "Assumes processes-and-signals: PID 1.",
+        "Why packages exist: dependencies and updates; apt/dnf, update versus upgrade.",
+        "systemd as PID 1: units, targets.",
+        "start, stop, restart, enable, status.",
+        "Logs: journalctl -u, -f, --since; /var/log.",
+        "Scheduling: cron fields and systemd timers."
+      ],
+      "examples": [
+        "systemctl status nginx shows active, failed or inactive; journalctl -u nginx shows its messages.",
+        "The cron line 30 2 * * 1 runs at 02:30 every Monday.",
+        "apt update refreshes the list of available packages, while apt upgrade installs newer versions."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A service lifecycle diagram: stopped, running, failed, enabled at boot.",
+          "learnerAction": "Apply start, stop and enable.",
+          "placement": "services"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A cron expression builder with the five fields labelled.",
+          "learnerAction": "Edit fields to see the next run times.",
+          "placement": "cron"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "choice",
+          "targets": "diagnose-a-service",
+          "sample": "Which command shows the log messages of the service nginx?",
+          "answer": "journalctl -u nginx",
+          "choices": [
+            "systemctl log nginx",
+            "journalctl -u nginx",
+            "cat /etc/nginx",
+            "ps nginx"
+          ]
+        },
+        {
+          "kind": "choice",
+          "targets": "choose-a-package-command",
+          "sample": "What does apt update do?",
+          "answer": "Refreshes the list of available packages",
+          "choices": [
+            "Installs newer versions of every package",
+            "Refreshes the list of available packages",
+            "Removes unused packages",
+            "Reboots the system"
+          ]
+        },
+        {
+          "kind": "choice",
+          "targets": "diagnose-a-service",
+          "sample": "What does the cron line 30 2 * * 1 mean?",
+          "answer": "02:30 every Monday",
+          "choices": [
+            "02:30 every day",
+            "02:30 every Monday",
+            "30 minutes past every second hour on 1 January",
+            "Every 30 seconds on Monday"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "systemd-docs",
+        "debian-handbook",
+        "man-pages"
+      ],
+      "historyNotes": [
+        "systemd was first released in 2010; Debian adopted it as its default init system with release 8 (jessie) in 2015."
+      ],
+      "estimatedMinutes": 13
+    }
+  ],
+  "courseCheck": "A mixed check: predict the output and exit status of commands that mix globbing, quoting, redirection and pipes on a small fixed directory; convert between permission strings and octal; choose a signal; resolve a command name from PATH; and read a service failure from its log.",
+  "platformNeeds": [
+    "A sandboxed, deterministic shell simulator over a virtual filesystem (a new runner such as code-run-shell, no real processes), so learners can run the commands in the code-reading questions and the app can mark their output exactly. Until then every shell question is code-reading with a fixed input.",
+    "A filesystem_tree_explorer figure: a directory tree with a movable 'you are here' marker, path resolution and mount points.",
+    "A pipeline_stages figure: each stage of a pipe shows its output text, and the learner can edit one stage and watch downstream stages update.",
+    "A permission_bits figure: nine toggles linked to the octal digits and the ls -l string (number_machine could be a stand-in)."
+  ],
+  "unverified": [
+    "No external site could be opened in this session (network blocked), so every source has verified false. Every command's behaviour in the sample questions was run locally on GNU bash 5.2, coreutils 9.4, grep 3.11 and sed 4.9, so sample answers are checked; awk output was checked with mawk and the same programs are POSIX.",
+    "Writing the first shell: Ken Thompson 1971; the Bourne shell 1977; Bash 1989 (memory).",
+    "FSSTND 1994 and FHS 3.0 in 2015 (memory).",
+    "McIlroy 1964 memo and pipes in Unix in 1973 (memory).",
+    "Kleene 1951 and Thompson's QED regular expressions (memory).",
+    "systemd first released 2010, Debian default with release 8 in 2015 (memory).",
+    "Signal numbers 1, 2, 9, 15 are the same on all Linux architectures; others differ on some (memory; kill -l on x86-64 confirmed locally).",
+    "The Debian Handbook licence and edition were not checked."
+  ]
+}

@@ -2,7 +2,7 @@
 
 Status: approved 3 November 2026. George kept every course in A to D, and from E only First aid,
 using freely available Red Cross materials. Chess is covered by another app. The card pass
-(section 1) is deferred to after the first expansion wave. Curricula are being researched into
+(section 1) is deferred to after the first expansion wave. Curricula are researched in
 `docs/curricula/`.
 
 ## 0. Release 1.3.0 first, so George can test in Instrumenta
@@ -201,16 +201,25 @@ course needs these extra steps:
 
 ## 5. Proposed waves
 
+Curricula for all 46 courses are in `docs/curricula/` (review page: `docs/curricula/index.html`).
+The waves follow the prerequisites the curricula set, so no course is written before a course it
+builds on.
+
 | Wave | Courses | Why first |
 | --- | --- | --- |
-| 1 | A9 System design, A10 Software design and architecture, A18 AI agents, A17 AI engineering, A2 Computers and networks | George's active lanes in Notion |
-| 2 | A1 DSA, A3 Linux, A4 Git, A7 Backend and APIs, A8 Databases, A13 Cybersecurity | Foundations the wave 1 courses lean on |
-| 3 | A11 DevOps, A12 Cloud, A14 Data engineering, A15 Analytics engineering, A16 Machine learning, A19 AI-assisted engineering | |
-| 4 | A5 Web, A6 TypeScript and Node, A20 UX, A21 Game design, A22 Systems programming, A23 Testing, A24 Technical writing | |
+| 1 | A2 Computers and networks, A9 System design, A10 Software design and architecture, A16 Machine learning, A17 AI engineering, A18 AI agents | George's active lanes in Notion; AI agents builds on AI engineering, which builds on machine learning |
+| 2 | A1 DSA, A3 Linux, A4 Git, A7 Backend and APIs, A8 Databases, A13 Cybersecurity | Foundations the later software courses lean on |
+| 3 | A11 DevOps, A12 Cloud, A14 Data engineering, A15 Analytics engineering, A23 Testing | DevOps needs Linux and Git; analytics needs data engineering |
+| 4 | A5 Web, A6 TypeScript and Node, A19 AI-assisted engineering, A20 UX, A21 Game design, A22 Systems programming, A24 Technical writing | AI-assisted engineering needs Git and Testing |
 | 5 | B1–B6 Making | |
-| 6 | C1–C5 Maths and science | |
+| 6 | C4 Trigonometry first, then C1, C2, C3 and C5 | Physics II and Calculus II use trigonometry |
 | 7 | D1–D10 Humanities and creative | |
-| 8 | Any of E that George keeps | |
+| 8 | E First aid | Needs its figures checked against current Red Cross and IFRC guidance before writing |
 
 Each wave is about 5–7 courses, which means roughly 3–4 million Sonnet tokens plus checking. The
 weekly usage limit was hit once during the rewrite, so a wave is about what one week allows.
+
+**Before a wave is written:** every curriculum's sources were written from memory, because the
+research session could not reach outside sites (a few data and web sources were read from their
+GitHub repositories). The writer, or a session with those hosts allowed, opens each source, confirms
+its licence, and checks the `unverified` list before any lesson cites it.

@@ -1,0 +1,1550 @@
+{
+  "id": "analytics-engineering-and-governance",
+  "title": "Analytics Engineering and Data Governance",
+  "family": "A",
+  "voice": "A",
+  "description": "How raw data becomes trusted analysis: dimensional models, transformation layers, tests and metrics, then lineage, quality, privacy and the roles that govern all of it.",
+  "audience": "A capable adult who can write SQL joins and aggregates (sql-from-rows-to-reports) and has seen a data pipeline (data-engineering helps but is not required). No previous modelling or governance knowledge assumed. Tools such as dbt are named only as examples.",
+  "prerequisites": [
+    "sql-from-rows-to-reports",
+    "data-engineering"
+  ],
+  "outcomes": [
+    "You'll be able to declare a grain and design a star schema around it.",
+    "You'll be able to keep history in dimensions and avoid fan-out in joins.",
+    "You'll be able to place logic in layers, write data tests and define metrics once.",
+    "You'll be able to trace lineage, measure quality and read a contract and a service level.",
+    "You'll be able to classify and protect personal data and explain what governance has to do in practice."
+  ],
+  "sources": [
+    {
+      "id": "kimball-techniques",
+      "title": "Kimball Group: Dimensional Modeling Techniques",
+      "url": "https://www.kimballgroup.com/data-warehouse-business-intelligence-resources/kimball-techniques/dimensional-modeling-techniques/",
+      "licence": "Copyrighted by Kimball Group; reference only, paraphrase never quote",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "kimball-book",
+      "title": "Kimball and Ross, The Data Warehouse Toolkit, 3rd ed. (Wiley, 2013)",
+      "url": "https://www.kimballgroup.com/data-warehouse-business-intelligence-resources/books/data-warehouse-dw-toolkit/",
+      "licence": "Copyrighted book; reference only",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "dbt-tests",
+      "title": "dbt documentation: Data tests",
+      "url": "https://docs.getdbt.com/docs/build/data-tests",
+      "licence": "dbt docs repository; licence not confirmed, treat as reference",
+      "use": "reference",
+      "verified": true
+    },
+    {
+      "id": "dbt-incremental",
+      "title": "dbt documentation: Incremental models",
+      "url": "https://docs.getdbt.com/docs/build/incremental-models",
+      "licence": "dbt docs repository; licence not confirmed, treat as reference",
+      "use": "reference",
+      "verified": true
+    },
+    {
+      "id": "dbt-snapshots",
+      "title": "dbt documentation: Snapshots",
+      "url": "https://docs.getdbt.com/docs/build/snapshots",
+      "licence": "dbt docs repository; licence not confirmed, treat as reference",
+      "use": "reference",
+      "verified": true
+    },
+    {
+      "id": "dbt-metrics",
+      "title": "dbt documentation: Metrics and the semantic layer (MetricFlow)",
+      "url": "https://docs.getdbt.com/docs/build/metrics-overview",
+      "licence": "dbt docs repository; licence not confirmed, treat as reference",
+      "use": "reference",
+      "verified": true
+    },
+    {
+      "id": "dbt-contracts",
+      "title": "dbt documentation: Model contracts",
+      "url": "https://docs.getdbt.com/docs/mesh/govern/model-contracts",
+      "licence": "dbt docs repository; licence not confirmed, treat as reference",
+      "use": "reference",
+      "verified": true
+    },
+    {
+      "id": "openlineage",
+      "title": "OpenLineage specification",
+      "url": "https://openlineage.io/docs/spec/object-model/",
+      "licence": "Apache-2.0",
+      "use": "adapt",
+      "verified": true
+    },
+    {
+      "id": "odcs",
+      "title": "Open Data Contract Standard (Bitol)",
+      "url": "https://github.com/bitol-io/open-data-contract-standard",
+      "licence": "Apache-2.0",
+      "use": "adapt",
+      "verified": true
+    },
+    {
+      "id": "great-expectations",
+      "title": "Great Expectations documentation (expectations as executable data checks)",
+      "url": "https://docs.greatexpectations.io/",
+      "licence": "Apache-2.0",
+      "use": "reference",
+      "verified": true
+    },
+    {
+      "id": "gdpr",
+      "title": "Regulation (EU) 2016/679 (GDPR), Articles 5, 6, 15 to 20, 33 and 83",
+      "url": "https://eur-lex.europa.eu/eli/reg/2016/679/oj",
+      "licence": "EU legislation, reusable with attribution",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "ico-guidance",
+      "title": "UK ICO: Guide to the UK GDPR",
+      "url": "https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/",
+      "licence": "Open Government Licence v3.0",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "nist-deid",
+      "title": "NIST SP 800-188: De-Identifying Government Datasets",
+      "url": "https://csrc.nist.gov/pubs/sp/800/188/final",
+      "licence": "US government work, public domain",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "sweeney-kanon",
+      "title": "Sweeney, k-anonymity: a model for protecting privacy (2002)",
+      "url": "https://doi.org/10.1142/S0218488502001648",
+      "licence": "Paper, all rights reserved; reference only",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "dama-dmbok",
+      "title": "DAMA-DMBOK: Data Management Body of Knowledge, 2nd ed.",
+      "url": "https://www.dama.org/cpages/body-of-knowledge",
+      "licence": "Copyrighted; reference only",
+      "use": "reference",
+      "verified": false
+    }
+  ],
+  "modules": [
+    {
+      "id": "modelling",
+      "title": "Modelling for analysis",
+      "summary": "Grain, facts and dimensions, slowly changing history and the trade-offs between model shapes."
+    },
+    {
+      "id": "transformation",
+      "title": "Transformation layers",
+      "summary": "Staging, intermediate and mart models, incremental builds, tests and a semantic layer that defines metrics once."
+    },
+    {
+      "id": "trust",
+      "title": "Lineage and quality",
+      "summary": "Following data back to its sources, measuring quality, and agreeing contracts and service levels."
+    },
+    {
+      "id": "governance",
+      "title": "Privacy and governance",
+      "summary": "Classifying and protecting data, privacy law in practice and the roles that make governance real."
+    }
+  ],
+  "lessons": [
+    {
+      "id": "from-questions-to-grain",
+      "moduleId": "modelling",
+      "title": "From questions to grain",
+      "objective": "Turn a business question into a business process and a declared grain, and recognise a fact table whose grain is mixed.",
+      "prerequisiteLessonIds": [],
+      "concepts": [
+        {
+          "id": "business-process",
+          "title": "Business process",
+          "summary": "A measurable activity the business performs, such as taking an order or shipping a parcel, produces the events a model records."
+        },
+        {
+          "id": "grain",
+          "title": "Grain",
+          "summary": "The grain states exactly what one row of a fact table represents, such as one order line, and every column must be true at that grain."
+        },
+        {
+          "id": "four-steps",
+          "title": "Four design steps",
+          "summary": "Dimensional design chooses the business process, declares the grain, identifies the dimensions and identifies the facts, in that order."
+        },
+        {
+          "id": "star-schema",
+          "title": "Star schema",
+          "summary": "A fact table of measurements surrounded by dimension tables of descriptive context, joined by keys."
+        }
+      ],
+      "skills": [
+        "declare-grain",
+        "spot-mixed-grain",
+        "name-the-process"
+      ],
+      "misconceptions": [
+        "Learners start from the available columns. The grain comes from the question and the process, and columns follow.",
+        "Learners put order totals on an order-line table. The total is true at order grain, so summing it over lines repeats it.",
+        "Learners think more detail is always better. Grain must be fine enough for the questions but no finer than the data supports."
+      ],
+      "sequence": [
+        "Start with 'what share of orders ship late?' and name the process and grain.",
+        "Declare order line as the grain and list what is true at that grain: quantity, unit price, line amount.",
+        "Show an order_total column on the line table and total it.",
+        "Draw the star: orders fact with date, customer and product dimensions."
+      ],
+      "examples": [
+        "Grain: one row per order line. Quantity 2 and line amount 40.00 are true at that grain; the order's shipping fee of 5.00 is not, and storing it on both of two lines would double it to 10.00 when summed.",
+        "Orders of 100, 200 and 300 with 2, 1 and 3 lines: summing an order_total repeated on each line gives 100x2 + 200x1 + 300x3 = 1,300 instead of 600.",
+        "A star for retail sales has a sales fact (grain: one row per product per receipt line) and dimensions date, store, product and customer."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A star schema with the fact table in the centre and four dimensions around it; a banner shows the declared grain in words. Views: star, grain sentence, a mixed-grain mistake highlighted.",
+          "learnerAction": "Change the grain statement and see which columns are no longer true at that grain.",
+          "placement": "grain and star-schema"
+        },
+        {
+          "type": "table",
+          "shows": "A small order-lines table with an order_total column repeated, using different orders from the question, and a SUM row.",
+          "learnerAction": "Sum the column and compare it with the total of the distinct orders.",
+          "placement": "spot-mixed-grain"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "choice",
+          "targets": "declare-grain",
+          "sample": "Which is a well-formed grain statement for a sales fact table?",
+          "answer": "One row per product on each receipt line",
+          "choices": [
+            "Sales",
+            "Daily sales data",
+            "One row per product on each receipt line",
+            "Everything about customers"
+          ]
+        },
+        {
+          "kind": "numeric",
+          "targets": "spot-mixed-grain",
+          "sample": "Orders of 100, 200 and 300 have 2, 1 and 3 order lines. An order_total column is copied onto each line. What does SUM(order_total) over the line table return?",
+          "answer": "1300"
+        },
+        {
+          "kind": "single-term",
+          "targets": "name-the-process",
+          "sample": "'How long does it take to ship an order after payment?' Which business process does the model record? Answer in two words.",
+          "answer": "order fulfilment"
+        }
+      ],
+      "sourceIds": [
+        "kimball-techniques",
+        "kimball-book"
+      ],
+      "historyNotes": [
+        "Ralph Kimball's The Data Warehouse Toolkit was first published in 1996. Confirm before printing."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "facts-and-dimensions",
+      "moduleId": "modelling",
+      "title": "Facts and dimensions",
+      "objective": "Classify measures as additive, semi-additive or non-additive, choose between transaction, periodic snapshot and accumulating snapshot facts, and explain surrogate keys.",
+      "prerequisiteLessonIds": [
+        "from-questions-to-grain"
+      ],
+      "concepts": [
+        {
+          "id": "additivity",
+          "title": "Additivity",
+          "summary": "Additive measures can be summed across every dimension, semi-additive ones across all but time, and non-additive ones such as ratios not at all."
+        },
+        {
+          "id": "fact-types",
+          "title": "Fact table types",
+          "summary": "A transaction fact records events, a periodic snapshot records state at regular intervals, and an accumulating snapshot tracks one row through a process with several dates."
+        },
+        {
+          "id": "surrogate-key",
+          "title": "Surrogate key",
+          "summary": "A meaningless integer key owned by the warehouse, which survives changes in source keys and allows history."
+        },
+        {
+          "id": "degenerate-dimension",
+          "title": "Degenerate dimension",
+          "summary": "An identifier such as an order number kept on the fact table because it has no attributes of its own."
+        }
+      ],
+      "skills": [
+        "classify-measure",
+        "pick-fact-type",
+        "aggregate-balance"
+      ],
+      "misconceptions": [
+        "Learners sum account balances over days. A balance is a state at a moment, and the total of three days' balances means nothing.",
+        "Learners average a ratio column. Ratios must be rebuilt from their additive parts.",
+        "Learners use the source's business key as the join key. It can change, repeat across systems or lose history."
+      ],
+      "sequence": [
+        "An account with balances 100, 120 and 90 on three days.",
+        "Which aggregation works for each of quantity sold, unit price, margin percent and balance.",
+        "Three fact types for one retail business: sales lines, daily stock levels, and order-to-delivery progress.",
+        "Why dim_customer has customer_key as well as customer_id."
+      ],
+      "examples": [
+        "Balances of 100, 120 and 90 on Monday to Wednesday sum to 310, which is meaningless; the end-of-period balance is 90 and the average is 103.33.",
+        "Quantity and revenue are additive; unit price and margin percent are non-additive; account balance and stock level are semi-additive (sum across accounts, not across days).",
+        "A periodic snapshot of stock has one row per product per day; an accumulating snapshot of orders has one row per order with dates for ordered, paid, shipped and delivered."
+      ],
+      "figures": [
+        {
+          "type": "table",
+          "shows": "A fact table of daily account balances for different accounts and values from the questions, with aggregation buttons (sum, average, last) and a sum-across-accounts row.",
+          "learnerAction": "Try each aggregation across time and across accounts.",
+          "placement": "additivity"
+        },
+        {
+          "type": "diagram_choice",
+          "shows": "Four business processes with a choice of fact table type.",
+          "learnerAction": "Match process to fact type.",
+          "placement": "fact-types"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "choice",
+          "targets": "classify-measure",
+          "sample": "Which measure is semi-additive?",
+          "answer": "Account balance",
+          "choices": [
+            "Quantity sold",
+            "Account balance",
+            "Unit price",
+            "Margin percentage"
+          ]
+        },
+        {
+          "kind": "numeric",
+          "targets": "aggregate-balance",
+          "sample": "An account's balance was 100 on Monday, 120 on Tuesday and 90 on Wednesday. What is its balance for the period, taking the end-of-period value?",
+          "answer": "90"
+        },
+        {
+          "kind": "choice",
+          "targets": "pick-fact-type",
+          "sample": "Which fact table type has one row per order, updated as the order moves through paid, shipped and delivered?",
+          "answer": "Accumulating snapshot",
+          "choices": [
+            "Transaction fact",
+            "Periodic snapshot",
+            "Accumulating snapshot",
+            "Factless fact"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "kimball-techniques",
+        "kimball-book"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "history-in-dimensions",
+      "moduleId": "modelling",
+      "title": "History in dimensions",
+      "objective": "Choose between overwriting and versioning a dimension attribute, and join a fact to the dimension row that was true on the transaction date.",
+      "prerequisiteLessonIds": [
+        "facts-and-dimensions"
+      ],
+      "concepts": [
+        {
+          "id": "scd",
+          "title": "Slowly changing dimension",
+          "summary": "An attribute of a dimension, such as a customer's city, changes occasionally, and the model must decide whether the past should show the old or the new value."
+        },
+        {
+          "id": "type1-type2",
+          "title": "Type 1 and Type 2",
+          "summary": "Type 1 overwrites the value and loses history, while Type 2 adds a new row with validity dates so history is kept."
+        },
+        {
+          "id": "as-of-join",
+          "title": "As-of join",
+          "summary": "A fact joins the dimension row whose validity range contains the fact's date."
+        },
+        {
+          "id": "conformed",
+          "title": "Conformed dimensions",
+          "summary": "A dimension shared by several fact tables with identical keys and meaning, so their results can be combined."
+        }
+      ],
+      "skills": [
+        "choose-scd-type",
+        "as-of-sum",
+        "read-validity-range"
+      ],
+      "misconceptions": [
+        "Learners overwrite attributes to keep the model simple, then find last year's revenue moves to the customer's new city.",
+        "Learners join facts to the current dimension row only. That puts every past sale in the present attribute.",
+        "Learners use closed end dates and overlapping ranges, which makes a fact match two rows."
+      ],
+      "sequence": [
+        "Customer C1 moved from Leeds to York on 2026-03-01 and has three sales.",
+        "Total by city under Type 1 and under Type 2.",
+        "Validity ranges: valid_from inclusive, valid_to exclusive, with 9999-12-31 for the current row.",
+        "Other SCD types in one line each: 0 keeps the original, 3 adds a previous-value column, 6 combines 1, 2 and 3."
+      ],
+      "examples": [
+        "dim_customer: (C1, Leeds, 2025-01-01 to 2026-03-01), (C1, York, 2026-03-01 to 9999-12-31), (C2, Leeds, 2025-01-01 to 9999-12-31). Sales: C1 50 on 2026-01-15, C1 30 on 2026-02-20, C1 70 on 2026-04-02, C2 20 on 2026-04-03.",
+        "As-of join by city: Leeds 100 (50+30 from C1 and 20 from C2), York 70.",
+        "Joining only to current rows (Type 1 behaviour): Leeds 20, York 150."
+      ],
+      "figures": [
+        {
+          "type": "relational_query",
+          "shows": "The dim_customer and sales tables for a different example (a salesperson who changes region), with editable join conditions and live result.",
+          "learnerAction": "Switch between a current-row join and an as-of join and read the totals.",
+          "placement": "as-of-join"
+        },
+        {
+          "type": "timeline_explorer",
+          "shows": "A date axis with validity bars for each version of a dimension row and sale dots that attach to the bar they fall in.",
+          "learnerAction": "Drag a sale across the change date.",
+          "placement": "type1-type2"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "code-run-sql",
+          "targets": "as-of-sum",
+          "sample": "Setup: CREATE TABLE dim_customer(sk INT, cust_id TEXT, city TEXT, valid_from TEXT, valid_to TEXT); INSERT INTO dim_customer VALUES (1,'C1','Leeds','2025-01-01','2026-03-01'),(2,'C1','York','2026-03-01','9999-12-31'),(3,'C2','Leeds','2025-01-01','9999-12-31'); CREATE TABLE sales(id INT,cust_id TEXT,sale_date TEXT,amount INT); INSERT INTO sales VALUES (1,'C1','2026-01-15',50),(2,'C1','2026-02-20',30),(3,'C1','2026-04-02',70),(4,'C2','2026-04-03',20); Join sales to dim_customer on cust_id with sale_date >= valid_from AND sale_date < valid_to. What is the York total?",
+          "answer": "70"
+        },
+        {
+          "kind": "code-run-sql",
+          "targets": "as-of-sum",
+          "sample": "With the same tables, join only to the current rows (valid_to = '9999-12-31'). What is the York total?",
+          "answer": "150"
+        },
+        {
+          "kind": "choice",
+          "targets": "choose-scd-type",
+          "sample": "Finance must report each past sale under the sales region the account manager belonged to at the time. Which approach?",
+          "answer": "Type 2: keep a row per version with validity dates",
+          "choices": [
+            "Type 1: overwrite the region",
+            "Type 2: keep a row per version with validity dates",
+            "Delete the old rows",
+            "Store the region only in the report"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "kimball-techniques",
+        "kimball-book",
+        "dbt-snapshots"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "choosing-a-model-shape",
+      "moduleId": "modelling",
+      "title": "Choosing a model shape",
+      "objective": "Choose between a star schema, a normalised model, one wide table and a data vault for a given need, and detect a join fan-out before it inflates a total.",
+      "prerequisiteLessonIds": [
+        "history-in-dimensions"
+      ],
+      "concepts": [
+        {
+          "id": "normalised-vs-dimensional",
+          "title": "Normalised and dimensional",
+          "summary": "A normalised model avoids redundancy for updating, a dimensional model repeats descriptions to make reading simple and fast."
+        },
+        {
+          "id": "wide-table",
+          "title": "One big table",
+          "summary": "A denormalised wide table is easy to query for one purpose but repeats data and hides grain."
+        },
+        {
+          "id": "data-vault",
+          "title": "Data vault",
+          "summary": "A model of hubs (keys), links (relationships) and satellites (history) built for auditable integration from many sources, usually with marts built on top."
+        },
+        {
+          "id": "fan-out",
+          "title": "Join fan-out",
+          "summary": "Joining a one-to-many relationship repeats the parent row once per child, so a parent measure summed after the join is inflated."
+        }
+      ],
+      "skills": [
+        "pick-shape",
+        "detect-fan-out",
+        "fix-fan-out"
+      ],
+      "misconceptions": [
+        "Learners think one shape suits every layer. Integration, history and reporting have different needs.",
+        "Learners join orders to items and sum the order total. Each order repeats once per item.",
+        "Learners think a bigger model is a better model. Each added table adds joins and ways to be wrong."
+      ],
+      "sequence": [
+        "Compare three shapes of the same retail data by what is easy and what is hard.",
+        "Join 3 orders to 6 items and sum order totals.",
+        "Fix it by aggregating items first or summing at the right grain.",
+        "Place data vault as an integration layer feeding stars."
+      ],
+      "examples": [
+        "Orders of 100, 200 and 300 joined to items (2, 1 and 3 lines) give SUM(o.total) = 1,300 after the join, but 600 from the orders table alone.",
+        "Aggregating items to one row per order before the join keeps the sum at 600.",
+        "A star is the best default for reporting, a data vault for many-source integration with audit needs, and a wide table as a final convenience mart."
+      ],
+      "figures": [
+        {
+          "type": "relational_query",
+          "shows": "Two tables, invoices and invoice lines (different from the questions), with a join that can be toggled between raw and pre-aggregated, and totals shown for each.",
+          "learnerAction": "Run both joins and compare totals.",
+          "placement": "fan-out"
+        },
+        {
+          "type": "diagram_choice",
+          "shows": "Four scenarios (ad hoc dashboard, many-source audit, transactional app, data science feature table) with a choice of shape.",
+          "learnerAction": "Choose the shape for each.",
+          "placement": "pick-shape"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "code-run-sql",
+          "targets": "detect-fan-out",
+          "sample": "Setup: CREATE TABLE o(id INT, total INT); INSERT INTO o VALUES (1,100),(2,200),(3,300); CREATE TABLE i(oid INT, sku TEXT); INSERT INTO i VALUES (1,'a'),(1,'b'),(2,'c'),(3,'a'),(3,'b'),(3,'c'); What does SELECT SUM(o.total) FROM o JOIN i ON i.oid = o.id return?",
+          "answer": "1300"
+        },
+        {
+          "kind": "numeric",
+          "targets": "fix-fan-out",
+          "sample": "With the same tables, what does SELECT SUM(total) FROM o return?",
+          "answer": "600"
+        },
+        {
+          "kind": "choice",
+          "targets": "pick-shape",
+          "sample": "Which shape fits integrating ten source systems with full audit history before building reports?",
+          "answer": "Data vault feeding dimensional marts",
+          "choices": [
+            "One big table",
+            "Data vault feeding dimensional marts",
+            "A single spreadsheet",
+            "Normalised tables only, no marts"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "kimball-book",
+        "kimball-techniques"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "layers-of-models",
+      "moduleId": "transformation",
+      "title": "Layers of models",
+      "objective": "Place a transformation in a staging, intermediate or mart layer, choose a materialisation, and read a model graph.",
+      "prerequisiteLessonIds": [
+        "choosing-a-model-shape"
+      ],
+      "concepts": [
+        {
+          "id": "staging",
+          "title": "Staging",
+          "summary": "Staging models mirror one source table each, renaming columns, fixing types and changing nothing else."
+        },
+        {
+          "id": "intermediate-marts",
+          "title": "Intermediate and marts",
+          "summary": "Intermediate models join and reshape, and marts present business entities and measures for use."
+        },
+        {
+          "id": "materialisation",
+          "title": "Materialisation",
+          "summary": "A model can be built as a view, a table, an incremental table or inlined as ephemeral, trading build time against query time and freshness."
+        },
+        {
+          "id": "model-dag",
+          "title": "Model graph",
+          "summary": "Models refer to each other by reference rather than table name, so the tool builds a graph and runs models in dependency order."
+        }
+      ],
+      "skills": [
+        "place-the-logic",
+        "pick-materialisation",
+        "read-model-graph"
+      ],
+      "misconceptions": [
+        "Learners put business logic in staging. Staging must stay boring so every downstream model sees the same cleaned source.",
+        "Learners materialise everything as tables. Views cost nothing to build and tables cost nothing to read; each has its place.",
+        "Learners hard-code table names. References let the tool order the build and trace lineage."
+      ],
+      "sequence": [
+        "Show raw orders to stg_orders, int_orders_joined, fct_orders.",
+        "Choose a materialisation for a 2 billion row event model refreshed hourly.",
+        "Read a graph of eight models and find what runs first.",
+        "Reference by ref('stg_orders') rather than a schema.table string."
+      ],
+      "examples": [
+        "stg_orders renames orderid to order_id and casts amount to a decimal; int_orders_joined joins it to customers; fct_orders is the mart.",
+        "A multi-billion-row append-mostly event model is a good incremental table; a small lookup is a view.",
+        "In dbt, ref('stg_orders') is how one model refers to another, and the tool builds the dependency graph from those calls (an example, not a requirement)."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A model graph from sources through staging, intermediate and mart models, with a legend for materialisation and a build-order numbering. Views: layers, materialisation, build order.",
+          "learnerAction": "Click a model to highlight what it needs and what needs it.",
+          "placement": "model-dag"
+        },
+        {
+          "type": "diagram_choice",
+          "shows": "Five transformations (rename a column, join orders to customers, daily revenue by region, cast a date, a one-off helper) with a layer choice.",
+          "learnerAction": "Place each in a layer.",
+          "placement": "staging and intermediate-marts"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "choice",
+          "targets": "place-the-logic",
+          "sample": "Where should casting amount from text to a decimal and renaming orderid to order_id happen?",
+          "answer": "In the staging model for that source",
+          "choices": [
+            "In the final mart",
+            "In the staging model for that source",
+            "In the dashboard",
+            "In an intermediate join"
+          ]
+        },
+        {
+          "kind": "choice",
+          "targets": "pick-materialisation",
+          "sample": "A model with several billion rows grows by appending new events each hour. Which materialisation suits it?",
+          "answer": "Incremental table",
+          "choices": [
+            "View",
+            "Ephemeral",
+            "Incremental table",
+            "Full-refresh table every hour"
+          ]
+        },
+        {
+          "kind": "single-term",
+          "targets": "read-model-graph",
+          "sample": "In dbt, which function does one model use to refer to another so the tool can order the build? Give the function name.",
+          "answer": "ref"
+        }
+      ],
+      "sourceIds": [
+        "dbt-tests",
+        "dbt-incremental",
+        "kimball-book"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "incremental-builds",
+      "moduleId": "transformation",
+      "title": "Incremental builds",
+      "objective": "Predict which rows an incremental model picks up and which it misses, and choose a lookback or snapshot to close the gap.",
+      "prerequisiteLessonIds": [
+        "layers-of-models"
+      ],
+      "concepts": [
+        {
+          "id": "incremental-filter",
+          "title": "Incremental filter",
+          "summary": "An incremental run selects only rows newer than the maximum timestamp already in the target and merges them by key."
+        },
+        {
+          "id": "lookback",
+          "title": "Lookback window",
+          "summary": "Re-reading a recent window each run catches late-arriving rows, and a unique key keeps the re-read from duplicating."
+        },
+        {
+          "id": "full-refresh",
+          "title": "Full refresh",
+          "summary": "Rebuilding the whole model from scratch repairs logic changes and missed rows at the cost of a long build."
+        },
+        {
+          "id": "snapshot-model",
+          "title": "Snapshots",
+          "summary": "A snapshot records how a mutable source row changes over time, adding validity dates, so history exists when the source overwrites it."
+        }
+      ],
+      "skills": [
+        "predict-incremental-rows",
+        "find-missed-row",
+        "choose-repair"
+      ],
+      "misconceptions": [
+        "Learners think an incremental model always matches a full refresh. It matches only if late rows and changed logic are handled.",
+        "Learners think a unique key alone catches late rows. The filter must read them first.",
+        "Learners forget that a changed model definition does not rewrite old rows. A full refresh is needed."
+      ],
+      "sequence": [
+        "A target with ids 1 to 3 and a source with ids 1 to 5, updated on different days.",
+        "Run the max(updated_at) filter and list the ids it reads.",
+        "Show the missed late row, then a 3-day lookback.",
+        "Snapshots: use a timestamp strategy to capture a row's changes."
+      ],
+      "examples": [
+        "Target max updated_at is 2026-05-03. Source rows: id 1 (05-01), id 2 changed to v=25 (05-04), id 3 (05-03), id 4 new (05-04), id 5 late (05-02). The filter updated_at > 2026-05-03 reads ids 2 and 4.",
+        "After the merge the target holds ids 1, 2 (v=25), 3 and 4: four rows; id 5 is missed because its timestamp is older than the max.",
+        "A lookback of 3 days (updated_at > max - 3 days) re-reads ids 3 and 5, and the unique key avoids duplicates."
+      ],
+      "figures": [
+        {
+          "type": "relational_query",
+          "shows": "A target table, a source table and a run button for the incremental filter, with a lookback slider, using a different table (invoices).",
+          "learnerAction": "Run the filter and change the lookback.",
+          "placement": "lookback"
+        },
+        {
+          "type": "timeline_explorer",
+          "shows": "A time axis with source commits and the max timestamp marker, plus the late row falling behind it.",
+          "learnerAction": "Move the marker and see which rows read.",
+          "placement": "incremental-filter"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "code-run-sql",
+          "targets": "predict-incremental-rows",
+          "sample": "Setup: CREATE TABLE tgt(id INT PRIMARY KEY, v INT, updated_at TEXT); INSERT INTO tgt VALUES (1,10,'2026-05-01'),(2,20,'2026-05-02'),(3,30,'2026-05-03'); CREATE TABLE src(id INT, v INT, updated_at TEXT); INSERT INTO src VALUES (1,10,'2026-05-01'),(2,25,'2026-05-04'),(3,30,'2026-05-03'),(4,40,'2026-05-04'),(5,50,'2026-05-02'); Merge rows with updated_at > (SELECT MAX(updated_at) FROM tgt) into tgt by id. How many rows does tgt hold afterwards?",
+          "answer": "4"
+        },
+        {
+          "kind": "numeric",
+          "targets": "find-missed-row",
+          "sample": "Which source id is never loaded by that filter? Give the id.",
+          "answer": "5"
+        },
+        {
+          "kind": "choice",
+          "targets": "choose-repair",
+          "sample": "Which change makes the incremental model pick up late-arriving rows?",
+          "answer": "Re-read a recent window and merge on the unique key",
+          "choices": [
+            "Delete the target and never rebuild",
+            "Re-read a recent window and merge on the unique key",
+            "Use a strict greater-than on the max timestamp",
+            "Remove the unique key"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "dbt-incremental",
+        "dbt-snapshots"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "testing-data",
+      "moduleId": "transformation",
+      "title": "Testing data",
+      "objective": "Write a test as a query that returns failing rows, read the result of the four standard tests, and choose where in the graph a test belongs.",
+      "prerequisiteLessonIds": [
+        "incremental-builds"
+      ],
+      "concepts": [
+        {
+          "id": "failing-rows",
+          "title": "Tests return failing rows",
+          "summary": "A data test is a query written so that it returns the rows that break the assertion, and it passes when it returns none."
+        },
+        {
+          "id": "standard-tests",
+          "title": "The standard four",
+          "summary": "unique, not_null, accepted_values and relationships cover most structural assumptions about a column."
+        },
+        {
+          "id": "where-to-test",
+          "title": "Where to test",
+          "summary": "Test sources for what you receive, staging for keys, and marts for business rules, because a failure is cheapest to explain closest to its cause."
+        },
+        {
+          "id": "unit-vs-data",
+          "title": "Unit tests and data tests",
+          "summary": "A data test checks real data after a build, while a unit test checks the transformation logic against small fixed inputs."
+        }
+      ],
+      "skills": [
+        "write-failing-rows-query",
+        "count-failures",
+        "place-the-test"
+      ],
+      "misconceptions": [
+        "Learners write tests that return a count of passes. A test must return the failing rows so the cause can be seen.",
+        "Learners expect unique to count NULLs as duplicates. A not_null test handles those.",
+        "Learners test only the final mart. By then the cause is hours away."
+      ],
+      "sequence": [
+        "customers with email values including a repeat and two NULLs, and orders with customer ids.",
+        "unique returns the repeated value; not_null returns the NULL rows.",
+        "relationships returns orders whose customer id has no match, ignoring NULL ids.",
+        "accepted_values returns orders with a status not on the list."
+      ],
+      "examples": [
+        "customers emails: a@x.com, NULL, a@x.com, d@x.com, NULL. A unique test returns 1 failing value (a@x.com, appearing twice) and a not_null test returns 2 rows.",
+        "orders with customer_ids 1, 2, 9, 3, NULL, 4, 12: a relationships test against customers 1 to 5 returns orders with customer ids 9 and 12.",
+        "orders with statuses paid, paid, shipped, refunded, paid, void, paid: accepted_values for (paid, shipped, refunded) returns the one 'void' order."
+      ],
+      "figures": [
+        {
+          "type": "relational_query",
+          "shows": "Two tables with failing-rows queries for each standard test and a pass/fail strip, using a different example (employees and departments).",
+          "learnerAction": "Run each test and read the failing rows.",
+          "placement": "failing-rows and standard-tests"
+        },
+        {
+          "type": "diagram_choice",
+          "shows": "A graph of models with tests as flags, and the learner chooses the best layer for four tests.",
+          "learnerAction": "Place each test.",
+          "placement": "where-to-test"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "code-run-sql",
+          "targets": "write-failing-rows-query",
+          "sample": "Setup: CREATE TABLE customers(id INT, email TEXT); INSERT INTO customers VALUES (1,'a@x.com'),(2,NULL),(3,'a@x.com'),(4,'d@x.com'),(5,NULL); CREATE TABLE orders(id INT, customer_id INT, status TEXT); INSERT INTO orders VALUES (10,1,'paid'),(11,2,'paid'),(12,9,'shipped'),(13,3,'refunded'),(14,NULL,'paid'),(15,4,'void'),(16,12,'paid'); Write the relationships test: orders whose non-null customer_id has no matching customers.id. Which order ids are returned, in ascending order?",
+          "answer": "12, 16"
+        },
+        {
+          "kind": "numeric",
+          "targets": "count-failures",
+          "sample": "With the same customers table, how many rows does a not_null test on email return?",
+          "answer": "2"
+        },
+        {
+          "kind": "single-term",
+          "targets": "write-failing-rows-query",
+          "sample": "With the same orders table, which order id fails an accepted_values test for status in ('paid','shipped','refunded')?",
+          "answer": "15"
+        }
+      ],
+      "sourceIds": [
+        "dbt-tests",
+        "great-expectations"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "semantic-layers-and-metrics",
+      "moduleId": "transformation",
+      "title": "Semantic layers and metrics",
+      "objective": "Define a metric once from additive parts, explain why a ratio of sums differs from an average of ratios, and avoid double counting distinct measures across groups.",
+      "prerequisiteLessonIds": [
+        "testing-data"
+      ],
+      "concepts": [
+        {
+          "id": "metric",
+          "title": "Metric",
+          "summary": "A named calculation, such as revenue or average order value, with an agreed definition, grain and filters."
+        },
+        {
+          "id": "semantic-layer",
+          "title": "Semantic layer",
+          "summary": "A layer that defines metrics and dimensions once, so every dashboard and query returns the same number."
+        },
+        {
+          "id": "metric-types",
+          "title": "Metric types",
+          "summary": "Simple metrics aggregate a measure, ratio metrics divide two metrics, cumulative metrics accumulate over time and derived metrics combine metrics."
+        },
+        {
+          "id": "non-additive-metrics",
+          "title": "Non-additive metrics",
+          "summary": "Distinct counts and ratios cannot be added across groups, and must be recomputed at the requested grain."
+        }
+      ],
+      "skills": [
+        "compute-ratio-metric",
+        "avoid-double-counting",
+        "define-once"
+      ],
+      "misconceptions": [
+        "Learners average per-region averages. The overall average is a ratio of totals.",
+        "Learners add distinct customer counts across regions. A customer in two regions is counted twice.",
+        "Learners redefine revenue in each dashboard. Two numbers for one name destroy trust."
+      ],
+      "sequence": [
+        "Two regions: A has revenue 100 and 10 orders; B has revenue 900 and 30 orders.",
+        "Average of average order values versus total revenue over total orders.",
+        "Customers in A: 1, 2, 3. Customers in B: 3, 4.",
+        "Define 'revenue' once, with its filters, and reuse it."
+      ],
+      "examples": [
+        "Average order value: region A 100/10 = 10, region B 900/30 = 30. The average of the two is 20, but the overall value is (100+900)/(10+30) = 25.",
+        "Distinct customers: A has {1,2,3}, B has {3,4}; the sum of counts is 5, the distinct count over both is 4.",
+        "A ratio metric stores numerator and denominator metrics, and the tool divides after aggregating."
+      ],
+      "figures": [
+        {
+          "type": "table",
+          "shows": "Two other regions (different numbers from the questions) with revenue, orders and AOV, and buttons for 'average the AOVs' and 'total over total'.",
+          "learnerAction": "Try both and compare with a hidden reference.",
+          "placement": "compute-ratio-metric"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "Two overlapping circles for customers in two other regions (different ids from the questions) with counts and the distinct union.",
+          "learnerAction": "Toggle between sum of counts and distinct count.",
+          "placement": "non-additive-metrics"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-ratio-metric",
+          "sample": "Region A has revenue 100 from 10 orders and region B has revenue 900 from 30 orders. What is the overall average order value?",
+          "answer": "25"
+        },
+        {
+          "kind": "numeric",
+          "targets": "avoid-double-counting",
+          "sample": "Region A's customers are 1, 2 and 3, and region B's are 3 and 4. How many distinct customers are there overall?",
+          "answer": "4"
+        },
+        {
+          "kind": "choice",
+          "targets": "define-once",
+          "sample": "Two dashboards show different 'revenue' for the same month. What fixes it at the cause?",
+          "answer": "Define revenue once in a shared metric layer and reuse it",
+          "choices": [
+            "Tell users which dashboard to trust",
+            "Define revenue once in a shared metric layer and reuse it",
+            "Round both numbers",
+            "Delete one dashboard"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "dbt-metrics",
+        "kimball-book"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "lineage",
+      "moduleId": "trust",
+      "title": "Lineage",
+      "objective": "Read a lineage graph to list everything upstream or downstream of a node, and say what an impact analysis and a column-level lineage add.",
+      "prerequisiteLessonIds": [
+        "semantic-layers-and-metrics"
+      ],
+      "concepts": [
+        {
+          "id": "lineage",
+          "title": "Lineage",
+          "summary": "A record of which datasets and jobs produced which other datasets, so data can be traced back to sources and forward to uses."
+        },
+        {
+          "id": "upstream-downstream",
+          "title": "Upstream and downstream",
+          "summary": "Upstream nodes feed a dataset, and downstream nodes consume it, directly or through other nodes."
+        },
+        {
+          "id": "impact-analysis",
+          "title": "Impact analysis",
+          "summary": "Walking downstream from a changing node lists the models, reports and owners that a change can break."
+        },
+        {
+          "id": "lineage-events",
+          "title": "Lineage events",
+          "summary": "Jobs can emit run events naming their input and output datasets, and a lineage store assembles them into a graph."
+        }
+      ],
+      "skills": [
+        "list-downstream",
+        "list-upstream",
+        "count-impacted-reports"
+      ],
+      "misconceptions": [
+        "Learners think lineage is a drawing. It is captured from runs, so it stays true when jobs change.",
+        "Learners count only direct consumers. An impact reaches everything downstream, however many hops.",
+        "Learners think table-level lineage is enough. A broken column needs column-level lineage to see which outputs really use it."
+      ],
+      "sequence": [
+        "Draw sources s1 and s2 into stg1 and stg2, then int1, mart1, mart2 and dashboards d1 and d2.",
+        "List everything downstream of stg1 and upstream of d2.",
+        "Impact: if s2 changes shape, which dashboards are affected?",
+        "Show a run event with a job, a run, and input and output datasets."
+      ],
+      "examples": [
+        "Edges: s1 to stg1; s2 to stg2; stg1 and stg2 to int1; int1 to mart1; stg2 to mart2; mart1 to d1 and d2; mart2 to d2.",
+        "Downstream of stg1: int1, mart1, d1, d2 (4 nodes). Upstream of d2: mart1, mart2, int1, stg1, stg2, s1, s2 (7 nodes).",
+        "If s2 changes, the affected dashboards are d1 and d2 (2): d1 through stg2, int1, mart1; d2 through mart1 and mart2."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A different lineage graph from the one in the questions, with selectable nodes: choosing one highlights upstream in one colour and downstream in another and shows counts. Views: table-level, column-level for one mart.",
+          "learnerAction": "Click nodes and read the highlighted sets.",
+          "placement": "upstream-downstream and impact-analysis"
+        },
+        {
+          "type": "data_series",
+          "shows": "A list of run events (start, complete) with job and dataset names that build the graph step by step.",
+          "learnerAction": "Step through the events and watch edges appear.",
+          "placement": "lineage-events"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "list-downstream",
+          "sample": "Edges: s1 to stg1; s2 to stg2; stg1 and stg2 to int1; int1 to mart1; stg2 to mart2; mart1 to d1 and d2; mart2 to d2. How many nodes are downstream of stg1?",
+          "answer": "4"
+        },
+        {
+          "kind": "numeric",
+          "targets": "list-upstream",
+          "sample": "In the same graph, how many nodes are upstream of d2?",
+          "answer": "7"
+        },
+        {
+          "kind": "numeric",
+          "targets": "count-impacted-reports",
+          "sample": "In the same graph, source s2 changes shape. How many dashboards (d1, d2) can be affected?",
+          "answer": "2"
+        }
+      ],
+      "sourceIds": [
+        "openlineage",
+        "dbt-contracts"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "measuring-quality",
+      "moduleId": "trust",
+      "title": "Measuring quality",
+      "objective": "Compute completeness, uniqueness and freshness, and use a z-score against recent history to flag an abnormal volume.",
+      "prerequisiteLessonIds": [
+        "lineage"
+      ],
+      "concepts": [
+        {
+          "id": "quality-dimensions",
+          "title": "Quality dimensions",
+          "summary": "Completeness, uniqueness, validity, accuracy, consistency and timeliness name different ways data can be wrong."
+        },
+        {
+          "id": "quality-metrics",
+          "title": "Quality as a rate",
+          "summary": "Each dimension becomes a rate, such as non-null rows over all rows, compared with a threshold agreed with the data's users."
+        },
+        {
+          "id": "anomaly-z",
+          "title": "Volume anomalies",
+          "summary": "A z-score, the distance from the recent mean in standard deviations, flags a day whose row count is unusual."
+        },
+        {
+          "id": "freshness-sla",
+          "title": "Freshness target",
+          "summary": "Timeliness is measured as age against a target, and a breach is the amount by which the age exceeds it."
+        }
+      ],
+      "skills": [
+        "compute-completeness",
+        "compute-z-score",
+        "compute-breach"
+      ],
+      "misconceptions": [
+        "Learners treat quality as a pass or fail. Quality is a rate with a threshold that matches a use.",
+        "Learners test accuracy with rules only. Accuracy needs an external reference; rules catch validity and consistency.",
+        "Learners set a fixed row-count limit. Volumes drift and have seasons, so compare with recent history."
+      ],
+      "sequence": [
+        "940 non-null emails in 1,000 rows.",
+        "980 distinct ids in 1,000 rows.",
+        "Daily row counts in thousands: 95, 105, 95, 105, then 85 today.",
+        "A table last updated at 03:00, checked at 09:00 against a 4-hour target."
+      ],
+      "examples": [
+        "Completeness: 940 / 1,000 = 94%. Uniqueness: 980 distinct of 1,000 rows = 98%.",
+        "History 95, 105, 95, 105 has mean 100 and population standard deviation 5; a count of 85 has z = (85-100)/5 = -3.0.",
+        "A table updated at 03:00 and checked at 09:00 is 6 hours old; against a 4-hour target it breaches by 2 hours."
+      ],
+      "figures": [
+        {
+          "type": "data_series",
+          "shows": "A bar chart of a different week of daily row counts (not the history in the questions) with mean and plus or minus 3 standard deviation lines and a movable 'today' bar.",
+          "learnerAction": "Drag today's count and read its z-score.",
+          "placement": "anomaly-z"
+        },
+        {
+          "type": "table",
+          "shows": "A quality scorecard with completeness, uniqueness and freshness for several columns and target colours.",
+          "learnerAction": "Set thresholds and see which columns fail.",
+          "placement": "quality-metrics"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-completeness",
+          "sample": "940 of 1,000 rows have a non-null email. What is the completeness, in percent?",
+          "answer": "94"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-z-score",
+          "sample": "Daily row counts (thousands) were 95, 105, 95 and 105. Using the population standard deviation, what is the z-score of today's count of 85?",
+          "answer": "-3"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-breach",
+          "sample": "A table was last updated at 03:00 and it is 09:00. Its freshness target is 4 hours. By how many hours is it in breach?",
+          "answer": "2"
+        }
+      ],
+      "sourceIds": [
+        "great-expectations",
+        "dbt-tests",
+        "dama-dmbok"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "contracts-ownership-and-slos",
+      "moduleId": "trust",
+      "title": "Contracts, ownership and service levels",
+      "objective": "Classify a schema change as breaking or compatible, work out an error budget from a service-level objective, and say who owns a failing dataset.",
+      "prerequisiteLessonIds": [
+        "measuring-quality"
+      ],
+      "concepts": [
+        {
+          "id": "data-contract",
+          "title": "Data contract",
+          "summary": "An agreement between a producer and its consumers on schema, meaning, quality and timeliness of a dataset, checked automatically."
+        },
+        {
+          "id": "breaking-change",
+          "title": "Breaking change",
+          "summary": "Removing, renaming or retyping a field, or changing its meaning, breaks consumers, while adding an optional field does not."
+        },
+        {
+          "id": "slo",
+          "title": "Service-level objective",
+          "summary": "A target for a measurable indicator, such as 99% of days with data ready by 07:00, over a set period."
+        },
+        {
+          "id": "error-budget",
+          "title": "Error budget",
+          "summary": "The allowed failure implied by the objective, such as 1% of a 30-day month, which is 7.2 hours."
+        }
+      ],
+      "skills": [
+        "classify-change",
+        "compute-error-budget",
+        "assign-ownership"
+      ],
+      "misconceptions": [
+        "Learners think a contract is a document. It is a machine-checked agreement, or it will drift.",
+        "Learners think a new column cannot break anyone. A consumer that selects every column or enforces a fixed schema can break.",
+        "Learners assign ownership to the pipeline team for everything. The producing domain owns the meaning; the platform owns the tooling."
+      ],
+      "sequence": [
+        "List five changes and mark each breaking or compatible.",
+        "Turn 99% over 30 days into hours.",
+        "A failed freshness check at 07:00: who is paged, who is told.",
+        "A contract file with schema, quality and SLO sections."
+      ],
+      "examples": [
+        "Compatible: adding an optional column. Breaking: removing a column, renaming a column, changing a type from integer to string, changing 'amount' from gross to net.",
+        "99% over 30 days (720 hours) allows 1% = 7.2 hours of failure; 99.5% allows 3.6 hours.",
+        "The Open Data Contract Standard describes schema, quality and service-level sections in one YAML document (an example, not a requirement)."
+      ],
+      "figures": [
+        {
+          "type": "table",
+          "shows": "A change list with columns for the change, who is affected and a breaking/compatible mark hidden until chosen.",
+          "learnerAction": "Classify each change.",
+          "placement": "breaking-change"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A month calendar with failed days shaded against an error budget bar that drains.",
+          "learnerAction": "Click days to fail and watch the budget.",
+          "placement": "slo and error-budget"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "choice",
+          "targets": "classify-change",
+          "sample": "Which change is breaking for a consumer that expects the current schema?",
+          "answer": "Renaming the column order_total to total",
+          "choices": [
+            "Adding an optional column delivered_at",
+            "Renaming the column order_total to total",
+            "Adding a column description",
+            "Adding a new, unrelated table"
+          ]
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-error-budget",
+          "sample": "A freshness objective is 99% of the time over a 30-day month (720 hours). How many hours of breach does the error budget allow?",
+          "answer": "7.2"
+        },
+        {
+          "kind": "choice",
+          "targets": "assign-ownership",
+          "sample": "A source field's meaning changes, and downstream reports are wrong. Who should be accountable for fixing the meaning and informing consumers?",
+          "answer": "The producing team that owns the dataset",
+          "choices": [
+            "The analyst who found it",
+            "The producing team that owns the dataset",
+            "Whoever opens the dashboard next",
+            "The cloud vendor"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "odcs",
+        "dbt-contracts",
+        "great-expectations"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "classifying-and-protecting-data",
+      "moduleId": "governance",
+      "title": "Classifying and protecting data",
+      "objective": "Classify data by sensitivity, tell hashing and pseudonymisation from anonymisation, and compute k for a table to judge re-identification risk.",
+      "prerequisiteLessonIds": [
+        "contracts-ownership-and-slos"
+      ],
+      "concepts": [
+        {
+          "id": "classification",
+          "title": "Classification",
+          "summary": "Data is labelled by sensitivity, such as public, internal, confidential and restricted, and the label drives who can see it and how it is stored."
+        },
+        {
+          "id": "pii",
+          "title": "Personal data",
+          "summary": "Any information relating to an identifiable person, including indirect identifiers such as a postcode and age together."
+        },
+        {
+          "id": "pseudonymisation",
+          "title": "Pseudonymisation and anonymisation",
+          "summary": "Pseudonymisation replaces identifiers but can be reversed or guessed and remains personal data, while true anonymisation cannot be linked back to a person."
+        },
+        {
+          "id": "k-anonymity",
+          "title": "k-anonymity",
+          "summary": "A table has k-anonymity when every combination of quasi-identifiers appears at least k times, so no row is unique among its group."
+        }
+      ],
+      "skills": [
+        "classify-a-column",
+        "compute-k",
+        "tell-pseudo-from-anon"
+      ],
+      "misconceptions": [
+        "Learners think hashing an email makes it anonymous. An unsalted hash of a guessable value can be matched by hashing candidates.",
+        "Learners remove names and call the data anonymous. Age, postcode and sex together can identify people.",
+        "Learners protect only the columns marked PII. Combinations of ordinary columns can re-identify."
+      ],
+      "sequence": [
+        "Classify columns of a customer table by sensitivity.",
+        "Hash an email: why a list of known emails reverses it.",
+        "Count how many rows share each (age band, postcode prefix, sex).",
+        "Generalise rows until every group has at least 3."
+      ],
+      "examples": [
+        "Table of 8 rows with (age band, postcode prefix, sex): (30-39, LS1, F) x3, (40-49, LS2, M) x3, (20-29, LS1, M) x1, (30-39, LS1, M) x1. Group sizes are 3, 3, 1, 1, so k = 1.",
+        "To reach k = 3 the two rows in single-row groups must be generalised or removed.",
+        "An unsalted SHA-256 hash of a known email matches the hash of the same email computed by anyone, so it is pseudonymous at best."
+      ],
+      "figures": [
+        {
+          "type": "table",
+          "shows": "A table of other rows (not the question's rows) with quasi-identifier columns, coloured by group size, and a generalise button that widens an age band.",
+          "learnerAction": "Generalise until every group is at least 3.",
+          "placement": "k-anonymity"
+        },
+        {
+          "type": "diagram_choice",
+          "shows": "Six columns of a customer table with a choice of sensitivity label.",
+          "learnerAction": "Label each column.",
+          "placement": "classification"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-k",
+          "sample": "Rows (age band, postcode prefix, sex): (30-39, LS1, F) x3; (40-49, LS2, M) x3; (20-29, LS1, M) x1; (30-39, LS1, M) x1. What is the k of this table?",
+          "answer": "1"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-k",
+          "sample": "For the same table, how many rows lie in groups smaller than 3 and so block k = 3?",
+          "answer": "2"
+        },
+        {
+          "kind": "single-term",
+          "targets": "tell-pseudo-from-anon",
+          "sample": "Replacing an email with an unsalted hash of the email is an example of which technique, which still leaves personal data? Give the one word.",
+          "answer": "pseudonymisation"
+        }
+      ],
+      "sourceIds": [
+        "nist-deid",
+        "sweeney-kanon",
+        "gdpr",
+        "ico-guidance"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "privacy-law-in-practice",
+      "moduleId": "governance",
+      "title": "Privacy law in practice",
+      "objective": "Explain the main GDPR principles, lawful bases and data subject rights, and show how an erasure request works in a table format with immutable files.",
+      "prerequisiteLessonIds": [
+        "classifying-and-protecting-data"
+      ],
+      "concepts": [
+        {
+          "id": "principles",
+          "title": "Principles",
+          "summary": "Personal data must be processed lawfully, fairly and transparently, for specified purposes, minimally, accurately, for no longer than needed, and securely, with the controller accountable."
+        },
+        {
+          "id": "lawful-bases",
+          "title": "Lawful bases",
+          "summary": "There are six lawful bases for processing: consent, contract, legal obligation, vital interests, public task and legitimate interests."
+        },
+        {
+          "id": "rights",
+          "title": "Data subject rights",
+          "summary": "People may access their data, correct it, have it erased in some cases, restrict or object to processing, and receive it in a portable format."
+        },
+        {
+          "id": "erasure-in-lake",
+          "title": "Erasure in immutable storage",
+          "summary": "Deleting a row in a table format writes a new version, and the old files remain on storage until they are vacuumed."
+        }
+      ],
+      "skills": [
+        "breach-notice",
+        "count-lawful-bases",
+        "plan-erasure"
+      ],
+      "misconceptions": [
+        "Learners think consent is always required. It is one of six lawful bases, and often not the right one.",
+        "Learners think a SQL DELETE ends the obligation. In a versioned table the old files still hold the data until vacuum, and backups still hold it too.",
+        "Learners treat privacy as a legal-team matter. Retention, minimisation and erasure are engineering designs."
+      ],
+      "sequence": [
+        "Walk through the seven principles in plain words.",
+        "Pick lawful bases for three processing activities.",
+        "Map access, rectification, erasure and portability to engineering tasks.",
+        "Erase one customer from a Delta table: delete, then vacuum after retention, then backups.",
+        "The 72-hour breach notification rule."
+      ],
+      "examples": [
+        "Under GDPR a controller must notify the supervisory authority of a personal data breach without undue delay and, where feasible, within 72 hours of becoming aware of it (Article 33).",
+        "Administrative fines can reach 20 million euros or 4% of worldwide annual turnover, whichever is higher (Article 83(5)); for a company with 1 billion euros turnover that is 40 million euros.",
+        "A DELETE in Delta writes a new version; with a vacuum retention of 7 days the old files with the person's data are removed only after the retention has passed and the vacuum runs."
+      ],
+      "figures": [
+        {
+          "type": "timeline_explorer",
+          "shows": "A timeline of an erasure request: request, delete commit, retention window, vacuum, backup expiry, with the data's remaining copies shown at each point.",
+          "learnerAction": "Step forward in time and see where the data still exists.",
+          "placement": "erasure-in-lake"
+        },
+        {
+          "type": "diagram_choice",
+          "shows": "Five processing activities with candidate lawful bases.",
+          "learnerAction": "Choose a lawful basis for each.",
+          "placement": "lawful-bases"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "count-lawful-bases",
+          "sample": "How many lawful bases for processing does the GDPR list?",
+          "answer": "6"
+        },
+        {
+          "kind": "numeric",
+          "targets": "breach-notice",
+          "sample": "Within how many hours of becoming aware should a controller, where feasible, notify the authority of a personal data breach?",
+          "answer": "72"
+        },
+        {
+          "kind": "choice",
+          "targets": "plan-erasure",
+          "sample": "A customer's rows are deleted from a versioned lakehouse table with a DELETE. When is the personal data actually gone from the table's storage?",
+          "answer": "After the old versions are vacuumed past the retention period",
+          "choices": [
+            "Immediately after the DELETE",
+            "After the old versions are vacuumed past the retention period",
+            "Never; it cannot be removed",
+            "After the next INSERT"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "gdpr",
+        "ico-guidance"
+      ],
+      "historyNotes": [
+        "The GDPR was adopted in April 2016 and applies from 25 May 2018. Confirm before printing."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "governance-in-practice",
+      "moduleId": "governance",
+      "title": "Governance in practice",
+      "objective": "Assign owner, steward and custodian roles, describe what a catalogue and glossary record, and sketch a governance process that people will actually follow.",
+      "prerequisiteLessonIds": [
+        "privacy-law-in-practice"
+      ],
+      "concepts": [
+        {
+          "id": "roles",
+          "title": "Governance roles",
+          "summary": "The owner is accountable for a dataset, the steward maintains its definitions and quality, and the custodian runs the platform that stores it."
+        },
+        {
+          "id": "catalogue",
+          "title": "Catalogue and glossary",
+          "summary": "A catalogue records technical, business and operational metadata for datasets, and a glossary fixes the meaning of business terms."
+        },
+        {
+          "id": "policy-to-control",
+          "title": "From policy to control",
+          "summary": "A policy becomes a rule the platform enforces, such as a masking rule on a classified column or a retention job, rather than a document to remember."
+        },
+        {
+          "id": "certified-data",
+          "title": "Certified datasets",
+          "summary": "A dataset marked as reviewed, owned and monitored tells consumers which sources to trust."
+        }
+      ],
+      "skills": [
+        "assign-roles",
+        "sort-metadata",
+        "turn-policy-into-control"
+      ],
+      "misconceptions": [
+        "Learners think governance is a committee. It is owners, definitions and controls built into the platform.",
+        "Learners think a catalogue fills itself. Descriptions and owners need a person; lineage and statistics can be automatic.",
+        "Learners write policies as documents. A policy without an enforcing control is a hope."
+      ],
+      "sequence": [
+        "Three people: the sales director, an analyst who defines 'active customer', and the platform engineer. Who owns, stewards and runs?",
+        "Sort metadata items into technical, business and operational.",
+        "Turn 'delete data after 24 months' into a job and a check.",
+        "Use a certification badge and see how consumers choose."
+      ],
+      "examples": [
+        "Sales director: owner of the sales dataset; analyst: steward who maintains the definition of 'active customer'; platform engineer: custodian.",
+        "Technical metadata: schema and data types. Business metadata: owner, glossary term, description. Operational metadata: last refresh, row count, query frequency.",
+        "A 24-month retention policy becomes a scheduled delete of rows older than 24 months plus a check that none remain."
+      ],
+      "figures": [
+        {
+          "type": "table",
+          "shows": "A catalogue entry for a dataset with fields for owner, steward, description, classification, freshness and lineage, some blank for the learner to complete.",
+          "learnerAction": "Fill the missing fields from a short brief.",
+          "placement": "catalogue"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A policy-to-control ladder: policy text, rule, automated control, monitoring, evidence.",
+          "learnerAction": "Click a rung to see an example for retention.",
+          "placement": "policy-to-control"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "choice",
+          "targets": "assign-roles",
+          "sample": "Which role is accountable for a dataset's use and quality targets?",
+          "answer": "Data owner",
+          "choices": [
+            "Data owner",
+            "Data custodian",
+            "Data consumer",
+            "Network administrator"
+          ]
+        },
+        {
+          "kind": "choice",
+          "targets": "sort-metadata",
+          "sample": "Last refresh time and row count are which kind of metadata?",
+          "answer": "Operational",
+          "choices": [
+            "Technical",
+            "Business",
+            "Operational",
+            "Legal"
+          ]
+        },
+        {
+          "kind": "self",
+          "targets": "turn-policy-into-control",
+          "sample": "Rate yourself: take the policy 'customer emails are visible only to support staff' and name the control that enforces it (for example column masking by role).",
+          "answer": "Self-rated 1 to 5; a good answer names an enforced control such as role-based column masking"
+        }
+      ],
+      "sourceIds": [
+        "dama-dmbok",
+        "odcs",
+        "openlineage"
+      ],
+      "estimatedMinutes": 13
+    }
+  ],
+  "courseCheck": "A mixed check of: declaring a grain and spotting mixed grain; additive and semi-additive measures; as-of joins against a Type 2 dimension; a join fan-out total; layer and materialisation choice; the rows an incremental filter reads and misses; failing-rows queries for the four standard tests; ratio of sums versus average of ratios and distinct counts; upstream and downstream counts in a lineage graph; completeness, z-score and freshness breach; breaking changes and an error budget; k for a table; GDPR numbers; governance roles and metadata kinds.",
+  "platformNeeds": [
+    "A dimensional_model figure that draws a star from a grain statement and highlights columns that are not true at the grain; svg_figure is the fallback.",
+    "A lineage_graph figure with selectable nodes, upstream and downstream highlighting and live counts; svg_figure with fixed views is the fallback.",
+    "SQL practice with the sandbox's SQL dialect (SQLite-compatible, no MERGE); incremental and merge behaviour is taught with INSERT ... ON CONFLICT.",
+    "A k_anonymity table figure that groups rows by selected quasi-identifiers and colours group sizes; table is the fallback."
+  ],
+  "unverified": [
+    "Kimball Group pages, the GDPR text on EUR-Lex, the ICO guide, NIST SP 800-188, Sweeney's paper and DAMA-DMBOK could not be opened (verified false). Kimball techniques (grain, additivity, fact table types, SCD types) and GDPR numbers (Article 5 principles, six lawful bases in Article 6, Articles 15 to 20 rights, 72 hours in Article 33, fines up to 20 million euros or 4% in Article 83(5)) are from memory and must be checked against the text before lessons are written. This is educational content, not legal advice.",
+    "dbt documentation pages were read from the docs repository on GitHub (data tests, incremental models, snapshots, metrics overview, model contracts); the repository licence was not confirmed, so those pages are listed as reference only and lessons must not copy their text.",
+    "The OpenLineage object model and the Open Data Contract Standard were read from their GitHub repositories (Apache-2.0).",
+    "All SQL answers were run in SQLite 3.53 and arithmetic was checked in Python. The population standard deviation is used for the z-score; a sample standard deviation would give a different value.",
+    "The year of the first edition of The Data Warehouse Toolkit (1996) and GDPR dates (adopted April 2016, applying from 25 May 2018) are from memory.",
+    "The pseudonymisation versus anonymisation distinction follows common regulatory guidance; its exact legal line depends on the jurisdiction."
+  ]
+}

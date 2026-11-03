@@ -1,4 +1,4 @@
-import { rmSync, symlinkSync } from "node:fs";
+import { existsSync, readdirSync, rmSync, symlinkSync } from "node:fs";
 import path from "node:path";
 import type { FastifyInstance } from "fastify";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -204,30 +204,16 @@ describe("Discere API", () => {
     expect(repeated.statusCode).toBe(409);
   });
 
-  it("lists the twenty active courses", async () => {
+  it("lists every course directory under content/", async () => {
+    const contentRoot = path.resolve(import.meta.dirname, "../../../content");
+    const expected = readdirSync(contentRoot).filter(
+      (name) => !name.startsWith("_") && existsSync(path.join(contentRoot, name, "bundle.json")),
+    );
     const list = await app.inject({ method: "GET", url: "/api/courses" });
     expect(list.statusCode).toBe(200);
     const ids = list.json().courses.map((course: { id: string }) => course.id);
-    expect(ids).toHaveLength(20);
-    for (const id of [
-      "engineering-structures-and-machines",
-      "economics-markets-and-strategy",
-      "philosophy-knowledge-mind-and-ethics",
-      "english-reading-writing-and-rhetoric",
-      "astronomy-sky-to-cosmos",
-      "psychology-how-minds-work",
-    ])
-      expect(ids).toContain(id);
-    expect(ids).toContain("linear-algebra-vectors-and-maps");
-    expect(ids).toContain("biology-cells-to-ecosystems");
-    expect(ids).toContain("chemistry-atoms-to-reactions");
-    expect(ids).toContain("calculus-change-and-accumulation");
-    expect(ids).toContain("geometry-shape-and-space");
-    expect(ids).toContain("physics-motion-and-forces");
-    expect(ids).toContain("python-for-data-analysis");
-    expect(ids).toContain("sql-from-rows-to-reports");
-    expect(ids).toContain("rust-foundations");
-    expect(ids).toContain("electronics-foundations");
+    expect(ids.length).toBeGreaterThanOrEqual(20);
+    expect([...ids].sort()).toEqual([...expected].sort());
   });
 
   it("leaves an archived course out of the list but preserves its details", async () => {

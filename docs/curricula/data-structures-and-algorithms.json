@@ -1,0 +1,1429 @@
+{
+  "id": "data-structures-and-algorithms",
+  "title": "Data Structures and Algorithms",
+  "family": "A",
+  "voice": "A",
+  "description": "Learn how the standard containers work, what they cost, and how to pick one, from arrays and hash tables to heaps, graphs and dynamic programming, with every claim counted by hand and checked in Python.",
+  "audience": "Someone who finished How Computers Solve Problems or has equivalent footing: they know steps, branches, loops, linear and binary search, and the idea that cost grows with input size. They can read and write short Python functions. Mathematics beyond arithmetic and a little algebra is not needed.",
+  "prerequisites": [
+    "cs-basics"
+  ],
+  "outcomes": [
+    "You'll be able to count the steps of nested loops and state their growth class.",
+    "You'll be able to say what arrays, linked lists, stacks, queues, hash tables, trees and heaps cost for their main operations.",
+    "You'll be able to trace insertion sort, merge sort and quicksort by hand.",
+    "You'll be able to run breadth-first search, depth-first search and Dijkstra's algorithm on a small graph.",
+    "You'll be able to turn a recursive problem into a table and see when greedy choices fail.",
+    "You'll be able to choose a container from the operations a problem needs."
+  ],
+  "sources": [
+    {
+      "id": "erickson",
+      "title": "Algorithms (Jeff Erickson)",
+      "url": "https://jeffe.cs.illinois.edu/teaching/algorithms/",
+      "licence": "CC BY 4.0",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "opends",
+      "title": "Open Data Structures (Pat Morin)",
+      "url": "https://opendatastructures.org/",
+      "licence": "Creative Commons Attribution (CC BY 2.5 Canada for the text; check the edition)",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "ocw-6006",
+      "title": "MIT 6.006 Introduction to Algorithms (OpenCourseWare)",
+      "url": "https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/",
+      "licence": "CC BY-NC-SA 4.0",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "clrs",
+      "title": "Introduction to Algorithms, 4th edition (Cormen, Leiserson, Rivest, Stein)",
+      "url": "https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/",
+      "licence": "Commercial textbook, all rights reserved",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "py-timecomplexity",
+      "title": "Python wiki: TimeComplexity",
+      "url": "https://wiki.python.org/moin/TimeComplexity",
+      "licence": "PSF-hosted wiki; reference only",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "py-heapq",
+      "title": "Python documentation: heapq",
+      "url": "https://docs.python.org/3/library/heapq.html",
+      "licence": "PSF License Version 2; code examples 0BSD",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "py-deque",
+      "title": "Python documentation: collections.deque",
+      "url": "https://docs.python.org/3/library/collections.html#collections.deque",
+      "licence": "PSF License Version 2; code examples 0BSD",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "py-dict",
+      "title": "Python documentation: Mapping types, dict",
+      "url": "https://docs.python.org/3/library/stdtypes.html#mapping-types-dict",
+      "licence": "PSF License Version 2; code examples 0BSD",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "dijkstra-1959",
+      "title": "E. W. Dijkstra, 'A note on two problems in connexion with graphs', Numerische Mathematik 1 (1959)",
+      "url": "https://doi.org/10.1007/BF01386390",
+      "licence": "Copyright Springer; paper",
+      "use": "reference",
+      "verified": false
+    }
+  ],
+  "modules": [
+    {
+      "id": "cost-and-containers",
+      "title": "Cost and containers",
+      "summary": "Count what code does, then meet the basic ways of holding a sequence: arrays, growing arrays, linked lists, stacks and queues."
+    },
+    {
+      "id": "lookup-and-order",
+      "title": "Lookup and order",
+      "summary": "Find items by key with hashing, use recursion, and put items in order with merge sort and quicksort."
+    },
+    {
+      "id": "trees-graphs-reuse",
+      "title": "Trees, graphs and reuse",
+      "summary": "Organise items in trees and heaps, explore graphs, find cheapest paths, and avoid repeated work."
+    }
+  ],
+  "lessons": [
+    {
+      "id": "counting-steps-in-nested-loops",
+      "moduleId": "cost-and-containers",
+      "title": "Counting steps in nested loops",
+      "objective": "Count how many times the innermost statement of nested loops runs, as an exact formula, and state its growth class.",
+      "prerequisiteLessonIds": [],
+      "concepts": [
+        {
+          "id": "step-count",
+          "title": "Step count",
+          "summary": "The step count T(n) is the number of times a chosen basic operation executes for an input of size n."
+        },
+        {
+          "id": "big-o",
+          "title": "Big-O bound",
+          "summary": "f(n) is O(g(n)) when, beyond some n, f(n) stays below a constant multiple of g(n)."
+        },
+        {
+          "id": "triangular",
+          "title": "Triangular count",
+          "summary": "A loop whose inner bound grows by one each pass runs 0 + 1 + ... + (n-1) = n(n-1)/2 times, which is quadratic."
+        }
+      ],
+      "skills": [
+        "count-inner-executions",
+        "drop-constants-and-low-terms",
+        "classify-growth"
+      ],
+      "misconceptions": [
+        "Thinking two nested loops always means n squared. Counting the inner bound matters: a loop that runs 3 times inside a loop that runs n times is still linear.",
+        "Thinking Big-O gives a running time in seconds. It describes how the step count grows, and constants such as hardware speed are deliberately ignored.",
+        "Thinking n(n-1)/2 is 'half as slow' and so a different class from n squared. Constant factors do not change the class."
+      ],
+      "sequence": [
+        "Pick the operation to count (the comparison or the assignment inside the innermost loop).",
+        "Single loop: n steps. Nested full loops: n x n.",
+        "Triangular loop: inner range depends on i; write the counts for i = 0, 1, 2, ... and sum.",
+        "Sum 1 to n by pairing: n(n-1)/2 for 0 to n-1.",
+        "Drop constants and lower terms to get the class: n^2/2 - n/2 is O(n^2).",
+        "Sequential blocks add, nested blocks multiply; the larger term wins."
+      ],
+      "examples": [
+        "for i in range(n): for j in range(i): count += 1 runs 0+1+...+(n-1) times: n=6 gives 15, n=8 gives 28, n=10 gives 45, n=100 gives 4950.",
+        "A block with a double loop (n^2 steps) followed by a single loop (n steps) takes n^2 + n steps: 110 for n = 10, still O(n^2).",
+        "for i in range(n): for j in range(i, n): count += 1 runs n(n+1)/2 times: n=5 gives 15, n=100 gives 5050."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "An n x n grid of cells for n = 8; cells shaded where the inner loop runs for the triangular loop (j < i).",
+          "learnerAction": "Move an n slider from 2 to 12 and watch the shaded cell count and the grid.",
+          "placement": "triangular count"
+        },
+        {
+          "type": "program_trace",
+          "shows": "The triangular loop with variables i, j and count, one step at a time.",
+          "learnerAction": "Step through and note count at the end of each pass of the outer loop.",
+          "placement": "trace"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "count-inner-executions",
+          "sample": "for i in range(8): for j in range(i): count += 1. What is count at the end?",
+          "answer": "28"
+        },
+        {
+          "kind": "choice",
+          "targets": "classify-growth",
+          "sample": "A program runs a double loop of n x n steps and then a separate single loop of n steps. Which class describes its growth?",
+          "answer": "O(n^2)",
+          "choices": [
+            "O(n)",
+            "O(n log n)",
+            "O(n^2)",
+            "O(n^3)"
+          ]
+        },
+        {
+          "kind": "code-run-python",
+          "targets": "count-inner-executions",
+          "sample": "Write steps(n) that returns how many times the body of this loop runs: for i in range(n): for j in range(i, n): body. steps(5) is 15 and steps(100) is 5050.",
+          "answer": "def steps(n):\n    return n * (n + 1) // 2"
+        }
+      ],
+      "sourceIds": [
+        "erickson",
+        "opends",
+        "ocw-6006"
+      ],
+      "historyNotes": [
+        "Big-O notation in this sense was popularised for algorithm analysis by Donald Knuth in the 1970s, drawing on earlier use in number theory by Bachmann and Landau. (Check before citing.)"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "arrays-and-contiguous-memory",
+      "moduleId": "cost-and-containers",
+      "title": "Arrays and contiguous memory",
+      "objective": "Compute an element's address from its index, and count how many elements move when inserting into or deleting from an array.",
+      "prerequisiteLessonIds": [
+        "counting-steps-in-nested-loops"
+      ],
+      "concepts": [
+        {
+          "id": "array",
+          "title": "Array",
+          "summary": "An array stores equal-sized elements in consecutive memory, so element i sits at base + i x size."
+        },
+        {
+          "id": "random-access",
+          "title": "Constant-time indexing",
+          "summary": "Because the address is arithmetic, reading or writing a[i] costs the same for any i."
+        },
+        {
+          "id": "shifting",
+          "title": "Shifting",
+          "summary": "Inserting or deleting in the middle of an array moves every element after that position by one slot."
+        }
+      ],
+      "skills": [
+        "compute-address",
+        "count-shifts",
+        "implement-removal"
+      ],
+      "misconceptions": [
+        "Thinking a Python list lookup must search for the position. Indexing is arithmetic and takes constant time.",
+        "Thinking inserting at the front is as cheap as at the end. Inserting at index 0 moves all n elements.",
+        "Confusing a Python list, which stores references to objects, with a packed array of raw numbers; the address arithmetic applies to the array of references."
+      ],
+      "sequence": [
+        "Memory as numbered slots; an array claims a run of them.",
+        "address(i) = base + i x size, with a worked example.",
+        "Why indexing is constant time: one multiplication and one addition.",
+        "Delete at index i: the n-1-i later elements each move left by one.",
+        "Insert at index i in a full array: the elements from i onwards each move right by one.",
+        "Costs: front O(n), end O(1) if there is room, middle O(n)."
+      ],
+      "examples": [
+        "base 1000, 8-byte elements: a[5] is at 1000 + 5 x 8 = 1040.",
+        "Deleting index 2 from a length-7 array moves 4 elements (indices 3 to 6).",
+        "Inserting at index 0 into an array holding 6 elements moves 6 elements."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A row of memory slots with addresses 1000, 1008, ... and an array's elements; a marker for the base address.",
+          "learnerAction": "Drag a pointer to index k and read the computed address formula fill in.",
+          "placement": "address arithmetic"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "An 8-slot array with 6 filled slots and an insert marker; slots slide right as the marker is placed.",
+          "learnerAction": "Place the insert marker at different indices and count the arrows.",
+          "placement": "shifting"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-address",
+          "sample": "An array of 8-byte elements starts at address 1000. What is the address of a[5]?",
+          "answer": "1040"
+        },
+        {
+          "kind": "numeric",
+          "targets": "count-shifts",
+          "sample": "A length-7 array deletes the element at index 2 by moving later elements left. How many elements move?",
+          "answer": "4"
+        },
+        {
+          "kind": "code-run-python",
+          "targets": "implement-removal",
+          "sample": "Write remove_at(a, i) that returns a new list of the same length with the element at index i removed by shifting later elements left, and None in the last slot. Do not use del, pop or remove. remove_at([4,8,15,16,23], 1) is [4,15,16,23,None].",
+          "answer": "def remove_at(a, i):\n    out = list(a)\n    for k in range(i, len(a) - 1):\n        out[k] = out[k + 1]\n    out[-1] = None\n    return out"
+        }
+      ],
+      "sourceIds": [
+        "opends",
+        "erickson",
+        "py-timecomplexity"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "dynamic-arrays-and-amortised-cost",
+      "moduleId": "cost-and-containers",
+      "title": "Dynamic arrays and amortised cost",
+      "objective": "Simulate a doubling dynamic array, total its copies, and explain why the average cost of append is constant.",
+      "prerequisiteLessonIds": [
+        "arrays-and-contiguous-memory"
+      ],
+      "concepts": [
+        {
+          "id": "capacity",
+          "title": "Capacity and size",
+          "summary": "A dynamic array keeps a size (items stored) and a capacity (slots reserved), and appends are free while size < capacity."
+        },
+        {
+          "id": "doubling",
+          "title": "Doubling",
+          "summary": "When full, the array allocates twice the capacity and copies every element once, which makes the total copying for n appends less than 2n."
+        },
+        {
+          "id": "amortised",
+          "title": "Amortised cost",
+          "summary": "Amortised cost is the total cost of a sequence of operations divided by their number, which can be low even when a single operation is expensive."
+        }
+      ],
+      "skills": [
+        "simulate-growth",
+        "total-copies",
+        "compare-growth-policies"
+      ],
+      "misconceptions": [
+        "Thinking one append can be 'O(1) or O(n)' so the average must be O(n). Resizes are rare and the expensive ones double in spacing, so the total stays linear.",
+        "Thinking amortised means 'on average over random inputs'. It is a worst-case guarantee over any sequence of operations.",
+        "Thinking growing by a fixed 10 slots is as good as doubling. Fixed growth makes the total quadratic."
+      ],
+      "sequence": [
+        "Reserve more slots than needed, so most appends touch only one slot.",
+        "Trace capacity 1 doubling through nine appends: copies happen when size 1, 2, 4, 8 are full.",
+        "Sum the copies: 1+2+4+8 = 15 < 2 x 9.",
+        "General bound: copies for n appends are below 2n, so about 3n writes in total, constant per append.",
+        "Contrast with growing by 10 slots: copy totals for n = 1000.",
+        "What real libraries do: growth factors other than 2 are used, and the argument still holds for any factor above 1."
+      ],
+      "examples": [
+        "Capacity 1, append 9 items: copies at sizes 1, 2, 4 and 8, total 15; final capacity 16.",
+        "1000 appends from capacity 1 with doubling: 1023 element copies, final capacity 1024, so about 2.02 writes per append in all.",
+        "1000 appends from capacity 1 growing by 10: 49,600 copies, final capacity 1001."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A bar of 16 slots with a filled region and a capacity marker; when full, a new bar twice as long appears and copy arrows are drawn.",
+          "learnerAction": "Press append repeatedly and watch a running total of copies stay hidden until the learner enters an estimate.",
+          "placement": "growth"
+        },
+        {
+          "type": "data_series",
+          "shows": "Total copies against n for doubling and for fixed growth by 10, n from 0 to 200.",
+          "learnerAction": "Switch the policy and compare curve shapes.",
+          "placement": "growth policies"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "total-copies",
+          "sample": "A dynamic array starts at capacity 1 and doubles when full. How many element copies happen in total across 9 appends?",
+          "answer": "15"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compare-growth-policies",
+          "sample": "Same array, 1000 appends, but it grows by 10 slots whenever full. How many element copies happen in total?",
+          "answer": "49600"
+        },
+        {
+          "kind": "code-run-python",
+          "targets": "simulate-growth",
+          "sample": "Write copies(n, grow=None) for a dynamic array that starts at capacity 1 and, when full, grows to double its capacity if grow is None or by grow slots otherwise. Return the total element copies after n appends. copies(9) is 15 and copies(1000, 10) is 49600.",
+          "answer": "def copies(n, grow=None):\n    cap, size, total = 1, 0, 0\n    for _ in range(n):\n        if size == cap:\n            total += size\n            cap = cap * 2 if grow is None else cap + grow\n        size += 1\n    return total"
+        }
+      ],
+      "sourceIds": [
+        "opends",
+        "erickson",
+        "py-timecomplexity"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "linked-lists-and-pointers",
+      "moduleId": "cost-and-containers",
+      "title": "Linked lists and pointers",
+      "objective": "Traverse, insert into and reverse a singly linked list, and say which operations a linked list makes cheaper or dearer than an array.",
+      "prerequisiteLessonIds": [
+        "arrays-and-contiguous-memory"
+      ],
+      "concepts": [
+        {
+          "id": "node",
+          "title": "Node",
+          "summary": "A node holds a value and a reference to the next node, and the list is the chain from a head reference."
+        },
+        {
+          "id": "pointer-reroute",
+          "title": "Insertion by rerouting",
+          "summary": "Inserting after a known node changes two references and moves nothing, so it costs constant time."
+        },
+        {
+          "id": "sequential-access",
+          "title": "Sequential access",
+          "summary": "Reaching the k-th node means following k references from the head, which costs O(k)."
+        }
+      ],
+      "skills": [
+        "traverse-by-reference",
+        "reverse-a-list",
+        "compare-with-arrays"
+      ],
+      "misconceptions": [
+        "Thinking a linked list is always faster for insertion. Finding the place to insert costs O(n); only insertion at a node you already hold is constant.",
+        "Thinking list[i] works in constant time on a linked list.",
+        "Losing the rest of the list when rerouting: setting node.next before saving the old next discards the tail."
+      ],
+      "sequence": [
+        "Nodes scattered in memory, tied by references.",
+        "Traverse: cur = head; while cur: visit; cur = cur.next.",
+        "Insert after node p: new.next = p.next, then p.next = new (order matters).",
+        "Reverse in place with prev, cur, next, tracing 7 -> 3 -> 9 -> 4.",
+        "Cost table against arrays: access by index, insert at front, insert after known node, search.",
+        "Why arrays usually win in practice: cache behaviour (flagged for the systems course)."
+      ],
+      "examples": [
+        "Reverse 7 -> 3 -> 9 -> 4 to get 4 -> 9 -> 3 -> 7; the third node is then 3.",
+        "Reaching the 5th node from the head follows 4 references.",
+        "Inserting 5 after the node holding 3 in 7 -> 3 -> 9 gives 7 -> 3 -> 5 -> 9."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Boxes and arrows for 7 -> 3 -> 9 -> 4 with named pointers prev, cur, next.",
+          "learnerAction": "Step the reversal loop; each step recolours the arrows reversed so far.",
+          "placement": "reversal"
+        },
+        {
+          "type": "table",
+          "shows": "Cost comparison table of operations (index access, insert at front, insert after known node, search by value) for arrays and linked lists, with the cells empty for the learner to fill.",
+          "learnerAction": "Drag O(1)/O(n) tags into cells.",
+          "placement": "comparison"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "traverse-by-reference",
+          "sample": "How many next references must be followed from the head to reach the 5th node?",
+          "answer": "4"
+        },
+        {
+          "kind": "numeric",
+          "targets": "reverse-a-list",
+          "sample": "After reversing 7 -> 3 -> 9 -> 4, what is the value of the third node?",
+          "answer": "3"
+        },
+        {
+          "kind": "code-run-python",
+          "targets": "reverse-a-list",
+          "sample": "Given class Node with fields value and next, write reverse(head) that reverses the list in place and returns the new head (None for an empty list). Reversing 7,3,9,4 yields 4,9,3,7.",
+          "answer": "def reverse(head):\n    prev = None\n    while head:\n        head.next, prev, head = prev, head, head.next\n    return prev"
+        }
+      ],
+      "sourceIds": [
+        "opends",
+        "erickson",
+        "py-timecomplexity"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "stacks-and-queues",
+      "moduleId": "cost-and-containers",
+      "title": "Stacks and queues",
+      "objective": "Use a stack and a queue to solve small problems, and state the discipline each enforces.",
+      "prerequisiteLessonIds": [
+        "linked-lists-and-pointers",
+        "dynamic-arrays-and-amortised-cost"
+      ],
+      "concepts": [
+        {
+          "id": "stack",
+          "title": "Stack",
+          "summary": "A stack allows adding and removing only at one end, so the last item added is the first removed (LIFO)."
+        },
+        {
+          "id": "queue",
+          "title": "Queue",
+          "summary": "A queue adds at the back and removes from the front, so the first item added is the first removed (FIFO)."
+        },
+        {
+          "id": "deque",
+          "title": "Double-ended queue",
+          "summary": "A deque supports constant-time adds and removes at both ends, which is why it is used for queues in Python rather than list.pop(0)."
+        }
+      ],
+      "skills": [
+        "trace-stack",
+        "match-brackets",
+        "choose-the-structure"
+      ],
+      "misconceptions": [
+        "Thinking a stack and a queue are different storage. The difference is the rule about which end you use.",
+        "Using list.pop(0) as a queue in Python. It shifts every remaining element, so each removal costs O(n).",
+        "Matching brackets by counting only. '([)]' has equal counts but is not balanced."
+      ],
+      "sequence": [
+        "Real examples: a pile of plates, undo history, a line at a counter.",
+        "Stack operations push, pop, peek and a trace of push 3, push 5, pop, push 8, pop, pop.",
+        "Queue operations enqueue and dequeue, and the trace of a, b, c.",
+        "Balanced brackets with a stack, worked on '{[()]}' and '([)]'.",
+        "Postfix evaluation with a stack: 3 4 + 2 * = 14.",
+        "Choosing: undo and recursion unwinding are stacks; fair service and breadth-first search are queues."
+      ],
+      "examples": [
+        "push 3, push 5, pop, push 8, pop, pop returns 5, 8, 3.",
+        "'{[()]}' is balanced, '([)]' is not, '((' is not.",
+        "Postfix '3 4 + 2 *' is 14; '5 1 2 + 4 * + 3 -' is 14."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A vertical stack of cells beside a horizontal queue pipe, each with push/enqueue and pop/dequeue buttons.",
+          "learnerAction": "Perform a scripted sequence of operations and read out the removed item.",
+          "placement": "stack versus queue"
+        },
+        {
+          "type": "program_trace",
+          "shows": "The bracket-matching loop showing the stack content for '{[()]}'.",
+          "learnerAction": "Step forward and back.",
+          "placement": "brackets"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "single-term",
+          "targets": "trace-stack",
+          "sample": "Operations: push 3, push 5, pop, push 8, pop, pop. What is the final value popped?",
+          "answer": "3"
+        },
+        {
+          "kind": "choice",
+          "targets": "choose-the-structure",
+          "sample": "Which structure suits an undo history in an editor?",
+          "answer": "Stack",
+          "choices": [
+            "Queue",
+            "Stack",
+            "Hash table",
+            "Sorted array"
+          ]
+        },
+        {
+          "kind": "code-run-python",
+          "targets": "match-brackets",
+          "sample": "Write balanced(s) returning True when every (, [ or { in s is closed in the right order and False otherwise; other characters are ignored. balanced('{[()]}') is True and balanced('([)]') is False.",
+          "answer": "def balanced(s):\n    pairs = {')': '(', ']': '[', '}': '{'}\n    stack = []\n    for ch in s:\n        if ch in '([{':\n            stack.append(ch)\n        elif ch in pairs:\n            if not stack or stack.pop() != pairs[ch]:\n                return False\n    return not stack"
+        }
+      ],
+      "sourceIds": [
+        "opends",
+        "erickson",
+        "py-deque"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "hash-tables",
+      "moduleId": "lookup-and-order",
+      "title": "Hash tables",
+      "objective": "Place keys into buckets with a hash function, resolve collisions by chaining or probing, and compute load factor.",
+      "prerequisiteLessonIds": [
+        "arrays-and-contiguous-memory",
+        "linked-lists-and-pointers"
+      ],
+      "concepts": [
+        {
+          "id": "hash-function",
+          "title": "Hash function",
+          "summary": "A hash function maps a key to an integer, and taking it modulo the table size gives a bucket index."
+        },
+        {
+          "id": "collision",
+          "title": "Collision",
+          "summary": "Two keys that land in the same bucket collide, and a table must resolve this by chaining entries in a bucket or probing for a nearby free slot."
+        },
+        {
+          "id": "load-factor",
+          "title": "Load factor",
+          "summary": "The load factor is stored entries divided by buckets, and expected lookup cost grows with it, so tables resize when it passes a threshold."
+        }
+      ],
+      "skills": [
+        "place-keys",
+        "resolve-collisions",
+        "compute-load-factor"
+      ],
+      "misconceptions": [
+        "Thinking hashing makes lookup always O(1). It is expected O(1) with a good hash function and bounded load factor; the worst case is O(n).",
+        "Thinking a dictionary is ordered by key. Hash order is unrelated to key order; Python's dict happens to remember insertion order, which is a language guarantee since 3.7.",
+        "Thinking a collision is an error. It is expected and handled."
+      ],
+      "sequence": [
+        "Look-up without searching: compute where the key must be.",
+        "k mod m for integer keys; five keys into five buckets with some sharing a bucket.",
+        "Chaining: each bucket holds a short list. Linear probing: step to the next free slot, wrapping around.",
+        "Load factor and why tables grow, relating back to the doubling array.",
+        "The sample use: counting words, finding a pair with a given sum in one pass.",
+        "Why keys must be immutable in Python (a list cannot be a dict key)."
+      ],
+      "examples": [
+        "m = 5, keys 12, 7, 20, 15, 3, 27 hash to buckets 2, 2, 0, 0, 3, 2: bucket 2 holds [12, 7, 27], bucket 0 holds [20, 15], bucket 3 holds [3]; load factor 6/5 = 1.2.",
+        "Linear probing, m = 7, keys 10, 17, 3, 24 all hash to 3 and land in slots 3, 4, 5, 6.",
+        "two_sum([2,7,11,15], 9) is (0, 1) found in one pass using a dict."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A table of 5 empty buckets and a queue of keys; each key drawn with its computed index after a click.",
+          "learnerAction": "Insert keys one at a time with chaining and read chain lengths.",
+          "placement": "chaining"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "The same keys placed by linear probing into a 7-slot array with probe arrows.",
+          "learnerAction": "Switch collision strategy and compare layouts.",
+          "placement": "probing"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-load-factor",
+          "sample": "A hash table has 8 buckets and stores 12 entries. What is its load factor?",
+          "answer": "1.5"
+        },
+        {
+          "kind": "numeric",
+          "targets": "resolve-collisions",
+          "sample": "Linear probing, table size 7, hash k mod 7. Insert 10, 17, 3, 24 in order. Which slot (0 to 6) does 24 end in?",
+          "answer": "6"
+        },
+        {
+          "kind": "code-run-python",
+          "targets": "place-keys",
+          "sample": "Write two_sum(nums, target) returning a tuple (i, j) with i < j and nums[i] + nums[j] == target, using one pass and a dict. Exactly one pair exists. two_sum([2,7,11,15], 9) is (0, 1) and two_sum([3,2,4], 6) is (1, 2).",
+          "answer": "def two_sum(nums, target):\n    seen = {}\n    for j, x in enumerate(nums):\n        if target - x in seen:\n            return (seen[target - x], j)\n        seen[x] = j"
+        }
+      ],
+      "sourceIds": [
+        "opends",
+        "erickson",
+        "py-dict",
+        "clrs"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "recursion-and-the-call-stack",
+      "moduleId": "lookup-and-order",
+      "title": "Recursion and the call stack",
+      "objective": "Write a recursive function with a base case, trace its call stack, and count calls for a doubly recursive function.",
+      "prerequisiteLessonIds": [
+        "stacks-and-queues"
+      ],
+      "concepts": [
+        {
+          "id": "base-case",
+          "title": "Base case",
+          "summary": "A recursive function needs a case that returns without calling itself, or it never stops."
+        },
+        {
+          "id": "call-stack",
+          "title": "Call stack",
+          "summary": "Each active call keeps its own variables on a stack, and returning resumes the caller at the line after the call."
+        },
+        {
+          "id": "call-count",
+          "title": "Call count recurrence",
+          "summary": "For fib, calls(n) = 1 + calls(n-1) + calls(n-2), which grows exponentially because the same subproblems are recomputed."
+        }
+      ],
+      "skills": [
+        "trace-recursion",
+        "write-recursive-function",
+        "count-calls"
+      ],
+      "misconceptions": [
+        "Thinking a recursive call 'jumps back'. Each call has its own copy of the variables and the caller waits.",
+        "Forgetting that a missing or unreachable base case gives infinite recursion; Python stops it at about 1000 frames with RecursionError.",
+        "Thinking recursion is always slower than loops. Doubly recursive fib is slow because it repeats work, not because it is recursive."
+      ],
+      "sequence": [
+        "A problem that contains a smaller copy of itself: factorial, summing nested lists.",
+        "fact(3) expanded: fact(3) = 3 x fact(2) ...; frames pile up then unwind.",
+        "Draw the call stack depth: fact(5) reaches 6 frames with fact(0).",
+        "fib(5) call tree and the count 15.",
+        "The count recurrence and values for n = 0 to 7.",
+        "Preview of how memoising (lesson 14) removes the repeats."
+      ],
+      "examples": [
+        "fact(5) has frames fact(5) down to fact(0): 6 at the deepest point.",
+        "Calls for fib: n=0..7 give 1, 1, 3, 5, 9, 15, 25, 41.",
+        "flatten([1,[2,[3,4]],5]) is [1,2,3,4,5]."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A tree of calls for fib(5) with nodes drawn faded until the learner steps through them.",
+          "learnerAction": "Step through the calls and count nodes by hand before the total appears.",
+          "placement": "call tree"
+        },
+        {
+          "type": "program_trace",
+          "shows": "fact(3) with a stack of frames, each frame's n and pending multiplication.",
+          "learnerAction": "Step through and watch frames pile up and unwind.",
+          "placement": "call stack"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "count-calls",
+          "sample": "fib(n) = n if n < 2 else fib(n-1) + fib(n-2). How many calls (including the first) does fib(6) make?",
+          "answer": "25"
+        },
+        {
+          "kind": "numeric",
+          "targets": "trace-recursion",
+          "sample": "fact(n) returns 1 when n == 0 and n * fact(n-1) otherwise. At the deepest point of fact(5), how many frames are on the stack?",
+          "answer": "6"
+        },
+        {
+          "kind": "code-run-python",
+          "targets": "write-recursive-function",
+          "sample": "Write flatten(x) that takes a list that may contain nested lists to any depth and returns a flat list in order. flatten([1,[2,[3,4]],5]) is [1,2,3,4,5].",
+          "answer": "def flatten(x):\n    out = []\n    for item in x:\n        if isinstance(item, list):\n            out += flatten(item)\n        else:\n            out.append(item)\n    return out"
+        }
+      ],
+      "sourceIds": [
+        "erickson",
+        "opends",
+        "ocw-6006"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "insertion-and-merge-sort",
+      "moduleId": "lookup-and-order",
+      "title": "Insertion sort and merge sort",
+      "objective": "Trace insertion sort and merge, count comparisons, and explain why merge sort takes O(n log n).",
+      "prerequisiteLessonIds": [
+        "recursion-and-the-call-stack",
+        "counting-steps-in-nested-loops"
+      ],
+      "concepts": [
+        {
+          "id": "inversion",
+          "title": "Inversion",
+          "summary": "An inversion is a pair of positions i < j with a[i] > a[j], and insertion sort performs exactly one shift per inversion."
+        },
+        {
+          "id": "merge",
+          "title": "Merge",
+          "summary": "Merging two sorted lists repeatedly takes the smaller front item, producing a sorted list in at most len(a) + len(b) - 1 comparisons."
+        },
+        {
+          "id": "divide-and-conquer",
+          "title": "Divide and conquer",
+          "summary": "Merge sort splits the list in halves, sorts each recursively and merges, giving log2 n levels each doing about n work."
+        }
+      ],
+      "skills": [
+        "trace-insertion-sort",
+        "merge-two-lists",
+        "count-merge-levels"
+      ],
+      "misconceptions": [
+        "Thinking insertion sort is always slow. On nearly sorted data it takes close to n steps.",
+        "Thinking merge sort needs no extra memory. Merging needs an output list of size n.",
+        "Counting the levels of merge sort as n rather than log2 n."
+      ],
+      "sequence": [
+        "Insertion sort: grow a sorted prefix, slide each new item left to its place.",
+        "Trace [5, 2, 4, 6, 1, 3]; count shifts (9) and comparisons (12); relate shifts to inversions.",
+        "Best case (sorted: 5 comparisons, 0 shifts for six items) and worst case (reversed: 15).",
+        "Merge two sorted lists: [2, 5, 8] and [3, 4, 9] in 5 comparisons.",
+        "Merge sort recursion: halves, base case of one element, merge back.",
+        "Levels: n = 16 has 4 levels of merging, each handling 16 items, so about 64 item moves."
+      ],
+      "examples": [
+        "Insertion sort on [5,2,4,6,1,3]: 9 shifts, 12 comparisons. On [1,2,3,4,5,6]: 0 shifts, 5 comparisons. On [6,5,4,3,2,1]: 15 shifts, 15 comparisons.",
+        "merge([2,5,8],[3,4,9]) is [2,3,4,5,8,9] using 5 comparisons.",
+        "count_inversions([3,1,2]) is 2; ([5,4,3,2,1]) is 10."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Six cards in a row with a divider showing the sorted prefix; the next card lifts out and slides left past larger cards.",
+          "learnerAction": "Step through; shifts and comparison counters are hidden until the learner enters their own count.",
+          "placement": "insertion sort"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A merge-sort tree for 8 items: split on the way down, merge on the way up.",
+          "learnerAction": "Click a node to merge it and see the output list.",
+          "placement": "merge sort tree"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "trace-insertion-sort",
+          "sample": "Insertion sort on [5, 2, 4, 6, 1, 3]. How many element shifts (moves of a larger item one place right) does it perform?",
+          "answer": "9"
+        },
+        {
+          "kind": "numeric",
+          "targets": "merge-two-lists",
+          "sample": "Merging [2, 5, 8] and [3, 4, 9], how many element comparisons are made before one list is exhausted?",
+          "answer": "5"
+        },
+        {
+          "kind": "code-run-python",
+          "targets": "merge-two-lists",
+          "sample": "Write merge(a, b) that merges two sorted lists into one sorted list, taking from a on ties. merge([2,5,8],[3,4,9]) is [2,3,4,5,8,9].",
+          "answer": "def merge(a, b):\n    i = j = 0\n    out = []\n    while i < len(a) and j < len(b):\n        if a[i] <= b[j]:\n            out.append(a[i]); i += 1\n        else:\n            out.append(b[j]); j += 1\n    return out + a[i:] + b[j:]"
+        }
+      ],
+      "sourceIds": [
+        "erickson",
+        "opends",
+        "clrs",
+        "ocw-6006"
+      ],
+      "historyNotes": [
+        "John von Neumann described merge sort in 1945 for the EDVAC design. (Check before citing.)"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "quicksort-and-partition",
+      "moduleId": "lookup-and-order",
+      "title": "Quicksort and the limit on sorting",
+      "objective": "Carry out Lomuto partitioning, give quicksort's best and worst cases, and compute the comparison lower bound for sorting.",
+      "prerequisiteLessonIds": [
+        "insertion-and-merge-sort"
+      ],
+      "concepts": [
+        {
+          "id": "partition",
+          "title": "Partition",
+          "summary": "Partitioning rearranges a list around a pivot so everything not greater than the pivot lies before it and everything greater lies after it, fixing the pivot's final position."
+        },
+        {
+          "id": "worst-case",
+          "title": "Worst case",
+          "summary": "Quicksort with a last-element pivot on already sorted input splits n into 0 and n-1 each time, making n(n-1)/2 comparisons."
+        },
+        {
+          "id": "lower-bound",
+          "title": "Comparison lower bound",
+          "summary": "Any comparison sort must distinguish n! orderings with yes/no answers, so it needs at least ceil(log2(n!)) comparisons in the worst case."
+        }
+      ],
+      "skills": [
+        "partition-by-hand",
+        "state-quicksort-cases",
+        "compute-lower-bound"
+      ],
+      "misconceptions": [
+        "Thinking quicksort is always O(n log n). It is on average, but a poor pivot gives n squared.",
+        "Thinking the pivot ends in the middle of the list. It ends at its sorted position, wherever that is.",
+        "Thinking a cleverer comparison sort can beat n log n. Counting sort avoids comparisons but needs small integer keys."
+      ],
+      "sequence": [
+        "Pick a pivot, partition, then sort the two sides recursively.",
+        "Lomuto partition trace on [3, 8, 2, 5, 1, 4, 7, 6] with pivot 6.",
+        "Balanced split gives depth log n; one-sided split gives depth n.",
+        "Why sorted input is the worst case for a last-element pivot: 28 comparisons for 8 items.",
+        "Decision-tree argument: 5 items have 120 orderings, so at least 7 comparisons.",
+        "Escape routes: random pivot; counting sort for small integer keys."
+      ],
+      "examples": [
+        "Lomuto on [3,8,2,5,1,4,7,6]: result [3,2,5,1,4,6,7,8], pivot ends at index 5, 7 comparisons.",
+        "Lomuto on [2,8,7,1,3,5,6,4]: result [2,1,3,4,7,5,6,8], pivot index 3.",
+        "ceil(log2(5!)) = ceil(6.907) = 7; for n = 8 it is 16; for n = 10 it is 22."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Array cells with pivot at the right end and two pointers i and j; cells coloured by region (at most pivot, greater, unexamined).",
+          "learnerAction": "Step j through the array; region colours update.",
+          "placement": "Lomuto partition"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A binary decision tree for sorting three items with leaves for the six orderings.",
+          "learnerAction": "Click a comparison to follow a branch.",
+          "placement": "lower bound"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "partition-by-hand",
+          "sample": "Lomuto partition (pivot = last element) on [3, 8, 2, 5, 1, 4, 7, 6]. At which index does the pivot end up?",
+          "answer": "5"
+        },
+        {
+          "kind": "numeric",
+          "targets": "state-quicksort-cases",
+          "sample": "Quicksort with the last element as pivot runs on an already sorted list of 8 distinct items. How many comparisons does partitioning perform in total?",
+          "answer": "28"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-lower-bound",
+          "sample": "What is the smallest number of comparisons that can always sort 5 items, ceil(log2(5!))?",
+          "answer": "7"
+        },
+        {
+          "kind": "code-run-python",
+          "targets": "partition-by-hand",
+          "sample": "Write partition(a) that partitions a copy of a around its last element (Lomuto scheme) and returns (new_list, pivot_index). partition([3,8,2,5,1,4,7,6]) is ([3,2,5,1,4,6,7,8], 5).",
+          "answer": "def partition(a):\n    a = list(a)\n    pivot = a[-1]\n    i = -1\n    for j in range(len(a) - 1):\n        if a[j] <= pivot:\n            i += 1\n            a[i], a[j] = a[j], a[i]\n    a[i + 1], a[-1] = a[-1], a[i + 1]\n    return a, i + 1"
+        }
+      ],
+      "sourceIds": [
+        "erickson",
+        "opends",
+        "clrs",
+        "ocw-6006"
+      ],
+      "historyNotes": [
+        "Tony Hoare invented quicksort in 1959 to 1960 while working on machine translation in Moscow and Britain. (Check before citing.)"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "binary-search-trees",
+      "moduleId": "trees-graphs-reuse",
+      "title": "Binary search trees",
+      "objective": "Insert keys into a binary search tree, read its traversals, and relate its height to search cost.",
+      "prerequisiteLessonIds": [
+        "recursion-and-the-call-stack",
+        "hash-tables"
+      ],
+      "concepts": [
+        {
+          "id": "bst-property",
+          "title": "Search-tree property",
+          "summary": "In a binary search tree every key in a node's left subtree is smaller and every key in its right subtree is larger."
+        },
+        {
+          "id": "traversal",
+          "title": "Traversal",
+          "summary": "In-order traversal visits left subtree, node, right subtree and so lists the keys in sorted order; pre-order and post-order visit the node first and last."
+        },
+        {
+          "id": "height",
+          "title": "Height",
+          "summary": "Search, insert and delete follow one root-to-leaf path, so they cost O(h), which is log n when balanced and n when the tree is a chain."
+        }
+      ],
+      "skills": [
+        "insert-keys",
+        "list-traversals",
+        "relate-height-to-cost"
+      ],
+      "misconceptions": [
+        "Thinking a BST is always balanced. Inserting sorted keys 1 to 5 gives a chain of height 5.",
+        "Thinking in-order traversal depends on insertion order. It always gives sorted order; pre-order does depend on it.",
+        "Thinking a hash table and a BST do the same job. A BST also supports ordered queries: smallest, next larger, range."
+      ],
+      "sequence": [
+        "The idea: binary search made into a structure that can grow.",
+        "Insert 8, 3, 10, 1, 6, 14, 4, 7, 13 and draw the tree.",
+        "Search for 7: the path 8, 3, 6, 7 visits 4 nodes.",
+        "In-order gives 1 3 4 6 7 8 10 13 14; pre-order 8 3 1 6 4 7 10 14 13; post-order 1 4 7 6 3 13 14 10 8.",
+        "Height: 4 nodes on the longest path here; a chain of 5 keys has height 5.",
+        "Balanced variants (AVL, red-black) restore O(log n) by rotations; mention only."
+      ],
+      "examples": [
+        "The insertion above gives height 4 (counting nodes on the longest path).",
+        "Inserting 1,2,3,4,5 in order gives a chain of height 5; inserting 4,2,6,1,3,5,7 gives height 3.",
+        "Path searching 13: 8, 10, 14, 13."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A growing binary tree drawn node by node as keys are inserted, with the comparison path highlighted.",
+          "learnerAction": "Insert a key by choosing left or right at each node; wrong choices are refused with the rule shown.",
+          "placement": "insertion"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "The same tree with three traversal orders as animated tours.",
+          "learnerAction": "Choose pre-order, in-order or post-order and press play.",
+          "placement": "traversals"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "insert-keys",
+          "sample": "Insert 8, 3, 10, 1, 6, 14, 4, 7, 13 in order into an empty BST. How many nodes are on the longest root-to-leaf path?",
+          "answer": "4"
+        },
+        {
+          "kind": "numeric",
+          "targets": "relate-height-to-cost",
+          "sample": "Keys 1, 2, 3, 4, 5 are inserted in that order into an empty BST. How many nodes does a search for 5 visit?",
+          "answer": "5"
+        },
+        {
+          "kind": "code-run-python",
+          "targets": "insert-keys",
+          "sample": "Write bst_height(values) that inserts values in order into a binary search tree (smaller to the left, greater or equal to the right) and returns the number of nodes on the longest root-to-leaf path (0 for no values). bst_height([8,3,10,1,6,14,4,7,13]) is 4.",
+          "answer": "def bst_height(values):\n    root = None\n    def insert(node, k):\n        if node is None:\n            return [k, None, None]\n        if k < node[0]:\n            node[1] = insert(node[1], k)\n        else:\n            node[2] = insert(node[2], k)\n        return node\n    def height(node):\n        return 0 if node is None else 1 + max(height(node[1]), height(node[2]))\n    for v in values:\n        root = insert(root, v)\n    return height(root)"
+        }
+      ],
+      "sourceIds": [
+        "opends",
+        "erickson",
+        "clrs",
+        "ocw-6006"
+      ],
+      "historyNotes": [
+        "AVL trees, from Adelson-Velsky and Landis in 1962, were the first self-balancing search trees. (Check before citing.)"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "heaps-and-priority-queues",
+      "moduleId": "trees-graphs-reuse",
+      "title": "Heaps and priority queues",
+      "objective": "Insert into and remove from an array-backed min-heap, and use a priority queue to pull the smallest item first.",
+      "prerequisiteLessonIds": [
+        "binary-search-trees",
+        "dynamic-arrays-and-amortised-cost"
+      ],
+      "concepts": [
+        {
+          "id": "heap-property",
+          "title": "Heap property",
+          "summary": "In a min-heap every node is no larger than its children, so the smallest item is at the root."
+        },
+        {
+          "id": "heap-array",
+          "title": "Heap in an array",
+          "summary": "A complete binary tree fits in an array where the children of index i are 2i+1 and 2i+2 and the parent of i is (i-1)//2."
+        },
+        {
+          "id": "priority-queue",
+          "title": "Priority queue",
+          "summary": "A priority queue removes the item with the highest priority first, and a heap does insert and remove in O(log n)."
+        }
+      ],
+      "skills": [
+        "sift-up",
+        "remove-minimum",
+        "use-priority-queue"
+      ],
+      "misconceptions": [
+        "Thinking a heap is sorted. Only the parent-child order is guaranteed; siblings and cousins are unordered.",
+        "Thinking the second-smallest is always at index 1. It is index 1 or 2.",
+        "Thinking a heap is a search tree. It is not: finding an arbitrary key takes O(n)."
+      ],
+      "sequence": [
+        "Need: repeatedly take the smallest of a changing collection.",
+        "Array layout and index formulas, worked on [2, 5, 3, 9, 6].",
+        "Insert 1: append, swap with parent until in place, giving [1, 5, 2, 9, 6, 3].",
+        "Remove minimum: move the last item to the root, swap down with the smaller child: from [1,5,2,9,6,3] to [2,5,3,9,6].",
+        "Cost: height is log2 n, so each operation is O(log n).",
+        "Python's heapq and its use for k smallest items; schedulers and Dijkstra's algorithm as consumers."
+      ],
+      "examples": [
+        "Insert 1 into heap [2,5,3,9,6]: the new item at index 5 swaps with parent index 2, then with parent index 0, giving [1,5,2,9,6,3].",
+        "Remove the minimum from [1,5,2,9,6,3]: returns 1, leaving [2,5,3,9,6].",
+        "heapq pushing 5,2,8,1,9,3 gives the array [1,2,3,5,9,8]; nsmallest(3) is [1,2,3]."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A tree and the matching array side by side for [2,5,3,9,6], with index labels.",
+          "learnerAction": "Click a node to highlight its array cell, its parent and its children.",
+          "placement": "array view"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "The insert-and-sift-up animation from [2,5,3,9,6] with the new value as a draggable token.",
+          "learnerAction": "Step the sift-up and name the swaps before the animation does them.",
+          "placement": "sift-up"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "sift-up",
+          "sample": "In array [2, 5, 3, 9, 6] representing a min-heap, 1 is inserted. What is the index of 1 afterwards?",
+          "answer": "0"
+        },
+        {
+          "kind": "numeric",
+          "targets": "remove-minimum",
+          "sample": "After removing the minimum from min-heap [1, 5, 2, 9, 6, 3], what is the array's first element?",
+          "answer": "2"
+        },
+        {
+          "kind": "code-run-python",
+          "targets": "sift-up",
+          "sample": "Write heap_push(heap, x) that returns a new list: heap with x added, keeping the min-heap property in the array representation (do not use heapq). heap_push([2,5,3,9,6], 1) is [1,5,2,9,6,3].",
+          "answer": "def heap_push(heap, x):\n    h = list(heap) + [x]\n    i = len(h) - 1\n    while i > 0 and h[(i - 1) // 2] > h[i]:\n        h[(i - 1) // 2], h[i] = h[i], h[(i - 1) // 2]\n        i = (i - 1) // 2\n    return h"
+        }
+      ],
+      "sourceIds": [
+        "opends",
+        "erickson",
+        "py-heapq",
+        "clrs"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "graphs-and-traversal",
+      "moduleId": "trees-graphs-reuse",
+      "title": "Graphs and traversal",
+      "objective": "Represent a graph as adjacency lists, and produce breadth-first and depth-first orders and shortest hop counts.",
+      "prerequisiteLessonIds": [
+        "stacks-and-queues",
+        "recursion-and-the-call-stack"
+      ],
+      "concepts": [
+        {
+          "id": "graph",
+          "title": "Graph",
+          "summary": "A graph is a set of vertices and a set of edges between pairs of them, stored for a program as adjacency lists mapping each vertex to its neighbours."
+        },
+        {
+          "id": "bfs",
+          "title": "Breadth-first search",
+          "summary": "BFS explores vertices in order of distance from the start by using a queue, so the first time it reaches a vertex is by a path with the fewest edges."
+        },
+        {
+          "id": "dfs",
+          "title": "Depth-first search",
+          "summary": "DFS follows one path as far as it can before backing up, using recursion or an explicit stack."
+        }
+      ],
+      "skills": [
+        "write-adjacency-lists",
+        "trace-bfs",
+        "trace-dfs"
+      ],
+      "misconceptions": [
+        "Thinking DFS finds shortest paths. It finds some path; only BFS gives the fewest edges.",
+        "Forgetting a visited set, so that a cycle makes the search loop forever.",
+        "Adding up degrees and expecting the edge count: each undirected edge is counted twice, so the degree sum is 2E."
+      ],
+      "sequence": [
+        "Vertices and edges for roads, links, dependencies; directed versus undirected.",
+        "Adjacency list for A:[B,C], B:[A,D,E], C:[A,F], D:[B], E:[B,F], F:[C,E].",
+        "BFS from A: queue trace gives A B C D E F; hops A to F = 2.",
+        "DFS from A, neighbours in listed order: A B D E F C.",
+        "Cost: each vertex and edge is handled a constant number of times, so O(V + E).",
+        "Sum of degrees is 12, so there are 6 edges."
+      ],
+      "examples": [
+        "BFS order from A on that graph is A, B, C, D, E, F. DFS order is A, B, D, E, F, C.",
+        "Fewest hops from A to F is 2 (A-C-F); from D to F is 3 (D-B-E-F).",
+        "Unreachable vertex returns -1."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A six-vertex graph drawn with labelled edges and an adjacency-list panel beside it.",
+          "learnerAction": "Click a vertex to highlight its list entry and neighbours.",
+          "placement": "representation"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "The same graph with a queue panel; vertices change colour as they are discovered and visited.",
+          "learnerAction": "Step BFS, then switch to DFS and see the panel change to a stack; order lists are hidden until finished.",
+          "placement": "traversals"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "single-term",
+          "targets": "trace-bfs",
+          "sample": "Using the graph A:[B,C], B:[A,D,E], C:[A,F], D:[B], E:[B,F], F:[C,E], which vertex does BFS from A visit last?",
+          "answer": "F"
+        },
+        {
+          "kind": "numeric",
+          "targets": "trace-bfs",
+          "sample": "On the same graph, what is the fewest number of edges on a path from D to F?",
+          "answer": "3"
+        },
+        {
+          "kind": "code-run-python",
+          "targets": "trace-bfs",
+          "sample": "Write shortest_hops(graph, start, goal) for a dict mapping each vertex to a list of neighbours, returning the fewest edges from start to goal or -1 if unreachable. On the graph above, shortest_hops(g, 'A', 'F') is 2.",
+          "answer": "from collections import deque\ndef shortest_hops(graph, start, goal):\n    dist = {start: 0}\n    q = deque([start])\n    while q:\n        u = q.popleft()\n        for v in graph[u]:\n            if v not in dist:\n                dist[v] = dist[u] + 1\n                q.append(v)\n    return dist.get(goal, -1)"
+        }
+      ],
+      "sourceIds": [
+        "erickson",
+        "opends",
+        "clrs",
+        "ocw-6006"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "weighted-shortest-paths",
+      "moduleId": "trees-graphs-reuse",
+      "title": "Cheapest paths with Dijkstra",
+      "objective": "Run Dijkstra's algorithm by hand on a small weighted graph and explain why it needs non-negative weights.",
+      "prerequisiteLessonIds": [
+        "graphs-and-traversal",
+        "heaps-and-priority-queues"
+      ],
+      "concepts": [
+        {
+          "id": "weighted-graph",
+          "title": "Weighted graph",
+          "summary": "In a weighted graph each edge has a cost, and a path's cost is the sum of its edge costs."
+        },
+        {
+          "id": "relaxation",
+          "title": "Relaxation",
+          "summary": "Relaxing an edge u to v replaces the best known distance to v with dist[u] + w when that is smaller."
+        },
+        {
+          "id": "dijkstra",
+          "title": "Dijkstra's algorithm",
+          "summary": "Dijkstra repeatedly finalises the unfinalised vertex with the smallest known distance, which is correct when all weights are non-negative."
+        }
+      ],
+      "skills": [
+        "run-dijkstra",
+        "explain-greedy-correctness",
+        "contrast-with-bfs"
+      ],
+      "misconceptions": [
+        "Thinking the path with the fewest edges is the cheapest. BFS minimises edges, not cost.",
+        "Thinking Dijkstra works with negative edges. A later negative edge can undercut a vertex already finalised.",
+        "Forgetting to update a neighbour's distance when a cheaper route appears, or to push the update onto the heap."
+      ],
+      "sequence": [
+        "Why weights break BFS: S to C in two hops costs 5, but a three-hop route costs 4.",
+        "Initialise: distance 0 at source, infinity elsewhere.",
+        "Pick the smallest unfinalised vertex, relax its edges, repeat; trace on graph S-A 4, S-B 1, B-A 2, A-C 1, B-C 5, C-D 3.",
+        "Final: B=1, A=3, C=4, D=7; finalisation order S, B, A, C, D.",
+        "Why it works: the smallest tentative distance cannot be beaten later because weights are non-negative.",
+        "Cost with a heap: O((V + E) log V)."
+      ],
+      "examples": [
+        "Distances from S: S 0, B 1, A 3 (via B), C 4 (via A), D 7.",
+        "BFS from S reaches C in 2 hops at cost 5 (S-A-C) or 6 (S-B-C); the cheapest path S-B-A-C has 3 hops and cost 4.",
+        "Finalisation order S, B, A, C, D."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "The weighted graph with distance labels under each vertex that update as edges relax; a heap panel beside it.",
+          "learnerAction": "Choose which vertex to finalise next; the figure refuses any but the smallest tentative distance and says why.",
+          "placement": "Dijkstra"
+        },
+        {
+          "type": "table",
+          "shows": "A distance table with a row per step and a column per vertex, filled progressively.",
+          "learnerAction": "Fill the next row, then compare with the correct row.",
+          "placement": "trace table"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "run-dijkstra",
+          "sample": "Edges (undirected): S-A 4, S-B 1, B-A 2, A-C 1, B-C 5, C-D 3. What is the cheapest cost from S to D?",
+          "answer": "7"
+        },
+        {
+          "kind": "numeric",
+          "targets": "contrast-with-bfs",
+          "sample": "On that graph, how many edges are on the cheapest path from S to C?",
+          "answer": "3"
+        },
+        {
+          "kind": "code-run-python",
+          "targets": "run-dijkstra",
+          "sample": "Write dijkstra(graph, source) for a dict of dicts {u: {v: weight}} returning a dict of shortest distances to every reachable vertex. On the graph above from 'S' the distance to 'D' is 7.",
+          "answer": "import heapq\ndef dijkstra(graph, source):\n    dist = {source: 0}\n    pq = [(0, source)]\n    done = set()\n    while pq:\n        d, u = heapq.heappop(pq)\n        if u in done:\n            continue\n        done.add(u)\n        for v, w in graph[u].items():\n            if v not in dist or d + w < dist[v]:\n                dist[v] = d + w\n                heapq.heappush(pq, (dist[v], v))\n    return dist"
+        }
+      ],
+      "sourceIds": [
+        "erickson",
+        "dijkstra-1959",
+        "clrs",
+        "py-heapq"
+      ],
+      "historyNotes": [
+        "Edsger Dijkstra published the algorithm in 1959 in Numerische Mathematik; he later said he designed it in about twenty minutes without pencil and paper. (Check before citing.)"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "dynamic-programming",
+      "moduleId": "trees-graphs-reuse",
+      "title": "Dynamic programming",
+      "objective": "Turn a recursive problem with repeated subproblems into a table, and show where a greedy choice fails.",
+      "prerequisiteLessonIds": [
+        "recursion-and-the-call-stack",
+        "weighted-shortest-paths"
+      ],
+      "concepts": [
+        {
+          "id": "overlapping-subproblems",
+          "title": "Overlapping subproblems",
+          "summary": "A problem has overlapping subproblems when the same smaller question is asked many times, so storing answers saves work."
+        },
+        {
+          "id": "recurrence-table",
+          "title": "Recurrence and table",
+          "summary": "A dynamic program defines each answer from smaller ones and fills a table in an order that guarantees those smaller answers exist."
+        },
+        {
+          "id": "greedy-failure",
+          "title": "Greedy failure",
+          "summary": "Taking the largest coin first is not always optimal: with coins 1, 3 and 4, making 6 greedily uses three coins while 3 + 3 uses two."
+        }
+      ],
+      "skills": [
+        "fill-the-table",
+        "write-the-recurrence",
+        "spot-greedy-failure"
+      ],
+      "misconceptions": [
+        "Thinking dynamic programming is a trick for specific puzzles. It is memoisation or a table over a recurrence, usable whenever subproblems repeat.",
+        "Thinking a greedy rule that works for common coin systems works for all of them.",
+        "Filling a table in the wrong order, so an entry depends on one not yet computed."
+      ],
+      "sequence": [
+        "Recall fib(6): 25 calls recompute the same values.",
+        "Memoise: store each fib(n) the first time; calls drop to 11.",
+        "Coin change: define best[a] = 1 + min(best[a - c]) over coins c <= a.",
+        "Fill best[0..6] for coins 1, 3, 4: 0, 1, 2, 1, 1, 2, 2.",
+        "Greedy gives 4 + 1 + 1 for amount 6; the table shows 2.",
+        "Longest common subsequence as a second table example: ABCBDAB and BDCABA have LCS length 4."
+      ],
+      "examples": [
+        "fib(6) with a memo table makes 11 calls instead of 25.",
+        "best for coins {1,3,4}: [0,1,2,1,1,2,2]; amount 10 needs 3 coins (3 + 3 + 4).",
+        "With coins {1,5,10,25}, amount 30 needs 2 coins (25 + 5).",
+        "LCS(ABCBDAB, BDCABA) = 4; LCS(kitten, sitting) = 4."
+      ],
+      "figures": [
+        {
+          "type": "table",
+          "shows": "The coin-change table for coins 1, 3, 4 with columns 0 to 6; row cells fill from left to right.",
+          "learnerAction": "Fill each cell by choosing which coin gave the minimum; a wrong cell is explained.",
+          "placement": "fill the table"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A call tree for fib(6) with repeated subtrees shaded the same colour, then the same tree with memoised nodes pruned.",
+          "learnerAction": "Toggle memoisation to see the tree shrink.",
+          "placement": "overlapping subproblems"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "fill-the-table",
+          "sample": "Coins 1, 3, 4. What is the fewest coins that make 6?",
+          "answer": "2"
+        },
+        {
+          "kind": "numeric",
+          "targets": "spot-greedy-failure",
+          "sample": "Coins 1, 3, 4. Taking the largest coin that fits each time, how many coins does greedy use for 6?",
+          "answer": "3"
+        },
+        {
+          "kind": "self",
+          "targets": "choose-a-container",
+          "sample": "Without looking back, name the container you would pick for each: an undo history, fast lookup by key, always taking the smallest waiting item. Rate yourself: all three / two / one.",
+          "answer": "Stack; hash table; min-heap (priority queue)"
+        },
+        {
+          "kind": "code-run-python",
+          "targets": "write-the-recurrence",
+          "sample": "Write min_coins(coins, amount) returning the fewest coins that sum to amount, or -1 if impossible. min_coins([1,3,4], 6) is 2 and min_coins([2], 3) is -1.",
+          "answer": "def min_coins(coins, amount):\n    INF = float('inf')\n    best = [0] + [INF] * amount\n    for a in range(1, amount + 1):\n        for c in coins:\n            if c <= a and best[a - c] + 1 < best[a]:\n                best[a] = best[a - c] + 1\n    return -1 if best[amount] == INF else best[amount]"
+        }
+      ],
+      "sourceIds": [
+        "erickson",
+        "clrs",
+        "ocw-6006",
+        "opends"
+      ],
+      "historyNotes": [
+        "Richard Bellman coined 'dynamic programming' in the 1950s; the name was chosen partly to sound impressive to funders. (Check before citing.)"
+      ],
+      "estimatedMinutes": 13
+    }
+  ],
+  "courseCheck": "A mixed check: step counts of a triangular loop; address and shift counts for arrays; total copies in a doubling array; a linked-list reversal; a stack trace and bracket match; a hash placement with collision; a recursion call count; insertion shifts and merge comparisons; a Lomuto partition; a BST built from a key list and its traversals; a heap insertion; BFS order and DFS order; Dijkstra on a new six-vertex graph; and a coin-change table where greedy fails. Include three Python function tasks (merge, bfs hops, min_coins) and one choose-the-container item per module.",
+  "platformNeeds": [
+    "A data_structure_explorer figure type with a typed model (array, linked list, hash table, BST, heap, graph) whose operations the learner performs by clicking and which refuses invalid moves with the rule that was broken. svg_figure fallbacks are described in each lesson.",
+    "A trace_table figure whose rows the learner fills in (distance table, DP table), checked cell by cell; the existing table type is the fallback.",
+    "A complexity_plot figure that overlays step counts for several growth classes for a learner-chosen n range; data_series is the fallback.",
+    "Python sandbox: lessons use only the standard library (heapq, collections.deque), no input files, and call functions with small inputs. Checkers should compare return values; tuple versus list equality must be stated in the prompt where it matters (for example partition returns a tuple)."
+  ],
+  "unverified": [
+    "No online source could be opened: the session proxy refused every external host (403 on CONNECT). All sources are marked verified false. Licence statements (Erickson CC BY 4.0, Open Data Structures, MIT OCW CC BY-NC-SA 4.0, Python docs PSF/0BSD) are from memory and must be confirmed before any adaptation.",
+    "Every numeric answer in this file was computed by running Python 3.12 code in the session: step counts, copies, shift and comparison counts, partitions, tree heights and traversals, heap operations, BFS/DFS orders, Dijkstra distances and DP tables. Comparison counts depend on the exact insertion sort and merge loop (insertion sort counts a comparison for each element examined, including the one that stops the shift, and none when the sorted prefix is exhausted); lessons must show the same loop.",
+    "CPython's real list growth factor is about 1.125 plus a constant, not 2; the lesson on dynamic arrays uses doubling as the model and should say so. Exact CPython behaviour was not checked here.",
+    "History notes marked 'check' (Big-O attribution, von Neumann merge sort 1945, Hoare quicksort 1959 to 1960, AVL 1962, Dijkstra 1959 and the twenty-minute anecdote, Bellman naming) are from memory.",
+    "Python dict insertion order being a language guarantee from 3.7 is from memory of the 3.7 release notes."
+  ]
+}

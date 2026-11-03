@@ -1,0 +1,1399 @@
+{
+  "id": "ai-agents",
+  "title": "AI Agents and Agent Architecture",
+  "family": "A",
+  "voice": "A",
+  "description": "Design agents you can trust: the loop, tools and protocols, memory, patterns for planning and composition, and the controls for permissions, injection, traces, evaluation and oversight.",
+  "audience": "A developer who has called a language model from code. ai-engineering (tokens, prompts, retrieval, evaluation) is the recommended earlier course. Coding assistants are covered separately in ai-assisted-engineering.",
+  "prerequisites": [
+    "python-for-data-analysis",
+    "cs-basics",
+    "probability-statistics",
+    "ai-engineering"
+  ],
+  "outcomes": [
+    "You'll be able to choose between a workflow, a copilot and an agent for a task.",
+    "You'll be able to trace an agent loop and compute its cost and reliability.",
+    "You'll be able to design tools and a server-side permission model.",
+    "You'll be able to recognise prompt injection and break the lethal trifecta.",
+    "You'll be able to instrument and evaluate an agent and stage its rollout."
+  ],
+  "sources": [
+    {
+      "id": "anthropic-agents",
+      "title": "Building effective agents (Anthropic Engineering)",
+      "url": "https://www.anthropic.com/engineering/building-effective-agents",
+      "licence": "Copyright Anthropic",
+      "use": "reference",
+      "verified": true
+    },
+    {
+      "id": "anthropic-multi",
+      "title": "How we built our multi-agent research system (Anthropic Engineering)",
+      "url": "https://www.anthropic.com/engineering/multi-agent-research-system",
+      "licence": "Copyright Anthropic",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "mcp-spec",
+      "title": "Model Context Protocol specification",
+      "url": "https://modelcontextprotocol.io/specification",
+      "licence": "Open specification; repository licence to confirm (MIT at first release)",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "jsonrpc",
+      "title": "JSON-RPC 2.0 Specification",
+      "url": "https://www.jsonrpc.org/specification",
+      "licence": "Free to use; no stated licence",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "react-paper",
+      "title": "ReAct: Synergizing Reasoning and Acting in Language Models (Yao et al., ICLR 2023, arXiv:2210.03629)",
+      "url": "https://arxiv.org/abs/2210.03629",
+      "licence": "arXiv; author-chosen licence (confirm)",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "reflexion",
+      "title": "Reflexion: Language Agents with Verbal Reinforcement Learning (Shinn et al., NeurIPS 2023, arXiv:2303.11366)",
+      "url": "https://arxiv.org/abs/2303.11366",
+      "licence": "arXiv; author-chosen licence (confirm)",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "tau-bench",
+      "title": "tau-bench: A Benchmark for Tool-Agent-User Interaction in Real-World Domains (Yao et al., 2024, arXiv:2406.12045)",
+      "url": "https://arxiv.org/abs/2406.12045",
+      "licence": "arXiv; author-chosen licence (confirm)",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "greshake",
+      "title": "Not what you've signed up for: Compromising Real-World LLM-Integrated Applications with Indirect Prompt Injection (Greshake et al., 2023, arXiv:2302.12173)",
+      "url": "https://arxiv.org/abs/2302.12173",
+      "licence": "arXiv; author-chosen licence (confirm)",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "willison-trifecta",
+      "title": "The lethal trifecta for AI agents (Simon Willison, June 2025)",
+      "url": "https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/",
+      "licence": "Copyright the author",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "owasp-llm",
+      "title": "OWASP Top 10 for LLM Applications 2025 (OWASP GenAI Security Project)",
+      "url": "https://genai.owasp.org/llm-top-10/",
+      "licence": "OWASP projects are normally CC BY-SA 4.0 (confirm)",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "nist-rmf",
+      "title": "Artificial Intelligence Risk Management Framework (AI RMF 1.0), NIST AI 100-1",
+      "url": "https://www.nist.gov/itl/ai-risk-management-framework",
+      "licence": "US government work, not subject to copyright in the US",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "otel-genai",
+      "title": "OpenTelemetry semantic conventions for generative AI",
+      "url": "https://opentelemetry.io/docs/specs/semconv/gen-ai/",
+      "licence": "Apache 2.0 (specification); confirm",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "a2a",
+      "title": "Agent2Agent (A2A) protocol",
+      "url": "https://a2a-protocol.org/",
+      "licence": "Apache 2.0 (confirm)",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "aima",
+      "title": "Artificial Intelligence: A Modern Approach (Russell and Norvig), 4th ed.",
+      "url": "https://aima.cs.berkeley.edu/",
+      "licence": "Copyright Pearson",
+      "use": "reference",
+      "verified": false
+    }
+  ],
+  "modules": [
+    {
+      "id": "anatomy",
+      "title": "Anatomy of an agent",
+      "summary": "What separates an agent from a workflow, the loop at its core, its tools and protocol, and what it remembers."
+    },
+    {
+      "id": "patterns",
+      "title": "Architecture patterns",
+      "summary": "Planning, composed workflows and multiple agents, and the costs each pattern carries."
+    },
+    {
+      "id": "governing",
+      "title": "Governing agents",
+      "summary": "Permissions, injection, traces, evaluation and human oversight: the controls that decide whether an agent can be trusted with a task."
+    }
+  ],
+  "lessons": [
+    {
+      "id": "workflows-and-agents",
+      "moduleId": "anatomy",
+      "title": "Workflow, copilot or agent",
+      "objective": "Place a process on the autonomy ladder and choose the lowest rung that meets the need.",
+      "prerequisiteLessonIds": [],
+      "concepts": [
+        {
+          "id": "workflow",
+          "title": "Workflow",
+          "summary": "Model calls and tools orchestrated by code along predefined paths."
+        },
+        {
+          "id": "agent",
+          "title": "Agent",
+          "summary": "A system in which the model decides its own next steps and tool use within a loop."
+        },
+        {
+          "id": "autonomy-ladder",
+          "title": "Autonomy ladder",
+          "summary": "Script, model-assisted workflow, copilot, agent: more freedom, less predictability."
+        }
+      ],
+      "skills": [
+        "place-on-ladder",
+        "compare-cost"
+      ],
+      "misconceptions": [
+        "Every AI feature should be an agent; extra autonomy buys flexibility at the cost of predictability, cost and auditability.",
+        "A chatbot with tools is automatically an agent; if the code fixes the path, it is a workflow."
+      ],
+      "sequence": [
+        "One business process: classify and answer a refund request.",
+        "Four designs: script, model-assisted workflow, copilot, agent.",
+        "Compare correctness, cost, latency, auditability and failure impact.",
+        "The decision rule: minimum autonomy that meets the need, and a trigger for more."
+      ],
+      "examples": [
+        "Workflow: 3 model calls at $0.01 each = $0.03. Agent: averages 12 calls = $0.12, four times as much.",
+        "A fixed-path pipeline of classify, retrieve, answer is a workflow even though three model calls are involved."
+      ],
+      "figures": [
+        {
+          "type": "table",
+          "shows": "Four designs scored on correctness, cost, latency, auditability.",
+          "learnerAction": "Move the process's requirements and see which rung wins.",
+          "placement": "ladder"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A line from script to agent with the control moving from code to model.",
+          "learnerAction": "none",
+          "placement": "definition"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compare-cost",
+          "sample": "A workflow makes 3 model calls and an agent averages 12, each costing $0.01. How many times more does the agent cost?",
+          "answer": "4"
+        },
+        {
+          "kind": "choice",
+          "targets": "place-on-ladder",
+          "sample": "Code always runs classify, then retrieve, then answer, each a model call. This is a",
+          "answer": "Workflow",
+          "choices": [
+            "Workflow",
+            "Agent",
+            "Copilot",
+            "Script"
+          ]
+        },
+        {
+          "kind": "choice",
+          "targets": "place-on-ladder",
+          "sample": "The model chooses which tool to call next until it decides it is finished. This is a",
+          "answer": "Agent",
+          "choices": [
+            "Agent",
+            "Workflow",
+            "Script",
+            "Prompt chain"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "anthropic-agents",
+        "aima"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "the-agent-loop",
+      "moduleId": "anatomy",
+      "title": "The agent loop",
+      "objective": "Trace an agent loop step by step, add a stop condition and a step budget, and compute how errors compound.",
+      "prerequisiteLessonIds": [
+        "workflows-and-agents"
+      ],
+      "concepts": [
+        {
+          "id": "loop",
+          "title": "Agent loop",
+          "summary": "Repeat: model sees context, picks an action, the result is appended, until a stop condition holds."
+        },
+        {
+          "id": "step-budget",
+          "title": "Step budget",
+          "summary": "A hard limit on iterations, tokens or time."
+        },
+        {
+          "id": "compounding-error",
+          "title": "Compounding error",
+          "summary": "Per-step reliability multiplies across steps."
+        }
+      ],
+      "skills": [
+        "trace-loop",
+        "compute-reliability"
+      ],
+      "misconceptions": [
+        "The agent stops when it is done; without a limit it loops until the budget runs out.",
+        "Context stays constant; each step appends actions and results, so input tokens grow.",
+        "If every step is 95% reliable the task is 95% reliable; ten steps give about 60%."
+      ],
+      "sequence": [
+        "Pseudocode of the loop.",
+        "One run traced: goal, step, tool call, observation.",
+        "Termination: final answer, budget, error, human stop.",
+        "Context growth and reliability arithmetic."
+      ],
+      "examples": [
+        "Base context 1,000 tokens, +400 per step: input over 6 steps is 1,000, 1,400, 1,800, 2,200, 2,600, 3,000 = 12,000.",
+        "0.95¹⁰ ≈ 0.599."
+      ],
+      "figures": [
+        {
+          "type": "program_trace",
+          "shows": "A loop in Python with variables: messages, step, done.",
+          "learnerAction": "Step through three iterations.",
+          "placement": "loop"
+        },
+        {
+          "type": "data_series",
+          "shows": "Input tokens per step, rising line.",
+          "learnerAction": "Add steps.",
+          "placement": "context growth"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "trace-loop",
+          "sample": "Context is 1,000 tokens at step 1 and grows by 400 each step. How many input tokens in total over 6 steps?",
+          "answer": "12000"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-reliability",
+          "sample": "Each step succeeds with probability 0.95, independently. What is the chance all 10 succeed, to two decimals?",
+          "answer": "0.60"
+        },
+        {
+          "kind": "choice",
+          "targets": "trace-loop",
+          "sample": "Which stops an endless loop?",
+          "answer": "A step budget",
+          "choices": [
+            "A step budget",
+            "A longer prompt",
+            "Higher temperature",
+            "More tools"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "anthropic-agents",
+        "react-paper"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "tools-and-schemas",
+      "moduleId": "anatomy",
+      "title": "Designing tools",
+      "objective": "Classify tools as read or write, write a tool description the model can use, and make a write tool safe to retry.",
+      "prerequisiteLessonIds": [
+        "the-agent-loop"
+      ],
+      "concepts": [
+        {
+          "id": "tool-description",
+          "title": "Tool description",
+          "summary": "The name, purpose, parameters and limits that the model reads when choosing a tool."
+        },
+        {
+          "id": "read-write",
+          "title": "Read versus write tool",
+          "summary": "A read tool only fetches; a write tool changes state."
+        },
+        {
+          "id": "idempotency-key",
+          "title": "Idempotency key",
+          "summary": "A caller-supplied token so a repeated request has the effect of one."
+        }
+      ],
+      "skills": [
+        "classify-tools",
+        "retry-safely"
+      ],
+      "misconceptions": [
+        "The model picks the right tool from its name alone; descriptions and error messages are prompts.",
+        "A retried write is harmless; a duplicate charge is a real harm."
+      ],
+      "sequence": [
+        "Five tools for a support agent.",
+        "What a good description says: when to use it, inputs, what comes back, when not to use it.",
+        "Error messages that help the next step.",
+        "Idempotency on writes."
+      ],
+      "examples": [
+        "search_orders and get_customer are reads; issue_refund and send_email are writes.",
+        "issue_refund(order_id, amount, idempotency_key): three retries with the same key refund once."
+      ],
+      "figures": [
+        {
+          "type": "table",
+          "shows": "Tool list with columns read/write, scope, reversible.",
+          "learnerAction": "Fill in the cells.",
+          "placement": "classification"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "Two descriptions of the same tool, one vague, one precise.",
+          "learnerAction": "none",
+          "placement": "description"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "choice",
+          "targets": "classify-tools",
+          "sample": "Which is a write tool?",
+          "answer": "issue_refund",
+          "choices": [
+            "search_orders",
+            "get_customer",
+            "issue_refund",
+            "read_policy"
+          ]
+        },
+        {
+          "kind": "numeric",
+          "targets": "retry-safely",
+          "sample": "A refund call with the same idempotency key is sent 3 times. How many refunds happen?",
+          "answer": "1"
+        },
+        {
+          "kind": "code-reading",
+          "targets": "retry-safely",
+          "sample": "def issue_refund(order_id, amount): pays out every call. Why is a retry after a timeout dangerous?",
+          "answer": "The first call may have succeeded, so the retry pays twice"
+        }
+      ],
+      "sourceIds": [
+        "anthropic-agents",
+        "mcp-spec",
+        "owasp-llm"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "mcp-and-protocols",
+      "moduleId": "anatomy",
+      "title": "Tool protocols: MCP and agent-to-agent",
+      "objective": "Read a JSON-RPC tool request and say which side owns each part of the Model Context Protocol.",
+      "prerequisiteLessonIds": [
+        "tools-and-schemas"
+      ],
+      "concepts": [
+        {
+          "id": "mcp",
+          "title": "Model Context Protocol",
+          "summary": "An open protocol by which a client application discovers and calls tools, resources and prompts on a server."
+        },
+        {
+          "id": "json-rpc",
+          "title": "JSON-RPC",
+          "summary": "A message format of method, parameters and id, with a matching result or error."
+        },
+        {
+          "id": "transport",
+          "title": "Transport",
+          "summary": "The channel carrying messages: standard input/output for local servers, HTTP for remote ones."
+        }
+      ],
+      "skills": [
+        "read-rpc",
+        "assign-roles"
+      ],
+      "misconceptions": [
+        "MCP is a framework for building agents; it is a wire protocol between hosts and tool servers.",
+        "The server decides which tool the model uses; the host and model do, and the server only describes and executes.",
+        "MCP and agent-to-agent protocols solve the same problem; one connects an agent to tools and data, the other agents to agents."
+      ],
+      "sequence": [
+        "The integration problem: N applications times M tools.",
+        "Host, client and server roles.",
+        "Initialise, list tools, call a tool.",
+        "A tools/call message and its result."
+      ],
+      "examples": [
+        "{\"jsonrpc\":\"2.0\",\"id\":7,\"method\":\"tools/call\",\"params\":{\"name\":\"search_orders\",\"arguments\":{\"customer\":\"c-42\"}}}",
+        "Connecting 4 hosts to 6 tools needs 24 bespoke integrations, but 4 + 6 = 10 protocol implementations."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Host, client and server boxes with the messages between them in order.",
+          "learnerAction": "Step through initialise, tools/list, tools/call.",
+          "placement": "handshake"
+        },
+        {
+          "type": "table",
+          "shows": "The same message with fields labelled.",
+          "learnerAction": "Click a field to name it.",
+          "placement": "message"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "single-term",
+          "targets": "read-rpc",
+          "sample": "In the JSON message {\"jsonrpc\":\"2.0\",\"id\":7,\"method\":\"tools/call\",...} which key names the operation?",
+          "answer": "method"
+        },
+        {
+          "kind": "numeric",
+          "targets": "assign-roles",
+          "sample": "4 applications and 6 tools: how many integrations are needed without a shared protocol, and with one it is 4 + 6 = 10. How many without?",
+          "answer": "24"
+        },
+        {
+          "kind": "choice",
+          "targets": "assign-roles",
+          "sample": "Which side executes a tool?",
+          "answer": "The server",
+          "choices": [
+            "The server",
+            "The model",
+            "The client's UI",
+            "The transport"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "mcp-spec",
+        "jsonrpc",
+        "a2a"
+      ],
+      "historyNotes": [
+        "Anthropic introduced MCP in November 2024; the specification has since been revised several times and governance has moved toward a neutral foundation."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "memory-and-context",
+      "moduleId": "anatomy",
+      "title": "Memory and context management",
+      "objective": "Decide what an agent keeps in context, summarises or stores outside it, and compute when compaction triggers.",
+      "prerequisiteLessonIds": [
+        "the-agent-loop"
+      ],
+      "concepts": [
+        {
+          "id": "working-context",
+          "title": "Working context",
+          "summary": "What is in the prompt on this step."
+        },
+        {
+          "id": "compaction",
+          "title": "Compaction",
+          "summary": "Summarising old turns to free room."
+        },
+        {
+          "id": "external-memory",
+          "title": "External memory",
+          "summary": "Notes and files the agent writes and reads back by tool."
+        }
+      ],
+      "skills": [
+        "budget-context",
+        "choose-memory"
+      ],
+      "misconceptions": [
+        "A bigger window removes the need for memory design; long contexts cost more and can be used less well.",
+        "Memory is retrieval; memory has writes, and a wrong write persists.",
+        "Summaries are lossless; they drop detail, which may be the detail needed later."
+      ],
+      "sequence": [
+        "The window as a budget.",
+        "Three tiers: context, summary, external store.",
+        "What to write down: decisions, user preferences, open tasks.",
+        "When to compact."
+      ],
+      "examples": [
+        "Window 100,000, compaction at 80% = 80,000. History is 62,000, so 18,000 more tokens trigger it. A tool result of 21,000 tokens puts history at 83,000, so compaction runs."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A context bar with history, tool results and free space and a compaction line.",
+          "learnerAction": "Add a tool result.",
+          "placement": "budget"
+        },
+        {
+          "type": "table",
+          "shows": "Candidate facts to keep, summarise or store.",
+          "learnerAction": "Sort each fact.",
+          "placement": "tiers"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "budget-context",
+          "sample": "Window 100,000 tokens and compaction at 80% usage. History is 62,000. How many more tokens until compaction triggers?",
+          "answer": "18000"
+        },
+        {
+          "kind": "choice",
+          "targets": "choose-memory",
+          "sample": "A user's standing preference for metric units should be",
+          "answer": "Stored in external memory and read when relevant",
+          "choices": [
+            "Stored in external memory and read when relevant",
+            "Left in an old turn",
+            "Forgotten",
+            "Added to every prompt as the whole chat"
+          ]
+        },
+        {
+          "kind": "self",
+          "targets": "compaction",
+          "sample": "In your own words, say what can be lost when old turns are summarised.",
+          "answer": "Specific details, exact values and the reasoning behind decisions"
+        }
+      ],
+      "sourceIds": [
+        "anthropic-agents",
+        "anthropic-multi"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "planning-patterns",
+      "moduleId": "patterns",
+      "title": "Planning and reasoning patterns",
+      "objective": "Choose between acting step by step, planning first and reflecting, given a task's predictability and cost of error.",
+      "prerequisiteLessonIds": [
+        "memory-and-context"
+      ],
+      "concepts": [
+        {
+          "id": "react",
+          "title": "Reason-act loop",
+          "summary": "Interleave a short reasoning step with an action and an observation."
+        },
+        {
+          "id": "plan-execute",
+          "title": "Plan then execute",
+          "summary": "Write the whole plan first, then carry out steps, replanning on failure."
+        },
+        {
+          "id": "reflection",
+          "title": "Reflection",
+          "summary": "Critique the result or failure and retry with the critique."
+        }
+      ],
+      "skills": [
+        "pick-pattern",
+        "trace-replan"
+      ],
+      "misconceptions": [
+        "Showing reasoning to the user is evidence the answer is right; it is not a verified account of the model's computation.",
+        "Planning first is always cheaper; a rigid plan fails when early observations change the task.",
+        "Reflection fixes errors; it needs a signal such as a test or a checker to be better than guessing."
+      ],
+      "sequence": [
+        "A task with unknown steps: investigate a failing job.",
+        "A task with known steps: fill a form.",
+        "Plan, step, observe, replan.",
+        "Reflection with an external signal."
+      ],
+      "examples": [
+        "A 6-step plan in which step 4 fails: replan from step 4, so 3 steps done, 1 failed, then a new 3-step tail: 7 actions in total.",
+        "A test result is a reliable reflection signal; the model's own opinion of its answer is not."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Three flows: loop, plan then execute, loop with critique.",
+          "learnerAction": "Pick a task type and highlight the fitting flow.",
+          "placement": "patterns"
+        },
+        {
+          "type": "table",
+          "shows": "Step list with a failure at step 4 and the replanned steps.",
+          "learnerAction": "none",
+          "placement": "replan"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "trace-replan",
+          "sample": "A 6-step plan fails at step 4 and the agent writes a new plan with 3 steps from that point. Counting step 4's failed attempt, how many actions were taken in total?",
+          "answer": "7"
+        },
+        {
+          "kind": "choice",
+          "targets": "pick-pattern",
+          "sample": "The steps to fix a failing job are unknown until logs are read. Best pattern:",
+          "answer": "Reason-act loop",
+          "choices": [
+            "Reason-act loop",
+            "A fixed plan written first",
+            "No tools",
+            "Voting only"
+          ]
+        },
+        {
+          "kind": "choice",
+          "targets": "pick-pattern",
+          "sample": "Which signal makes reflection reliable?",
+          "answer": "A failing test",
+          "choices": [
+            "A failing test",
+            "The model's confidence",
+            "Longer answers",
+            "A higher temperature"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "react-paper",
+        "reflexion",
+        "anthropic-agents"
+      ],
+      "historyNotes": [
+        "The ReAct paper was posted to arXiv in October 2022 and published at ICLR 2023."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "composed-workflows",
+      "moduleId": "patterns",
+      "title": "Composed workflow patterns",
+      "objective": "Match a task to prompt chaining, routing, parallelisation, orchestrator-workers or evaluator-optimiser, and compute the latency and accuracy effects.",
+      "prerequisiteLessonIds": [
+        "planning-patterns",
+        "workflows-and-agents"
+      ],
+      "concepts": [
+        {
+          "id": "chaining",
+          "title": "Prompt chaining",
+          "summary": "A fixed sequence of model calls, each taking the previous output."
+        },
+        {
+          "id": "parallelisation",
+          "title": "Parallelisation",
+          "summary": "Independent subtasks run at once (sectioning) or the same task run several times (voting)."
+        },
+        {
+          "id": "evaluator-optimiser",
+          "title": "Evaluator-optimiser",
+          "summary": "One call proposes, another critiques, and the loop repeats until accepted."
+        }
+      ],
+      "skills": [
+        "match-pattern",
+        "compute-parallel"
+      ],
+      "misconceptions": [
+        "Parallel branches add their times; latency is the slowest branch.",
+        "Majority voting always improves accuracy; the votes must be independent and better than chance.",
+        "An orchestrator is just a bigger prompt; it decides subtasks at run time, which a fixed workflow cannot."
+      ],
+      "sequence": [
+        "Five patterns and the task shape each fits.",
+        "Three branches taking 4, 6 and 5 s.",
+        "Voting with three 80% voters.",
+        "Where a pattern stops being a workflow and becomes an agent."
+      ],
+      "examples": [
+        "Sequential 4 + 6 + 5 = 15 s, parallel max = 6 s.",
+        "Three independent 80% voters: P(majority right) = 3·0.8²·0.2 + 0.8³ = 0.384 + 0.512 = 0.896."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Five small diagrams of the patterns.",
+          "learnerAction": "Select a task to highlight the matching pattern.",
+          "placement": "patterns"
+        },
+        {
+          "type": "table",
+          "shows": "Branch times with sequential and parallel totals.",
+          "learnerAction": "Change a time.",
+          "placement": "latency"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-parallel",
+          "sample": "Three independent branches take 4 s, 6 s and 5 s. How long does the parallel version take?",
+          "answer": "6"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-parallel",
+          "sample": "Three independent voters are each right 80% of the time and the majority wins. What is the chance the majority is right?",
+          "answer": "0.896"
+        },
+        {
+          "kind": "choice",
+          "targets": "match-pattern",
+          "sample": "A subtask list that cannot be known until the input is read is best served by",
+          "answer": "Orchestrator-workers",
+          "choices": [
+            "Orchestrator-workers",
+            "Prompt chaining",
+            "Routing",
+            "Sectioning"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "anthropic-agents"
+      ],
+      "historyNotes": [
+        "Anthropic described these five workflow patterns in 'Building effective agents' in late 2024."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "multi-agent-systems",
+      "moduleId": "patterns",
+      "title": "Multiple agents",
+      "objective": "Say when splitting work between agents helps, count the token cost, and define the contract between agents.",
+      "prerequisiteLessonIds": [
+        "composed-workflows",
+        "memory-and-context"
+      ],
+      "concepts": [
+        {
+          "id": "handoff",
+          "title": "Handoff",
+          "summary": "One agent passing control and context to another."
+        },
+        {
+          "id": "context-isolation",
+          "title": "Context isolation",
+          "summary": "Giving a subagent only the context its task needs."
+        },
+        {
+          "id": "contract",
+          "title": "Agent contract",
+          "summary": "The defined inputs, outputs and permissions between two agents."
+        }
+      ],
+      "skills": [
+        "count-multi-agent-cost",
+        "design-contract"
+      ],
+      "misconceptions": [
+        "More agents means more intelligence; each added agent adds tokens, latency and an interface that can fail.",
+        "A subagent sees everything the lead agent sees; it only sees what it is handed.",
+        "Agents can share state through chat; shared mutable state needs an owner."
+      ],
+      "sequence": [
+        "A research task with four independent searches.",
+        "What a subagent buys: parallel time, a clean context.",
+        "What it costs: tokens multiplied, summaries lose detail, coordination bugs.",
+        "The contract: input spec, output schema, tool allow-list, budget."
+      ],
+      "examples": [
+        "Lead plans in 10k tokens, four workers use 20k each = 80k, synthesis 10k: total 100k compared with perhaps 35k for one agent doing the task serially.",
+        "Worker output schema: {claims:[{text, source_url}], gaps:[...]}."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Lead agent with four workers and their token bars.",
+          "learnerAction": "Remove a worker.",
+          "placement": "topology"
+        },
+        {
+          "type": "table",
+          "shows": "Contract fields for one worker.",
+          "learnerAction": "Fill in the missing field.",
+          "placement": "contract"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "count-multi-agent-cost",
+          "sample": "A lead uses 10k tokens to plan, four workers use 20k each, and synthesis uses 10k. Total tokens in thousands?",
+          "answer": "100"
+        },
+        {
+          "kind": "choice",
+          "targets": "design-contract",
+          "sample": "Which is part of an agent contract?",
+          "answer": "An output schema",
+          "choices": [
+            "An output schema",
+            "A mood",
+            "A longer name",
+            "A random seed"
+          ]
+        },
+        {
+          "kind": "choice",
+          "targets": "context-isolation",
+          "sample": "Why give a subagent a narrow context?",
+          "answer": "It keeps the task focused and the main context small",
+          "choices": [
+            "It keeps the task focused and the main context small",
+            "It makes the model smarter",
+            "It is required by the protocol",
+            "It lowers the temperature"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "anthropic-multi",
+        "a2a",
+        "anthropic-agents"
+      ],
+      "historyNotes": [
+        "Google announced the Agent2Agent protocol in April 2025."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "permissions-and-governed-actions",
+      "moduleId": "governing",
+      "title": "Permissions and governed actions",
+      "objective": "Design the permission model for an agent's tools: scoped identity, approval for risky writes, audit log, budgets and a kill switch.",
+      "prerequisiteLessonIds": [
+        "tools-and-schemas",
+        "composed-workflows"
+      ],
+      "concepts": [
+        {
+          "id": "least-privilege",
+          "title": "Least privilege",
+          "summary": "Giving an agent only the access its task needs."
+        },
+        {
+          "id": "approval-gate",
+          "title": "Approval gate",
+          "summary": "A human decision required before a risky action runs."
+        },
+        {
+          "id": "audit-log",
+          "title": "Audit log",
+          "summary": "An append-only record of each action with who, what and why."
+        }
+      ],
+      "skills": [
+        "assign-approvals",
+        "estimate-approval-load"
+      ],
+      "misconceptions": [
+        "The system prompt can enforce permissions; the server must check them, since a prompt can be bypassed.",
+        "Approving every action is the safest design; too many prompts train people to click yes.",
+        "An agent should reuse the user's full credentials; it needs its own scoped identity."
+      ],
+      "sequence": [
+        "A support agent with read and write tools.",
+        "Tier the actions: read, reversible write, irreversible or costly write.",
+        "Server-side enforcement of each tier.",
+        "Audit, rate and spend limits, and an emergency disable."
+      ],
+      "examples": [
+        "1,000 approvals a day at 5 seconds each is 5,000 s, about 83 minutes of pure clicking.",
+        "Refunds under $20 auto-approve with logging; refunds over $20 need approval; account deletion is never available to the agent."
+      ],
+      "figures": [
+        {
+          "type": "table",
+          "shows": "Tool list with a tier column and an approval column.",
+          "learnerAction": "Assign an approval rule to each tool.",
+          "placement": "policy"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "Request path: model, policy check on server, tool, audit log.",
+          "learnerAction": "Block a call at the policy check.",
+          "placement": "enforcement"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "estimate-approval-load",
+          "sample": "1,000 approvals a day take 5 seconds each. About how many minutes is that, to one decimal?",
+          "answer": "83.3"
+        },
+        {
+          "kind": "choice",
+          "targets": "assign-approvals",
+          "sample": "Where must a refund limit be enforced?",
+          "answer": "On the server that executes the tool",
+          "choices": [
+            "On the server that executes the tool",
+            "In the system prompt",
+            "In the user's browser",
+            "In the model's temperature"
+          ]
+        },
+        {
+          "kind": "choice",
+          "targets": "assign-approvals",
+          "sample": "Which action should the agent never be able to do alone?",
+          "answer": "Delete a customer account",
+          "choices": [
+            "Delete a customer account",
+            "Search orders",
+            "Read a policy",
+            "Draft an email"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "owasp-llm",
+        "nist-rmf",
+        "anthropic-agents"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "prompt-injection-and-agents",
+      "moduleId": "governing",
+      "title": "Prompt injection and the lethal trifecta",
+      "objective": "Identify which of three dangerous capabilities an agent combines, and remove one.",
+      "prerequisiteLessonIds": [
+        "permissions-and-governed-actions"
+      ],
+      "concepts": [
+        {
+          "id": "trifecta",
+          "title": "Lethal trifecta",
+          "summary": "Access to private data, exposure to untrusted content and a way to communicate externally, in one agent."
+        },
+        {
+          "id": "untrusted-content",
+          "title": "Untrusted content",
+          "summary": "Any text the agent reads that an attacker could have written."
+        },
+        {
+          "id": "privilege-separation",
+          "title": "Privilege separation",
+          "summary": "Splitting work so that the part reading untrusted content has no powerful tools."
+        }
+      ],
+      "skills": [
+        "count-legs",
+        "break-the-trifecta"
+      ],
+      "misconceptions": [
+        "Filtering for the word 'ignore' blocks injection; attackers rephrase and hide text in documents.",
+        "Only chat input is untrusted; web pages, emails, tool results and retrieved documents all are.",
+        "Human approval alone fixes it; a hurried approver misses the hidden action."
+      ],
+      "sequence": [
+        "An email agent reads the inbox and can send mail.",
+        "The three legs.",
+        "Data exfiltration through a link or an outbound call.",
+        "Controls: remove a leg, split privileges, restrict outbound, approve outbound."
+      ],
+      "examples": [
+        "An agent reading emails (private data + untrusted content) and with no way to send anything outside has two legs, so it cannot exfiltrate; adding a send_email tool adds the third.",
+        "A browser agent with a logged-in session has private data; browsing adds untrusted content; clicking links is outbound: all three."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Three overlapping circles labelled by capability, with agent designs placed in them.",
+          "learnerAction": "Toggle tools on and off to see overlap.",
+          "placement": "trifecta"
+        },
+        {
+          "type": "table",
+          "shows": "Agent designs with the three legs ticked.",
+          "learnerAction": "Tick the legs.",
+          "placement": "audit"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "count-legs",
+          "sample": "An agent reads the user's inbox and fetches arbitrary web pages but has no outbound tool. How many of the three legs does it have?",
+          "answer": "2"
+        },
+        {
+          "kind": "choice",
+          "targets": "break-the-trifecta",
+          "sample": "Which change most directly removes a leg for an agent that reads email and can send email?",
+          "answer": "Remove the ability to send to external addresses",
+          "choices": [
+            "Remove the ability to send to external addresses",
+            "Add a stronger system prompt",
+            "Raise temperature",
+            "Add more examples"
+          ]
+        },
+        {
+          "kind": "choice",
+          "targets": "count-legs",
+          "sample": "A web page is",
+          "answer": "Untrusted content",
+          "choices": [
+            "Untrusted content",
+            "Trusted configuration",
+            "A permission",
+            "A schema"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "willison-trifecta",
+        "greshake",
+        "owasp-llm"
+      ],
+      "historyNotes": [
+        "Simon Willison named the lethal trifecta in June 2025; Greshake et al. described indirect prompt injection in 2023."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "observability-and-traces",
+      "moduleId": "governing",
+      "title": "Observability and traces",
+      "objective": "Read an agent trace, compute p95 latency and cost per success, and decide what to redact.",
+      "prerequisiteLessonIds": [
+        "the-agent-loop",
+        "permissions-and-governed-actions"
+      ],
+      "concepts": [
+        {
+          "id": "trace",
+          "title": "Trace",
+          "summary": "The record of one run as nested spans for model calls, retrievals and tool calls."
+        },
+        {
+          "id": "p95",
+          "title": "95th percentile",
+          "summary": "The value below which 95% of observations fall (nearest rank: the ceil(0.95·n)th smallest)."
+        },
+        {
+          "id": "cost-per-success",
+          "title": "Cost per success",
+          "summary": "Total spend divided by the number of successful tasks."
+        }
+      ],
+      "skills": [
+        "read-trace",
+        "compute-metrics"
+      ],
+      "misconceptions": [
+        "Averages describe latency; a few slow runs hide in the mean.",
+        "Log everything; traces hold personal data and secrets and need redaction and retention rules.",
+        "Cost per run is the cost metric; failed runs cost the same and deliver nothing."
+      ],
+      "sequence": [
+        "One run as a tree of spans.",
+        "What each span records: input summary, output summary, duration, tokens, error.",
+        "Percentiles and rates.",
+        "Redaction before storage."
+      ],
+      "examples": [
+        "Twenty sorted latencies end 3.4, 4.8, 9.5: the nearest-rank 95th is the 19th value, 4.8 s.",
+        "$12 across 100 runs with 80 successes: $0.15 per success."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A waterfall of spans for one run: plan, search, two tool calls, answer.",
+          "learnerAction": "Click a span for its tokens and duration.",
+          "placement": "trace"
+        },
+        {
+          "type": "data_distribution",
+          "shows": "Latency histogram for a demonstration run set, with p50 and p95 markers; the question's twenty values are not plotted.",
+          "learnerAction": "none",
+          "placement": "percentile"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-metrics",
+          "sample": "Sorted latencies in seconds (20 runs): 1.1, 1.2, 1.2, 1.3, 1.4, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.4, 2.6, 2.9, 3.4, 4.8, 9.5. What is the nearest-rank p95?",
+          "answer": "4.8"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-metrics",
+          "sample": "100 runs cost $12 in total and 80 succeed. What is the cost per success in dollars?",
+          "answer": "0.15"
+        },
+        {
+          "kind": "choice",
+          "targets": "read-trace",
+          "sample": "Before storing a trace you should",
+          "answer": "Redact personal data and secrets",
+          "choices": [
+            "Redact personal data and secrets",
+            "Keep raw text forever",
+            "Delete all spans",
+            "Share it publicly"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "otel-genai",
+        "anthropic-agents",
+        "nist-rmf"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "evaluating-agents",
+      "moduleId": "governing",
+      "title": "Evaluating agents",
+      "objective": "Grade outcomes and trajectories, and compute pass@k against pass^k to describe reliability.",
+      "prerequisiteLessonIds": [
+        "observability-and-traces"
+      ],
+      "concepts": [
+        {
+          "id": "trajectory",
+          "title": "Trajectory",
+          "summary": "The sequence of actions an agent took, not only its final answer."
+        },
+        {
+          "id": "pass-at-k",
+          "title": "pass@k",
+          "summary": "The chance that at least one of k attempts succeeds."
+        },
+        {
+          "id": "pass-hat-k",
+          "title": "pass^k",
+          "summary": "The chance that all k attempts succeed."
+        }
+      ],
+      "skills": [
+        "grade-run",
+        "compute-pass-k"
+      ],
+      "misconceptions": [
+        "The final answer is all that matters; a right answer reached by deleting records is a failure.",
+        "A 90% success agent is reliable; if the task repeats daily for a month, it will fail around three times.",
+        "Same prompt, same result; sampling and tool variance make repeated trials necessary."
+      ],
+      "sequence": [
+        "A run with a correct answer and a forbidden action.",
+        "Outcome check (state of the environment) and trajectory check (allowed tools, step count).",
+        "k trials per task.",
+        "Regression gate on a critical suite."
+      ],
+      "examples": [
+        "Per-trial success 0.8: pass@3 = 1 − 0.2³ = 0.992; pass^3 = 0.8³ = 0.512.",
+        "90% daily success over 30 days: expected failures 3."
+      ],
+      "figures": [
+        {
+          "type": "table",
+          "shows": "Six runs with columns for outcome, forbidden-action flag, steps.",
+          "learnerAction": "Mark pass or fail under a rule set.",
+          "placement": "grading"
+        },
+        {
+          "type": "graph_plot",
+          "shows": "pass@k and pass^k curves for a demonstration p (0.6), not the p = 0.8 used in the questions.",
+          "learnerAction": "Slide p.",
+          "placement": "reliability"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-pass-k",
+          "sample": "Each trial succeeds with probability 0.8, independently. What is pass^3?",
+          "answer": "0.512"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-pass-k",
+          "sample": "With the same trials, what is pass@3?",
+          "answer": "0.992"
+        },
+        {
+          "kind": "choice",
+          "targets": "grade-run",
+          "sample": "The final answer is right but the agent deleted a record it should not touch. Grade:",
+          "answer": "Fail",
+          "choices": [
+            "Fail",
+            "Pass",
+            "Partial credit always",
+            "Cannot be graded"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "tau-bench",
+        "anthropic-agents",
+        "nist-rmf"
+      ],
+      "historyNotes": [
+        "The tau-bench paper (2024) introduced the pass^k reliability measure for agents."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "human-oversight-and-rollout",
+      "moduleId": "governing",
+      "title": "Human oversight, rollout and risk",
+      "objective": "Place human control points, stage a rollout and map agent risk work onto the NIST AI RMF functions.",
+      "prerequisiteLessonIds": [
+        "evaluating-agents",
+        "prompt-injection-and-agents"
+      ],
+      "concepts": [
+        {
+          "id": "oversight-point",
+          "title": "Oversight point",
+          "summary": "Where a person approves, samples or can stop the agent."
+        },
+        {
+          "id": "staged-rollout",
+          "title": "Staged rollout",
+          "summary": "Shadow, assist, then act, each gated by evidence."
+        },
+        {
+          "id": "autonomy-record",
+          "title": "Autonomy decision record",
+          "summary": "A written decision stating the autonomy level, why, and the trigger for changing it."
+        }
+      ],
+      "skills": [
+        "place-oversight",
+        "size-sample"
+      ],
+      "misconceptions": [
+        "A human in the loop is always safer; a person rubber-stamping at speed adds latency without checking.",
+        "Oversight ends at launch; monitoring and incident response continue.",
+        "Risk work belongs to the model team alone; govern, map, measure and manage involve owners, product and security."
+      ],
+      "sequence": [
+        "Three oversight styles: approve first, review a sample after, alert on anomalies.",
+        "Shadow mode: the agent proposes, nothing executes.",
+        "Promotion gates from evaluation results.",
+        "An incident: how to stop the agent."
+      ],
+      "examples": [
+        "Review 2% of 1,500 daily actions: 30 actions a day.",
+        "NIST AI RMF functions: Govern (policies, roles), Map (context, risks), Measure (evaluate), Manage (respond, improve)."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A staged rollout ladder with gates.",
+          "learnerAction": "Pass a gate by meeting an evaluation target.",
+          "placement": "rollout"
+        },
+        {
+          "type": "table",
+          "shows": "Risk tasks matched to Govern, Map, Measure, Manage.",
+          "learnerAction": "Sort tasks.",
+          "placement": "rmf"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "size-sample",
+          "sample": "You review 2% of 1,500 daily agent actions. How many actions is that?",
+          "answer": "30"
+        },
+        {
+          "kind": "choice",
+          "targets": "place-oversight",
+          "sample": "Which stage runs the agent without executing its actions?",
+          "answer": "Shadow",
+          "choices": [
+            "Shadow",
+            "Act",
+            "Assist",
+            "Retire"
+          ]
+        },
+        {
+          "kind": "single-term",
+          "targets": "place-oversight",
+          "sample": "Which NIST AI RMF function covers policies, roles and accountability?",
+          "answer": "Govern"
+        }
+      ],
+      "sourceIds": [
+        "nist-rmf",
+        "anthropic-agents",
+        "owasp-llm"
+      ],
+      "historyNotes": [
+        "NIST released AI RMF 1.0 in January 2023."
+      ],
+      "estimatedMinutes": 13
+    }
+  ],
+  "courseCheck": "A mixed set built around one scenario, a support agent with read and write tools: classify the tools, assign approval tiers, count trifecta legs, compute context growth, a pass^k, a p95, and place a rollout stage. Add one self-rated recall on why permissions are enforced on the server.",
+  "platformNeeds": [
+    "An agent_trace figure: a waterfall of nested spans with click-to-inspect tokens and duration (svg_figure fallback given).",
+    "A policy_matrix figure: tools by tier with approval rules the learner assigns.",
+    "A json_rpc_stepper figure for the MCP handshake (svg_figure fallback given).",
+    "A graph_plot variant with a probability slider for pass@k versus pass^k.",
+    "Code items use only math and json; no model calls are needed."
+  ],
+  "unverified": [
+    "MCP details (introduction in November 2024, transports, primitive names, revision dates) are from memory; modelcontextprotocol.io could not be opened. Re-read the current spec before writing lesson 4.",
+    "A2A announcement in April 2025 and its later move to a foundation are from memory.",
+    "Simon Willison's lethal trifecta date (June 2025) and the tau-bench pass^k definition are from memory.",
+    "OpenTelemetry GenAI conventions are still marked as in development in my memory; check status.",
+    "The approximate 100k total-token figure for multi-agent cost is a worked example, not a measured number.",
+    "Only the Anthropic 'Building effective agents' page was opened (headings confirmed)."
+  ]
+}
