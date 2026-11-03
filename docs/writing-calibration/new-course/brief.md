@@ -122,8 +122,9 @@ least two figures on its opener or teaching screens. Put a figure on a graded sc
   stacks, trees, before-and-after. Use **cases** (2 to 5 views the learner switches between) to
   make a figure interactive: the stages of a process, a system before and after a change, the same
   data under two strategies. Prefer a figure with cases where the idea has stages or alternatives.
-- `program_trace` steps through a short program in Discere's Python subset (as in the example).
-  Use it only for Python-style code.
+- `program_trace` steps through a short program in Discere's teaching subset (as in the
+  example), which tracks a single variable `x` with simple updates, `if` and `while`. Use it only
+  for code of that shape; show other code in the prompt or an `svg_figure`.
 - Another type the curriculum names (`table`, `data_series`, `timeline_explorer`,
   `coordinate_plane`, a subject explorer): copy its shape from a course that already uses it, found
   with `grep -l '"type": "<type>"' content/*/bundle.json`, reading only that one diagram.
@@ -156,6 +157,8 @@ only what you can confirm, and leave out a detail you cannot.
    run `pnpm validate:content` or the test suites: other courses are being written at the same
    time and are incomplete.
 4. Do not commit and do not edit code. Touch only `content/<course>/` and `.author/<course>/`.
+   Keep every scratch script and file in `.author/<course>/`: other agents use the shared temp
+   folders at the same time and will overwrite yours.
 
 ## Report (under 250 words)
 
