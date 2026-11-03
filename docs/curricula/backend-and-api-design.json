@@ -1,0 +1,1516 @@
+{
+  "id": "backend-and-api-design",
+  "title": "Backend Development and API Design",
+  "family": "A",
+  "voice": "A",
+  "description": "Understand HTTP well enough to design an API that clients can rely on: methods, status codes, caching, resources, JSON, contracts, pagination, errors, security and the structure of a service behind it.",
+  "audience": "Someone who can write short Python functions and has seen a database query, and who now wants to build or consume web services. No web framework knowledge is needed; the course is about the protocol and the design decisions, not about any one framework.",
+  "prerequisites": [
+    "cs-basics",
+    "python-for-data-analysis",
+    "sql-from-rows-to-reports"
+  ],
+  "outcomes": [
+    "You'll be able to read and write a raw HTTP request and response.",
+    "You'll be able to choose methods and status codes that do what they promise, and decide what is safe to retry.",
+    "You'll be able to work out cache freshness and use conditional requests.",
+    "You'll be able to design resources, URLs and JSON bodies, and describe them in OpenAPI.",
+    "You'll be able to paginate a collection correctly, shape errors, and make a POST safe to retry.",
+    "You'll be able to tell authentication from authorisation, and spot injection, mass assignment and missing object-level checks.",
+    "You'll be able to limit and retry traffic sensibly and place code in layers."
+  ],
+  "sources": [
+    {
+      "id": "rfc9110",
+      "title": "RFC 9110: HTTP Semantics (June 2022)",
+      "url": "https://www.rfc-editor.org/rfc/rfc9110.html",
+      "licence": "IETF Trust Legal Provisions: may be quoted and adapted with attribution; code components under the Revised BSD licence",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "rfc9111",
+      "title": "RFC 9111: HTTP Caching (June 2022)",
+      "url": "https://www.rfc-editor.org/rfc/rfc9111.html",
+      "licence": "IETF Trust Legal Provisions",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "rfc9112",
+      "title": "RFC 9112: HTTP/1.1 (June 2022)",
+      "url": "https://www.rfc-editor.org/rfc/rfc9112.html",
+      "licence": "IETF Trust Legal Provisions",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "rfc3986",
+      "title": "RFC 3986: Uniform Resource Identifier (URI) Generic Syntax",
+      "url": "https://www.rfc-editor.org/rfc/rfc3986.html",
+      "licence": "IETF Trust Legal Provisions",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "rfc8259",
+      "title": "RFC 8259: The JSON Data Interchange Format",
+      "url": "https://www.rfc-editor.org/rfc/rfc8259.html",
+      "licence": "IETF Trust Legal Provisions",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "rfc9457",
+      "title": "RFC 9457: Problem Details for HTTP APIs",
+      "url": "https://www.rfc-editor.org/rfc/rfc9457.html",
+      "licence": "IETF Trust Legal Provisions",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "rfc6585",
+      "title": "RFC 6585: Additional HTTP Status Codes (429 Too Many Requests)",
+      "url": "https://www.rfc-editor.org/rfc/rfc6585.html",
+      "licence": "IETF Trust Legal Provisions",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "openapi",
+      "title": "OpenAPI Specification v3.1",
+      "url": "https://spec.openapis.org/oas/v3.1.0.html",
+      "licence": "Apache-2.0",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "owasp-api",
+      "title": "OWASP API Security Top 10 (2023)",
+      "url": "https://owasp.org/API-Security/editions/2023/en/0x00-header/",
+      "licence": "CC BY-SA 4.0",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "owasp-cheats",
+      "title": "OWASP Cheat Sheet Series: Password Storage, SQL Injection Prevention, Session Management, REST Security",
+      "url": "https://cheatsheetseries.owasp.org/",
+      "licence": "CC BY-SA 4.0",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "mdn-http",
+      "title": "MDN Web Docs: HTTP",
+      "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP",
+      "licence": "Text CC BY-SA 2.5; code samples CC0",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "fielding-2000",
+      "title": "Roy Fielding, Architectural Styles and the Design of Network-based Software Architectures (doctoral dissertation, 2000), chapter 5",
+      "url": "https://ics.uci.edu/~fielding/pubs/dissertation/top.htm",
+      "licence": "Copyright the author; free to read",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "py-stdlib",
+      "title": "Python documentation: urllib.parse, json, hmac, hashlib",
+      "url": "https://docs.python.org/3/library/",
+      "licence": "PSF License Version 2; code examples 0BSD",
+      "use": "reference",
+      "verified": false
+    }
+  ],
+  "modules": [
+    {
+      "id": "http",
+      "title": "Speaking HTTP",
+      "summary": "What a request and response contain, what the methods and status codes promise, and how caching saves work."
+    },
+    {
+      "id": "interface",
+      "title": "Designing the interface",
+      "summary": "Resources and URLs, JSON bodies, a written contract in OpenAPI, and the habits that make an API easy to live with: pagination, clear errors, safe retries and careful change."
+    },
+    {
+      "id": "trust-and-load",
+      "title": "Trust and load",
+      "summary": "Who is calling, what they may do, what input to distrust, and how to behave when traffic is heavy."
+    },
+    {
+      "id": "structure",
+      "title": "Structuring a service",
+      "summary": "Layers, transactions and background work, tied together with the earlier ideas."
+    }
+  ],
+  "lessons": [
+    {
+      "id": "anatomy-of-an-http-exchange",
+      "moduleId": "http",
+      "title": "Anatomy of an HTTP exchange",
+      "objective": "Read and write a raw HTTP/1.1 request and response, and state what each part is for.",
+      "prerequisiteLessonIds": [],
+      "concepts": [
+        {
+          "id": "request",
+          "title": "Request",
+          "summary": "An HTTP request is a request line (method, target, version), header fields, a blank line and an optional body."
+        },
+        {
+          "id": "response",
+          "title": "Response",
+          "summary": "A response is a status line (version, status code, reason), header fields, a blank line and an optional body."
+        },
+        {
+          "id": "header",
+          "title": "Header field",
+          "summary": "A header field is a name and value that describes the message, such as Content-Type for the body's media type and Content-Length for its size in bytes."
+        }
+      ],
+      "skills": [
+        "parse-a-request",
+        "read-headers",
+        "compute-content-length"
+      ],
+      "misconceptions": [
+        "Thinking the URL is sent as a single string. The request line carries the path and query; the host goes in the Host header.",
+        "Counting characters instead of bytes for Content-Length. A body with non-ASCII characters has more bytes than characters in UTF-8.",
+        "Thinking the server sees the fragment after #. Browsers never send it."
+      ],
+      "sequence": [
+        "A request travels as lines of text; show one raw POST to a shop API.",
+        "Request line: method, target (path plus query), version.",
+        "Headers: Host, Content-Type, Content-Length, Accept, Authorization.",
+        "Body: JSON of 22 bytes for {\"item\":\"pen\",\"qty\":3}.",
+        "The response: status line, headers (Content-Type, Content-Length, Location), body.",
+        "Who decides what: the client chooses the request, the server chooses the status; headers describe, bodies carry data."
+      ],
+      "examples": [
+        "POST /orders HTTP/1.1, Host: shop.example, Content-Type: application/json, Content-Length: 22, blank line, then {\"item\":\"pen\",\"qty\":3}.",
+        "GET /search?q=rust&page=2 HTTP/1.1 parses to method GET, path /search, query q=rust and page=2, version HTTP/1.1.",
+        "The body {\"item\":\"pen\",\"qty\":3} is 22 bytes."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A raw request laid out in coloured bands: request line, headers, blank line, body, with a matching response underneath.",
+          "learnerAction": "Hover each band to see its name and role; the Content-Length value is hidden in the request used for the question.",
+          "placement": "anatomy"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A network path: client, DNS, TCP connection, server, with the request and response arrows labelled in order.",
+          "learnerAction": "Step through the path.",
+          "placement": "exchange"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-content-length",
+          "sample": "What Content-Length (in bytes) should a request carry for the UTF-8 body {\"item\":\"pen\",\"qty\":3}?",
+          "answer": "22"
+        },
+        {
+          "kind": "single-term",
+          "targets": "read-headers",
+          "sample": "Which header names the media type of the body, such as application/json?",
+          "answer": "Content-Type"
+        },
+        {
+          "kind": "code-run-python",
+          "targets": "parse-a-request",
+          "sample": "Write parse_request_line(line) returning a tuple (method, path, query_dict, version) for a line like 'GET /search?q=rust&page=2 HTTP/1.1'. Query values are strings. The example gives ('GET', '/search', {'q': 'rust', 'page': '2'}, 'HTTP/1.1').",
+          "answer": "from urllib.parse import urlsplit, parse_qs\ndef parse_request_line(line):\n    method, target, version = line.split(' ')\n    u = urlsplit(target)\n    query = {k: v[0] for k, v in parse_qs(u.query).items()}\n    return (method, u.path, query, version)"
+        }
+      ],
+      "sourceIds": [
+        "rfc9110",
+        "rfc9112",
+        "mdn-http",
+        "py-stdlib"
+      ],
+      "historyNotes": [
+        "The first HTTP/1.1 specification was RFC 2068 (1997); RFC 9110, 9111 and 9112 (June 2022) replaced the earlier RFC 7230 to 7235 series. (Check before citing.)"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "methods-and-safety",
+      "moduleId": "http",
+      "title": "Methods, safety and idempotence",
+      "objective": "Say which HTTP methods are safe and idempotent, and predict the effect of a request delivered twice.",
+      "prerequisiteLessonIds": [
+        "anatomy-of-an-http-exchange"
+      ],
+      "concepts": [
+        {
+          "id": "safe-method",
+          "title": "Safe method",
+          "summary": "A method is safe when its defined semantics are read-only, as for GET and HEAD, so a client may issue it without asking."
+        },
+        {
+          "id": "idempotent-method",
+          "title": "Idempotent method",
+          "summary": "A method is idempotent when sending the same request several times has the same intended effect on the server as sending it once, as for PUT and DELETE."
+        },
+        {
+          "id": "retry-rule",
+          "title": "Retry rule",
+          "summary": "Because a lost response is indistinguishable from a lost request, only safe and idempotent requests may be repeated automatically."
+        }
+      ],
+      "skills": [
+        "classify-methods",
+        "predict-duplicate-effect",
+        "decide-retry"
+      ],
+      "misconceptions": [
+        "Thinking GET is only a convention. Clients, caches and crawlers rely on GET having no side effects, so a GET that deletes data causes real damage.",
+        "Thinking idempotent means the response is the same. A second DELETE may return 404 while the server state is the same as after the first.",
+        "Thinking POST is for creating and PUT for updating. PUT replaces a whole resource at a known address; POST is for everything else, and is neither safe nor idempotent."
+      ],
+      "sequence": [
+        "The client's problem: the connection drops and you do not know whether the server acted.",
+        "The method table: GET, HEAD (safe, idempotent); PUT, DELETE (idempotent, not safe); POST, PATCH (neither, by definition).",
+        "A counter at 10: PUT value=15 twice leaves 15; POST add 5 twice leaves 20.",
+        "DELETE twice: the first removes, the second finds nothing; state is the same.",
+        "Retry policy: retry GET, PUT, DELETE freely; retry POST only with a key (lesson 9).",
+        "Why a crawler may follow every GET link but must not follow a link that triggers a POST."
+      ],
+      "examples": [
+        "Counter = 10. 'PUT /counter {value: 15}' sent twice gives 15. 'POST /counter/add {n: 5}' sent twice gives 20.",
+        "DELETE /orders/7 first returns 204, second returns 404; the order is absent after both.",
+        "GET and HEAD are safe; PUT and DELETE are idempotent but not safe."
+      ],
+      "figures": [
+        {
+          "type": "table",
+          "shows": "A grid of methods (GET, HEAD, PUT, DELETE, POST, PATCH) against Safe and Idempotent, with the cells empty.",
+          "learnerAction": "Fill each cell, then see the rule that decides it.",
+          "placement": "method properties"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A client and a server with a counter at 10; the response arrow can be broken by the learner, and the client resends.",
+          "learnerAction": "Break the response, resend, and watch the counter for PUT and for POST.",
+          "placement": "lost response"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "predict-duplicate-effect",
+          "sample": "A counter is at 10. The request POST /counter/add with body {\"n\": 5} is delivered twice. What is the counter afterwards?",
+          "answer": "20"
+        },
+        {
+          "kind": "numeric",
+          "targets": "predict-duplicate-effect",
+          "sample": "A counter is at 10. The request PUT /counter with body {\"value\": 15} is delivered twice. What is the counter afterwards?",
+          "answer": "15"
+        },
+        {
+          "kind": "choice",
+          "targets": "classify-methods",
+          "sample": "Which method is both safe and idempotent?",
+          "answer": "GET",
+          "choices": [
+            "POST",
+            "PUT",
+            "GET",
+            "DELETE"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "rfc9110",
+        "mdn-http"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "status-codes",
+      "moduleId": "http",
+      "title": "Status codes that say what happened",
+      "objective": "Choose the status code that correctly reports an outcome, and distinguish 401 from 403 and 400 from 409.",
+      "prerequisiteLessonIds": [
+        "methods-and-safety"
+      ],
+      "concepts": [
+        {
+          "id": "status-class",
+          "title": "Status class",
+          "summary": "The first digit gives the class: 2xx success, 3xx redirection, 4xx client error, 5xx server error."
+        },
+        {
+          "id": "auth-codes",
+          "title": "401 and 403",
+          "summary": "401 means the request lacks valid credentials, 403 means the caller is identified but not allowed."
+        },
+        {
+          "id": "conflict-codes",
+          "title": "400, 409 and 422",
+          "summary": "400 means the request could not be understood, 409 means it is valid but conflicts with the current state, and 422 means it was understood but its content cannot be processed."
+        }
+      ],
+      "skills": [
+        "pick-status",
+        "distinguish-auth",
+        "code-status-mapping"
+      ],
+      "misconceptions": [
+        "Returning 200 for everything and putting the error in the body. Clients, caches, logs and retry logic read the status code first.",
+        "Using 401 for 'not allowed'. Despite its name, 401 is about missing or invalid authentication.",
+        "Using 500 for the client's mistakes. 5xx tells the client that retrying later might work; 4xx tells it to change the request."
+      ],
+      "sequence": [
+        "Why a code exists: machines act on it before a human reads the body.",
+        "2xx: 200 with a body, 201 with Location after creating, 204 with no body.",
+        "3xx in brief: 301/308 permanent, 304 not modified (lesson 4).",
+        "4xx: 400 malformed, 401 no credentials, 403 forbidden, 404 no such resource, 409 conflict, 429 too many requests.",
+        "5xx: 500 unexpected failure, 503 temporarily unavailable.",
+        "A decision walk for an incoming request: parse, authenticate, authorise, find the resource, check state, act."
+      ],
+      "examples": [
+        "POST /orders succeeds: 201 Created with Location: /orders/42.",
+        "Body is not valid JSON: 400. A valid token for user A reading user B's invoice: 403. No token: 401.",
+        "Registering an email already in use: 409."
+      ],
+      "figures": [
+        {
+          "type": "diagram_choice",
+          "shows": "A flowchart of a request through parse, authenticate, authorise, find, check state and act, with a status code at each exit left blank.",
+          "learnerAction": "Drag status codes onto the exits.",
+          "placement": "decision walk"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A row of coloured bands for 2xx, 3xx, 4xx and 5xx with example codes.",
+          "learnerAction": "Click a band to see who should change what: client, server or nobody.",
+          "placement": "classes"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "choice",
+          "targets": "pick-status",
+          "sample": "A client sends a body that is not valid JSON. Which status code fits best?",
+          "answer": "400",
+          "choices": [
+            "200",
+            "400",
+            "404",
+            "500"
+          ]
+        },
+        {
+          "kind": "choice",
+          "targets": "distinguish-auth",
+          "sample": "A request carries a valid token for user A and asks for user B's private invoice. Which status code reports that A is not allowed?",
+          "answer": "403",
+          "choices": [
+            "401",
+            "403",
+            "404 only",
+            "409"
+          ]
+        },
+        {
+          "kind": "code-run-python",
+          "targets": "code-status-mapping",
+          "sample": "Write status_for(outcome) mapping these outcome strings to codes: 'created' 201, 'no-content' 204, 'malformed' 400, 'no-credentials' 401, 'forbidden' 403, 'missing' 404, 'conflict' 409, 'rate-limited' 429, 'overloaded' 503. status_for('conflict') is 409.",
+          "answer": "def status_for(outcome):\n    return {'created': 201, 'no-content': 204, 'malformed': 400, 'no-credentials': 401, 'forbidden': 403, 'missing': 404, 'conflict': 409, 'rate-limited': 429, 'overloaded': 503}[outcome]"
+        }
+      ],
+      "sourceIds": [
+        "rfc9110",
+        "rfc6585",
+        "mdn-http"
+      ],
+      "historyNotes": [
+        "Status codes 429 and 428 were added by RFC 6585 in April 2012. (Check before citing.)"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "caching-and-conditional-requests",
+      "moduleId": "http",
+      "title": "Caching and conditional requests",
+      "objective": "Work out whether a cached response is still fresh, and explain how a validator avoids resending an unchanged body.",
+      "prerequisiteLessonIds": [
+        "status-codes"
+      ],
+      "concepts": [
+        {
+          "id": "freshness",
+          "title": "Freshness",
+          "summary": "A cached response is fresh while its age is less than its freshness lifetime, such as Cache-Control: max-age=300, and can be reused without contacting the server."
+        },
+        {
+          "id": "validator",
+          "title": "Validator",
+          "summary": "An ETag or Last-Modified value identifies a version of a resource so a client can ask whether it has changed."
+        },
+        {
+          "id": "revalidation",
+          "title": "Revalidation",
+          "summary": "A stale response is revalidated with If-None-Match, and a 304 Not Modified reply with no body lets the cache reuse its copy."
+        }
+      ],
+      "skills": [
+        "compute-freshness",
+        "count-origin-requests",
+        "read-conditional-exchange"
+      ],
+      "misconceptions": [
+        "Thinking caching only makes pages load faster for one user. Shared caches and CDNs save the server work for everyone.",
+        "Thinking 304 is an error. It is the success case for revalidation, with the cost of a round trip but not of a body.",
+        "Thinking no-cache means do not store. no-cache means store but revalidate before reuse; no-store forbids keeping it."
+      ],
+      "sequence": [
+        "The cost being saved: server work and bytes on the wire.",
+        "Cache-Control: max-age=300 means fresh for 300 seconds from when it was generated.",
+        "Age and remaining lifetime: fetched at t = 0, max-age 120, request at t = 95 has 25 seconds left.",
+        "Stale does not mean gone: send If-None-Match: \"v7\"; the server replies 304 with no body if still current.",
+        "Count origin contacts for requests at t = 0, 100, 200, 350, 400, 500 with max-age 300.",
+        "Choosing: static assets get long max-age with versioned names; private data uses private and short lifetimes."
+      ],
+      "examples": [
+        "max-age=120, fetched at t = 0: a request at t = 95 is served from cache (25 s left); a request at t = 130 finds it stale and revalidates.",
+        "max-age=300 and requests at 0, 100, 200, 350, 400, 500 contact the origin at 0 and 350 only (the 304 at 350 renews the copy): 2 contacts for 6 requests.",
+        "A 48,000-byte body revalidated with a 304 transfers headers only."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A timeline from 0 to 400 seconds with a green fresh bar of max-age and request ticks.",
+          "learnerAction": "Drag the max-age slider and click ticks to see whether each is served from cache or revalidated; contact counts are hidden until the learner guesses.",
+          "placement": "freshness"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A sequence diagram: client, cache, origin; request with If-None-Match, origin replying 304 with no body.",
+          "learnerAction": "Switch between 200 and 304 and compare bytes on the wire.",
+          "placement": "revalidation"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-freshness",
+          "sample": "A response with Cache-Control: max-age=120 was fetched at t = 0. A request arrives at t = 95. How many seconds of freshness remain?",
+          "answer": "25"
+        },
+        {
+          "kind": "numeric",
+          "targets": "count-origin-requests",
+          "sample": "A resource never changes and is served with max-age=300. A client requests it at t = 0, 100, 200, 350, 400 and 500 seconds, revalidating when stale and treating a 304 as renewing freshness from that moment. How many times is the origin contacted?",
+          "answer": "2"
+        },
+        {
+          "kind": "choice",
+          "targets": "read-conditional-exchange",
+          "sample": "The client sends If-None-Match with the current ETag and the resource has not changed. What does the origin reply?",
+          "answer": "304 Not Modified with no body",
+          "choices": [
+            "200 with the full body",
+            "304 Not Modified with no body",
+            "204 No Content",
+            "412 Precondition Failed"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "rfc9111",
+        "rfc9110",
+        "mdn-http"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "resources-and-urls",
+      "moduleId": "interface",
+      "title": "Resources and URLs",
+      "objective": "Design URLs for resources and collections, split a URL into its parts, and match a path to a template.",
+      "prerequisiteLessonIds": [
+        "methods-and-safety"
+      ],
+      "concepts": [
+        {
+          "id": "resource",
+          "title": "Resource",
+          "summary": "A resource is a thing the API exposes, named by a URL, and the methods act on it."
+        },
+        {
+          "id": "url-parts",
+          "title": "URL parts",
+          "summary": "A URL has a scheme, host, path, query and fragment; the path names the resource and the query narrows or shapes the result."
+        },
+        {
+          "id": "template",
+          "title": "Path template",
+          "summary": "A template such as /orders/{id} describes a family of paths, and a router extracts the named parts."
+        }
+      ],
+      "skills": [
+        "split-a-url",
+        "name-resources",
+        "match-templates"
+      ],
+      "misconceptions": [
+        "Putting verbs in paths (/getOrder, /cancelOrder). The method already carries the verb; use nouns for resources.",
+        "Using GET for an action with side effects because it is easy to test in a browser.",
+        "Nesting too deeply. /customers/17/orders/42 is clear; five levels hide that /orders/42 might be enough."
+      ],
+      "sequence": [
+        "URL anatomy on https://api.shop.example/v1/customers/17/orders?status=open&limit=20#top.",
+        "Path: /v1/customers/17/orders; query: status=open&limit=20; fragment: top (never sent).",
+        "Collections and items: /orders and /orders/42; GET lists, POST adds, GET/PUT/DELETE act on one.",
+        "Relationships: /customers/17/orders lists that customer's orders.",
+        "Actions as resources: POST /orders/42/cancellation rather than GET /orders/42/cancel.",
+        "Routing: match /orders/{id}/items/{item} against /orders/42/items/7."
+      ],
+      "examples": [
+        "https://api.shop.example/v1/customers/17/orders?status=open&limit=20#top has path /v1/customers/17/orders, query status=open&limit=20 and fragment top.",
+        "match('/orders/{id}', '/orders/42') gives {'id': '42'}; against '/orders/42/items' it gives None.",
+        "GET /orders/42/cancel breaks the safe-method rule; POST /orders/42/cancellation does not."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A URL drawn as coloured segments with labels scheme, host, path, query, fragment.",
+          "learnerAction": "Click a segment to see what is sent to the server and what is not.",
+          "placement": "url anatomy"
+        },
+        {
+          "type": "diagram_choice",
+          "shows": "Three candidate designs for cancelling an order.",
+          "learnerAction": "Pick the one that respects method semantics.",
+          "placement": "naming"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "single-term",
+          "targets": "split-a-url",
+          "sample": "Which part of a URL, introduced by #, is never sent to the server?",
+          "answer": "fragment"
+        },
+        {
+          "kind": "choice",
+          "targets": "name-resources",
+          "sample": "Which design for cancelling order 42 breaks the rule that GET is safe?",
+          "answer": "GET /orders/42/cancel",
+          "choices": [
+            "POST /orders/42/cancellation",
+            "GET /orders/42/cancel",
+            "PATCH /orders/42 with {\"status\":\"cancelled\"}",
+            "DELETE /orders/42"
+          ]
+        },
+        {
+          "kind": "code-run-python",
+          "targets": "match-templates",
+          "sample": "Write match(template, path) returning a dict of named parts if path fits the template, or None. Segments written {name} capture; others must be equal; the segment counts must agree. match('/orders/{id}', '/orders/42') is {'id': '42'}.",
+          "answer": "def match(template, path):\n    t = template.strip('/').split('/')\n    p = path.strip('/').split('/')\n    if len(t) != len(p):\n        return None\n    out = {}\n    for a, b in zip(t, p):\n        if a.startswith('{') and a.endswith('}'):\n            out[a[1:-1]] = b\n        elif a != b:\n            return None\n    return out"
+        }
+      ],
+      "sourceIds": [
+        "rfc3986",
+        "rfc9110",
+        "mdn-http",
+        "fielding-2000"
+      ],
+      "historyNotes": [
+        "REST was defined by Roy Fielding in chapter 5 of his 2000 dissertation at UC Irvine. (Check before citing.)"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "json-representations",
+      "moduleId": "interface",
+      "title": "JSON and representations",
+      "objective": "Judge whether text is valid JSON, design a response body, and handle money and large numbers safely.",
+      "prerequisiteLessonIds": [
+        "resources-and-urls"
+      ],
+      "concepts": [
+        {
+          "id": "representation",
+          "title": "Representation",
+          "summary": "A representation is a particular encoding of a resource's state, chosen by the client with Accept and declared by the server with Content-Type."
+        },
+        {
+          "id": "json-syntax",
+          "title": "JSON syntax",
+          "summary": "JSON has objects, arrays, strings, numbers, true, false and null; it forbids comments, trailing commas, single quotes and leading zeros."
+        },
+        {
+          "id": "number-care",
+          "title": "Number care",
+          "summary": "JSON numbers have no fixed precision, but most parsers read them as 64-bit floats, so binary fractions and integers above 2^53 lose exactness."
+        }
+      ],
+      "skills": [
+        "validate-json",
+        "model-money",
+        "handle-missing-fields"
+      ],
+      "misconceptions": [
+        "Thinking JSON allows single quotes or trailing commas because JavaScript does.",
+        "Sending money as a float. 0.1 + 0.2 is 0.30000000000000004 in binary floating point; use integer minor units such as cents.",
+        "Treating null, an absent field and an empty string as the same. They are different states, and PATCH semantics depend on the difference."
+      ],
+      "sequence": [
+        "The same order as a JSON document; what the client reads.",
+        "Valid and invalid examples: {\"a\":1}, {\"a\":1,}, {'a':1}, [1,2,].",
+        "Stable naming and types: ids as strings, timestamps in ISO 8601, no mixed types in one field.",
+        "Money: 19.99 x 3 as cents is 1999 x 3 = 5997.",
+        "Large integers: 9007199254740993 read by a double becomes 9007199254740992, so send ids that may exceed 2^53 as strings.",
+        "Missing versus null: a PATCH with {\"nick\": null} clears the field; omitting it leaves the field."
+      ],
+      "examples": [
+        "{\"a\":1,} is invalid (trailing comma); {\"a\":null} is valid.",
+        "0.1 + 0.2 = 0.30000000000000004; 19.99 as 1999 cents x 3 = 5997 cents.",
+        "float(9007199254740993) is 9007199254740992.0."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A JSON document with syntax colouring and an error marker that the learner can place on a suspicious token.",
+          "learnerAction": "Click the first character that breaks the syntax.",
+          "placement": "syntax"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "The same order rendered as JSON and as an XML-like alternative with the Accept header changed.",
+          "learnerAction": "Change Accept and see the Content-Type reply.",
+          "placement": "representations"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "choice",
+          "targets": "validate-json",
+          "sample": "Which of these is valid JSON?",
+          "answer": "{\"a\": null}",
+          "choices": [
+            "{'a': 1}",
+            "{\"a\": 1,}",
+            "{\"a\": null}",
+            "{\"a\": 01}"
+          ]
+        },
+        {
+          "kind": "numeric",
+          "targets": "model-money",
+          "sample": "A unit price is 19.99, stored as integer cents. What is the total in cents for 3 units?",
+          "answer": "5997"
+        },
+        {
+          "kind": "code-run-python",
+          "targets": "handle-missing-fields",
+          "sample": "Write missing_fields(text, required) that parses text as JSON and returns a sorted list of required keys that are absent, or the string 'invalid' if the text is not valid JSON or not an object. missing_fields('{\"item\":\"pen\"}', ['item','qty']) is ['qty'].",
+          "answer": "import json\ndef missing_fields(text, required):\n    try:\n        d = json.loads(text)\n    except ValueError:\n        return 'invalid'\n    if not isinstance(d, dict):\n        return 'invalid'\n    return sorted(k for k in required if k not in d)"
+        }
+      ],
+      "sourceIds": [
+        "rfc8259",
+        "rfc9110",
+        "mdn-http",
+        "py-stdlib"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "describing-an-api-with-openapi",
+      "moduleId": "interface",
+      "title": "Describing an API with OpenAPI",
+      "objective": "Read an OpenAPI description to find paths, operations, required fields and documented responses, and check a request body against a schema.",
+      "prerequisiteLessonIds": [
+        "json-representations",
+        "status-codes"
+      ],
+      "concepts": [
+        {
+          "id": "openapi-doc",
+          "title": "OpenAPI document",
+          "summary": "An OpenAPI document is a machine-readable description of an HTTP API: its paths, operations, parameters, request bodies, responses and schemas."
+        },
+        {
+          "id": "schema",
+          "title": "Schema",
+          "summary": "A schema describes the allowed shape of a JSON value, including property types and which properties are required."
+        },
+        {
+          "id": "contract",
+          "title": "Contract",
+          "summary": "The description is a contract that clients, servers, tests and documentation can all be generated or checked against."
+        }
+      ],
+      "skills": [
+        "read-an-operation",
+        "find-required-fields",
+        "validate-against-schema"
+      ],
+      "misconceptions": [
+        "Thinking the description is documentation only. Tools generate clients, mocks and tests from it, so drift between description and server is a defect.",
+        "Confusing required with nullable. A required property must be present; whether it may be null is a separate statement.",
+        "Documenting only the success response. Error responses are part of the contract."
+      ],
+      "sequence": [
+        "Why write the contract first: front-end and back-end teams can work at once and tests can check conformance.",
+        "Document skeleton: openapi version, info, paths, components.",
+        "One operation read line by line: POST /orders, requestBody referencing Order, responses 201 and 400.",
+        "Schema: type object, properties item (string), qty (integer), required [item, qty].",
+        "Checking a body against the schema: {\"item\":\"pen\"} fails because qty is missing; {\"item\":\"pen\",\"qty\":\"3\"} fails because qty is a string.",
+        "Reuse with $ref and components.schemas."
+      ],
+      "examples": [
+        "paths: /orders: post: operationId: createOrder; requestBody: $ref Order; responses: 201 (Created), 400 (Invalid body). Order requires item (string) and qty (integer).",
+        "{\"item\":\"pen\",\"qty\":3} is valid; {\"item\":\"pen\"} lacks qty; {\"item\":\"pen\",\"qty\":\"3\"} has the wrong type for qty."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A short OpenAPI document on the left (paths, one operation, schema) and a rendered documentation view on the right, with lines connected.",
+          "learnerAction": "Click a line in the document and see the matching documentation fragment.",
+          "placement": "structure"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A request body on one side, the schema on the other, with a checkmark or error per property.",
+          "learnerAction": "Edit the body and watch the checks change.",
+          "placement": "validation"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "choice",
+          "targets": "find-required-fields",
+          "sample": "Order schema: type object; properties item (string), qty (integer), note (string); required [item, qty]. Which body is valid?",
+          "answer": "{\"item\":\"pen\",\"qty\":3}",
+          "choices": [
+            "{\"item\":\"pen\"}",
+            "{\"item\":\"pen\",\"qty\":\"3\"}",
+            "{\"item\":\"pen\",\"qty\":3}",
+            "{\"qty\":3,\"note\":\"x\"}"
+          ]
+        },
+        {
+          "kind": "single-term",
+          "targets": "read-an-operation",
+          "sample": "Which OpenAPI field gives an operation a unique name that code generators use for the function name?",
+          "answer": "operationId"
+        },
+        {
+          "kind": "code-run-python",
+          "targets": "validate-against-schema",
+          "sample": "Write check(schema, body) with schema {'required': [...], 'properties': {name: 'string'|'integer'}}. Return a sorted list of messages: 'k: required' for each missing required key, and 'k: expected T' for each present key whose value has the wrong type (bool is not an integer). check(schema, {'item':'pen','qty':'3'}) is ['qty: expected integer'] for the Order schema.",
+          "answer": "def check(schema, body):\n    errs = []\n    for k in schema['required']:\n        if k not in body:\n            errs.append(k + ': required')\n    kinds = {'string': str, 'integer': int}\n    for k, t in schema['properties'].items():\n        if k in body:\n            v = body[k]\n            if not isinstance(v, kinds[t]) or isinstance(v, bool):\n                errs.append(k + ': expected ' + t)\n    return sorted(errs)"
+        }
+      ],
+      "sourceIds": [
+        "openapi",
+        "rfc8259",
+        "mdn-http"
+      ],
+      "historyNotes": [
+        "The specification began as Swagger; SmartBear donated it to the Linux Foundation in 2015 and it was renamed OpenAPI. (Check before citing.)"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "pagination-and-filtering",
+      "moduleId": "interface",
+      "title": "Pagination and filtering",
+      "objective": "Compute offset pages, show how offset paging repeats items when data changes, and implement keyset (cursor) paging.",
+      "prerequisiteLessonIds": [
+        "resources-and-urls",
+        "describing-an-api-with-openapi"
+      ],
+      "concepts": [
+        {
+          "id": "offset-paging",
+          "title": "Offset paging",
+          "summary": "Offset paging asks for the items after skipping offset rows, which is easy but shifts whenever rows are inserted or deleted earlier in the list."
+        },
+        {
+          "id": "keyset-paging",
+          "title": "Keyset paging",
+          "summary": "Keyset paging asks for items after the last one seen, using the sort key, so earlier changes do not shift later pages."
+        },
+        {
+          "id": "cursor",
+          "title": "Cursor",
+          "summary": "A cursor is an opaque token that encodes where to resume, so clients do not depend on its content."
+        }
+      ],
+      "skills": [
+        "compute-pages",
+        "predict-repeats",
+        "implement-keyset"
+      ],
+      "misconceptions": [
+        "Returning an unbounded list. A collection that grows will eventually time out or exhaust memory, so every list endpoint needs a limit.",
+        "Thinking offset paging is exact. If two items are inserted at the front between page 1 and page 2, page 2 repeats two items.",
+        "Thinking clients should build cursors themselves. Treat them as opaque so the server can change the encoding."
+      ],
+      "sequence": [
+        "A list of 137 orders and a page size of 25: ceil(137/25) = 6 pages, the last holding 12.",
+        "Offset paging: ?limit=25&offset=100; cost and drift.",
+        "Drift: ids 100 down to 91, limit 5; two new rows 101, 102 arrive; page 2 (offset 5) repeats 97 and 96.",
+        "Keyset: ?limit=5&after=96 returns 95, 94, 93, 92, 91 whatever was inserted above.",
+        "Cursor tokens: base64 of {\"after\": 96}, opaque to the client.",
+        "Filtering and sorting through query parameters, and why a sort needs a unique tiebreaker."
+      ],
+      "examples": [
+        "137 items at 25 per page is 6 pages; offset 125 returns 12 items.",
+        "Newest-first ids 100 to 91; page 1 (limit 5) gives 100..96. After 101 and 102 are added, offset 5 gives 97, 96, 95, 94, 93: 97 and 96 repeat.",
+        "page_after(items, 96, 5) over ids 100 down to 91 gives [95, 94, 93, 92, 91]."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A list of ten cards (ids 100 to 91) with a page window of five that the learner slides; two new cards appear at the top between page requests.",
+          "learnerAction": "Request page 2 by offset and then by cursor, and mark repeated cards; the count of repeats is hidden until answered.",
+          "placement": "drift"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "Two URL strips: ?limit=25&offset=100 and ?limit=25&cursor=eyJhZnRlciI6IDk2fQ==.",
+          "learnerAction": "Decode the cursor to see its content.",
+          "placement": "cursor"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-pages",
+          "sample": "137 items with a page size of 25. How many pages are there?",
+          "answer": "6"
+        },
+        {
+          "kind": "numeric",
+          "targets": "predict-repeats",
+          "sample": "Ids 100 down to 91 are listed newest first. Page 1 (limit 5, offset 0) was fetched. Then ids 101 and 102 were added at the top. Page 2 is fetched with offset 5. How many items on page 2 were already on page 1?",
+          "answer": "2"
+        },
+        {
+          "kind": "code-run-python",
+          "targets": "implement-keyset",
+          "sample": "Write page_after(items, after, limit) where items are ids sorted from newest to oldest. If after is None return the first limit ids; otherwise the limit ids that come after the id after. page_after([100,99,98,97,96,95,94,93,92,91], 96, 5) is [95, 94, 93, 92, 91].",
+          "answer": "def page_after(items, after, limit):\n    if after is None:\n        return items[:limit]\n    i = items.index(after)\n    return items[i + 1:i + 1 + limit]"
+        }
+      ],
+      "sourceIds": [
+        "rfc9110",
+        "owasp-api",
+        "mdn-http"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "errors-and-idempotency",
+      "moduleId": "interface",
+      "title": "Errors and safe retries",
+      "objective": "Shape an error response with problem details, and make a POST safe to retry with an idempotency key.",
+      "prerequisiteLessonIds": [
+        "status-codes",
+        "methods-and-safety",
+        "describing-an-api-with-openapi"
+      ],
+      "concepts": [
+        {
+          "id": "problem-details",
+          "title": "Problem details",
+          "summary": "RFC 9457 defines a JSON error body served as application/problem+json with type, title, status, detail and instance members."
+        },
+        {
+          "id": "idempotency-key",
+          "title": "Idempotency key",
+          "summary": "The client sends a unique key with a request, and the server stores the result under that key so a repeat returns the stored result instead of acting again."
+        },
+        {
+          "id": "exactly-once-effect",
+          "title": "Effect once",
+          "summary": "Retries can deliver a request many times, so safety comes from the server recognising repeats, not from hoping the network delivers once."
+        }
+      ],
+      "skills": [
+        "shape-an-error",
+        "dedupe-with-a-key",
+        "decide-key-scope"
+      ],
+      "misconceptions": [
+        "Writing errors for humans only. A stable machine-readable type lets clients react without parsing text.",
+        "Leaking internals in an error: stack traces, SQL and file paths help attackers.",
+        "Thinking retry is always safe if the server is idempotent in the HTTP sense. POST is not idempotent unless the server makes it so with a key."
+      ],
+      "sequence": [
+        "A payment request times out. The client does not know if the charge happened.",
+        "Retrying without protection: balance 100, charge 30 three times gives 10.",
+        "Idempotency key: same key means same request; the server charges once, balance 70, and returns the stored response for repeats.",
+        "What the server stores: key, a fingerprint of the request body, and the response.",
+        "Same key with a different body is a client bug; reject with an error (commonly 422 or 409).",
+        "Error body: {\"type\":\"https://api.shop.example/errors/insufficient-funds\",\"title\":\"Insufficient funds\",\"status\":422,\"detail\":\"Balance 100 is lower than 130.\"} with Content-Type: application/problem+json."
+      ],
+      "examples": [
+        "Balance 100, charge 30 with key K delivered 3 times: 70 with a key, 10 without.",
+        "process([('a',30),('a',30),('b',20),('a',30)]) charges 50 in total.",
+        "A problem-details body has type, title, status, detail and optionally instance."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A sequence diagram: client sends POST with key K, the response is lost, the client resends, the server returns the stored response.",
+          "learnerAction": "Toggle the key on and off and watch the balance box.",
+          "placement": "retry"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A problem-details JSON object with each member labelled by role.",
+          "learnerAction": "Click a member to see an example value and who reads it.",
+          "placement": "error body"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "dedupe-with-a-key",
+          "sample": "Balance is 100. A client sends POST /charges with amount 30 and the same Idempotency-Key three times (two are retries). What is the balance afterwards?",
+          "answer": "70"
+        },
+        {
+          "kind": "single-term",
+          "targets": "shape-an-error",
+          "sample": "Which media type does RFC 9457 give for a problem-details body?",
+          "answer": "application/problem+json"
+        },
+        {
+          "kind": "code-run-python",
+          "targets": "dedupe-with-a-key",
+          "sample": "Write total_charged(requests) where requests is a list of (key, amount) pairs; the first time a key appears its amount is charged, later repeats of the key are ignored. Return the total charged. total_charged([('a',30),('a',30),('b',20),('a',30)]) is 50.",
+          "answer": "def total_charged(requests):\n    seen, total = set(), 0\n    for key, amount in requests:\n        if key in seen:\n            continue\n        seen.add(key)\n        total += amount\n    return total"
+        }
+      ],
+      "sourceIds": [
+        "rfc9457",
+        "rfc9110",
+        "mdn-http"
+      ],
+      "historyNotes": [
+        "RFC 9457 (July 2023) obsoletes RFC 7807 (2016). An Idempotency-Key header is being standardised in an IETF HTTP API working-group draft; it was not an RFC when this was written. (Check before citing.)"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "versioning-and-change",
+      "moduleId": "interface",
+      "title": "Versioning and change",
+      "objective": "Classify a change to an API as breaking or non-breaking, and describe how to evolve an API without stranding clients.",
+      "prerequisiteLessonIds": [
+        "errors-and-idempotency",
+        "pagination-and-filtering"
+      ],
+      "concepts": [
+        {
+          "id": "breaking-change",
+          "title": "Breaking change",
+          "summary": "A change is breaking if a client written against the old contract can fail: removing or renaming a field, changing its type, or newly requiring a request field."
+        },
+        {
+          "id": "tolerant-reader",
+          "title": "Tolerant reader",
+          "summary": "Clients that ignore unknown fields let servers add fields without breaking them."
+        },
+        {
+          "id": "deprecation",
+          "title": "Deprecation and sunset",
+          "summary": "A deprecation warns that something will go, with a date, and the Deprecation and Sunset headers announce this in responses."
+        }
+      ],
+      "skills": [
+        "classify-change",
+        "plan-migration",
+        "write-compat-check"
+      ],
+      "misconceptions": [
+        "Thinking any change needs a new version. Additive changes (new optional field, new endpoint) need none.",
+        "Thinking adding an enum value is always safe. Clients that switch exhaustively on the old values may break.",
+        "Versioning only in the URL. Whether /v2 or a header, the real work is keeping both contracts running during migration."
+      ],
+      "sequence": [
+        "Clients you cannot update are the constraint.",
+        "Safe changes: add an optional response field, add an endpoint, add an optional query parameter.",
+        "Breaking changes: remove or rename a field, change a type from integer to string, make an optional request field required.",
+        "Subtle: new enum value; tightening validation; changing default sort.",
+        "Migration plan: add the new field alongside the old, announce deprecation with a Sunset date, measure traffic on the old field, then remove.",
+        "A mechanical check: every old response field must still exist with the same type."
+      ],
+      "examples": [
+        "Old response {id: integer, name: string}. Adding nick: string is non-breaking; removing name is breaking; changing id to string is breaking.",
+        "Making a request field 'currency' required when it was optional breaks callers who omit it.",
+        "Renaming 'qty' to 'quantity' can be done safely by returning both for a deprecation period."
+      ],
+      "figures": [
+        {
+          "type": "table",
+          "shows": "A list of eight changes with a column for 'breaking?', to be filled in.",
+          "learnerAction": "Mark each change then see which client would fail.",
+          "placement": "classification"
+        },
+        {
+          "type": "timeline_explorer",
+          "shows": "A deprecation timeline: announce, both fields served, Sunset header added, field removed.",
+          "learnerAction": "Move the removal date and see traffic still on the old field.",
+          "placement": "migration"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "choice",
+          "targets": "classify-change",
+          "sample": "Which change is non-breaking for existing clients?",
+          "answer": "Adding an optional field to a response",
+          "choices": [
+            "Renaming a response field",
+            "Changing id from integer to string",
+            "Adding an optional field to a response",
+            "Making an optional request field required"
+          ]
+        },
+        {
+          "kind": "choice",
+          "targets": "classify-change",
+          "sample": "A response field 'qty' is removed and replaced by 'quantity' in the same version. Which clients fail?",
+          "answer": "Clients that read qty",
+          "choices": [
+            "None, JSON is flexible",
+            "Clients that read qty",
+            "Only clients written in statically typed languages",
+            "Only clients that send POST"
+          ]
+        },
+        {
+          "kind": "code-run-python",
+          "targets": "write-compat-check",
+          "sample": "Write is_breaking(old, new) where old and new map response field names to type names. Return True if any old field is missing from new or has a different type; extra fields in new are fine. is_breaking({'id':'integer','name':'string'}, {'id':'integer','name':'string','nick':'string'}) is False.",
+          "answer": "def is_breaking(old, new):\n    return any(k not in new or new[k] != t for k, t in old.items())"
+        }
+      ],
+      "sourceIds": [
+        "openapi",
+        "rfc9110",
+        "mdn-http"
+      ],
+      "historyNotes": [
+        "The Sunset header is RFC 8594 (2019); a Deprecation response header was standardised later as RFC 9745. (Check both before citing.)"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "identity-and-sessions",
+      "moduleId": "trust-and-load",
+      "title": "Identity, sessions and tokens",
+      "objective": "Distinguish authentication from authorisation, explain sessions and signed tokens, and compute how password hashing cost changes guessing time.",
+      "prerequisiteLessonIds": [
+        "status-codes",
+        "json-representations"
+      ],
+      "concepts": [
+        {
+          "id": "authentication",
+          "title": "Authentication",
+          "summary": "Authentication establishes who is calling, by a password, a key, a token or a certificate."
+        },
+        {
+          "id": "signed-token",
+          "title": "Signed token",
+          "summary": "A signed token carries claims plus a keyed hash (HMAC) so the server can verify, without a lookup, that it issued them; the claims are readable by anyone."
+        },
+        {
+          "id": "password-hash",
+          "title": "Password hashing",
+          "summary": "Passwords are stored as slow, salted hashes (Argon2id, scrypt, bcrypt or PBKDF2) so a stolen table is expensive to guess against."
+        }
+      ],
+      "skills": [
+        "separate-authn-authz",
+        "sign-and-verify",
+        "estimate-guessing-time"
+      ],
+      "misconceptions": [
+        "Thinking base64 is encryption. A token's payload is only encoded; anyone can read it, so never put secrets in it.",
+        "Storing passwords with a fast hash such as plain SHA-256. Speed helps the attacker as much as the owner.",
+        "Comparing signatures with ==. Use a constant-time comparison so timing does not leak how many bytes matched."
+      ],
+      "sequence": [
+        "Two questions: who are you (authentication), and may you do this (authorisation).",
+        "Server-side sessions: random id in a cookie, state on the server. Cookie flags HttpOnly, Secure, SameSite.",
+        "Self-contained tokens: payload plus HMAC-SHA256 of the payload with a secret key.",
+        "Signing and verifying 'user=7' with key 'k' in Python; changing one character of the payload invalidates the signature.",
+        "Password storage: salt, slow hash; guessing time arithmetic: 26^8 possibilities at 1,000 guesses per second.",
+        "401 versus 403 revisited: a missing or bad token is 401."
+      ],
+      "examples": [
+        "HMAC-SHA256 of 'user=7' with key 'k' begins 056c0432 (hex). Verify with hmac.compare_digest.",
+        "All 8-letter lowercase passwords: 26^8 = 208,827,064,576; at 1,000 guesses per second that takes 208,827,064.576 s, about 2,417 days.",
+        "A tampered payload 'user=8' fails verification against the signature of 'user=7'."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A token drawn as three coloured parts (header, payload, signature) with the payload decoded below.",
+          "learnerAction": "Edit the payload and watch the signature check turn red.",
+          "placement": "signed token"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A sequence diagram: login, session cookie, later request with cookie, server lookup.",
+          "learnerAction": "Step through and compare with the token flow.",
+          "placement": "session"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "choice",
+          "targets": "separate-authn-authz",
+          "sample": "A request has no token at all. Which status code is correct?",
+          "answer": "401",
+          "choices": [
+            "200",
+            "401",
+            "403",
+            "404"
+          ]
+        },
+        {
+          "kind": "numeric",
+          "targets": "estimate-guessing-time",
+          "sample": "There are 26^8 = 208,827,064,576 possible 8-letter lowercase passwords. An attacker makes 1,000 guesses per second. About how many days does it take to try them all (rounded to a whole number)?",
+          "answer": "2417"
+        },
+        {
+          "kind": "code-run-python",
+          "targets": "sign-and-verify",
+          "sample": "Write sign(payload, key) returning the HMAC-SHA256 hex digest of payload (UTF-8) with key (UTF-8), and verify(payload, signature, key) returning True only if it matches, using hmac.compare_digest. sign('user=7', 'k') starts with '056c0432'.",
+          "answer": "import hmac, hashlib\ndef sign(payload, key):\n    return hmac.new(key.encode(), payload.encode(), hashlib.sha256).hexdigest()\ndef verify(payload, signature, key):\n    return hmac.compare_digest(sign(payload, key), signature)"
+        }
+      ],
+      "sourceIds": [
+        "owasp-cheats",
+        "owasp-api",
+        "rfc9110",
+        "py-stdlib"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "authorisation-and-input-trust",
+      "moduleId": "trust-and-load",
+      "title": "Authorisation and input you cannot trust",
+      "objective": "Spot missing object-level authorisation, injection and mass assignment in an endpoint, and fix each.",
+      "prerequisiteLessonIds": [
+        "identity-and-sessions"
+      ],
+      "concepts": [
+        {
+          "id": "bola",
+          "title": "Object-level authorisation",
+          "summary": "Every request for a specific object must check that the caller may access that object, not only that the caller is logged in."
+        },
+        {
+          "id": "injection",
+          "title": "Injection",
+          "summary": "Building a query by concatenating input lets input change the query's structure; parameterised queries keep data and code apart."
+        },
+        {
+          "id": "mass-assignment",
+          "title": "Mass assignment",
+          "summary": "Copying every field of a request body onto a stored object lets a caller set fields they should not, so accept only an allowlist."
+        }
+      ],
+      "skills": [
+        "spot-missing-check",
+        "parameterise-queries",
+        "allowlist-fields"
+      ],
+      "misconceptions": [
+        "Thinking login is enough. If /invoices/18 returns any invoice to any logged-in user, changing the number reads someone else's data.",
+        "Escaping quotes by hand. Parameterised queries are the dependable fix.",
+        "Checking authorisation in the client or hiding the button. The server enforces every rule."
+      ],
+      "sequence": [
+        "The most common API flaw: broken object-level authorisation, top of the OWASP API list.",
+        "An endpoint walked: GET /invoices/{id} loads by id and returns it. What is missing?",
+        "Fix: load by id and owner, or compare owner to caller; return 404 or 403.",
+        "Injection: name = \"x' OR '1'='1\" in a concatenated query returns all 3 rows; the parameterised version returns 0.",
+        "Mass assignment: {\"name\":\"Ana\",\"role\":\"admin\"} copied wholesale; allowlist name and email.",
+        "Validation as a first line: types, ranges, lengths, and rejecting unknown fields."
+      ],
+      "examples": [
+        "users has 3 rows. The concatenated query for name x' OR '1'='1 returns 3 rows; the parameterised query returns 0.",
+        "filter_fields({'name':'Ana','role':'admin'}, {'name','email'}) is {'name':'Ana'}.",
+        "Invoice 18 belongs to user 4; user 9 requests it; the server must refuse."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A request /invoices/18 from user 9 reaching a handler box; an owner-check gate that the learner can enable.",
+          "learnerAction": "Enable the gate and replay user 9's request.",
+          "placement": "object-level check"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A SQL string with input highlighted: with concatenation the quote closes the string; with a placeholder the input stays a value.",
+          "learnerAction": "Type an input and see how the query is parsed.",
+          "placement": "injection"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "parameterise-queries",
+          "sample": "users has 3 rows. A handler builds SELECT * FROM users WHERE name = '<input>' by concatenation and receives x' OR '1'='1. How many rows come back?",
+          "answer": "3"
+        },
+        {
+          "kind": "choice",
+          "targets": "spot-missing-check",
+          "sample": "GET /invoices/{id} returns the invoice whenever the caller is logged in. Which fix addresses the flaw?",
+          "answer": "Check that the invoice belongs to the caller before returning it",
+          "choices": [
+            "Make invoice ids longer",
+            "Check that the invoice belongs to the caller before returning it",
+            "Hide the invoice link in the interface",
+            "Require HTTPS"
+          ]
+        },
+        {
+          "kind": "code-run-python",
+          "targets": "allowlist-fields",
+          "sample": "Write filter_fields(payload, allowed) returning a new dict with only the keys of payload that are in allowed. filter_fields({'name':'Ana','role':'admin'}, {'name','email'}) is {'name': 'Ana'}.",
+          "answer": "def filter_fields(payload, allowed):\n    return {k: v for k, v in payload.items() if k in allowed}"
+        }
+      ],
+      "sourceIds": [
+        "owasp-api",
+        "owasp-cheats",
+        "py-stdlib"
+      ],
+      "historyNotes": [
+        "Broken Object Level Authorization is API1:2023 in the OWASP API Security Top 10, 2023 edition. (Check before citing.)"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "rate-limits-and-retries",
+      "moduleId": "trust-and-load",
+      "title": "Rate limits, backoff and retries",
+      "objective": "Trace a token bucket, return the right response when it is empty, and compute retry delays with exponential backoff.",
+      "prerequisiteLessonIds": [
+        "errors-and-idempotency",
+        "identity-and-sessions"
+      ],
+      "concepts": [
+        {
+          "id": "token-bucket",
+          "title": "Token bucket",
+          "summary": "A token bucket holds up to a capacity of tokens, refills at a fixed rate, and spends one per request, which allows bursts up to the capacity and a steady rate over time."
+        },
+        {
+          "id": "retry-after",
+          "title": "429 and Retry-After",
+          "summary": "A server over the limit replies 429 Too Many Requests and may add Retry-After to say when to try again."
+        },
+        {
+          "id": "backoff",
+          "title": "Exponential backoff with jitter",
+          "summary": "A client that retries waits longer after each failure, for example base x 2^attempt up to a cap, with random jitter so many clients do not retry together."
+        }
+      ],
+      "skills": [
+        "trace-token-bucket",
+        "compute-backoff",
+        "decide-what-to-retry"
+      ],
+      "misconceptions": [
+        "Retrying immediately and forever. A thousand clients doing this turn a short outage into a long one.",
+        "Retrying requests that cannot succeed. A 400 will fail the same way again; retry only timeouts, 429 and 503 (and only idempotent or keyed requests).",
+        "Thinking a rate limit is only protection from attackers. It also keeps one noisy client from starving the others."
+      ],
+      "sequence": [
+        "Why limit: shared capacity and fairness.",
+        "Token bucket: capacity 3, refill 1 per second, starts full; trace requests at 0, 0, 0, 0, 1, 1, 2.",
+        "The result: allowed, allowed, allowed, refused, allowed, refused, allowed.",
+        "What the server sends: 429, Retry-After: seconds; the client should honour it.",
+        "Backoff delays from 100 ms: 100, 200, 400, 800, 1600; with a cap of 2000 the sixth is 2000.",
+        "Timeouts and retry budgets: stop after a few attempts, and add jitter."
+      ],
+      "examples": [
+        "Bucket capacity 3, refill 1/s: requests at t = 0, 0, 0, 0, 1, 1, 2 give True, True, True, False, True, False, True: 5 allowed.",
+        "Backoff base 100 ms, five retries: 100 + 200 + 400 + 800 + 1600 = 3100 ms of waiting.",
+        "With a 2000 ms cap and six retries the delays are 100, 200, 400, 800, 1600, 2000 (total 5100)."
+      ],
+      "figures": [
+        {
+          "type": "data_series",
+          "shows": "Tokens in the bucket over time as requests arrive, with refill slope and capacity ceiling.",
+          "learnerAction": "Add requests on a timeline and see when the bucket empties.",
+          "placement": "token bucket"
+        },
+        {
+          "type": "timeline_explorer",
+          "shows": "Two retry schedules for a failing request: fixed 1 s delay and exponential with a cap.",
+          "learnerAction": "Toggle jitter on and off and compare the clustering of retries.",
+          "placement": "backoff"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "trace-token-bucket",
+          "sample": "A bucket has capacity 3, refills 1 token per second and starts full. Requests arrive at t = 0, 0, 0, 0, 1, 1, 2 seconds. How many are allowed?",
+          "answer": "5"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-backoff",
+          "sample": "A client retries five times with delays 100 ms, doubling each time, and no cap. What is the total waiting time in ms?",
+          "answer": "3100"
+        },
+        {
+          "kind": "code-run-python",
+          "targets": "trace-token-bucket",
+          "sample": "Write token_bucket(capacity, rate, times) for a bucket that starts full, refills rate tokens per second up to capacity, and spends one token per allowed request. times is non-decreasing. Return a list of booleans. token_bucket(3, 1, [0,0,0,0,1,1,2]) is [True, True, True, False, True, False, True].",
+          "answer": "def token_bucket(capacity, rate, times):\n    tokens, last, out = capacity, (times[0] if times else 0), []\n    for t in times:\n        tokens = min(capacity, tokens + (t - last) * rate)\n        last = t\n        if tokens >= 1:\n            tokens -= 1\n            out.append(True)\n        else:\n            out.append(False)\n    return out"
+        }
+      ],
+      "sourceIds": [
+        "rfc6585",
+        "rfc9110",
+        "owasp-api"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "layers-and-background-work",
+      "moduleId": "structure",
+      "title": "Layers, transactions and background work",
+      "objective": "Place code in handler, service and data layers, explain why a queue changes the failure model, and make a consumer safe against duplicate messages.",
+      "prerequisiteLessonIds": [
+        "rate-limits-and-retries",
+        "authorisation-and-input-trust"
+      ],
+      "concepts": [
+        {
+          "id": "layers",
+          "title": "Layers",
+          "summary": "A handler translates HTTP to and from calls, a service applies business rules, and a repository talks to storage, so each can change and be tested alone."
+        },
+        {
+          "id": "transaction-boundary",
+          "title": "Transaction boundary",
+          "summary": "One request that changes several rows should do so inside one database transaction, opened and committed by the service layer."
+        },
+        {
+          "id": "at-least-once",
+          "title": "At-least-once delivery",
+          "summary": "A queue that retries until acknowledged delivers some messages more than once, so consumers must tolerate duplicates."
+        }
+      ],
+      "skills": [
+        "place-the-code",
+        "reason-about-duplicates",
+        "write-an-idempotent-consumer"
+      ],
+      "misconceptions": [
+        "Putting SQL in handlers and validation in the database layer, so nothing can be tested without a server.",
+        "Sending email inside the request transaction. A slow mail server then holds the transaction open, and a rollback cannot unsend the mail.",
+        "Thinking a queue guarantees exactly-once processing. It gives at-least-once at best, so processing must be idempotent."
+      ],
+      "sequence": [
+        "A request walked through the layers: parse and authenticate, authorise, apply rules, write, respond.",
+        "Which layer owns what: status codes in the handler, rules in the service, SQL in the repository.",
+        "A service method that debits and credits inside one transaction (link to databases course).",
+        "Background work: enqueue 'send confirmation email' after commit; a worker consumes it.",
+        "Duplicate delivery: the same 'paid' event twice must not send two emails.",
+        "Operability: request ids in logs, a health check endpoint, a readiness check that includes the database."
+      ],
+      "examples": [
+        "Events (1,'paid'), (1,'paid'), (2,'paid'), (3,'created'), (2,'paid'): sending one email per paid order sends 2.",
+        "A worker adds 10 to a counter per message; a duplicate message turns 10 into 20 unless message ids are tracked.",
+        "GET /health returns 200 when the process is up; /ready returns 503 until the database connection works."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Boxes for client, handler, service, repository, database, with a queue and worker below the service.",
+          "learnerAction": "Click a request step to see which box does it.",
+          "placement": "layers"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A queue with messages m1, m2, m2 (duplicate) feeding a worker; a seen-ids box beside it.",
+          "learnerAction": "Toggle the dedupe check and watch the email count.",
+          "placement": "duplicates"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "choice",
+          "targets": "place-the-code",
+          "sample": "Where should the rule 'an order cannot ship before it is paid' live?",
+          "answer": "The service layer",
+          "choices": [
+            "The handler, as an if before the response",
+            "The service layer",
+            "The repository SQL",
+            "The client"
+          ]
+        },
+        {
+          "kind": "numeric",
+          "targets": "reason-about-duplicates",
+          "sample": "Events arrive as (1,paid), (1,paid), (2,paid), (3,created), (2,paid). The worker emails once per order the first time it sees paid. How many emails are sent?",
+          "answer": "2"
+        },
+        {
+          "kind": "code-run-python",
+          "targets": "write-an-idempotent-consumer",
+          "sample": "Write emails_sent(events) where events is a list of (order_id, type) pairs. Send one email per order the first time a 'paid' event for it appears and ignore repeats; return the number of emails. emails_sent([(1,'paid'),(1,'paid'),(2,'paid'),(3,'created'),(2,'paid')]) is 2.",
+          "answer": "def emails_sent(events):\n    seen, count = set(), 0\n    for order_id, kind in events:\n        if kind == 'paid' and order_id not in seen:\n            seen.add(order_id)\n            count += 1\n    return count"
+        }
+      ],
+      "sourceIds": [
+        "owasp-cheats",
+        "rfc9110"
+      ],
+      "estimatedMinutes": 13
+    }
+  ],
+  "courseCheck": "A mixed check: a Content-Length and request-line parse; the effect of duplicate delivery for POST and PUT; a status code for six outcomes; a cache freshness and origin-contact count; a URL split and template match; a valid-JSON choice and a money calculation; an OpenAPI schema check; a pagination drift count; an idempotency-key balance; a breaking-change classification; a signed-token verification and a password-guessing estimate; an authorisation fix; a token-bucket trace and a backoff total; and a duplicate-message question. Include three Python function tasks (match, page_after, token_bucket) and one scenario that asks the learner to find the three flaws in a described endpoint.",
+  "platformNeeds": [
+    "An http_exchange figure type: a raw request and response with named bands, editable headers and body, and live Content-Length. svg_figure fallbacks are described in the lessons.",
+    "A mock API runner: a small in-sandbox HTTP simulator that the learner's Python can call as a function (for example app.handle(method, path, headers, body) returning status, headers, body), so lessons on status codes, pagination, idempotency and rate limiting can be graded against behaviour rather than isolated helper functions. The Python sandbox has no network, so real HTTP calls are impossible; pure functions are used today.",
+    "An openapi_viewer figure that renders a short OpenAPI document next to its documentation view and a body-versus-schema checker.",
+    "A sequence_diagram figure with lanes, messages and lost-message markers that the learner can toggle; svg_figure is the fallback.",
+    "A time-based simulator (token bucket, cache freshness, backoff) driven by a timeline the learner edits; data_series and timeline_explorer are fallbacks."
+  ],
+  "unverified": [
+    "No online source could be opened: the session proxy refused every external host (403 on CONNECT), including rfc-editor.org, owasp.org and spec.openapis.org. Every source is marked verified false. RFC numbers, titles and years are from memory: 9110/9111/9112 (June 2022), 8259 (JSON), 9457 (July 2023, obsoletes 7807), 6585 (429), 3986 (URI), 8594 (Sunset), 9745 (Deprecation), 5789 (PATCH), 8288 (Link).",
+    "Section numbers inside the RFCs are not cited because I could not check them. The freshness rule and the treatment of a 304 as renewing freshness are written from memory of RFC 9111. The cache questions avoid the boundary where age equals max-age, because I could not confirm whether that is fresh or stale; the writer should state the rule from the RFC and keep the questions away from the boundary. The lesson concept says 'less than'; check it against the RFC wording.",
+    "Checked by execution in Python 3.12: Content-Length 22, request-line parse, template matching, origin-contact count, money arithmetic, JSON validity of the sample strings, schema check, pagination drift, idempotent total, backoff totals, token-bucket trace, HMAC digest prefix, guessing-time arithmetic (2,416.98 days, rounded to 2,417), SQL injection row counts in SQLite, and the compatibility check.",
+    "Status 422 versus 400 for invalid-but-parseable content, and 403 versus 404 for hiding the existence of other users' objects, are design choices on which sources differ; the sample questions avoid asking for either.",
+    "The Idempotency-Key header was an IETF draft when written; the status and the choice of 422 or 409 for a mismatched body vary between vendors.",
+    "OWASP API Top 10 2023 category numbers are from memory; Broken Object Level Authorization is API1:2023.",
+    "Password-hash advice (Argon2id first, then scrypt, bcrypt, PBKDF2) follows the OWASP Password Storage Cheat Sheet as remembered; parameters are deliberately not given.",
+    "SmartBear's donation of Swagger to the Linux Foundation in 2015 and the Fielding 2000 dissertation chapter are from memory."
+  ]
+}
