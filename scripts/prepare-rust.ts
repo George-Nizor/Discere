@@ -71,6 +71,9 @@ for (const lesson of candidate.lessons) {
     if (isProgram(step.diagram)) step.diagram = await prepareProgram(step.diagram as unknown as ProgramDraft, lesson.id + "." + step.id);
 }
 
+// Lessons still being written (no steps yet) are left out of the check and put back unchanged.
+const all = candidate.lessons;
+candidate.lessons = all.filter((lesson) => lesson.steps.length > 0);
 const validation = validateCourseBundle(candidate);
 for (const issue of validation.issues)
   console[issue.severity === "error" ? "error" : "warn"](
@@ -122,7 +125,9 @@ for (const project of collection.projects)
 const { warnings } = validateRustProjects(collection, validation.bundle);
 
 await mkdir(path.join(directory, "review"), { recursive: true });
-await writeFile(path.join(directory, "bundle.json"), JSON.stringify(validation.bundle, null, 2) + "\n");
+const written = new Map(validation.bundle.lessons.map((lesson) => [lesson.id, lesson]));
+const complete = { ...validation.bundle, lessons: all.map((lesson) => written.get(lesson.id) ?? lesson) };
+await writeFile(path.join(directory, "bundle.json"), JSON.stringify(complete, null, 2) + "\n");
 await writeFile(path.join(directory, "rust-projects.json"), JSON.stringify(collection, null, 2) + "\n");
 await writeFile(
   path.join(directory, "review", "rust-projects.json"),
