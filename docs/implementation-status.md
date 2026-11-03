@@ -2,6 +2,13 @@
 
 Updated: 2026-11-03
 
+Release 1.6.1 is the expansion's third wave: DevOps and Delivery, Cloud Fundamentals, Software
+Testing and Quality, Data Engineering, and Analytics Engineering and Data Governance, with The
+Web and AI-Assisted Engineering from wave 4. (A v1.6.0 tag was pushed by mistake onto 1.5.0;
+its release workflow refused it, so no 1.6.0 was published.) Every SQL
+figure in the data courses now matches what SQLite returns (`scripts/check-sql-figures.py`),
+which caught one row-order error in Databases.
+
 Release 1.5.0 is the expansion's second wave: Data Structures and Algorithms, Linux and the
 Command Line, Backend Development and API Design, Databases and Data Modelling, and
 Cybersecurity, written and checked as for 1.4.0. Git and Version Control, also wave 2, shipped in
