@@ -2,6 +2,13 @@
 
 Updated: 2026-11-03
 
+Release 1.5.0 is the expansion's second wave: Data Structures and Algorithms, Linux and the
+Command Line, Backend Development and API Design, Databases and Data Modelling, and
+Cybersecurity, written and checked as for 1.4.0. Git and Version Control, also wave 2, shipped in
+1.4.0. The agents corrected two curriculum errors (the umask rule, and a denormalisation example
+whose question disagreed with it), and the certificate lifetime follows the CA/Browser Forum's
+2026 rule.
+
 Release 1.4.0 is the first wave of the expansion (`docs/expansion-plan-2026-11.md`).
 
 - **New courses:** How Computers and Networks Work, System Design, Software Design and
