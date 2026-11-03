@@ -195,10 +195,10 @@ export function CourseLibrary({ courses }: { courses: CourseSummary[] }) {
     },
     {
       id: "arts",
-      title: "Music and art",
-      description: "Music theory, sound, and drawing.",
+      title: "Music and sound",
+      description: "Music theory, and how sound and audio work.",
       icon: Music,
-      courseIds: ["music-theory", "sound-and-audio-fundamentals", "drawing-and-visual-art-fundamentals"],
+      courseIds: ["music-theory", "sound-and-audio-fundamentals"],
     },
     {
       id: "life",

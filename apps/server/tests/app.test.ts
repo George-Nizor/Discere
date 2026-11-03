@@ -1,4 +1,4 @@
-import { existsSync, readdirSync, rmSync, symlinkSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, rmSync, symlinkSync } from "node:fs";
 import path from "node:path";
 import type { FastifyInstance } from "fastify";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -204,11 +204,16 @@ describe("Discere API", () => {
     expect(repeated.statusCode).toBe(409);
   });
 
-  it("lists every course directory under content/", async () => {
+  it("lists every course under content/ that is not archived", async () => {
     const contentRoot = path.resolve(import.meta.dirname, "../../../content");
-    const expected = readdirSync(contentRoot).filter(
-      (name) => !name.startsWith("_") && existsSync(path.join(contentRoot, name, "bundle.json")),
-    );
+    const expected = readdirSync(contentRoot).filter((name) => {
+      const file = path.join(contentRoot, name, "bundle.json");
+      return (
+        !name.startsWith("_") &&
+        existsSync(file) &&
+        JSON.parse(readFileSync(file, "utf8")).course.catalogueVisibility !== "archived"
+      );
+    });
     const list = await app.inject({ method: "GET", url: "/api/courses" });
     expect(list.statusCode).toBe(200);
     const ids = list.json().courses.map((course: { id: string }) => course.id);

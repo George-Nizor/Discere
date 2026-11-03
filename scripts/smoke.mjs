@@ -1,4 +1,4 @@
-import { existsSync, mkdtempSync, readdirSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import {
@@ -210,10 +210,15 @@ try {
         throw new Error(`${courseId}/${item.id} lost a teaching beat or exposed answers.`);
     }
   }
-  // Every course directory under content/ is an active course.
-  const activeIds = readdirSync(resolve("content")).filter(
-    (name) => !name.startsWith("_") && existsSync(join(resolve("content"), name, "bundle.json")),
-  );
+  // Every course directory under content/ is an active course, unless it is archived.
+  const activeIds = readdirSync(resolve("content")).filter((name) => {
+    const file = join(resolve("content"), name, "bundle.json");
+    return (
+      !name.startsWith("_") &&
+      existsSync(file) &&
+      JSON.parse(readFileSync(file, "utf8")).course.catalogueVisibility !== "archived"
+    );
+  });
   if (
     courseList.courses?.length !== activeIds.length ||
     activeIds.some((id) => !courseList.courses.some((item) => item.id === id))
