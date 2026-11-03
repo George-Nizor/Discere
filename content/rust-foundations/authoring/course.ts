@@ -1110,5 +1110,714 @@ export const projects: RustProjectCollection = {
         },
       ],
     },
+    {
+      "id": "text-tools",
+      "version": "1.0.0",
+      "title": "Text tools",
+      "description": "Four small functions that read text without copying it, using loops, slices and borrowed &str arguments: count the words, find the last one, shift letters and test for a palindrome.",
+      "tasks": [
+        {
+          "id": "word-counter",
+          "title": "Count the words in a line",
+          "prompt": "Write a function `count_words` that returns how many words a line of text holds. Words are separated by spaces, and extra spaces between them do not count as words.\n\nThe method `split_whitespace` gives the words one at a time, and `count` counts the items of an iterator.",
+          "lessonId": "slices-and-strings",
+          "conceptIds": [
+            "rust-slices"
+          ],
+          "sourceIds": [
+            "book-slices",
+            "rbe-str"
+          ],
+          "kind": "function",
+          "call": {
+            "name": "count_words",
+            "parameters": [
+              {
+                "name": "text",
+                "type": "&str"
+              }
+            ],
+            "returns": "usize"
+          },
+          "starter": "fn count_words(text: &str) -> usize {\n    // Return the number of words in text.\n}\n",
+          "hints": [
+            "split_whitespace skips extra spaces, so you do not have to.",
+            "text.split_whitespace() is an iterator, and count() consumes it and returns the number of items."
+          ],
+          "correction": "If a line with extra spaces gives the wrong number, check that you used split_whitespace and not split(' '), which makes an empty piece for each extra space.",
+          "solution": "fn count_words(text: &str) -> usize {\n    text.split_whitespace().count()\n}\n",
+          "explanation": "split_whitespace gives only the real words, and count consumes the iterator and reports how many there were. An empty line has no words, so the result is 0.",
+          "cases": [
+            {
+              "arguments": [
+                "\"the quick brown fox\""
+              ],
+              "expected": "4"
+            },
+            {
+              "arguments": [
+                "\"\""
+              ],
+              "expected": "0"
+            },
+            {
+              "arguments": [
+                "\"  one  \""
+              ],
+              "expected": "1"
+            },
+            {
+              "arguments": [
+                "\"a b  c   d e f\""
+              ],
+              "expected": "6"
+            }
+          ]
+        },
+        {
+          "id": "last-word",
+          "title": "The last word of a line",
+          "prompt": "Write a function `last_word` that returns the last word of a line as a slice of the input, without making a new String. An empty line has no last word, so return the empty text for it.\n\nThe iterator from `split_whitespace` has a method `last`, which returns an Option, and `unwrap_or(\"\")` replaces a missing word with the empty text.",
+          "lessonId": "slices-and-strings",
+          "conceptIds": [
+            "rust-slices"
+          ],
+          "sourceIds": [
+            "book-slices",
+            "rbe-str"
+          ],
+          "kind": "function",
+          "call": {
+            "name": "last_word",
+            "parameters": [
+              {
+                "name": "text",
+                "type": "&str"
+              }
+            ],
+            "returns": "&str"
+          },
+          "starter": "fn last_word(text: &str) -> &str {\n    // Return the last word of text, or \"\" if there is none.\n}\n",
+          "hints": [
+            "text.split_whitespace().last() gives an Option<&str>.",
+            "Use unwrap_or(\"\") on that Option for the case of an empty line."
+          ],
+          "correction": "If the result has a leading or trailing space, check that you split on whitespace and did not slice the text yourself with a fixed index.",
+          "solution": "fn last_word(text: &str) -> &str {\n    text.split_whitespace().last().unwrap_or(\"\")\n}\n",
+          "explanation": "The words are slices of the original text, so nothing is copied. last returns None for an empty line, and unwrap_or supplies the empty text for that case.",
+          "cases": [
+            {
+              "arguments": [
+                "\"rust is fun\""
+              ],
+              "expected": "\"fun\""
+            },
+            {
+              "arguments": [
+                "\"single\""
+              ],
+              "expected": "\"single\""
+            },
+            {
+              "arguments": [
+                "\"\""
+              ],
+              "expected": "\"\""
+            },
+            {
+              "arguments": [
+                "\"  trailing space  \""
+              ],
+              "expected": "\"space\""
+            }
+          ]
+        },
+        {
+          "id": "caesar-shift",
+          "title": "Shift the letters of a text",
+          "prompt": "Write a function `shift_text` that moves every lowercase letter forward by `shift` places and wraps from z back to a. Other characters stay as they are. The shift is at most 25.\n\nA character `c` can be turned into its place in the alphabet with `c as u8 - b'a'`, and a number back into a letter with `n as char`.",
+          "lessonId": "slices-and-strings",
+          "conceptIds": [
+            "rust-slices"
+          ],
+          "sourceIds": [
+            "book-slices",
+            "rbe-str"
+          ],
+          "kind": "function",
+          "call": {
+            "name": "shift_text",
+            "parameters": [
+              {
+                "name": "text",
+                "type": "&str"
+              },
+              {
+                "name": "shift",
+                "type": "u8"
+              }
+            ],
+            "returns": "String"
+          },
+          "starter": "fn shift_text(text: &str, shift: u8) -> String {\n    // Build a new String with each lowercase letter moved forward.\n}\n",
+          "hints": [
+            "Loop over text.chars(), and push each result onto a String made with String::new().",
+            "For a lowercase letter, the new place is (c as u8 - b'a' + shift) % 26, and adding b'a' turns it back into a byte.",
+            "Test c.is_ascii_lowercase() first, and push other characters unchanged."
+          ],
+          "correction": "If a letter near the end of the alphabet comes out wrong, check that the remainder after dividing by 26 is taken before b'a' is added back.",
+          "solution": "fn shift_text(text: &str, shift: u8) -> String {\n    let mut out = String::new();\n    for c in text.chars() {\n        if c.is_ascii_lowercase() {\n            let moved = (c as u8 - b'a' + shift) % 26 + b'a';\n            out.push(moved as char);\n        } else {\n            out.push(c);\n        }\n    }\n    out\n}\n",
+          "explanation": "The place of a letter is its distance from a. Adding the shift and taking the remainder after 26 wraps z back to a, and adding b'a' returns to the byte of a letter. Characters that are not lowercase letters are copied unchanged.",
+          "cases": [
+            {
+              "arguments": [
+                "\"abc xyz\"",
+                "3"
+              ],
+              "expected": "\"def abc\""
+            },
+            {
+              "arguments": [
+                "\"hello, world!\"",
+                "13"
+              ],
+              "expected": "\"uryyb, jbeyq!\""
+            },
+            {
+              "arguments": [
+                "\"zebra\"",
+                "1"
+              ],
+              "expected": "\"afcsb\""
+            },
+            {
+              "arguments": [
+                "\"Rust 2\"",
+                "0"
+              ],
+              "expected": "\"Rust 2\""
+            }
+          ]
+        },
+        {
+          "id": "palindrome",
+          "title": "Does it read the same backwards",
+          "prompt": "Write a function `is_palindrome` that returns true when a text reads the same forwards and backwards, ignoring upper and lower case.\n\nThe method `to_lowercase` returns a lowercase String, and `chars().rev()` walks the characters from the end.",
+          "lessonId": "slices-and-strings",
+          "conceptIds": [
+            "rust-slices"
+          ],
+          "sourceIds": [
+            "book-slices",
+            "rbe-str"
+          ],
+          "kind": "function",
+          "call": {
+            "name": "is_palindrome",
+            "parameters": [
+              {
+                "name": "text",
+                "type": "&str"
+              }
+            ],
+            "returns": "bool"
+          },
+          "starter": "fn is_palindrome(text: &str) -> bool {\n    // Return whether text is a palindrome, ignoring case.\n}\n",
+          "hints": [
+            "Make a lowercase copy first with text.to_lowercase().",
+            "Collect the characters forwards and backwards into two Vecs: lower.chars().collect::<Vec<char>>() and lower.chars().rev().collect::<Vec<char>>().",
+            "Two Vecs can be compared with ==."
+          ],
+          "correction": "If Level and level disagree, check that you lowercased the text before comparing the two sequences.",
+          "solution": "fn is_palindrome(text: &str) -> bool {\n    let lower = text.to_lowercase();\n    let forward: Vec<char> = lower.chars().collect();\n    let backward: Vec<char> = lower.chars().rev().collect();\n    forward == backward\n}\n",
+          "explanation": "Lowercasing makes the comparison ignore case. The two Vecs hold the same characters in opposite orders, and == on Vecs compares them item by item, so they are equal exactly when the text is a palindrome.",
+          "cases": [
+            {
+              "arguments": [
+                "\"Level\""
+              ],
+              "expected": "true"
+            },
+            {
+              "arguments": [
+                "\"rust\""
+              ],
+              "expected": "false"
+            },
+            {
+              "arguments": [
+                "\"\""
+              ],
+              "expected": "true"
+            },
+            {
+              "arguments": [
+                "\"Noon\""
+              ],
+              "expected": "true"
+            },
+            {
+              "arguments": [
+                "\"ab\""
+              ],
+              "expected": "false"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "library-catalogue",
+      "version": "1.0.0",
+      "title": "Library catalogue",
+      "description": "A catalogue of books modelled with a struct and an enum for each book's state, an Option for lookups, a Result for checking a book out, and a HashMap for counting loans.",
+      "tasks": [
+        {
+          "id": "model-a-book",
+          "title": "Model a book",
+          "prompt": "The program reads one line that says what state a book is in: `available`, `borrowed` followed by a name, or `lost`. Build a `Book` with the id 1 and the title Dune in that state, and print it with `{:?}`.\n\nThe types are written for you. Fill in `main` after the line is read.\n\nFor the input `borrowed ann` the program prints `Book { id: 1, title: \"Dune\", status: Borrowed(\"ann\") }`.",
+          "lessonId": "enums-and-match",
+          "conceptIds": [
+            "rust-enums"
+          ],
+          "sourceIds": [
+            "book-enums",
+            "book-match"
+          ],
+          "kind": "program",
+          "starter": "use std::io;\n\n#[derive(Debug)]\nenum Status {\n    Available,\n    Borrowed(String),\n    Lost,\n}\n\n#[derive(Debug)]\nstruct Book {\n    id: u32,\n    title: String,\n    status: Status,\n}\n\nfn main() {\n    let mut line = String::new();\n    io::stdin().read_line(&mut line).unwrap();\n    let mut words = line.split_whitespace();\n    // Build the status from the first word, then the Book, then print it.\n}\n",
+          "hints": [
+            "words.next() returns an Option<&str>, so you can match on it with Some(\"borrowed\") and Some(\"lost\") arms and a _ arm for the rest.",
+            "For borrowed, the member's name is the next word: words.next().unwrap_or(\"nobody\").to_string().",
+            "Finish with let book = Book { id: 1, title: String::from(\"Dune\"), status }; and println!(\"{:?}\", book);"
+          ],
+          "correction": "Compare the printed line with the expected one exactly. The derive attribute gives the format, so a difference usually means that the wrong variant was built.",
+          "solution": "use std::io;\n\n#[derive(Debug)]\nenum Status {\n    Available,\n    Borrowed(String),\n    Lost,\n}\n\n#[derive(Debug)]\nstruct Book {\n    id: u32,\n    title: String,\n    status: Status,\n}\n\nfn main() {\n    let mut line = String::new();\n    io::stdin().read_line(&mut line).unwrap();\n    let mut words = line.split_whitespace();\n    let status = match words.next() {\n        Some(\"borrowed\") => Status::Borrowed(words.next().unwrap_or(\"nobody\").to_string()),\n        Some(\"lost\") => Status::Lost,\n        _ => Status::Available,\n    };\n    let book = Book { id: 1, title: String::from(\"Dune\"), status };\n    println!(\"{:?}\", book);\n}\n",
+          "explanation": "The match turns the first word into a Status variant, and the Borrowed variant carries the name that follows. Debug formatting, from the derive, prints the struct and its enum field without any further code.",
+          "cases": [
+            {
+              "stdin": "available\n",
+              "expected": "Book { id: 1, title: \"Dune\", status: Available }"
+            },
+            {
+              "stdin": "borrowed ann\n",
+              "expected": "Book { id: 1, title: \"Dune\", status: Borrowed(\"ann\") }"
+            },
+            {
+              "stdin": "lost\n",
+              "expected": "Book { id: 1, title: \"Dune\", status: Lost }"
+            }
+          ]
+        },
+        {
+          "id": "find-a-book",
+          "title": "Find a book by its id",
+          "prompt": "Write a function `title_for` that finds the title of the book with a given id. Ids start at 1, so id 1 is the first title in the slice. An id of 0, or one past the end, has no book, so return None for it.\n\nThe method `get` on a slice returns an Option<&&str>, and `copied()` turns that into an Option<&str>.",
+          "lessonId": "option-and-missing-values",
+          "conceptIds": [
+            "rust-option"
+          ],
+          "sourceIds": [
+            "book-option",
+            "book-if-let"
+          ],
+          "kind": "function",
+          "call": {
+            "name": "title_for",
+            "parameters": [
+              {
+                "name": "titles",
+                "type": "&[&str]"
+              },
+              {
+                "name": "id",
+                "type": "usize"
+              }
+            ],
+            "returns": "Option<&str>"
+          },
+          "starter": "fn title_for<'a>(titles: &[&'a str], id: usize) -> Option<&'a str> {\n    // Return the title with this id, if there is one.\n}\n",
+          "hints": [
+            "Id 0 has no book, and subtracting 1 from a usize 0 would panic, so test for it first.",
+            "titles.get(id - 1) is an Option<&&str>. Add .copied() to get an Option<&str>."
+          ],
+          "correction": "If id 0 stops the program with a panic, the check for 0 has to come before the subtraction.",
+          "solution": "fn title_for<'a>(titles: &[&'a str], id: usize) -> Option<&'a str> {\n    if id == 0 {\n        None\n    } else {\n        titles.get(id - 1).copied()\n    }\n}\n",
+          "explanation": "get returns None for a position that does not exist, so ids past the end need no special case. Id 0 is handled first, because id - 1 would overflow, and the result is an Option, so the caller must decide what to do about a missing book.",
+          "cases": [
+            {
+              "arguments": [
+                "&[\"Dune\", \"Emma\"]",
+                "2"
+              ],
+              "expected": "Some(\"Emma\")"
+            },
+            {
+              "arguments": [
+                "&[\"Dune\", \"Emma\"]",
+                "9"
+              ],
+              "expected": "None"
+            },
+            {
+              "arguments": [
+                "&[\"Dune\", \"Emma\"]",
+                "0"
+              ],
+              "expected": "None"
+            },
+            {
+              "arguments": [
+                "&[\"Dune\"]",
+                "1"
+              ],
+              "expected": "Some(\"Dune\")"
+            }
+          ]
+        },
+        {
+          "id": "check-out",
+          "title": "Check out a book",
+          "prompt": "Write a function `checkout` that tries to lend a book to a member. The book's state is a text: `available`, `borrowed` followed by the holder's name, or `lost`.\n\nIf it is available, return Ok with the text `NAME has it now`. If it is borrowed, return Err with `already borrowed by HOLDER`. If it is lost, return Err with `lost`. For any other state, return Err with `no such book`.\n\nThe method `strip_prefix(\"borrowed \")` returns the rest of the text as an Option when it starts that way.",
+          "lessonId": "result-and-question-mark",
+          "conceptIds": [
+            "rust-result"
+          ],
+          "sourceIds": [
+            "book-result",
+            "book-panic-or-not"
+          ],
+          "kind": "function",
+          "call": {
+            "name": "checkout",
+            "parameters": [
+              {
+                "name": "state",
+                "type": "&str"
+              },
+              {
+                "name": "member",
+                "type": "&str"
+              }
+            ],
+            "returns": "Result<String, String>"
+          },
+          "starter": "fn checkout(state: &str, member: &str) -> Result<String, String> {\n    // Lend the book if it is available, or say why not.\n}\n",
+          "hints": [
+            "Start with if state == \"available\", then use else if let Some(holder) = state.strip_prefix(\"borrowed \") for the second case.",
+            "format!(\"{member} has it now\") builds the success text, and format!(\"already borrowed by {holder}\") the failure.",
+            "Err needs a String, so write Err(String::from(\"lost\")) or \"lost\".to_string()."
+          ],
+          "correction": "If one state gives the wrong message, check the order of the tests and that each failure is wrapped in Err.",
+          "solution": "fn checkout(state: &str, member: &str) -> Result<String, String> {\n    if state == \"available\" {\n        Ok(format!(\"{member} has it now\"))\n    } else if let Some(holder) = state.strip_prefix(\"borrowed \") {\n        Err(format!(\"already borrowed by {holder}\"))\n    } else if state == \"lost\" {\n        Err(String::from(\"lost\"))\n    } else {\n        Err(String::from(\"no such book\"))\n    }\n}\n",
+          "explanation": "The function says in its type that it can fail and what a failure looks like. Each branch returns exactly one of Ok or Err, and strip_prefix both tests the state and gives the holder's name.",
+          "cases": [
+            {
+              "arguments": [
+                "\"available\"",
+                "\"ann\""
+              ],
+              "expected": "Ok(\"ann has it now\")"
+            },
+            {
+              "arguments": [
+                "\"borrowed bo\"",
+                "\"ann\""
+              ],
+              "expected": "Err(\"already borrowed by bo\")"
+            },
+            {
+              "arguments": [
+                "\"lost\"",
+                "\"ann\""
+              ],
+              "expected": "Err(\"lost\")"
+            },
+            {
+              "arguments": [
+                "\"missing\"",
+                "\"ann\""
+              ],
+              "expected": "Err(\"no such book\")"
+            }
+          ]
+        },
+        {
+          "id": "loans-per-member",
+          "title": "Loans per member",
+          "prompt": "The input holds one member's name for every book that is out on loan, separated by whitespace. Count the loans for each member and print one line for each, in alphabetical order, in the form `NAME: COUNT`.\n\nFor the input `ann bo ann` the program prints `ann: 2` and then `bo: 1`.\n\nThe starter reads the whole input into `text`.",
+          "lessonId": "collections",
+          "conceptIds": [
+            "rust-vec"
+          ],
+          "sourceIds": [
+            "book-vectors",
+            "book-strings"
+          ],
+          "kind": "program",
+          "starter": "use std::collections::HashMap;\nuse std::io::{self, Read};\n\nfn main() {\n    let mut text = String::new();\n    io::stdin().read_to_string(&mut text).unwrap();\n    // Count the loans per name and print them in alphabetical order.\n}\n",
+          "hints": [
+            "Make a HashMap<&str, u32> and loop over text.split_whitespace().",
+            "*counts.entry(name).or_insert(0) += 1; counts one loan.",
+            "Collect the keys into a Vec, sort it, and print counts[*name] for each."
+          ],
+          "correction": "A HashMap has no fixed order, so if the lines come out in a different order from the expected one, sort the names before printing.",
+          "solution": "use std::collections::HashMap;\nuse std::io::{self, Read};\n\nfn main() {\n    let mut text = String::new();\n    io::stdin().read_to_string(&mut text).unwrap();\n    let mut counts: HashMap<&str, u32> = HashMap::new();\n    for name in text.split_whitespace() {\n        *counts.entry(name).or_insert(0) += 1;\n    }\n    let mut names: Vec<&&str> = counts.keys().collect();\n    names.sort();\n    for name in names {\n        println!(\"{name}: {}\", counts[*name]);\n    }\n}\n",
+          "explanation": "The entry method starts a new name at 0 and adds one for each loan. The keys of a HashMap come in no fixed order, so they are sorted before printing and the report is the same on every run.",
+          "cases": [
+            {
+              "stdin": "ann bo ann\n",
+              "expected": "ann: 2\nbo: 1"
+            },
+            {
+              "stdin": "cy\n",
+              "expected": "cy: 1"
+            },
+            {
+              "stdin": "bo ann bo cy ann bo\n",
+              "expected": "ann: 2\nbo: 3\ncy: 1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "score-report",
+      "version": "1.0.0",
+      "title": "Score report",
+      "description": "A wider version of the report program: parse score lines with Result, summarise entries and groups with a trait, pick the top scores with a generic function, and report averages with an iterator chain.",
+      "tasks": [
+        {
+          "id": "parse-lines",
+          "title": "Parse one line of scores",
+          "prompt": "Write a function `parse_line` that turns a line such as `ann,8` into the name and the score. Spaces around either part are ignored.\n\nIf the line has no comma, return Err with `missing comma`. If the score is not a whole number, return Err with `bad score for NAME: ` followed by the message of the parse error.",
+          "lessonId": "putting-it-together",
+          "conceptIds": [
+            "rust-program-design"
+          ],
+          "sourceIds": [
+            "book-io-project",
+            "book-modules"
+          ],
+          "kind": "function",
+          "call": {
+            "name": "parse_line",
+            "parameters": [
+              {
+                "name": "line",
+                "type": "&str"
+              }
+            ],
+            "returns": "Result<(String, u32), String>"
+          },
+          "starter": "fn parse_line(line: &str) -> Result<(String, u32), String> {\n    // Split at the comma, trim both parts and parse the score.\n}\n",
+          "hints": [
+            "line.split_once(',') returns an Option of the two parts, and .ok_or(\"missing comma\")? turns None into an Err.",
+            "score.trim().parse::<u32>() gives a Result, and .map_err(|e| format!(\"bad score for {}: {}\", name.trim(), e))? changes its error into a String.",
+            "Finish with Ok((name.trim().to_string(), score))."
+          ],
+          "correction": "If the message for a bad score is wrong, check that the format! text matches exactly and that map_err comes before the ?.",
+          "solution": "fn parse_line(line: &str) -> Result<(String, u32), String> {\n    let (name, score) = line.split_once(',').ok_or(\"missing comma\")?;\n    let score = score\n        .trim()\n        .parse::<u32>()\n        .map_err(|e| format!(\"bad score for {}: {}\", name.trim(), e))?;\n    Ok((name.trim().to_string(), score))\n}\n",
+          "explanation": "Each step that can fail ends in a question mark, so the first failure leaves the function with its Err and the later steps run only for good input. map_err puts every error into the one type that the function promises.",
+          "cases": [
+            {
+              "arguments": [
+                "\"ann,8\""
+              ],
+              "expected": "Ok((\"ann\", 8))"
+            },
+            {
+              "arguments": [
+                "\"cy,x\""
+              ],
+              "expected": "Err(\"bad score for cy: invalid digit found in string\")"
+            },
+            {
+              "arguments": [
+                "\"dee\""
+              ],
+              "expected": "Err(\"missing comma\")"
+            },
+            {
+              "arguments": [
+                "\" bo , 7 \""
+              ],
+              "expected": "Ok((\"bo\", 7))"
+            }
+          ]
+        },
+        {
+          "id": "a-summary-trait",
+          "title": "A Summary trait",
+          "prompt": "The starter defines `trait Summary` with one method, `summarise`, and two structs: `Entry` for one score and `Group` for all the scores of one name. Implement the trait for both.\n\nFor an Entry, `summarise` returns `NAME scored SCORE`. For a Group, it returns `NAME: AVERAGE (COUNT scores)`, with the average printed with one decimal place.\n\nThe program reads a line such as `ann 8 10`, and prints the summary of an Entry for the first score and then of the Group of all of them.",
+          "lessonId": "traits-and-generics",
+          "conceptIds": [
+            "rust-traits"
+          ],
+          "sourceIds": [
+            "book-generics",
+            "book-traits"
+          ],
+          "kind": "program",
+          "starter": "use std::io;\n\ntrait Summary {\n    fn summarise(&self) -> String;\n}\n\nstruct Entry {\n    name: String,\n    score: u32,\n}\n\nstruct Group {\n    name: String,\n    scores: Vec<u32>,\n}\n\n// Implement Summary for Entry and for Group here.\n\nfn main() {\n    let mut line = String::new();\n    io::stdin().read_line(&mut line).unwrap();\n    let mut words = line.split_whitespace();\n    let name = words.next().unwrap_or(\"nobody\").to_string();\n    let scores: Vec<u32> = words.map(|w| w.parse().unwrap_or(0)).collect();\n    let entry = Entry { name: name.clone(), score: scores[0] };\n    let group = Group { name, scores };\n    println!(\"{}\", entry.summarise());\n    println!(\"{}\", group.summarise());\n}\n",
+          "hints": [
+            "Write impl Summary for Entry { fn summarise(&self) -> String { ... } } and the same for Group.",
+            "format!(\"{} scored {}\", self.name, self.score) builds the text for an Entry.",
+            "For a Group, add the scores with self.scores.iter().sum::<u32>() as f64, divide by self.scores.len() as f64, and print the average with {:.1}."
+          ],
+          "correction": "If the average is printed with too many decimals, add :.1 inside the braces. If the count is wrong, use self.scores.len().",
+          "solution": "use std::io;\n\ntrait Summary {\n    fn summarise(&self) -> String;\n}\n\nstruct Entry {\n    name: String,\n    score: u32,\n}\n\nstruct Group {\n    name: String,\n    scores: Vec<u32>,\n}\n\nimpl Summary for Entry {\n    fn summarise(&self) -> String {\n        format!(\"{} scored {}\", self.name, self.score)\n    }\n}\n\nimpl Summary for Group {\n    fn summarise(&self) -> String {\n        let total = self.scores.iter().sum::<u32>() as f64;\n        let average = total / self.scores.len() as f64;\n        format!(\"{}: {:.1} ({} scores)\", self.name, average, self.scores.len())\n    }\n}\n\nfn main() {\n    let mut line = String::new();\n    io::stdin().read_line(&mut line).unwrap();\n    let mut words = line.split_whitespace();\n    let name = words.next().unwrap_or(\"nobody\").to_string();\n    let scores: Vec<u32> = words.map(|w| w.parse().unwrap_or(0)).collect();\n    let entry = Entry { name: name.clone(), score: scores[0] };\n    let group = Group { name, scores };\n    println!(\"{}\", entry.summarise());\n    println!(\"{}\", group.summarise());\n}\n",
+          "explanation": "The trait names one behaviour, and each type supplies its own body for it. main calls summarise in the same way on both, and each call runs the body that belongs to the value in front of the dot.",
+          "cases": [
+            {
+              "stdin": "ann 8 10\n",
+              "expected": "ann scored 8\nann: 9.0 (2 scores)"
+            },
+            {
+              "stdin": "bo 6\n",
+              "expected": "bo scored 6\nbo: 6.0 (1 scores)"
+            },
+            {
+              "stdin": "cy 5 5 5 6\n",
+              "expected": "cy scored 5\ncy: 5.2 (4 scores)"
+            }
+          ]
+        },
+        {
+          "id": "generic-top-n",
+          "title": "The top n of anything",
+          "prompt": "Write a generic function `top_n` that returns the `n` largest items of a slice, largest first, as a new Vec. If the slice has fewer than `n` items, return all of them.\n\nIt must work for any type that can be compared and cloned, so the bounds are `T: PartialOrd + Clone`.",
+          "lessonId": "traits-and-generics",
+          "conceptIds": [
+            "rust-traits"
+          ],
+          "sourceIds": [
+            "book-generics",
+            "book-traits"
+          ],
+          "kind": "function",
+          "call": {
+            "name": "top_n",
+            "parameters": [
+              {
+                "name": "items",
+                "type": "&[T]"
+              },
+              {
+                "name": "n",
+                "type": "usize"
+              }
+            ],
+            "returns": "Vec<T>"
+          },
+          "starter": "fn top_n<T: PartialOrd + Clone>(items: &[T], n: usize) -> Vec<T> {\n    // Return the n largest items, largest first.\n}\n",
+          "hints": [
+            "items.to_vec() makes a Vec that you may sort, and it needs Clone.",
+            "v.sort_by(|a, b| b.partial_cmp(a).unwrap()) sorts from largest to smallest.",
+            "v.truncate(n) keeps at most n items, and returns nothing, so return v on the next line."
+          ],
+          "correction": "If the order is reversed, check that the closure compares b with a and not a with b. If the length is wrong, check truncate.",
+          "solution": "fn top_n<T: PartialOrd + Clone>(items: &[T], n: usize) -> Vec<T> {\n    let mut v = items.to_vec();\n    v.sort_by(|a, b| b.partial_cmp(a).unwrap());\n    v.truncate(n);\n    v\n}\n",
+          "explanation": "The bounds promise what the body uses: Clone for to_vec and PartialOrd for partial_cmp. Comparing b with a reverses the order, and truncate leaves the whole Vec alone when it holds fewer than n items.",
+          "cases": [
+            {
+              "arguments": [
+                "&[8, 6, 10, 7]",
+                "2"
+              ],
+              "expected": "[10, 8]"
+            },
+            {
+              "arguments": [
+                "&[1.5, 0.5, 2.5]",
+                "1"
+              ],
+              "expected": "[2.5]"
+            },
+            {
+              "arguments": [
+                "&['a', 'c', 'b']",
+                "2"
+              ],
+              "expected": "['c', 'b']"
+            },
+            {
+              "arguments": [
+                "&[3]",
+                "5"
+              ],
+              "expected": "[3]"
+            }
+          ]
+        },
+        {
+          "id": "report-with-iterators",
+          "title": "Averages with a minimum",
+          "prompt": "Write a function `averages` that takes a slice of score lists, one list per person, and a minimum count. It returns the average of each list that has at least that many scores, in the same order.\n\nUse an iterator chain with `filter`, `map` and `collect`. The closure given to `filter` is where the minimum is used.",
+          "lessonId": "closures-and-iterators",
+          "conceptIds": [
+            "rust-closures"
+          ],
+          "sourceIds": [
+            "book-closures",
+            "book-iterators"
+          ],
+          "kind": "function",
+          "call": {
+            "name": "averages",
+            "parameters": [
+              {
+                "name": "lists",
+                "type": "&[Vec<u32>]"
+              },
+              {
+                "name": "min",
+                "type": "usize"
+              }
+            ],
+            "returns": "Vec<f64>"
+          },
+          "starter": "fn averages(lists: &[Vec<u32>], min: usize) -> Vec<f64> {\n    // Average each list that has at least min scores.\n}\n",
+          "hints": [
+            "lists.iter().filter(|l| l.len() >= min) keeps the long enough lists, and the closure captures min.",
+            "map(|l| l.iter().sum::<u32>() as f64 / l.len() as f64) turns a list into its average.",
+            "End with .collect(), and the return type tells it to build a Vec<f64>."
+          ],
+          "correction": "If a list that is too short appears in the result, check that the filter comes before the map. If a decimal is cut short, convert the sum with as f64 before dividing.",
+          "solution": "fn averages(lists: &[Vec<u32>], min: usize) -> Vec<f64> {\n    lists\n        .iter()\n        .filter(|l| l.len() >= min)\n        .map(|l| l.iter().sum::<u32>() as f64 / l.len() as f64)\n        .collect()\n}\n",
+          "explanation": "The filter closure captures min from the function's parameters and keeps only the lists that are long enough. The map computes each average, and collect gathers them, so no loop or intermediate Vec is written.",
+          "cases": [
+            {
+              "arguments": [
+                "&[vec![8, 10], vec![6], vec![6, 7]]",
+                "2"
+              ],
+              "expected": "[9.0, 6.5]"
+            },
+            {
+              "arguments": [
+                "&[vec![8, 10], vec![6], vec![6, 7]]",
+                "1"
+              ],
+              "expected": "[9.0, 6.0, 6.5]"
+            },
+            {
+              "arguments": [
+                "&[vec![8, 10], vec![6], vec![6, 7]]",
+                "3"
+              ],
+              "expected": "[]"
+            },
+            {
+              "arguments": [
+                "&[vec![2, 3, 6]]",
+                "1"
+              ],
+              "expected": "[3.6666666666666665]"
+            }
+          ]
+        }
+      ]
+    }
   ],
 };
