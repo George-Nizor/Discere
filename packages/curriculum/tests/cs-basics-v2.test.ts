@@ -290,10 +290,13 @@ describe("CS Basics story lessons 1 to 6", () => {
     expect((5 + 1) * 2).toBe(12);
     expect(1 + 5).toBe(6);
     // Lesson 2: x = 8 takes the if branch (8 + 10); x = 7 takes it too (7 - 4), then doubles.
-    expect(8 > 5 ? 8 + 10 : 8 - 1).toBe(18);
-    expect((7 >= 5 ? 7 - 4 : 7 + 1) * 2).toBe(6);
-    expect([4, 6].map((v) => (v > 5) === (v >= 5))).toEqual([true, true]);
-    expect((5 > 5) === (5 >= 5)).toBe(false);
+    const ifElse = (x: number) => (x > 5 ? x + 10 : x - 1);
+    const thenDouble = (x: number) => (x >= 5 ? x - 4 : x + 1) * 2;
+    const sameEitherWay = (v: number) => (v > 5) === (v >= 5);
+    expect(ifElse(8)).toBe(18);
+    expect(thenDouble(7)).toBe(6);
+    expect([4, 6].map(sameEitherWay)).toEqual([true, true]);
+    expect(sameEitherWay(5)).toBe(false);
     // Lesson 3: 9 while > 5 subtracting 2 (two passes, three checks); range(3) adding 4; 6 up to 20 by 3.
     expect(whileDown(9, 5, 2)).toEqual({ x: 5, passes: 2 });
     let y = 10;

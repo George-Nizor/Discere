@@ -26,9 +26,8 @@ const REQUIRED_CLAUSES: Record<(typeof PROMPT_NAMES)[number], string[]> = {
   ],
   "lesson-writer": [
     "Develop one main idea.",
-    "Do not begin with an overview of the lesson.",
-    "Do not end with a ceremonial summary.",
-    "Avoid negative parallelisms, forced groups of three",
+    "Do not pad, and do not compress.",
+    "`.claude/skills/discere-lesson-voice/SKILL.md`",
     "Do not invent facts or visual details.",
     "Do not include hidden reasoning.",
   ],
