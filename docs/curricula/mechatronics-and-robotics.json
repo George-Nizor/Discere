@@ -1,0 +1,1229 @@
+{
+  "id": "mechatronics-and-robotics",
+  "title": "Mechatronics and Robotics",
+  "family": "B",
+  "voice": "A",
+  "description": "Microcontrollers, sensors, motors and drivers, state machines and the geometry of robot arms and wheeled robots.",
+  "audience": "Adults who finished Electronics Foundations and know basic programming; no hardware experience needed.",
+  "prerequisites": [
+    "electronics-foundations",
+    "cs-basics",
+    "physics-motion-and-forces"
+  ],
+  "outcomes": [
+    "You'll be able to read a microcontroller's timing and I/O.",
+    "You'll be able to convert sensor readings to physical units.",
+    "You'll be able to size a motor drive.",
+    "You'll be able to compute arm and wheeled-robot kinematics."
+  ],
+  "sources": [
+    {
+      "id": "modern-robotics",
+      "title": "Lynch and Park, Modern Robotics: Mechanics, Planning, and Control (Cambridge, 2017)",
+      "url": "http://hades.mech.northwestern.edu/index.php/Modern_Robotics",
+      "licence": "Free preprint PDF; copyright Cambridge University Press",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "mit-2-12",
+      "title": "MIT OCW 2.12 Introduction to Robotics",
+      "url": "https://ocw.mit.edu/courses/2-12-introduction-to-robotics-fall-2005/",
+      "licence": "CC BY-NC-SA 4.0",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "mit-2-737",
+      "title": "MIT OCW 2.737 Mechatronics",
+      "url": "https://ocw.mit.edu/courses/2-737-mechatronics-fall-2007/",
+      "licence": "CC BY-NC-SA 4.0",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "arduino-docs",
+      "title": "Arduino documentation (language reference, hardware pages); concepts only",
+      "url": "https://www.arduino.cc/reference/en/",
+      "licence": "CC BY-SA 4.0",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "sparkfun-learn",
+      "title": "SparkFun Learn tutorials (PWM, ADC, H-bridges, encoders)",
+      "url": "https://learn.sparkfun.com/",
+      "licence": "CC BY-SA 4.0 for most tutorials",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "rp2040-ds",
+      "title": "Raspberry Pi RP2040 datasheet (a current example microcontroller)",
+      "url": "https://datasheets.raspberrypi.com/rp2040/rp2040-datasheet.pdf",
+      "licence": "CC BY-ND 4.0",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "wiki-mecha",
+      "title": "Wikipedia: Finite-state machine, Rotary encoder, Back-EMF, Complementary filter, Differential wheeled robot",
+      "url": "https://en.wikipedia.org/wiki/Finite-state_machine",
+      "licence": "CC BY-SA 4.0",
+      "use": "reference",
+      "verified": false
+    }
+  ],
+  "modules": [
+    {
+      "id": "controller",
+      "title": "Computers that sense",
+      "summary": "What a microcontroller is, how it reads switches and voltages, and how to structure its behaviour."
+    },
+    {
+      "id": "actuators",
+      "title": "Making things move",
+      "summary": "DC motors, switching power, steppers, servos and sizing a drive."
+    },
+    {
+      "id": "robots",
+      "title": "Robot geometry and behaviour",
+      "summary": "Where a robot is and where its tool is, how sensors are fused, and how a whole robot is organised."
+    }
+  ],
+  "lessons": [
+    {
+      "id": "what-a-microcontroller-is",
+      "moduleId": "controller",
+      "title": "What a microcontroller is",
+      "objective": "Describe the parts of a microcontroller and compute clock and timer timings.",
+      "prerequisiteLessonIds": [],
+      "concepts": [
+        {
+          "id": "mcu",
+          "title": "Microcontroller",
+          "summary": "A single chip holding a processor, memory and peripherals such as pins, timers and converters, built to read inputs and drive outputs."
+        },
+        {
+          "id": "timer",
+          "title": "Timer",
+          "summary": "A counter driven by the clock, optionally slowed by a prescaler, that overflows at a known interval."
+        }
+      ],
+      "skills": [
+        "name-mcu-parts",
+        "compute-timer-period",
+        "explain-loop"
+      ],
+      "misconceptions": [
+        "Learners think a microcontroller is a small PC. It has no operating system by default and runs one program forever.",
+        "Learners think faster clock always means better; power and I/O matter more.",
+        "Learners think delay() is free; the processor does nothing else while waiting."
+      ],
+      "sequence": [
+        "Read, decide, act, repeat.",
+        "CPU, flash, RAM, pins.",
+        "Clock and cycles.",
+        "Timer with prescaler.",
+        "Peripherals do work without the CPU.",
+        "Choosing a part."
+      ],
+      "examples": [
+        "16 MHz clock: 62.5 ns per cycle.",
+        "Prescaler 64: tick 4 microseconds; an 8-bit timer overflows after 256*4=1.024 ms.",
+        "A loop of 2000 cycles at 16 MHz runs 8000 times per second."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Block diagram of a microcontroller with CPU, memory, timer, ADC and pins.",
+          "learnerAction": "Tap a block to see what it does.",
+          "placement": "Anatomy"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "Timeline of a timer counting to overflow.",
+          "learnerAction": "Change prescaler.",
+          "placement": "Timer"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-timer-period",
+          "sample": "Clock 16 MHz, prescaler 64, 8-bit timer. Overflow period in ms?",
+          "answer": "1.024"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-timer-period",
+          "sample": "Clock 8 MHz. One cycle in ns?",
+          "answer": "125"
+        },
+        {
+          "kind": "choice",
+          "targets": "explain-loop",
+          "sample": "A microcontroller program normally?",
+          "answer": "Repeats forever",
+          "choices": [
+            "Repeats forever",
+            "Ends after one run",
+            "Waits for an OS",
+            "Compiles itself"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "arduino-docs",
+        "rp2040-ds",
+        "mit-2-737"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "digital-inputs-and-outputs",
+      "moduleId": "controller",
+      "title": "Digital pins, switches and LEDs",
+      "objective": "Pick resistor values for pins and avoid floating inputs and switch bounce.",
+      "prerequisiteLessonIds": [
+        "what-a-microcontroller-is"
+      ],
+      "concepts": [
+        {
+          "id": "pull",
+          "title": "Pull-up / pull-down",
+          "summary": "A resistor that sets an input to a known level when the switch is open."
+        },
+        {
+          "id": "bounce",
+          "title": "Bounce",
+          "summary": "A mechanical switch makes and breaks several times in a few milliseconds when pressed."
+        }
+      ],
+      "skills": [
+        "size-led-resistor",
+        "explain-floating",
+        "debounce"
+      ],
+      "misconceptions": [
+        "Learners think an unconnected input reads 0. It floats and reads anything.",
+        "Learners connect an LED directly to a pin.",
+        "Learners expect one press to be one edge."
+      ],
+      "sequence": [
+        "Pins: input or output.",
+        "Logic levels.",
+        "Floating inputs; pull-up.",
+        "LED resistor.",
+        "Switch bounce.",
+        "Level mismatch between 3.3 V and 5 V parts."
+      ],
+      "examples": [
+        "LED 2 V at 15 mA from 5 V: R=(5-2)/0.015=200 ohm.",
+        "10 kohm pull-up at 3.3 V: 0.33 mA when pressed.",
+        "Bounce lasts about 5 ms; sample every 10 ms."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Switch with pull-up and the input voltage over time, with bounce.",
+          "learnerAction": "Press.",
+          "placement": "Bounce"
+        },
+        {
+          "type": "series_circuit_explorer",
+          "shows": "LED and resistor series loop.",
+          "learnerAction": "Change R.",
+          "placement": "LED current"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "size-led-resistor",
+          "sample": "Supply 3.3 V, LED 2.0 V, 10 mA. R in ohm?",
+          "answer": "130"
+        },
+        {
+          "kind": "numeric",
+          "targets": "explain-floating",
+          "sample": "10 kohm pull-up at 5 V, pressed. Current in mA?",
+          "answer": "0.5"
+        },
+        {
+          "kind": "choice",
+          "targets": "debounce",
+          "sample": "Bounce is handled by?",
+          "answer": "Ignoring changes for a few ms",
+          "choices": [
+            "Ignoring changes for a few ms",
+            "Faster clock",
+            "Larger LED",
+            "Lower voltage"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "sparkfun-learn",
+        "arduino-docs"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "analog-sensing",
+      "moduleId": "controller",
+      "title": "Analog signals and the converter",
+      "objective": "Convert between voltage and ADC counts and recover a sensor value through a divider.",
+      "prerequisiteLessonIds": [
+        "digital-inputs-and-outputs"
+      ],
+      "concepts": [
+        {
+          "id": "adc",
+          "title": "ADC",
+          "summary": "Converts a voltage to an integer of 2^n levels; one step (LSB) is Vref/2^n."
+        },
+        {
+          "id": "divider",
+          "title": "Divider sensing",
+          "summary": "A resistive sensor in a divider turns resistance into voltage."
+        }
+      ],
+      "skills": [
+        "convert-adc",
+        "solve-divider",
+        "reduce-noise"
+      ],
+      "misconceptions": [
+        "Learners treat the reading as the voltage itself.",
+        "Learners think more bits means more accuracy; accuracy depends on references and noise.",
+        "Learners think averaging cures all noise; it only reduces random noise by sqrt N."
+      ],
+      "sequence": [
+        "Quantisation.",
+        "LSB = Vref/2^n.",
+        "Count to voltage.",
+        "Divider and thermistor.",
+        "Averaging.",
+        "Sampling rate."
+      ],
+      "examples": [
+        "12-bit, 3.3 V: LSB=0.806 mV; reading 2048 means 1.650 V.",
+        "10-bit, 5 V: 4.88 mV per count.",
+        "Averaging 16 samples cuts random noise by a factor 4."
+      ],
+      "figures": [
+        {
+          "type": "graph_plot",
+          "shows": "Staircase quantisation of a sine.",
+          "learnerAction": "Change bits.",
+          "placement": "Resolution"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "Thermistor divider with ADC.",
+          "learnerAction": "Heat.",
+          "placement": "Divider"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "convert-adc",
+          "sample": "12-bit, Vref 3.3 V, reading 1024. Voltage in V?",
+          "answer": "0.825"
+        },
+        {
+          "kind": "numeric",
+          "targets": "solve-divider",
+          "sample": "Divider with 10 kohm on top, thermistor to ground, 12-bit reading 1024. Thermistor resistance in ohm to the nearest ohm?",
+          "answer": "3333"
+        },
+        {
+          "kind": "numeric",
+          "targets": "reduce-noise",
+          "sample": "Average of 16 samples reduces random noise by what factor?",
+          "answer": "4"
+        }
+      ],
+      "sourceIds": [
+        "arduino-docs",
+        "sparkfun-learn"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "position-and-motion-sensors",
+      "moduleId": "controller",
+      "title": "Sensors for position and motion",
+      "objective": "Turn encoder counts and echo times into distance and name sensor trade-offs.",
+      "prerequisiteLessonIds": [
+        "analog-sensing"
+      ],
+      "concepts": [
+        {
+          "id": "encoder",
+          "title": "Quadrature encoder",
+          "summary": "Two out-of-phase channels give direction and four counts per pulse cycle."
+        },
+        {
+          "id": "tof",
+          "title": "Time of flight",
+          "summary": "Distance is half of speed times round-trip time."
+        }
+      ],
+      "skills": [
+        "compute-encoder-distance",
+        "compute-tof-distance",
+        "pick-sensor"
+      ],
+      "misconceptions": [
+        "Learners confuse encoder pulses per revolution with counts per revolution.",
+        "Learners forget the halving for echo.",
+        "Learners think sensors give truth; they have resolution, noise and drift."
+      ],
+      "sequence": [
+        "Properties of a sensor.",
+        "Encoder.",
+        "Distance sensing.",
+        "Inertial sensing.",
+        "Choosing.",
+        "Calibration."
+      ],
+      "examples": [
+        "600 PPR x4=2400 counts/rev, 0.15 degrees per count.",
+        "Wheel 65 mm: 0.0851 mm per count; 7200 counts=612.6 mm.",
+        "Echo 5.8 ms at 343 m/s: 0.995 m."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Quadrature signals with direction.",
+          "learnerAction": "Rotate.",
+          "placement": "Encoder"
+        },
+        {
+          "type": "data_series",
+          "shows": "Noisy distance trace.",
+          "learnerAction": "Filter.",
+          "placement": "Noise"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-encoder-distance",
+          "sample": "1000 PPR, x4 counting, rotates 3 turns. Counts?",
+          "answer": "12000"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-tof-distance",
+          "sample": "Echo 11.6 ms at 343 m/s. Distance in m to 2 decimals?",
+          "answer": "1.99"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-encoder-distance",
+          "sample": "2400 counts per rev. Degrees per count?",
+          "answer": "0.15"
+        }
+      ],
+      "sourceIds": [
+        "sparkfun-learn",
+        "mit-2-737"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "state-machines",
+      "moduleId": "controller",
+      "title": "State machines",
+      "objective": "Read and design a finite state machine and write it without blocking delays.",
+      "prerequisiteLessonIds": [
+        "position-and-motion-sensors"
+      ],
+      "concepts": [
+        {
+          "id": "fsm",
+          "title": "Finite state machine",
+          "summary": "A set of states, events and a table saying which state follows each event."
+        },
+        {
+          "id": "nonblocking",
+          "title": "Non-blocking timing",
+          "summary": "Check elapsed time each pass instead of waiting."
+        }
+      ],
+      "skills": [
+        "trace-fsm",
+        "count-transitions",
+        "design-fsm"
+      ],
+      "misconceptions": [
+        "Learners write behaviour as nested if statements on flags; the flags drift out of step. One state variable cannot.",
+        "Learners think every state must handle every event. Unlisted pairs should do nothing, and that must be a decision.",
+        "Learners use delay() for a pause and then miss a button press during it."
+      ],
+      "sequence": [
+        "Start with a vending machine or door: behaviour depends on what already happened, not only on the input.",
+        "Name the states and the events that move between them.",
+        "Write the transition table; blank cells mean stay put.",
+        "Turn the table into code: one state variable, one lookup per event.",
+        "Replace delay() with elapsed-time checks so events are never missed.",
+        "Add a safe state that every fault event leads to."
+      ],
+      "examples": [
+        "Table idle,run,pause traced with events.",
+        "4 states and 3 events give at most 12 transitions.",
+        "Traffic light cycle."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "State diagram with arrows.",
+          "learnerAction": "Click events.",
+          "placement": "FSM"
+        },
+        {
+          "type": "python_execution",
+          "shows": "State table run.",
+          "learnerAction": "Edit.",
+          "placement": "Trace"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "code-run-python",
+          "targets": "trace-fsm",
+          "sample": "table={('idle','press'):'run',('run','press'):'pause',('pause','press'):'run',('run','timeout'):'idle',('pause','reset'):'idle'}; s='idle'; for e in ['press','press','timeout','press','reset']: s=table.get((s,e),s); print(s)",
+          "answer": "run"
+        },
+        {
+          "kind": "numeric",
+          "targets": "count-transitions",
+          "sample": "4 states, 3 events. Maximum table entries?",
+          "answer": "12"
+        },
+        {
+          "kind": "choice",
+          "targets": "design-fsm",
+          "sample": "An unlisted event in a state should?",
+          "answer": "Leave state unchanged",
+          "choices": [
+            "Leave state unchanged",
+            "Crash",
+            "Reset to idle always",
+            "Repeat last"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "wiki-mecha",
+        "arduino-docs"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "dc-motors",
+      "moduleId": "actuators",
+      "title": "DC motors",
+      "objective": "Compute stall current, torque, no-load speed and operating point.",
+      "prerequisiteLessonIds": [
+        "state-machines"
+      ],
+      "concepts": [
+        {
+          "id": "kt",
+          "title": "Motor constants",
+          "summary": "Torque T = Kt I and back-EMF E = Ke w, equal in SI units."
+        },
+        {
+          "id": "stall",
+          "title": "Stall",
+          "summary": "At zero speed there is no back-EMF so current is V/R."
+        }
+      ],
+      "skills": [
+        "compute-stall",
+        "compute-no-load",
+        "compute-operating-point"
+      ],
+      "misconceptions": [
+        "Learners think a motor draws constant current.",
+        "Learners think a stalled motor is safe; it overheats.",
+        "Learners confuse rpm and rad/s."
+      ],
+      "sequence": [
+        "Motor as a generator.",
+        "V = I R + Ke w.",
+        "Stall.",
+        "No load.",
+        "Operating point.",
+        "Efficiency."
+      ],
+      "examples": [
+        "R=2 ohm, Kt=0.05, 12 V: stall 6 A, torque 0.30 N m, no-load 240 rad/s=2292 rpm.",
+        "At 1500 rpm: back-EMF 7.85 V, current 2.07 A, torque 0.104 N m.",
+        "Peak power 18 W at half no-load speed."
+      ],
+      "figures": [
+        {
+          "type": "graph_plot",
+          "shows": "Torque-speed line.",
+          "learnerAction": "Drag load.",
+          "placement": "Torque-speed"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "Motor equivalent circuit.",
+          "learnerAction": "Change speed.",
+          "placement": "Circuit"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-stall",
+          "sample": "12 V, R=2 ohm. Stall current in A?",
+          "answer": "6"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-no-load",
+          "sample": "12 V, Ke=0.05. No-load speed in rad/s?",
+          "answer": "240"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-operating-point",
+          "sample": "12 V, R=2, Ke=0.05, speed 100 rad/s. Current in A?",
+          "answer": "3.5"
+        }
+      ],
+      "sourceIds": [
+        "mit-2-737",
+        "wiki-mecha"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "pwm-and-h-bridges",
+      "moduleId": "actuators",
+      "title": "Driving a motor: PWM and H-bridges",
+      "objective": "Compute average voltage and loss and explain how an H-bridge reverses a motor.",
+      "prerequisiteLessonIds": [
+        "dc-motors"
+      ],
+      "concepts": [
+        {
+          "id": "pwm",
+          "title": "PWM",
+          "summary": "Switching a voltage fully on and off; average output = duty x supply."
+        },
+        {
+          "id": "hbridge",
+          "title": "H-bridge",
+          "summary": "Four switches that connect a motor in either direction or brake."
+        }
+      ],
+      "skills": [
+        "compute-pwm-average",
+        "compute-switch-loss",
+        "explain-h-bridge"
+      ],
+      "misconceptions": [
+        "Learners think PWM reduces the voltage across the motor at each instant.",
+        "Learners turn on both switches on one side.",
+        "Learners forget the diode for inductive current."
+      ],
+      "sequence": [
+        "Why not a series resistor.",
+        "Duty cycle.",
+        "Inductance smooths.",
+        "H-bridge states.",
+        "Shoot-through.",
+        "Loss I^2 R."
+      ],
+      "examples": [
+        "12 V at 35 percent: 4.2 V average.",
+        "L/R=1 mH/2 ohm=0.5 ms, much longer than a 50 microsecond period.",
+        "3 A through 20 milliohm: 0.18 W."
+      ],
+      "figures": [
+        {
+          "type": "graph_plot",
+          "shows": "PWM waveform and average.",
+          "learnerAction": "Duty.",
+          "placement": "PWM"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "H-bridge with highlighted path.",
+          "learnerAction": "Pick direction.",
+          "placement": "H-bridge"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-pwm-average",
+          "sample": "24 V at 25 percent. Average V?",
+          "answer": "6"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-switch-loss",
+          "sample": "4 A, 25 milliohm. Loss in W?",
+          "answer": "0.4"
+        },
+        {
+          "kind": "choice",
+          "targets": "explain-h-bridge",
+          "sample": "Both high-side and low-side switches on one leg means?",
+          "answer": "Shoot-through short circuit",
+          "choices": [
+            "Shoot-through short circuit",
+            "Brake",
+            "Reverse",
+            "Idle"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "sparkfun-learn",
+        "mit-2-737"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "steppers-and-servos",
+      "moduleId": "actuators",
+      "title": "Steppers and servos",
+      "objective": "Compute step counts, speeds and positions for steppers and hobby servos.",
+      "prerequisiteLessonIds": [
+        "pwm-and-h-bridges"
+      ],
+      "concepts": [
+        {
+          "id": "stepper",
+          "title": "Stepper motor",
+          "summary": "Moves in fixed angular steps, 1.8 degrees for 200 steps per revolution."
+        },
+        {
+          "id": "servo",
+          "title": "Servo",
+          "summary": "A motor with position feedback; a hobby servo reads a 1 to 2 ms pulse every 20 ms."
+        }
+      ],
+      "skills": [
+        "compute-step-rate",
+        "compute-lead-resolution",
+        "map-servo-pulse"
+      ],
+      "misconceptions": [
+        "Learners think steppers cannot lose steps; overload or too-fast acceleration makes them skip silently.",
+        "Learners think 16x microstepping gives 16x accuracy; it gives finer commands, not equal accuracy.",
+        "Learners think servo pulse width sets speed; it sets position."
+      ],
+      "sequence": [
+        "Coils pull a toothed rotor one step at a time: 200 steps is 1.8 degrees.",
+        "Position is counted, not measured, so it is open loop and loses steps if overloaded.",
+        "Microstepping shares coil current to make smaller steps, with less torque gain per step than the count suggests.",
+        "A lead screw turns steps into linear distance: lead / steps per rev.",
+        "A hobby servo hides a motor, gearbox, potentiometer and a feedback loop; pulse width commands angle.",
+        "Choose a stepper for repeatable positioning at modest load, a servo for compact closed-loop angle."
+      ],
+      "examples": [
+        "200 steps/rev x16=3200; 600 rpm full steps: 2000 steps/s.",
+        "8 mm lead / 3200 = 0.0025 mm.",
+        "1.25 ms pulse = 45 degrees."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Stepper rotor positions.",
+          "learnerAction": "Step.",
+          "placement": "Stepper"
+        },
+        {
+          "type": "graph_plot",
+          "shows": "Pulse width vs angle.",
+          "learnerAction": "Drag.",
+          "placement": "Servo"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-step-rate",
+          "sample": "200 steps/rev at 300 rpm. Steps/s?",
+          "answer": "1000"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-lead-resolution",
+          "sample": "Lead 5 mm, 1000 steps/rev. mm per step?",
+          "answer": "0.005"
+        },
+        {
+          "kind": "numeric",
+          "targets": "map-servo-pulse",
+          "sample": "1 ms=0, 2 ms=180 degrees. Pulse for 90 degrees in ms?",
+          "answer": "1.5"
+        }
+      ],
+      "sourceIds": [
+        "sparkfun-learn",
+        "mit-2-737"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "sizing-a-drive",
+      "moduleId": "actuators",
+      "title": "Sizing a motor and gearbox",
+      "objective": "Find wheel torque and speed for a robot and choose a gear ratio.",
+      "prerequisiteLessonIds": [
+        "steppers-and-servos"
+      ],
+      "concepts": [
+        {
+          "id": "wheel-torque",
+          "title": "Wheel torque",
+          "summary": "Force at the ground times wheel radius."
+        },
+        {
+          "id": "reflect",
+          "title": "Reflected torque",
+          "summary": "Motor torque needed = wheel torque / (ratio x efficiency)."
+        }
+      ],
+      "skills": [
+        "compute-wheel-torque",
+        "pick-ratio",
+        "compute-motor-torque"
+      ],
+      "misconceptions": [
+        "Learners size for speed only and then find the robot cannot climb a ramp.",
+        "Learners forget gearbox efficiency, so the motor is undersized by a fifth or more.",
+        "Learners use the total force on one wheel instead of sharing it across driven wheels."
+      ],
+      "sequence": [
+        "State the job: robot mass, steepest slope, top speed, wheel radius.",
+        "Force along the slope: m g sin(angle); split across driven wheels.",
+        "Wheel torque = force x radius.",
+        "Wheel speed from v / r; ratio = motor speed / wheel speed.",
+        "Motor torque = wheel torque / (ratio x efficiency).",
+        "Add a margin of about 2x and check stall current against the driver."
+      ],
+      "examples": [
+        "6 kg on 10 degrees: 10.22 N, 5.11 N per wheel, 0.256 N m at r=0.05.",
+        "0.5 m/s: wheel 10 rad/s=95.5 rpm; motor 3000 rpm gives about 31:1.",
+        "At 30:1, 80 percent: motor torque 10.6 mN m."
+      ],
+      "figures": [
+        {
+          "type": "engineering_explorer",
+          "shows": "gears model with the motor-side stage.",
+          "learnerAction": "Adjust ratio.",
+          "placement": "Ratio"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "Free-body of robot on slope.",
+          "learnerAction": "Change angle.",
+          "placement": "Forces"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-wheel-torque",
+          "sample": "5 N at r=0.04 m. Torque in N m?",
+          "answer": "0.2"
+        },
+        {
+          "kind": "numeric",
+          "targets": "pick-ratio",
+          "sample": "Motor 3000 rpm, wheel 100 rpm. Ratio?",
+          "answer": "30"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-motor-torque",
+          "sample": "Wheel 0.25 N m, ratio 30, efficiency 0.8. Motor torque in mN m to 1 decimal?",
+          "answer": "10.4"
+        }
+      ],
+      "sourceIds": [
+        "mit-2-737",
+        "mit-2-12"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "arm-kinematics",
+      "moduleId": "robots",
+      "title": "Arms: where is the hand?",
+      "objective": "Compute the end position of a two-link arm and its reach.",
+      "prerequisiteLessonIds": [
+        "sizing-a-drive"
+      ],
+      "concepts": [
+        {
+          "id": "fk",
+          "title": "Forward kinematics",
+          "summary": "The tool position follows from the joint angles and link lengths."
+        },
+        {
+          "id": "workspace",
+          "title": "Workspace",
+          "summary": "The set of points the tool can reach; for two links it is a ring."
+        }
+      ],
+      "skills": [
+        "compute-fk",
+        "compute-reach",
+        "spot-limits"
+      ],
+      "misconceptions": [
+        "Learners use t2 alone for the second link instead of t1+t2.",
+        "Learners think the workspace is a full disc; a short second link leaves a hole in the middle.",
+        "Learners confuse joint angles (relative) with world angles (absolute)."
+      ],
+      "sequence": [
+        "Draw a base frame and a two-link arm with joint angles measured from the previous link.",
+        "The elbow position is (l1 cos t1, l1 sin t1).",
+        "The hand adds (l2 cos(t1+t2), l2 sin(t1+t2)); angles add.",
+        "Reach is largest when straight (l1+l2) and smallest when folded (|l1-l2|).",
+        "So the workspace is a ring, not a disc.",
+        "Real joint limits trim the ring."
+      ],
+      "examples": [
+        "l1=0.30, l2=0.20, 30 and 45 degrees: x=0.3116, y=0.3432.",
+        "Workspace ring 0.1 to 0.5 m.",
+        "Full stretch reach 0.5."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Two-link arm.",
+          "learnerAction": "Drag.",
+          "placement": "FK"
+        },
+        {
+          "type": "coordinate_plane",
+          "shows": "Workspace ring.",
+          "learnerAction": "Click.",
+          "placement": "Workspace"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-fk",
+          "sample": "l1=0.3, l2=0.2, theta1=30, theta2=45. x in m to 3 decimals?",
+          "answer": "0.312"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-reach",
+          "sample": "l1=0.3, l2=0.2. Minimum reach?",
+          "answer": "0.1"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-reach",
+          "sample": "Maximum reach?",
+          "answer": "0.5"
+        }
+      ],
+      "sourceIds": [
+        "modern-robotics",
+        "mit-2-12"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "inverse-kinematics",
+      "moduleId": "robots",
+      "title": "Inverse kinematics",
+      "objective": "Find joint angles for a target point and see why there are two solutions.",
+      "prerequisiteLessonIds": [
+        "arm-kinematics"
+      ],
+      "concepts": [
+        {
+          "id": "ik",
+          "title": "Inverse kinematics",
+          "summary": "Finding joint angles for a given tool position."
+        },
+        {
+          "id": "elbow",
+          "title": "Elbow configurations",
+          "summary": "Two solutions mirror each other, up and down."
+        }
+      ],
+      "skills": [
+        "solve-ik",
+        "check-reachable",
+        "explain-singularity"
+      ],
+      "misconceptions": [
+        "Learners think there is one answer; there are usually two.",
+        "Learners use arctan(y/x) alone for t1, ignoring the second link.",
+        "Learners do not check reach before solving and take acos of a number above 1."
+      ],
+      "sequence": [
+        "Ask the reverse question: which angles put the hand at (x, y)?",
+        "Law of cosines on the triangle of l1, l2 and the line to the target gives cos t2.",
+        "Two signs of t2 give two arms, elbow-down and elbow-up.",
+        "Find t1 from the target direction minus the offset the second link causes.",
+        "At full stretch the two solutions merge; velocities become impossible (a singularity).",
+        "Pick the solution by joint limits and the shorter move."
+      ],
+      "examples": [
+        "Target (0.35,0.20): cos theta2=0.2708, theta2=74.29 degrees.",
+        "theta1=29.74-28.53=1.22 degrees for elbow-down; 58.27 for elbow-up.",
+        "A target at 0.6 m is unreachable."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Arm and two solutions.",
+          "learnerAction": "Drag target.",
+          "placement": "IK"
+        },
+        {
+          "type": "python_execution",
+          "shows": "IK function.",
+          "learnerAction": "Run.",
+          "placement": "Code"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "solve-ik",
+          "sample": "cos(theta2)=0.2708. theta2 in degrees to 1 decimal?",
+          "answer": "74.3"
+        },
+        {
+          "kind": "choice",
+          "targets": "check-reachable",
+          "sample": "l1=0.3, l2=0.2, target at 0.6 m?",
+          "answer": "Unreachable",
+          "choices": [
+            "Unreachable",
+            "Reachable",
+            "One solution",
+            "Two solutions"
+          ]
+        },
+        {
+          "kind": "choice",
+          "targets": "explain-singularity",
+          "sample": "Full stretch has?",
+          "answer": "One solution",
+          "choices": [
+            "One solution",
+            "Two solutions",
+            "No solution",
+            "Many"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "modern-robotics",
+        "mit-2-12"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "mobile-robots-and-sensor-fusion",
+      "moduleId": "robots",
+      "title": "Mobile robots and sensor fusion",
+      "objective": "Compute differential-drive motion and blend gyro and accelerometer data.",
+      "prerequisiteLessonIds": [
+        "inverse-kinematics"
+      ],
+      "concepts": [
+        {
+          "id": "diff-drive",
+          "title": "Differential drive",
+          "summary": "v = (vr+vl)/2 and w = (vr-vl)/L."
+        },
+        {
+          "id": "complementary",
+          "title": "Complementary filter",
+          "summary": "Combines gyro (good short term) and accelerometer (good long term)."
+        }
+      ],
+      "skills": [
+        "compute-diff-drive",
+        "dead-reckon",
+        "apply-complementary-filter"
+      ],
+      "misconceptions": [
+        "Learners think odometry stays accurate; error only grows.",
+        "Learners average two sensors equally, ignoring that their errors have different timescales.",
+        "Learners think a gyro measures angle; it measures rate and must be integrated."
+      ],
+      "sequence": [
+        "Two driven wheels set forward speed (average) and turn rate (difference over track).",
+        "Integrate speed and turn rate each step to update the pose: odometry.",
+        "Small errors in wheel diameter and slip accumulate: drift.",
+        "A gyro measures turn rate, smooth but drifting; an accelerometer gives a noisy absolute tilt.",
+        "Blend: angle = a(angle + gyro dt) + (1-a) accel.",
+        "A Kalman filter picks the blend by modelled uncertainty; the complementary filter fixes it."
+      ],
+      "examples": [
+        "vr=0.6, vl=0.4, L=0.2: v=0.5, w=1.0 rad/s, radius 0.5 m.",
+        "Complementary step: 0.98*(10+5*0.01)+0.02*12=10.089.",
+        "A 1 degree heading error grows to 1.7 cm over 1 m."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Differential drive.",
+          "learnerAction": "Change speeds.",
+          "placement": "Turn"
+        },
+        {
+          "type": "data_series",
+          "shows": "Gyro and accel traces.",
+          "learnerAction": "Change alpha.",
+          "placement": "Filter"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-diff-drive",
+          "sample": "vr=0.8, vl=0.4, L=0.2. v in m/s?",
+          "answer": "0.6"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-diff-drive",
+          "sample": "vr=0.8, vl=0.4, L=0.2. w in rad/s?",
+          "answer": "2"
+        },
+        {
+          "kind": "numeric",
+          "targets": "apply-complementary-filter",
+          "sample": "alpha 0.98, angle 10, gyro 5 deg/s, dt 0.01, accel 12. New angle to 2 decimals?",
+          "answer": "10.09"
+        }
+      ],
+      "sourceIds": [
+        "modern-robotics",
+        "wiki-mecha"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "whole-robot",
+      "moduleId": "robots",
+      "title": "Putting a robot together",
+      "objective": "Organise sensing, decision and action in time, power and safety.",
+      "prerequisiteLessonIds": [
+        "mobile-robots-and-sensor-fusion"
+      ],
+      "concepts": [
+        {
+          "id": "sense-plan-act",
+          "title": "Sense-plan-act loop",
+          "summary": "A repeating cycle with a fixed period."
+        },
+        {
+          "id": "budget",
+          "title": "Power budget",
+          "summary": "Battery energy divided by average power gives run time."
+        }
+      ],
+      "skills": [
+        "compute-run-time",
+        "design-loop",
+        "choose-safe-state"
+      ],
+      "misconceptions": [
+        "Learners budget average current and then brown out on motor start-up peaks.",
+        "Learners run everything in one loop at one rate, so a slow sensor read delays motor control.",
+        "Learners design driving but not stopping."
+      ],
+      "sequence": [
+        "Split the robot into sensing, deciding and acting layers.",
+        "Give each a rate: motor control fast (100 Hz or more), distance sensors slower, planning slowest.",
+        "Express behaviour as a state machine of simple modes (search, approach, avoid, stop).",
+        "Tally current for every part to find peak and average power.",
+        "Divide battery energy by average power for run time, and size wiring and driver for the peak.",
+        "Define a safe state, an emergency stop and a watchdog before the first run."
+      ],
+      "examples": [
+        "2000 mAh at 7.4 V=14.8 Wh; 12 W average gives 1.23 h.",
+        "Control 100 Hz, sensors 20 Hz.",
+        "Watchdog resets a hung loop."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Layers of a robot.",
+          "learnerAction": "Tap.",
+          "placement": "Layers"
+        },
+        {
+          "type": "table",
+          "shows": "Power budget table.",
+          "learnerAction": "Sum.",
+          "placement": "Power"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-run-time",
+          "sample": "14.8 Wh battery, 10 W average. Hours?",
+          "answer": "1.48"
+        },
+        {
+          "kind": "numeric",
+          "targets": "design-loop",
+          "sample": "A 50 Hz loop has period in ms?",
+          "answer": "20"
+        },
+        {
+          "kind": "choice",
+          "targets": "choose-safe-state",
+          "sample": "On sensor loss the robot should?",
+          "answer": "Stop",
+          "choices": [
+            "Stop",
+            "Speed up",
+            "Ignore",
+            "Turn left"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "mit-2-737",
+        "modern-robotics"
+      ],
+      "estimatedMinutes": 13
+    }
+  ],
+  "courseCheck": "Mixed: timer period; LED resistor; ADC voltage; encoder distance; FSM trace; motor stall; PWM average; step rate; drive sizing; FK/IK; diff drive; run time.",
+  "platformNeeds": [
+    "A two-link arm kinematics explorer with draggable joints and target.",
+    "A motor torque-speed explorer.",
+    "A state-machine editor/figure with stepping.",
+    "A microcontroller pin/timing simulator is not required; svg_figure suffices."
+  ],
+  "unverified": [
+    "All source URLs unopened (no network). Licences from memory.",
+    "Bounce 5 ms and thermistor beta 3950 are typical figures, not from a datasheet.",
+    "Servo 1-2 ms/50 Hz is conventional; actual servos vary.",
+    "Servo range 0-180 degrees is nominal."
+  ]
+}

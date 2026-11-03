@@ -1,0 +1,1365 @@
+{
+  "id": "git-and-version-control",
+  "title": "Git and Version Control",
+  "family": "A",
+  "voice": "A",
+  "description": "Understand Git as snapshots, hashes and pointers rather than a list of commands, so that branching, merging, rebasing, undoing and sharing become predictable.",
+  "audience": "A capable adult who has used a terminal a little and works with files that change, whether code, writing or data. Assumes the first two lessons of Linux and the Command Line and the hash digest idea from How Computers and Networks Work. No prior Git is needed.",
+  "prerequisites": [
+    "cs-basics",
+    "linux-and-the-command-line",
+    "computers-and-networks"
+  ],
+  "outcomes": [
+    "You'll be able to predict what git status shows after a sequence of edits.",
+    "You'll be able to explain a commit, a hash and a branch as objects and pointers.",
+    "You'll be able to tell a fast-forward from a three-way merge and resolve a conflict.",
+    "You'll be able to choose between merge and rebase and say when rewriting is unsafe.",
+    "You'll be able to pick the right undo and recover a commit with the reflog.",
+    "You'll be able to find the commit that introduced a bug in a handful of tests.",
+    "You'll be able to share work through a remote and choose a review workflow."
+  ],
+  "sources": [
+    {
+      "id": "pro-git",
+      "title": "Pro Git, 2nd edition (Scott Chacon and Ben Straub)",
+      "url": "https://git-scm.com/book/en/v2",
+      "licence": "CC BY-NC-SA 3.0 (confirm version on the book's licence page); adapting needs share-alike and non-commercial use",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "git-docs",
+      "title": "Git reference documentation and manual pages",
+      "url": "https://git-scm.com/docs",
+      "licence": "Git source documentation is GPL-2.0; the site's own licence was not checked",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "git-glossary",
+      "title": "gitglossary and gitrevisions manual pages",
+      "url": "https://git-scm.com/docs/gitglossary",
+      "licence": "GPL-2.0 (Git source documentation)",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "git-internals",
+      "title": "Pro Git, chapter 10: Git Internals",
+      "url": "https://git-scm.com/book/en/v2/Git-Internals-Git-Objects",
+      "licence": "CC BY-NC-SA 3.0",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "semver",
+      "title": "Semantic Versioning 2.0.0",
+      "url": "https://semver.org/",
+      "licence": "CC BY 3.0",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "conventional-commits",
+      "title": "Conventional Commits 1.0.0",
+      "url": "https://www.conventionalcommits.org/en/v1.0.0/",
+      "licence": "CC BY 3.0",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "github-flow",
+      "title": "GitHub Docs: GitHub flow",
+      "url": "https://docs.github.com/en/get-started/using-github/github-flow",
+      "licence": "CC BY 4.0 for the documentation text",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "trunk-based",
+      "title": "Trunk Based Development",
+      "url": "https://trunkbaseddevelopment.com/",
+      "licence": "Believed CC BY 4.0; not checked",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "driessen",
+      "title": "A successful Git branching model (Vincent Driessen, 2010)",
+      "url": "https://nvie.com/posts/a-successful-git-branching-model/",
+      "licence": "Copyright the author; reference only",
+      "use": "reference",
+      "verified": false
+    }
+  ],
+  "modules": [
+    {
+      "id": "snapshots",
+      "title": "Snapshots and history",
+      "summary": "What a commit is, the three places a change lives, how Git names things, and how to read history."
+    },
+    {
+      "id": "branches-and-change",
+      "title": "Branches, merging and undoing",
+      "summary": "Branches as pointers, merging and conflicts, rebase, undoing safely, and finding the commit that broke something."
+    },
+    {
+      "id": "working-with-others",
+      "title": "Working with others",
+      "summary": "Remotes, review workflows, and tags and messages that keep a project's history useful."
+    }
+  ],
+  "lessons": [
+    {
+      "id": "why-version-control",
+      "moduleId": "snapshots",
+      "title": "Why keep a history",
+      "objective": "Say what problems version control solves and what a repository, a commit and a clone are.",
+      "prerequisiteLessonIds": [],
+      "concepts": [
+        {
+          "id": "repository",
+          "title": "Repository",
+          "summary": "The project's files together with the full history of every saved state."
+        },
+        {
+          "id": "commit",
+          "title": "Commit",
+          "summary": "A saved snapshot of the whole project with a message, an author, a time and a link to the commit before it."
+        },
+        {
+          "id": "distributed",
+          "title": "Distributed version control",
+          "summary": "Every clone holds the complete history, so almost every operation works offline."
+        }
+      ],
+      "skills": [
+        "name-the-parts",
+        "choose-the-tool"
+      ],
+      "misconceptions": [
+        "Believing version control is a backup: it records deliberate states, and it does not protect uncommitted work or lost disks.",
+        "Believing Git and GitHub are the same thing.",
+        "Believing a commit stores only the lines that changed."
+      ],
+      "sequence": [
+        "Assumes linux-and-the-command-line: the-shell-and-a-command and files-and-the-filesystem-tree.",
+        "The problem with file copies: report_final_v3_REAL.docx.",
+        "Three needs: go back, see what changed and why, work in parallel without overwriting.",
+        "A commit as a named snapshot with a parent.",
+        "Centralised versus distributed: what a clone contains.",
+        "Git is the tool and GitHub, GitLab and others are hosting services."
+      ],
+      "examples": [
+        "Five copies of a report named v1 to v5 do not say which differs in what; five commits with messages do.",
+        "A clone of a project with 3,000 commits holds all 3,000 locally.",
+        "Two people changing the same file from the same starting copy create two diverging versions to reconcile."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A timeline of five commits as labelled dots with messages, and a competing folder of files named v1 to v5.",
+          "learnerAction": "Click a commit to see its message and parent.",
+          "placement": "history"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "Two laptops and a hosting service, each holding a full copy of the history.",
+          "learnerAction": "Click a machine to see which commits it has.",
+          "placement": "distributed"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "single-term",
+          "targets": "name-the-parts",
+          "sample": "What do we call a saved snapshot in Git, given a message and a link to its predecessor?",
+          "answer": "commit"
+        },
+        {
+          "kind": "choice",
+          "targets": "choose-the-tool",
+          "sample": "Which statement is correct?",
+          "answer": "Git is the version control tool and GitHub is a hosting service for Git repositories",
+          "choices": [
+            "Git and GitHub are two names for the same program",
+            "Git is the version control tool and GitHub is a hosting service for Git repositories",
+            "GitHub is the tool and Git is the website",
+            "Git only works through GitHub"
+          ]
+        },
+        {
+          "kind": "self",
+          "targets": "name-the-parts",
+          "sample": "Recall in one or two sentences why a clone of a Git repository can show you the history without contacting the server.",
+          "answer": "Every clone contains the complete history, not only the latest files."
+        }
+      ],
+      "sourceIds": [
+        "pro-git",
+        "git-docs"
+      ],
+      "historyNotes": [
+        "Linus Torvalds began writing Git in April 2005 after the Linux kernel lost free access to BitKeeper; the first Git-managed kernel release followed within weeks. Earlier systems include RCS (1982), CVS (1990) and Subversion (2000)."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "working-tree-index-repository",
+      "moduleId": "snapshots",
+      "title": "Working tree, index and repository",
+      "objective": "Predict what git status shows after a sequence of edits, adds and commits.",
+      "prerequisiteLessonIds": [
+        "why-version-control"
+      ],
+      "concepts": [
+        {
+          "id": "working-tree",
+          "title": "Working tree",
+          "summary": "The files you edit on disk."
+        },
+        {
+          "id": "index",
+          "title": "Index (staging area)",
+          "summary": "The proposed next commit; git add copies a file's current content into it."
+        },
+        {
+          "id": "tracked",
+          "title": "Tracked and untracked",
+          "summary": "A file is tracked once it is in the index or the last commit; git commit -a includes changes to tracked files but never untracked ones."
+        }
+      ],
+      "skills": [
+        "predict-status",
+        "stage-deliberately"
+      ],
+      "misconceptions": [
+        "Believing git add records the file: it records its content at that moment, so later edits need adding again.",
+        "Believing git commit -a adds new files.",
+        "Believing the index is a copy of the repository."
+      ],
+      "sequence": [
+        "Assumes linux-and-the-command-line: looking-at-files.",
+        "Three places: working tree, index, last commit.",
+        "git status compares them in pairs; the two columns of git status --short.",
+        "Edit, add, edit again: the file appears as MM.",
+        "Why a staging area exists: composing a commit from part of your work.",
+        "git add -p and git diff versus git diff --cached."
+      ],
+      "examples": [
+        "After editing a tracked file, status --short shows ' M a.txt'; after git add it shows 'M  a.txt'; after another edit it shows 'MM a.txt'.",
+        "A new file shows '?? u.txt' until it is added.",
+        "git commit -am 'msg' commits the changed tracked file and leaves an untracked new.txt out."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Three columns labelled working tree, index and last commit, with files as tokens that move when you run add and commit.",
+          "learnerAction": "Run add, edit and commit and watch the tokens move.",
+          "placement": "three areas"
+        },
+        {
+          "type": "table",
+          "shows": "The two-letter status code table.",
+          "learnerAction": "Match codes to situations.",
+          "placement": "status codes"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "single-term",
+          "targets": "predict-status",
+          "sample": "A tracked file a.txt is edited, then git add a.txt, then edited again. What does git status --short print for it? Use two characters then the name.",
+          "answer": "MM a.txt"
+        },
+        {
+          "kind": "single-term",
+          "targets": "predict-status",
+          "sample": "A brand-new file u.txt has never been added. What does git status --short print for it?",
+          "answer": "?? u.txt"
+        },
+        {
+          "kind": "choice",
+          "targets": "stage-deliberately",
+          "sample": "What does git commit -a leave out?",
+          "answer": "New, untracked files",
+          "choices": [
+            "Changes to tracked files",
+            "New, untracked files",
+            "Deleted tracked files",
+            "The commit message"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "pro-git",
+        "git-docs"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "objects-and-hashes",
+      "moduleId": "snapshots",
+      "title": "Objects and hashes",
+      "objective": "Explain how Git names content with a hash, what the four object types are, and why changing history changes every later hash.",
+      "prerequisiteLessonIds": [
+        "working-tree-index-repository"
+      ],
+      "concepts": [
+        {
+          "id": "content-addressing",
+          "title": "Content addressing",
+          "summary": "An object's name is a hash of its content, so identical content always has the same name and different content a different one."
+        },
+        {
+          "id": "object-types",
+          "title": "Object types",
+          "summary": "A blob holds file content, a tree lists names and the objects they point to, a commit points to one tree and its parents, and a tag names a commit."
+        },
+        {
+          "id": "hash-chain",
+          "title": "Hash chain",
+          "summary": "A commit's hash includes its parents' hashes, so changing an old commit changes it and every commit after it."
+        }
+      ],
+      "skills": [
+        "size-a-hash",
+        "count-objects",
+        "predict-hash-change"
+      ],
+      "misconceptions": [
+        "Believing a commit stores a list of differences.",
+        "Believing the hash is a random ID or a sequence number.",
+        "Believing two identical files in different folders are stored twice."
+      ],
+      "sequence": [
+        "Assumes computers-and-networks: tls-trust-and-encryption (hash digests).",
+        "A hash as a fingerprint: SHA-1 gives 160 bits, which is 40 hex characters; the hash of the text 'hello' followed by a newline begins ce01362.",
+        "Blob: the hash is taken over 'blob 6', a zero byte and the content.",
+        "Tree: names, modes and hashes; a commit: one tree, parents, author, message.",
+        "Identical content is stored once.",
+        "Changing a parent changes the hash of every descendant, which is why a history rewrite is visible to others.",
+        "The move to SHA-256 in progress."
+      ],
+      "examples": [
+        "printf 'hello\\n' | git hash-object --stdin prints ce013625030ba8dba906f756967f9e9ca394464a, which is the SHA-1 of 'blob 6' + NUL + 'hello\\n'.",
+        "Two files d1/x and d2/y both containing 'same' share 1 blob.",
+        "Changing the message of commit 3 of 5 changes the hashes of commits 3, 4 and 5."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A commit drawn with an arrow to a tree, the tree with arrows to blobs and sub-trees, and arrows back to the parent commit.",
+          "learnerAction": "Click an object to see its type and what it points to.",
+          "placement": "object graph"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A chain of five commits with hashes; editing the third turns the third, fourth and fifth red.",
+          "learnerAction": "Edit a commit.",
+          "placement": "hash chain"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "size-a-hash",
+          "sample": "How many hexadecimal characters are in a full SHA-1 hash?",
+          "answer": "40"
+        },
+        {
+          "kind": "numeric",
+          "targets": "count-objects",
+          "sample": "Two files in different folders contain exactly the same text. How many blob objects does Git store for them?",
+          "answer": "1"
+        },
+        {
+          "kind": "code-run-python",
+          "targets": "predict-hash-change",
+          "sample": "After import hashlib, what does print(hashlib.sha1(b'blob 6\\x00hello\\n').hexdigest()[:7]) output?",
+          "answer": "ce01362"
+        }
+      ],
+      "sourceIds": [
+        "git-internals",
+        "pro-git",
+        "git-glossary"
+      ],
+      "historyNotes": [
+        "Git still uses SHA-1 by default; experimental SHA-256 repositories were added in Git 2.29 in October 2020. SHA-1 collisions were demonstrated publicly in 2017."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "reading-history",
+      "moduleId": "snapshots",
+      "title": "Reading history",
+      "objective": "Use log, show, diff, blame and revision names such as HEAD~2 and A..B to answer questions about a project's past.",
+      "prerequisiteLessonIds": [
+        "objects-and-hashes"
+      ],
+      "concepts": [
+        {
+          "id": "revision-name",
+          "title": "Revision name",
+          "summary": "HEAD is the current commit, HEAD~n is its n-th ancestor along first parents, and a branch or tag names the commit it points at."
+        },
+        {
+          "id": "range",
+          "title": "Range A..B",
+          "summary": "The commits reachable from B but not from A."
+        },
+        {
+          "id": "diff",
+          "title": "Diff",
+          "summary": "The line-by-line difference between two states: working tree and index, index and HEAD, or two commits."
+        }
+      ],
+      "skills": [
+        "resolve-a-name",
+        "count-a-range"
+      ],
+      "misconceptions": [
+        "Believing HEAD~2 means the commit two before 'in time' rather than two parents back.",
+        "Believing A..B and B..A are the same.",
+        "Believing git log shows only the current branch's work from before the branch."
+      ],
+      "sequence": [
+        "Assumes linux-and-the-command-line: streams-redirection-and-pipes (log output is paged).",
+        "git log --oneline --graph --all on a small history.",
+        "HEAD, HEAD~1, HEAD~2 along a straight line.",
+        "Ranges: main..feature are the commits on feature not yet on main.",
+        "git show, git diff, git diff --cached, git diff A B.",
+        "git blame and git log -p -- file: who changed this line, and why?"
+      ],
+      "examples": [
+        "Commits C1 to C5 with C5 at HEAD: HEAD~2 is C3.",
+        "main holds c1, c2, c3 and feature holds c1, c2, f1: main..feature is 1 commit (f1) and feature..main is 1 commit (c3).",
+        "git blame shows the last commit to touch each line."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A commit graph with branch labels; the learner types a revision or range and the selected commits highlight.",
+          "learnerAction": "Type HEAD~2 or main..feature.",
+          "placement": "revision names"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A unified diff with added and removed lines coloured.",
+          "learnerAction": "Switch between working tree, index and HEAD comparisons.",
+          "placement": "diff"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "single-term",
+          "targets": "resolve-a-name",
+          "sample": "A straight history has commits C1 (oldest) to C5, and HEAD is C5. Which commit is HEAD~2?",
+          "answer": "C3"
+        },
+        {
+          "kind": "numeric",
+          "targets": "count-a-range",
+          "sample": "main holds c1, c2, c3; feature branched after c2 and holds c1, c2, f1. How many commits are in main..feature?",
+          "answer": "1"
+        },
+        {
+          "kind": "choice",
+          "targets": "resolve-a-name",
+          "sample": "Which command shows who last changed each line of a file?",
+          "answer": "git blame",
+          "choices": [
+            "git show",
+            "git blame",
+            "git diff --cached",
+            "git status"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "git-docs",
+        "pro-git",
+        "git-glossary"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "branches-are-pointers",
+      "moduleId": "branches-and-change",
+      "title": "Branches are pointers",
+      "objective": "Explain what a branch and HEAD are, and say which pointer moves on commit, branch and switch.",
+      "prerequisiteLessonIds": [
+        "reading-history"
+      ],
+      "concepts": [
+        {
+          "id": "branch",
+          "title": "Branch",
+          "summary": "A movable name that points to one commit, stored as a 41-byte file holding the 40-character hash and a newline."
+        },
+        {
+          "id": "head",
+          "title": "HEAD",
+          "summary": "A pointer to the current branch, so a new commit advances that branch."
+        },
+        {
+          "id": "detached-head",
+          "title": "Detached HEAD",
+          "summary": "HEAD points straight at a commit, so new commits belong to no branch and can be lost."
+        }
+      ],
+      "skills": [
+        "follow-the-pointers",
+        "spot-a-detached-head"
+      ],
+      "misconceptions": [
+        "Believing a branch is a copy of the files.",
+        "Believing creating a branch makes commits.",
+        "Believing HEAD is the newest commit in the repository."
+      ],
+      "sequence": [
+        "Assumes objects-and-hashes: a commit is named by its hash.",
+        "A branch is a name for a commit: cat .git/refs/heads/main is 41 bytes.",
+        "HEAD contains 'ref: refs/heads/main'.",
+        "git branch x creates a pointer and commits nothing; git switch x moves HEAD.",
+        "Committing advances only the branch HEAD points at.",
+        "Detached HEAD: how it happens (checking out a commit or tag) and how to save work with git switch -c."
+      ],
+      "examples": [
+        "The file .git/refs/heads/main is 41 bytes, 40 for the hash and one for the newline.",
+        "After git branch x and git switch x, a commit moves x and leaves main where it was.",
+        "git checkout <hash> prints a detached-HEAD warning."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A commit graph with branch labels and a HEAD arrow; buttons run branch, switch and commit and the labels move.",
+          "learnerAction": "Run commands and watch the labels.",
+          "placement": "pointers"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "The same graph in a detached state.",
+          "learnerAction": "Commit while detached and see the orphan.",
+          "placement": "detached HEAD"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "follow-the-pointers",
+          "sample": "How many bytes is the file .git/refs/heads/main, which holds a 40-character hash and a newline?",
+          "answer": "41"
+        },
+        {
+          "kind": "numeric",
+          "targets": "follow-the-pointers",
+          "sample": "How many commits does git branch x create?",
+          "answer": "0"
+        },
+        {
+          "kind": "single-term",
+          "targets": "follow-the-pointers",
+          "sample": "You run git branch x, git switch x, and then commit. Which branch name now points at the new commit?",
+          "answer": "x"
+        }
+      ],
+      "sourceIds": [
+        "pro-git",
+        "git-docs",
+        "git-internals"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "merging",
+      "moduleId": "branches-and-change",
+      "title": "Merging",
+      "objective": "Predict whether a merge is a fast-forward or creates a merge commit, and what the result contains.",
+      "prerequisiteLessonIds": [
+        "branches-are-pointers"
+      ],
+      "concepts": [
+        {
+          "id": "fast-forward",
+          "title": "Fast-forward",
+          "summary": "When the current branch's tip is an ancestor of the other branch, merge just moves the pointer forward and creates no commit."
+        },
+        {
+          "id": "three-way-merge",
+          "title": "Three-way merge",
+          "summary": "When both branches have new commits, Git combines the changes of each since their merge base into a new commit."
+        },
+        {
+          "id": "merge-commit",
+          "title": "Merge commit",
+          "summary": "A commit with two parents."
+        }
+      ],
+      "skills": [
+        "classify-a-merge",
+        "count-after-merge"
+      ],
+      "misconceptions": [
+        "Believing a merge copies one branch over the other.",
+        "Believing Git compares only the two tips.",
+        "Believing every merge makes a commit."
+      ],
+      "sequence": [
+        "Assumes branches-are-pointers.",
+        "Merge feature into main when main has not moved: fast-forward.",
+        "When both moved: find the merge base, compare each tip with it, apply both sets of changes.",
+        "The result: a commit with two parents.",
+        "--no-ff and --ff-only: choosing history shape.",
+        "After a merge, what does git log --graph show?"
+      ],
+      "examples": [
+        "main has c1, c2, c3 and feature has c1, c2, f1: the merge base is c2, so a three-way merge is needed, and the result has 5 commits (c1, c2, c3, f1 and the merge) with 1 merge commit.",
+        "If main still ended at c2, merging feature would be a fast-forward and create no commit.",
+        "A merge commit has 2 parents."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Two branches diverging from a base commit; the learner presses merge and the figure shows either a pointer slide or a new commit with two parents.",
+          "learnerAction": "Choose whether main has moved.",
+          "placement": "fast-forward or three-way"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "The three versions of a file (base, ours, theirs) side by side with the merged result.",
+          "learnerAction": "Edit ours or theirs.",
+          "placement": "three-way merge"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "count-after-merge",
+          "sample": "main holds c1, c2, c3 and feature holds c1, c2, f1. After a three-way merge into main, how many commits are reachable from main?",
+          "answer": "5"
+        },
+        {
+          "kind": "numeric",
+          "targets": "classify-a-merge",
+          "sample": "How many parents does a merge commit have?",
+          "answer": "2"
+        },
+        {
+          "kind": "choice",
+          "targets": "classify-a-merge",
+          "sample": "When is git merge feature a fast-forward?",
+          "answer": "When main's tip is an ancestor of feature's tip",
+          "choices": [
+            "When both branches have new commits",
+            "When main's tip is an ancestor of feature's tip",
+            "When feature has no commits",
+            "Always"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "pro-git",
+        "git-docs"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "merge-conflicts",
+      "moduleId": "branches-and-change",
+      "title": "Merge conflicts",
+      "objective": "Read conflict markers, say which side each part belongs to, and predict whether two edits will conflict.",
+      "prerequisiteLessonIds": [
+        "merging"
+      ],
+      "concepts": [
+        {
+          "id": "conflict",
+          "title": "Conflict",
+          "summary": "Git cannot choose between changes that touch the same lines, or adjacent lines, since the merge base."
+        },
+        {
+          "id": "conflict-markers",
+          "title": "Conflict markers",
+          "summary": "<<<<<<< HEAD begins your side, ======= separates, and >>>>>>> branch ends the other side."
+        },
+        {
+          "id": "resolution",
+          "title": "Resolution",
+          "summary": "Edit the file to the intended result, remove the markers, git add it and commit; git merge --abort returns to the state before."
+        }
+      ],
+      "skills": [
+        "predict-conflict",
+        "read-markers"
+      ],
+      "misconceptions": [
+        "Believing a conflict means someone made a mistake.",
+        "Believing edits on different lines never conflict: adjacent lines do.",
+        "Believing resolving means choosing a whole side."
+      ],
+      "sequence": [
+        "Assumes merging.",
+        "When changes do not overlap, Git merges them silently; lines 1 and 5 of a five-line file merge cleanly.",
+        "Adjacent lines 2 and 3 conflict, because Git treats a change and its neighbours as a unit.",
+        "The same line changed on both sides is the textbook conflict.",
+        "Reading a conflicted file marker by marker.",
+        "Resolve, add, commit; abort; a tool is optional.",
+        "How to reduce conflicts: small branches, frequent merges from main."
+      ],
+      "examples": [
+        "Base 1-5, main changes line 5, other changes line 1: clean merge giving one, 2, 3, 4, five.",
+        "Main changes line 2 to 'main' and other to 'other': the file has <<<<<<< HEAD, main, =======, other, >>>>>>> other.",
+        "git status after the conflict shows 'UU f'."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A conflicted file with the HEAD side and the other side coloured, and a resolution editor beneath.",
+          "learnerAction": "Pick lines from either side, edit, and see the final file.",
+          "placement": "markers"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A five-line file with two edits placed by the learner.",
+          "learnerAction": "Choose which lines each side edits and see whether Git reports a conflict.",
+          "placement": "what conflicts"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "choice",
+          "targets": "predict-conflict",
+          "sample": "Base file has five lines. One branch edits line 1 and the other edits line 5. What does the merge do?",
+          "answer": "Merges cleanly",
+          "choices": [
+            "Merges cleanly",
+            "Reports a conflict",
+            "Refuses to run",
+            "Keeps only one edit"
+          ]
+        },
+        {
+          "kind": "choice",
+          "targets": "predict-conflict",
+          "sample": "One branch edits line 2 and the other edits line 3 of the same file. What does Git report?",
+          "answer": "A conflict, because the edited lines are adjacent",
+          "choices": [
+            "Merges cleanly",
+            "A conflict, because the edited lines are adjacent",
+            "Nothing, because the lines differ",
+            "An error about the base"
+          ]
+        },
+        {
+          "kind": "single-term",
+          "targets": "read-markers",
+          "sample": "In a conflicted file, which marker line begins the section holding your current branch's version? Write the seven characters and the word that follows.",
+          "answer": "<<<<<<< HEAD"
+        }
+      ],
+      "sourceIds": [
+        "pro-git",
+        "git-docs"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "rebase-and-rewriting-history",
+      "moduleId": "branches-and-change",
+      "title": "Rebase and rewriting history",
+      "objective": "Explain what rebase does to commit hashes, compare it with merge, and say when it is safe.",
+      "prerequisiteLessonIds": [
+        "merge-conflicts"
+      ],
+      "concepts": [
+        {
+          "id": "rebase",
+          "title": "Rebase",
+          "summary": "Replaying a branch's commits one by one on top of a new base, which creates new commits."
+        },
+        {
+          "id": "linear-history",
+          "title": "Linear history",
+          "summary": "A history with no merge commits, which rebase produces and merge does not."
+        },
+        {
+          "id": "shared-history",
+          "title": "Shared history rule",
+          "summary": "Do not rewrite commits that others already have, because their copies will no longer match."
+        }
+      ],
+      "skills": [
+        "count-after-rebase",
+        "judge-safety"
+      ],
+      "misconceptions": [
+        "Believing rebase moves commits: it copies them, and the old ones remain until garbage-collected.",
+        "Believing rebase and merge give the same result.",
+        "Believing it is always safe because it is local."
+      ],
+      "sequence": [
+        "Assumes merge-conflicts and objects-and-hashes.",
+        "Feature has 3 commits, main has moved on 2: git rebase main replays 3 commits after main's tip.",
+        "Each replayed commit has a new hash because its parent changed.",
+        "Result: main..feature is 3, feature..main is 0, and the log is a straight line of 6 commits.",
+        "Merge preserves what happened; rebase tidies the story. Neither is wrong.",
+        "git rebase -i: squash, reword, reorder.",
+        "The rule for shared branches."
+      ],
+      "examples": [
+        "Base b; feat has f1, f2, f3; main has m1, m2. After git rebase main on feat the log reads base, m1, m2, f1, f2, f3: 6 commits, and f1 now has a different hash.",
+        "git rebase -i HEAD~3 can squash three commits into one.",
+        "If a teammate already pulled f1, rebasing and force-pushing makes their copy diverge."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Two graphs side by side, before and after rebase, with old commits greyed and new ones highlighted.",
+          "learnerAction": "Toggle merge and rebase.",
+          "placement": "rebase result"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "An interactive rebase todo list with pick, squash and reword.",
+          "learnerAction": "Reorder and squash.",
+          "placement": "interactive rebase"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "count-after-rebase",
+          "sample": "base is shared. feat has 3 commits and main has 2 more since base. After git rebase main on feat, how many commits are in main..feat?",
+          "answer": "3"
+        },
+        {
+          "kind": "numeric",
+          "targets": "count-after-rebase",
+          "sample": "With the same branches, how many commits are reachable from feat after the rebase, counting base?",
+          "answer": "6"
+        },
+        {
+          "kind": "choice",
+          "targets": "judge-safety",
+          "sample": "When is rewriting commits with rebase safe?",
+          "answer": "When only you have those commits",
+          "choices": [
+            "Always",
+            "When only you have those commits",
+            "Never",
+            "Only after a merge"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "pro-git",
+        "git-docs"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "undoing-things",
+      "moduleId": "branches-and-change",
+      "title": "Undoing things",
+      "objective": "Choose the right undo for a mistake in the working tree, the index or the history, and recover a lost commit with the reflog.",
+      "prerequisiteLessonIds": [
+        "rebase-and-rewriting-history"
+      ],
+      "concepts": [
+        {
+          "id": "restore",
+          "title": "restore",
+          "summary": "Discards edits in the working tree or unstages a file; it does not touch history."
+        },
+        {
+          "id": "reset-modes",
+          "title": "reset modes",
+          "summary": "git reset moves the branch to another commit; --soft leaves changes staged, --mixed leaves them unstaged and --hard discards them."
+        },
+        {
+          "id": "revert",
+          "title": "revert",
+          "summary": "Makes a new commit that undoes an earlier one, so published history stays intact."
+        },
+        {
+          "id": "reflog",
+          "title": "Reflog",
+          "summary": "A local log of where HEAD has pointed, which can recover commits that no branch reaches."
+        }
+      ],
+      "skills": [
+        "pick-an-undo",
+        "predict-reset"
+      ],
+      "misconceptions": [
+        "Believing git reset --hard destroys committed work for ever: the reflog normally still has it.",
+        "Believing revert deletes the earlier commit.",
+        "Believing there is one undo command."
+      ],
+      "sequence": [
+        "Assumes branches-are-pointers: reset moves a pointer.",
+        "A decision table: edit in file, staged edit, committed but unpushed, committed and pushed.",
+        "reset --soft, --mixed, --hard after two commits, one commit back.",
+        "revert for shared history.",
+        "git reflog: find 'HEAD@{1}' and get back.",
+        "Uncommitted work lost by --hard is unrecoverable; committed work is not."
+      ],
+      "examples": [
+        "Two commits one and two. git reset --soft HEAD~1 leaves two.txt staged (A  two.txt); --mixed leaves it untracked (?? two.txt); --hard removes it. In all three cases 1 commit remains.",
+        "git revert HEAD on a history one, two gives three commits: one, two, Revert \"two\".",
+        "After reset --hard HEAD~1, git reflog still lists the lost commit as HEAD@{1}."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A three-column diagram (working tree, index, HEAD) for each reset mode showing what moves.",
+          "learnerAction": "Switch between soft, mixed and hard.",
+          "placement": "reset modes"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A decision flow from 'what went wrong' to a command.",
+          "learnerAction": "Choose the situation.",
+          "placement": "choosing an undo"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "choice",
+          "targets": "pick-an-undo",
+          "sample": "A commit has already been pushed and others have pulled it. Which command safely undoes its effect?",
+          "answer": "git revert",
+          "choices": [
+            "git reset --hard",
+            "git revert",
+            "git rebase -i",
+            "git restore"
+          ]
+        },
+        {
+          "kind": "numeric",
+          "targets": "predict-reset",
+          "sample": "History is one, two. You run git reset --soft HEAD~1. How many commits remain?",
+          "answer": "1"
+        },
+        {
+          "kind": "single-term",
+          "targets": "predict-reset",
+          "sample": "After git reset --hard HEAD~1, what is the name of the log that still records the lost commit?",
+          "answer": "reflog"
+        }
+      ],
+      "sourceIds": [
+        "pro-git",
+        "git-docs"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "finding-what-broke",
+      "moduleId": "branches-and-change",
+      "title": "Finding what broke",
+      "objective": "Use bisect and the pickaxe to locate the commit that introduced a bug, and compute how many steps bisect needs.",
+      "prerequisiteLessonIds": [
+        "undoing-things"
+      ],
+      "concepts": [
+        {
+          "id": "bisect",
+          "title": "Bisect",
+          "summary": "A binary search through history: Git checks out the middle commit, you say good or bad, and the range halves."
+        },
+        {
+          "id": "steps",
+          "title": "Number of steps",
+          "summary": "Searching n commits takes at most ceil(log2 n) tests, so 1,000 commits need 10."
+        },
+        {
+          "id": "pickaxe",
+          "title": "Pickaxe",
+          "summary": "git log -S 'text' lists commits that changed the number of occurrences of that text."
+        }
+      ],
+      "skills": [
+        "compute-bisect-steps",
+        "choose-a-search"
+      ],
+      "misconceptions": [
+        "Believing bisect needs you to read the code.",
+        "Believing it takes about n/2 steps.",
+        "Believing it works when the test result is flaky."
+      ],
+      "sequence": [
+        "Assumes cs-basics: halving-the-problem.",
+        "The question: which commit introduced this? Reading 1,000 commits is hopeless.",
+        "Binary search: 1,000 to 500 to 250 to ... to 1, ten halvings, since 2^10 = 1,024.",
+        "git bisect start, bad, good; or bisect run with a script exiting 0 for good and 1 for bad.",
+        "A test must be deterministic.",
+        "git log -S and git blame for the question 'when did this line appear'."
+      ],
+      "examples": [
+        "With 1,000 commits and the bug introduced at commit 637, a scripted bisect ran 10 tests.",
+        "With 1,000,000 commits, 20 tests are enough because 2^20 = 1,048,576.",
+        "git log -S 'timeout' lists commits that added or removed the word timeout."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A strip of 1,000 commits with the search window shrinking at each test.",
+          "learnerAction": "Mark each tested commit good or bad.",
+          "placement": "bisect"
+        },
+        {
+          "type": "table",
+          "shows": "A table of steps against commits.",
+          "learnerAction": "Slide the number of commits.",
+          "placement": "steps"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-bisect-steps",
+          "sample": "What is the largest number of tests bisect needs for 1,000 commits?",
+          "answer": "10"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-bisect-steps",
+          "sample": "What is the largest number of tests bisect needs for 1,000,000 commits?",
+          "answer": "20"
+        },
+        {
+          "kind": "choice",
+          "targets": "choose-a-search",
+          "sample": "Which command finds commits that added or removed a given string?",
+          "answer": "git log -S",
+          "choices": [
+            "git log -S",
+            "git status",
+            "git bisect good",
+            "git merge-base"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "git-docs",
+        "pro-git"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "remotes-and-sharing",
+      "moduleId": "working-with-others",
+      "title": "Remotes and sharing",
+      "objective": "Explain fetch, pull and push, remote-tracking branches, and why a push is rejected.",
+      "prerequisiteLessonIds": [
+        "finding-what-broke"
+      ],
+      "concepts": [
+        {
+          "id": "remote",
+          "title": "Remote and remote-tracking branch",
+          "summary": "A remote is another copy of the repository, and origin/main is your record of where its main branch was when you last fetched."
+        },
+        {
+          "id": "fetch-pull",
+          "title": "Fetch and pull",
+          "summary": "fetch downloads new commits and moves origin/main; pull is fetch followed by a merge or rebase into your branch."
+        },
+        {
+          "id": "non-fast-forward",
+          "title": "Rejected push",
+          "summary": "A push is refused if it would discard commits the remote has, which means you must integrate them first."
+        }
+      ],
+      "skills": [
+        "read-divergence",
+        "order-the-steps"
+      ],
+      "misconceptions": [
+        "Believing git pull and git fetch are the same.",
+        "Believing origin/main shows the server's current state.",
+        "Believing --force is the usual fix for a rejected push."
+      ],
+      "sequence": [
+        "Assumes computers-and-networks: names-and-dns and tcp-reliable-delivery (HTTPS or SSH to a host).",
+        "clone sets up origin and a main that tracks origin/main.",
+        "The scenario: Alice has 1 new local commit, Bob pushed 2.",
+        "git fetch updates origin/main, and status says the branches have diverged, with 1 and 2 different commits.",
+        "The push is rejected with 'fetch first'.",
+        "Integrate by merge or rebase, then push.",
+        "Force pushing with --force-with-lease and when it is acceptable."
+      ],
+      "examples": [
+        "After Bob pushes 2 commits and Alice has made 1 locally, Alice's git rev-list --count main..origin/main is 2 and origin/main..main is 1.",
+        "Alice's push is rejected: ! [rejected] main -> main (fetch first).",
+        "After git pull --no-rebase there are 5 commits: base, a1, b1, b2 and the merge."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Three repositories (Alice, hosting service, Bob) with branch labels including origin/main; commands move commits between them.",
+          "learnerAction": "Run clone, commit, push and fetch.",
+          "placement": "remotes"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A sequence diagram of the rejected push and its resolution.",
+          "learnerAction": "Step through.",
+          "placement": "push rejected"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "read-divergence",
+          "sample": "Alice has made 1 commit; Bob pushed 2 commits. After Alice fetches, how many commits does origin/main have that her main lacks?",
+          "answer": "2"
+        },
+        {
+          "kind": "single-term",
+          "targets": "order-the-steps",
+          "sample": "Which command downloads new commits into origin/main without changing your working tree or branch?",
+          "answer": "git fetch"
+        },
+        {
+          "kind": "choice",
+          "targets": "read-divergence",
+          "sample": "git push says rejected (fetch first). What does that tell you?",
+          "answer": "The remote has commits you do not have",
+          "choices": [
+            "The remote is down",
+            "The remote has commits you do not have",
+            "Your commits are invalid",
+            "You lack permission"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "pro-git",
+        "git-docs"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "collaboration-workflows",
+      "moduleId": "working-with-others",
+      "title": "Collaboration workflows",
+      "objective": "Compare trunk-based development, GitHub flow and long-lived release branches, and say what a pull request is for.",
+      "prerequisiteLessonIds": [
+        "remotes-and-sharing"
+      ],
+      "concepts": [
+        {
+          "id": "pull-request",
+          "title": "Pull request",
+          "summary": "A hosting-service feature, not part of Git, that proposes merging a branch and holds the discussion and checks."
+        },
+        {
+          "id": "trunk-based",
+          "title": "Trunk-based development",
+          "summary": "Everyone merges small changes to one main branch at least daily, hiding unfinished work behind flags."
+        },
+        {
+          "id": "long-lived-branch",
+          "title": "Long-lived branch",
+          "summary": "A branch that lives for weeks or releases, which makes integration costly later."
+        }
+      ],
+      "skills": [
+        "pick-a-workflow",
+        "review-a-change"
+      ],
+      "misconceptions": [
+        "Believing a pull request is a Git command.",
+        "Believing big pull requests are more efficient than small ones.",
+        "Believing branches need a ceremony: a branch is cheap, and the cost is in how long it lives."
+      ],
+      "sequence": [
+        "Assumes remotes-and-sharing.",
+        "A pull request: branch, push, propose, review, merge.",
+        "Small, focused changes: size of review and risk of conflict.",
+        "GitHub flow: branch from main, open a PR, merge when green.",
+        "Trunk-based: very short branches and feature flags.",
+        "Release branches: when a product has to maintain several versions (Driessen's Git Flow, 2010).",
+        "Protected branches, required reviews and checks."
+      ],
+      "examples": [
+        "A 1,000-line change takes longer to review than ten 100-line changes and hides more risk.",
+        "A team shipping one hosted version continuously fits trunk-based or GitHub flow; a library maintained in versions 2.x and 3.x needs release branches.",
+        "A pull request needs: description, small diff, passing checks."
+      ],
+      "figures": [
+        {
+          "type": "diagram_choice",
+          "shows": "Three branching diagrams in the same style: trunk-based, GitHub flow and release branches.",
+          "learnerAction": "Pick a team description and match the diagram.",
+          "placement": "workflows"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A pull request page layout with description, diff and checks.",
+          "learnerAction": "Mark what a reviewer needs.",
+          "placement": "PR anatomy"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "choice",
+          "targets": "pick-a-workflow",
+          "sample": "A web app deploys from main several times a day and has one live version. Which workflow fits best?",
+          "answer": "Trunk-based or GitHub flow",
+          "choices": [
+            "Trunk-based or GitHub flow",
+            "Long-lived release branches per version",
+            "One branch per developer for months",
+            "No branches"
+          ]
+        },
+        {
+          "kind": "single-term",
+          "targets": "pick-a-workflow",
+          "sample": "Name the practice of merging small changes to one main branch at least daily.",
+          "answer": "trunk-based development"
+        },
+        {
+          "kind": "self",
+          "targets": "review-a-change",
+          "sample": "Recall one reason small pull requests are easier to review and safer to merge.",
+          "answer": "Less to read, fewer conflicts, easier to revert."
+        }
+      ],
+      "sourceIds": [
+        "github-flow",
+        "trunk-based",
+        "driessen",
+        "pro-git"
+      ],
+      "historyNotes": [
+        "Vincent Driessen published 'A successful Git branching model' in January 2010; he later added a note that it suits versioned software more than continuously delivered web apps."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "tags-versions-and-messages",
+      "moduleId": "working-with-others",
+      "title": "Tags, versions and messages",
+      "objective": "Name releases with tags and semantic versions, write commit messages others can use, and keep secrets and generated files out.",
+      "prerequisiteLessonIds": [
+        "collaboration-workflows"
+      ],
+      "concepts": [
+        {
+          "id": "tag",
+          "title": "Tag",
+          "summary": "A fixed name for a commit; an annotated tag is an object with a message, a lightweight tag is a plain pointer."
+        },
+        {
+          "id": "semver",
+          "title": "Semantic version",
+          "summary": "MAJOR.MINOR.PATCH: increase MAJOR for incompatible changes, MINOR for compatible features and PATCH for compatible fixes."
+        },
+        {
+          "id": "commit-message",
+          "title": "Commit message",
+          "summary": "A short summary line, a blank line and a body saying why; conventional commits prefix the type, such as fix: or feat:."
+        },
+        {
+          "id": "gitignore",
+          "title": "Ignore file",
+          "summary": "Patterns for untracked files Git should not list; it has no effect on files already tracked."
+        }
+      ],
+      "skills": [
+        "bump-a-version",
+        "spot-a-secret-risk"
+      ],
+      "misconceptions": [
+        "Believing tags move like branches.",
+        "Believing a deleted secret is gone from history.",
+        "Believing .gitignore stops tracking a file already committed."
+      ],
+      "sequence": [
+        "Assumes objects-and-hashes and branches-are-pointers.",
+        "Tags: lightweight (a pointer) and annotated (an object); git cat-file -t shows commit versus tag.",
+        "Semantic versioning: 2.4.1 -> 2.4.2 for a fix, 2.5.0 for a compatible feature, 3.0.0 for a breaking change.",
+        "Conventional commits and why machine-readable messages help.",
+        "Messages that explain why: the diff already says what.",
+        ".gitignore: *.log hides untracked logs but a tracked file stays tracked.",
+        "Secrets: once committed and pushed, rotate the secret; rewriting history is not enough."
+      ],
+      "examples": [
+        "From 2.4.1, a compatible new feature gives 2.5.0, a bug fix gives 2.4.2 and a breaking change gives 3.0.0.",
+        "git tag v1 creates a lightweight tag (type commit); git tag -a v2 -m ... creates an annotated one (type tag).",
+        "With *.log ignored, a log file added with -f and then edited still appears as M."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A version number with three fields and three buttons for fix, feature and breaking change.",
+          "learnerAction": "Apply changes.",
+          "placement": "semver"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A commit message laid out as summary, blank line and body.",
+          "learnerAction": "Mark which part says what and which says why.",
+          "placement": "message anatomy"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "single-term",
+          "targets": "bump-a-version",
+          "sample": "The version is 2.4.1 and you add a backwards-compatible feature. What is the new version?",
+          "answer": "2.5.0"
+        },
+        {
+          "kind": "single-term",
+          "targets": "bump-a-version",
+          "sample": "The version is 2.4.1 and you make a breaking change. What is the new version?",
+          "answer": "3.0.0"
+        },
+        {
+          "kind": "choice",
+          "targets": "spot-a-secret-risk",
+          "sample": "A password was committed and pushed, then deleted in the next commit. What should be done?",
+          "answer": "Treat it as exposed and change the password",
+          "choices": [
+            "Nothing, it is deleted",
+            "Treat it as exposed and change the password",
+            "Add it to .gitignore",
+            "Run git status"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "semver",
+        "conventional-commits",
+        "pro-git",
+        "git-docs"
+      ],
+      "historyNotes": [
+        "Semantic Versioning 2.0.0 was published by Tom Preston-Werner in 2013."
+      ],
+      "estimatedMinutes": 13
+    }
+  ],
+  "courseCheck": "A mixed check built on one small repository history: predict status codes, count commits in ranges and after a merge or rebase, classify a merge, read conflict markers, choose an undo, compute bisect steps, interpret a rejected push, and bump a semantic version.",
+  "platformNeeds": [
+    "A commit_graph figure: commits as dots with branch and HEAD labels, where the learner runs add, commit, branch, switch, merge and rebase from buttons and the graph updates (a deterministic simulator, not a real Git). It would carry most of this course; the svg_figure fallback is one hand-drawn SVG per before/after state.",
+    "A code-run-git or git_session runner that executes a small, whitelisted set of Git commands against a virtual repository so that learners can run the commands in the code-reading questions. Until then every Git command question is code-reading.",
+    "A three_way_merge figure: base, ours, theirs and the result with conflict markers.",
+    "A diff_view figure for unified diffs with colouring. A table or program_trace could stand in."
+  ],
+  "unverified": [
+    "No external site could be opened in this session (network blocked), so every source has verified false. Pro Git's exact licence version, the Git documentation's licence and the Trunk Based Development site's licence all need checking before adaptation. Pro Git is NC-SA, so lessons may only adapt it if the product accepts share-alike and non-commercial terms; the safe reading is reference only.",
+    "Every Git command output in the sample questions (status codes, counts of commits in ranges, merge, conflict, rebase, reset modes, revert, reflog, bisect step count, rejected push, tags and ignore) was run on Git 2.43.0 locally and matches, as was the SHA-1 of 'blob 6' NUL 'hello' newline. Wording of messages may differ in other Git versions.",
+    "History written from memory: Git started April 2005 after the BitKeeper dispute; RCS 1982, CVS 1990, Subversion 2000; SHA-256 support in Git 2.29 (October 2020); SHA-1 collision shown in 2017; Driessen's article January 2010; Semantic Versioning 2.0.0 by Tom Preston-Werner in 2013.",
+    "The reference to CS Basics 'halving-the-problem' is by lesson id from the existing bundle."
+  ]
+}

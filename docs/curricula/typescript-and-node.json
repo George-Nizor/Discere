@@ -1,0 +1,1540 @@
+{
+  "id": "typescript-and-node",
+  "title": "TypeScript and Node.js",
+  "family": "A",
+  "voice": "A",
+  "description": "How TypeScript's types catch mistakes before code runs, and how Node.js runs JavaScript outside the browser, ending with a small typed service that validates what enters it.",
+  "audience": "A capable adult who can read JavaScript (the language lessons of the-web-html-css-javascript, or equivalent) and has used a command line.",
+  "prerequisites": [
+    "the-web-html-css-javascript"
+  ],
+  "outcomes": [
+    "You'll be able to predict the type TypeScript infers and read its error messages.",
+    "You'll be able to narrow unions, write generics and derive types from other types.",
+    "You'll be able to predict the order of callbacks in Node and what blocks the event loop.",
+    "You'll be able to read an HTTP handler, a stream and a semver range, and design a service that validates its input."
+  ],
+  "sources": [
+    {
+      "id": "ts-handbook",
+      "title": "The TypeScript Handbook (Microsoft)",
+      "url": "https://www.typescriptlang.org/docs/handbook/intro.html",
+      "licence": "CC BY 4.0 (TypeScript-Website repository)",
+      "use": "adapt",
+      "verified": true
+    },
+    {
+      "id": "ts-tsconfig",
+      "title": "TSConfig reference: strict family and noUncheckedIndexedAccess",
+      "url": "https://www.typescriptlang.org/tsconfig/",
+      "licence": "CC BY 4.0 (TypeScript-Website repository)",
+      "use": "reference",
+      "verified": true
+    },
+    {
+      "id": "node-api",
+      "title": "Node.js API documentation",
+      "url": "https://nodejs.org/docs/latest/api/",
+      "licence": "MIT-style Node.js licence; documentation text may be adapted with attribution",
+      "use": "reference",
+      "verified": true
+    },
+    {
+      "id": "node-learn",
+      "title": "Node.js Learn: event loop, timers and nextTick",
+      "url": "https://nodejs.org/en/learn/asynchronous-work/event-loop-timers-and-nexttick",
+      "licence": "CC BY 4.0 (nodejs.org content; to be confirmed)",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "node-modules",
+      "title": "Node.js docs: ECMAScript modules and CommonJS",
+      "url": "https://nodejs.org/docs/latest/api/esm.html",
+      "licence": "MIT-style Node.js licence",
+      "use": "reference",
+      "verified": true
+    },
+    {
+      "id": "node-stream",
+      "title": "Node.js docs: Stream and Buffer",
+      "url": "https://nodejs.org/docs/latest/api/stream.html",
+      "licence": "MIT-style Node.js licence",
+      "use": "reference",
+      "verified": true
+    },
+    {
+      "id": "node-http",
+      "title": "Node.js docs: HTTP",
+      "url": "https://nodejs.org/docs/latest/api/http.html",
+      "licence": "MIT-style Node.js licence",
+      "use": "reference",
+      "verified": true
+    },
+    {
+      "id": "node-test",
+      "title": "Node.js docs: Test runner and assert",
+      "url": "https://nodejs.org/docs/latest/api/test.html",
+      "licence": "MIT-style Node.js licence",
+      "use": "reference",
+      "verified": true
+    },
+    {
+      "id": "semver-spec",
+      "title": "Semantic Versioning 2.0.0",
+      "url": "https://semver.org/",
+      "licence": "CC BY 3.0",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "npm-docs",
+      "title": "npm documentation: package.json, dependencies and semver ranges",
+      "url": "https://docs.npmjs.com/",
+      "licence": "Artistic License 2.0 (npm/documentation repository; to be confirmed)",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "mdn-promise",
+      "title": "MDN: Promise and async functions",
+      "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise",
+      "licence": "CC BY-SA 2.5 (prose); code CC0",
+      "use": "reference",
+      "verified": true
+    }
+  ],
+  "modules": [
+    {
+      "id": "the-type-system",
+      "title": "The type system",
+      "summary": "What types are, how TypeScript infers and narrows them, and how generics and type operators describe code you have not written yet."
+    },
+    {
+      "id": "node-runtime",
+      "title": "The Node.js runtime",
+      "summary": "How Node runs JavaScript outside the browser: modules, the event loop, bytes and streams, HTTP and failure handling."
+    },
+    {
+      "id": "building-services",
+      "title": "Building services",
+      "summary": "Packages, versions and tests, and a typed service that validates what enters it and shuts down cleanly."
+    }
+  ],
+  "lessons": [
+    {
+      "id": "what-types-are-for",
+      "moduleId": "the-type-system",
+      "title": "What types are for",
+      "objective": "Explain that types exist only at compile time, read a basic compiler error and say what the compiled JavaScript contains.",
+      "prerequisiteLessonIds": [],
+      "concepts": [
+        {
+          "id": "static-type",
+          "title": "Static type",
+          "summary": "A label the compiler attaches to a value or expression to check how it is used before the program runs."
+        },
+        {
+          "id": "type-erasure",
+          "title": "Type erasure",
+          "summary": "Annotations, interfaces and type aliases are removed when TypeScript is compiled, so none of them exist at run time."
+        },
+        {
+          "id": "compile-vs-run",
+          "title": "Compile time and run time",
+          "summary": "The checker reports mistakes before running, but by default the compiler still emits JavaScript when it finds errors."
+        },
+        {
+          "id": "tsc",
+          "title": "The compiler",
+          "summary": "tsc reads TypeScript and tsconfig.json, checks types, and writes JavaScript for the chosen target."
+        }
+      ],
+      "skills": [
+        "read-a-type-error",
+        "predict-emitted-js"
+      ],
+      "misconceptions": [
+        "Learners think the types still exist when the program runs. They are erased, so typeof or instanceof can never check an interface.",
+        "Learners think a type error stops the build. By default tsc reports the error and still writes the JavaScript, unless noEmitOnError is set.",
+        "Learners think a typed value is validated. Types describe what the author promises, and nothing checks data from outside."
+      ],
+      "sequence": [
+        "Show let n: number = 5; n = \"five\" and read the message and code.",
+        "Compile const x: number = 1; interface A { a: number } and show the JavaScript, which contains only const x = 1;.",
+        "Run a file with an error and show that JavaScript is still written.",
+        "Name the three jobs: catch mistakes, document intent, enable editor tooling."
+      ],
+      "examples": [
+        "let n: number = 5; n = \"five\"; reports error TS2322: Type 'string' is not assignable to type 'number'. (TypeScript 5.6).",
+        "const x: number = 1; interface A { a: number } type T = string; function f(a: number): string { return String(a) } compiles to const x = 1; and function f(a) { return String(a); }.",
+        "tsc exits with a non-zero code on that error but still writes the .js file."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A pipeline: .ts source, type checker (error list), type eraser, .js output. Views: the file with its annotations highlighted, then the same file with them removed.",
+          "learnerAction": "Toggle between source and output to see which tokens vanish.",
+          "placement": "type-erasure"
+        },
+        {
+          "type": "diagram_choice",
+          "shows": "Six snippets of TypeScript, each with a choice of which parts remain in the JavaScript.",
+          "learnerAction": "Pick the surviving text.",
+          "placement": "predict-emitted-js"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "choice",
+          "targets": "read-a-type-error",
+          "sample": "let n: number = 5;\nn = \"five\";\nWhich message does the compiler report on the second line?",
+          "answer": "Type 'string' is not assignable to type 'number'.",
+          "choices": [
+            "Type 'string' is not assignable to type 'number'.",
+            "Variable 'n' is not defined.",
+            "Cannot reassign a number.",
+            "Expected a string but received a number."
+          ]
+        },
+        {
+          "kind": "code-reading",
+          "targets": "predict-emitted-js",
+          "sample": "Compile with tsc: const x: number = 1; interface A { a: number }\nWhat is the entire JavaScript output?",
+          "answer": "const x = 1;"
+        },
+        {
+          "kind": "choice",
+          "targets": "predict-emitted-js",
+          "sample": "With default compiler options, a file contains a type error. What does tsc do?",
+          "answer": "Reports the error and still writes the JavaScript file.",
+          "choices": [
+            "Reports the error and still writes the JavaScript file.",
+            "Reports the error and writes nothing.",
+            "Fixes the error automatically.",
+            "Writes the JavaScript and hides the error."
+          ]
+        }
+      ],
+      "sourceIds": [
+        "ts-handbook",
+        "ts-tsconfig"
+      ],
+      "historyNotes": [
+        "TypeScript was announced by Microsoft in October 2012, led by Anders Hejlsberg. Confirm before printing."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "inference-and-literal-types",
+      "moduleId": "the-type-system",
+      "title": "Inference and literal types",
+      "objective": "Predict the type TypeScript infers for a declaration, including how let, const and as const change it.",
+      "prerequisiteLessonIds": [
+        "what-types-are-for"
+      ],
+      "concepts": [
+        {
+          "id": "inference",
+          "title": "Type inference",
+          "summary": "The compiler works out a type from the initial value, so annotations are needed mainly at boundaries."
+        },
+        {
+          "id": "widening",
+          "title": "Widening",
+          "summary": "A mutable location widens a literal to its general type, so let a = 5 is number while const b = 5 has the literal type 5."
+        },
+        {
+          "id": "as-const",
+          "title": "as const",
+          "summary": "as const freezes a literal expression to its narrowest, readonly type."
+        },
+        {
+          "id": "array-tuple",
+          "title": "Arrays and tuples",
+          "summary": "[1, 'a'] is an array of string or number, and [string, number] is a tuple of fixed length and position types."
+        }
+      ],
+      "skills": [
+        "infer-declaration-type",
+        "use-as-const",
+        "read-tuple-error"
+      ],
+      "misconceptions": [
+        "Learners think const and let infer the same type. const keeps the literal type, so const b = 5 has type 5.",
+        "Learners annotate everything. Inference already gives the right type in most places.",
+        "Learners think an object literal's string property has a literal type. It is widened to string unless as const is used."
+      ],
+      "sequence": [
+        "Infer types for let a = 5, const b = 5 and let c = [1, 'a'].",
+        "Show const d = { kind: 'circle' } as { kind: string } and the same with as const as { readonly kind: 'circle' }.",
+        "Tuple: const t: [string, number] = ['a', 1, 2] fails on length.",
+        "Where to annotate: function parameters, exported functions and empty collections."
+      ],
+      "examples": [
+        "let a = 5 has type number; const b = 5 has type 5; let c = [1, \"a\"] has type (string | number)[].",
+        "const d = { kind: \"circle\" } has type { kind: string }; with as const it is { readonly kind: \"circle\" }.",
+        "const dirs = [\"up\", \"down\"] as const gives readonly [\"up\", \"down\"], and typeof dirs[number] is \"up\" | \"down\"."
+      ],
+      "figures": [
+        {
+          "type": "table",
+          "shows": "Rows of declarations with columns for what the checker infers, hidden until the learner chooses, using declarations different from the questions.",
+          "learnerAction": "Predict each type then reveal.",
+          "placement": "widening and as-const"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A type lattice from literal 5 up to number up to unknown, with an arrow showing widening at let and not at const.",
+          "learnerAction": "Pick let or const and watch the arrow.",
+          "placement": "widening"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "single-term",
+          "targets": "infer-declaration-type",
+          "sample": "const b = 5;\nWhat is the type of b? Give it as TypeScript prints it.",
+          "answer": "5"
+        },
+        {
+          "kind": "single-term",
+          "targets": "infer-declaration-type",
+          "sample": "let c = [1, \"a\"];\nWhat type does TypeScript infer for c?",
+          "answer": "(string | number)[]"
+        },
+        {
+          "kind": "single-term",
+          "targets": "use-as-const",
+          "sample": "const e = { kind: \"circle\" } as const;\nWhat is the type of e?",
+          "answer": "{ readonly kind: \"circle\"; }"
+        }
+      ],
+      "sourceIds": [
+        "ts-handbook"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "shapes-and-structural-typing",
+      "moduleId": "the-type-system",
+      "title": "Shapes and structural typing",
+      "objective": "Decide whether a value fits an object type by its shape, and predict when excess property checks and readonly stop an assignment.",
+      "prerequisiteLessonIds": [
+        "inference-and-literal-types"
+      ],
+      "concepts": [
+        {
+          "id": "object-type",
+          "title": "Object type",
+          "summary": "An object type lists property names, their types and whether each is optional or readonly."
+        },
+        {
+          "id": "structural-typing",
+          "title": "Structural typing",
+          "summary": "A value fits a type when it has at least the required properties with compatible types, whatever it was declared as."
+        },
+        {
+          "id": "excess-check",
+          "title": "Excess property check",
+          "summary": "A fresh object literal assigned to a type may not name properties the type lacks, though a variable holding the same object may."
+        },
+        {
+          "id": "interface-vs-alias",
+          "title": "Interface and type alias",
+          "summary": "Both describe shapes; interfaces can be extended and merged, and aliases can name unions and other non-object types."
+        }
+      ],
+      "skills": [
+        "match-shape",
+        "predict-excess-error",
+        "use-readonly"
+      ],
+      "misconceptions": [
+        "Learners think a class instance must be declared as an interface's implementer to fit it. Shape alone decides.",
+        "Learners think the excess property error means the extra property is wrong at run time. It is a typo guard on fresh literals only.",
+        "Learners think readonly protects data at run time. It is erased, and only the checker enforces it."
+      ],
+      "sequence": [
+        "A class Dog with a name property assigned to an interface Named, with no declared relationship.",
+        "A literal { x: 1, y: 2 } assigned straight to { x: number } fails, but assigning a variable that holds it passes.",
+        "readonly x on an interface and the assignment p.x = 2.",
+        "Optional properties and the undefined they add."
+      ],
+      "examples": [
+        "interface Named { name: string } class Dog { name = \"d\"; bark(){} } const n: Named = new Dog(); compiles with no error.",
+        "const p: { x: number } = { x: 1, y: 2 } reports TS2353; const q = { x: 1, y: 2 }; const p2: { x: number } = q; has no error.",
+        "interface P { readonly x: number } const p: P = { x: 1 }; p.x = 2; reports TS2540: Cannot assign to 'x' because it is a read-only property."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Venn-style boxes: a Named shape with name, and three values (a Dog, a literal, a number) dropped into it, ticked or crossed.",
+          "learnerAction": "Drag each value into the target type.",
+          "placement": "structural-typing"
+        },
+        {
+          "type": "diagram_choice",
+          "shows": "Four assignments of literals and variables to object types, each with compile or error.",
+          "learnerAction": "Choose the outcome.",
+          "placement": "excess-check"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "choice",
+          "targets": "match-shape",
+          "sample": "interface Named { name: string }\nclass Dog { name = \"d\"; bark() {} }\nconst n: Named = new Dog();\nWhat does the compiler do?",
+          "answer": "Accepts it, because Dog has a name string.",
+          "choices": [
+            "Accepts it, because Dog has a name string.",
+            "Rejects it, because Dog does not implement Named.",
+            "Rejects it, because Dog has an extra bark method.",
+            "Accepts it only with a type assertion."
+          ]
+        },
+        {
+          "kind": "choice",
+          "targets": "predict-excess-error",
+          "sample": "const p: { x: number } = { x: 1, y: 2 };\nWhat happens?",
+          "answer": "Error TS2353: y does not exist in the target type.",
+          "choices": [
+            "No error.",
+            "Error TS2353: y does not exist in the target type.",
+            "Error: x is missing.",
+            "Error: y must be a number."
+          ]
+        },
+        {
+          "kind": "choice",
+          "targets": "use-readonly",
+          "sample": "interface P { readonly x: number }\nconst p: P = { x: 1 };\np.x = 2;\nWhich error is reported?",
+          "answer": "Cannot assign to 'x' because it is a read-only property.",
+          "choices": [
+            "Cannot assign to 'x' because it is a read-only property.",
+            "Type 'number' is not assignable to type 'string'.",
+            "Property 'x' is missing.",
+            "No error."
+          ]
+        }
+      ],
+      "sourceIds": [
+        "ts-handbook"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "unions-and-narrowing",
+      "moduleId": "the-type-system",
+      "title": "Unions and narrowing",
+      "objective": "Narrow a union with typeof, in, equality and discriminant checks, and use never to prove a switch is exhaustive.",
+      "prerequisiteLessonIds": [
+        "shapes-and-structural-typing"
+      ],
+      "concepts": [
+        {
+          "id": "union-type",
+          "title": "Union type",
+          "summary": "A | B allows either type, and only operations valid for both are allowed until the value is narrowed."
+        },
+        {
+          "id": "narrowing",
+          "title": "Narrowing",
+          "summary": "Control-flow analysis refines a union inside a branch from checks such as typeof x === 'string'."
+        },
+        {
+          "id": "discriminated-union",
+          "title": "Discriminated union",
+          "summary": "A union whose members share a literal-typed property, such as kind, lets one check identify the member."
+        },
+        {
+          "id": "exhaustiveness",
+          "title": "Exhaustiveness with never",
+          "summary": "If every member is handled, the leftover type is never, and assigning it to never makes forgotten cases a compile error."
+        }
+      ],
+      "skills": [
+        "narrow-a-union",
+        "find-missing-case",
+        "handle-undefined"
+      ],
+      "misconceptions": [
+        "Learners think a union lets them use any member's properties. Only the shared ones are allowed until narrowed.",
+        "Learners narrow with a type annotation or as. A check on the value narrows it, and an assertion only silences the checker.",
+        "Learners rely on a default case. It hides new members, whereas a never check reports them."
+      ],
+      "sequence": [
+        "function with x: string | number and a typeof branch.",
+        "A Shape union of circle, rect and tri with a switch on kind, and the error when tri is not handled.",
+        "A default branch with const _x: never = s.",
+        "An optional parameter name?: string and the possibly-undefined error."
+      ],
+      "examples": [
+        "With type Shape = circle | rect | tri and a switch handling only circle and rect inside a function declared to return number, tsc reports TS2366: Function lacks ending return statement and return type does not include 'undefined'.",
+        "Adding default: const _x: never = s; reports TS2322: Type '{ kind: \"tri\"; b: number; h: number; }' is not assignable to type 'never'.",
+        "function greet(name?: string){ return name.toUpperCase(); } reports TS18048: 'name' is possibly 'undefined'; name?.toUpperCase() fixes it."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A union drawn as three coloured tiles with a branch tree; after each check the surviving tiles stay lit. Views: typeof check, kind check, never check.",
+          "learnerAction": "Click a check to see which members survive.",
+          "placement": "narrowing and discriminated-union"
+        },
+        {
+          "type": "diagram_choice",
+          "shows": "Code snippets with the cursor inside different branches and a choice of narrowed type.",
+          "learnerAction": "Pick the type at the cursor.",
+          "placement": "narrow-a-union"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "choice",
+          "targets": "narrow-a-union",
+          "sample": "function f(x: string | number) {\n  if (typeof x === \"string\") { return x.length; }\n  return ???;\n}\nWhich expression is allowed at ???",
+          "answer": "x.toFixed(1)",
+          "choices": [
+            "x.length",
+            "x.toFixed(1)",
+            "x.toUpperCase()",
+            "x.charAt(0)"
+          ]
+        },
+        {
+          "kind": "single-term",
+          "targets": "find-missing-case",
+          "sample": "Shape is circle | rect | tri. A function handles circle and rect in a switch and returns number. Which error code does tsc report for the function?",
+          "answer": "TS2366"
+        },
+        {
+          "kind": "choice",
+          "targets": "handle-undefined",
+          "sample": "function greet(name?: string) { return name.toUpperCase(); }\nWhich fix handles a missing name at run time without a crash?",
+          "answer": "name?.toUpperCase()",
+          "choices": [
+            "name?.toUpperCase()",
+            "name!.toUpperCase()",
+            "name as number",
+            "(name: string)"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "ts-handbook",
+        "ts-tsconfig"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "generics",
+      "moduleId": "the-type-system",
+      "title": "Generics",
+      "objective": "Read a generic signature, predict the type argument TypeScript infers, and constrain a type parameter so only valid arguments are accepted.",
+      "prerequisiteLessonIds": [
+        "unions-and-narrowing"
+      ],
+      "concepts": [
+        {
+          "id": "type-parameter",
+          "title": "Type parameter",
+          "summary": "A placeholder such as T that the compiler fills in from the call, so one function can relate its input and output types."
+        },
+        {
+          "id": "inference-from-call",
+          "title": "Inference from the call",
+          "summary": "The type argument is usually inferred from the arguments, and written explicitly only when inference cannot decide."
+        },
+        {
+          "id": "constraint",
+          "title": "Constraint",
+          "summary": "T extends Shape limits the argument to types with that shape, and lets the body use those members."
+        },
+        {
+          "id": "generic-containers",
+          "title": "Generic containers",
+          "summary": "Array<T>, Promise<T> and Map<K, V> are ordinary types that carry other types."
+        }
+      ],
+      "skills": [
+        "infer-type-argument",
+        "apply-constraint",
+        "read-promise-type"
+      ],
+      "misconceptions": [
+        "Learners think generics are just any. any loses the relationship between input and output, while T keeps it.",
+        "Learners think the type parameter exists at run time. It is erased with every other type.",
+        "Learners over-constrain or over-annotate. Let the call decide, and add extends only when the body needs members."
+      ],
+      "sequence": [
+        "function first<T>(xs: T[]): T | undefined and the types of first([1, 2]) and first([]).",
+        "function longest<T extends { length: number }>(a: T, b: T) and why longest(1, 2) fails.",
+        "async function load(): Promise<number> and the type of await load().",
+        "id<T>(x: T): T with id(5) giving the literal type 5."
+      ],
+      "examples": [
+        "first([1, 2]) has type number | undefined; first([]) has type undefined; first(['a', 1]) has type string | number | undefined (TypeScript 5.6).",
+        "longest(1, 2) reports TS2345: Argument of type 'number' is not assignable to parameter of type '{ length: number; }'.",
+        "async function load(): Promise<number> returns Promise<number>, and await load() has type number."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A function box with an input pipe labelled T and an output pipe labelled T | undefined; calls with different arguments colour T in.",
+          "learnerAction": "Pick an argument and read the filled-in signature.",
+          "placement": "type-parameter"
+        },
+        {
+          "type": "table",
+          "shows": "Calls (rows, different from the questions) against the inferred type argument and result type, hidden until chosen.",
+          "learnerAction": "Predict then reveal.",
+          "placement": "inference-from-call"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "single-term",
+          "targets": "infer-type-argument",
+          "sample": "function first<T>(xs: T[]): T | undefined { return xs[0]; }\nconst a = first([1, 2]);\nWhat is the type of a?",
+          "answer": "number | undefined"
+        },
+        {
+          "kind": "choice",
+          "targets": "apply-constraint",
+          "sample": "function longest<T extends { length: number }>(a: T, b: T) { return a.length >= b.length ? a : b; }\nWhich call is a compile error?",
+          "answer": "longest(1, 2)",
+          "choices": [
+            "longest(\"ab\", \"c\")",
+            "longest([1], [2, 3])",
+            "longest(1, 2)",
+            "longest({ length: 2 }, { length: 5 })"
+          ]
+        },
+        {
+          "kind": "single-term",
+          "targets": "read-promise-type",
+          "sample": "async function load(): Promise<number> { return 1; }\nasync function main() { const v = await load(); }\nWhat is the type of v?",
+          "answer": "number"
+        }
+      ],
+      "sourceIds": [
+        "ts-handbook"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "transforming-types",
+      "moduleId": "the-type-system",
+      "title": "Transforming types",
+      "objective": "Use keyof, indexed access and the common utility types to derive one type from another, and predict what each accepts.",
+      "prerequisiteLessonIds": [
+        "generics"
+      ],
+      "concepts": [
+        {
+          "id": "keyof",
+          "title": "keyof and typeof",
+          "summary": "keyof T is the union of T's property names, and typeof x takes the type of a value."
+        },
+        {
+          "id": "indexed-access",
+          "title": "Indexed access",
+          "summary": "T['name'] is the type of that property, and typeof arr[number] is the element type of an array type."
+        },
+        {
+          "id": "utility-types",
+          "title": "Utility types",
+          "summary": "Partial, Required, Readonly, Pick, Omit and Record build new object types from existing ones."
+        },
+        {
+          "id": "single-source",
+          "title": "One source of truth",
+          "summary": "Deriving types from a value or a base type keeps them from drifting apart."
+        }
+      ],
+      "skills": [
+        "read-derived-type",
+        "choose-utility",
+        "derive-from-value"
+      ],
+      "misconceptions": [
+        "Learners rewrite near-identical interfaces by hand. Derived types change when the base changes.",
+        "Learners think Partial deep-copies optionality. It makes top-level properties optional only.",
+        "Learners think Omit checks its keys. Omit<T, 'typo'> compiles, so Pick with keyof is safer when keys must exist."
+      ],
+      "sequence": [
+        "Take type U = { id: number; name: string; email?: string } and apply Partial, Required, Pick and Omit.",
+        "keyof U and a variable of that type given 'phone'.",
+        "const Color = { Red: 'red', Blue: 'blue' } as const, then type Color = typeof Color[keyof typeof Color].",
+        "Record<'x' | 'y', number> needs both keys."
+      ],
+      "examples": [
+        "With U = { id: number; name: string; email?: string }, Required<U> demands email and const b: Required<U> = { id: 1, name: \"a\" } reports TS2741: Property 'email' is missing.",
+        "const c: Pick<U, \"id\"> = { id: 1, name: \"z\" } reports TS2353 because name is not in the picked type; Omit<U, \"id\"> is { name: string; email?: string }.",
+        "const Color = { Red: \"red\", Blue: \"blue\" } as const; type Color = typeof Color[keyof typeof Color] is \"red\" | \"blue\", so const d: Color = \"green\" is an error."
+      ],
+      "figures": [
+        {
+          "type": "table",
+          "shows": "A type-transformer board: a base interface, a transformer chosen from a list and the resulting property list with optional and readonly marks.",
+          "learnerAction": "Choose a transformer and read the result.",
+          "placement": "utility-types"
+        },
+        {
+          "type": "diagram_choice",
+          "shows": "Four needs (all fields optional for a patch, only id and name, everything but id, a map from ids to numbers) each with candidate utility types.",
+          "learnerAction": "Match the need to the type.",
+          "placement": "choose-utility"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "choice",
+          "targets": "choose-utility",
+          "sample": "Which type describes the body of a PATCH request where every field of User may be sent or omitted?",
+          "answer": "Partial<User>",
+          "choices": [
+            "Partial<User>",
+            "Required<User>",
+            "Readonly<User>",
+            "Pick<User, keyof User>"
+          ]
+        },
+        {
+          "kind": "single-term",
+          "targets": "read-derived-type",
+          "sample": "type U = { id: number; name: string; email?: string };\ntype K = keyof U;\nWhat is K? Write the union with | and double quotes.",
+          "answer": "\"id\" | \"name\" | \"email\""
+        },
+        {
+          "kind": "single-term",
+          "targets": "derive-from-value",
+          "sample": "const Color = { Red: \"red\", Blue: \"blue\" } as const;\ntype C = typeof Color[keyof typeof Color];\nWhat is C?",
+          "answer": "\"red\" | \"blue\""
+        }
+      ],
+      "sourceIds": [
+        "ts-handbook"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "types-at-the-edges",
+      "moduleId": "the-type-system",
+      "title": "Types at the edges",
+      "objective": "Explain why data from outside is untyped, choose unknown over any, and read assertions, noUncheckedIndexedAccess and satisfies correctly.",
+      "prerequisiteLessonIds": [
+        "transforming-types"
+      ],
+      "concepts": [
+        {
+          "id": "any-vs-unknown",
+          "title": "any and unknown",
+          "summary": "any switches checking off for a value, while unknown accepts anything but demands narrowing before use."
+        },
+        {
+          "id": "assertion",
+          "title": "Type assertion",
+          "summary": "value as T tells the checker to trust you, adds no run-time check and is rejected only when the types cannot overlap."
+        },
+        {
+          "id": "unchecked-index",
+          "title": "Unchecked index access",
+          "summary": "Without noUncheckedIndexedAccess, xs[0] has type number even when the array may be empty."
+        },
+        {
+          "id": "validate-at-boundary",
+          "title": "Validate at the boundary",
+          "summary": "JSON.parse returns any, so input is parsed into unknown and checked by a guard or a schema library before it is typed."
+        }
+      ],
+      "skills": [
+        "choose-unknown",
+        "predict-index-type",
+        "read-satisfies"
+      ],
+      "misconceptions": [
+        "Learners think JSON.parse returns the shape they expect. It returns any, so a wrong cast hides the bug until run time.",
+        "Learners use as to convert. It never converts a value; it only changes what the checker believes.",
+        "Learners think strict mode checks array bounds. Only noUncheckedIndexedAccess adds undefined to index reads."
+      ],
+      "sequence": [
+        "const j = JSON.parse('{}'); j.anything.at.all compiles; replace with unknown and the same line fails.",
+        "'5' as number is rejected, '5' as unknown as number is accepted and still a string at run time.",
+        "xs[0] on number[] under default and under noUncheckedIndexedAccess.",
+        "satisfies: const cfg = { port: 3000 } satisfies { port: number | string } keeps port as number, but the annotation widens it."
+      ],
+      "examples": [
+        "JSON.parse('{}') is typed any, so const n: number = j.anything.at.all compiles; with unknown it is TS18046.",
+        "const t = \"5\" as number reports TS2352 (neither type sufficiently overlaps); \"5\" as unknown as number compiles and the value is still the string \"5\".",
+        "With noUncheckedIndexedAccess, const xs: number[] = []; const x0 = xs[0]; has type number | undefined; without the flag it is number.",
+        "const cfg = { port: 3000, host: \"x\" } satisfies { port: number | string; host: string } keeps cfg.port as number, while const cfg2: { port: number | string } = { port: 3000 } gives cfg2.port the type string | number."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A boundary diagram: untyped data (network, file, JSON) crossing into typed code through a validator, with the 'as' shortcut drawn as a dashed bypass labelled 'no check'. Views: validated, asserted.",
+          "learnerAction": "Send a bad payload through each route and see where it fails.",
+          "placement": "validate-at-boundary"
+        },
+        {
+          "type": "table",
+          "shows": "A short list of expressions (rows, not the same as the questions) and the type with and without noUncheckedIndexedAccess.",
+          "learnerAction": "Predict both columns then reveal.",
+          "placement": "unchecked-index"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "choice",
+          "targets": "choose-unknown",
+          "sample": "const input: unknown = JSON.parse(text);\nWhich line is accepted by the compiler?",
+          "answer": "if (typeof input === \"string\") input.trim();",
+          "choices": [
+            "input.trim();",
+            "if (typeof input === \"string\") input.trim();",
+            "input.length;",
+            "const n: number = input;"
+          ]
+        },
+        {
+          "kind": "single-term",
+          "targets": "predict-index-type",
+          "sample": "With strict and noUncheckedIndexedAccess on:\nconst xs: number[] = [];\nconst x0 = xs[0];\nWhat is the type of x0?",
+          "answer": "number | undefined"
+        },
+        {
+          "kind": "single-term",
+          "targets": "read-satisfies",
+          "sample": "const cfg = { port: 3000, host: \"x\" } satisfies { port: number | string; host: string };\nWhat is the type of cfg.port?",
+          "answer": "number"
+        }
+      ],
+      "sourceIds": [
+        "ts-handbook",
+        "ts-tsconfig"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "what-node-is",
+      "moduleId": "node-runtime",
+      "title": "What Node is",
+      "objective": "Describe what Node adds to the JavaScript engine, choose between ES modules and CommonJS, and read configuration from environment variables safely.",
+      "prerequisiteLessonIds": [
+        "what-types-are-for"
+      ],
+      "concepts": [
+        {
+          "id": "runtime",
+          "title": "Runtime",
+          "summary": "Node packages the V8 engine with libuv's event loop, file and network APIs and a module system, so JavaScript can run outside a browser."
+        },
+        {
+          "id": "esm-cjs",
+          "title": "ES modules and CommonJS",
+          "summary": "import/export modules are the standard, require/module.exports is the older system, and package.json type or the file extension selects which one a file is."
+        },
+        {
+          "id": "node-prefix",
+          "title": "Built-in modules",
+          "summary": "Built-ins such as fs and http are imported with the node: prefix, which marks them as part of the runtime rather than a package."
+        },
+        {
+          "id": "process-env",
+          "title": "process.env",
+          "summary": "Environment variables arrive as strings or undefined, so numbers and booleans must be parsed."
+        }
+      ],
+      "skills": [
+        "pick-module-system",
+        "parse-env",
+        "know-the-globals"
+      ],
+      "misconceptions": [
+        "Learners think Node and the browser share all globals. Node has no window or document, and the browser has no fs.",
+        "Learners think process.env values keep their type. Assigning 5 stores the string '5', and a missing variable is undefined.",
+        "Learners expect __dirname in every file. It exists in CommonJS only; in ESM use import.meta.dirname."
+      ],
+      "sequence": [
+        "List what a browser gives JavaScript and what Node gives it instead.",
+        "A file with import and a package.json with type: module versus a .cjs file.",
+        "process.env.N = 5 then typeof process.env.N, and Number(process.env.PORT ?? 3000).",
+        "import { readFile } from 'node:fs/promises'."
+      ],
+      "examples": [
+        "process.env.N = 5; typeof process.env.N is 'string'; Number(process.env.NOPE ?? 3000) is 3000; Number(undefined) is NaN (Node 22).",
+        "In an ES module typeof __dirname is 'undefined' and typeof require is 'undefined'; in CommonJS they are 'string' and 'function'.",
+        "import.meta.dirname and import.meta.filename are available in ES modules from Node 20.11 and 21.2; the sandbox ran Node 22."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A layered diagram: your code, Node APIs (fs, http, timers), V8 and libuv, operating system. A second view swaps the Node layer for the browser's DOM and fetch.",
+          "learnerAction": "Toggle runtimes and see which APIs exist in each.",
+          "placement": "runtime"
+        },
+        {
+          "type": "table",
+          "shows": "Two columns, CommonJS and ES modules, with rows for syntax, __dirname, top-level await and how Node chooses the format.",
+          "learnerAction": "Fill each cell by choosing.",
+          "placement": "esm-cjs"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "code-reading",
+          "targets": "parse-env",
+          "sample": "process.env.N = 5;\nconsole.log(typeof process.env.N);\nWhat is printed?",
+          "answer": "string"
+        },
+        {
+          "kind": "code-reading",
+          "targets": "parse-env",
+          "sample": "// PORT is not set\nconsole.log(Number(process.env.PORT ?? 3000));\nWhat is printed?",
+          "answer": "3000"
+        },
+        {
+          "kind": "choice",
+          "targets": "pick-module-system",
+          "sample": "In a file run as an ES module, what is typeof __dirname?",
+          "answer": "'undefined'",
+          "choices": [
+            "'string'",
+            "'undefined'",
+            "'function'",
+            "a ReferenceError is thrown"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "node-api",
+        "node-modules",
+        "ts-handbook"
+      ],
+      "historyNotes": [
+        "Ryan Dahl introduced Node.js in 2009. Confirm before printing."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "the-node-event-loop",
+      "moduleId": "node-runtime",
+      "title": "The Node event loop",
+      "objective": "Predict the order of synchronous code, process.nextTick, promises, timers and setImmediate, and explain why blocking the loop stalls everything.",
+      "prerequisiteLessonIds": [
+        "what-node-is"
+      ],
+      "concepts": [
+        {
+          "id": "single-thread",
+          "title": "One thread of JavaScript",
+          "summary": "Your code runs on one thread, so any long synchronous task delays every other callback."
+        },
+        {
+          "id": "tick-and-microtask",
+          "title": "nextTick and promises",
+          "summary": "process.nextTick callbacks run first after the current operation, then promise callbacks, and both run before the loop moves on."
+        },
+        {
+          "id": "timers-immediate",
+          "title": "Timers and setImmediate",
+          "summary": "Inside an I/O callback setImmediate always runs before a zero-delay timer, while from the main module the order is not guaranteed."
+        },
+        {
+          "id": "offloading",
+          "title": "Offloading work",
+          "summary": "I/O is performed outside the JavaScript thread, and CPU-heavy work belongs in worker threads or another process."
+        }
+      ],
+      "skills": [
+        "order-node-callbacks",
+        "spot-blocking",
+        "choose-offload"
+      ],
+      "misconceptions": [
+        "Learners think async means parallel JavaScript. Callbacks still run one at a time on a single thread.",
+        "Learners expect setTimeout(0) before setImmediate always. From the main module the order depends on timing, and only inside I/O is it fixed.",
+        "Learners think a loop of await calls is non-blocking, then run a CPU-heavy loop on the main thread and freeze the server."
+      ],
+      "sequence": [
+        "Sketch the loop phases: timers, I/O callbacks, poll, check (setImmediate), close.",
+        "A CommonJS file with sync, nextTick, promise, timeout and immediate logs.",
+        "The same four calls inside an fs.readFile callback.",
+        "A while loop that spins for a second and delays a timer.",
+        "When to choose a worker thread."
+      ],
+      "examples": [
+        "In a CommonJS script, console.log('sync'); process.nextTick(...'tick'); Promise.resolve().then(...'promise') prints sync, tick, promise (Node 22).",
+        "Inside fs.readFile(__filename, cb), logging tick, promise, setImmediate and setTimeout 0 prints tick, promise, immediate, timeout in that order.",
+        "In an ES module the promise callback runs before the nextTick callback, because module evaluation itself runs inside a promise job (checked in Node 22)."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "The Node loop as a ring of phases (timers, poll, check, close) with side lanes for the nextTick queue and the promise queue and a step button. Views: main module, inside an I/O callback.",
+          "learnerAction": "Step and read what runs next.",
+          "placement": "tick-and-microtask and timers-immediate"
+        },
+        {
+          "type": "order_sequence",
+          "shows": "Five log lines from a script with nextTick, promise, timeout and immediate to place in order.",
+          "learnerAction": "Drag into order before stepping.",
+          "placement": "order-node-callbacks"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "code-reading",
+          "targets": "order-node-callbacks",
+          "sample": "CommonJS file:\nsetTimeout(() => console.log('timeout'), 0);\nprocess.nextTick(() => console.log('tick'));\nPromise.resolve().then(() => console.log('promise'));\nconsole.log('sync');\nWhat are the first three lines printed?",
+          "answer": "sync, tick, promise"
+        },
+        {
+          "kind": "choice",
+          "targets": "order-node-callbacks",
+          "sample": "Inside an fs.readFile callback you call setTimeout(f, 0) and setImmediate(g). Which runs first?",
+          "answer": "g, the setImmediate callback",
+          "choices": [
+            "f, the timer",
+            "g, the setImmediate callback",
+            "Either, it is random",
+            "Neither runs"
+          ]
+        },
+        {
+          "kind": "choice",
+          "targets": "choose-offload",
+          "sample": "A request handler hashes a 200 MB file with a long synchronous loop and other requests stall. What is the best fix?",
+          "answer": "Move the work to a worker thread or a separate process.",
+          "choices": [
+            "Wrap the loop in async/await.",
+            "Move the work to a worker thread or a separate process.",
+            "Use setTimeout(0) inside the loop body.",
+            "Add more await keywords."
+          ]
+        }
+      ],
+      "sourceIds": [
+        "node-learn",
+        "node-api",
+        "mdn-promise"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "files-streams-and-buffers",
+      "moduleId": "node-runtime",
+      "title": "Files, streams and buffers",
+      "objective": "Count the bytes in a string under UTF-8, convert between hex, base64 and text, and say when a stream's write signals backpressure.",
+      "prerequisiteLessonIds": [
+        "the-node-event-loop"
+      ],
+      "concepts": [
+        {
+          "id": "buffer",
+          "title": "Buffer",
+          "summary": "A Buffer is a fixed-size block of bytes, and text becomes bytes through an encoding such as UTF-8."
+        },
+        {
+          "id": "utf8-length",
+          "title": "Characters versus bytes",
+          "summary": "A string's length counts UTF-16 code units while its UTF-8 size counts bytes, and the two differ for non-ASCII text."
+        },
+        {
+          "id": "stream",
+          "title": "Stream",
+          "summary": "A stream moves data in chunks, so a large file can be processed without holding all of it in memory."
+        },
+        {
+          "id": "backpressure",
+          "title": "Backpressure",
+          "summary": "write() returns false when the internal buffer reaches the high-water mark, and the producer should wait for drain."
+        }
+      ],
+      "skills": [
+        "count-bytes",
+        "convert-encodings",
+        "read-backpressure"
+      ],
+      "misconceptions": [
+        "Learners think length is the byte size. 'héllo'.length is 5 while its UTF-8 size is 6.",
+        "Learners think readFile is fine for any file. It loads the whole file into memory, which breaks for large inputs.",
+        "Learners ignore the return value of write(). Ignoring it lets memory grow without limit when the consumer is slower."
+      ],
+      "sequence": [
+        "Count bytes: 'hello' versus 'héllo', '€' and an emoji.",
+        "Convert 'hi' to hex and base64 and back.",
+        "Compare readFile of a 4 GB file with a read stream piped through a transform.",
+        "Writable with highWaterMark 10: write 5 bytes, 5 bytes, 1 byte and read each return value.",
+        "pipeline() from node:stream/promises handles errors and backpressure."
+      ],
+      "examples": [
+        "Buffer.byteLength('héllo') is 6 while 'héllo'.length is 5; '€' has length 1 and 3 bytes; '😀' has length 2 and 4 bytes.",
+        "Buffer.from('hi').toString('hex') is '6869' and toString('base64') is 'aGk='; Buffer.from('aGk=', 'base64').toString() is 'hi'.",
+        "A Writable with highWaterMark 10 and a slow consumer returns true, false, false for writes of 5, 5 and 1 bytes. In Node 22 the default highWaterMark for byte streams is 65536."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A pipe diagram: file, read stream, transform, write stream, each with a fill gauge and a highWaterMark line. Views: fast consumer, slow consumer.",
+          "learnerAction": "Start the flow and watch the gauge reach the line and pause.",
+          "placement": "backpressure"
+        },
+        {
+          "type": "table",
+          "shows": "Strings (rows) with columns for length, UTF-8 bytes and hex, hidden until the learner enters an estimate; strings differ from the questions.",
+          "learnerAction": "Estimate then reveal.",
+          "placement": "utf8-length"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "count-bytes",
+          "sample": "How many bytes is the string 'héllo' in UTF-8? (Buffer.byteLength)",
+          "answer": "6"
+        },
+        {
+          "kind": "code-reading",
+          "targets": "convert-encodings",
+          "sample": "console.log(Buffer.from('hi').toString('base64'));\nWhat is printed?",
+          "answer": "aGk="
+        },
+        {
+          "kind": "code-reading",
+          "targets": "read-backpressure",
+          "sample": "const w = new Writable({ highWaterMark: 10, write(c, e, cb) { setImmediate(cb); } });\nconsole.log(w.write('12345'), w.write('67890'), w.write('x'));\nWhat is printed?",
+          "answer": "true false false"
+        }
+      ],
+      "sourceIds": [
+        "node-stream",
+        "node-api"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "serving-http",
+      "moduleId": "node-runtime",
+      "title": "Serving HTTP",
+      "objective": "Read a Node HTTP handler and predict the status, headers and body it sends, including routing from req.url and what happens when a response is never ended.",
+      "prerequisiteLessonIds": [
+        "files-streams-and-buffers"
+      ],
+      "concepts": [
+        {
+          "id": "request-response",
+          "title": "Request and response objects",
+          "summary": "A handler receives the request (method, url, headers, a body stream) and writes a status, headers and body to the response."
+        },
+        {
+          "id": "routing",
+          "title": "Routing",
+          "summary": "A router chooses a handler from the method and path, and req.url includes the query string unless it is parsed with URL."
+        },
+        {
+          "id": "response-contract",
+          "title": "The response contract",
+          "summary": "A handler must set a status, a content-type and end the response, or the client waits until it times out."
+        },
+        {
+          "id": "body-parsing",
+          "title": "Reading a body",
+          "summary": "A request body arrives as chunks of bytes, which are collected, decoded and parsed, and bad JSON should return 400."
+        }
+      ],
+      "skills": [
+        "route-a-request",
+        "pick-status",
+        "find-missing-end"
+      ],
+      "misconceptions": [
+        "Learners route on req.url directly. It contains the query string, so '/users/42?x=1' does not equal '/users/42'.",
+        "Learners think the status defaults to something helpful. It is 200 unless set, which makes a missing resource look like success.",
+        "Learners think a handler that returns finishes the response. The response ends only when res.end() runs."
+      ],
+      "sequence": [
+        "Parse new URL('/users/42?x=1', 'http://localhost') and read pathname and searchParams.",
+        "Choose 404 for a missing user, 400 for malformed JSON, 405 with an Allow header for a wrong method, 201 for creation.",
+        "A handler that writes a header but never calls res.end().",
+        "Set Content-Type: application/json and send JSON.stringify output."
+      ],
+      "examples": [
+        "new URL('/users/42?x=1','http://localhost').pathname is '/users/42' and its split('/') is ['', 'users', '42']; req.url split('/') leaves '42?x=1' as the last piece.",
+        "A POST that creates a user returns 201 and a Location header; malformed JSON returns 400; a user that does not exist returns 404; DELETE on a route that only allows GET returns 405.",
+        "res.statusCode is 200 until set."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A request-to-response diagram with a handler box in the middle, the raw request on the left and the response on the right, with a router table beneath. Views: happy path, missing end().",
+          "learnerAction": "Pick a request and follow it through the router.",
+          "placement": "routing and response-contract"
+        },
+        {
+          "type": "diagram_choice",
+          "shows": "Six scenarios (created, bad JSON, missing, wrong method, server fault, unauthenticated) with a choice of status code.",
+          "learnerAction": "Choose the status for each.",
+          "placement": "pick-status"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "code-reading",
+          "targets": "route-a-request",
+          "sample": "const url = new URL(req.url, 'http://localhost');\nconst parts = url.pathname.split('/');\nIf req.url is '/users/42?x=1', what is parts[2]?",
+          "answer": "42"
+        },
+        {
+          "kind": "single-term",
+          "targets": "pick-status",
+          "sample": "Which status code should a server return when a client POSTs a body that is not valid JSON? Give the number.",
+          "answer": "400"
+        },
+        {
+          "kind": "choice",
+          "targets": "find-missing-end",
+          "sample": "A handler calls res.writeHead(200, {'Content-Type': 'text/plain'}) and res.write('ok') but never calls res.end(). What does the client see?",
+          "answer": "The connection stays open until a timeout.",
+          "choices": [
+            "The full response 'ok' immediately.",
+            "The connection stays open until a timeout.",
+            "A 500 error from Node.",
+            "An empty 204 response."
+          ]
+        }
+      ],
+      "sourceIds": [
+        "node-http",
+        "node-api",
+        "ts-handbook"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "errors-and-concurrency",
+      "moduleId": "node-runtime",
+      "title": "Errors and concurrency",
+      "objective": "Predict how Promise.all, allSettled, race and forEach with async behave, and what an unhandled rejection does to a Node process.",
+      "prerequisiteLessonIds": [
+        "serving-http"
+      ],
+      "concepts": [
+        {
+          "id": "promise-combinators",
+          "title": "Promise combinators",
+          "summary": "Promise.all rejects on the first rejection, allSettled always reports every outcome, race settles with the first to settle and any with the first to fulfil."
+        },
+        {
+          "id": "sequential-parallel",
+          "title": "Sequential and parallel awaits",
+          "summary": "await in a for loop runs tasks one after another, while Promise.all over started promises runs them together."
+        },
+        {
+          "id": "unhandled-rejection",
+          "title": "Unhandled rejections",
+          "summary": "Since Node 15 a rejection nobody handles terminates the process with a non-zero exit code by default."
+        },
+        {
+          "id": "abort",
+          "title": "Cancellation",
+          "summary": "An AbortController signal passed to an API lets the caller cancel the work, which rejects with an AbortError."
+        }
+      ],
+      "skills": [
+        "predict-combinator",
+        "time-the-awaits",
+        "trace-foreach-async"
+      ],
+      "misconceptions": [
+        "Learners think forEach(async ...) waits for the callbacks. It ignores the returned promises, so code after it runs first.",
+        "Learners think try/catch around a missing await catches the error. The rejection escapes because the promise is not awaited.",
+        "Learners think Promise.all cancels the other tasks when one rejects. They keep running; only the result is lost."
+      ],
+      "sequence": [
+        "Three promises, one rejecting: Promise.all and allSettled results.",
+        "Three tasks of 50 ms each awaited in a loop and with Promise.all.",
+        "[1,2,3].forEach(async n => { await null; out.push(n) }) and out.length straight afterwards.",
+        "Promise.reject(new Error('x')) at the top level and the exit code."
+      ],
+      "examples": [
+        "Promise.all([Promise.resolve(1), Promise.reject(new Error('boom')), slow]) rejects with 'boom'; allSettled gives statuses fulfilled and rejected (checked in Node 22).",
+        "Three 50 ms timers awaited one after another take about 150 ms; started together under Promise.all they take about 50 ms.",
+        "node -e \"Promise.reject(new Error('x'))\" exits with code 1; with a process.on('unhandledRejection') handler it exits 0."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A timeline with three bars: sequential (end to end), parallel (stacked) and a failed Promise.all where the others continue greyed. Views: sequential, parallel, rejection.",
+          "learnerAction": "Switch views and read the total time.",
+          "placement": "sequential-parallel"
+        },
+        {
+          "type": "order_sequence",
+          "shows": "Output lines of a snippet that mixes forEach(async) and await, to place in order.",
+          "learnerAction": "Drag into order.",
+          "placement": "trace-foreach-async"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "time-the-awaits",
+          "sample": "Three independent tasks each take 50 ms. They are awaited one after another in a for loop. Ignoring overhead, how many ms until all finish?",
+          "answer": "150"
+        },
+        {
+          "kind": "numeric",
+          "targets": "time-the-awaits",
+          "sample": "The same three 50 ms tasks are started together and awaited with Promise.all. Ignoring overhead, how many ms until all finish?",
+          "answer": "50"
+        },
+        {
+          "kind": "code-reading",
+          "targets": "trace-foreach-async",
+          "sample": "const out = [];\n[1, 2, 3].forEach(async n => { await null; out.push(n); });\nconsole.log(out.length);\nWhat is printed?",
+          "answer": "0"
+        }
+      ],
+      "sourceIds": [
+        "mdn-promise",
+        "node-api"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "packages-versions-and-tests",
+      "moduleId": "building-services",
+      "title": "Packages, versions and tests",
+      "objective": "Read a semver range and say which versions it accepts, explain what a lockfile fixes, and read a node:test file.",
+      "prerequisiteLessonIds": [
+        "errors-and-concurrency"
+      ],
+      "concepts": [
+        {
+          "id": "semver",
+          "title": "Semantic versioning",
+          "summary": "MAJOR.MINOR.PATCH, where a major bump may break callers, a minor bump adds backwards-compatible features and a patch bump fixes bugs."
+        },
+        {
+          "id": "range-operators",
+          "title": "Range operators",
+          "summary": "^1.2.3 accepts 1.2.3 up to but not including 2.0.0, ~1.2.3 accepts up to but not including 1.3.0, and below 1.0.0 the caret is stricter."
+        },
+        {
+          "id": "lockfile",
+          "title": "Lockfile",
+          "summary": "package-lock.json records the exact version of every dependency, and npm ci installs exactly that."
+        },
+        {
+          "id": "node-test",
+          "title": "The built-in test runner",
+          "summary": "node --test runs files that use node:test and node:assert, with describe/it blocks and strictEqual for comparisons."
+        }
+      ],
+      "skills": [
+        "match-semver-range",
+        "compare-versions",
+        "read-a-test"
+      ],
+      "misconceptions": [
+        "Learners compare versions as strings or decimals. 1.10.0 is greater than 1.9.0 though '1.10.0' < '1.9.0' as text.",
+        "Learners think ^ means any newer version. It stops at the next major, and below 1.0.0 it stops at the next minor or patch.",
+        "Learners delete the lockfile to fix errors. It is what makes installs repeatable."
+      ],
+      "sequence": [
+        "Check the range ^1.2.3 against 1.9.0, 2.0.0 and 1.2.3-beta.1.",
+        "Check ~1.2.3, ^0.2.3 and ^0.0.3 against the next candidate versions.",
+        "Bump 1.4.2 by minor, major and patch.",
+        "A node:test file with describe, it, assert.strictEqual and a deliberately failing case.",
+        "Run npm ci versus npm install."
+      ],
+      "examples": [
+        "^1.2.3 accepts 1.9.0 and rejects 2.0.0; ~1.2.3 accepts 1.2.9 and rejects 1.3.0; ^0.2.3 accepts 0.2.9 and rejects 0.3.0; ^0.0.3 rejects 0.0.4 (checked with the semver package).",
+        "^1.2.3 does not accept the prerelease 1.2.3-beta.1; the minor bump of 1.4.2 is 1.5.0 and the major bump is 2.0.0.",
+        "semver.gt('1.10.0','1.9.0') is true while the string comparison '1.10.0' > '1.9.0' is false."
+      ],
+      "figures": [
+        {
+          "type": "table",
+          "shows": "Version lines (1.2.3 to 3.0.0) against range operators, each cell tick or cross, for the learner to fill in (versions differ from the questions).",
+          "learnerAction": "Complete the grid.",
+          "placement": "range-operators"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A dependency tree with locked versions on each node and a banner for 'npm install' versus 'npm ci'.",
+          "learnerAction": "Toggle the command and see whether versions can change.",
+          "placement": "lockfile"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "choice",
+          "targets": "match-semver-range",
+          "sample": "Which version does the range ^1.2.3 accept?",
+          "answer": "1.9.0",
+          "choices": [
+            "2.0.0",
+            "1.9.0",
+            "1.2.2",
+            "1.2.3-beta.1"
+          ]
+        },
+        {
+          "kind": "choice",
+          "targets": "match-semver-range",
+          "sample": "Which version does the range ^0.2.3 accept?",
+          "answer": "0.2.9",
+          "choices": [
+            "0.3.0",
+            "0.2.2",
+            "0.2.9",
+            "1.0.0"
+          ]
+        },
+        {
+          "kind": "single-term",
+          "targets": "compare-versions",
+          "sample": "What is the next minor version after 1.4.2? Give it as MAJOR.MINOR.PATCH.",
+          "answer": "1.5.0"
+        }
+      ],
+      "sourceIds": [
+        "semver-spec",
+        "npm-docs",
+        "node-test"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "a-typed-service",
+      "moduleId": "building-services",
+      "title": "A typed service",
+      "objective": "Design a small HTTP service that parses its configuration and every request body into typed values, fails fast on bad input and shuts down cleanly.",
+      "prerequisiteLessonIds": [
+        "packages-versions-and-tests",
+        "types-at-the-edges"
+      ],
+      "concepts": [
+        {
+          "id": "config-at-startup",
+          "title": "Configuration at startup",
+          "summary": "Read and validate environment variables once at startup, so a missing variable fails the process immediately instead of a request later."
+        },
+        {
+          "id": "parse-dont-assume",
+          "title": "Parse, don't assume",
+          "summary": "Turn unknown input into a typed value in one place, returning a result or an error, so the rest of the code sees only valid data."
+        },
+        {
+          "id": "graceful-shutdown",
+          "title": "Graceful shutdown",
+          "summary": "On SIGTERM stop accepting connections, finish in-flight requests, close resources and exit."
+        },
+        {
+          "id": "observability",
+          "title": "Logs and health",
+          "summary": "Structured logs with a request id and a health endpoint make a service operable."
+        }
+      ],
+      "skills": [
+        "order-shutdown",
+        "place-validation",
+        "type-a-parser"
+      ],
+      "misconceptions": [
+        "Learners validate inside each handler. Validation belongs at the boundary so every handler receives typed data.",
+        "Learners call process.exit() in the signal handler. That drops in-flight requests; server.close() lets them finish.",
+        "Learners cast req.body as User. The cast checks nothing, so a malformed body reaches the database."
+      ],
+      "sequence": [
+        "A config module that returns a typed object or throws with every missing key.",
+        "A parseCreateUser(input: unknown) function returning { ok: true, value } or { ok: false, error }.",
+        "A discriminated Result type and a handler that narrows on ok.",
+        "The shutdown order: stop listening, wait for in-flight work, close the database, exit 0.",
+        "A node:test file that checks the parser with good and bad input."
+      ],
+      "examples": [
+        "type Result<T> = { ok: true; value: T } | { ok: false; error: string } lets a handler narrow with if (!r.ok) return 400.",
+        "Shutdown order for a service with a database: server.close(), wait for in-flight requests, close the pool, exit 0.",
+        "Config read once: const port = Number(process.env.PORT ?? 3000) and a check that Number.isInteger(port)."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A service diagram: config loader, router, validator, handler, database, with arrows for the happy path and a bad payload stopped at the validator. A second view shows the SIGTERM shutdown sequence.",
+          "learnerAction": "Send a bad payload and a SIGTERM and watch each path.",
+          "placement": "parse-dont-assume and graceful-shutdown"
+        },
+        {
+          "type": "order_sequence",
+          "shows": "Five shutdown steps to place in order.",
+          "learnerAction": "Drag into order.",
+          "placement": "graceful-shutdown"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "choice",
+          "targets": "place-validation",
+          "sample": "Where should request-body validation happen so every handler receives typed data?",
+          "answer": "At the boundary, once, before the handler runs",
+          "choices": [
+            "Inside each handler after its first query",
+            "At the boundary, once, before the handler runs",
+            "Only in the database constraints",
+            "Nowhere; TypeScript types are enough"
+          ]
+        },
+        {
+          "kind": "choice",
+          "targets": "order-shutdown",
+          "sample": "Which is the correct order for a graceful SIGTERM shutdown?",
+          "answer": "Stop accepting connections, wait for in-flight requests, close the database pool, exit 0",
+          "choices": [
+            "Close the database pool, stop accepting connections, wait for requests, exit 0",
+            "Stop accepting connections, wait for in-flight requests, close the database pool, exit 0",
+            "Exit 0, then close the database pool",
+            "Wait for in-flight requests, exit 0, stop accepting connections"
+          ]
+        },
+        {
+          "kind": "choice",
+          "targets": "type-a-parser",
+          "sample": "Which return type forces the caller to handle failure?",
+          "answer": "{ ok: true; value: T } | { ok: false; error: string }",
+          "choices": [
+            "T",
+            "T | any",
+            "{ ok: true; value: T } | { ok: false; error: string }",
+            "unknown"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "node-http",
+        "node-api",
+        "ts-handbook",
+        "node-test"
+      ],
+      "estimatedMinutes": 13
+    }
+  ],
+  "courseCheck": "A mixed check of: what is erased at compile time; inferred types for declarations; assignability of shapes; narrowing in a union; generic inference; utility and keyof types; any versus unknown and noUncheckedIndexedAccess; process.env and module differences; Node callback ordering; UTF-8 byte counts and backpressure; HTTP routing and status codes; Promise combinators and timing; semver ranges; and shutdown ordering. Items are choices, single terms or the printed output of a short snippet.",
+  "platformNeeds": [
+    "A sandboxed JavaScript and Node runner (no network, time limit, console capture) for code-run-javascript questions, plus a TypeScript runner that returns the compiler's diagnostics so a learner can type a fix and see whether it compiles. Until then every question is code-reading.",
+    "A type_playground figure that shows the type of a hovered expression and the diagnostics list; an svg_figure with table fallback is described per lesson.",
+    "An event_loop figure with Node phases and the nextTick and promise queues (stack, queues and a step button).",
+    "A program_trace that accepts JavaScript."
+  ],
+  "unverified": [
+    "typescriptlang.org, MDN and nodejs.org/en/learn were not reachable from the research sandbox. The TypeScript Handbook and tsconfig reference were read from the TypeScript-Website repository on GitHub; the Node API pages (api/*.html) were reachable. The Node Learn event-loop page redirected and was not read (verified false).",
+    "TypeScript error codes and messages were produced by running TypeScript 5.6.3 with strict on; wording can change between versions. Node outputs came from Node 22.23.",
+    "setTimeout versus setImmediate order from the main module is documented as non-deterministic; it was stable in the sandbox but is deliberately not asked.",
+    "The default highWaterMark for byte streams (65536) is Node 22 behaviour; older versions use 16384.",
+    "Dates for the announcement of TypeScript (October 2012) and Node.js (2009) are from memory.",
+    "semver.org and docs.npmjs.com could not be opened, so the semver range rules were confirmed only with the semver npm package."
+  ]
+}

@@ -1,0 +1,1286 @@
+{
+  "id": "statistical-and-causal-inference",
+  "title": "Statistical and Causal Inference",
+  "family": "C",
+  "voice": "A",
+  "description": "From the wobble of a sample mean to a defensible claim about cause. Intervals, tests, power, regression, experiments and causal diagrams.",
+  "audience": "A capable adult who has met means, spread and sampling in Discere's probability course and wants to know how far a result can be trusted and when it shows cause.",
+  "prerequisites": [
+    "probability-statistics"
+  ],
+  "outcomes": [
+    "You'll be able to build and read a confidence interval for a mean, a proportion and a difference.",
+    "You'll be able to run a test and say what its p-value does and does not mean.",
+    "You'll be able to judge whether a study had enough data and whether many tests inflated its results.",
+    "You'll be able to fit a line and refuse to read it as a cause.",
+    "You'll be able to explain why randomising works, spot a confounder and use a causal diagram to choose what to adjust for."
+  ],
+  "sources": [
+    {
+      "id": "os-stats",
+      "title": "OpenStax, Introductory Statistics 2e (Illowsky, Dean)",
+      "url": "https://openstax.org/details/books/introductory-statistics-2e",
+      "licence": "CC BY 4.0",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "os-stats-bus",
+      "title": "OpenStax, Introductory Business Statistics 2e",
+      "url": "https://openstax.org/details/books/introductory-business-statistics-2e",
+      "licence": "CC BY 4.0",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "os-hsstats",
+      "title": "OpenStax, Statistics (high school)",
+      "url": "https://openstax.org/details/books/statistics-high-school",
+      "licence": "CC BY 4.0",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "nist-handbook",
+      "title": "NIST/SEMATECH e-Handbook of Statistical Methods",
+      "url": "https://www.itl.nist.gov/div898/handbook/",
+      "licence": "US government work, public domain",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "wasserstein-2016",
+      "title": "Wasserstein and Lazar, The ASA Statement on p-Values (The American Statistician, 2016)",
+      "url": "https://doi.org/10.1080/00031305.2016.1154108",
+      "licence": "Open access article, cite only",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "ioannidis-2005",
+      "title": "Ioannidis, Why Most Published Research Findings Are False (PLoS Medicine, 2005)",
+      "url": "https://doi.org/10.1371/journal.pmed.0020124",
+      "licence": "CC BY 4.0 (PLoS)",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "hernan-robins",
+      "title": "Hernan and Robins, Causal Inference: What If (free book)",
+      "url": "https://miguelhernan.org/whatifbook",
+      "licence": "Free to read online, copyright held by authors",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "pearl-2009",
+      "title": "Pearl, Causality (2nd ed., 2009) and Pearl, Causal Diagrams for Empirical Research (Biometrika, 1995)",
+      "url": "https://doi.org/10.1093/biomet/82.4.669",
+      "licence": "Copyrighted, cite only",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "charig-1986",
+      "title": "Charig et al., Comparison of treatment of renal calculi (BMJ, 1986)",
+      "url": "https://doi.org/10.1136/bmj.292.6524.879",
+      "licence": "BMJ, cite only",
+      "use": "reference",
+      "verified": false
+    }
+  ],
+  "modules": [
+    {
+      "id": "estimate",
+      "title": "Estimating with honest uncertainty",
+      "summary": "From the way sample means vary to intervals that say how far a result can be trusted."
+    },
+    {
+      "id": "test",
+      "title": "Testing claims",
+      "summary": "What a p-value is, the two ways a test can fail, how many observations a test needs, and the trap of running many tests."
+    },
+    {
+      "id": "cause",
+      "title": "From association to cause",
+      "summary": "Fit lines, then ask what would have to be true for a difference to be caused rather than merely seen."
+    }
+  ],
+  "lessons": [
+    {
+      "id": "sample-means-wobble",
+      "moduleId": "estimate",
+      "title": "How sample means wobble",
+      "objective": "Compute the standard error of a mean and say how sample size changes it.",
+      "prerequisiteLessonIds": [],
+      "concepts": [
+        {
+          "id": "sampling-distribution",
+          "title": "Sampling distribution",
+          "summary": "The distribution of a statistic, such as a sample mean, over all the samples of one size that could be drawn."
+        },
+        {
+          "id": "standard-error",
+          "title": "Standard error",
+          "summary": "The standard deviation of a sample mean, equal to the population standard deviation divided by the square root of n."
+        }
+      ],
+      "skills": [
+        "compute-standard-error",
+        "scale-sample-size"
+      ],
+      "misconceptions": [
+        "Standard error is read as the spread of the data, not the spread of the estimate. The two share a symbol in some tables, which hides the division by the square root of n.",
+        "To halve the error, people double the sample. Doubling only divides the error by about 1.41; halving needs four times as many.",
+        "A larger population needs a proportionally larger sample. The error depends on n and the spread, not on the population size (unless the sample is a large fraction of it)."
+      ],
+      "sequence": [
+        "Start from the prior course: one sample mean is a single draw. Draw two more and they differ. Ask what pattern those differences must follow.",
+        "Enumerate every sample for a tiny population so the sampling distribution is visible, not asserted.",
+        "State SE = sd / sqrt(n) and check it against the enumerated case.",
+        "Use the formula to answer how large a sample must be for a target error.",
+        "Contrast the sd of the data with the sd of the mean."
+      ],
+      "examples": [
+        "Population {2, 4, 6}, samples of size 2 with replacement: 9 ordered samples with means 2, 3, 4, 3, 4, 5, 4, 5, 6. Their mean is 4 and their variance is 12/9 = 4/3. The population variance is 8/3, and (8/3)/2 = 4/3, so SE = sqrt(4/3) = 1.155.",
+        "sd 12 and n = 36 gives SE = 12/6 = 2. n = 144 gives 12/12 = 1. Quadrupling n halved the error."
+      ],
+      "figures": [
+        {
+          "type": "inference_explorer",
+          "shows": "Case 1: sampling_means with population [2,4,6], sample size 2, listing the nine means. Case 2: standard_error with mean 50, sd 12, n 36 and n 144 as separate cases.",
+          "learnerAction": "Switch cases and read how the spread of the means compares with the population spread.",
+          "placement": "After the sequence reaches the enumerated example and before the formula is stated."
+        },
+        {
+          "type": "data_distribution",
+          "shows": "Dot plot of the nine sample means beside the three population values.",
+          "learnerAction": "none",
+          "placement": "The contrast between spread of data and spread of means."
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-standard-error",
+          "sample": "A population has sd 15. What is the standard error of the mean for samples of size 25?",
+          "answer": "3"
+        },
+        {
+          "kind": "numeric",
+          "targets": "scale-sample-size",
+          "sample": "The sd is 12. How large must n be for the standard error to be 1.5?",
+          "answer": "64"
+        },
+        {
+          "kind": "choice",
+          "targets": "scale-sample-size",
+          "sample": "A pilot sample gives a certain standard error. How much larger must the sample be to halve it?",
+          "answer": "Four times as large",
+          "choices": [
+            "Twice as large",
+            "Four times as large",
+            "Eight times as large",
+            "The same size, but sampled more carefully"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "os-stats",
+        "nist-handbook"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "normal-areas",
+      "moduleId": "estimate",
+      "title": "Areas under the normal curve",
+      "objective": "Convert a value to a z-score and read the share of a normal distribution beyond it.",
+      "prerequisiteLessonIds": [
+        "sample-means-wobble"
+      ],
+      "concepts": [
+        {
+          "id": "z-score",
+          "title": "z-score",
+          "summary": "The number of standard deviations a value lies above or below the mean: z = (x - mean) / sd."
+        },
+        {
+          "id": "normal-model",
+          "title": "Normal model",
+          "summary": "A symmetric bell-shaped distribution fully described by its mean and standard deviation, with fixed areas at fixed z-scores."
+        }
+      ],
+      "skills": [
+        "compute-z",
+        "read-normal-area"
+      ],
+      "misconceptions": [
+        "The curve's height is read as probability. Only area under the curve is probability; a single value has area zero.",
+        "z = 2 is read as '2 percent'. It is two standard deviations, and the share beyond it is about 2.3 percent.",
+        "Everything is treated as normal. The normal area only applies if the data, or the sample mean via a large sample, is roughly bell-shaped."
+      ],
+      "sequence": [
+        "Standardise: subtract the mean, divide by the sd, and every normal problem becomes the same curve.",
+        "Learn three anchor areas: about 68 percent within 1 sd, 95 within 2, 99.7 within 3.",
+        "Learn the exact value used all the time: 1.96 leaves 2.5 percent in each tail.",
+        "Tie back to lesson 1: sample means from big samples are approximately normal, which is why this curve is needed.",
+        "Use areas to answer 'how unusual is this?'"
+      ],
+      "examples": [
+        "Heights with mean 170 cm and sd 8 cm. 186 cm has z = (186 - 170)/8 = 2. About 2.28 percent of people are taller (1 - 0.97725).",
+        "Scores with mean 100 and sd 15. Between 85 and 115 is z from -1 to 1: area 0.6827, about 68 percent."
+      ],
+      "figures": [
+        {
+          "type": "inference_explorer",
+          "shows": "normal model with mean 100, sd 15, shaded 85 to 115; second case mean 170, sd 8, shaded 154 to 186.",
+          "learnerAction": "Move the bounds and watch the shaded area.",
+          "placement": "After the standardising step."
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-z",
+          "sample": "Scores have mean 500 and sd 100. What is the z-score of 650?",
+          "answer": "1.5"
+        },
+        {
+          "kind": "numeric",
+          "targets": "read-normal-area",
+          "sample": "For a standard normal, the area below z = 1 is 0.8413. What is the area above z = 1, to two decimal places?",
+          "answer": "0.16"
+        },
+        {
+          "kind": "choice",
+          "targets": "read-normal-area",
+          "sample": "About what share of a normal distribution lies within 2 standard deviations of the mean?",
+          "answer": "About 95 percent",
+          "choices": [
+            "About 50 percent",
+            "About 68 percent",
+            "About 95 percent",
+            "About 99.7 percent"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "os-stats",
+        "nist-handbook"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "interval-for-a-mean",
+      "moduleId": "estimate",
+      "title": "An interval for a mean",
+      "objective": "Build a confidence interval for a mean and say what widens or narrows it.",
+      "prerequisiteLessonIds": [
+        "sample-means-wobble",
+        "normal-areas"
+      ],
+      "concepts": [
+        {
+          "id": "margin-of-error",
+          "title": "Margin of error",
+          "summary": "The critical value times the standard error; the half-width of the interval."
+        },
+        {
+          "id": "t-critical",
+          "title": "t critical value",
+          "summary": "The multiplier used when the population sd is unknown and estimated by s; it is larger than the z value for small samples."
+        }
+      ],
+      "skills": [
+        "build-mean-interval",
+        "choose-critical-value"
+      ],
+      "misconceptions": [
+        "The interval is taken to contain 95 percent of the individual data values. It is about the mean, not about individuals.",
+        "Using 1.96 for every sample size. With a small n and estimated s the multiplier must come from the t distribution.",
+        "A higher confidence level is thought to give a more precise answer. It gives a wider interval."
+      ],
+      "sequence": [
+        "Ask what range of true means would make our sample mean unsurprising.",
+        "Estimate +/- critical value x SE, with 1.96 when sigma is known.",
+        "When sigma is estimated by s, use t with n - 1 degrees of freedom.",
+        "See what changes the width: n, spread, confidence level.",
+        "Report the interval in units and with a sentence that does not claim more than it should."
+      ],
+      "examples": [
+        "n = 36, mean 52, sigma 9 known: SE 1.5, margin 1.96 x 1.5 = 2.94, interval (49.06, 54.94).",
+        "n = 16, mean 20, s = 8: SE 2, t(15 df, 95 percent) = 2.131, margin 4.262, interval (15.74, 24.26)."
+      ],
+      "figures": [
+        {
+          "type": "inference_explorer",
+          "shows": "mean_interval cases: mean 52, sd 9, n 36 known sigma at 90, 95 and 99 percent.",
+          "learnerAction": "Switch confidence level and watch the interval width.",
+          "placement": "After the construction."
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "build-mean-interval",
+          "sample": "sigma = 10 is known and n = 100. What is the margin of error for a 95 percent interval? Use 1.96.",
+          "answer": "1.96"
+        },
+        {
+          "kind": "numeric",
+          "targets": "choose-critical-value",
+          "sample": "n = 9, mean 40, s = 6. The t value for 95 percent with 8 degrees of freedom is 2.306. What is the upper end of the interval, to two decimals?",
+          "answer": "44.61"
+        },
+        {
+          "kind": "choice",
+          "targets": "build-mean-interval",
+          "sample": "The confidence level is raised from 95 to 99 percent with the same data. What happens to the interval?",
+          "answer": "It gets wider",
+          "choices": [
+            "It gets wider",
+            "It gets narrower",
+            "It stays the same",
+            "It shifts to the right"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "os-stats",
+        "nist-handbook"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "what-95-means",
+      "moduleId": "estimate",
+      "title": "What 95 percent promises",
+      "objective": "Interpret a confidence level as a property of the method and build an interval for a proportion.",
+      "prerequisiteLessonIds": [
+        "interval-for-a-mean"
+      ],
+      "concepts": [
+        {
+          "id": "coverage",
+          "title": "Coverage",
+          "summary": "The long-run share of intervals, made by the same method on repeated samples, that contain the true value."
+        },
+        {
+          "id": "proportion-interval",
+          "title": "Proportion interval",
+          "summary": "p-hat plus or minus a critical value times sqrt(p-hat(1 - p-hat)/n)."
+        }
+      ],
+      "skills": [
+        "interpret-confidence",
+        "build-proportion-interval"
+      ],
+      "misconceptions": [
+        "After one interval is computed, the learner says there is a 95 percent chance the true mean is inside. The true value is fixed; the method's catch rate is 95 percent.",
+        "A result of 52 percent with a margin of 3 means the true value is 'probably 52'. The whole interval is plausible; the centre is not special.",
+        "The proportion formula is used with tiny counts. It needs enough successes and failures (a common rule is at least 10 of each)."
+      ],
+      "sequence": [
+        "Simulate repeated sampling: draw many samples, make an interval from each, mark the ones that miss.",
+        "Count: roughly 1 in 20 misses at 95 percent. Any single interval either has the value or does not.",
+        "Compute 0.95^20 = 0.36 to show that a long run of 20 hits is not guaranteed.",
+        "Move to a proportion and compute an interval from a poll.",
+        "Say what a good one-sentence reading of a poll interval is."
+      ],
+      "examples": [
+        "42 of 120 support a plan. p-hat = 0.35, SE = sqrt(0.35 x 0.65/120) = 0.0435, margin 0.0853, interval (0.265, 0.435).",
+        "Probability that 20 independent 95 percent intervals all cover the truth: 0.95^20 = 0.358."
+      ],
+      "figures": [
+        {
+          "type": "inference_explorer",
+          "shows": "interval_coverage with mean 50, sd 10, n 25, 95 percent, 20 intervals (seed given); plus proportion_interval 42 of 120 at 95 percent.",
+          "learnerAction": "Draw a new set of intervals and see which miss the true line.",
+          "placement": "Immediately after the opening question."
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "build-proportion-interval",
+          "sample": "60 of 100 people prefer option A. What is the 95 percent margin of error for the proportion, to three decimals? Use 1.96.",
+          "answer": "0.096"
+        },
+        {
+          "kind": "numeric",
+          "targets": "interpret-confidence",
+          "sample": "A 95 percent method is used on 100 independent samples. On average, how many intervals miss the true value?",
+          "answer": "5"
+        },
+        {
+          "kind": "choice",
+          "targets": "interpret-confidence",
+          "sample": "Which statement about one computed 95 percent interval is correct?",
+          "answer": "The method that produced it captures the true value in 95 percent of repeated samples",
+          "choices": [
+            "There is a 95 percent chance the true value lies in this interval",
+            "95 percent of the data lie in this interval",
+            "The method that produced it captures the true value in 95 percent of repeated samples",
+            "The true value is probably the centre of the interval and nowhere else"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "os-stats",
+        "os-stats-bus",
+        "nist-handbook"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "surprise-under-the-null",
+      "moduleId": "test",
+      "title": "How surprising is this sample?",
+      "objective": "Carry out a test of a mean and read a p-value without overstating it.",
+      "prerequisiteLessonIds": [
+        "what-95-means"
+      ],
+      "concepts": [
+        {
+          "id": "p-value",
+          "title": "p-value",
+          "summary": "The probability, if the null hypothesis were true, of a result at least as extreme as the one observed."
+        },
+        {
+          "id": "null-hypothesis",
+          "title": "Null hypothesis",
+          "summary": "A specific default claim, such as a mean equal to 100, against which the data are measured."
+        }
+      ],
+      "skills": [
+        "compute-test-statistic",
+        "read-p-value"
+      ],
+      "misconceptions": [
+        "The p-value is read as the probability the null hypothesis is true. It assumes the null and asks about the data.",
+        "A p-value above 0.05 is read as proof of no effect. It means the data were not surprising enough, which can also happen when the sample is small.",
+        "A small p-value is read as a large or important effect. Size and surprise are separate."
+      ],
+      "sequence": [
+        "Frame a claim: the mean is 100. Take a sample and ask how far its mean is from 100 in standard errors.",
+        "z = (sample mean - null mean)/SE.",
+        "Convert z to a tail area; double it for a two-sided alternative.",
+        "Decide with a threshold chosen in advance, and report the p-value as well.",
+        "Separate 'surprising' from 'big' with a large-n example."
+      ],
+      "examples": [
+        "Null mean 100, sigma 15, n = 36, sample mean 104. SE 2.5, z = 1.6. One-sided p 0.0548, two-sided p 0.1096. Not below 0.05.",
+        "n = 3600 with the same sd and a sample mean of 100.5: SE 0.25, z = 2, two-sided p about 0.046. Tiny effect, small p."
+      ],
+      "figures": [
+        {
+          "type": "inference_explorer",
+          "shows": "mean_test: nullMean 100, mean 104, sd 15, n 36, known sigma, different, alpha 0.05; second case with n 144 (so the same mean difference gives a different z).",
+          "learnerAction": "Move the sample mean or n and see where the statistic falls on the null curve.",
+          "placement": "After the z step."
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-test-statistic",
+          "sample": "Null mean 50, sample mean 52, sd 10, n = 25 (sigma known). What is z?",
+          "answer": "1"
+        },
+        {
+          "kind": "numeric",
+          "targets": "read-p-value",
+          "sample": "z = 2.58. What is the two-sided p-value, to two decimals?",
+          "answer": "0.01"
+        },
+        {
+          "kind": "choice",
+          "targets": "read-p-value",
+          "sample": "A test gives p = 0.03. Which reading is correct?",
+          "answer": "If the null were true, a result this extreme would occur about 3 percent of the time",
+          "choices": [
+            "There is a 3 percent chance the null is true",
+            "If the null were true, a result this extreme would occur about 3 percent of the time",
+            "The effect is 3 percent large",
+            "The result will replicate 97 percent of the time"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "os-stats",
+        "wasserstein-2016"
+      ],
+      "historyNotes": [
+        "The ASA issued its statement on p-values in 2016, the first time the association took a position on a specific matter of statistical practice."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "two-ways-to-be-wrong",
+      "moduleId": "test",
+      "title": "Two ways to be wrong",
+      "objective": "Distinguish false alarms from missed effects and estimate both rates from counts.",
+      "prerequisiteLessonIds": [
+        "surprise-under-the-null"
+      ],
+      "concepts": [
+        {
+          "id": "type-i-error",
+          "title": "Type I error",
+          "summary": "Rejecting a null hypothesis that is true; its rate is the significance level alpha."
+        },
+        {
+          "id": "power-definition",
+          "title": "Power",
+          "summary": "The probability of rejecting the null when a specific alternative is true; one minus the missed-effect rate."
+        }
+      ],
+      "skills": [
+        "name-error-types",
+        "compute-error-rates"
+      ],
+      "misconceptions": [
+        "Alpha is read as the probability the null is true given rejection. It is the rate of rejection when the null is true.",
+        "Failing to reject is read as the null being true. Low power makes a miss common.",
+        "Lowering alpha is read as free safety. With n fixed it raises the missed-effect rate."
+      ],
+      "sequence": [
+        "Run the same test on many data sets where nothing is going on and count the rejections.",
+        "Run it again where a real effect exists and count the misses.",
+        "Name the errors and match each to a rate.",
+        "Show the trade: moving the threshold shifts one error into the other.",
+        "Show the other way to buy both: more data."
+      ],
+      "examples": [
+        "1,000 runs under the null: 48 rejections, a false-alarm rate of 0.048.",
+        "200 runs with a real effect: 70 missed, so power = 130/200 = 0.65."
+      ],
+      "figures": [
+        {
+          "type": "inference_explorer",
+          "shows": "test_outcomes: nullRuns 1000, falseRejections 48, alternativeRuns 200, missedEffects 70; second case 500/26 and 400/80.",
+          "learnerAction": "Switch cases and read both rates.",
+          "placement": "After the two kinds of run are described."
+        },
+        {
+          "type": "svg_figure",
+          "shows": "Two overlapping bell curves, null and alternative, with a movable cut-off; alpha shaded on the null, beta on the alternative.",
+          "learnerAction": "Slide the cut-off to trade one area for the other.",
+          "placement": "The trade-off step."
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "single-term",
+          "targets": "name-error-types",
+          "sample": "What is the name for rejecting a null hypothesis that is actually true?",
+          "answer": "Type I error"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-error-rates",
+          "sample": "In 400 runs with a real effect, the test missed it 100 times. What is the power?",
+          "answer": "0.75"
+        },
+        {
+          "kind": "choice",
+          "targets": "compute-error-rates",
+          "sample": "Alpha is lowered from 0.05 to 0.01 and nothing else changes. What happens to power?",
+          "answer": "It falls",
+          "choices": [
+            "It rises",
+            "It falls",
+            "It stays the same",
+            "It becomes 1"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "os-stats",
+        "nist-handbook"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "size-a-study",
+      "moduleId": "test",
+      "title": "How big should the study be?",
+      "objective": "Estimate power for a given sample and find the sample size needed for 80 percent power.",
+      "prerequisiteLessonIds": [
+        "two-ways-to-be-wrong"
+      ],
+      "concepts": [
+        {
+          "id": "effect-size",
+          "title": "Effect size",
+          "summary": "The difference worth detecting, often compared with the standard deviation."
+        },
+        {
+          "id": "sample-size-for-power",
+          "title": "Sample size for power",
+          "summary": "n = ((z_alpha/2 + z_beta) x sigma / delta)^2 for a two-sided test of a mean."
+        }
+      ],
+      "skills": [
+        "estimate-power",
+        "plan-sample-size"
+      ],
+      "misconceptions": [
+        "Planning is done after the data arrive. A study should name the smallest effect that matters before it starts.",
+        "Power is thought to be a property of the test alone. It depends on effect, spread, n and alpha together.",
+        "Rounding the sample size down. Round up, always."
+      ],
+      "sequence": [
+        "Fix the effect that matters, the spread and alpha. Find how often the test would catch it.",
+        "See power rise with n, with the effect, and as the spread falls.",
+        "Invert: pick the power wanted (80 percent is a convention) and solve for n.",
+        "Check the answer against the explorer.",
+        "Say what an underpowered study can and cannot conclude."
+      ],
+      "examples": [
+        "Effect 5, sd 10, n = 25, alpha 0.05 two-sided: SE 2, shift 2.5, power = Phi(2.5 - 1.96) + Phi(-2.5 - 1.96) = 0.705.",
+        "To detect 5 with sd 10 at 80 percent power: n = ((1.96 + 0.8416) x 10/5)^2 = 31.4, so 32."
+      ],
+      "figures": [
+        {
+          "type": "inference_explorer",
+          "shows": "power: effect 5, sd 10, n 25, alpha 0.05; and effect 5, sd 10, n 64.",
+          "learnerAction": "Move n and watch the alternative curve slide past the cut-off.",
+          "placement": "After the first example."
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "estimate-power",
+          "sample": "Effect 3, sd 10, n = 100, alpha 0.05 two-sided. Using the normal model, what is the power to two decimals?",
+          "answer": "0.85"
+        },
+        {
+          "kind": "numeric",
+          "targets": "plan-sample-size",
+          "sample": "Effect 3, sd 10, alpha 0.05, 80 percent power (use 1.96 and 0.8416). What is the smallest whole n?",
+          "answer": "88"
+        },
+        {
+          "kind": "choice",
+          "targets": "plan-sample-size",
+          "sample": "Which change raises power?",
+          "answer": "A larger sample",
+          "choices": [
+            "A smaller sample",
+            "A larger sample",
+            "A smaller effect",
+            "A noisier measure"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "os-stats",
+        "nist-handbook"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "compare-two-groups",
+      "moduleId": "test",
+      "title": "Compare two groups",
+      "objective": "Build an interval for a difference of means and decide when to pair the data.",
+      "prerequisiteLessonIds": [
+        "size-a-study"
+      ],
+      "concepts": [
+        {
+          "id": "difference-interval",
+          "title": "Interval for a difference",
+          "summary": "(mean1 - mean2) +/- critical x sqrt(s1^2/n1 + s2^2/n2) for independent groups."
+        },
+        {
+          "id": "paired-design",
+          "title": "Paired design",
+          "summary": "Two measurements on the same unit; analyse the differences as one sample."
+        }
+      ],
+      "skills": [
+        "se-of-difference",
+        "pair-or-not"
+      ],
+      "misconceptions": [
+        "Standard errors are added. The variances add, so the SE of a difference is the square root of the sum of squares, not the sum.",
+        "Overlapping intervals for two means are read as proof of no difference. The interval for the difference is the right check.",
+        "Paired data are analysed as two independent groups. That throws away the match and usually widens the interval."
+      ],
+      "sequence": [
+        "Two groups, two means, two standard errors. How do they combine?",
+        "Variances of independent estimates add.",
+        "Build the interval for the difference and check whether it includes zero.",
+        "Switch to before/after on the same people: take differences.",
+        "Decide when pairing is legitimate."
+      ],
+      "examples": [
+        "Group A: mean 82, sd 10, n 40. Group B: mean 76, sd 12, n 50. Difference 6, SE = sqrt(100/40 + 144/50) = sqrt(5.38) = 2.32, 95 percent margin about 4.55 (z), interval (1.45, 10.55).",
+        "Before 10, 12, 9, 14 and after 8, 11, 9, 11: differences -2, -1, 0, -3, mean -1.5."
+      ],
+      "figures": [
+        {
+          "type": "inference_explorer",
+          "shows": "two_sample: A mean 82 sd 10 n 40 against B mean 76 sd 12 n 50; paired: before [10,12,9,14] after [8,11,9,11].",
+          "learnerAction": "Switch between independent and paired readings.",
+          "placement": "After the SE combination step."
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "se-of-difference",
+          "sample": "Group 1 has sd 6 and n 36. Group 2 has sd 8 and n 64. What is the standard error of the difference in means, to two decimals?",
+          "answer": "1.41"
+        },
+        {
+          "kind": "numeric",
+          "targets": "pair-or-not",
+          "sample": "Before: 20, 25, 30, 35. After: 18, 22, 31, 30. What is the mean of (after - before)?",
+          "answer": "-2.25"
+        },
+        {
+          "kind": "choice",
+          "targets": "pair-or-not",
+          "sample": "Which study should use a paired analysis?",
+          "answer": "Blood pressure of the same patients before and after a drug",
+          "choices": [
+            "Blood pressure of patients on drug A against different patients on drug B",
+            "Blood pressure of the same patients before and after a drug",
+            "Heights of two unrelated classes",
+            "Scores of two random samples of students"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "os-stats",
+        "os-stats-bus"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "many-tests-one-lucky-result",
+      "moduleId": "test",
+      "title": "Many tests, one lucky result",
+      "objective": "Compute the chance of a false alarm across many tests and correct for it.",
+      "prerequisiteLessonIds": [
+        "compare-two-groups"
+      ],
+      "concepts": [
+        {
+          "id": "family-wise-error",
+          "title": "Family-wise error",
+          "summary": "The probability of at least one false rejection among m true-null tests: 1 - (1 - alpha)^m for independent tests."
+        },
+        {
+          "id": "bonferroni",
+          "title": "Bonferroni correction",
+          "summary": "Test each of m comparisons at alpha / m to keep the family-wise rate at or below alpha."
+        }
+      ],
+      "skills": [
+        "compute-familywise",
+        "apply-correction"
+      ],
+      "misconceptions": [
+        "Each test at 0.05 is thought to keep the overall risk at 0.05. With 20 tests the chance of at least one false alarm is 64 percent.",
+        "Choosing the interesting result after looking is treated as one test. The test count is every comparison that could have been reported.",
+        "Correcting for many tests is thought to guarantee findings are true. It controls one error rate and nothing more."
+      ],
+      "sequence": [
+        "Start with a coin flip logic: 20 shots at a 1-in-20 event.",
+        "Compute 1 - 0.95^m for several m.",
+        "Apply the Bonferroni threshold and see what it costs in power.",
+        "Show the invisible version: a researcher slices the data many ways and reports one slice.",
+        "Say what honest reporting looks like: pre-register, report all tests."
+      ],
+      "examples": [
+        "20 independent true-null tests at 0.05: 1 - 0.95^20 = 0.642.",
+        "Bonferroni for 20 tests: 0.05/20 = 0.0025 per test."
+      ],
+      "figures": [
+        {
+          "type": "inference_explorer",
+          "shows": "multiple_tests: 20 tests, alpha 0.05; and 5 tests alpha 0.05.",
+          "learnerAction": "Add tests and watch the chance of at least one false positive.",
+          "placement": "After the coin-flip comparison."
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-familywise",
+          "sample": "10 independent tests of true nulls at alpha 0.05. What is the probability of at least one false rejection, to two decimals?",
+          "answer": "0.40"
+        },
+        {
+          "kind": "numeric",
+          "targets": "apply-correction",
+          "sample": "Eight comparisons with an overall alpha of 0.05. What is the Bonferroni per-test threshold?",
+          "answer": "0.00625"
+        },
+        {
+          "kind": "choice",
+          "targets": "compute-familywise",
+          "sample": "A researcher tries 30 subgroups and reports the one with p = 0.02. What is the main problem?",
+          "answer": "The reported p-value ignores the 30 comparisons",
+          "choices": [
+            "Subgroups are never valid",
+            "The reported p-value ignores the 30 comparisons",
+            "p = 0.02 is too small to be real",
+            "The sample was too large"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "ioannidis-2005",
+        "wasserstein-2016",
+        "os-stats"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "fit-a-line",
+      "moduleId": "cause",
+      "title": "Fit a line",
+      "objective": "Compute a least-squares line, read slope and residual, and refuse to extrapolate blindly.",
+      "prerequisiteLessonIds": [
+        "many-tests-one-lucky-result"
+      ],
+      "concepts": [
+        {
+          "id": "least-squares",
+          "title": "Least-squares line",
+          "summary": "The line that minimises the sum of squared vertical gaps; slope = Sxy/Sxx and it passes through (x-bar, y-bar)."
+        },
+        {
+          "id": "residual",
+          "title": "Residual",
+          "summary": "Observed y minus the line's predicted y."
+        }
+      ],
+      "skills": [
+        "compute-slope",
+        "predict-and-residual"
+      ],
+      "misconceptions": [
+        "The slope is read as the effect of changing x for an individual. It is a difference between groups of units.",
+        "Predicting far outside the data is treated as safe. The line only describes the range seen.",
+        "A high correlation is read as one variable causing the other."
+      ],
+      "sequence": [
+        "Plot points and ask where a single line should go. Let the learner drag it and watch the sum of squares change.",
+        "State the closed-form slope and intercept.",
+        "Predict and read the residual at a known point.",
+        "Warn: extrapolation and outliers.",
+        "Hand off to the causal part: a line describes, it does not explain."
+      ],
+      "examples": [
+        "Points (0,1), (1,3), (2,4), (3,8): x-bar 1.5, y-bar 4, Sxy 11, Sxx 5. Slope 2.2, intercept 0.7. At x = 3 the line gives 7.3, residual +0.7.",
+        "Points (1,2), (2,4), (3,5), (4,4), (5,5) give slope 0.6, intercept 2.2, R squared 0.6."
+      ],
+      "figures": [
+        {
+          "type": "coordinate_plane",
+          "shows": "Scatter of the points with a draggable line and the squared gaps drawn as squares.",
+          "learnerAction": "Drag the line to reduce the total squared gap; then reveal the least-squares line.",
+          "placement": "After the question of where the line goes."
+        },
+        {
+          "type": "graph_plot",
+          "shows": "The fitted line over the points with a faded extension beyond the data.",
+          "learnerAction": "none",
+          "placement": "The extrapolation warning."
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-slope",
+          "sample": "Points (1,2), (2,3), (3,7). The mean of x is 2 and the mean of y is 4. What is the least-squares slope?",
+          "answer": "2.5"
+        },
+        {
+          "kind": "numeric",
+          "targets": "predict-and-residual",
+          "sample": "A line is y = 0.7 + 2.2x. At x = 5 what does it predict?",
+          "answer": "11.7"
+        },
+        {
+          "kind": "choice",
+          "targets": "compute-slope",
+          "sample": "Cities with more ice cream sales have more drownings, slope positive. What is the safest reading?",
+          "answer": "The two move together, but the data alone do not show that either causes the other",
+          "choices": [
+            "Ice cream causes drownings",
+            "Drowning causes ice cream sales",
+            "The two move together, but the data alone do not show that either causes the other",
+            "The slope must be wrong"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "os-stats",
+        "nist-handbook"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "randomise-to-compare",
+      "moduleId": "cause",
+      "title": "Randomise to compare",
+      "objective": "Explain why random assignment supports causal claims and count the assignments behind a randomisation p-value.",
+      "prerequisiteLessonIds": [
+        "fit-a-line"
+      ],
+      "concepts": [
+        {
+          "id": "random-assignment",
+          "title": "Random assignment",
+          "summary": "Allocating units to arms by chance so that, on average, known and unknown traits balance."
+        },
+        {
+          "id": "randomisation-test",
+          "title": "Randomisation test",
+          "summary": "Reassign labels in every possible way and count how often the difference is as large as the observed one."
+        }
+      ],
+      "skills": [
+        "justify-randomisation",
+        "count-assignments"
+      ],
+      "misconceptions": [
+        "Random sampling and random assignment are confused. Sampling lets us generalise; assignment lets us infer cause.",
+        "Matching the arms on a few traits is thought to be as good as randomising. Unmeasured traits can still differ.",
+        "Randomising guarantees equal groups. In a small trial chance imbalance is still likely; that is what the p-value accounts for."
+      ],
+      "sequence": [
+        "Show an observational comparison where the keen people choose the drug.",
+        "Randomise: a coin decides the arm, so keenness is spread by chance.",
+        "Add blocking and blinding as ways to cut noise and bias.",
+        "Count the possible assignments for 6 people, 3 treated: 20.",
+        "If the three treated have the three highest outcomes, only 1 of 20 assignments is as extreme."
+      ],
+      "examples": [
+        "6 people, 3 treated: C(6,3) = 20 assignments. If the treated are exactly the three highest, one-sided p = 1/20 = 0.05.",
+        "10 people into two groups of 5: C(10,5) = 252 assignments."
+      ],
+      "figures": [
+        {
+          "type": "inference_explorer",
+          "shows": "allocation: eight units in two blocks, arms A and B with outcome values.",
+          "learnerAction": "Re-randomise within blocks and compare the arm means.",
+          "placement": "After the coin-decides step."
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "count-assignments",
+          "sample": "8 people are split into two labelled groups of 4. How many different assignments are possible?",
+          "answer": "70"
+        },
+        {
+          "kind": "choice",
+          "targets": "justify-randomisation",
+          "sample": "What does random assignment accomplish that matching on age and sex does not?",
+          "answer": "It balances unmeasured traits on average",
+          "choices": [
+            "It balances unmeasured traits on average",
+            "It guarantees identical groups",
+            "It removes the need for a control group",
+            "It makes the sample representative"
+          ]
+        },
+        {
+          "kind": "single-term",
+          "targets": "justify-randomisation",
+          "sample": "What is the name for hiding the arm from participants so that expectation does not shape the outcome?",
+          "answer": "Blinding"
+        }
+      ],
+      "sourceIds": [
+        "os-stats",
+        "hernan-robins"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "confounding",
+      "moduleId": "cause",
+      "title": "When a hidden factor drives both",
+      "objective": "Detect a confounder and show how stratifying can reverse a comparison.",
+      "prerequisiteLessonIds": [
+        "randomise-to-compare"
+      ],
+      "concepts": [
+        {
+          "id": "confounder",
+          "title": "Confounder",
+          "summary": "A factor that influences both the exposure and the outcome and so creates a spurious or distorted association."
+        },
+        {
+          "id": "simpsons-paradox",
+          "title": "Simpson's paradox",
+          "summary": "A comparison that holds in every subgroup can reverse in the pooled data when group sizes differ across arms."
+        }
+      ],
+      "skills": [
+        "spot-confounder",
+        "stratify"
+      ],
+      "misconceptions": [
+        "The pooled figure is trusted over the subgroups, or the reverse, without asking how people got into each arm.",
+        "Adjusting for any variable available is thought to be harmless. Some adjustments introduce bias (next lesson).",
+        "Confounding is thought to be a fault of small samples. More data does not remove it."
+      ],
+      "sequence": [
+        "Show the pooled table where treatment B looks better.",
+        "Split by stone size: A is better in each row.",
+        "Explain: doctors gave A to harder cases. Severity drives treatment and outcome.",
+        "Name the confounder and the fix: compare like with like.",
+        "Contrast with randomisation: severity would be balanced by design."
+      ],
+      "examples": [
+        "Kidney stones: A 273/350 = 78 percent, B 289/350 = 83 percent overall. Small stones A 81/87 = 93 percent, B 234/270 = 87 percent. Large stones A 192/263 = 73 percent, B 55/80 = 69 percent. A wins in each group; B wins overall because B was used mostly on small stones."
+      ],
+      "figures": [
+        {
+          "type": "table",
+          "shows": "The two-by-two-by-two table: treatment, stone size, success counts.",
+          "learnerAction": "Reveal the stratified view row by row.",
+          "placement": "After the pooled comparison."
+        },
+        {
+          "type": "svg_figure",
+          "shows": "Three nodes: severity, treatment, recovery, with arrows from severity to both.",
+          "learnerAction": "none",
+          "placement": "The naming step."
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "stratify",
+          "sample": "Treatment A succeeded in 192 of 263 large-stone cases. What is the success rate as a percentage, rounded to the nearest whole number?",
+          "answer": "73"
+        },
+        {
+          "kind": "choice",
+          "targets": "spot-confounder",
+          "sample": "Which variable is a likely confounder for the effect of coffee on heart disease?",
+          "answer": "Smoking",
+          "choices": [
+            "Smoking",
+            "The colour of the mug",
+            "The day of the week the data were entered",
+            "The number of rows in the table"
+          ]
+        },
+        {
+          "kind": "single-term",
+          "targets": "stratify",
+          "sample": "What name is given to a reversal where the pooled comparison disagrees with every subgroup?",
+          "answer": "Simpson's paradox"
+        }
+      ],
+      "sourceIds": [
+        "charig-1986",
+        "hernan-robins"
+      ],
+      "historyNotes": [
+        "The kidney-stone data come from a 1986 BMJ comparison of open surgery and percutaneous nephrolithotomy, and are used in teaching as an example of Simpson's paradox."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "draw-the-causes",
+      "moduleId": "cause",
+      "title": "Draw the causes",
+      "objective": "Read a causal diagram and decide which variables to adjust for.",
+      "prerequisiteLessonIds": [
+        "confounding"
+      ],
+      "concepts": [
+        {
+          "id": "dag",
+          "title": "Causal diagram",
+          "summary": "A directed acyclic graph whose arrows mean 'directly influences'."
+        },
+        {
+          "id": "collider",
+          "title": "Collider",
+          "summary": "A variable with two arrows pointing into it; conditioning on it opens a path that was blocked."
+        }
+      ],
+      "skills": [
+        "classify-structures",
+        "choose-adjustment"
+      ],
+      "misconceptions": [
+        "Adjusting for every available variable is thought to be safe. Adjusting for a mediator removes the effect we want, and for a collider adds bias.",
+        "Arrows are read as statistical association. They are claims about what would change if we intervened.",
+        "A missing arrow is thought to be a minor detail. It is a strong claim."
+      ],
+      "sequence": [
+        "Draw a fork: heat drives ice cream and drownings.",
+        "Draw a chain: smoking to tar to cancer.",
+        "Draw a collider: talent and looks into who becomes a famous actor.",
+        "Rule: block backdoor paths (forks), leave chains open, do not condition on colliders.",
+        "Practise listing paths and deciding the adjustment set."
+      ],
+      "examples": [
+        "X <- Z -> Y and X <- W -> Y plus X -> M -> Y: two backdoor paths (via Z and via W), one causal path through M. Adjust for Z and W, not M.",
+        "Talent -> Famous <- Looks: among the famous, talent and looks look negatively related although they are unrelated in the population."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Switchable diagrams: fork, chain, collider, and one larger graph with several paths.",
+          "learnerAction": "Click a variable to condition on it and watch each path turn open or blocked.",
+          "placement": "After the three structures are named."
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "choose-adjustment",
+          "sample": "In X <- Z -> Y, X <- W -> Y, X -> M -> Y, how many backdoor paths from X to Y need blocking?",
+          "answer": "2"
+        },
+        {
+          "kind": "single-term",
+          "targets": "classify-structures",
+          "sample": "What is a variable called when two arrows point into it?",
+          "answer": "Collider"
+        },
+        {
+          "kind": "choice",
+          "targets": "choose-adjustment",
+          "sample": "You want the total effect of X on Y, and M lies on the path X -> M -> Y. Should you adjust for M?",
+          "answer": "No, it carries part of the effect",
+          "choices": [
+            "Yes, always",
+            "No, it carries part of the effect",
+            "Only if M is binary",
+            "Only if the sample is large"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "pearl-2009",
+        "hernan-robins"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "natural-experiments",
+      "moduleId": "cause",
+      "title": "When nature randomises",
+      "objective": "Compute a difference-in-differences and say what a natural experiment needs to be credible.",
+      "prerequisiteLessonIds": [
+        "draw-the-causes"
+      ],
+      "concepts": [
+        {
+          "id": "diff-in-diff",
+          "title": "Difference in differences",
+          "summary": "The change in the treated group minus the change in a comparison group over the same period."
+        },
+        {
+          "id": "parallel-trends",
+          "title": "Parallel trends",
+          "summary": "The assumption that, without treatment, both groups would have changed by the same amount."
+        }
+      ],
+      "skills": [
+        "compute-did",
+        "assess-assumption"
+      ],
+      "misconceptions": [
+        "A before-and-after change in the treated group is taken as the effect. Time alone moves outcomes.",
+        "A natural experiment is thought to be as good as a trial. It is only as good as the as-if randomness it uses.",
+        "Any comparison group will do. It must have followed the same trend."
+      ],
+      "sequence": [
+        "Start with Snow's 1854 comparison: two water companies supplied intermingled houses, so water source was close to random with respect to household traits.",
+        "Introduce the idea: find a rule or accident that assigns exposure without regard to outcome.",
+        "Difference in differences: subtract the control change to remove common time trends.",
+        "Regression discontinuity: a cut-off such as a score of 18 gives people just above and below that are nearly alike.",
+        "Weigh the assumptions you cannot test."
+      ],
+      "examples": [
+        "Treated group goes 50 to 56 (+6). Control goes 48 to 50 (+2). Difference in differences = 6 - 2 = 4.",
+        "Treated 30 to 27 (-3). Control 28 to 20 (-8). Estimate = -3 - (-8) = +5."
+      ],
+      "figures": [
+        {
+          "type": "table",
+          "shows": "Before and after means for two groups with the difference in differences worked in cells.",
+          "learnerAction": "Fill in the cells in order.",
+          "placement": "After the idea of a comparison group."
+        },
+        {
+          "type": "graph_plot",
+          "shows": "Two lines before and after, with a dashed counterfactual for the treated group parallel to the control line.",
+          "learnerAction": "none",
+          "placement": "The parallel-trends step."
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-did",
+          "sample": "Treated: 30 to 27. Control: 28 to 20. What is the difference in differences (treated change minus control change)?",
+          "answer": "5"
+        },
+        {
+          "kind": "choice",
+          "targets": "assess-assumption",
+          "sample": "What does a difference-in-differences estimate rely on?",
+          "answer": "The groups would have changed equally without treatment",
+          "choices": [
+            "The groups started at equal levels",
+            "The groups would have changed equally without treatment",
+            "The sample is large",
+            "The treated group was chosen at random"
+          ]
+        },
+        {
+          "kind": "single-term",
+          "targets": "assess-assumption",
+          "sample": "What is the name of the design that compares people just above and just below an eligibility cut-off?",
+          "answer": "Regression discontinuity"
+        }
+      ],
+      "sourceIds": [
+        "hernan-robins",
+        "os-stats",
+        "pearl-2009"
+      ],
+      "historyNotes": [
+        "John Snow compared cholera deaths in 1854 London households served by two water companies, one drawing from the Thames upstream of the sewage and one downstream. He reported about 315 deaths per 10,000 houses for the Southwark and Vauxhall company and 37 for Lambeth."
+      ],
+      "estimatedMinutes": 13
+    }
+  ],
+  "courseCheck": "Mixed items that ask the learner to compute a standard error and interval, read a p-value in words, estimate power or sample size, correct for several tests, predict from a fitted line, find a difference in differences, and pick the right adjustment set from a small diagram. At least a third should give a short study description and ask whether its conclusion is causal.",
+  "platformNeeds": [
+    "A scatter-with-fit figure: draggable line, squared residual squares, least-squares reveal. coordinate_plane covers points but not residual squares. Fallback: svg_figure with three switchable views (data, a guess line with gaps, the fitted line).",
+    "A causal-diagram figure: nodes and arrows with click-to-condition and path colouring. Fallback: svg_figure with switchable views for each structure.",
+    "An inference_explorer case for a randomisation test (enumerate assignments) beyond the existing allocation model. Fallback: table figure listing the 20 assignments.",
+    "The inference_explorer power model's tail convention (one or two sided) should be stated in its schema; questions here assume two-sided."
+  ],
+  "unverified": [
+    "All sources: the research environment could not reach the internet (proxy denied every host), so every source is marked verified false. URLs are the standard locations as remembered.",
+    "t critical values (2.131 for 15 df, 2.306 for 8 df) are standard table values from memory; check against a t table.",
+    "Kidney stone counts (273/350, 289/350, 81/87, 234/270, 192/263, 55/80) are from the 1986 BMJ paper as widely reproduced; check the original.",
+    "Snow's 315 and 37 deaths per 10,000 houses are from memory; check Snow's 1855 table before quoting.",
+    "The ASA statement is described as the association's first position on a specific practice matter; this is commonly said but not checked.",
+    "Power question answers assume a two-sided test with 1.96 and the normal model; the explorer's convention may differ slightly."
+  ]
+}

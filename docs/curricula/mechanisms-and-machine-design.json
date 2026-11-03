@@ -1,0 +1,1174 @@
+{
+  "id": "mechanisms-and-machine-design",
+  "title": "Mechanisms and Machine Design",
+  "family": "B",
+  "voice": "A",
+  "description": "How linkages, cams, gears, shafts, bearings, springs and bolts make machines move, last and fit together.",
+  "audience": "Adults who have done Engineering: Structures and Machines and want to see how real machines are put together. They know forces, moments, stress, simple gear ratios and levers, and basic trigonometry.",
+  "prerequisites": [
+    "engineering-structures-and-machines",
+    "physics-motion-and-forces"
+  ],
+  "outcomes": [
+    "You'll be able to count a mechanism's freedoms and judge a four-bar linkage.",
+    "You'll be able to size a spur-gear pair and read a planetary train.",
+    "You'll be able to estimate bearing life, spring rates and bolt preload.",
+    "You'll be able to read a tolerance fit and judge a fatigue risk."
+  ],
+  "sources": [
+    {
+      "id": "mit-2-72",
+      "title": "MIT OCW 2.72 Elements of Mechanical Design",
+      "url": "https://ocw.mit.edu/courses/2-72-elements-of-mechanical-design-spring-2009/",
+      "licence": "CC BY-NC-SA 4.0",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "mit-2-007",
+      "title": "MIT OCW 2.007 Design and Manufacturing I (linkages, cams, gears, mechanisms)",
+      "url": "https://ocw.mit.edu/courses/2-007-design-and-manufacturing-i-spring-2009/",
+      "licence": "CC BY-NC-SA 4.0",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "libretexts-me",
+      "title": "LibreTexts Engineering: Mechanical Engineering bookshelf",
+      "url": "https://eng.libretexts.org/Bookshelves/Mechanical_Engineering",
+      "licence": "Varies by book; mostly CC BY-NC-SA",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "openstax-up1",
+      "title": "OpenStax University Physics Volume 1 (rotation, oscillation, work and energy)",
+      "url": "https://openstax.org/books/university-physics-volume-1/pages/1-introduction",
+      "licence": "CC BY 4.0",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "iso-286",
+      "title": "ISO 286-1:2010 Geometrical product specifications, ISO code system for tolerances (public summary only)",
+      "url": "https://www.iso.org/standard/45975.html",
+      "licence": "Copyright ISO, paywalled",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "iso-281",
+      "title": "ISO 281 Rolling bearings, dynamic load ratings and rating life (public summary only)",
+      "url": "https://www.iso.org/standard/38102.html",
+      "licence": "Copyright ISO, paywalled",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "iso-898",
+      "title": "ISO 898-1 Mechanical properties of fasteners, bolts, screws and studs (public summary only)",
+      "url": "https://www.iso.org/standard/60610.html",
+      "licence": "Copyright ISO, paywalled",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "wiki-mech",
+      "title": "Wikipedia: Four-bar linkage, Grashof condition, Cam, Involute gear, Epicyclic gearing, Goodman relation",
+      "url": "https://en.wikipedia.org/wiki/Four-bar_linkage",
+      "licence": "CC BY-SA 4.0",
+      "use": "reference",
+      "verified": false
+    }
+  ],
+  "modules": [
+    {
+      "id": "linkages-cams",
+      "title": "Linkages and cams",
+      "summary": "How a few rigid links and a profiled disc turn steady rotation into useful, controlled motion."
+    },
+    {
+      "id": "gears",
+      "title": "Gears in depth",
+      "summary": "Why gear teeth mesh smoothly, how epicyclic and worm trains reach big ratios, and what the teeth push on."
+    },
+    {
+      "id": "supports",
+      "title": "Shafts, bearings and springs",
+      "summary": "What carries the torque, what lets it spin, and what stores the energy."
+    },
+    {
+      "id": "joints-failure",
+      "title": "Joints, fits and failure",
+      "summary": "Holding parts together, controlling how well they fit, and predicting how they break."
+    }
+  ],
+  "lessons": [
+    {
+      "id": "mobility-and-degrees-of-freedom",
+      "moduleId": "linkages-cams",
+      "title": "Counting what a mechanism can do",
+      "objective": "Use the mobility formula to find how many inputs a planar linkage needs.",
+      "prerequisiteLessonIds": [],
+      "concepts": [
+        {
+          "id": "link-joint",
+          "title": "Links and joints",
+          "summary": "A link is a rigid body; a joint is a connection that allows some relative motion and blocks the rest."
+        },
+        {
+          "id": "mobility",
+          "title": "Mobility",
+          "summary": "For a planar mechanism, M = 3(n - 1) - 2*j1 - j2, where n counts links including the fixed frame, j1 counts one-freedom joints and j2 counts two-freedom joints."
+        }
+      ],
+      "skills": [
+        "count-links-and-joints",
+        "compute-mobility",
+        "tell-mechanism-from-structure"
+      ],
+      "misconceptions": [
+        "Learners count the frame as a link only sometimes, so every answer is off by three. The frame is a link because it is the reference body.",
+        "Learners think a mechanism with mobility 1 is weak or slow. Mobility 1 means one input fully decides the motion, which is what a machine wants.",
+        "A pin joint is counted as two joints when two links meet there. A pin joint joining two links is one joint; a pin through three links counts as two."
+      ],
+      "sequence": [
+        "Start with a free body in a plane: three freedoms (x, y, turn).",
+        "Pin two bodies together and count what is lost: two freedoms.",
+        "Build the formula from that bookkeeping: each extra link adds 3, each pin takes away 2.",
+        "Apply to a triangle (mobility 0, a structure), a four-bar (1) and a five-bar (2).",
+        "Note the formula's limits: parallel links in special geometry can move although it says 0."
+      ],
+      "examples": [
+        "Triangle of three links and three pins: n=3, j1=3, M=3*2-6=0, a rigid structure (ties back to trusses).",
+        "Four-bar: n=4, j1=4, M=3*3-8=1.",
+        "Five-bar: n=5, j1=5, M=3*4-10=2, so two motors are needed to place its coupler point.",
+        "Cam with a flat-faced follower sliding in a guide: frame, cam, follower; revolute cam-frame, prismatic follower-frame (j1=2), cam-follower contact (j2=1): M=3*2-4-1=1."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Four sketches (triangle, four-bar, five-bar, cam and follower) with links numbered and joints marked.",
+          "learnerAction": "Tap each joint to mark it counted; a tally of n, j1 and j2 fills in under the sketch.",
+          "placement": "Counting"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "The same four-bar drawn with one link highlighted as the fixed frame, then re-labelled with the frame hidden.",
+          "learnerAction": "Toggle the frame to see the count change.",
+          "placement": "Why the frame counts"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-mobility",
+          "sample": "A planar linkage has 6 links including the frame and 7 pin joints. Its mobility is?",
+          "answer": "1"
+        },
+        {
+          "kind": "choice",
+          "targets": "tell-mechanism-from-structure",
+          "sample": "A frame of 5 links joined by 6 pins has mobility 3*4-12 = 0. What is it?",
+          "answer": "A structure",
+          "choices": [
+            "A structure",
+            "A mechanism with one input",
+            "A mechanism with two inputs",
+            "A mechanism that cannot be built"
+          ]
+        },
+        {
+          "kind": "numeric",
+          "targets": "count-links-and-joints",
+          "sample": "A crank, a connecting rod, a slider and the frame form a slider-crank with 3 pin joints and 1 sliding joint. Its mobility is?",
+          "answer": "1"
+        }
+      ],
+      "sourceIds": [
+        "mit-2-007",
+        "wiki-mech"
+      ],
+      "historyNotes": [
+        "Pafnuty Chebyshev (1850s) and Martin Grubler (1883) gave early versions of the mobility count; the planar form is usually named Grubler's or the Chebyshev-Grubler-Kutzbach criterion."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "four-bar-linkages",
+      "moduleId": "linkages-cams",
+      "title": "Four-bar linkages",
+      "objective": "Say from four link lengths whether a four-bar can turn fully and where it transmits force badly.",
+      "prerequisiteLessonIds": [
+        "mobility-and-degrees-of-freedom"
+      ],
+      "concepts": [
+        {
+          "id": "grashof",
+          "title": "Grashof condition",
+          "summary": "If the shortest plus the longest link is no more than the sum of the other two, at least one link can rotate fully."
+        },
+        {
+          "id": "transmission-angle",
+          "title": "Transmission angle",
+          "summary": "The angle between the coupler and the output link; near 90 degrees the coupler pushes the output efficiently, and below about 40 degrees the linkage jams or wears."
+        }
+      ],
+      "skills": [
+        "apply-grashof",
+        "classify-four-bar",
+        "spot-poor-transmission"
+      ],
+      "misconceptions": [
+        "Learners expect the longest link to be the crank. The crank in a crank-rocker is the shortest link, next to the frame.",
+        "Learners think Grashof says the linkage works well. It says only that one link can turn fully, not that forces transmit well.",
+        "Learners confuse the transmission angle with the angle of any link to the horizontal; it is the angle between coupler and output, measured at their joint."
+      ],
+      "sequence": [
+        "Name the four links: frame, crank, coupler, rocker.",
+        "Ask which link can make a full turn and show what blocks the others.",
+        "State the Grashof test s + l <= p + q and what it guarantees.",
+        "Classify: crank-rocker (shortest is the crank), double-crank (shortest is the frame), double-rocker (shortest is the coupler), non-Grashof triple-rocker.",
+        "Show a transmission angle sweeping through the stroke and where it is worst.",
+        "Window-wiper and sewing-machine needle as real crank-rockers."
+      ],
+      "examples": [
+        "Links 20, 50, 40, 60 mm: s=20, l=60, s+l=80, p+q=90, so 80 <= 90 is Grashof. With the 20 mm link as the crank it is a crank-rocker.",
+        "Links 30, 40, 60, 80 mm: s+l=110, p+q=100, 110 > 100, not Grashof, so every link only rocks.",
+        "Links 30, 40, 60, 60 mm: s+l=90, p+q=100, Grashof by 10 mm of margin; the same four lengths with the 30 mm link as the frame give a double-crank."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A four-bar linkage with a draggable crank angle, a traced coupler-point curve and a live transmission-angle readout.",
+          "learnerAction": "Drag the crank round; see the rocker swing and the transmission angle change.",
+          "placement": "Crank-rocker motion and jamming"
+        },
+        {
+          "type": "table",
+          "shows": "Eight link-length sets with columns for s+l, p+q and Grashof yes/no hidden until the learner commits.",
+          "learnerAction": "Fill the yes/no for each set.",
+          "placement": "Grashof test"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "choice",
+          "targets": "apply-grashof",
+          "sample": "Link lengths 25, 55, 45, 70 mm. Is the linkage Grashof?",
+          "answer": "Yes: 25+70=95 <= 55+45=100",
+          "choices": [
+            "Yes: 25+70=95 <= 55+45=100",
+            "No: 25+70=95 > 55+45=100",
+            "No: 25+55=80 < 45+70=115",
+            "Cannot be said without the frame"
+          ]
+        },
+        {
+          "kind": "single-term",
+          "targets": "classify-four-bar",
+          "sample": "In a Grashof four-bar, the shortest link is fixed as the frame. The linkage is a double-___ (crank or rocker).",
+          "answer": "crank"
+        },
+        {
+          "kind": "choice",
+          "targets": "spot-poor-transmission",
+          "sample": "Which transmission angle risks jamming?",
+          "answer": "15 degrees",
+          "choices": [
+            "15 degrees",
+            "50 degrees",
+            "75 degrees",
+            "90 degrees"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "mit-2-007",
+        "wiki-mech"
+      ],
+      "historyNotes": [
+        "Franz Grashof (1826-1893) published the rotatability condition in his 1883 Theoretische Maschinenlehre."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "slider-crank-and-quick-return",
+      "moduleId": "linkages-cams",
+      "title": "Slider-cranks and quick returns",
+      "objective": "Compute a slider-crank's stroke and position and explain how offset gives a quick return.",
+      "prerequisiteLessonIds": [
+        "four-bar-linkages"
+      ],
+      "concepts": [
+        {
+          "id": "stroke",
+          "title": "Stroke",
+          "summary": "In a slider-crank with no offset the slider travels twice the crank radius."
+        },
+        {
+          "id": "quick-return",
+          "title": "Quick return",
+          "summary": "When the forward and return strokes take different crank angles, the ratio of the longer to the shorter is the time ratio, (180 + a)/(180 - a) for offset angle a."
+        }
+      ],
+      "skills": [
+        "compute-stroke",
+        "compute-slider-position",
+        "compute-time-ratio"
+      ],
+      "misconceptions": [
+        "Learners expect the slider speed to be constant when the crank is. It slows to zero at each end of the stroke.",
+        "Learners think a longer connecting rod lengthens the stroke. Stroke is set by the crank radius only; the rod changes the shape of the motion.",
+        "Learners expect a quick-return machine to do more work per cycle. It only changes how the cycle is shared between cutting and returning."
+      ],
+      "sequence": [
+        "Start from the engine: piston, rod, crank.",
+        "Write slider position x = r cos t + sqrt(l^2 - r^2 sin^2 t) and see the two extremes.",
+        "Stroke = 2r, independent of rod length.",
+        "Show speed going to zero at both ends and the piston's asymmetry for a short rod.",
+        "Offset the slider line so the forward and return sweeps are unequal angles.",
+        "Time ratio = (180 + a)/(180 - a); a shaper's cutting stroke runs slow, the return fast."
+      ],
+      "examples": [
+        "Crank r=50 mm, rod l=200 mm: x(0)=250 mm, x(180)=150 mm, stroke 100 mm. At 90 degrees x=sqrt(200^2-50^2)=193.6 mm.",
+        "Offset angle a=30 degrees: time ratio (180+30)/(180-30)=210/150=1.4. At 60 rpm the working stroke takes 210/360 s = 0.583 s and the return 0.417 s.",
+        "Crank 20 mm gives a 40 mm stroke; with a 20 mm longer rod the stroke is unchanged."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Slider-crank with a dot tracing slider position against crank angle (one cycle), rod length adjustable.",
+          "learnerAction": "Drag the crank; shorten the rod and watch the curve lose symmetry.",
+          "placement": "Position curve"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "Offset slider-crank with the two extreme crank positions drawn and the offset angle a marked.",
+          "learnerAction": "Set the offset; the forward and return arcs are shaded and their ratio shown after the learner estimates it.",
+          "placement": "Time ratio"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-stroke",
+          "sample": "A slider-crank has crank radius 35 mm and rod 140 mm. The stroke in mm is?",
+          "answer": "70"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-slider-position",
+          "sample": "r=50 mm, l=200 mm, crank at 90 degrees. Slider distance from the crank centre in mm, to 1 decimal?",
+          "answer": "193.6"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-time-ratio",
+          "sample": "An offset gives a=20 degrees. The forward-to-return time ratio to 2 decimals?",
+          "answer": "1.25"
+        }
+      ],
+      "sourceIds": [
+        "mit-2-007",
+        "openstax-up1"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "cams-and-followers",
+      "moduleId": "linkages-cams",
+      "title": "Cams and followers",
+      "objective": "Pick a cam motion law and find a follower's peak speed from rise, lift and angle.",
+      "prerequisiteLessonIds": [
+        "slider-crank-and-quick-return"
+      ],
+      "concepts": [
+        {
+          "id": "cam-profile",
+          "title": "Cam profile",
+          "summary": "The cam's outline fixes the follower's displacement for every cam angle."
+        },
+        {
+          "id": "motion-law",
+          "title": "Motion law",
+          "summary": "Constant velocity, simple harmonic and cycloidal motion trade peak speed and acceleration against smoothness."
+        }
+      ],
+      "skills": [
+        "read-displacement-diagram",
+        "compute-peak-follower-speed",
+        "choose-motion-law"
+      ],
+      "misconceptions": [
+        "Learners read the cam profile as the displacement graph. The graph is displacement against cam angle; the profile also depends on the base circle and follower.",
+        "Learners think constant-velocity motion is the gentlest. At its ends acceleration is theoretically infinite, which hammers the follower.",
+        "Learners assume bigger lift needs a bigger cam; the base circle sets size and pressure angle."
+      ],
+      "sequence": [
+        "Build a displacement diagram: rise, dwell, return, dwell.",
+        "Constant velocity: simple slope, but corners.",
+        "Simple harmonic motion: s = (h/2)(1 - cos(pi t / T)), peak speed pi/2 times the average.",
+        "Cycloidal: smooth start and end, peak speed twice the average.",
+        "Pressure angle and base circle: why small cams jam.",
+        "Valve train as the standard example."
+      ],
+      "examples": [
+        "Lift 20 mm in 0.25 s. Constant velocity: 80 mm/s. SHM peak: pi/2*80=125.7 mm/s. Cycloidal peak: 160 mm/s.",
+        "SHM peak acceleration pi^2 h/(2T^2)= pi^2*20/(2*0.0625)=1579 mm/s^2, about 1.58 m/s^2. Cycloidal: 2 pi h/T^2 = 2011 mm/s^2.",
+        "Cam turns at 60 rpm: 1 s per turn, so a 90-degree rise takes 0.25 s."
+      ],
+      "figures": [
+        {
+          "type": "graph_plot",
+          "shows": "Displacement, velocity and acceleration curves for the three motion laws over one rise.",
+          "learnerAction": "Switch laws; drag the rise time and read peak values.",
+          "placement": "Motion laws"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A disc cam, roller follower and its displacement diagram side by side.",
+          "learnerAction": "Drag the cam angle; a marker moves on both.",
+          "placement": "Profile vs diagram"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-peak-follower-speed",
+          "sample": "A follower rises 30 mm in 0.3 s with simple harmonic motion. Peak speed in mm/s, to 1 decimal? (average 100 mm/s)",
+          "answer": "157.1"
+        },
+        {
+          "kind": "choice",
+          "targets": "choose-motion-law",
+          "sample": "Which law has infinite theoretical acceleration at the start of the rise?",
+          "answer": "Constant velocity",
+          "choices": [
+            "Constant velocity",
+            "Simple harmonic",
+            "Cycloidal",
+            "None of them"
+          ]
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-peak-follower-speed",
+          "sample": "Cycloidal rise of 40 mm in 0.5 s. Peak speed in mm/s?",
+          "answer": "160"
+        }
+      ],
+      "sourceIds": [
+        "mit-2-007",
+        "wiki-mech"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "gear-tooth-geometry",
+      "moduleId": "gears",
+      "title": "Why gear teeth are curved",
+      "objective": "Compute pitch diameters, centre distance and module for a spur-gear pair and say why the involute is used.",
+      "prerequisiteLessonIds": [
+        "cams-and-followers"
+      ],
+      "concepts": [
+        {
+          "id": "module",
+          "title": "Module",
+          "summary": "Module m = pitch diameter / number of teeth in mm; two gears mesh only if their modules match."
+        },
+        {
+          "id": "involute",
+          "title": "Involute tooth",
+          "summary": "An involute curve keeps the speed ratio constant even if the centre distance is slightly off, because contact stays on one fixed line of action."
+        },
+        {
+          "id": "pressure-angle",
+          "title": "Pressure angle",
+          "summary": "The angle between the line of action and the common tangent of the pitch circles; 20 degrees is standard."
+        }
+      ],
+      "skills": [
+        "compute-pitch-diameter",
+        "compute-centre-distance",
+        "identify-module"
+      ],
+      "misconceptions": [
+        "Learners think teeth of the same count mesh. They also need the same module and pressure angle.",
+        "Learners read the outside diameter as the pitch diameter; addendum adds 1 module each side, so da = m(z + 2).",
+        "Learners think the involute shape is chosen for looks; its geometry gives constant ratio and tolerance to centre-distance error."
+      ],
+      "sequence": [
+        "Recall ratio from tooth counts (from the earlier gear-train lesson, not repeated).",
+        "Why a ratio from rolling cylinders would slip, and what teeth add.",
+        "Module and pitch circle: d = m z.",
+        "Centre distance a = m(z1 + z2)/2.",
+        "Involute: unwrap string from a base circle; base diameter db = d cos(phi).",
+        "Contact ratio above 1 so there is always a tooth in contact; undercut below about 17 teeth at 20 degrees."
+      ],
+      "examples": [
+        "m=2 mm, z1=20, z2=45: d1=40, d2=90, centre distance 65 mm, ratio 2.25. Base circle of the small gear: 40*cos20=37.59 mm.",
+        "Outside diameter 124 mm, 60 teeth: m = 124/(60+2) = 2 mm.",
+        "Circular pitch p = pi*m = 6.283 mm for m=2."
+      ],
+      "figures": [
+        {
+          "type": "engineering_explorer",
+          "shows": "gears model with driver 20, driven 45, input speed 1000 rpm; second case 20 and 30.",
+          "learnerAction": "Change tooth counts and see the speed and torque.",
+          "placement": "Ratio versus size"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "An involute drawn by unwrapping a string from a base circle, with the line of action and pressure angle marked.",
+          "learnerAction": "Drag the unwrapping point.",
+          "placement": "Involute"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-centre-distance",
+          "sample": "Module 3 mm, gears of 18 and 42 teeth. Centre distance in mm?",
+          "answer": "90.0"
+        },
+        {
+          "kind": "numeric",
+          "targets": "identify-module",
+          "sample": "A gear has 40 teeth and an outside diameter of 84 mm. Its module in mm?",
+          "answer": "2.0"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-pitch-diameter",
+          "sample": "Module 1.5 mm, 36 teeth. Pitch diameter in mm?",
+          "answer": "54.0"
+        }
+      ],
+      "sourceIds": [
+        "mit-2-007",
+        "mit-2-72",
+        "wiki-mech"
+      ],
+      "historyNotes": [
+        "Involute gear teeth were analysed by Leonhard Euler in the 1750s."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "planetary-and-worm-gears",
+      "moduleId": "gears",
+      "title": "Planetary and worm gears",
+      "objective": "Find the ratio of a planetary set and the lead angle that makes a worm drive self-locking.",
+      "prerequisiteLessonIds": [
+        "gear-tooth-geometry"
+      ],
+      "concepts": [
+        {
+          "id": "epicyclic",
+          "title": "Epicyclic train",
+          "summary": "A sun, planets on a carrier and a ring share an axis, so a large ratio fits in a small volume."
+        },
+        {
+          "id": "worm",
+          "title": "Worm drive",
+          "summary": "A worm of N starts drives a wheel of Z teeth with ratio Z/N, and may lock if friction beats the lead angle."
+        }
+      ],
+      "skills": [
+        "compute-planetary-ratio",
+        "compute-worm-ratio",
+        "judge-self-locking"
+      ],
+      "misconceptions": [
+        "Learners treat the planets as idlers and ignore the carrier. The carrier carries the output.",
+        "Learners think planet size changes the ratio; it only sets ring size (Zr = Zs + 2Zp).",
+        "Learners think every worm is self-locking; it depends on the lead angle and friction."
+      ],
+      "sequence": [
+        "Why a single stage stops at about 6:1 to 10:1 in practice.",
+        "Three parts on one axis; hold one, drive one, take the third.",
+        "Ring fixed, sun input, carrier output: ratio 1 + Zr/Zs.",
+        "Sun fixed, ring in, carrier out: 1 + Zs/Zr.",
+        "Worm: ratio Z/N; lead angle tan l = lead/(pi d); self-lock if l < friction angle.",
+        "Where each is used: automatic gearboxes, hub gears, steering, hoists."
+      ],
+      "examples": [
+        "Sun 20, ring 80: planets (80-20)/2=30 teeth; ratio 1+80/20=5; sun at 1000 rpm gives carrier 200 rpm.",
+        "Sun fixed, ring 80 input: carrier at ring speed /(1+20/80)=0.8 of ring speed.",
+        "Worm single start, axial pitch 5 mm, pitch diameter 20 mm: tan l = 5/(pi*20)=0.0796, l=4.55 degrees; wheel of 40 teeth gives 40:1."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Planetary set with sun, three planets, carrier and ring; each part can be set as fixed, input or output.",
+          "learnerAction": "Choose roles and read the ratio; a locked part highlights.",
+          "placement": "Configurations"
+        },
+        {
+          "type": "engineering_explorer",
+          "shows": "gears model with two stages, 20/60 then 15/45.",
+          "learnerAction": "Compare with the single planetary stage.",
+          "placement": "Compound alternative"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-planetary-ratio",
+          "sample": "Ring fixed, sun input, carrier output. Sun 24 teeth, ring 96. The ratio?",
+          "answer": "5.0"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-planetary-ratio",
+          "sample": "Ring 90, sun 30, planets p teeth. Planet tooth count?",
+          "answer": "30.0"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-worm-ratio",
+          "sample": "A two-start worm drives a 50-tooth wheel. The ratio is N:1 with N =?",
+          "answer": "25"
+        }
+      ],
+      "sourceIds": [
+        "mit-2-72",
+        "wiki-mech"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "gear-forces-and-shafts",
+      "moduleId": "supports",
+      "title": "What gears push on, and what shafts carry",
+      "objective": "Resolve a gear tooth force and find a shaft's torsion stress and twist.",
+      "prerequisiteLessonIds": [
+        "planetary-and-worm-gears"
+      ],
+      "concepts": [
+        {
+          "id": "tooth-force",
+          "title": "Tooth force",
+          "summary": "The tooth force is normal to the tooth; its tangential part carries the torque, its radial part pushes the gears apart."
+        },
+        {
+          "id": "torsion",
+          "title": "Torsion",
+          "summary": "A solid round shaft carrying torque T has surface shear stress 16T/(pi d^3) and twists by TL/(GJ)."
+        }
+      ],
+      "skills": [
+        "resolve-tooth-force",
+        "compute-shaft-torque",
+        "compute-torsion-stress"
+      ],
+      "misconceptions": [
+        "Learners treat the torque as the force. The tangential force is torque divided by pitch radius.",
+        "Learners forget the radial component, which loads the bearings.",
+        "Learners think doubling the diameter doubles shaft strength. It multiplies it by eight."
+      ],
+      "sequence": [
+        "Tangential force Ft = T/r.",
+        "Radial force Fr = Ft tan(phi), normal force Ft/cos(phi).",
+        "These become shaft bending and bearing loads.",
+        "Torque from power: T = P/w.",
+        "Shear stress and twist in a solid round shaft; d^3 and d^4.",
+        "Stress concentrations at keyways and shoulders."
+      ],
+      "examples": [
+        "Torque 40 N*m, pitch radius 50 mm: Ft=800 N, Fr=800*tan20=291.2 N, normal 851.3 N.",
+        "5 kW at 1500 rpm: w=157.08 rad/s, T=31.83 N*m. A 20 mm steel shaft: tau=20.3 MPa.",
+        "Twist over 0.5 m with G=80 GPa: 0.73 degrees."
+      ],
+      "figures": [
+        {
+          "type": "engineering_explorer",
+          "shows": "gears model, 20/45, input torque 40 N*m, with arrows on the tooth contact.",
+          "learnerAction": "Change torque and see how the shaft torque scales by the ratio.",
+          "placement": "Torque by stage"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "Shaft cross-section with shear stress shown growing linearly from the axis outward.",
+          "learnerAction": "Drag the diameter; stress falls as d cubed.",
+          "placement": "Torsion"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "resolve-tooth-force",
+          "sample": "Torque 60 N*m on a gear of pitch radius 75 mm. Tangential force in N?",
+          "answer": "800"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-shaft-torque",
+          "sample": "3 kW at 1000 rpm. Torque in N*m to 1 decimal?",
+          "answer": "28.6"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-torsion-stress",
+          "sample": "Torque 31.83 N*m on a 20 mm solid shaft. Shear stress in MPa to 1 decimal?",
+          "answer": "20.3"
+        }
+      ],
+      "sourceIds": [
+        "mit-2-72",
+        "libretexts-me",
+        "openstax-up1"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "bearings-and-life",
+      "moduleId": "supports",
+      "title": "Bearings and how long they last",
+      "objective": "Estimate rolling-bearing life from load and rating, and choose plain or rolling.",
+      "prerequisiteLessonIds": [
+        "gear-forces-and-shafts"
+      ],
+      "concepts": [
+        {
+          "id": "l10",
+          "title": "L10 life",
+          "summary": "The number of million revolutions that 90 percent of identical bearings survive: L10 = (C/P)^p."
+        },
+        {
+          "id": "bearing-types",
+          "title": "Bearing types",
+          "summary": "Plain bearings run on a lubricant film and suit high load at low speed; rolling bearings trade a small start-up friction for rolling contact."
+        }
+      ],
+      "skills": [
+        "compute-l10",
+        "convert-life-to-hours",
+        "pick-bearing-type"
+      ],
+      "misconceptions": [
+        "Learners treat L10 as the life of each bearing. 10 percent fail earlier and half last about five times longer.",
+        "Learners expect life to fall in proportion to load; for ball bearings it falls with the cube.",
+        "Learners think rolling beats plain in every case; a plain bearing tolerates shock and is quieter and cheaper."
+      ],
+      "sequence": [
+        "Why friction and wear decide bearing design.",
+        "Plain bearing and the oil film; rolling: balls and rollers.",
+        "Dynamic rating C: load for 1 million revolutions.",
+        "L10 = (C/P)^3 for balls, ^(10/3) for rollers.",
+        "Hours: L10h = 10^6 L10/(60 n).",
+        "Preload, clearance and lubrication, briefly."
+      ],
+      "examples": [
+        "C=14 kN, P=2 kN, ball: L10 = 7^3 = 343 million revolutions. At 1500 rpm: 343e6/(60*1500)= 3811 h.",
+        "Same loads with roller bearings: 7^(10/3) = 656 million revolutions.",
+        "Doubling P cuts a ball bearing's life to 1/8."
+      ],
+      "figures": [
+        {
+          "type": "graph_plot",
+          "shows": "L10 life against load for ball and roller bearings, log-log.",
+          "learnerAction": "Move the load; the point slides along each curve.",
+          "placement": "Load-life law"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "Cross sections of a deep-groove ball bearing, a roller bearing and a plain bush.",
+          "learnerAction": "Tap parts to label inner race, outer race, cage.",
+          "placement": "Types"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-l10",
+          "sample": "C=20 kN, P=4 kN, ball bearing. L10 in million revolutions?",
+          "answer": "125"
+        },
+        {
+          "kind": "numeric",
+          "targets": "convert-life-to-hours",
+          "sample": "L10 = 343 million revolutions at 1500 rpm. Hours to the nearest whole?",
+          "answer": "3811"
+        },
+        {
+          "kind": "choice",
+          "targets": "compute-l10",
+          "sample": "Load doubles on a ball bearing. L10 becomes?",
+          "answer": "One eighth",
+          "choices": [
+            "Half",
+            "One quarter",
+            "One eighth",
+            "Unchanged"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "iso-281",
+        "mit-2-72"
+      ],
+      "historyNotes": [
+        "Richard Stribeck's 1901-02 experiments on friction in plain bearings produced the Stribeck curve."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "springs",
+      "moduleId": "supports",
+      "title": "Springs",
+      "objective": "Find a helical spring's stiffness, stress and natural frequency, and combine springs.",
+      "prerequisiteLessonIds": [
+        "bearings-and-life"
+      ],
+      "concepts": [
+        {
+          "id": "spring-rate",
+          "title": "Spring rate",
+          "summary": "k = G d^4 /(8 D^3 N) for a helical compression spring with wire diameter d, mean coil diameter D and N active coils."
+        },
+        {
+          "id": "wahl",
+          "title": "Wahl factor",
+          "summary": "The shear stress in the wire is raised by a curvature factor Kw = (4C-1)/(4C-4) + 0.615/C, where C = D/d."
+        }
+      ],
+      "skills": [
+        "compute-spring-rate",
+        "combine-springs",
+        "compute-natural-frequency"
+      ],
+      "misconceptions": [
+        "Learners think the wire is loaded in tension. A helical spring twists the wire.",
+        "Learners add stiffnesses of springs in series. In series, flexibilities add.",
+        "Learners think thicker coils make a stiffer spring, but D enters as D cubed in the denominator."
+      ],
+      "sequence": [
+        "Springs store energy: E = 1/2 k x^2.",
+        "Twist the wire: the coil is a torsion bar wrapped round.",
+        "k = G d^4/(8 D^3 N).",
+        "Series and parallel combinations.",
+        "Stress: tau = Kw 8FD/(pi d^3).",
+        "Spring plus mass gives natural frequency f = sqrt(k/m)/2pi; surge in fast machines."
+      ],
+      "examples": [
+        "d=2 mm, D=16 mm, N=10, G=80 GPa: k=80000*16/(8*4096*10)=3.906 N/mm. Index C=8, Kw=1.184; at F=40 N tau=203.7*1.184=241.2 MPa.",
+        "Two 4 N/mm springs in series: 2 N/mm; in parallel 8 N/mm.",
+        "Mass 0.5 kg on k=3906 N/m: f=14.1 Hz."
+      ],
+      "figures": [
+        {
+          "type": "graph_plot",
+          "shows": "Force-deflection line with area shaded as stored energy.",
+          "learnerAction": "Change k and compression and read the energy.",
+          "placement": "Spring energy"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "Two springs in series and in parallel with the shared load path marked.",
+          "learnerAction": "Drag a spring in or out of each arrangement.",
+          "placement": "Combination"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "combine-springs",
+          "sample": "Springs of 6 N/mm and 3 N/mm in series. Combined rate in N/mm?",
+          "answer": "2"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-spring-rate",
+          "sample": "d=3 mm, D=24 mm, N=8, G=80 GPa. k in N/mm to 2 decimals?",
+          "answer": "7.32"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-natural-frequency",
+          "sample": "k=3906 N/m, m=0.5 kg. Natural frequency in Hz, 1 decimal?",
+          "answer": "14.1"
+        }
+      ],
+      "sourceIds": [
+        "mit-2-72",
+        "openstax-up1",
+        "libretexts-me"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "bolted-joints-and-preload",
+      "moduleId": "joints-failure",
+      "title": "Bolted joints and preload",
+      "objective": "Find tightening torque and the share of an external load a bolt carries.",
+      "prerequisiteLessonIds": [
+        "springs"
+      ],
+      "concepts": [
+        {
+          "id": "preload",
+          "title": "Preload",
+          "summary": "A bolt works as a stiff spring pulling parts together; the initial tension is preload."
+        },
+        {
+          "id": "joint-constant",
+          "title": "Joint constant",
+          "summary": "C = kb/(kb+km) is the share of an added load that the bolt carries; the rest relieves clamping."
+        }
+      ],
+      "skills": [
+        "compute-tightening-torque",
+        "compute-bolt-load",
+        "choose-preload"
+      ],
+      "misconceptions": [
+        "Learners think the bolt carries the whole external load. Usually it carries a small share, because the clamped parts are much stiffer.",
+        "Learners think tighter is always better; preload is set below proof strength.",
+        "Learners read a bolt as a rigid pin rather than a spring."
+      ],
+      "sequence": [
+        "Why joints use friction, not shear, in many designs.",
+        "Bolt and clamped parts as two springs.",
+        "Preload target: about 75 percent of proof load.",
+        "Torque T = K F d.",
+        "Load share: bolt rise = C P; clamp loss = (1-C) P.",
+        "Separation at P = Fi/(1-C); property class 8.8 means 800 MPa tensile, 640 MPa yield."
+      ],
+      "examples": [
+        "M10x1.5, stress area 58 mm^2, class 8.8 proof 580 MPa: 75 percent preload = 0.75*580*58 = 25.2 kN.",
+        "T = 0.2*20000*0.01 = 40 N*m for a 20 kN preload.",
+        "kb:km = 1:4, so C=0.2; external 10 kN raises the bolt by 2 kN and clamping falls by 8 kN. Separation at 20/0.8 = 25 kN."
+      ],
+      "figures": [
+        {
+          "type": "graph_plot",
+          "shows": "Force-extension diagram of bolt and members with preload and external load triangles.",
+          "learnerAction": "Drag the load; the bolt and clamp shares update.",
+          "placement": "Load sharing"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "Cutaway bolt joint showing thread, clamped plates and the load path.",
+          "learnerAction": "Hover to see friction vs shear.",
+          "placement": "Joint"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-tightening-torque",
+          "sample": "Preload 25 kN, K=0.2, d=12 mm. Torque in N*m?",
+          "answer": "60.0"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-bolt-load",
+          "sample": "C=0.25, external load 8 kN. Added bolt load in kN?",
+          "answer": "2"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compute-bolt-load",
+          "sample": "Fi=20 kN, C=0.2. External load that separates the joint in kN?",
+          "answer": "25"
+        }
+      ],
+      "sourceIds": [
+        "iso-898",
+        "mit-2-72"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "fits-and-tolerances",
+      "moduleId": "joints-failure",
+      "title": "Fits and tolerances",
+      "objective": "Read an ISO fit code and compute clearance or interference.",
+      "prerequisiteLessonIds": [
+        "bolted-joints-and-preload"
+      ],
+      "concepts": [
+        {
+          "id": "fit",
+          "title": "Fit",
+          "summary": "The relationship between a shaft and a hole: clearance, transition or interference."
+        },
+        {
+          "id": "basic-hole",
+          "title": "Basic-hole system",
+          "summary": "The hole is fixed with zero lower deviation (H); fits vary by shaft deviation letters."
+        }
+      ],
+      "skills": [
+        "read-fit-code",
+        "compute-clearance",
+        "stack-tolerances"
+      ],
+      "misconceptions": [
+        "Learners read a tolerance as an error. It is permission to vary.",
+        "Learners expect smaller tolerances always better; they cost more.",
+        "Learners add stack-up tolerances linearly always; statistical stack-up combines them as the root of the sum of squares."
+      ],
+      "sequence": [
+        "Why no part is exactly its nominal size.",
+        "Tolerance grades (IT6, IT7) and deviation letters.",
+        "Hole H7 for 25 mm: 0 to +21 micrometres.",
+        "Shaft g6: -20 to -7 micrometres; p6: +22 to +35.",
+        "Clearance and interference from the extremes.",
+        "Stack-up: worst case vs root-sum-square."
+      ],
+      "examples": [
+        "25 H7/g6: hole 25.000-25.021, shaft 24.980-24.993; clearance 0.007 to 0.041 mm.",
+        "25 H7/p6: shaft 25.022-25.035; interference 0.001 to 0.035 mm.",
+        "Three parts each +/-0.10: worst case +/-0.30, RSS sqrt(3*0.01)=0.173."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Tolerance zones for hole and shaft drawn as bars around a zero line, with clearance gap shaded.",
+          "learnerAction": "Select the fit; the bars slide.",
+          "placement": "Fit chart"
+        },
+        {
+          "type": "table",
+          "shows": "Fit codes against type (clearance, transition, interference).",
+          "learnerAction": "Sort codes into columns.",
+          "placement": "Fit types"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-clearance",
+          "sample": "Hole 25.000-25.021, shaft 24.980-24.993. Maximum clearance in mm?",
+          "answer": "0.041"
+        },
+        {
+          "kind": "choice",
+          "targets": "read-fit-code",
+          "sample": "H7/p6 is usually a?",
+          "answer": "Press (interference) fit",
+          "choices": [
+            "Free running fit",
+            "Locational clearance fit",
+            "Press (interference) fit",
+            "Loose fit"
+          ]
+        },
+        {
+          "kind": "numeric",
+          "targets": "stack-tolerances",
+          "sample": "Four parts, each +/-0.05 mm. Worst-case total tolerance in mm?",
+          "answer": "0.2"
+        }
+      ],
+      "sourceIds": [
+        "iso-286",
+        "mit-2-72"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "fatigue-and-failure",
+      "moduleId": "joints-failure",
+      "title": "How parts fail",
+      "objective": "Use Goodman and Miner to judge fatigue safety, and name the other common failure modes.",
+      "prerequisiteLessonIds": [
+        "fits-and-tolerances"
+      ],
+      "concepts": [
+        {
+          "id": "fatigue",
+          "title": "Fatigue",
+          "summary": "Repeated stress far below yield can grow a crack until the part breaks."
+        },
+        {
+          "id": "goodman",
+          "title": "Goodman line",
+          "summary": "sa/Se + sm/Su = 1/n combines alternating and mean stress into a safety factor."
+        }
+      ],
+      "skills": [
+        "apply-goodman",
+        "apply-miner",
+        "identify-failure-mode"
+      ],
+      "misconceptions": [
+        "Learners think a part that survives the first load survives forever.",
+        "Learners think strength alone fixes life; surface finish and notches matter.",
+        "Learners add the stress concentration factor to stress; it multiplies."
+      ],
+      "sequence": [
+        "Static failure: yield, fracture, buckling.",
+        "The S-N curve and the endurance limit (about half of Su for steels).",
+        "Modifiers: finish, size, load.",
+        "Stress concentration Kt.",
+        "Goodman safety factor.",
+        "Miner's cumulative damage."
+      ],
+      "examples": [
+        "Se=200, Su=500, sa=80, sm=100 MPa: 0.4+0.2 = 0.6, n=1.67.",
+        "Hole in plate: Kt about 3; 40 MPa nominal becomes 120 MPa.",
+        "10^5 cycles with N=4*10^5 (0.25) plus 2*10^5 with N=10^6 (0.2): damage 0.45."
+      ],
+      "figures": [
+        {
+          "type": "graph_plot",
+          "shows": "S-N curve on log axes with the endurance limit as a knee.",
+          "learnerAction": "Move the stress; read the cycles.",
+          "placement": "S-N"
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A broken shaft cross-section with beach marks and a fast-fracture zone.",
+          "learnerAction": "Tap zones.",
+          "placement": "Reading failures"
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "apply-goodman",
+          "sample": "Se=250, Su=600, sa=75, sm=120 MPa. Safety factor n to 2 decimals? (75/250+120/600=0.5)",
+          "answer": "2.0"
+        },
+        {
+          "kind": "numeric",
+          "targets": "apply-miner",
+          "sample": "0.25 of life used at one stress, 0.3 at another. Total damage?",
+          "answer": "0.55"
+        },
+        {
+          "kind": "numeric",
+          "targets": "identify-failure-mode",
+          "sample": "A hole gives Kt = 2.5 on a 60 MPa nominal stress. Peak stress in MPa?",
+          "answer": "150"
+        }
+      ],
+      "sourceIds": [
+        "mit-2-72",
+        "libretexts-me"
+      ],
+      "historyNotes": [
+        "August Woehler's railway axle tests in the 1850s-60s produced the S-N approach."
+      ],
+      "estimatedMinutes": 13
+    }
+  ],
+  "courseCheck": "A mixed check: count mobility of a new mechanism; apply Grashof; stroke of a slider-crank; module and centre distance; planetary ratio; torque to tooth force to shaft stress; L10 life; spring series rate; bolt torque and load share; fit clearance; Goodman factor.",
+  "platformNeeds": [
+    "A linkage and cam kinematics explorer (new figure type) with a draggable crank angle, coupler curves, transmission angle and cam displacement graphs.",
+    "A fits-and-tolerance diagram figure with bars for hole and shaft zones.",
+    "A bearing-life plot (graph_plot on log axes) with selectable bearing type; today it must be drawn as svg_figure."
+  ],
+  "unverified": [
+    "All source URLs could not be opened because the session had no outside network access; licences are from memory.",
+    "ISO 286 values (IT6=13, IT7=21 micrometres for 18-30 mm; g deviation -7; p deviation +22) are from memory of the standard tables.",
+    "M10 stress area 58 mm^2, class 8.8 proof 580 MPa from memory of ISO 898-1 / 724.",
+    "Grubler 1883 and Grashof 1883 attributions, Euler's 1750s involute work and Woehler dates from memory.",
+    "Standard 0.5 Su endurance estimate and Kt around 3 for a hole are textbook rules of thumb."
+  ]
+}

@@ -1,0 +1,1438 @@
+{
+  "id": "sound-and-audio-fundamentals",
+  "title": "Sound and Audio Fundamentals",
+  "family": "A",
+  "voice": "A",
+  "description": "What sound is, how we hear it, how it is measured and stored, and the principles behind shaping it: decibels, spectrum, sampling, compression, EQ, reverb and sound design.",
+  "audience": "A curious adult with school-level maths and physics who makes or wants to make audio for games, video or music, or simply wants to know why sound behaves as it does. No software or hardware needed; the course teaches concepts, and tools appear only as current examples.",
+  "prerequisites": [
+    "maths-foundations",
+    "physics-motion-and-forces"
+  ],
+  "outcomes": [
+    "You'll be able to relate frequency, wavelength, period and the speed of sound.",
+    "You'll be able to read a spectrum and explain timbre through harmonics.",
+    "You'll be able to calculate with decibels, including level changes from doubling distance or adding sources.",
+    "You'll be able to explain how hearing limits what we perceive and how masking enables lossy compression.",
+    "You'll be able to compute sampling limits, aliasing, bit-depth ranges and file sizes.",
+    "You'll be able to predict what a compressor, filter or reverb does to a signal.",
+    "You'll be able to build a sound for a purpose by layering and shaping its frequency, dynamics and space."
+  ],
+  "sources": [
+    {
+      "id": "openstax-college-physics",
+      "title": "College Physics 2e (OpenStax), chapter 17 Physics of Hearing",
+      "url": "https://openstax.org/books/college-physics-2e/pages/17-introduction-to-sound",
+      "licence": "CC BY 4.0",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "openstax-university-physics",
+      "title": "University Physics Volume 1 (OpenStax), chapter 17 Sound",
+      "url": "https://openstax.org/books/university-physics-volume-1/pages/17-introduction",
+      "licence": "CC BY 4.0",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "think-dsp",
+      "title": "Think DSP: Digital Signal Processing in Python (Allen B. Downey)",
+      "url": "https://greenteapress.com/wp/think-dsp/",
+      "licence": "CC BY-NC 4.0 (free online)",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "fletcher-munson",
+      "title": "H. Fletcher and W. A. Munson, 'Loudness, its definition, measurement and calculation', Journal of the Acoustical Society of America 5(2), 1933",
+      "url": "https://doi.org/10.1121/1.1915637",
+      "licence": "Copyright the publisher",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "shannon-1949",
+      "title": "C. E. Shannon, 'Communication in the presence of noise', Proceedings of the IRE 37(1), 1949",
+      "url": "https://doi.org/10.1109/JRPROC.1949.232969",
+      "licence": "Copyright IEEE; classic paper",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "niosh-98-126",
+      "title": "NIOSH, Criteria for a Recommended Standard: Occupational Noise Exposure (Publication 98-126), 1998",
+      "url": "https://www.cdc.gov/niosh/docs/98-126/",
+      "licence": "US government work, public domain",
+      "use": "adapt",
+      "verified": false
+    },
+    {
+      "id": "ebu-r128",
+      "title": "EBU Recommendation R 128: Loudness normalisation and permitted maximum level of audio signals",
+      "url": "https://tech.ebu.ch/publications/r128",
+      "licence": "Copyright EBU; freely available",
+      "use": "reference",
+      "verified": false
+    },
+    {
+      "id": "sabine-1922",
+      "title": "W. C. Sabine, Collected Papers on Acoustics, Harvard University Press, 1922 (includes 'Reverberation', 1900)",
+      "url": "https://archive.org/details/collectedpaperso00sabi",
+      "licence": "Public domain in the US",
+      "use": "reference",
+      "verified": false
+    }
+  ],
+  "modules": [
+    {
+      "id": "physics-of-sound",
+      "title": "The physics of sound",
+      "summary": "Sound as a wave, and the quantities that describe it: speed, frequency, wavelength, harmonics and resonance."
+    },
+    {
+      "id": "hearing-and-measurement",
+      "title": "Hearing and measurement",
+      "summary": "How the ear responds and how the decibel scale describes level."
+    },
+    {
+      "id": "digital-audio",
+      "title": "Digital audio",
+      "summary": "How a continuous wave becomes numbers and what is lost or kept in storage."
+    },
+    {
+      "id": "shaping-sound",
+      "title": "Shaping sound",
+      "summary": "Dynamics, filters, reverb and the principles of designing a sound."
+    }
+  ],
+  "lessons": [
+    {
+      "id": "sound-as-pressure-waves",
+      "moduleId": "physics-of-sound",
+      "title": "Sound as pressure waves",
+      "objective": "Explain how a vibrating source produces a wave in a medium, and use the speed of sound to find distances from delays.",
+      "prerequisiteLessonIds": [],
+      "concepts": [
+        {
+          "id": "sound-wave",
+          "title": "Sound wave",
+          "summary": "A sound wave is a travelling pattern of compressions and rarefactions in a medium, produced by a vibrating source."
+        },
+        {
+          "id": "longitudinal",
+          "title": "Longitudinal wave",
+          "summary": "In a longitudinal wave the particles move back and forth along the direction in which the wave travels."
+        },
+        {
+          "id": "speed-of-sound",
+          "title": "Speed of sound",
+          "summary": "The speed of sound depends on the medium and its temperature, not on loudness or pitch; in air at 20 C it is about 343 m/s."
+        },
+        {
+          "id": "medium",
+          "title": "Medium",
+          "summary": "Sound needs matter to travel through, so it cannot propagate in a vacuum."
+        }
+      ],
+      "skills": [
+        "use-speed-of-sound"
+      ],
+      "misconceptions": [
+        "Believing the air itself travels from speaker to ear: each particle only oscillates about a position while the pressure pattern moves on.",
+        "Believing louder sounds travel faster: amplitude changes how much the pressure varies, not how fast the pattern advances.",
+        "Believing sound can cross space as in films: with no medium there is nothing to compress."
+      ],
+      "sequence": [
+        "Open with a speaker cone and a row of air particles; the cone pushes, a region of higher pressure forms, and it passes outwards.",
+        "Name compression, rarefaction and the longitudinal motion, comparing with a transverse wave on a rope.",
+        "State that the pattern, not the particles, travels, and give the speed for air at 20 C, water and steel.",
+        "Use v = d / t for echo and thunder problems, noting that light arrives effectively at once.",
+        "Mention temperature dependence: v is roughly 331 + 0.6 T m/s with T in degrees Celsius."
+      ],
+      "examples": [
+        "Thunder arrives 3.0 s after the flash: d = 343 x 3.0 = 1029 m.",
+        "A shout returns as an echo after 0.50 s: the sound travelled out and back, so the wall is 343 x 0.50 / 2 = 85.75 m away.",
+        "At 20 C, 331 + 0.6 x 20 = 343 m/s."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A row of particles showing compressions and rarefactions moving right, with one particle highlighted and its small back-and-forth path traced.",
+          "learnerAction": "Scrub time; watch one particle and the pattern separately.",
+          "placement": "Pattern versus particles."
+        },
+        {
+          "type": "data_series",
+          "shows": "Speed of sound in air plotted against temperature from -20 C to 40 C.",
+          "learnerAction": "Drag a temperature marker; read the speed.",
+          "placement": "Temperature dependence."
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "use-speed-of-sound",
+          "sample": "Thunder arrives 3.0 s after the lightning flash. Taking the speed of sound as 343 m/s, how far away in metres was the strike?",
+          "answer": "1029"
+        },
+        {
+          "kind": "numeric",
+          "targets": "use-speed-of-sound",
+          "sample": "An echo of a clap returns after 0.50 s. How far in metres is the reflecting wall? (speed 343 m/s)",
+          "answer": "85.75"
+        },
+        {
+          "kind": "choice",
+          "targets": "medium",
+          "sample": "In which of these can a sound wave not travel?",
+          "answer": "a vacuum",
+          "choices": [
+            "water",
+            "steel",
+            "a vacuum",
+            "air"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "openstax-college-physics",
+        "openstax-university-physics"
+      ],
+      "estimatedMinutes": 12
+    },
+    {
+      "id": "frequency-wavelength-and-amplitude",
+      "moduleId": "physics-of-sound",
+      "title": "Frequency, wavelength and amplitude",
+      "objective": "Relate frequency, period and wavelength with v = f x wavelength, and distinguish pitch from loudness.",
+      "prerequisiteLessonIds": [
+        "sound-as-pressure-waves"
+      ],
+      "concepts": [
+        {
+          "id": "frequency",
+          "title": "Frequency",
+          "summary": "Frequency is the number of cycles per second, in hertz, and it sets the pitch heard."
+        },
+        {
+          "id": "period",
+          "title": "Period",
+          "summary": "The period is the time of one cycle, T = 1 / f."
+        },
+        {
+          "id": "wavelength",
+          "title": "Wavelength",
+          "summary": "Wavelength is the distance over which a wave repeats, and v = f x wavelength."
+        },
+        {
+          "id": "amplitude",
+          "title": "Amplitude",
+          "summary": "Amplitude is the size of the pressure variation and sets the loudness, not the pitch."
+        },
+        {
+          "id": "phase",
+          "title": "Phase",
+          "summary": "Phase is the position within a cycle; two waves offset by half a cycle can cancel."
+        }
+      ],
+      "skills": [
+        "wavelength-from-frequency",
+        "period-from-frequency"
+      ],
+      "misconceptions": [
+        "Believing pitch depends on amplitude: a quiet and a loud 440 Hz tone have the same pitch.",
+        "Believing higher-pitched sounds travel faster: in a given medium all frequencies travel at the same speed, so the wavelength shrinks as frequency rises.",
+        "Treating wavelength as height of the wave: for sound it is the length of one repeat along the direction of travel."
+      ],
+      "sequence": [
+        "Draw a pressure-versus-time trace of a single tone and mark one cycle.",
+        "Define frequency, period and their reciprocal link.",
+        "Hold the speed fixed and show that doubling f halves the wavelength: v = f x wavelength.",
+        "Compute wavelengths at the audible limits to show the 'size' of sounds: metres for bass, centimetres for treble.",
+        "Introduce phase with two equal tones added in phase and out of phase."
+      ],
+      "examples": [
+        "440 Hz in air: wavelength = 343 / 440 = 0.78 m; period = 1 / 440 = 2.27 ms.",
+        "20 Hz has wavelength 17.15 m; 20,000 Hz has 0.01715 m (1.7 cm).",
+        "250 Hz has period 1 / 250 = 0.004 s = 4 ms."
+      ],
+      "figures": [
+        {
+          "type": "graph_plot",
+          "shows": "Two waveforms on the same axes, with sliders for frequency and amplitude.",
+          "learnerAction": "Change each; see that amplitude changes height and frequency changes the spacing of peaks.",
+          "placement": "Pitch versus loudness."
+        },
+        {
+          "type": "svg_figure",
+          "shows": "Two equal sine waves in phase and then half a cycle apart, with their sum drawn below.",
+          "learnerAction": "Slide the phase offset.",
+          "placement": "Phase cancellation."
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "wavelength-from-frequency",
+          "sample": "What is the wavelength in metres, to two decimals, of a 440 Hz tone in air at 343 m/s?",
+          "answer": "0.78"
+        },
+        {
+          "kind": "numeric",
+          "targets": "period-from-frequency",
+          "sample": "What is the period in milliseconds of a 250 Hz tone?",
+          "answer": "4"
+        },
+        {
+          "kind": "numeric",
+          "targets": "wavelength-from-frequency",
+          "sample": "What is the wavelength in metres of a 20 Hz tone in air at 343 m/s?",
+          "answer": "17.15"
+        }
+      ],
+      "sourceIds": [
+        "openstax-college-physics",
+        "openstax-university-physics"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "harmonics-and-timbre",
+      "moduleId": "physics-of-sound",
+      "title": "Harmonics and timbre",
+      "objective": "Read a spectrum as the set of sine components of a sound and explain why two instruments on the same pitch sound different.",
+      "prerequisiteLessonIds": [
+        "frequency-wavelength-and-amplitude"
+      ],
+      "concepts": [
+        {
+          "id": "spectrum",
+          "title": "Spectrum",
+          "summary": "A spectrum plots the amplitude of each frequency component of a sound."
+        },
+        {
+          "id": "harmonic-series",
+          "title": "Harmonic series",
+          "summary": "The harmonics of a note with fundamental f are f, 2f, 3f, 4f and so on."
+        },
+        {
+          "id": "timbre",
+          "title": "Timbre",
+          "summary": "Timbre is the quality that separates two sounds of equal pitch and loudness, and depends largely on the relative amplitudes of the harmonics."
+        },
+        {
+          "id": "fourier",
+          "title": "Fourier analysis",
+          "summary": "Any steady periodic wave can be built by adding sine waves at the harmonics of its frequency."
+        },
+        {
+          "id": "waveshapes",
+          "title": "Standard waveshapes",
+          "summary": "A square wave has only odd harmonics with amplitude 1/n; a sawtooth has all harmonics with amplitude 1/n."
+        }
+      ],
+      "skills": [
+        "compute-harmonics",
+        "read-spectrum"
+      ],
+      "misconceptions": [
+        "Believing pitch is the strongest component: pitch follows the fundamental period, which may be weaker than the harmonics above it.",
+        "Believing a sound has 'a' frequency: real sounds contain many, and a pure sine is the exceptional case.",
+        "Counting the fundamental as the first overtone: the first overtone is the second harmonic."
+      ],
+      "sequence": [
+        "Show a flute-like waveform nearly a sine and a violin-like one jagged, both at the same period.",
+        "Show that the jagged wave equals a sum of sines at f, 2f, 3f and so on, and that the spectrum records their amplitudes.",
+        "Define the harmonic series and its relation to intervals: 2f is an octave above, 3f an octave and a fifth.",
+        "Build a square wave by adding odd harmonics with amplitude 1/n, and watch the shape improve with each term.",
+        "Define timbre and contrast with noise, whose spectrum is continuous."
+      ],
+      "examples": [
+        "The harmonics of 220 Hz: 220, 440, 660, 880, 1100; the 3rd harmonic is 660 Hz.",
+        "A 100 Hz square wave contains 100, 300, 500, 700 Hz with amplitudes 1, 1/3, 1/5, 1/7.",
+        "A pure sine has one line in its spectrum."
+      ],
+      "figures": [
+        {
+          "type": "data_series",
+          "shows": "Spectrum bars for harmonics 1 to 16 with amplitude sliders and the resulting waveform drawn above.",
+          "learnerAction": "Raise or lower individual harmonics and watch the waveform and the timbre description change.",
+          "placement": "Spectrum and waveform."
+        },
+        {
+          "type": "svg_figure",
+          "shows": "Square wave approximations with 1, 3, 5 and 9 harmonics overlaid.",
+          "learnerAction": "Step the number of harmonics.",
+          "placement": "Fourier synthesis."
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compute-harmonics",
+          "sample": "The fundamental is 110 Hz. What is the frequency in Hz of the 5th harmonic?",
+          "answer": "550"
+        },
+        {
+          "kind": "choice",
+          "targets": "compute-harmonics",
+          "sample": "Which frequencies make up the first three components of an ideal 100 Hz square wave?",
+          "answer": "100, 300 and 500 Hz",
+          "choices": [
+            "100, 200 and 300 Hz",
+            "100, 300 and 500 Hz",
+            "100, 150 and 200 Hz",
+            "200, 400 and 600 Hz"
+          ]
+        },
+        {
+          "kind": "numeric",
+          "targets": "read-spectrum",
+          "sample": "How many spectral lines does a pure sine wave have?",
+          "answer": "1"
+        }
+      ],
+      "sourceIds": [
+        "openstax-university-physics",
+        "think-dsp"
+      ],
+      "historyNotes": [
+        "Joseph Fourier published his analysis of heat conduction using trigonometric series in Theorie analytique de la chaleur in 1822."
+      ],
+      "estimatedMinutes": 14
+    },
+    {
+      "id": "resonance-and-standing-waves",
+      "moduleId": "physics-of-sound",
+      "title": "Resonance and standing waves",
+      "objective": "Find the fundamental frequency of a string or pipe from its length and the wave speed, and explain why a closed pipe has only odd harmonics.",
+      "prerequisiteLessonIds": [
+        "harmonics-and-timbre"
+      ],
+      "concepts": [
+        {
+          "id": "standing-wave",
+          "title": "Standing wave",
+          "summary": "A standing wave forms when waves reflect between ends and interfere, leaving nodes of no motion and antinodes of maximum motion."
+        },
+        {
+          "id": "string-modes",
+          "title": "String modes",
+          "summary": "A string fixed at both ends has frequencies f_n = n v / (2L)."
+        },
+        {
+          "id": "open-pipe",
+          "title": "Open pipe",
+          "summary": "An open pipe has f_n = n v / (2L) with n = 1, 2, 3, ... (ideal pipe, end corrections ignored)."
+        },
+        {
+          "id": "closed-pipe",
+          "title": "Closed pipe",
+          "summary": "A pipe closed at one end has f_n = n v / (4L) with only odd n."
+        },
+        {
+          "id": "resonance",
+          "title": "Resonance",
+          "summary": "Resonance is a large response of a system driven near one of its natural frequencies."
+        }
+      ],
+      "skills": [
+        "pipe-frequency",
+        "string-frequency"
+      ],
+      "misconceptions": [
+        "Thinking the string vibrates at v/L: the longest standing wave is half a wavelength long, giving v/(2L).",
+        "Thinking the speed v in the formula is the speed of sound in air for a string: it is the wave speed along the string, set by tension and mass per length.",
+        "Thinking a closed pipe sounds an octave higher than an open one: it is an octave lower for the same length, because only a quarter wavelength fits."
+      ],
+      "sequence": [
+        "Fix a string at both ends and show the shape that fits: half a wavelength, then a full one, and so on.",
+        "Derive f_n = n v / (2L) from the fitted wavelengths 2L / n.",
+        "Move to a pipe: open ends are antinodes, so the same result; a closed end is a node, so odd quarter-wavelengths fit.",
+        "Give resonance as driving at a natural frequency, such as a glass or a room mode.",
+        "State the idealisation (end corrections ignored)."
+      ],
+      "examples": [
+        "A string with wave speed 260 m/s and length 0.65 m: f1 = 260 / (2 x 0.65) = 200 Hz; f2 = 400 Hz.",
+        "An ideal open pipe 0.50 m long: f1 = 343 / (2 x 0.50) = 343 Hz.",
+        "The same length closed at one end: f1 = 343 / (4 x 0.50) = 171.5 Hz, then 514.5 Hz."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A string with the first four standing-wave shapes drawn over the same length.",
+          "learnerAction": "Pick a mode number; the shape and wavelength relative to L update.",
+          "placement": "Modes of a string."
+        },
+        {
+          "type": "svg_figure",
+          "shows": "Open and closed pipes with the displacement pattern for the first modes, nodes and antinodes marked.",
+          "learnerAction": "Switch pipe end conditions.",
+          "placement": "Open versus closed."
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "string-frequency",
+          "sample": "A string 0.65 m long carries waves at 260 m/s. What is its fundamental frequency in Hz?",
+          "answer": "200"
+        },
+        {
+          "kind": "numeric",
+          "targets": "pipe-frequency",
+          "sample": "An ideal pipe, closed at one end, is 0.50 m long. What is its fundamental frequency in Hz in air at 343 m/s?",
+          "answer": "171.5"
+        },
+        {
+          "kind": "choice",
+          "targets": "closed-pipe",
+          "sample": "Which harmonics does an ideal pipe closed at one end produce?",
+          "answer": "only odd harmonics",
+          "choices": [
+            "all harmonics",
+            "only odd harmonics",
+            "only even harmonics",
+            "only the fundamental"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "openstax-college-physics",
+        "openstax-university-physics"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "how-we-hear",
+      "moduleId": "hearing-and-measurement",
+      "title": "How we hear",
+      "objective": "Trace sound through the ear, state the range of human hearing, and explain why loudness and pitch perception are not simple copies of amplitude and frequency.",
+      "prerequisiteLessonIds": [
+        "harmonics-and-timbre"
+      ],
+      "concepts": [
+        {
+          "id": "ear-path",
+          "title": "Path through the ear",
+          "summary": "Sound passes the pinna and ear canal to the eardrum, through three small bones (malleus, incus and stapes) to the cochlea, where hair cells convert vibration to nerve signals."
+        },
+        {
+          "id": "hearing-range",
+          "title": "Range of hearing",
+          "summary": "Young healthy ears hear roughly 20 Hz to 20,000 Hz, a span of about 10 octaves, and the upper limit falls with age and noise damage."
+        },
+        {
+          "id": "canal-resonance",
+          "title": "Ear-canal resonance",
+          "summary": "The ear canal acts like a pipe closed at one end and boosts sound around 3 kHz, where the ear is most sensitive."
+        },
+        {
+          "id": "equal-loudness",
+          "title": "Equal-loudness contours",
+          "summary": "Equal-loudness contours show that tones of different frequency need different pressure levels to sound equally loud, with greatest sensitivity at 2 to 5 kHz."
+        },
+        {
+          "id": "log-pitch",
+          "title": "Logarithmic pitch",
+          "summary": "Equal frequency ratios are heard as equal pitch intervals, so an octave is always a 2:1 ratio."
+        }
+      ],
+      "skills": [
+        "canal-frequency",
+        "octave-count"
+      ],
+      "misconceptions": [
+        "Believing the ear is a flat microphone: its response varies with frequency by tens of decibels at low levels.",
+        "Believing hearing range is fixed at 20 to 20,000 Hz for everyone: it is a nominal figure for young ears.",
+        "Believing the stapes is large: it is the smallest bone in the body."
+      ],
+      "sequence": [
+        "Follow the sound along a labelled ear diagram, naming each part by what it does.",
+        "Treat the canal as a pipe closed at one end: with L = 2.5 cm, f1 = 343 / (4 x 0.025) = 3430 Hz, which fits the ear's sensitivity peak.",
+        "Describe the cochlea as a frequency analyser along the basilar membrane.",
+        "Show the equal-loudness contours and ask which frequency needs the least pressure.",
+        "Count octaves in the audible range: log2(20000 / 20) = log2(1000) = 9.97, about 10."
+      ],
+      "examples": [
+        "A canal of 2.5 cm closed at the eardrum: 343 / (4 x 0.025) = 3430 Hz.",
+        "20 Hz to 20,000 Hz is a ratio of 1000, and 2^10 = 1024, so about 10 octaves.",
+        "At low levels, a 50 Hz tone must be tens of dB higher in level than a 3 kHz tone to sound equally loud."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Cross-section of the ear with the sound path animated and parts labelled.",
+          "learnerAction": "Click a part to see its job; no quiz answers are shown.",
+          "placement": "Path through the ear."
+        },
+        {
+          "type": "graph_plot",
+          "shows": "Equal-loudness contours on a log-frequency axis (illustrative, sourced from ISO 226).",
+          "learnerAction": "Choose a loudness level to see its curve.",
+          "placement": "Frequency-dependent sensitivity."
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "canal-frequency",
+          "sample": "An ear canal of length 2.5 cm acts as a pipe closed at one end. What is its fundamental frequency in Hz, taking the speed of sound as 343 m/s?",
+          "answer": "3430"
+        },
+        {
+          "kind": "numeric",
+          "targets": "octave-count",
+          "sample": "About how many octaves lie between 20 Hz and 20,000 Hz, to the nearest whole number?",
+          "answer": "10"
+        },
+        {
+          "kind": "choice",
+          "targets": "ear-path",
+          "sample": "Which three small bones carry vibration across the middle ear?",
+          "answer": "malleus, incus and stapes",
+          "choices": [
+            "malleus, incus and stapes",
+            "cochlea, pinna and eardrum",
+            "tympanum, anvil and drum",
+            "hammer, cochlea and canal"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "openstax-college-physics",
+        "fletcher-munson"
+      ],
+      "historyNotes": [
+        "Harvey Fletcher and Wilden Munson published equal-loudness curves in 1933; they were later revised and standardised, most recently as ISO 226:2003."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "decibels",
+      "moduleId": "hearing-and-measurement",
+      "title": "Decibels",
+      "objective": "Convert between power, pressure and decibel levels, and predict how level changes when sources are added or distance changes.",
+      "prerequisiteLessonIds": [
+        "how-we-hear"
+      ],
+      "concepts": [
+        {
+          "id": "decibel",
+          "title": "Decibel",
+          "summary": "The decibel is ten times the base-10 logarithm of a power ratio, so every factor of 10 in power is 10 dB."
+        },
+        {
+          "id": "spl",
+          "title": "Sound pressure level",
+          "summary": "SPL = 20 log10(p / p0) with p0 = 20 micropascals, the nominal threshold of hearing at 1 kHz, which is 0 dB SPL."
+        },
+        {
+          "id": "doubling",
+          "title": "Doubling rules",
+          "summary": "Doubling power adds 3.01 dB and doubling pressure adds 6.02 dB."
+        },
+        {
+          "id": "inverse-square",
+          "title": "Inverse-square law",
+          "summary": "For a point source in free space, intensity falls with the square of distance, so each doubling of distance lowers the level by 6.02 dB."
+        },
+        {
+          "id": "exposure",
+          "title": "Exposure limits",
+          "summary": "Safe-listening guidance sets 85 dBA for 8 hours and halves the time for every 3 dB more."
+        }
+      ],
+      "skills": [
+        "db-from-ratio",
+        "level-change"
+      ],
+      "misconceptions": [
+        "Adding decibels like ordinary numbers: two 60 dB sources make 63 dB, not 120 dB, because the scale is logarithmic.",
+        "Using 10 log10 for pressure: pressure is an amplitude, so the factor is 20; the 10 applies to power or intensity.",
+        "Thinking 0 dB means silence: 0 dB SPL is a reference level, and negative values are possible."
+      ],
+      "sequence": [
+        "Open with the range of sound intensities: from 1e-12 W/m2 at threshold to about 1 W/m2 at the pain threshold, a factor of a million million.",
+        "Introduce the logarithm as the power of 10, and define the decibel from the intensity ratio.",
+        "Move to pressure: intensity is proportional to pressure squared, which brings in 20 log10.",
+        "Derive the doubling rules (3.01 and 6.02 dB) and use them for adding equal sources and for distance.",
+        "Close with exposure: each 3 dB doubles the energy, so permitted time halves."
+      ],
+      "examples": [
+        "Intensity 1e-6 W/m2 against 1e-12 W/m2: 10 log10(1e6) = 60 dB.",
+        "A pressure of 2 Pa: 20 log10(2 / 0.00002) = 20 log10(100000) = 100 dB SPL.",
+        "Moving from 1 m to 8 m from a point source: 8 is three doublings, so 3 x 6.02 = 18.06 dB lower.",
+        "At 85 dBA the limit is 8 h; at 88 dBA 4 h; at 91 dBA 2 h."
+      ],
+      "figures": [
+        {
+          "type": "graph_plot",
+          "shows": "Level in dB against intensity ratio on a log axis, with markers at 10x, 100x and 1000x.",
+          "learnerAction": "Drag a marker; read dB and ratio.",
+          "placement": "The decibel scale."
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A point source with concentric rings at 1, 2, 4, 8 m labelled by distance only.",
+          "learnerAction": "Pick a distance to highlight its ring; the level change stays hidden until the learner enters their own value.",
+          "placement": "Inverse-square law."
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "db-from-ratio",
+          "sample": "A sound has intensity 1e-6 W/m2. The reference is 1e-12 W/m2. What is its level in dB?",
+          "answer": "60"
+        },
+        {
+          "kind": "numeric",
+          "targets": "db-from-ratio",
+          "sample": "What is the SPL in dB of a sound pressure of 2 Pa, with p0 = 20 micropascals?",
+          "answer": "100"
+        },
+        {
+          "kind": "numeric",
+          "targets": "level-change",
+          "sample": "By how many dB, to the nearest whole number, does the level fall when you move from 1 m to 8 m away from a point source in free space?",
+          "answer": "18"
+        }
+      ],
+      "sourceIds": [
+        "openstax-college-physics",
+        "niosh-98-126"
+      ],
+      "historyNotes": [
+        "Bel and decibel are named after Alexander Graham Bell; the decibel became the standard unit in telephone engineering in the 1920s."
+      ],
+      "estimatedMinutes": 14
+    },
+    {
+      "id": "sampling-and-aliasing",
+      "moduleId": "digital-audio",
+      "title": "Sampling and aliasing",
+      "objective": "Choose a sample rate for a given bandwidth and predict the alias of a tone that exceeds the Nyquist frequency.",
+      "prerequisiteLessonIds": [
+        "decibels"
+      ],
+      "concepts": [
+        {
+          "id": "sampling",
+          "title": "Sampling",
+          "summary": "Sampling measures the signal's amplitude at equal time steps, and the sample rate is the number of measurements per second."
+        },
+        {
+          "id": "nyquist",
+          "title": "Nyquist frequency",
+          "summary": "The Nyquist frequency is half the sample rate, and a sampled signal can represent only frequencies below it."
+        },
+        {
+          "id": "aliasing",
+          "title": "Aliasing",
+          "summary": "A tone above the Nyquist frequency folds back and appears at |f - fs| (for fs/2 < f < fs), so it cannot be told from a lower real tone."
+        },
+        {
+          "id": "anti-alias",
+          "title": "Anti-aliasing filter",
+          "summary": "A low-pass filter before the converter removes content above the Nyquist frequency before sampling."
+        },
+        {
+          "id": "reconstruction",
+          "title": "Reconstruction",
+          "summary": "A band-limited signal sampled above twice its highest frequency can be rebuilt exactly."
+        }
+      ],
+      "skills": [
+        "nyquist-limit",
+        "alias-frequency"
+      ],
+      "misconceptions": [
+        "Believing more samples always means more detail up to infinity: below the Nyquist frequency the sampled signal already holds all the information.",
+        "Believing digital audio is 'steps': the sample points are joined by reconstruction into a smooth wave, not a staircase.",
+        "Believing aliasing can be fixed after sampling: the folded tone is indistinguishable from a real low one."
+      ],
+      "sequence": [
+        "Sample a slow sine many times per cycle, then fewer, until only two samples per cycle remain.",
+        "State the sampling theorem and the Nyquist frequency.",
+        "Show a tone just above Nyquist and the lower tone that fits the same points.",
+        "Compute the alias: for fs = 44,100 Hz and f = 30,000 Hz the tone appears at 44,100 - 30,000 = 14,100 Hz.",
+        "Explain the anti-aliasing filter and why practical rates, 44.1 and 48 kHz, are set a little above 40 kHz."
+      ],
+      "examples": [
+        "fs = 44,100 Hz has Nyquist 22,050 Hz.",
+        "30,000 Hz sampled at 44,100 Hz aliases to 14,100 Hz; 25,000 Hz sampled at 48,000 Hz aliases to 23,000 Hz.",
+        "To capture 20,000 Hz you need fs above 40,000 Hz."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A sine wave with sample points shown as dots, and a second, lower-frequency sine through the same points.",
+          "learnerAction": "Slide the signal frequency; the apparent-frequency read-out stays hidden until the learner commits a prediction.",
+          "placement": "Aliasing."
+        },
+        {
+          "type": "data_series",
+          "shows": "A spectrum from 0 to fs with the tone's mirror image reflected about fs/2.",
+          "learnerAction": "Move the tone.",
+          "placement": "Folding."
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "nyquist-limit",
+          "sample": "What is the Nyquist frequency in Hz for a sample rate of 44,100 Hz?",
+          "answer": "22050"
+        },
+        {
+          "kind": "numeric",
+          "targets": "alias-frequency",
+          "sample": "A 30,000 Hz tone is sampled at 44,100 Hz with no anti-aliasing filter. At what frequency in Hz does it appear?",
+          "answer": "14100"
+        },
+        {
+          "kind": "numeric",
+          "targets": "alias-frequency",
+          "sample": "A 25,000 Hz tone is sampled at 48,000 Hz with no filter. At what frequency in Hz does it appear?",
+          "answer": "23000"
+        }
+      ],
+      "sourceIds": [
+        "think-dsp",
+        "shannon-1949"
+      ],
+      "historyNotes": [
+        "Harry Nyquist analysed telegraph signalling limits in 1928 and Claude Shannon stated the sampling theorem for communications in 1949.",
+        "The 44,100 Hz rate comes from early digital audio stored on video recorders: 3 samples x 245 lines x 60 fields (NTSC) and 3 x 294 x 50 (PAL) both equal 44,100."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "bit-depth-and-data",
+      "moduleId": "digital-audio",
+      "title": "Bit depth and data",
+      "objective": "Calculate the number of levels, ideal dynamic range and data rate of uncompressed audio.",
+      "prerequisiteLessonIds": [
+        "sampling-and-aliasing"
+      ],
+      "concepts": [
+        {
+          "id": "quantisation",
+          "title": "Quantisation",
+          "summary": "Quantisation rounds each sample to one of 2^N levels, where N is the bit depth, and the rounding error is heard as noise."
+        },
+        {
+          "id": "dynamic-range",
+          "title": "Dynamic range",
+          "summary": "For an ideal quantiser with a full-scale sine the signal-to-quantisation-noise ratio is 6.02 N + 1.76 dB, about 6 dB per bit."
+        },
+        {
+          "id": "data-rate",
+          "title": "Data rate",
+          "summary": "Uncompressed data rate is sample rate x bit depth x number of channels."
+        },
+        {
+          "id": "dither",
+          "title": "Dither",
+          "summary": "Dither adds a very small noise before quantising so that quantisation error is not correlated with the signal."
+        },
+        {
+          "id": "clipping",
+          "title": "Clipping",
+          "summary": "A signal beyond full scale cannot be represented and is flattened, which adds harmonics."
+        }
+      ],
+      "skills": [
+        "levels-from-bits",
+        "data-size"
+      ],
+      "misconceptions": [
+        "Believing bit depth sets how high frequencies reach: the sample rate sets frequency range, and bit depth sets dynamic range.",
+        "Believing a quiet file loses nothing at 16 bits: if the signal uses only a few levels, quantisation noise is relatively large.",
+        "Believing 24-bit is 50 percent more detailed than 16-bit: each added bit doubles the number of levels, so 8 more bits gives 256 times as many."
+      ],
+      "sequence": [
+        "Take a sine and round it to 3 bits: 8 levels, visible steps and an error signal.",
+        "Count levels as powers of two, and tie each bit to about 6 dB.",
+        "Compute 16-bit: 65,536 levels, 6.02 x 16 + 1.76 = 98.08 dB; 24-bit: 16,777,216 levels.",
+        "Compute CD data: 44,100 x 16 x 2 = 1,411,200 bits per second.",
+        "Convert to storage and mention clipping and dither."
+      ],
+      "examples": [
+        "16-bit: 2^16 = 65,536 levels; ideal range 98.1 dB.",
+        "24-bit: 2^24 = 16,777,216 levels.",
+        "One minute of CD stereo: 44,100 x 2 channels x 2 bytes x 60 s = 10,584,000 bytes."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "A sine wave quantised at 2, 3, 4 and 8 bits with level grid and error trace.",
+          "learnerAction": "Choose a bit depth; see the staircase and the noise trace.",
+          "placement": "Quantisation."
+        },
+        {
+          "type": "table",
+          "shows": "Bit depth, number of levels, ideal range in dB, with some cells blank.",
+          "learnerAction": "Fill the blanks.",
+          "placement": "Bits and decibels."
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "levels-from-bits",
+          "sample": "How many quantisation levels does 24-bit audio have?",
+          "answer": "16777216"
+        },
+        {
+          "kind": "numeric",
+          "targets": "data-size",
+          "sample": "What is the data rate in bits per second of CD audio: 44,100 Hz, 16 bits, 2 channels?",
+          "answer": "1411200"
+        },
+        {
+          "kind": "numeric",
+          "targets": "data-size",
+          "sample": "How many bytes does one minute of CD-quality stereo take (44,100 Hz, 16-bit, 2 channels)?",
+          "answer": "10584000"
+        }
+      ],
+      "sourceIds": [
+        "think-dsp",
+        "openstax-college-physics"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "compression-and-masking",
+      "moduleId": "digital-audio",
+      "title": "Compression and masking",
+      "objective": "Distinguish lossless from lossy compression, explain how masking lets lossy codecs discard data, and compute ratios and sizes at a given bitrate.",
+      "prerequisiteLessonIds": [
+        "bit-depth-and-data",
+        "how-we-hear"
+      ],
+      "concepts": [
+        {
+          "id": "lossless",
+          "title": "Lossless compression",
+          "summary": "Lossless compression stores the same samples in fewer bits and decodes to an exact copy."
+        },
+        {
+          "id": "lossy",
+          "title": "Lossy compression",
+          "summary": "Lossy compression discards information that listeners are expected not to miss, so the decoded signal differs from the original."
+        },
+        {
+          "id": "masking",
+          "title": "Masking",
+          "summary": "A loud sound makes nearby frequencies, or the instants just before and after it, inaudible at a lower level."
+        },
+        {
+          "id": "bitrate",
+          "title": "Bitrate",
+          "summary": "Bitrate is the data per second of the stored stream, and for a lossy codec it is chosen directly."
+        },
+        {
+          "id": "generation-loss",
+          "title": "Generation loss",
+          "summary": "Each lossy encode of already lossy audio throws away more, so editing masters should be uncompressed."
+        }
+      ],
+      "skills": [
+        "compression-ratio",
+        "stream-size"
+      ],
+      "misconceptions": [
+        "Believing 'lossless' means smaller than lossy: it means exactly recoverable, and it is usually larger.",
+        "Believing a higher bitrate always sounds better: above a codec's transparency threshold there is no audible gain.",
+        "Believing lossy codecs only cut high frequencies: they allocate bits by what is audible in each moment and band."
+      ],
+      "sequence": [
+        "Show two close tones, one strong, one weak, and the hearing threshold curve lifted around the strong one.",
+        "Explain that coders compute that raised threshold and spend fewer bits where it is high.",
+        "Define lossless as an exact round trip and lossy as threshold-based discarding.",
+        "Compute the ratio of 1,411.2 kbps CD audio to a 128 kbps stream: 11.025 to 1.",
+        "Compute a three-minute stream size and discuss when each format is the right tool."
+      ],
+      "examples": [
+        "1411.2 / 128 = 11.025, so 128 kbps is about 11:1.",
+        "Three minutes at 128 kbps: 128,000 x 180 / 8 = 2,880,000 bytes.",
+        "A lossless file of the same song is typically about half of the 1,411.2 kbps size."
+      ],
+      "figures": [
+        {
+          "type": "graph_plot",
+          "shows": "Hearing threshold curve with a loud masker tone, showing the raised threshold around it and a quiet tone beneath it.",
+          "learnerAction": "Move the masker; see whether the quiet tone is above the raised threshold.",
+          "placement": "Masking."
+        },
+        {
+          "type": "table",
+          "shows": "Format comparison: PCM, lossless, lossy by bitrate, size per minute.",
+          "learnerAction": "Fill in the size per minute for a given bitrate.",
+          "placement": "Bitrate and size."
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "stream-size",
+          "sample": "How many bytes does a 3-minute stream at 128 kbps occupy? (128 kbps = 128,000 bits per second)",
+          "answer": "2880000"
+        },
+        {
+          "kind": "numeric",
+          "targets": "compression-ratio",
+          "sample": "CD audio is 1411.2 kbps. By what ratio, to the nearest whole number, is it larger than a 128 kbps stream?",
+          "answer": "11"
+        },
+        {
+          "kind": "choice",
+          "targets": "lossless",
+          "sample": "Which of these decodes to exactly the original samples?",
+          "answer": "FLAC",
+          "choices": [
+            "MP3",
+            "AAC",
+            "FLAC",
+            "Ogg Vorbis"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "think-dsp",
+        "ebu-r128"
+      ],
+      "historyNotes": [
+        "MP3 (MPEG-1 Audio Layer III) was standardised as part of ISO/IEC 11172-3 in 1993."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "dynamics",
+      "moduleId": "shaping-sound",
+      "title": "Dynamics and compression",
+      "objective": "Compute the output level and gain reduction of a compressor and describe the envelope of a sound.",
+      "prerequisiteLessonIds": [
+        "decibels",
+        "bit-depth-and-data"
+      ],
+      "concepts": [
+        {
+          "id": "envelope",
+          "title": "Envelope",
+          "summary": "The envelope of a sound is how its amplitude changes in time, commonly described by attack, decay, sustain and release."
+        },
+        {
+          "id": "compressor",
+          "title": "Compressor",
+          "summary": "Above its threshold a compressor lets the output rise by only 1 dB for every R dB the input rises, where R is the ratio."
+        },
+        {
+          "id": "gain-reduction",
+          "title": "Gain reduction",
+          "summary": "Gain reduction is the input level minus the output level, in dB."
+        },
+        {
+          "id": "limiter",
+          "title": "Limiter",
+          "summary": "A limiter is a compressor with a very high ratio, used to stop the level exceeding a ceiling."
+        },
+        {
+          "id": "loudness",
+          "title": "Loudness measurement",
+          "summary": "Loudness is measured in LUFS, a weighted level over time, to compare programmes whatever their peaks."
+        }
+      ],
+      "skills": [
+        "compressor-output",
+        "gain-reduction"
+      ],
+      "misconceptions": [
+        "Believing a compressor lowers everything: only the parts above the threshold are reduced, and makeup gain then raises the whole signal.",
+        "Believing peak level and loudness are the same: two signals with equal peaks can differ greatly in perceived loudness.",
+        "Believing the ratio is in decibels: it compares input change to output change, as 4:1."
+      ],
+      "sequence": [
+        "Draw an input/output line: a straight line at 1:1, then a bend at the threshold with a lower slope.",
+        "Express the rule: output = T + (input - T) / R above T.",
+        "Compute a 4:1 example and read off the gain reduction.",
+        "Add attack and release times as how quickly the gain follows the input.",
+        "Finish with makeup gain and loudness measurement."
+      ],
+      "examples": [
+        "Threshold -20 dB, ratio 4:1, input -8 dB: 12 dB over, output = -20 + 12 / 4 = -17 dB; gain reduction 9 dB.",
+        "Threshold -18 dB, ratio 2:1, input -6 dB: 12 dB over, output = -18 + 12 / 2 = -12 dB; gain reduction 6 dB.",
+        "A track with peaks at -1 dBFS and a noise floor at -60 dBFS has 59 dB of dynamic range."
+      ],
+      "figures": [
+        {
+          "type": "graph_plot",
+          "shows": "Compressor transfer curve, input dB against output dB, with sliders for threshold and ratio.",
+          "learnerAction": "Move the sliders and read a point on the curve.",
+          "placement": "Transfer curve."
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A waveform before and after compression, with the gain-reduction trace below it.",
+          "learnerAction": "Change attack and release.",
+          "placement": "Time behaviour."
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "compressor-output",
+          "sample": "Threshold is -20 dB, ratio 4:1 and the input is -8 dB. What is the output level in dB?",
+          "answer": "-17"
+        },
+        {
+          "kind": "numeric",
+          "targets": "gain-reduction",
+          "sample": "Threshold is -18 dB, ratio 2:1 and the input is -6 dB. How many dB of gain reduction occur?",
+          "answer": "6"
+        },
+        {
+          "kind": "choice",
+          "targets": "limiter",
+          "sample": "What ratio setting best describes a limiter?",
+          "answer": "very high, such as 20:1 or more",
+          "choices": [
+            "1:1",
+            "2:1",
+            "very high, such as 20:1 or more",
+            "below 1:1"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "think-dsp",
+        "ebu-r128"
+      ],
+      "historyNotes": [
+        "EBU R128 (2010) recommends programme loudness of -23 LUFS for broadcast."
+      ],
+      "estimatedMinutes": 14
+    },
+    {
+      "id": "eq-and-filters",
+      "moduleId": "shaping-sound",
+      "title": "EQ and filters",
+      "objective": "Describe low-pass, high-pass, band-pass and shelf filters, and calculate attenuation per octave and the Q of a band.",
+      "prerequisiteLessonIds": [
+        "harmonics-and-timbre",
+        "decibels"
+      ],
+      "concepts": [
+        {
+          "id": "filter-types",
+          "title": "Filter types",
+          "summary": "Low-pass filters pass frequencies below a cutoff, high-pass above it, band-pass within a range, and shelves raise or cut everything above or below a corner."
+        },
+        {
+          "id": "cutoff",
+          "title": "Cutoff frequency",
+          "summary": "The cutoff is where the response has fallen 3 dB from the passband."
+        },
+        {
+          "id": "slope",
+          "title": "Slope",
+          "summary": "A filter's slope is its attenuation per octave: each filter order adds about 6 dB per octave."
+        },
+        {
+          "id": "q-factor",
+          "title": "Q factor",
+          "summary": "Q is centre frequency divided by bandwidth, so a narrow band has a high Q."
+        },
+        {
+          "id": "eq-use",
+          "title": "Equalisation",
+          "summary": "Equalisation raises or cuts bands to correct a sound or to make space for others in a mix."
+        }
+      ],
+      "skills": [
+        "slope-attenuation",
+        "q-from-bandwidth"
+      ],
+      "misconceptions": [
+        "Believing the cutoff is where sound is completely removed: it is the 3 dB point and the signal fades gradually beyond it.",
+        "Believing boosting is better than cutting: boosting raises noise and risks clipping, so cutting is often cleaner.",
+        "Believing octaves are equal Hz steps: from 125 to 1000 Hz is 3 octaves; each doubling is one."
+      ],
+      "sequence": [
+        "Start with a spectrum and draw what a low-pass filter does to a bright tone.",
+        "Define cutoff as the -3 dB point and slope in dB per octave.",
+        "Compute attenuation two octaves beyond the cutoff for 12 dB per octave.",
+        "Define Q and compute it from a centre frequency and bandwidth.",
+        "Show typical uses: cutting rumble with a high-pass, scooping mud around 250 Hz, a presence boost near 3 kHz."
+      ],
+      "examples": [
+        "A 12 dB/octave low-pass at 1000 Hz: at 4000 Hz, two octaves above, roughly -24 dB.",
+        "Centre 1000 Hz, bandwidth 250 Hz: Q = 1000 / 250 = 4.",
+        "A first-order RC low-pass with R = 1.6 kohm and C = 100 nF has fc = 1 / (2 pi R C) = 995 Hz."
+      ],
+      "figures": [
+        {
+          "type": "graph_plot",
+          "shows": "Filter response curve on log frequency and dB axes with controls for type, cutoff, slope and Q.",
+          "learnerAction": "Change each control and read the curve at a chosen frequency.",
+          "placement": "Filter responses."
+        },
+        {
+          "type": "data_series",
+          "shows": "A spectrum before and after a filter.",
+          "learnerAction": "Toggle the filter on and off.",
+          "placement": "Effect on spectrum."
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "slope-attenuation",
+          "sample": "A low-pass filter has a cutoff of 1000 Hz and a slope of 12 dB per octave. By about how many dB is a 4000 Hz tone attenuated (ignore the -3 dB at the cutoff)?",
+          "answer": "24"
+        },
+        {
+          "kind": "numeric",
+          "targets": "q-from-bandwidth",
+          "sample": "An EQ band is centred on 1000 Hz with a bandwidth of 250 Hz. What is its Q?",
+          "answer": "4"
+        },
+        {
+          "kind": "numeric",
+          "targets": "octave-count",
+          "sample": "How many octaves lie between 125 Hz and 1000 Hz?",
+          "answer": "3"
+        }
+      ],
+      "sourceIds": [
+        "think-dsp",
+        "openstax-college-physics"
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "reverb-and-space",
+      "moduleId": "shaping-sound",
+      "title": "Reverb and space",
+      "objective": "Explain how reflections create reverberation, calculate RT60 with Sabine's formula, and convert path differences to delays.",
+      "prerequisiteLessonIds": [
+        "decibels",
+        "sound-as-pressure-waves"
+      ],
+      "concepts": [
+        {
+          "id": "reverberation",
+          "title": "Reverberation",
+          "summary": "Reverberation is the persistence of sound in a space as many reflections arrive after the direct sound."
+        },
+        {
+          "id": "rt60",
+          "title": "RT60",
+          "summary": "RT60 is the time for the sound level to fall by 60 dB after the source stops."
+        },
+        {
+          "id": "sabine",
+          "title": "Sabine equation",
+          "summary": "RT60 = 0.161 V / A seconds, with V the room volume in cubic metres and A the total absorption in square metres (sabins)."
+        },
+        {
+          "id": "early-reflections",
+          "title": "Early reflections",
+          "summary": "Reflections arriving within about 50 ms of the direct sound fuse with it and tell the ear about room size."
+        },
+        {
+          "id": "precedence",
+          "title": "Precedence effect",
+          "summary": "When two similar sounds arrive within a few milliseconds to about 30 ms, the ear localises to the first arrival."
+        }
+      ],
+      "skills": [
+        "rt60-from-room",
+        "delay-from-path"
+      ],
+      "misconceptions": [
+        "Believing reverb is the same as echo: an echo is a distinct repeat, while reverb is many overlapping repeats that blend.",
+        "Believing more absorption always sounds better: very dry rooms lack the cues that make sources sound present.",
+        "Believing RT60 is the time to silence: it is the time for a 60 dB decrease, which is not zero."
+      ],
+      "sequence": [
+        "Describe a clap in a hall: the direct sound, a handful of early reflections and the dense tail.",
+        "Show the decay on a log level plot and define RT60.",
+        "Introduce the Sabine formula and compute for a room.",
+        "Convert path differences to delays using d / v, and discuss the 50 ms fusion boundary.",
+        "Explain how the direct-to-reverberant ratio gives a cue for distance."
+      ],
+      "examples": [
+        "A room of 240 m3 with total absorption 40 sabins: RT60 = 0.161 x 240 / 40 = 0.966 s.",
+        "A reflection with an extra path of 17.15 m arrives 17.15 / 343 = 0.050 s later.",
+        "An extra path of 10 m delays by 10 / 343 = 29.2 ms."
+      ],
+      "figures": [
+        {
+          "type": "graph_plot",
+          "shows": "Level against time showing direct sound, early reflections and decaying tail, with a 60 dB drop marked.",
+          "learnerAction": "Change the absorption and see the tail slope change.",
+          "placement": "RT60."
+        },
+        {
+          "type": "svg_figure",
+          "shows": "A top-down room with a source, a listener, the direct path and one reflection path, lengths in metres.",
+          "learnerAction": "Move the source and read path lengths.",
+          "placement": "Delay from path difference."
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "rt60-from-room",
+          "sample": "A room has volume 240 m3 and total absorption 40 sabins. What is RT60 in seconds to two decimals? (RT60 = 0.161 V / A)",
+          "answer": "0.97"
+        },
+        {
+          "kind": "numeric",
+          "targets": "delay-from-path",
+          "sample": "A reflection travels 10 m further than the direct sound. How many milliseconds later does it arrive, to one decimal? (343 m/s)",
+          "answer": "29.2"
+        },
+        {
+          "kind": "numeric",
+          "targets": "rt60-definition",
+          "sample": "By how many dB must the level fall for the time to count as RT60?",
+          "answer": "60"
+        }
+      ],
+      "sourceIds": [
+        "openstax-college-physics",
+        "sabine-1922"
+      ],
+      "historyNotes": [
+        "Wallace Clement Sabine, a Harvard physicist, developed the reverberation formula around 1900 while working on the acoustics of Harvard's lecture rooms."
+      ],
+      "estimatedMinutes": 13
+    },
+    {
+      "id": "sound-design-principles",
+      "moduleId": "shaping-sound",
+      "title": "Principles of sound design",
+      "objective": "Plan a sound by layering parts across the spectrum, predict the effect of changing playback speed, and use distance and movement cues.",
+      "prerequisiteLessonIds": [
+        "dynamics",
+        "eq-and-filters",
+        "reverb-and-space"
+      ],
+      "concepts": [
+        {
+          "id": "layering",
+          "title": "Layering",
+          "summary": "Layering builds a sound from several parts, such as an attack transient, a body and a low tail, each occupying its own range."
+        },
+        {
+          "id": "speed-pitch",
+          "title": "Speed and pitch",
+          "summary": "Playing a recording faster by ratio r raises its frequencies by r and shortens its duration to 1/r; n semitones is a ratio of 2^(n/12)."
+        },
+        {
+          "id": "distance-cues",
+          "title": "Distance cues",
+          "summary": "Distant sounds are quieter, duller (air absorbs highs), and have more reverberation relative to direct sound."
+        },
+        {
+          "id": "doppler",
+          "title": "Doppler shift",
+          "summary": "A source moving toward a listener at speed vs has observed frequency f x v / (v - vs); away, f x v / (v + vs)."
+        },
+        {
+          "id": "diegesis",
+          "title": "Diegetic and non-diegetic sound",
+          "summary": "Diegetic sound belongs to the story world; non-diegetic sound, such as a score, does not."
+        }
+      ],
+      "skills": [
+        "speed-change",
+        "doppler-frequency"
+      ],
+      "misconceptions": [
+        "Believing a realistic recording is the best sound: designers exaggerate and combine sounds because the real one may lack clarity or weight.",
+        "Believing speed can be changed without altering pitch by simple playback: pitch and duration are locked together unless the audio is processed.",
+        "Believing the Doppler shift depends on loudness: it depends on relative velocity."
+      ],
+      "sequence": [
+        "Take an explosion and split it into click, body and sub-bass tail, matching each layer to what each part of the spectrum does.",
+        "Apply EQ to separate layers and dynamics to shape each tail.",
+        "Show that playback ratio changes pitch and length together, with a worked ratio.",
+        "Add distance and movement cues with reverb, filtering and Doppler.",
+        "Close with the purpose of a sound in the scene: information first, then feeling."
+      ],
+      "examples": [
+        "A 3.0 s sample played 12 semitones up has ratio 2, so lasts 1.5 s; 5 semitones up has ratio 2^(5/12) = 1.335.",
+        "A 440 Hz horn approaching at 20 m/s with v = 343 m/s: 440 x 343 / (343 - 20) = 467.2 Hz; receding: 440 x 343 / 363 = 415.8 Hz.",
+        "A door slam: transient (click), body (wood thud) and a low tail (room)."
+      ],
+      "figures": [
+        {
+          "type": "svg_figure",
+          "shows": "Three layered waveforms placed on a timeline and a spectrum chart, one per layer, summed into a result.",
+          "learnerAction": "Mute and solo layers visually.",
+          "placement": "Layering."
+        },
+        {
+          "type": "graph_plot",
+          "shows": "Doppler frequency against source position along a straight path past a listener.",
+          "learnerAction": "Change speed; read the frequency before and after passing.",
+          "placement": "Doppler."
+        }
+      ],
+      "questionPlan": [
+        {
+          "kind": "numeric",
+          "targets": "speed-change",
+          "sample": "A 3.0 s sample is played back at twice the original speed. How many seconds does it last?",
+          "answer": "1.5"
+        },
+        {
+          "kind": "numeric",
+          "targets": "doppler-frequency",
+          "sample": "A 440 Hz horn approaches a still listener at 20 m/s. The speed of sound is 343 m/s. What frequency in Hz is heard, to the nearest Hz?",
+          "answer": "467"
+        },
+        {
+          "kind": "choice",
+          "targets": "distance-cues",
+          "sample": "Which change best makes a sound seem further away?",
+          "answer": "lower level, duller highs and more reverb relative to direct sound",
+          "choices": [
+            "higher level and brighter highs",
+            "lower level, duller highs and more reverb relative to direct sound",
+            "less reverb and more bass",
+            "faster playback"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "openstax-college-physics",
+        "think-dsp"
+      ],
+      "estimatedMinutes": 14
+    }
+  ],
+  "courseCheck": "A mixed check of: v = f x wavelength and period calculations; harmonics of a note and a square wave; string and pipe fundamentals; decibel changes from ratios, added sources and distance; hearing range and octave counting; Nyquist and alias frequencies; levels, data rates and file sizes; compressor output and gain reduction; filter slopes, Q and RT60; and a short choice question on layering and distance cues.",
+  "platformNeeds": [
+    "Audio playback (figure type 'audio_player' or 'waveform_explorer'): sine, square and sawtooth tones with adjustable frequency and amplitude; sampled-and-aliased playback at chosen rates; a bit-depth crusher; a low-pass filter; a convolution or algorithmic reverb with an RT60 slider. Use the Web Audio API with oscillators and generated impulse responses so no licensed samples are required. Nothing in the questionPlan needs hearing a sound, so the svg_figure, graph_plot and data_series fallbacks work now.",
+    "A 'spectrum_explorer' figure: harmonic sliders summed to a live waveform and a spectrum bar chart. The data_series plus graph_plot fallback in the harmonics lesson approximates it.",
+    "A 'waveform_sampling' figure that draws a sine, the sample dots, and the reconstructed curve, with sample-rate and bit-depth controls.",
+    "Python with numpy in the sandbox would allow optional 'code-run-python' tasks that synthesise or filter arrays, but only if numpy is available there. Not required."
+  ],
+  "unverified": [
+    "All source URLs: the research session had no outbound web access, so none were opened. OpenStax chapter paths and the CC BY 4.0 licence, the Think DSP licence (CC BY-NC) and the NIOSH document number 98-126 were written from memory.",
+    "The steel sound speed was left out of the questions on purpose: the quoted value of about 5,900 m/s depends on bar versus bulk. Lessons should cite their source.",
+    "Exact figures: the 85 dBA / 8 h / 3 dB exchange-rate rule (NIOSH), EBU R128 at -23 LUFS, MP3 standardisation year 1993, and the date and details of Sabine's work (c. 1900) are from memory and need checking before quoting.",
+    "The 44.1 kHz video-recorder derivation (3 x 245 x 60 and 3 x 294 x 50) is arithmetic that checks, but the historical attribution to early PCM adaptors is from memory.",
+    "The 'about half of 1,411.2 kbps' remark for lossless files is a typical-figure claim and varies by material.",
+    "Equal-loudness standard ISO 226:2003 and the 2 to 5 kHz sensitivity range are from memory.",
+    "Computed by script: wavelengths, periods, dB values, alias frequencies, data sizes, compressor outputs, RT60, Doppler frequency, string and pipe frequencies."
+  ]
+}
