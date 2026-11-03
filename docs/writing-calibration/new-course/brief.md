@@ -125,6 +125,9 @@ least two figures on its opener or teaching screens. Put a figure on a graded sc
 - `program_trace` steps through a short program in Discere's teaching subset (as in the
   example), which tracks a single variable `x` with simple updates, `if` and `while`. Use it only
   for code of that shape; show other code in the prompt or an `svg_figure`.
+- `relational_query` shows input tables, SQL and its result. After applying a lesson with one,
+  run `python3 -I scripts/check-sql-figures.py <course>`: every result must match what SQLite
+  returns, rows in the order the query sorts them.
 - Another type the curriculum names (`table`, `data_series`, `timeline_explorer`,
   `coordinate_plane`, a subject explorer): copy its shape from a course that already uses it, found
   with `grep -l '"type": "<type>"' content/*/bundle.json`, reading only that one diagram.
