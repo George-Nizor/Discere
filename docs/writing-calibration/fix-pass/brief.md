@@ -42,7 +42,12 @@ why it matters through what it lets you do, in two connected paragraphs. Rewrite
 - describes its own figure or itself ("The figure shows…", "the gap between them is the point");
 - ends on a moral or announcement instead of the subject;
 - gives away the answer to the lesson's first question;
-- reads as short separate statements rather than connected sentences.
+- reads as short separate statements rather than connected sentences;
+- has a thin or vague second paragraph that never says what the learner will be able to answer or
+  do ("by following the lists in an order chosen to suit the question");
+- starts on an abstract description ("A square corner, a straight edge and the point where several
+  lines meet look like different things, but…") instead of a concrete thing the learner can
+  picture or work out ("Stand facing a wall and turn until it is directly on your right…").
 
 An opener that already reads like the references stays as it is. Keep every fact and number you
 keep, keep `**bold**` at the term the opener names, and do not add a fact you cannot support. Do
@@ -102,6 +107,12 @@ line and at least one hint. Vary where the correct option sits. Remove a numeric
    `npx tsx scripts/check-course.ts <course>` loads the course. For a course with SQL figures, run
    `python3 -I scripts/check-sql-figures.py <course>`. For rust-foundations, run
    `pnpm -s rust:prepare` and leave every code question's code untouched.
+
+Lesson text has no inline-code formatting, so never use backticks in prose (`voice-check` reports
+`BACKTICKS_IN_PROSE`); write code names plainly.
+
+Never delete a question from the bundle: one a lesson no longer asks stays, so learners' history
+still resolves. Do not reorder choice options; that is done for every course separately.
 
 Touch only `content/<course>/` and `.author/<course>/`. Do not commit, do not edit code, and do not
 run the test suites. Other agents are fixing other courses at the same time.

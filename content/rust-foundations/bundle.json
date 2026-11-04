@@ -82,9 +82,9 @@
     "status": "available",
     "introduction": {
       "paragraphs": [
-        "Rust is a systems programming language whose compiler examines a program far more thoroughly than most before it will let the program run, and a beginner meets that compiler early and often. This course treats it as a teacher: the programs are short, you say what each one does before running it, and when rustc refuses one, its message names the rule that was broken and usually shows the repair.",
-        "The course starts with printing, variables, number types and functions, and then turns to decisions and loops. Four lessons follow on the idea that Rust is best known for: every value has one owner, a borrow lends a value without giving it away, a slice borrows part of one, and the compiler checks that no reference outlives what it points to. They are built around the errors you will actually meet, such as E0382 for a moved value, E0502 and E0499 for conflicting borrows, and E0597 for a reference that outlives its value.",
-        "Structs and enums then model data, Option and Result carry a missing value or a failure in the type, and Vec, String and HashMap store it. Traits and generics, closures and iterators let one piece of code serve many types, and the last lesson joins everything into a program of about fifty lines that reads lines of data, skips the bad ones with a message and prints a sorted report. Every exercise that asks for code is compiled and run in the real compiler, and the same tools are open to you in the playground and in the Rust projects, which hold sixteen further tasks."
+        "Rust is a programming language built on one demand: the compiler must be able to tell, before a program runs, which part of the program is responsible for every value in it. In C, a program can release a piece of memory and keep using it, and the mistake shows up, if it shows up at all, as a crash or a wrong answer long after the line that caused it. Languages such as Java and Go prevent it with a garbage collector that runs alongside the program, which costs some speed and takes memory management out of the programmer's hands. Rust prevents it while the program is being compiled, by giving every value one owner and checking each use of the value against that fact, and the same checking rules out two parts of a program changing the same data at once.",
+        "A compiler that checks this much refuses programs that other languages would accept, and a beginner meets those refusals early and often. Each one is an error message that names the rule that was broken, and most of them show the repair: E0382, for example, reports that a value was used after it had been moved to another owner, and points to both of the lines involved. Reading such messages is therefore the quickest way to learn the rules, and it changes what it means for a program to compile, since a Rust program that builds has already been checked for a whole class of mistakes that other languages leave to testing.",
+        "Because nothing runs alongside the program to clean up after it, Rust programs can be about as fast as the equivalent C, and because the checking happens beforehand they can be trusted with work in which a memory error is a security flaw, which is why parts of Firefox and of the Linux kernel are now written in it. The programs here are short enough to be read in full, so every rule can be judged in the same way, by what the compiler says about the program in front of you."
       ],
       "outcomes": [
         "You'll be able to read a short Rust program and predict exactly what it prints.",
@@ -488,12 +488,7 @@
           "id": "swap-values",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The program below prints 2 and 5. Rust fills the braces in the order in which the values are listed, and the exercise is to make the same text come out with the numbers the other way round."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -508,12 +503,7 @@
           "id": "first-program",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "This time the body of main is empty, so the lines are yours to write. Each println! ends its line, which means that two lines of output need two calls."
-            }
-          ],
+          "lead": [],
           "reveal": [],
           "visualStateId": "",
           "checkQuestionId": "print-and-bind-first-program",
@@ -562,12 +552,7 @@
           "id": "area-of-a-rectangle",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Read the program from the top, keeping track of the value each name holds, and say what number follows area = in the output before running anything."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -592,12 +577,7 @@
           "id": "immutable-by-default",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Line 3 of this program tries to give score a second value with =. Read it as rustc, the Rust compiler, will, and decide whether the compiler accepts it."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -663,12 +643,7 @@
           "id": "fix-it",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The program from the last question is below, still with its error. The repair touches only one line, and the quickest way to find it is to run the program and read what rustc says."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -721,12 +696,7 @@
           "id": "shadow-level",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The program below changes level twice with plain assignments, and rustc rejects both. The repair this time is to shadow level, not to make it mutable."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -771,11 +741,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "Here is a complete Rust program, and you can probably say what it prints without having been told a single rule of the language. Two names, apples and pears, are each given a number, and the last line writes out something calculated from them."
+              "text": "Here is a complete Rust program. The line let apples = 3; gives the name apples to the number 3, and from then on the name can be written wherever the number could, which is how the last line is able to add apples to pears without repeating either number."
             },
             {
               "kind": "paragraph",
-              "text": "Some of what you can see will be unfamiliar, such as the exclamation mark after println and the pair of braces, and those details are set out over the next few screens. The larger subject is how a program holds values: a name is attached to a value, the name is used wherever the value is needed, and Rust requires you to say *in advance* which names may change later. That requirement is the first thing that separates Rust from most languages you may have used, and it is the reason the compiler will sometimes refuse a program that looks perfectly reasonable."
+              "text": "Giving a value a name is the first thing nearly every program does, and Rust attaches a condition to it that most languages do not: a name keeps its value unless you say, on the line that creates it, that it may change. A reader can then tell from that one line which names might change later, and can rule out the others when something goes wrong. The same condition is the reason the compiler will sometimes refuse a program that looks perfectly reasonable."
             }
           ],
           "diagram": {
@@ -868,12 +838,7 @@
           "id": "exact-division",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The program below shares 7 between 2 with whole numbers, so the .5 is discarded. What it needs is a different type of number, and not a different calculation."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -891,7 +856,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A type can be written after a variable's name with a colon, as in price: f64, and the program below does this for both of its variables. One holds a decimal number and the other a whole number, and the last line multiplies them. Decide whether rustc accepts that."
+              "text": "A type can be written after a variable's name with a colon, as in price: f64."
             }
           ],
           "reveal": [
@@ -953,12 +918,7 @@
           "id": "convert-the-count",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Here is the failing program again. Rust accepts the multiplication once both sides have the same type, so the exercise is to convert the right one of them and nothing else."
-            }
-          ],
+          "lead": [],
           "reveal": [],
           "visualStateId": "",
           "checkQuestionId": "types-and-functions-fix-as",
@@ -1007,12 +967,7 @@
           "id": "read-the-signature",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Read the first line of a function before its body, because it already states what goes in and what comes out."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1027,12 +982,7 @@
           "id": "write-triple",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Now write a function yourself. Its first line is given, and the body needs a single expression as its last line."
-            }
-          ],
+          "lead": [],
           "reveal": [],
           "visualStateId": "",
           "checkQuestionId": "types-and-functions-triple",
@@ -1042,12 +992,7 @@
           "id": "call-a-function",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A function can be called more than once, and each call starts afresh with its own value for price. Work out what the two calls hand back and what the program prints."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1075,7 +1020,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Here is double again, with one change: a semicolon after n * 2. Decide whether rustc accepts this version."
+              "text": "Here is double again, with a semicolon added after n * 2."
             }
           ],
           "reveal": [
@@ -1102,12 +1047,7 @@
           "id": "average",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Finally, combine the pieces: a function whose parameters and result are all decimals, and whose body must add before it divides."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1151,11 +1091,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "Here is another short program: seven cookies are shared between two people, and the last line prints the result of dividing the one number by the other. On a calculator the quotient would be 3.5, and in Rust what is printed depends on something that the program never states outright, which is the *kind* of number that cookies and people hold."
+              "text": "A calculator divides 7 by 2 and shows 3.5. Whether a Rust program does the same depends on the kind of number it is dividing, because a whole number such as 7 and a number with a decimal point such as 7.0 are values of different **types**, and the type decides what an operation on them means."
             },
             {
               "kind": "paragraph",
-              "text": "That makes the kind of a number part of what a program means, and Rust keeps track of it more strictly than most languages do. Two families of number come first, whole numbers and decimals, with a rule that stops them being mixed carelessly, and the function gives a calculation a name, inputs of stated kinds and a result of a stated kind."
+              "text": "Rust keeps track of types more strictly than most languages do, and that strictness is what lets a function state exactly what it needs and what it hands back. The compiler checks every call against that statement, so a program that mixes the two kinds of number carelessly is refused before it runs and not after it has produced a wrong answer."
             }
           ],
           "diagram": {
@@ -1247,12 +1187,7 @@
           "id": "age-boundary",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Rust has two symbols for \"at least\" and \"more than\", and they differ at exactly one value. Look at the condition in the program, work out whether it is true for the value that age holds, and type the word that the program prints."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1328,12 +1263,7 @@
           "id": "write-describe",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Write the body of describe as an if, an else if and an else, one for each of the three answers. The checker calls the function with several numbers, including 0, so the boundary between the first two conditions has to be right."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1352,7 +1282,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Most languages treat if as a statement that does something and produces nothing. In Rust an if with an else is an *expression*, which means that it works out to a value like 6 * 7 does, and that value can be given a name. In the program from the start of the lesson, let kind = if n % 2 == 0 { \"even\" } else { \"odd\" }; runs the test and gives kind the text from whichever block was chosen, so no assignment appears inside the blocks."
+              "text": "Most languages treat if as a statement that does something and produces nothing. In Rust an if with an else is an *expression*, which means that it works out to a value like 6 * 7 does, and that value can be given a name. A line such as let kind = if n % 2 == 0 { \"even\" } else { \"odd\" }; runs the test and gives kind the text from whichever block was chosen, so no assignment appears inside the blocks."
             },
             {
               "kind": "paragraph",
@@ -1394,12 +1324,7 @@
           "id": "predict-value",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Decide which condition is true for the value of a, then take the value of the block that runs. Say what number the program prints before you run it."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1457,12 +1382,7 @@
           "id": "non-bool",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Read the condition in the program and decide what type it has, then type the error code that rustc reports. Run the program afterwards to see the message for yourself."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1487,12 +1407,7 @@
           "id": "fix-types",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The program below is rejected because its two blocks give different types. Edit only the else block so that the program compiles and prints 1."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1584,12 +1499,7 @@
           "id": "leap-year",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A year is a leap year if 400 divides it, or if 4 divides it and 100 does not. Write the function as a chain, putting the most special case first so that no year reaches a rule that would misjudge it."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1633,11 +1543,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "The program in the figure decides something about a number and then prints an answer built from the decision. Its fourth line is the interesting one, because it does not use an if to *do* something; it uses the if to produce a number, which the let then keeps under a name."
+              "text": "The expression if n % 2 == 0 { n / 2 } else { n * 2 } is a number: n / 2 when n is even and n * 2 when it is odd. In many languages an if only decides which lines of code run, but in Rust it has a value, as 6 * 7 does, and can sit on the right of a let, which is what is meant by calling an if an **expression**."
             },
             {
               "kind": "paragraph",
-              "text": "Rust treats if in this way throughout, and the same fact that lets you write the line explains two rules that look arbitrary at first: why the test after if has to be a plain yes or no, and why both branches have to give the same kind of value."
+              "text": "That one fact explains two rules that look arbitrary at first, namely that the test after if has to be a plain yes or no and that both branches have to give the same kind of value. It also lets a decision be written directly as the value it produces, so that no variable has to be created first and filled in afterwards."
             }
           ],
           "diagram": {
@@ -1729,12 +1639,7 @@
           "id": "break-value",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Work out the value of p after each pass: p starts at 1 and is multiplied by 3 before every test. Decide when p first exceeds 100 and say what number the program prints."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1796,12 +1701,7 @@
           "id": "count-halvings",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Before running the program in the figure, write down the value of n after each pass and count the passes. The program prints that count, and only the count."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1826,12 +1726,7 @@
           "id": "countdown",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Write a while loop that prints 3, 2, 1 and then Liftoff! on separate lines. The loop needs a condition that ends it and a line in its body that moves the variable toward that end."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1893,12 +1788,7 @@
           "id": "sum-range",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The loop adds each value of i to a running total. Write out the values that this range gives to i, add them up, and say what the program prints."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1960,12 +1850,7 @@
           "id": "count-steps",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The body of this loop adds 1 to times on every pass, and the program prints times. Work out which values the range gives to the loop and count them."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2023,12 +1908,7 @@
           "id": "name-the-error",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The loop variable step is used on the last line, after the loop has ended. Decide what rustc will say about it and type the error code."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2053,12 +1933,7 @@
           "id": "fix-scope",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The program prints each step and then tries to name the last one after the loop, and rustc rejects it. Keep the output of the loop and make the final line print last step was 3 by keeping a variable outside the loop."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2113,12 +1988,7 @@
           "id": "first-power",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Find the first power of 2 above 1000 with a loop that doubles a number and a break that carries the number out. The body is only a few lines, and the starter has the first one."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2163,11 +2033,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "The program in the figure finds the first whole number whose square is above 50, and then prints every third number from 1 below 10. Nothing in it is written out three or eight times: each answer comes from a block of code that the program repeats until a stopping condition is met."
+              "text": "To find the first whole number whose square is above 50, you try 1, then 2, then 3, and check each square against 50 until one passes. Written out, that is the same step many times over, so a program writes it once, raising a counter by 1 and testing its square, and places it in a **loop** that repeats until a break leaves it carrying the number that passed."
             },
             {
               "kind": "paragraph",
-              "text": "That repetition is the second half of what a program needs beyond choosing between two paths, and Rust offers three forms of it. Which one fits depends on whether you know the values in advance, whether the stopping point depends on a changing quantity, or whether the search should end at the first thing it finds."
+              "text": "Repeating a block is what lets the same few lines serve for ten values or for ten million, and the part that needs care is what stops it. Rust has three ways of writing a repetition, and they differ in exactly that: loop runs until a break inside it says so, while checks a condition before every pass, and for walks through values fixed in advance, such as the numbers from 1 to 10. Which one fits depends on what you know before the repetition starts, and a stopping rule written slightly wrong is the commonest reason a loop runs once too often or never ends."
             }
           ],
           "diagram": {
@@ -2262,12 +2132,7 @@
           "id": "predict-assign",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "In Python or Java the second line of this program would give the same text a second name, and both names would work. Decide whether Rust accepts the program, given that a String has a single owner."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2338,12 +2203,7 @@
           "id": "vec-error",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A Vec holds a list of values and follows the same rule as a String. Read the program, find the line that moves v, and type the error code that rustc gives for the later use."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2400,12 +2260,7 @@
           "id": "copy-predict",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The type of x decides whether the second line copies or moves. Work out which it is, then say what the program prints."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2467,12 +2322,7 @@
           "id": "write-exclaim",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Write a function that takes a String by value, adds an exclamation mark and returns it. The checker calls it with several Strings and compares the String that comes back."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2519,12 +2369,7 @@
           "id": "clone-fix",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Fix the program with a clone, keeping both names in the println!. Run it first and read the end of rustc's message, which suggests the edit."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2612,12 +2457,7 @@
           "id": "count-clone",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Here the move happens in a function call. The function count only needs the length of the Vec, but it was written to take ownership, and the caller needs v afterwards. Change main so that both lines work and the program prints 3 3."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2661,11 +2501,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "The program in the figure gives a the value 5, gives b the value of a, and adds the two. Nobody would hesitate over it, and it works in Rust exactly as it would in any language, because each name holds a 5 of its own."
+              "text": "After the line let b = a; with a holding the number 5, the two names each hold a 5 of their own, and either can be used as before. With a piece of text in place of the number the same line behaves differently, because text cannot be duplicated as cheaply as a number and Rust has to decide which of the two names is responsible for it."
             },
             {
               "kind": "paragraph",
-              "text": "The same shape of program, with a piece of text in place of the number, behaves differently in Rust. Rust has a rule about who is responsible for each value, and the rule is checked by the compiler before the program runs, which is why the language needs no garbage collector and leaves no dangling memory."
+              "text": "The decision follows from a rule: every value has exactly one **owner**, which is the variable that holds it, and when the owner goes out of scope the value is dropped and its memory released. The compiler checks the rule before the program runs, which is why Rust needs no garbage collector and leaves no dangling memory, and why it can refuse a program that uses a value after it has gone."
             }
           ],
           "diagram": {
@@ -2757,12 +2597,7 @@
           "id": "write-total",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Write a function that sums the numbers of a Vec through a shared reference. A for loop can walk over the reference directly, and the checker calls the function with a reference to a Vec of its own."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2810,12 +2645,7 @@
           "id": "bump-twice",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The function adds 1 through its reference, and main lends x to it twice. Decide whether x itself changes, and say what the program prints."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2878,12 +2708,7 @@
           "id": "name-e0502",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Here v is borrowed by first, and then something changes v while first is still going to be used. Decide which rule is broken and type the error code."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2952,12 +2777,7 @@
           "id": "reorder",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Fix the program by changing only the order of its lines, so that the shared borrow ends before the mutable one starts. It should print 1 and then 4."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3004,12 +2824,7 @@
           "id": "fix-missing-mut",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The function above cannot change its argument. Change both the signature and the call so that the String is borrowed mutably, and the program prints hi!."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3097,12 +2912,7 @@
           "id": "write-append",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Now write the function yourself. It borrows a String mutably and adds an exclamation mark, and main calls it twice on a String holding hi before printing it."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3145,11 +2955,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "Last lesson's programs had to give a value away in order to use it somewhere else, so that a String passed to a function could not be printed afterwards. The program in the figure does something that looks impossible under that rule: it makes a second name for a String and then prints both names, and rustc accepts it."
+              "text": "In the line let r = &s;, the & makes r a **reference** to the String s: a second name that can read the text but does not own it. Because s is still the owner, both names can be printed afterwards, which an ordinary assignment would not allow, since that moves the String and leaves the old name unusable."
             },
             {
               "kind": "paragraph",
-              "text": "The second name is a view of the value that has no ownership of it. Views of this kind remove most of the returning and cloning from the last lesson, and they come with a short set of rules about who may read and who may change a value at any moment, which are the rules rustc applies to the borrowing programs it refuses."
+              "text": "A reference removes most of the returning and cloning that ownership alone forces on you, because a function can borrow a value for the length of a call and leave it with its owner. Borrowing comes with a short set of rules about who may read and who may change a value at any moment, and those are the rules rustc applies to the programs it refuses."
             }
           ],
           "diagram": {
@@ -3242,12 +3052,7 @@
           "id": "slice-predict",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A slice counts its own items from 0, whatever part of the array it covers. Decide which three items of a the slice contains, and say what number the program prints for the item at index 1 of the slice."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3391,12 +3196,7 @@
           "id": "write-before-dash",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "first_word looked for a space. Write the same kind of function for a hyphen: it returns the text before the first '-' as a slice of its argument, or all of the text if the argument has no hyphen."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3444,12 +3244,7 @@
           "id": "name-e0277",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The same mistake with a literal instead of a String. Decide whether it is refused, and type the error code for the line that indexes the text."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3506,12 +3301,7 @@
           "id": "bytes-predict",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The word contains one letter with an accent. Decide how many bytes it takes in UTF-8, and say what number len() reports for the whole word."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3539,7 +3329,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Count the vowels in the text with a for loop over its characters. The comparison with a character is written with single quotation marks, as in c == 'a'."
+              "text": "A character is written with single quotation marks, as in c == 'a'."
             }
           ],
           "reveal": [
@@ -3586,12 +3376,7 @@
           "id": "fix-clear",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Make the program above compile, by moving one line, so that it prints hello. The text stays the same, and the order of two lines decides whether the borrows overlap."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3635,11 +3420,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "Taking the first word of a sentence sounds like a task that needs a new String, and in many languages it is one: the characters are copied into a fresh piece of text. The program in the figure does something cheaper. It names the first five bytes of an existing text, and the word it prints is a view of the original, with nothing copied."
+              "text": "The expression &text[0..5] takes the bytes at positions 0 to 4 of \"hello world\", which spell the word hello, and it copies none of them: the result is a **slice**, a reference to part of the original text that records where the part starts and how long it is. Most languages build a fresh piece of text for the word and copy its characters into it, so a view of the original costs less."
             },
             {
               "kind": "paragraph",
-              "text": "A view of part of a sequence is how Rust programs pass around parts of arrays and of text. They also explain two oddities that surprise newcomers, namely that there are two string types and that a string cannot be indexed by position."
+              "text": "The same kind of view serves for parts of arrays and parts of text, and it is why a function that only reads text can accept a literal and a String alike. It also explains two oddities that surprise newcomers, namely that Rust has two string types and that a string cannot be indexed by position."
             }
           ],
           "diagram": {
@@ -3725,12 +3510,7 @@
           "id": "read-fields",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Read the fields off the value that main builds, and say what number the program prints for the product of its two fields."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3787,12 +3567,7 @@
           "id": "name-e0594",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The program below changes a field of a Rect. Decide whether the binding allows it, and type the error code for the assignment."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3860,12 +3635,7 @@
           "id": "perimeter",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The method perimeter is written inside an impl block and reads two fields through self. Work out the value of the expression with the numbers that r holds, and say what the program prints."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3960,12 +3730,7 @@
           "id": "write-counter",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Write the Counter from the last screens yourself: the struct, a constructor with no self, a method that changes the count and a method that reads it. The starter has only main."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4018,12 +3783,7 @@
           "id": "fix-display",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "This program asks for the ordinary printed form of a Point, which a struct does not have. Make it print the value in the Debug form, which needs a change to the definition and a change to the println!."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4071,12 +3831,7 @@
           "id": "write-is-square",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The main function below already calls a method that does not exist yet. Write is_square in an impl block, so that it returns true when both sides are equal."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4121,11 +3876,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A rectangle is two numbers, and a program that handles many of them soon has pairs of numbers passed from function to function with nothing but a variable name to say which is the width. The program in the figure keeps them under one name and asks the rectangle itself for its area."
+              "text": "A rectangle is two numbers, a width and a height, and a program that handles many of them soon has pairs of numbers passing from function to function with nothing but a variable name to say which is the width. A **struct** keeps the two under one name, and a function written beside it lets the rectangle answer for itself, so that r.area() asks a rectangle for its area where area(w, h) would need the numbers passed in separately."
             },
             {
               "kind": "paragraph",
-              "text": "The grouping and the function that works on it both have names. Together they let a program speak about its own subject in its own words, so that the code reads rect.area() and not area(w, h), and they bring the ownership rules of the last three lessons into the design of every function you write."
+              "text": "Together these let a program speak about its own subject in its own words, and they bring the ownership rules of the last three lessons into the design of every function you write, since each function that works on a value has to say whether it reads the value, changes it or takes it over."
             }
           ],
           "diagram": {
@@ -4220,12 +3975,7 @@
           "id": "coin-sum",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Each call to cents works out its own match. Decide which arm each of the two values selects, and say what number the program prints for the sum of the two results."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4288,12 +4038,7 @@
           "id": "name-e0004",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Look for the variant that this match leaves out, and type the error code that rustc gives for it."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4318,12 +4063,7 @@
           "id": "fix-suit",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The match below stops compiling because Suit::Clubs has no arm. Add the missing arm so that the program compiles and prints black."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4384,12 +4124,7 @@
           "id": "rect-area",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Find the arm of the match that fits the value built in main, note which names its pattern binds, and say what number the program prints."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4446,12 +4181,7 @@
           "id": "write-describe",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Write describe with a match and the four kinds of pattern from the figure. The checker calls it with several numbers, including the ends of each range."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4496,12 +4226,7 @@
           "id": "write-light",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Write a traffic light as an enum with two methods, one that steps to the next light and one that gives its name. Red goes to Green, Green to Yellow and Yellow back to Red."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4620,11 +4345,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "The function in the figure has no if, and no comparison of numbers. It takes a coin and returns what the coin is worth by naming each kind of coin and giving the number that goes with it. A coin can be nothing but a penny, a nickel, a dime or a quarter, and the program says so in a way that the compiler can check."
+              "text": "A coin in a program can be a penny, a nickel, a dime or a quarter and nothing else, and Rust lets you say exactly that: an **enum** called Coin whose value is always one of four named variants. A match then takes a Coin and gives the amount that goes with each kind, with one arm for each variant and no if and no comparison of numbers."
             },
             {
               "kind": "paragraph",
-              "text": "There is a way of describing a value of that kind, and a construct that takes such a value apart. Between them they replace a good deal of the if-else code, the integer codes and the null checks of other languages, and they give the compiler enough information to tell you when a case has been forgotten."
+              "text": "A value that is exactly one of several kinds is something nearly every program needs, and other languages stand in for it with integer codes, strings or null checks, none of which the compiler can check. Because Rust knows every variant, it can tell you when a match leaves one out, so a forgotten case becomes an error you read and not a fault you meet later."
             }
           ],
           "diagram": {
@@ -4727,12 +4452,7 @@
           "id": "get-predict",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The method get asks a Vec for the item at an index, and it returns an Option. Work out which of the two variants each call gives, given that the Vec holds three items, and decide what the second line of output shows."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4789,12 +4509,7 @@
           "id": "count-some",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The loop asks the Vec for the items at five indexes, and the block of the if let counts the ones that exist. Work out how many of the five give Some, and say what the program prints."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4851,12 +4566,7 @@
           "id": "name-e0369",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Here an Option<i32> is on the left of the plus sign, with a plain number on the right. Decide which rule is broken, and type the error code that rustc reports for it."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4992,12 +4702,7 @@
           "id": "write-first-even",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Write first_even yourself. The signature promises an Option<i32>, so every path through the function has to end in Some(...) or None."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5044,12 +4749,7 @@
           "id": "match-print",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "first_even is written for you. In main, take apart its result with a match and print the number if there is one and the word none otherwise, for each of the two lists."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5064,12 +4764,7 @@
           "id": "first-upper",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Write a function whose body is itself a match on an Option: the first character of a string may not exist, and the function returns an Option as well, so each arm builds one."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5114,11 +4809,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "The program in the figure asks a list of three numbers for the item at index 1 and then for the one at index 5. A language with a null value would hand back a number for the first and a null for the second, and nothing would mark the difference until a later line tried to use the null. Here each answer says what it is: the first is the number inside a wrapper that says it exists, and the second is a value that says there is nothing."
+              "text": "Asking a list of three numbers for the item at index 5 leaves nothing to return, and a language with a null value hands back a null that looks like any other result, so nothing marks the difference until a later line tries to use it. Rust answers with a value that says there is nothing, called **None**, and when the item does exist it answers with the item inside a wrapper, written Some, that says so."
             },
             {
               "kind": "paragraph",
-              "text": "The wrapper is part of the type, so a function that can fail to produce a value cannot be used as though it always did. That one design decision removes a whole family of faults, and the rest of the lesson is about how to unpack the wrapper."
+              "text": "The wrapper is part of the type, so a function that can fail to produce a value cannot be used as though it always did, and that one design decision removes a whole family of faults. Each use of such a result has to say what should happen when there is no value, and that answer is written in the program for every reader to see."
             }
           ],
           "diagram": {
@@ -5212,12 +4907,7 @@
           "id": "count-ok",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "parse returns Ok for text that holds a whole number, including a negative one, and Err for anything else. Decide for each of the five texts which variant it gives, and say what number the program prints."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5272,12 +4962,7 @@
           "id": "write-checked-div",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Write a function that can fail for a reason of your own. Division by zero has no answer, so return an Err holding the text division by zero in that case and an Ok with the quotient otherwise."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5368,12 +5053,7 @@
           "id": "write-parse-double",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Write parse_and_double, which parses its text as an i32 with ? and returns the number doubled inside Ok. The checker also calls it with text that is not a number, so the error has to come back unchanged."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5418,12 +5098,7 @@
           "id": "name-e0277",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "This function declares that it returns a plain i32, and uses ? in its body. Decide which rule that breaks, and type the error code that rustc reports."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5500,7 +5175,7 @@
               "math": "let mut total = 0; for item in items {"
             },
             {
-              "text": "Each text is parsed and the number added with one ?. For the list [\"4\", \"five\", \"6\"], count how many texts are parsed before the function returns.",
+              "text": "Each text is parsed and the number added with one ?. In the list [\"4\", \"five\", \"6\"] the second text is not a number.",
               "math": "total += item.parse::<i32>()?;",
               "selfExplain": {
                 "questionId": "rusf-result-and-question-mark-worked-two"
@@ -5562,12 +5237,7 @@
           "id": "report-sum-all",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "sum_all is written for you. Call it from main on two lists, one with valid numbers and one with a word among them, and use a match to print either the sum or the error message that explains the failure."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5612,11 +5282,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "The function in the figure takes two pieces of text and returns their sum, and it takes two lines to say what ought to be a single line of work, because each piece of text might not be a number. The calls in main show that the function copes with this: it returns a value that says either what the sum was or what went wrong, and the caller has to look."
+              "text": "Text typed by a person may be anything, so a call such as \"abc\".parse::<i32>() cannot always produce a number. In Rust it returns a **Result**, a value that is either Ok holding the number or Err holding the reason it failed, and a function that adds two pieces of text therefore has two chances to fail before it can give a sum."
             },
             {
               "kind": "paragraph",
-              "text": "That is Rust's replacement for exceptions. A failure is an ordinary value that travels in a function's return type, and a single character is enough to pass it up the chain of calls, so the code stays short while every point of failure stays visible."
+              "text": "A failure in Rust is an ordinary value that travels in a function's return type, which is the language's replacement for exceptions, and a single character, ?, is enough to pass it up the chain of calls. The code stays short while every point where something can fail remains visible, both in the function's signature and at the line that handles it."
             }
           ],
           "diagram": {
@@ -5710,12 +5380,7 @@
           "id": "vec-predict",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Write out the Vec after each line of the program, remembering that pop removes the last item and push adds at the end. Then say what number the final line prints."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5809,12 +5474,7 @@
           "id": "name-e0382",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A for loop goes through a Vec of numbers, and the last line asks for the length of the same Vec. Decide whether the loop left the Vec usable, and type the error code that rustc reports."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5839,12 +5499,7 @@
           "id": "write-evens",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Write a function that goes through a Vec by reference and builds a new Vec of the items that pass a test. The caller must still own the original Vec afterwards."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5859,12 +5514,7 @@
           "id": "double-predict",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The first loop borrows v mutably and changes every item through its reference, and the second reads the changed items. Decide what v holds after the loop, and say what the program prints."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5922,12 +5572,7 @@
           "id": "build-dash",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Build the text a-b-c from a list of three pieces with a loop, adding a dash before every piece except the first. Print the String and then its length."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -6008,12 +5653,7 @@
           "id": "count-words",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Count the words of a sentence with a HashMap and the entry method, and print how often one word occurs and how many different words the sentence has. The method split_whitespace gives the words one at a time."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -6064,12 +5704,7 @@
           "id": "fix-for",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Here a loop over a Vec uses the Vec up, and a later line needs it. Change the loop, and nothing else, so that the program prints 1, 2, 3 and then the length."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -6117,11 +5752,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "Every program so far has held a fixed number of values, one name for each. The program in the figure holds a list of scores that grows as the program runs: three values are added one at a time, a loop adds them up, and the list reports how many it holds. Nothing in the program says in advance how many scores there will be."
+              "text": "A program that adds up the scores of however many players turn up cannot give each score a name in advance, since it does not know how many there will be. A **Vec** holds them: it starts empty, grows by one each time a value is pushed onto it, reports how many values it holds, and can be walked through with a loop to add them up."
             },
             {
               "kind": "paragraph",
-              "text": "Rust's standard library has three types for this kind of work: one for a growable list, one for text that can be built piece by piece, and one for a table in which values are found by a key. They all follow the ownership rules from earlier in the course, and the way a loop is written decides whether it borrows a collection or uses it up."
+              "text": "Text that is built piece by piece and tables in which a value is found by a key have the same need, and the standard library supplies a type for each, String and HashMap. All three follow the ownership rules from earlier in the course, so the way a loop is written decides whether it borrows a collection or uses it up."
             }
           ],
           "diagram": {
@@ -6246,12 +5881,7 @@
           "id": "robot-predict",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Robot implements only the required method of Speak. Work out which greet runs for it, and what that greet builds, and type the text that the program prints."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -6311,12 +5941,7 @@
           "id": "name-e0277",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Here a generic function prints its argument with {}, and the call passes the integer 5. Decide which promise about T is missing, and type the error code that rustc reports."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -6373,12 +5998,7 @@
           "id": "largest-negative",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The function starts from the first item and not from 0. Work out how best changes as it goes through the list, and say what the program prints."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -6403,12 +6023,7 @@
           "id": "write-smallest",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Write the opposite function, smallest, with the same bounds. It has to work for integers, decimals and characters, because the checker calls it with all three."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -6497,12 +6112,7 @@
           "id": "write-print-area",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Put the pieces together: the trait, two types that implement it, and a generic function whose bound is the trait. The starter has only main, so everything else is yours to define."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -6557,12 +6167,7 @@
           "id": "write-pair",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Write a generic struct and a method that has a bound. The struct holds two values of one type, and the method returns the larger of the two, so the bound belongs on the impl block."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -6607,11 +6212,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "The two types in the figure each know how to work out their own area, and they do it with a method of the same name. That is a coincidence of naming and not something the compiler can use, so a function that wants to accept either, and no type that lacks an area, has no way to say so. A program with ten shapes would need ten copies of every function that works on a shape."
+              "text": "A square and a rectangle can each work out their own area with a method called area, but the shared name is only a coincidence, and the compiler cannot make use of it: a function that should accept a square or a rectangle, and nothing that lacks an area, has no way of saying so. With ten kinds of shape, every function that works on a shape would need ten versions."
             },
             {
               "kind": "paragraph",
-              "text": "Rust solves this in two parts. One names a behaviour so that types can share it, and the other lets a function or a struct be written once for any type that has the behaviour. Between them they remove the repetition, and the compiler still checks every use before the program runs."
+              "text": "Rust removes the repetition in two parts. A **trait** gives a behaviour, such as having an area, a name of its own so that types can share it, and a **generic** function or struct is written once for any type that has the behaviour. The compiler still checks every use before the program runs."
             }
           ],
           "diagram": {
@@ -6732,12 +6337,7 @@
           "id": "name-e0106",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "This function also takes two references and returns one of them. Decide whether the compiler can tell which input the result borrows from, and type the error code that it reports."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -6833,12 +6433,7 @@
           "id": "pick-first-predict",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Only x carries the lifetime 'a here, and y has no annotation. Decide which argument the result borrows from, and say which text the second line of output shows."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -6863,12 +6458,7 @@
           "id": "write-shorter",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Write shorter, the opposite of longest. Its signature is given with the annotation, and the body only has to choose between x and y, with x winning a tie."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -6947,12 +6537,7 @@
           "id": "fix-local",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Change make so that it hands the String to the caller. The return type and the last line of the function both change, and main stays as it is."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -7033,12 +6618,7 @@
           "id": "fix-scope",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The program on the last screen fails because b lives in a block that ends too soon. Change the program so that it prints longer, without changing longest."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -7082,11 +6662,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "The program in the figure sets a reference r to point at a number x, where x is made inside a pair of braces and r is used after them. On a first reading nothing is wrong: r holds the address of x, and x holds 5. But the closing brace ends the life of x, so by the next line the address leads nowhere, and printing it would read memory that the program has already given back."
+              "text": "A reference to a number x is only useful while x exists. If x is made inside a pair of braces and the reference is used after them, nothing looks wrong on a first reading, since the reference holds the address of x and x holds 5, but the closing brace ends the life of x, so by the next line the address leads nowhere and printing it would read memory that the program has already given back."
             },
             {
               "kind": "paragraph",
-              "text": "Most languages leave that to luck or to a garbage collector. Rust works it out before the program runs, by comparing how long each reference is used with how long its value lives, and the notation that sometimes appears in function signatures is how a function tells that comparison what it does with its references."
+              "text": "In C that is left to the programmer's care, and in languages with a garbage collector the value is simply kept alive for as long as anything refers to it. Rust works it out before the program runs, by comparing how long each reference is used with how long its value lives, and it refuses any program in which the first outlasts the second. Most of the time it makes the comparison without help, and the notation that sometimes appears in function signatures is how you tell it what a function does with its references."
             }
           ],
           "diagram": {
@@ -7173,12 +6753,7 @@
           "id": "capture-predict",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The closure triple reads the variable rate when it is called. Work out each of the two calls separately, and then say what number the program prints when the two results are added."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -7311,12 +6886,7 @@
           "id": "belt-predict",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Follow the items 1 to 5 through the chain in order. Decide which survive the filter, what the map makes of them, and what the consumer adds, and say what number the program prints."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -7373,12 +6943,7 @@
           "id": "lazy-predict",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "This program builds a map and then never uses it. Decide whether the closure inside it ever runs, and say how many lines of output the program produces."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -7403,12 +6968,7 @@
           "id": "count-long",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Count the words of a sentence that are longer than three characters, with a chain that splits the text into words, filters them by length and ends with a consumer. The method count returns how many items arrive."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -7426,7 +6986,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Write a function that turns a slice of words into a Vec of their lengths. The return type tells collect what to build, so the call needs no annotation."
+              "text": "The return type tells collect what to build, so the call needs no annotation."
             }
           ],
           "reveal": [
@@ -7475,12 +7035,7 @@
           "id": "write-adder",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Write make_adder yourself, and call it twice in main to build two different closures. The closure must capture n by ownership."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -7565,11 +7120,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "The chain in the figure keeps the odd numbers from 1 to 6, squares them, and adds the squares, in a single expression that reads from left to right like the sentence that describes it. There is no loop variable, no total to start at zero, and no list of intermediate results."
+              "text": "Take the numbers from 1 to 6, keep the odd ones, square each and add the squares. In Rust the whole job is one expression, (1..=6).filter(|n| n % 2 == 1).map(|n| n * n).sum(), that reads from left to right like the sentence that describes it, with no loop variable, no total to start at zero and no list of intermediate results."
             },
             {
               "kind": "paragraph",
-              "text": "Each stage is a short function written on the spot, and the stages are joined by a dot. That style needs two ideas that Rust treats carefully: the small unnamed functions, which can use variables from the place where they are written, and the sequences, which hand out their items one at a time and do no work until someone asks."
+              "text": "Each stage is a short function written on the spot, called a **closure**, and the stages are joined by a dot. The style rests on two ideas that Rust treats carefully, namely that a closure can use variables from the place where it is written, and that a sequence hands out its items one at a time and does no work until something asks for them."
             }
           ],
           "diagram": {
@@ -7704,12 +7259,7 @@
           "id": "count-good-predict",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The function parse returns Err for a line without a comma and for a score that is not a number. Decide which of the four lines give Ok, and say what number the program prints."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -7734,12 +7284,7 @@
           "id": "write-parse",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Write a parse function that returns a tuple inside Ok, and show both of its outcomes in main. Use ? with split_once and with the parse, and map_err so that every ? carries a String."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -7786,12 +7331,7 @@
           "id": "write-totals",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Build a map of totals instead of lists: for each name, add up its scores. The entry method does the work, and the order of the printed lines is fixed by asking for the names one at a time."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -7839,12 +7379,7 @@
           "id": "mean-predict",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The function converts both the sum and the length to f64 before it divides, and the format asks for two digits after the decimal point. Work out the mean and the rounding, and type the number that is printed."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -7869,12 +7404,7 @@
           "id": "write-module",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Put mean into a module named stats and call it from main, once with a list of scores and once with an empty list. Only the function marked pub can be reached from main."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -7924,12 +7454,7 @@
           "id": "borrow-check",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Read this program as the compiler does. The loop borrows scores, and the body of the loop changes it. Decide which borrow rule that breaks, and type the error code that rustc reports."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -7994,12 +7519,7 @@
           "id": "count-bad",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Reuse parse_line without changing it. Go through the lines of a different text with a loop and a match, count the good lines and the bad lines, and print both counts in the form given."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -8044,11 +7564,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "The program in the figure reads six lines of text, two of which are wrong, and prints a short report: one line for each of the two bad lines, saying what is wrong with it, and then the average score of each person in alphabetical order. It is about fifty lines long, and it needs nothing that has not been met in this course."
+              "text": "Data that comes from outside a program is rarely clean. A line such as ann,8 is easy to read, but the next may lack its comma or hold a score that is not a number, and a program that reads many lines has to decide for each one whether to use it or to report it and move on. Here is such a program, about fifty lines long: it groups the good scores by name, prints each person's average in alphabetical order, and says which lines it skipped and why."
             },
             {
               "kind": "paragraph",
-              "text": "A program of this size is the point at which the individual rules stop being exercises and start to fit together. The compiler's checks, which can seem like obstacles in a three-line program, are the reason that a fifty-line one can be changed and still be trusted, and the last lesson reads this one from top to bottom to show where each rule is doing its work."
+              "text": "At this size the separate rules from the course stop being exercises and start to fit together, because every part of the program rests on one that has already been met. The compiler's checks, which can seem like obstacles in a three-line program, are the reason that a fifty-line one can be changed and still be trusted."
             }
           ],
           "diagram": {
@@ -9228,7 +8748,7 @@
         "rust-if-expression",
         "rust-bool-condition"
       ],
-      "prompt": "Type the word that this program prints.",
+      "prompt": "What does this program print?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -9240,9 +8760,6 @@
         "acceptedIdeas": [
           "adult"
         ],
-        "acceptedAlternatives": [
-          "Adult"
-        ],
         "rejectedIdeas": [],
         "exampleAnswer": "adult"
       },
@@ -9252,7 +8769,39 @@
         "ref-if-expr",
         "error-index"
       ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "Both words, one after the other"
+        },
+        {
+          "id": "b",
+          "label": "adult"
+        },
+        {
+          "id": "c",
+          "label": "child"
+        }
+      ],
       "onCorrect": "adult. The operator >= is true when both sides are equal, so 18 passes the test.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "Only one block of an if runs. Once the condition 18 >= 18 is true, the block after else is skipped."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "The condition is age >= 18, and >= is true when the two sides are equal as well as when the left is larger, so 18 passes the test and the first block runs."
+        }
+      ],
       "skill": "write-if-else"
     },
     {
@@ -11737,21 +11286,20 @@
         "rust-slices",
         "rust-string-vs-str"
       ],
-      "prompt": "What number does this program print?",
-      "responseType": "numeric",
+      "prompt": "The letter é takes two bytes in UTF-8, and every other letter of this word takes one. What does this program print?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "len() counts bytes.",
-        "Letters with accents usually take two bytes.",
-        "Five characters, one of which takes two bytes."
+        "len() counts bytes, not characters.",
+        "Add up the bytes of the five letters: four take one byte each and é takes two."
       ],
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 6,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "h, l, l and o take one byte each and é takes two, so the length is 1 + 2 + 1 + 1 + 1 = 6."
+        "kind": "text",
+        "acceptedIdeas": [
+          "6, because len() counts bytes"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "6, because len() counts bytes"
       },
       "sourceIds": [
         "book-slices",
@@ -11759,27 +11307,40 @@
         "std-str",
         "error-index"
       ],
-      "onCorrect": "6. len() counts bytes, and the é takes two of them, so the text has 5 characters and 6 bytes.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "It does not compile, because the text is not plain English"
+        },
+        {
+          "id": "b",
+          "label": "5, because len() counts characters"
+        },
+        {
+          "id": "c",
+          "label": "6, because len() counts bytes"
+        }
+      ],
+      "onCorrect": "6. len() counts bytes, and the five letters of héllo take 1 + 2 + 1 + 1 + 1 bytes.",
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              5
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "5 is the number of characters. len() counts bytes, and é takes two."
+          "feedback": "A string literal is UTF-8 text, so any character can appear in it, and the program compiles and prints a number."
         },
         {
           "match": {
-            "numeric": [
-              7
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "Only the é takes two bytes. The other four letters take one each."
+          "feedback": "len() counts the bytes the text occupies, not the characters in it. Here é takes two bytes, so the count is higher than the five characters."
         }
       ],
-      "skill": "count-bytes-vs-chars",
-      "calculator": "off"
+      "skill": "count-bytes-vs-chars"
     },
     {
       "id": "rusf-slices-and-strings-vowels",
@@ -13281,16 +12842,13 @@
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "The Vec has three items, at indexes 0, 1 and 2.",
-        "get answers with Some for an item that exists and with the other variant for one that does not."
+        "The Vec has items at indexes 0, 1 and 2.",
+        "get returns an Option, so the answer is one of its two variants."
       ],
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
           "None"
-        ],
-        "acceptedAlternatives": [
-          "none"
         ],
         "rejectedIdeas": [],
         "exampleAnswer": "None"
@@ -13302,7 +12860,51 @@
         "rbe-option",
         "error-index"
       ],
-      "onCorrect": "None. get returns a value of a type that says whether an item was found, so asking past the end is safe.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Some(30), the last item"
+        },
+        {
+          "id": "b",
+          "label": "The program stops with a panic"
+        },
+        {
+          "id": "c",
+          "label": "None"
+        },
+        {
+          "id": "d",
+          "label": "Some(0)"
+        }
+      ],
+      "onCorrect": "None. Index 5 is outside the Vec, so get reports that there is no item and does not read any memory.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "get asks for the item at exactly the index it is given, and index 5 lies beyond the end of a Vec of three items, so no item is returned at all."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "get does not stop the program when the index is too large. It reports the missing item as a value, which is the point of returning an Option."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "Some(0) would mean that an item exists and happens to be zero. When no item exists there is no value at all, which is the other variant of Option."
+        }
+      ],
       "skill": "predict-get-result"
     },
     {
@@ -14147,21 +13749,20 @@
         "rust-result",
         "rust-question-mark"
       ],
-      "prompt": "How many items does sum_all try to parse for [\"4\", \"five\", \"6\"]?",
-      "responseType": "numeric",
+      "prompt": "sum_all is called with [\"4\", \"five\", \"6\"]. What happens to the text \"6\"?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "The loop goes through the items in order.",
-        "The second item is not a number.",
-        "? leaves the function as soon as it meets an Err."
+        "What does ? do when it meets an Err?",
+        "Returning from the function also ends the loop."
       ],
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 2,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "\"4\" parses, \"five\" fails, and ? returns the Err at once, so the third item is never parsed."
+        "kind": "text",
+        "acceptedIdeas": [
+          "It is never parsed, because the ? after \"five\" returns the Err from the function at once"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "It is never parsed, because the ? after \"five\" returns the Err from the function at once"
       },
       "sourceIds": [
         "book-result",
@@ -14170,27 +13771,40 @@
         "rbe-result",
         "error-index"
       ],
-      "onCorrect": "2. After the failed parse, ? returned from the function, so the loop never reached the third item.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "It is parsed and added, and the function returns Ok(10), since \"five\" is skipped"
+        },
+        {
+          "id": "b",
+          "label": "It is never parsed, because the ? after \"five\" returns the Err from the function at once"
+        },
+        {
+          "id": "c",
+          "label": "It is parsed, but the function still returns the Err from \"five\""
+        }
+      ],
+      "onCorrect": "The loop parses \"4\" and \"five\", and the ? after \"five\" returns the Err from sum_all, so \"6\" is never reached.",
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              3
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "3 would be right if the loop carried on past the failure. ? returns from the function at once."
+          "feedback": "? does not skip a text that fails. It returns the Err from sum_all straight away, so the loop never reaches \"6\" and there is no sum."
         },
         {
           "match": {
-            "numeric": [
-              1
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "The second item is parsed too, and that is the one that fails."
+          "feedback": "The loop ends at \"five\", because ? returns from the function at that point. Nothing after it is parsed, so \"6\" is never looked at."
         }
       ],
-      "skill": "use-question-mark",
-      "calculator": "off"
+      "skill": "use-question-mark"
     },
     {
       "id": "rusf-result-and-question-mark-faded-bad",
@@ -15172,21 +14786,17 @@
         "rust-traits",
         "rust-generics-bounds"
       ],
-      "prompt": "Type the text that the program prints.",
+      "prompt": "What does this program print?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Robot does not write its own greet, so the default one runs.",
-        "The default calls name() on the same value."
+        "Robot writes name but not greet.",
+        "A provided method calls self.name(), which for a Robot is the method Robot wrote."
       ],
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
           "I am R2"
-        ],
-        "acceptedAlternatives": [
-          "i am r2",
-          "I am R2."
         ],
         "rejectedIdeas": [],
         "exampleAnswer": "I am R2"
@@ -15198,7 +14808,39 @@
         "rbe-traits",
         "error-index"
       ],
-      "onCorrect": "I am R2. The default greet is written once in the trait, and it calls the name that Robot supplies.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "I am R2"
+        },
+        {
+          "id": "b",
+          "label": "I am Robot"
+        },
+        {
+          "id": "c",
+          "label": "Nothing, because it does not compile: Robot has no greet method of its own"
+        }
+      ],
+      "onCorrect": "I am R2. Robot receives the default greet, and its call to self.name() runs Robot's own name.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "The default greet builds its sentence with self.name(), and for a Robot that calls the name method that Robot wrote, which returns R2."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "A type needs to write only the required methods of a trait. The provided method greet comes with the trait, so Robot has it without writing it."
+        }
+      ],
       "skill": "use-default-method"
     },
     {
@@ -15682,19 +15324,16 @@
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "pick_first returns its first argument.",
-        "The first argument is a."
+        "Look at which argument the function returns.",
+        "The first line printed inside the function is not the second line of output."
       ],
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "alpha"
-        ],
-        "acceptedAlternatives": [
-          "Alpha"
+          "alpha, the text of the first argument"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "alpha"
+        "exampleAnswer": "alpha, the text of the first argument"
       },
       "sourceIds": [
         "book-lifetimes",
@@ -15702,7 +15341,39 @@
         "ref-lifetime-elision",
         "error-index"
       ],
-      "onCorrect": "alpha. The result borrows only from x, and the lifetime 'a says so, which is why b may end earlier.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "beta, the text of the second argument"
+        },
+        {
+          "id": "b",
+          "label": "alpha, the text of the first argument"
+        },
+        {
+          "id": "c",
+          "label": "There is no second line, because rustc refuses the call"
+        }
+      ],
+      "onCorrect": "alpha. The function returns x, and 'a on x and on the result says that the result borrows from x alone.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "The function returns x, the first argument, and the annotation 'a on x and on the result says that the result borrows from x. The second argument is only printed."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "The result is declared to borrow only from x, so the missing annotation on y is not a fault. y is read and printed inside the function and is not part of the result."
+        }
+      ],
       "skill": "write-lifetime-annotation"
     },
     {

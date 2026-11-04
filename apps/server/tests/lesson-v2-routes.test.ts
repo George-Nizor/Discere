@@ -61,10 +61,10 @@ describe("v2 lesson routes", () => {
   });
 
   it("explains a correct answer with its onCorrect line and records no assistance", async () => {
-    const right = (await attempt(q("order-in-a-check"), "10")).json();
-    const response = (await feedback(right.attemptId, "the-order-in-a-check")).json();
+    const right = (await attempt(q("minus"), "8")).json();
+    const response = (await feedback(right.attemptId, "subtracting-2x")).json();
     expect(response.onCorrect).toBe(
-      "The 5x is 5 × 8, which is 40, and 50 − 40 is 10, the same as the right side, so 8 is a solution.",
+      "The 2x is 2 × 6, which is 12, and 20 − 12 is 8. Subtraction comes after multiplication in the same way that addition does.",
     );
     // The reveal that follows a predict step is served with the feedback.
     const predicted = (

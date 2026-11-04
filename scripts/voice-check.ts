@@ -84,6 +84,25 @@ for (const [index, paragraph] of (
       severity: "error",
       message: `The paragraph walks through the course ("${paragraph.match(SYLLABUS)?.[0]}…"). Introduce the subject instead: what it is, why it matters, what it lets you do.`,
     });
+// Lesson text has no inline-code formatting, so a backtick shows on screen as a backtick.
+const PROSE_KEYS = new Set(["text", "prompt", "headline", "front", "back", "feedback", "onCorrect", "keyIdea", "label"]);
+function findBackticks(value: unknown, where: string, key: string): void {
+  if (typeof value === "string") {
+    if (PROSE_KEYS.has(key) && /`[^`]+`/u.test(value))
+      errors.push({
+        code: "BACKTICKS_IN_PROSE",
+        path: where,
+        severity: "error",
+        message: "Backticks show literally in lesson text; write code names plainly.",
+      });
+  } else if (Array.isArray(value)) value.forEach((item, i) => findBackticks(item, `${where}.${i}`, key));
+  else if (value && typeof value === "object")
+    for (const [k, v] of Object.entries(value))
+      if (!["code", "svg", "diagnostics", "starter", "exampleAnswer"].includes(k)) findBackticks(v, `${where}.${k}`, k);
+}
+findBackticks(bundle.lessons, "lessons", "");
+findBackticks(bundle.questions, "questions", "");
+findBackticks(bundle.flashcards, "flashcards", "");
 for (const issue of errors) console.log(`${issue.code} ${issue.path}: ${issue.message}`);
 console.log(
   `${course}: ${errors.length} error(s)${stubs.length ? `; ${stubs.length} lesson(s) not written yet` : ""}`,

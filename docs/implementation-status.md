@@ -2,6 +2,13 @@
 
 Updated: 2026-11-03
 
+Release 1.9.5 carries the fix pass to fifteen more courses: Maths Foundations, Geometry,
+Trigonometry, Linear Algebra, Calculus, Calculus II, Probability and Statistics, Statistical and
+Causal Inference, Logic and Reasoning, How Computers Solve Problems, How Computers and Networks
+Work, Data Structures and Algorithms, Rust Foundations, Git and Version Control, and Linux and the
+Command Line. Questions replaced during the pass stay in the bundles, unasked, so learners'
+history resolves, and old course tests that pinned a replaced answer are trimmed to match.
+
 Release 1.9.4 starts the fix pass George asked for after learning from the new courses. The rule
 capping multiple choice at 35% of a course is removed, since writers met it by turning
 conceptual checks into counting puzzles; a question screen no longer needs a lead, which had

@@ -65,9 +65,7 @@ describe("Logic and Reasoning v2 lessons", () => {
 
   it("what-logic-operates-on", () => {
     const l = "what-logic-operates-on";
-    expect([true, false]).toHaveLength(num(l, "2"));
     // A claim about a sealed jar has exactly one truth value in the actual case.
-    expect(num(l, "check-3")).toBe(1);
     expect(word(l, "3")).toBe(verdict(!true));
     expect(word(l, "practice-2")).toBe(verdict(!false));
   });
@@ -75,7 +73,6 @@ describe("Logic and Reasoning v2 lessons", () => {
   it("if-then-claims", () => {
     const l = "if-then-claims";
     expect(num(l, "2")).toBe(rows.filter(([p, q]) => imp(p, q)).length);
-    expect(num(l, "practice-2")).toBe(rows.filter(([p, q]) => !imp(p, q)).length);
     expect(word(l, "3")).toBe(verdict(imp(false, false)));
     expect(word(l, "4")).toBe(verdict(imp(false, true)));
     expect(word(l, "practice-1")).toBe(verdict(imp(true, false)));
@@ -88,7 +85,6 @@ describe("Logic and Reasoning v2 lessons", () => {
 
   it("converse-and-contrapositive", () => {
     const l = "converse-and-contrapositive";
-    expect(num(l, "2")).toBe(rows.filter(([p, q]) => imp(p, q) !== imp(!q, !p)).length);
     // q → p with q true and p false.
     expect(word(l, "1")).toBe(verdict(imp(true, false)));
     // Cases where p → q holds but the converse fails.
@@ -101,16 +97,13 @@ describe("Logic and Reasoning v2 lessons", () => {
     const adaSays = ([a, b]: [Person, Person]) => holds(a, b === "knave");
     const benSays = ([a, b]: [Person, Person]) => holds(b, a === b);
     expect(word(l, "1")).toBe(pairs.filter(([a, b]) => a === "knight" && adaSays([a, b]))[0]![1]);
-    expect(num(l, "2")).toBe(pairs.filter(adaSays).length);
     const both = pairs.filter((p) => adaSays(p) && benSays(p));
     expect(both).toHaveLength(1);
     expect(word(l, "3")).toBe(both[0]![0]);
     const caraSays = ([c, d]: [Person, Person]) => holds(c, d === "knight");
     const drewSays = ([c, d]: [Person, Person]) => holds(d, c === "knave");
-    expect(num(l, "4")).toBe(pairs.filter((p) => caraSays(p) && drewSays(p)).length);
     // Ada a knave: her false claim means Ben is not a knave.
     expect(word(l, "practice-1")).toBe(pairs.filter(([a, b]) => a === "knave" && adaSays([a, b]))[0]![1]);
-    expect(num(l, "practice-2")).toBe(people.length ** 2);
     const gusSays = ([g, h]: [Person, Person]) => holds(g, h === "knight");
     const halSays = ([g, h]: [Person, Person]) => holds(h, g !== h);
     const gh = pairs.filter((p) => gusSays(p) && halSays(p));
@@ -125,10 +118,7 @@ describe("Logic and Reasoning v2 lessons", () => {
   it("building-a-truth-table", () => {
     const l = "building-a-truth-table";
     expect(num(l, "1")).toBe(2 * 2);
-    expect(num(l, "2")).toBe(rows.filter(([p, q]) => p && q).length);
-    expect(num(l, "3")).toBe(rows.filter(([p, q]) => p || q).length);
     expect(num(l, "practice-1")).toBe(2 ** 3);
-    expect(num(l, "check-3")).toBe(rows.filter(([p, q]) => !(p || q)).length);
     // "p or q" and "p" are both true while q is true: TT only.
     expect(rows.filter(([p, q]) => (p || q) && p && q)).toEqual([[true, true]]);
     expect(choice(l, "4")).toEqual(["a"]);
@@ -139,7 +129,6 @@ describe("Logic and Reasoning v2 lessons", () => {
 
   it("finding-the-conclusion", () => {
     const l = "finding-the-conclusion";
-    expect(num(l, "2")).toBe(rows.filter(([p, q]) => imp(p, q) && p).length);
     // The teaching screen's two plain premises, p and q on their own, hold together only in TT.
     expect(rows.filter(([p, q]) => p && q)).toEqual([[true, true]]);
     expect(rows.filter(([p]) => p)).toHaveLength(2);
@@ -152,8 +141,6 @@ describe("Logic and Reasoning v2 lessons", () => {
 
   it("valid-but-untrue", () => {
     const l = "valid-but-untrue";
-    expect(num(l, "2")).toBe(rows.filter(([p, q]) => imp(p, q) && p && !q).length);
-    expect(num(l, "practice-2")).toBe(1);
     expect(word(l, "1")).toBe(validity((p, q) => imp(p, q) && p, (_p, q) => q));
     expect(word(l, "3")).toBe(validity((p, q) => imp(p, q) && q, (p) => p));
     expect(word(l, "check-3")).toBe(validity((p, q) => (p || q) && !p, (_p, q) => q));
@@ -276,14 +263,12 @@ describe("Logic and Reasoning story lessons", () => {
     ]);
     // Ada alone leaves two, Ben's sentence then leaves one with Ada a knight.
     const ada = pairs.filter(([a, b]) => holds(a, b === "knave"));
-    expect(ada).toHaveLength(num("knights-and-knaves", "2"));
     const adaAndBen = ada.filter(([a, b]) => holds(b, a === b));
     expect(adaAndBen).toEqual([["knight", "knave"]]);
     // Rows method in the teaching screen: "p and q" is false and p is true, so q is false.
     const fit = rows.filter(([p, q]) => !(p && q) && p);
     expect(fit).toEqual([[true, false]]);
     // Only one row makes "p and q" true, and the screen's "or" example keeps three rows.
-    expect(rows.filter(([p, q]) => p && q)).toHaveLength(num("building-a-truth-table", "2"));
     expect(rows.filter(([p, q]) => p || q)).toHaveLength(3);
   });
 });
@@ -318,8 +303,6 @@ describe("Logic and Reasoning validity and fallacy lessons", () => {
     expect(rows.filter(([p, q]) => imp(p, q) && q && !p)).toEqual([[false, true]]);
     expect(rows.filter(([p, q]) => imp(p, q) && q && !p)).not.toContainEqual([true, true]);
     // A valid argument has no counterexample, and one is enough to refute it.
-    expect(num("valid-but-untrue", "2")).toBe(0);
-    expect(num("valid-but-untrue", "practice-2")).toBe(1);
     expect(word("valid-but-untrue", "valid-check")).toBe("yes");
   });
 
@@ -342,7 +325,6 @@ describe("Logic and Reasoning validity and fallacy lessons", () => {
     expect(rows.some(([p, q]) => imp(p, q) !== imp(q, p))).toBe(true);
     // Questions asked in the lesson.
     expect(choice("naming-the-fallacies", "1")).toEqual(["a"]);
-    expect(word("naming-the-fallacies", "hook")).toBe("no");
     expect(word("naming-the-fallacies", "2")).toBe(verdict(!cleaner[1]));
     expect(word("naming-the-fallacies", "practice-1")).toBe("consequent");
     expect(word("naming-the-fallacies", "practice-2")).toBe("antecedent");
