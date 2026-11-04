@@ -30,9 +30,8 @@
     "status": "available",
     "introduction": {
       "paragraphs": [
-        "Most of the data that people analyse has already been moved, cleaned and stored by someone else, and the quality of that work decides whether the analysis can be trusted. This course follows the data from the system where it is produced to the table where it is read, and it explains each stage by the arithmetic that governs it: rows moved, bytes read, files skipped, tasks run and minutes late.",
-        "It begins with what a pipeline is, how it loads data without duplicating it, how it captures changes including deletes, and how a scheduler orders its tasks. It then turns to where the data is kept, comparing file formats, warehouses, lakes and lakehouses, the commit logs that make a lakehouse table reliable, and the partitions and files that decide how much a query must read.",
-        "The last lessons deal with processing and running the pipeline: how an engine divides work into tasks and why one skewed key can hold up a whole stage, how duplicates are removed, how streams are cut into windows and closed by a watermark, and how checks, monitoring, release practice and access control keep the result dependable. Named products such as Microsoft Fabric, Spark, Delta Lake and Iceberg appear as examples, and none is required."
+        "Most of the figures that people analyse, such as a day's revenue or the number of customers who ordered last week, were never read directly from the system that produced them. The rows were copied out of an orders database or an event stream, cleaned, joined to other data and written to a table built for reading, usually by a chain of scheduled jobs that nobody looks at until a figure is wrong. Data engineering is the work of building those chains so that the table at the end can be trusted, which is harder than it sounds, because every job will at some point fail and be run again, and every source will at some point send a row late, twice or in a shape nobody expected.",
+        "Much of the subject can be settled with arithmetic before anything runs. Whether a rerun doubles a table follows from how its rows are written, the bytes a query reads follow from how the files are laid out and which of them a filter can skip, and the time a job takes follows from the number of its tasks, the cores they share and the size of its largest key. Products such as Microsoft Fabric, Spark, Delta Lake and Iceberg appear as examples, and the same reasoning holds on whichever platform you use, so that you can predict what a pipeline will do and find the cause when it does something else."
       ],
       "outcomes": [
         "You'll be able to design a pipeline as a graph and make each step safe to rerun.",
@@ -704,12 +703,7 @@
           "id": "join-keeps-orders",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The join in the figure reads the 1,180 cleaned orders and the 40-row product list. Every order matches exactly one product. Work out how many rows the join writes."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -778,12 +772,7 @@
           "id": "name-the-rhythm",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A job reads the file of yesterday's orders at 02:00 every night. Say which of the two rhythms it is."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -846,12 +835,7 @@
           "id": "what-elt-keeps",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A pipeline lands 1,000 raw rows in its destination, and the cleaning step finds 40 unusable rows. Say how many rows the raw table holds once cleaning has finished, if the pipeline follows ELT."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -867,12 +851,7 @@
           "id": "insert-twice",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A job inserts three order rows into an empty table with plain INSERT statements. The orchestrator reports a timeout and runs the job a second time, although the first run had in fact finished. Decide how many rows the table holds before reading on."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -967,12 +946,7 @@
           "id": "overwrite-the-day",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A step deletes every row whose day is 2026-05-02 from a table that already holds 7 rows for earlier days, and then inserts the 3 rows for 2026-05-02. A retry runs the same step again. Decide how many rows the table holds after the retry."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1108,12 +1082,7 @@
           "id": "three-columns",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A query reads a columnar file of 50,000,000 rows. It needs 3 columns, and every value takes 8 bytes. Work out how many gigabytes the reader fetches, taking 1 GB as 1,000,000,000 bytes."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1129,12 +1098,7 @@
           "id": "which-groups",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A file holds the order_id column in four row groups, whose footer records the ranges 1 to 250, 251 to 500, 501 to 750 and 751 to 1000. A query asks for the row with order_id = 600. Decide how many row groups the reader has to open."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1203,12 +1167,7 @@
           "id": "overlapping-ranges",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A file's footer records four row groups for order_id with the ranges 1 to 120, 100 to 260, 240 to 400 and 390 to 520. The rows were not sorted, so the ranges overlap. A query filters order_id = 250. Work out how many row groups the reader has to open."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1314,12 +1273,7 @@
           "id": "fetch-one-record",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A service must fetch one complete order by its key, thousands of times a second. Say which layout suits it."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1335,12 +1289,7 @@
           "id": "compressed-read",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A columnar file holds 10,000,000 rows of 30 columns of 8 bytes. A query needs 4 columns, and compression reduces the stored size of those columns to a quarter of their raw size. Work out how many megabytes (1 MB is 1,000,000 bytes) the reader fetches."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1394,7 +1343,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "That layout is the file format, and it is easy to treat it as a matter of taste or of file size. The decision is better understood as a promise about the way the data will be read, because a format that suits one kind of question makes another kind more expensive. The arithmetic is simple multiplication, and it is the multiplication that data engineers repeat whenever they choose how to store a table."
+              "text": "That layout is the file format. Written row by row, the twenty values of one order sit together, so a query that wants two of them has to pass over all twenty, while written column by column each column sits in a block of its own and the query can fetch only the two blocks it needs. A format that suits one kind of question makes another kind more expensive, so choosing one is a decision about how the table will be read, and multiplying rows, columns and bytes tells you what each choice will cost before any query runs."
             }
           ]
         },
@@ -1470,12 +1419,7 @@
           "id": "a-weeks-of-increments",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A source of 10,000,000 rows has about 25,000 rows change each day, and an incremental load runs every night. Work out how many rows it moves in 7 nights."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1491,12 +1435,7 @@
           "id": "retry-a-plain-insert",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A customers table has 3 rows, with ids 1, 2 and 3, and no key declared. A batch of 2 rows, with ids 2 and 4, is added with a plain INSERT, and the scheduler runs the job twice because the first run seemed to time out. Decide how many rows the table holds before reading on."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1826,12 +1765,7 @@
           "id": "upsert-the-batch",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A customers table has 3 rows with ids 1, 2 and 3. A 2-row batch with ids 2 and 4 is written as an upsert keyed on id, and the job is run twice. Work out how many rows the table holds, and compare it with the 7 rows of the plain insert."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1893,12 +1827,7 @@
           "id": "apply-the-mark",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The stored watermark is 11:30, and the source rows carry updated_at values 11:20, 11:30, 11:45 and 12:05. Work out how many rows the filter updated_at > 11:30 selects."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1985,12 +1914,7 @@
           "id": "count-the-overlap",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A source has 1, 2, 3 and 1 rows stamped 05-01, 05-02, 05-03 and 05-04, where updated_at is a date. The watermark is 05-03. A strict filter would read only the 1 row of 05-04. Work out how many rows a run reads if it starts on 05-01 and includes that day."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2045,7 +1969,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "Both decisions have standard answers, and the answers depend on each other. The way a load finds its rows decides how often rows are read twice, and the way it writes them decides whether reading twice does any harm. Tables small enough to check by hand are enough to work through both."
+              "text": "The two decisions depend on each other. A load that carries only the changed rows has to know where the previous run stopped, and when it cannot be sure it reads some rows a second time, which is harmless only if the way it writes them can absorb a repeat. Settled together, they let you say for any load how many rows it moves each night and how many the table holds after the load has been retried."
             }
           ]
         },
@@ -2127,16 +2051,7 @@
           "id": "stale-after-polling",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A source table holds 5 rows. A warehouse copy was loaded from it and also holds 5 rows. One row is then hard-deleted at the source, and a nightly job runs that loads rows with updated_at beyond its [[watermark"
-            },
-            {
-              "kind": "paragraph",
-              "text": "The largest updated_at already loaded; the next run starts beyond it. Met in 'Loading without duplicates'.]], upserting them into the copy. Work out how many rows the warehouse copy holds afterwards."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2202,12 +2117,7 @@
           "id": "apply-a-short-log",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Apply this log to an empty table in position order: 1 insert id 1 'x'; 2 insert id 2 'y'; 3 update id 1 'x2'; 4 delete id 2; 5 insert id 3 'z'. Work out how many rows the table holds at the end."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2223,12 +2133,7 @@
           "id": "arrival-order",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Three entries come from the source log: position 1 insert id 1 'a', position 2 delete id 1, and position 3 insert id 1 'b'. Suppose they reach the warehouse in the order positions 1, 3, 2, and the warehouse applies them in the order they arrive. Decide how many rows the table holds at the end."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2334,12 +2239,7 @@
           "id": "compare-the-keys",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A warehouse holds ids 1 to 8. The source now holds ids 1, 2, 4, 5, 7 and 8, because some rows were hard-deleted. Compare the two lists of keys and work out how many rows the warehouse should delete."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2355,12 +2255,7 @@
           "id": "count-the-survivors",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A log is applied to an empty table. It holds 5 inserts of different keys, 4 updates of existing rows and 2 deletes of existing rows. Work out how many rows the table holds at the end."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2415,7 +2310,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The source database does know that the row was deleted, because it wrote the fact down in its own log as it happened. A pipeline that reads that log in place of the table sees every insert, update and delete, in the order the source committed them, and the work is to replay such a log correctly."
+              "text": "The source database does know that the row was deleted, because it wrote the fact down in its own log as it happened. A pipeline that reads that log in place of the table sees every insert, update and delete in the order the source committed them, so that applying the entries one by one, in that order, rebuilds the source table exactly, deletes included."
             }
           ]
         },
@@ -2492,12 +2387,7 @@
           "id": "order-the-sources",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "In the figure, the join must wait for all three sources, and the publish step must wait for the join. The sources can run in any order among themselves. Work out how many different orders the five tasks can run in, if only one task runs at a time."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2564,12 +2454,7 @@
           "id": "the-floor",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Task X takes 3 minutes. Tasks Y (5 minutes) and Z (8 minutes) both read X's output, and task W (2 minutes) reads both Y and Z. Work out the shortest possible total time, with as many workers as you like."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2585,12 +2470,7 @@
           "id": "waits-add-up",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A task fails and the scheduler retries it up to 3 times, waiting 2 minutes before the first retry, then 4, then 8, because each wait is double the last. Suppose every retry fails too. Decide how many minutes the scheduler spends waiting in total."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2599,7 +2479,7 @@
           ],
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
-          "checkQuestionId": "date-orchestrating-dependencies-backoff-wait",
+          "checkQuestionId": "date-orchestrating-dependencies-backoff-compare",
           "activityId": ""
         },
         {
@@ -2634,12 +2514,7 @@
           "id": "time-to-give-up",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A task takes 5 minutes to fail. It is tried once and retried 3 times, with waits of 2, 4 and 8 minutes before the retries, and every attempt fails at the end of its 5 minutes. Work out how many minutes pass from the first start until the last attempt fails."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2711,12 +2586,7 @@
           "id": "raise-the-limit",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A backfill of 20 daily partitions took 70 minutes at 3 runs at a time, with each run taking 10 minutes. The source can cope with 5 at a time instead. Work out how long the backfill takes now."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2767,11 +2637,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "Five tasks of 4, 6, 2, 3 and 1 minutes add up to 16 minutes of work, and whether the pipeline takes 16 minutes or 10 depends on which tasks have to wait for which. A scheduler needs two kinds of fact to decide this. The first is how long each task takes, and the second is which tasks read the output of which, because a task whose input is not yet written cannot start."
+              "text": "Five tasks of 4, 6, 2, 3 and 1 minutes add up to 16 minutes of work, and whether the pipeline takes 16 minutes or 10 depends on which tasks have to wait for which. A scheduler can decide that only if it knows how long each task takes and which tasks read the output of which, because a task whose input has not yet been written cannot start."
             },
             {
               "kind": "paragraph",
-              "text": "The second kind of fact is a graph. The graph shows which tasks can run together and which chain of tasks sets the shortest possible run, and the same graph then tells the scheduler what to do when a task fails, and how to rerun a month of history that went wrong."
+              "text": "The second of those facts is a graph, with a task at each node and an arrow wherever one task reads what another writes. It shows which tasks can run side by side and which chain of tasks sets the shortest possible run, and the same graph tells the scheduler what to do when a task fails and how to rerun a month of history that went wrong."
             }
           ]
         },
@@ -2854,12 +2724,7 @@
           "id": "rows-that-load",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A file holds 10,000 rows, and 120 of them have text in a column that the table declares numeric. A schema-on-write system rejects those rows at load. Work out how many rows it loads."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2875,12 +2740,7 @@
           "id": "one-copy-or-three",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Three engines, a SQL engine, a Spark engine and a machine-learning engine, all need the same 2 TB table. If each keeps its own copy, 6 TB are stored. Suppose they could read one shared copy instead. Decide how many terabytes of storage that would save."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2992,12 +2852,7 @@
           "id": "silver-row-count",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Bronze holds 2,000 events, and 250 of them are repeats of events already in the table. Silver keeps one row for each event. Work out how many rows silver holds."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3060,12 +2915,7 @@
           "id": "audit-copy",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A compliance team asks for an exact copy of every file as it arrived, kept unchanged. Say which layer holds it."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3081,12 +2931,7 @@
           "id": "rows-in-gold",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A gold table holds revenue for each day and each of 4 regions over 30 days, one row per day and region. Work out how many rows it holds."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3142,7 +2987,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The places that data is kept, and the layers it passes through, are the means of making those promises. There are three kinds of place, a warehouse, a lake and a lakehouse, and three layers inside the last of them, and a little arithmetic on rows and terabytes shows what each choice costs."
+              "text": "Where data is kept decides which of those promises can be kept. A warehouse checks every row against a schema before accepting it, a lake keeps files in whatever form they arrive, and a lakehouse keeps open files that several engines can read, with layers inside it that hold the same data at different stages of cleaning. Knowing what each place promises lets you put a new table where its readers can trust it, and say what a faulty row or an extra copy of a table will cost."
             }
           ]
         },
@@ -3234,12 +3079,7 @@
           "id": "replay-three-commits",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A log has three commits. Version 0 adds x, y and z. Version 1 removes x and adds w. Version 2 removes y. Replay them in order and work out how many files make up the table at version 2."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3278,12 +3118,7 @@
           "id": "commits-after-checkpoint",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The latest checkpoint is at version 20 and the latest commit is version 27. Work out how many commit files a reader has to apply after loading the checkpoint."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3299,12 +3134,7 @@
           "id": "two-writers",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The log's latest version is 4. Two writers both read version 4 and both try to create version 5 at the same moment, with changes that do not conflict. The storage layer lets only one of them create that file. The loser looks at the winner's change and tries again. Decide what the latest version number is once both have succeeded."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3362,12 +3192,7 @@
           "id": "which-version-does-it-read",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A query starts when the latest version is 12. While it runs, writers commit versions 13 and 14. Say which version the query reads."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3431,12 +3256,7 @@
           "id": "files-after-compaction",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A table has 8 files on storage, all live. A compaction rewrites 5 of them into 1 new file, as a single commit. Work out how many files are on storage after the compaction and before any vacuum."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3478,12 +3298,7 @@
           "id": "after-the-vacuum",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A vacuum has deleted every file that the current version does not use. An earlier version needed some of those files. Say whether the table can still be read as it was at that earlier version, answering yes or no."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3539,7 +3354,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "All of this comes from one small record kept beside the files, a log of which files belong to the table at each moment. The data is never changed, and the table is whatever the log says it is. Reading the log by hand is the quickest way to understand what Delta and Iceberg tables can and cannot do."
+              "text": "All of this comes from one small record kept beside the files, a log of which files belong to the table at each moment. The data files are never changed and the table is whatever the log says it is, so an update is a new entry that swaps some files in the list for others, and an old version is the list as it stood before. Reading that log tells you which files a query reads at any version, which files a cleanup job may safely delete, and why two writers working at once do not corrupt the table."
             }
           ]
         },
@@ -3626,12 +3441,7 @@
           "id": "two-months",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The 1,200 GB table has twelve monthly partitions of 100 GB. A query filters on the month column for two months. Work out how many gigabytes it reads."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3647,12 +3457,7 @@
           "id": "tiny-partitions",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The same 1,200 GB table is partitioned by customer id instead, and there are 3,000,000 customers with equal amounts of data. Decide how many kilobytes one partition holds, taking 1 KB as 1,000 bytes."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3714,12 +3519,7 @@
           "id": "pick-the-column",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A sales table of billions of rows is queried mostly for a range of days or weeks. Its columns include order_date, with about 1,095 distinct dates over three years, and customer_id, with about 3,000,000 values. Say which column is the better partition column."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3759,12 +3559,7 @@
           "id": "files-in-a-day",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A streaming job writes one file every minute into each of 5 partitions. A day has 1,440 minutes. Work out how many files it creates in one day."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3831,12 +3626,7 @@
           "id": "how-many-files-read",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Four files have order_id ranges 1 to 100, 50 to 150, 100 to 200 and 300 to 400. A query filters order_id = 100. Work out how many files have to be read."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3879,12 +3669,7 @@
           "id": "compact-the-day",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The streaming job from earlier wrote 7,200 files of 4 MB in a day. Compaction rewrites them into files of about 200 MB. Work out how many files hold the day's data afterwards."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3941,7 +3726,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The layout is a decision about which rows share a folder and which share a file, and it can be worked out with the same arithmetic as in the lesson on formats. The same arithmetic applies to partitions and to the files inside them, and also to the failure that partitioning invites when it goes too far."
+              "text": "The layout is a decision about which rows share a folder and which share a file. Rows kept in folders by date let a filter on date skip every folder outside its range, and statistics kept for each file let it skip files inside a folder, but only when the values in each file are close together. With a table's size, its number of folders and the ranges in its files, you can work out how many gigabytes a filtered query will read before the layout is built, and see when a layout has been cut so finely that its files cost more to open than to read."
             }
           ]
         },
@@ -4023,12 +3808,7 @@
           "id": "tasks-from-input",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "An input of 6 GiB is read in splits of 128 MiB, and one GiB is 1,024 MiB. Work out how many tasks the first stage runs."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4044,12 +3824,7 @@
           "id": "waves-of-100",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A stage has 100 tasks of equal length and the cluster has 24 cores. Work out how many waves the stage needs."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4113,12 +3888,7 @@
           "id": "count-blocks",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "80 map tasks each write one block for every one of 200 reducing partitions. Work out how many shuffle blocks are produced."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4134,12 +3904,7 @@
           "id": "one-hot-key",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "500 million rows are shuffled by key to 5 reducing tasks, each processing 1 million rows per second. One key holds 70% of the rows, and every row of a key goes to the same task. Decide how many seconds the stage takes, which is the time of its slowest task."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4247,12 +4012,7 @@
           "id": "which-call-runs",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A program reads a table, calls df.filter(...), then .select(...), then .count(). Say which call makes the engine start the work."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4291,12 +4051,7 @@
           "id": "cost-of-a-broadcast",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A 40 MB lookup table is broadcast to 8 executors so that a 1.5 TB table need not be shuffled. Work out how many megabytes the broadcast moves across the network."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4352,7 +4107,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The reasons are all arithmetic that can be done before the job runs: how many pieces there are, how many rounds of work they need, how much data has to move between machines, and whether any one piece is much bigger than the rest. Working through those four numbers is the quickest way to tell why a job is slow, and what could make it faster."
+              "text": "The gap comes from things that can be counted before the job runs. The pieces are processed in rounds no wider than the cluster's cores, an operation that groups rows by key has to move data between machines before it can start, and the pieces are not always the same size. Counting them for a job tells you where its time goes, and so whether more machines, a different key or a different kind of join would make it faster."
             }
           ]
         },
@@ -4428,12 +4183,7 @@
           "id": "distinct-on-resends",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A table has 500 rows. Of those, 80 re-send an earlier event, with the same values as the original but a new loaded_at. Work out how many rows SELECT DISTINCT * returns."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4743,12 +4493,7 @@
           "id": "which-number",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Rows for one key were loaded on 03-01, 03-02 and 03-05. The query numbers them with ROW_NUMBER() OVER (PARTITION BY id ORDER BY loaded_at DESC). Work out the rn given to the row loaded on 03-02."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4764,12 +4509,7 @@
           "id": "sum-before-dedupe",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A day's bronze table has 450 rows for 400 distinct events, because 50 events were sent twice. Every event is worth 10. Decide what SUM(amount) returns over the table as it stands."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4824,12 +4564,7 @@
           "id": "how-far-off",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The sum over the bronze table is 4,500 and the true revenue after deduplication is 4,000. Work out by what percentage of the true revenue the sum is too high."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4868,12 +4603,7 @@
           "id": "rows-after-rejects",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "After deduplication a table has 960 rows. A check finds that 14 of them have an amount that is not a number, and sends them to the reject table. Work out how many rows continue to silver."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4916,12 +4646,7 @@
           "id": "wrong-direction",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A query numbers the rows of event e1 with ORDER BY loaded_at ASC by mistake and keeps rn = 1. The event was loaded on 2026-03-01 and again on 2026-03-02. Say which load's date the kept row carries."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4975,7 +4700,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "Cleaning is the work of turning a table like that into one where each fact appears once and every value has a type, before any figure is built from it. The steps are short, and most of the difficulty is in doing them in the right order and in keeping a record of what was set aside."
+              "text": "Cleaning is the work of turning a table like that into one where each fact appears once and every value has a type, before any figure is built from it. It decides which of two copies of an order to keep, converts text such as ' 10.50' into a number, and sets aside the rows that cannot be converted, and it has to do all of this before anything is added up, since a total cannot tell which of its rows were copies. Done in that order, it gives a revenue figure that counts each order once, together with a record of every row that was left out and why."
             }
           ]
         },
@@ -5056,12 +4781,7 @@
           "id": "count-a-window",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Events arrive with event times 09:02, 09:07, 09:11, 09:12, 09:19 and 09:21. Tumbling 10-minute windows start at 09:00. Work out how many events fall in the window from 09:10 up to but not including 09:20."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5130,12 +4850,7 @@
           "id": "sliding-count",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A 12-minute window slides every 4 minutes. Work out how many windows each event falls in."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5151,12 +4866,7 @@
           "id": "count-the-sessions",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Events occur at minutes 0, 2, 8, 9, 15, 16 and 30. Session windows close after a gap of 5 minutes with no events. Work out how many sessions there are."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5172,12 +4882,7 @@
           "id": "what-watermark",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A stream engine tracks the latest event time it has seen, and subtracts an allowed lateness of 15 minutes to get the watermark. The latest event time seen is 11:20. Decide what the watermark is."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5245,12 +4950,7 @@
           "id": "is-it-closed",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The latest event time is 14:55 and the allowed lateness is 20 minutes. Say whether the window from 14:00 to 14:30 has been closed, answering yes or no."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5336,12 +5036,7 @@
           "id": "how-many-replays",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A consumer committed offset 300, then processed the records at offsets 300 to 306 and crashed before committing again. Work out how many records it reads again after restarting."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5357,12 +5052,7 @@
           "id": "which-window-by-arrival",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The purchase happened at 10:04 and reached the pipeline at 10:11. Five-minute tumbling windows start at 10:00. Say at what time the window begins that holds it if windows follow processing time."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5502,12 +5192,7 @@
           "id": "percent-failing",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A batch of 2,500 rows goes through a gate, and 40 rows fail the not-null check on the key. Work out what percentage of the batch fails."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5523,12 +5208,7 @@
           "id": "rows-that-continue",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The threshold is 2% and 1.6% of a batch of 2,500 rows fail, so the gate quarantines the 40 failing rows. Work out how many rows continue to the next layer."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5544,12 +5224,7 @@
           "id": "rename-breaks",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A source renames the column cust to customer_id, and nothing else changes. An existing downstream query selects the column cust. Decide whether the query still runs, answering yes or no."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5613,12 +5288,7 @@
           "id": "widen-the-type",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A source widens a column from a 32-bit integer to a 64-bit integer, so every old value still fits. Say whether the change is safe or breaking."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5655,12 +5325,7 @@
           "id": "allowed-failures",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A gate allows at most 2% of a batch to fail. A batch has 4,000 rows. Work out the greatest number of failing rows that still passes the gate."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5703,12 +5368,7 @@
           "id": "below-a-higher-threshold",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A different pipeline has a threshold of 5%. In a batch of 2,000 rows, 4% fail. Work out how many rows continue after the gate quarantines the failing ones."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5759,11 +5419,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A pipeline that moves bad data quickly is worse than one that stops. A single file with a renamed column, or a handful of null keys, can pass through every step without an error and surface weeks later as a dashboard figure that nobody can explain. Each step did what it was told, and no step was told to look at what it was given."
+              "text": "A nightly file of orders arrives in which a few hundred rows have no customer key. Nothing in the pipeline fails: the load accepts the rows, the join to the customers table quietly leaves them out, and weeks later the revenue on a dashboard is lower than the finance team's figure by an amount that nobody can trace. Each step did what it was told, and no step was told to look at what it was given."
             },
             {
               "kind": "paragraph",
-              "text": "A check placed where data changes hands turns that silent failure into a decision made on purpose, which is to stop, to set the bad rows aside, or to let the batch through. The decision follows from a few numbers."
+              "text": "A check placed where data changes hands turns that silent loss into a decision made on purpose, to stop the run, to set the bad rows aside, or to let the batch through. Which of those is right depends on how many rows fail and on whether the source has changed the shape of its data, and both can be settled from the batch itself before anything reaches the tables that people read."
             }
           ]
         },
@@ -5839,12 +5499,7 @@
           "id": "how-late",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A table was last loaded at 03:40 and is checked at 12:15. Its freshness target is 8 hours. Work out how many minutes late the table is."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5884,12 +5539,7 @@
           "id": "rows-per-second",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A job moves 240 million rows in 20 minutes. Work out its throughput in rows per second."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5905,21 +5555,16 @@
           "id": "half-the-rows",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A job usually writes 1,200,000 rows. Tonight it ran in its usual time and reported success, but it wrote only 600,000 rows. Decide what percentage of the usual volume that is."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "600,000 is half of 1,200,000, which is 50% of the usual volume. The job succeeded and is still wrong, and the next screen names the signal that shows it."
+              "text": "The job succeeded on time, so only the row count shows the problem: 600,000 is half of 1,200,000, which is 50% of the usual volume. The next screen names this signal and the others that sit beside it."
             }
           ],
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
-          "checkQuestionId": "date-monitoring-and-tuning-volume-percent",
+          "checkQuestionId": "date-monitoring-and-tuning-status-misses-volume",
           "activityId": ""
         },
         {
@@ -5950,12 +5595,7 @@
           "id": "alert-limit",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "An alert fires when a run writes under 80% of its usual 1,200,000 rows. Work out the number of rows below which the alert fires."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -6020,12 +5660,7 @@
           "id": "name-the-cause",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A table has grown to 80,000 files of about 100 KB each, and every query is slow to start. Say what the cause is."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -6068,12 +5703,7 @@
           "id": "time-to-finish",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A job runs at 200,000 rows per second. Tonight it has 900 million rows to move. Work out how many minutes it needs."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -6128,7 +5758,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "Monitoring is the work of measuring what matters to the people who read the data, and of knowing which measurement points to which cause. The measurements are simple divisions and subtractions, and the causes are the ones met in the earlier lessons on layout, skew and gates, so the work is mostly one of recognising which is which."
+              "text": "Monitoring measures what matters to the people who read the data: how old the newest row in a table is, how many rows a run wrote compared with a usual night, and how long the run took. Each of those is a subtraction or a division against a baseline, and each one, when it goes wrong, points to a cause such as a late source, a skewed key or a table of tiny files. Knowing which measurement points to which cause lets you notice a bad night before the readers do and fix the cause instead of buying more machines."
             }
           ]
         },
@@ -6210,12 +5840,7 @@
           "id": "sample-size",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Production holds 50,000,000 rows, and the test environment runs on a 1% sample. Work out how many rows the test environment processes."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -6256,12 +5881,7 @@
           "id": "first-stop",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A change has been reviewed and merged to the main branch. Say which environment it is deployed to first: development, test or production."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -6277,12 +5897,7 @@
           "id": "regional-rows",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A shared table holds 12,000 orders, split equally across 4 regions. A regional manager is allowed to see only the rows for their own region. Decide how many rows the manager should see."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -6346,12 +5961,7 @@
           "id": "hide-the-email",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Analysts may see every order but must not see customers' email addresses. Say which control fits: row-level security or column-level security."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -6390,12 +6000,7 @@
           "id": "who-holds-the-password",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A password was pasted into a notebook shared with 12 people. The same notebook was also committed to a repository that 30 other people can read. Work out how many people can read the password, if the two groups do not overlap."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -6438,12 +6043,7 @@
           "id": "outside-auditor",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "An external auditor must be able to query the monthly revenue table but must not be able to change it. Say which kind of access to give."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -6493,11 +6093,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A fix to a pipeline works on its author's laptop, is not reviewed by anyone, and is pasted into production at five in the evening. By six the dashboard is wrong, nobody knows what changed, and the database password that the fix needed is sitting in a notebook that thirty people can open."
+              "text": "A pipeline is defined by a handful of text files: the SQL for each step, a schedule, and settings that name its source, its destination and the password it uses to reach them. Over the years it runs, those files are changed many times by many people, and every change reaches the production tables, the ones that dashboards and reports read, by some route. A change pasted straight into production skips any review, leaves no record of what changed and cannot be undone by reverting it, whereas a change that passes through a review and a run on test data is caught before anyone reads the result."
             },
             {
               "kind": "paragraph",
-              "text": "A pipeline that runs for years is changed many times by many people, and every change reaches production by some route. The route can be a deliberate one with checks in it or an accidental one with none, and the same is true of who may see which rows and where the credentials are kept."
+              "text": "The same files raise two more questions, which are who may read which rows and columns of the tables they produce, and where the password is kept, since a password written into a notebook can be read by everyone who can open the notebook. The release path, the access controls and the secret store are the answers, and with them you can say how any change should reach production and how much of a table any reader should see."
             }
           ]
         },
@@ -6577,13 +6177,21 @@
         "etl-elt",
         "idempotence"
       ],
-      "prompt": "A job reads yesterday's orders file at 02:00 every night. Is it batch or streaming? Give one word.",
+      "prompt": "A job reads the file of yesterday's orders at 02:00 every night. Which processing rhythm is it?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
         "Does the job work on a fixed set of data or on a flow with no end?",
         "A complete file read on a schedule has a start and an end."
       ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Batch, because it processes a bounded set of data on a schedule"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Batch, because it processes a bounded set of data on a schedule"
+      },
       "sourceIds": [
         "fabric-docs",
         "airflow-dags",
@@ -6593,27 +6201,37 @@
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "streaming"
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "Streaming handles records as they arrive. This job waits for a complete file of yesterday's orders and runs on a schedule."
+          "feedback": "Running every day does not make a job a stream. Each run reads a complete file with a beginning and an end, and a stream handles records as they arrive, with no last record to wait for."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "A micro-batch runs every few seconds or minutes, so that it behaves almost like a stream. One run a night over a whole day of orders is ordinary batch work."
         }
       ],
       "skill": "classify-a-workload",
       "calculator": "off",
-      "answerAuthority": {
-        "kind": "text",
-        "acceptedIdeas": [
-          "batch"
-        ],
-        "acceptedAlternatives": [
-          "Batch",
-          "batch processing"
-        ],
-        "rejectedIdeas": [],
-        "exampleAnswer": "batch"
-      }
+      "choices": [
+        {
+          "id": "a",
+          "label": "Streaming, because it runs every day without end"
+        },
+        {
+          "id": "b",
+          "label": "Batch, because it processes a bounded set of data on a schedule"
+        },
+        {
+          "id": "c",
+          "label": "Micro-batch, because each run handles only one day"
+        }
+      ]
     },
     {
       "id": "date-what-a-pipeline-is-bronze-rows",
@@ -6674,14 +6292,21 @@
         "etl-elt",
         "idempotence"
       ],
-      "prompt": "A job inserts 3 rows into an empty table with plain INSERT statements and is run twice. How many rows does the table hold?",
-      "responseType": "numeric",
+      "prompt": "A job inserts three order rows into an empty table, which has no key declared, using plain INSERT statements. The orchestrator reports a timeout and runs the job again, although the first run had in fact finished. What does the table hold afterwards?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "What does a plain INSERT do when the row already exists?",
-        "Count the rows added by each run.",
-        "Add the two runs together."
+        "What does a plain INSERT do when an identical row is already in the table?",
+        "Think about what each run adds."
       ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Six rows, three of them copies of the other three"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Six rows, three of them copies of the other three"
+      },
       "sourceIds": [
         "fabric-docs",
         "airflow-dags",
@@ -6691,23 +6316,37 @@
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              3
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That would need the second run to notice the rows were already there. A plain INSERT adds new rows every time."
+          "feedback": "Writing the same rows again only replaces them if something matches each new row to an old one. A plain INSERT does no matching, so each run adds its rows to whatever is already there."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "An INSERT can fail on a repeated row only when the table declares a key for it to clash with. This table has none, so the second run succeeds and adds three more rows."
         }
       ],
       "skill": "spot-non-idempotent-step",
       "calculator": "off",
-      "answerAuthority": {
-        "kind": "numeric",
-        "value": 6,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "Each run adds its 3 rows and nothing checks for earlier copies: 3 + 3 = 6 rows."
-      }
+      "choices": [
+        {
+          "id": "a",
+          "label": "Three rows, because the second run writes the same rows again"
+        },
+        {
+          "id": "b",
+          "label": "Three rows, because the second run fails on rows that are already there"
+        },
+        {
+          "id": "c",
+          "label": "Six rows, three of them copies of the other three"
+        }
+      ]
     },
     {
       "id": "date-what-a-pipeline-is-upsert-rows",
@@ -7067,14 +6706,21 @@
         "encoding-compression",
         "schema-in-file"
       ],
-      "prompt": "The order_id column is split into four row groups with ranges 1 to 250, 251 to 500, 501 to 750 and 751 to 1000. A query asks for order_id = 600. How many row groups must be read?",
-      "responseType": "numeric",
+      "prompt": "A file stores the order_id column in four row groups, and its footer records their ranges as 1 to 250, 251 to 500, 501 to 750 and 751 to 1000. A query asks for the row with order_id = 600. How much of the file does the reader have to open?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Which range includes 600?",
-        "A group whose range excludes 600 cannot contain it.",
-        "Count the groups that remain."
+        "The footer gives each group's smallest and largest order_id.",
+        "Which ranges could contain 600?"
       ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Only the row group whose range includes 600"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Only the row group whose range includes 600"
+      },
       "sourceIds": [
         "parquet-format",
         "fabric-docs"
@@ -7083,31 +6729,37 @@
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              4
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That reads every group. A group whose range excludes 600 cannot hold the value."
+          "feedback": "The footer already says that three of the groups hold no value near 600, since 600 lies outside their ranges, so the reader has no reason to open them."
         },
         {
           "match": {
-            "numeric": [
-              0
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "The value 600 lies inside one range, so that group must be read."
+          "feedback": "The ranges do not overlap, so only one group can contain 600. A neighbouring group whose range ends at 500 or starts at 751 cannot hold it."
         }
       ],
       "skill": "read-footer-stats",
       "calculator": "off",
-      "answerAuthority": {
-        "kind": "numeric",
-        "value": 1,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "Only 501 to 750 includes 600. The ranges do not overlap, so the other three groups cannot hold that value and are skipped."
-      }
+      "choices": [
+        {
+          "id": "a",
+          "label": "All four row groups, because any of them might hold the row"
+        },
+        {
+          "id": "b",
+          "label": "Only the row group whose range includes 600"
+        },
+        {
+          "id": "c",
+          "label": "Two row groups, the one whose range includes 600 and the one beside it"
+        }
+      ]
     },
     {
       "id": "date-files-and-formats-overlap-groups",
@@ -7217,13 +6869,21 @@
         "encoding-compression",
         "schema-in-file"
       ],
-      "prompt": "A service must fetch one complete order by its key, thousands of times a second. Which layout suits it, row-oriented or columnar? Give the layout.",
+      "prompt": "A service must fetch one complete order by its key, thousands of times a second. Which file layout suits it?",
       "responseType": "short_text",
       "difficulty": 1.2,
       "hints": [
-        "Think about where the values of a single order are stored.",
-        "In which layout do one record's values sit together?"
+        "The service needs every column, but only of one row.",
+        "Ask where the values of one record sit in each layout."
       ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Row-oriented, because one complete record sits in one contiguous run of bytes"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Row-oriented, because one complete record sits in one contiguous run of bytes"
+      },
       "sourceIds": [
         "parquet-format",
         "fabric-docs"
@@ -7232,31 +6892,37 @@
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "columnar"
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "A columnar layout spreads one order across a separate block for each column, so it has to gather the pieces."
+          "feedback": "A columnar file saves bytes when a query reads a few columns of many rows. Fetching every column of one row means visiting a separate place for each column and then putting the record back together."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "At thousands of lookups a second the cost of each lookup adds up, and a columnar reader makes one visit per column where a row reader makes one in all."
         }
       ],
       "skill": "choose-format",
       "calculator": "off",
-      "answerAuthority": {
-        "kind": "text",
-        "acceptedIdeas": [
-          "row-oriented"
-        ],
-        "acceptedAlternatives": [
-          "row",
-          "rows",
-          "row oriented",
-          "row-based",
-          "row based",
-          "row layout"
-        ],
-        "rejectedIdeas": [],
-        "exampleAnswer": "row-oriented"
-      }
+      "choices": [
+        {
+          "id": "a",
+          "label": "Row-oriented, because one complete record sits in one contiguous run of bytes"
+        },
+        {
+          "id": "b",
+          "label": "Columnar, because it reads only the columns a query needs"
+        },
+        {
+          "id": "c",
+          "label": "Either, because a single record is too small for the layout to matter"
+        }
+      ]
     },
     {
       "id": "date-files-and-formats-compressed-read",
@@ -7358,13 +7024,20 @@
         "encoding-compression",
         "schema-in-file"
       ],
-      "prompt": "A Parquet row group's order_id column has min 1 and max 300 in the footer. A query filters order_id = 500. Does the reader read that row group or skip it? Give one word.",
+      "prompt": "A Parquet row group's order_id column has a minimum of 1 and a maximum of 300 in the file's footer. A query filters order_id = 500. What does the reader do with that row group?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Compare 500 with the range the footer records.",
-        "A value outside the range cannot be in the group."
+        "Compare 500 with the group's minimum and maximum."
       ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Skips it, because 500 lies outside the range 1 to 300"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Skips it, because 500 lies outside the range 1 to 300"
+      },
       "sourceIds": [
         "parquet-format",
         "fabric-docs"
@@ -7373,27 +7046,37 @@
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "read"
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "The footer records a maximum of 300, so no row in this group has order_id 500."
+          "feedback": "A range is enough to rule a group out: no value in it can be larger than the maximum, so 500 cannot be there."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "The footer's maximum of 300 already settles the question, so the reader need not open any chunk of this group."
         }
       ],
       "skill": "read-footer-stats",
       "calculator": "off",
-      "answerAuthority": {
-        "kind": "text",
-        "acceptedIdeas": [
-          "skip"
-        ],
-        "acceptedAlternatives": [
-          "skipped",
-          "skips"
-        ],
-        "rejectedIdeas": [],
-        "exampleAnswer": "skip"
-      }
+      "choices": [
+        {
+          "id": "a",
+          "label": "Reads it in full, because the footer gives only a range"
+        },
+        {
+          "id": "b",
+          "label": "Reads only its order_id chunk, to check for 500"
+        },
+        {
+          "id": "c",
+          "label": "Skips it, because 500 lies outside the range 1 to 300"
+        }
+      ]
     },
     {
       "id": "date-files-and-formats-practice-3",
@@ -7529,14 +7212,21 @@
         "upsert",
         "late-rows"
       ],
-      "prompt": "A customers table has 3 rows (ids 1, 2, 3) and no key. A 2-row batch (ids 2 and 4) is added with a plain INSERT and the job is run twice. How many rows does the table hold?",
-      "responseType": "numeric",
+      "prompt": "A customers table has 3 rows, with ids 1, 2 and 3, and no key declared. A batch of 2 rows, with ids 2 and 4, is added with a plain INSERT, and the scheduler runs the job twice because the first run seemed to time out. What does the table hold afterwards?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Does a plain INSERT check whether the id already exists?",
-        "Count the rows added by one run.",
-        "Add the original rows and the rows from both runs."
+        "The table has no key, so nothing stops a repeated id.",
+        "Count what each run adds to the 3 rows already there."
       ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "7 rows, with id 2 three times and id 4 twice"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "7 rows, with id 2 three times and id 4 twice"
+      },
       "sourceIds": [
         "delta-protocol",
         "fabric-docs",
@@ -7546,31 +7236,37 @@
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              4
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That counts the distinct ids. A plain INSERT adds a row each time whether or not its id is present."
+          "feedback": "Nothing merges rows by id unless the table declares id as a key and the write says what to do on a clash. A plain INSERT adds every row it is given."
         },
         {
           "match": {
-            "numeric": [
-              5
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That counts one run. The job ran twice."
+          "feedback": "The second run adds the same 2 rows again, since a plain INSERT does not look at what the table already holds."
         }
       ],
       "skill": "count-rows-after-replay",
       "calculator": "off",
-      "answerAuthority": {
-        "kind": "numeric",
-        "value": 7,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "A plain INSERT adds every row it is given: 3 + 2 + 2 = 7 rows, with only 4 distinct ids."
-      }
+      "choices": [
+        {
+          "id": "a",
+          "label": "4 rows, ids 1 to 4, because rows with the same id are merged"
+        },
+        {
+          "id": "b",
+          "label": "5 rows, because the second run adds nothing new"
+        },
+        {
+          "id": "c",
+          "label": "7 rows, with id 2 three times and id 4 twice"
+        }
+      ]
     },
     {
       "id": "date-loading-without-duplicates-upsert-rows",
@@ -8051,14 +7747,21 @@
         "soft-delete",
         "mirroring"
       ],
-      "prompt": "Log entries: position 1 insert id 1 'a', position 2 delete id 1, position 3 insert id 1 'b'. They are applied in arrival order 1, 3, 2. How many rows does the table hold at the end?",
-      "responseType": "numeric",
+      "prompt": "Three entries come from a source's change log: position 1 inserts id 1 with value 'a', position 2 deletes id 1, and position 3 inserts id 1 with value 'b'. They reach the warehouse in the order 1, 3, 2, and the warehouse applies them in the order they arrive. What does the warehouse table hold at the end?",
+      "responseType": "short_text",
       "difficulty": 1.3,
       "hints": [
-        "Apply the entries in the order 1, 3, 2.",
-        "What does the delete at position 2 remove when it is applied last?",
-        "Count the rows left."
+        "Apply the entries one at a time in the order 1, 3, 2.",
+        "Ask what the delete finds when it is applied last."
       ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "No rows, because the delete is applied last"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "No rows, because the delete is applied last"
+      },
       "sourceIds": [
         "delta-protocol",
         "fabric-docs",
@@ -8068,23 +7771,37 @@
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              1
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That is the result in log order. Here the delete is applied last, after the second insert."
+          "feedback": "That is the source's result, reached by applying the entries in the order 1, 2, 3. Here the delete arrives after the second insert and removes the row it wrote."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "The second insert of id 1 arrives while the first row is still there, and the delete that follows removes the row with that key, so nothing is left."
         }
       ],
       "skill": "order-by-position",
       "calculator": "off",
-      "answerAuthority": {
-        "kind": "numeric",
-        "value": 0,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "Entry 1 inserts id 1, entry 3 replaces its value with 'b', and entry 2 then deletes id 1, so the table ends with 0 rows."
-      }
+      "choices": [
+        {
+          "id": "a",
+          "label": "One row, id 1 with value 'b', the same as the source"
+        },
+        {
+          "id": "b",
+          "label": "No rows, because the delete is applied last"
+        },
+        {
+          "id": "c",
+          "label": "Two rows with id 1, one holding 'a' and one holding 'b'"
+        }
+      ]
     },
     {
       "id": "date-capturing-changes-value-of-id4",
@@ -8569,6 +8286,70 @@
       }
     },
     {
+      "id": "date-orchestrating-dependencies-backoff-compare",
+      "conceptIds": [
+        "date-dag",
+        "critical-path",
+        "retry-backoff",
+        "backfill"
+      ],
+      "prompt": "A task fails and the scheduler retries it 3 times, waiting 2 minutes before the first retry and doubling the wait before each retry after that. Every retry fails too. How does the total time spent waiting compare with retrying after a fixed wait of 2 minutes each time?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Write down the three waits when each one doubles the last.",
+        "Three fixed waits of 2 minutes come to 6 minutes."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "More than twice as long, because the later waits grow quickly"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "More than twice as long, because the later waits grow quickly"
+      },
+      "sourceIds": [
+        "airflow-dags",
+        "fabric-docs",
+        "dp700-guide"
+      ],
+      "onCorrect": "The doubling waits are 2, 4 and 8 minutes, 14 in all, against 6 minutes for three fixed waits of 2.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "Only the first wait is the same. Each later wait is double the one before, so the second and third waits are far longer than 2 minutes."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Doubling adds up faster than that: the waits become 2, 4 and 8 minutes, which is 14 minutes against 6 for three fixed waits."
+        }
+      ],
+      "skill": "find-critical-path",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "About the same, since the first wait is 2 minutes in both cases"
+        },
+        {
+          "id": "b",
+          "label": "More than twice as long, because the later waits grow quickly"
+        },
+        {
+          "id": "c",
+          "label": "A little longer, by a minute or two"
+        }
+      ]
+    },
+    {
       "id": "date-orchestrating-dependencies-retry-total",
       "conceptIds": [
         "date-dag",
@@ -8934,14 +8715,20 @@
         "lakehouse",
         "medallion"
       ],
-      "prompt": "Three engines each keep a 2 TB copy of a table, 6 TB in all. How many terabytes are saved if they read one shared 2 TB copy instead?",
-      "responseType": "numeric",
+      "prompt": "Three engines, a SQL engine, a Spark engine and a machine-learning engine, each keep their own 2 TB copy of the same table, 6 TB in all. Roughly how much of that storage would be saved if all three could read one shared copy instead?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "How much does one shared copy take?",
-        "Compare it with the three separate copies.",
-        "6 TB minus 2 TB."
+        "How many 2 TB copies are left when all three engines share one?"
       ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "About two thirds of it"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "About two thirds of it"
+      },
       "sourceIds": [
         "fabric-docs",
         "dp700-guide",
@@ -8952,31 +8739,37 @@
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              2
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That is the size of the shared copy. The saving is the difference from 6 TB."
+          "feedback": "An engine needs its own copy only when it cannot read the others' files. If the files are open and shared, one copy serves all three."
         },
         {
           "match": {
-            "numeric": [
-              6
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That is what the three separate copies take in all."
+          "feedback": "One shared copy keeps a single 2 TB table, so two of the three copies disappear and only a third of the storage remains."
         }
       ],
       "skill": "match-architecture",
       "calculator": "off",
-      "answerAuthority": {
-        "kind": "numeric",
-        "value": 4,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "Three copies take 6 TB and one copy takes 2 TB, so 6 − 2 = 4 TB are saved."
-      }
+      "choices": [
+        {
+          "id": "a",
+          "label": "None, because each engine still needs its own copy"
+        },
+        {
+          "id": "b",
+          "label": "About a third of it"
+        },
+        {
+          "id": "c",
+          "label": "About two thirds of it"
+        }
+      ]
     },
     {
       "id": "date-warehouses-lakes-and-lakehouses-silver-rows",
@@ -9086,13 +8879,21 @@
         "lakehouse",
         "medallion"
       ],
-      "prompt": "A compliance team needs an exact copy of every file as it arrived, kept unchanged. Which layer holds it? Give the layer's name.",
+      "prompt": "A compliance team needs an exact copy of every file as it arrived, kept unchanged. Which medallion layer holds it?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "The layer that promises nothing was lost.",
-        "Which layer keeps data unchanged and only adds to it?"
+        "Which layer is only ever added to and never changed?",
+        "Ask how far each layer has moved from the files as they arrived."
       ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Bronze"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Bronze"
+      },
       "sourceIds": [
         "fabric-docs",
         "dp700-guide",
@@ -9103,28 +8904,37 @@
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "silver"
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "Silver is already cleaned and deduplicated, so it is no longer an exact copy of what arrived."
+          "feedback": "Silver holds cleaned rows, with types fixed and duplicates removed, so it is no longer the data exactly as it arrived."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Gold holds tables built from silver for particular uses, such as totals, which are even further from the files as they arrived."
         }
       ],
       "skill": "place-in-layer",
       "calculator": "off",
-      "answerAuthority": {
-        "kind": "text",
-        "acceptedIdeas": [
-          "bronze"
-        ],
-        "acceptedAlternatives": [
-          "Bronze",
-          "bronze layer",
-          "the bronze layer"
-        ],
-        "rejectedIdeas": [],
-        "exampleAnswer": "bronze"
-      }
+      "choices": [
+        {
+          "id": "a",
+          "label": "Bronze"
+        },
+        {
+          "id": "b",
+          "label": "Silver"
+        },
+        {
+          "id": "c",
+          "label": "Gold"
+        }
+      ]
     },
     {
       "id": "date-warehouses-lakes-and-lakehouses-gold-rows",
@@ -9186,13 +8996,20 @@
         "lakehouse",
         "medallion"
       ],
-      "prompt": "A table holds one cleaned row per customer, with types fixed and duplicates removed. Which medallion layer is it? Give the layer's name.",
+      "prompt": "A table holds one cleaned row per customer, with types fixed and duplicates removed. Which medallion layer is it?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "The layer between raw data and finished totals.",
-        "Cleaned and typed, but not yet summarised."
+        "Ask whether the table has been changed from what arrived, and whether it was built for one particular use."
       ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Silver"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Silver"
+      },
       "sourceIds": [
         "fabric-docs",
         "dp700-guide",
@@ -9203,36 +9020,37 @@
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "gold"
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "Gold tables are built for a use, such as totals. A cleaned row per customer sits one layer earlier."
+          "feedback": "Bronze keeps data exactly as it arrived, duplicates and faulty types included, so a cleaned table has already left it."
         },
         {
           "match": {
-            "textIdeas": [
-              "bronze"
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "Bronze keeps data exactly as it arrived, so it has not been cleaned."
+          "feedback": "Gold holds tables built for one use, such as revenue per month. A cleaned table of customers is general-purpose detail that gold tables are built from."
         }
       ],
       "skill": "place-in-layer",
       "calculator": "off",
-      "answerAuthority": {
-        "kind": "text",
-        "acceptedIdeas": [
-          "silver"
-        ],
-        "acceptedAlternatives": [
-          "Silver",
-          "silver layer",
-          "the silver layer"
-        ],
-        "rejectedIdeas": [],
-        "exampleAnswer": "silver"
-      }
+      "choices": [
+        {
+          "id": "a",
+          "label": "Bronze"
+        },
+        {
+          "id": "b",
+          "label": "Silver"
+        },
+        {
+          "id": "c",
+          "label": "Gold"
+        }
+      ]
     },
     {
       "id": "date-warehouses-lakes-and-lakehouses-practice-2",
@@ -9472,14 +9290,21 @@
         "time-travel",
         "maintenance"
       ],
-      "prompt": "The latest version is 4. Two writers with non-conflicting changes both try to commit version 5. One succeeds, and the other retries after seeing that change. What is the latest version number once both have committed?",
-      "responseType": "numeric",
+      "prompt": "The latest version in a table's commit log is 4. Two writers both read version 4 and both try to create version 5 at the same moment, with changes that do not conflict. The storage layer lets only one of them create that file. What happens to the two changes?",
+      "responseType": "short_text",
       "difficulty": 1.2,
       "hints": [
-        "Only one writer can create version 5.",
-        "What does the other writer do after failing?",
-        "Its change becomes the next version."
+        "Only one writer can create the file for version 5.",
+        "Ask what stops the other writer from trying the next number."
       ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "One change becomes version 5, and the other is tried again as version 6"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "One change becomes version 5, and the other is tried again as version 6"
+      },
       "sourceIds": [
         "delta-protocol",
         "iceberg-spec",
@@ -9490,31 +9315,37 @@
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              5
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That counts only the first commit. The second writer retries and commits as the next version."
+          "feedback": "The writer that failed has not lost its files, only the race for the name. Since its change does not conflict with the winner's, it can simply commit after it."
         },
         {
           "match": {
-            "numeric": [
-              4
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "Both writers succeed, so the version number moves past 4."
+          "feedback": "Version 5 is a single file created by a single writer, and the storage layer lets only one writer create it, so nothing merges the two into one commit."
         }
       ],
       "skill": "order-metadata-tree",
       "calculator": "off",
-      "answerAuthority": {
-        "kind": "numeric",
-        "value": 6,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "One writer creates version 5 and the other, finding it taken, commits its own change as version 6."
-      }
+      "choices": [
+        {
+          "id": "a",
+          "label": "One change becomes version 5 and the other is lost"
+        },
+        {
+          "id": "b",
+          "label": "Both changes are merged into a single version 5"
+        },
+        {
+          "id": "c",
+          "label": "One change becomes version 5, and the other is tried again as version 6"
+        }
+      ]
     },
     {
       "id": "date-open-table-formats-snapshot-version",
@@ -9524,14 +9355,20 @@
         "time-travel",
         "maintenance"
       ],
-      "prompt": "A query starts when the latest version is 12. While it runs, versions 13 and 14 are committed. Which version does the query read?",
-      "responseType": "numeric",
+      "prompt": "A query starts when the latest version of a table is 12. While it runs, writers commit versions 13 and 14. Which version does the query read?",
+      "responseType": "short_text",
       "difficulty": 1.3,
       "hints": [
-        "When does the query fix its version?",
-        "Do commits made while it runs change its snapshot?",
-        "Which version was latest at the start?"
+        "A query reads one snapshot from beginning to end."
       ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Version 12, the one it fixed when it started"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Version 12, the one it fixed when it started"
+      },
       "sourceIds": [
         "delta-protocol",
         "iceberg-spec",
@@ -9542,31 +9379,37 @@
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              14
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That is the latest version at the end. The query keeps the version it fixed when it began."
+          "feedback": "A query fixes its version at the start and reads that snapshot throughout, so commits made while it runs do not reach it."
         },
         {
           "match": {
-            "numeric": [
-              13
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "The query ignores every commit made after it started, including 13."
+          "feedback": "Mixing versions would give a table that never existed, with part of a commit's changes and not the rest. Reading one fixed snapshot is what prevents that."
         }
       ],
       "skill": "order-metadata-tree",
       "calculator": "off",
-      "answerAuthority": {
-        "kind": "numeric",
-        "value": 12,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "A query reads the snapshot it fixed at the start, which was version 12, so it ignores the later commits."
-      }
+      "choices": [
+        {
+          "id": "a",
+          "label": "Version 12, the one it fixed when it started"
+        },
+        {
+          "id": "b",
+          "label": "Version 14, the latest by the time it finishes"
+        },
+        {
+          "id": "c",
+          "label": "Version 12 for the files it read early and version 14 for the rest"
+        }
+      ]
     },
     {
       "id": "date-open-table-formats-storage-after-compaction",
@@ -9680,13 +9523,20 @@
         "time-travel",
         "maintenance"
       ],
-      "prompt": "After a vacuum has deleted every file the current version does not use, can the table still be read as of an earlier version that needed some of those files? Answer yes or no.",
+      "prompt": "A vacuum has deleted every file that the current version of a table does not use. Can the table still be read as it was at an earlier version that needed some of those files?",
       "responseType": "short_text",
       "difficulty": 1.2,
       "hints": [
-        "Which files does the earlier version need?",
-        "Time travel reads files that must still be on storage."
+        "Reading an old version means opening the files it lists."
       ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "No, because some of the files that version lists are gone"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "No, because some of the files that version lists are gone"
+      },
       "sourceIds": [
         "delta-protocol",
         "iceberg-spec",
@@ -9697,28 +9547,37 @@
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "yes"
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "The vacuum deleted the files that version needs, so it is gone."
+          "feedback": "The log still lists the files, but a list is not the data. Reading the version means opening those files, and the vacuum has deleted some of them."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "A checkpoint is also a list of files and holds no data of its own, so it cannot bring back files that the vacuum deleted."
         }
       ],
       "skill": "count-physical-files",
       "calculator": "off",
-      "answerAuthority": {
-        "kind": "text",
-        "acceptedIdeas": [
-          "no"
-        ],
-        "acceptedAlternatives": [
-          "No",
-          "nope",
-          "it cannot"
-        ],
-        "rejectedIdeas": [],
-        "exampleAnswer": "no"
-      }
+      "choices": [
+        {
+          "id": "a",
+          "label": "Yes, because the commit log still describes that version"
+        },
+        {
+          "id": "b",
+          "label": "No, because some of the files that version lists are gone"
+        },
+        {
+          "id": "c",
+          "label": "Yes, as long as a checkpoint was written at that version"
+        }
+      ]
     },
     {
       "id": "date-open-table-formats-practice-1",
@@ -9962,14 +9821,20 @@
         "small-files",
         "data-skipping"
       ],
-      "prompt": "A 1,200 GB table is partitioned by customer id, with 3,000,000 customers and equal amounts of data. How many kilobytes (1 KB = 1,000 bytes) is one partition?",
-      "responseType": "numeric",
+      "prompt": "A 1,200 GB table partitioned by month has twelve partitions of 100 GB. Suppose it is partitioned by customer id instead, and there are 3,000,000 customers with equal amounts of data. Roughly how large is one partition?",
+      "responseType": "short_text",
       "difficulty": 1.3,
       "hints": [
-        "Convert 1,200 GB to bytes first.",
-        "Divide by the number of partitions.",
-        "Convert the result to kilobytes."
+        "Divide 1,200 GB by 3,000,000 roughly: a gigabyte is a million kilobytes."
       ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "A few hundred kilobytes"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "A few hundred kilobytes"
+      },
       "sourceIds": [
         "spark-sql-tuning",
         "delta-protocol",
@@ -9981,31 +9846,37 @@
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              400000
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That is the size in bytes. The question asks for kilobytes."
+          "feedback": "The table is the same size but is now divided into 3,000,000 pieces in place of twelve, so each piece is far smaller than a month."
         },
         {
           "match": {
-            "numeric": [
-              0.4
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That is the size in megabytes. The question asks for kilobytes."
+          "feedback": "A few gigabytes per partition would need only a few hundred partitions. Dividing 1,200 GB among 3,000,000 customers leaves each with well under a megabyte."
         }
       ],
       "skill": "pick-partition-column",
       "calculator": "off",
-      "answerAuthority": {
-        "kind": "numeric",
-        "value": 400,
-        "unit": "KB",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "1,200 GB is 1,200,000,000,000 bytes, and dividing by 3,000,000 partitions gives 400,000 bytes, which is 400 KB."
-      }
+      "choices": [
+        {
+          "id": "a",
+          "label": "About 100 GB, the same as a month"
+        },
+        {
+          "id": "b",
+          "label": "A few gigabytes"
+        },
+        {
+          "id": "c",
+          "label": "A few hundred kilobytes"
+        }
+      ]
     },
     {
       "id": "date-partitioning-and-file-layout-better-column",
@@ -10015,13 +9886,21 @@
         "small-files",
         "data-skipping"
       ],
-      "prompt": "Which column is the better partition column: order_date (about 1,095 values) or customer_id (about 3,000,000 values)? Give the column name.",
+      "prompt": "A sales table of billions of rows is queried mostly for a range of days or weeks. It has an order_date column with about 1,095 distinct dates over three years and a customer_id column with about 3,000,000 values. Which is the better partition column?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Which column do the queries filter on, and how many partitions would it create?",
-        "Millions of partitions would each be tiny."
+        "A good partition column is used in filters and has a modest number of values.",
+        "Compare each column's values with the 1,200 GB example: how big would each partition be?"
       ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "order_date, because queries filter on it and it has few enough values"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "order_date, because queries filter on it and it has few enough values"
+      },
       "sourceIds": [
         "spark-sql-tuning",
         "delta-protocol",
@@ -10033,27 +9912,37 @@
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "customer_id"
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "With about 3,000,000 values it would create millions of tiny partitions."
+          "feedback": "Queries filter on dates, not customers, so partitions by customer would rarely be pruned, and 3,000,000 values would make each partition tiny."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Large tables are where partitioning pays most, as long as the column is one that queries filter on and its values are few enough to keep each partition large."
         }
       ],
       "skill": "pick-partition-column",
       "calculator": "off",
-      "answerAuthority": {
-        "kind": "text",
-        "acceptedIdeas": [
-          "order_date"
-        ],
-        "acceptedAlternatives": [
-          "order date",
-          "orderdate"
-        ],
-        "rejectedIdeas": [],
-        "exampleAnswer": "order_date"
-      }
+      "choices": [
+        {
+          "id": "a",
+          "label": "customer_id, because it picks out rows most precisely"
+        },
+        {
+          "id": "b",
+          "label": "order_date, because queries filter on it and it has few enough values"
+        },
+        {
+          "id": "c",
+          "label": "Neither, because a table this large should not be partitioned"
+        }
+      ]
     },
     {
       "id": "date-partitioning-and-file-layout-files-per-day",
@@ -10590,14 +10479,21 @@
         "lazy",
         "skew"
       ],
-      "prompt": "500 million rows are shuffled to 5 reducers, each processing 1 million rows per second. One key holds 70% of the rows. How many seconds does the stage take?",
-      "responseType": "numeric",
+      "prompt": "500 million rows are shuffled by key to 5 reducing tasks, each processing 1 million rows per second, so an even split would take 100 seconds. One key holds 70% of the rows, and every row of a key goes to the same task. How long does the stage take, compared with the even split?",
+      "responseType": "short_text",
       "difficulty": 1.3,
       "hints": [
-        "How many rows does the hot key's task receive?",
-        "70% of 500 million rows.",
-        "Divide by 1 million rows per second."
+        "How many rows does the task with the hot key receive?",
+        "A stage finishes only when its slowest task finishes."
       ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Several times longer, because one task receives most of the rows"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Several times longer, because one task receives most of the rows"
+      },
       "sourceIds": [
         "spark-sql-tuning",
         "spark-streaming",
@@ -10608,31 +10504,37 @@
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              100
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That is the time if the rows were split evenly. One key holds 70% of them."
+          "feedback": "The work is not shared evenly: every row of the hot key goes to one task, so that task receives 70% of the rows while the other four share the rest."
         },
         {
           "match": {
-            "numeric": [
-              500
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That is every row on one task. The other keys go to the other four reducers."
+          "feedback": "One task receives 350 million rows, which at 1 million rows per second takes 350 seconds, and the stage cannot end before its slowest task does."
         }
       ],
       "skill": "estimate-skewed-stage",
       "calculator": "off",
-      "answerAuthority": {
-        "kind": "numeric",
-        "value": 350,
-        "unit": "seconds",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "The hot key's task gets 0.7 × 500 million = 350 million rows and needs 350 seconds, and the stage lasts until it finishes."
-      }
+      "choices": [
+        {
+          "id": "a",
+          "label": "About the same, since five tasks still share the work"
+        },
+        {
+          "id": "b",
+          "label": "A little longer, perhaps 120 seconds"
+        },
+        {
+          "id": "c",
+          "label": "Several times longer, because one task receives most of the rows"
+        }
+      ]
     },
     {
       "id": "date-distributed-processing-skew-seconds",
@@ -10694,13 +10596,20 @@
         "lazy",
         "skew"
       ],
-      "prompt": "In df.filter(...).select(...).count(), which call makes the engine start the work? Give the call's name.",
+      "prompt": "A program reads a table and then calls df.filter(...).select(...).count(). Which call makes the engine start the work?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Which of the calls returns a number to the program?",
-        "Filter and select are transformations."
+        "Which of the calls asks for a result to be returned to the program?"
       ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "count"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "count"
+      },
       "sourceIds": [
         "spark-sql-tuning",
         "spark-streaming",
@@ -10711,28 +10620,37 @@
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "filter"
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "filter is a transformation, so it only adds a step to the plan."
+          "feedback": "A filter is a transformation, so calling it only adds a step to the plan and no data is read yet."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "A select is a transformation like the filter before it, and it too only adds a step to the plan."
         }
       ],
       "skill": "classify-transformation",
       "calculator": "off",
-      "answerAuthority": {
-        "kind": "text",
-        "acceptedIdeas": [
-          "count"
-        ],
-        "acceptedAlternatives": [
-          "count()",
-          ".count()",
-          "the count"
-        ],
-        "rejectedIdeas": [],
-        "exampleAnswer": "count"
-      }
+      "choices": [
+        {
+          "id": "a",
+          "label": "filter"
+        },
+        {
+          "id": "b",
+          "label": "select"
+        },
+        {
+          "id": "c",
+          "label": "count"
+        }
+      ]
     },
     {
       "id": "date-distributed-processing-broadcast-mb",
@@ -10898,13 +10816,20 @@
         "lazy",
         "skew"
       ],
-      "prompt": "Is a group by a key and count a narrow or a wide transformation? Give one word.",
+      "prompt": "Is grouping rows by a key and counting each group a narrow or a wide transformation?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Does each output partition depend on a single input partition?",
-        "Rows with the same key must meet in one task."
+        "Can each partition produce the final count for a key without seeing the other partitions?"
       ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Wide, because the rows for each key must meet in one task"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Wide, because the rows for each key must meet in one task"
+      },
       "sourceIds": [
         "spark-sql-tuning",
         "spark-streaming",
@@ -10915,27 +10840,37 @@
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "narrow"
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "A narrow transformation works on one partition alone, but a group by needs rows from all of them."
+          "feedback": "Counting rows one at a time would be narrow, but a count per key needs every row of that key in the same place, and they start out spread over many partitions."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "A count over the whole table is an action, while a count per key is a grouping step in the plan, and its rows have to be shuffled so that each key's rows meet."
         }
       ],
       "skill": "classify-transformation",
       "calculator": "off",
-      "answerAuthority": {
-        "kind": "text",
-        "acceptedIdeas": [
-          "wide"
-        ],
-        "acceptedAlternatives": [
-          "Wide",
-          "wide transformation"
-        ],
-        "rejectedIdeas": [],
-        "exampleAnswer": "wide"
-      }
+      "choices": [
+        {
+          "id": "a",
+          "label": "Narrow, because each row is counted once"
+        },
+        {
+          "id": "b",
+          "label": "Wide, because the rows for each key must meet in one task"
+        },
+        {
+          "id": "c",
+          "label": "Neither, because counting is an action"
+        }
+      ]
     },
     {
       "id": "date-cleaning-and-deduplicating-distinct-rows",
@@ -11037,14 +10972,21 @@
         "order-of-steps",
         "quarantine-bad"
       ],
-      "prompt": "A bronze table has 450 rows for 400 distinct events, because 50 events were sent twice. Every event is worth 10. What does SUM(amount) return over the table as it stands?",
-      "responseType": "numeric",
+      "prompt": "A day's bronze table has 450 rows for 400 distinct events, because 50 events were sent twice. Every event is worth 10, so the true revenue is 4,000. What does SUM(amount) over the table as it stands return?",
+      "responseType": "short_text",
       "difficulty": 1.1,
       "hints": [
-        "How many rows does the query add up?",
-        "Repeated events are separate rows in bronze.",
-        "Multiply the rows by 10."
+        "SUM adds every row in the table.",
+        "How many rows does the table hold?"
       ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "More than 4,000, because each repeated row is added again"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "More than 4,000, because each repeated row is added again"
+      },
       "sourceIds": [
         "spark-sql-tuning",
         "fabric-docs"
@@ -11053,23 +10995,37 @@
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              4000
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That is the total after deduplication. The query adds every row of the table as it stands."
+          "feedback": "SUM adds every row it is given and has no idea which rows describe the same event, so a copy counts as much as the original."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Nothing in a sum subtracts a repeated row. Each of the 450 rows adds its 10, copies included."
         }
       ],
       "skill": "explain-order",
       "calculator": "off",
-      "answerAuthority": {
-        "kind": "numeric",
-        "value": 4500,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "The query adds every row, repeats included: 450 × 10 = 4,500."
-      }
+      "choices": [
+        {
+          "id": "a",
+          "label": "Exactly 4,000, because the repeats are copies of the same events"
+        },
+        {
+          "id": "b",
+          "label": "More than 4,000, because each repeated row is added again"
+        },
+        {
+          "id": "c",
+          "label": "Less than 4,000, because the repeats cancel each other"
+        }
+      ]
     },
     {
       "id": "date-cleaning-and-deduplicating-overstatement",
@@ -11221,13 +11177,21 @@
         "order-of-steps",
         "quarantine-bad"
       ],
-      "prompt": "A query orders event e1's rows by loaded_at ASC by mistake and keeps rn = 1. The event was loaded on 2026-03-01 and on 2026-03-02. Which load's date does the kept row carry? Give the date.",
+      "prompt": "A query numbers event e1's rows with ROW_NUMBER() OVER (PARTITION BY event_id ORDER BY loaded_at ASC), by mistake, and keeps rn = 1. The event was loaded on 2026-03-01 and again on 2026-03-02. Which row does it keep?",
       "responseType": "short_text",
       "difficulty": 1.2,
       "hints": [
-        "ASC puts the smallest value first.",
-        "Which of the two dates is earlier?"
+        "Ascending order puts the smallest value first.",
+        "Which row gets rn = 1?"
       ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "The row loaded on 2026-03-01, the earliest"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "The row loaded on 2026-03-01, the earliest"
+      },
       "sourceIds": [
         "spark-sql-tuning",
         "fabric-docs"
@@ -11236,28 +11200,37 @@
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "2026-03-02"
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That row would be kept with DESC. With ASC the earlier date gets rn = 1."
+          "feedback": "The latest row comes first only with ORDER BY loaded_at DESC. In ascending order the oldest row comes first and receives rn = 1."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Each row does get its own number, but the filter keeps only rn = 1, which is one row per event."
         }
       ],
       "skill": "dedupe-with-window",
       "calculator": "off",
-      "answerAuthority": {
-        "kind": "text",
-        "acceptedIdeas": [
-          "2026-03-01"
-        ],
-        "acceptedAlternatives": [
-          "03-01",
-          "1 March 2026",
-          "2026/03/01"
-        ],
-        "rejectedIdeas": [],
-        "exampleAnswer": "2026-03-01"
-      }
+      "choices": [
+        {
+          "id": "a",
+          "label": "The row loaded on 2026-03-02, the latest"
+        },
+        {
+          "id": "b",
+          "label": "The row loaded on 2026-03-01, the earliest"
+        },
+        {
+          "id": "c",
+          "label": "Both rows, since each has its own rn"
+        }
+      ]
     },
     {
       "id": "date-cleaning-and-deduplicating-practice-1",
@@ -11351,13 +11324,20 @@
         "order-of-steps",
         "quarantine-bad"
       ],
-      "prompt": "Which step must come first, deduplication or aggregation? Give the step's name.",
+      "prompt": "Which step must come first, deduplication or aggregation?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "An aggregate cannot undo what it has already added together.",
-        "Which step removes the repeated rows?"
+        "Can a total be corrected once the copies are inside it?"
       ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Deduplication, so that no total counts a repeat"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Deduplication, so that no total counts a repeat"
+      },
       "sourceIds": [
         "spark-sql-tuning",
         "fabric-docs"
@@ -11366,30 +11346,37 @@
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "aggregation"
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "Aggregating first adds the repeats into the total, where they can no longer be removed."
+          "feedback": "Once rows are added together the copies can no longer be told apart, so a total taken first already includes them and cannot be corrected."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "The totals differ whenever there are repeats: 450 rows give 4,500 and the 400 distinct events give 4,000."
         }
       ],
       "skill": "explain-order",
       "calculator": "off",
-      "answerAuthority": {
-        "kind": "text",
-        "acceptedIdeas": [
-          "deduplication"
-        ],
-        "acceptedAlternatives": [
-          "dedupe",
-          "deduplicate",
-          "deduplicating",
-          "dedup",
-          "de-duplication"
-        ],
-        "rejectedIdeas": [],
-        "exampleAnswer": "deduplication"
-      }
+      "choices": [
+        {
+          "id": "a",
+          "label": "Aggregation, so that the copies can be counted"
+        },
+        {
+          "id": "b",
+          "label": "Deduplication, so that no total counts a repeat"
+        },
+        {
+          "id": "c",
+          "label": "Either, since the total comes out the same"
+        }
+      ]
     },
     {
       "id": "date-streaming-and-event-time-count-0910",
@@ -11558,13 +11545,21 @@
         "watermark-stream",
         "delivery"
       ],
-      "prompt": "The latest event time seen is 11:20 and the allowed lateness is 15 minutes. What is the watermark? Give it as hh:mm.",
+      "prompt": "A stream engine counts purchases per window, and it allows records to arrive up to 15 minutes late. The latest event time it has seen is 11:20. Up to what event time can it treat its windows as complete?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "The watermark is the latest event time minus the lateness.",
-        "Subtract 15 minutes from 11:20."
+        "A record can be up to 15 minutes behind the latest event time.",
+        "Which event times could a record still arriving carry?"
       ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "11:05, fifteen minutes before the latest event time seen"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "11:05, fifteen minutes before the latest event time seen"
+      },
       "sourceIds": [
         "spark-streaming",
         "kafka-docs",
@@ -11576,27 +11571,37 @@
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "11:35"
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That adds the lateness. The watermark trails the latest event time, so it is subtracted."
+          "feedback": "A record stamped 11:10 could still arrive, since it would be only 10 minutes behind the latest event, so windows up to 11:20 cannot be treated as complete yet."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Waiting is measured backwards from the latest event: a record may be up to 15 minutes behind 11:20, so the times still at risk run back to 11:05, not forward."
         }
       ],
       "skill": "compute-watermark",
       "calculator": "off",
-      "answerAuthority": {
-        "kind": "text",
-        "acceptedIdeas": [
-          "11:05"
-        ],
-        "acceptedAlternatives": [
-          "11.05",
-          "11:05:00"
-        ],
-        "rejectedIdeas": [],
-        "exampleAnswer": "11:05"
-      }
+      "choices": [
+        {
+          "id": "a",
+          "label": "11:20, the latest event time it has seen"
+        },
+        {
+          "id": "b",
+          "label": "11:05, fifteen minutes before the latest event time seen"
+        },
+        {
+          "id": "c",
+          "label": "11:35, fifteen minutes after the latest event time seen"
+        }
+      ]
     },
     {
       "id": "date-streaming-and-event-time-window-closed",
@@ -11606,13 +11611,21 @@
         "watermark-stream",
         "delivery"
       ],
-      "prompt": "The latest event time is 14:55 and the allowed lateness is 20 minutes. Is the window from 14:00 to 14:30 closed? Answer yes or no.",
+      "prompt": "The latest event time seen is 14:55 and the allowed lateness is 20 minutes. Has the window from 14:00 to 14:30 been closed?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Work out the watermark first.",
-        "A window closes when the watermark is past its end."
+        "Work out the watermark: latest event time minus allowed lateness.",
+        "Compare it with the window's end."
       ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Yes, because the watermark of 14:35 is past the window's end"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Yes, because the watermark of 14:35 is past the window's end"
+      },
       "sourceIds": [
         "spark-streaming",
         "kafka-docs",
@@ -11624,28 +11637,37 @@
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "no"
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "The watermark is 14:35, and the window ended at 14:30, before it, so the window is closed."
+          "feedback": "A record stamped 14:29 would now be 26 minutes behind the latest event, more than the 20 minutes allowed, so the engine no longer waits for it."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "The engine can never know which record is the last, which is why it closes a window by the watermark and not by waiting for a final record."
         }
       ],
       "skill": "compute-watermark",
       "calculator": "off",
-      "answerAuthority": {
-        "kind": "text",
-        "acceptedIdeas": [
-          "yes"
-        ],
-        "acceptedAlternatives": [
-          "Yes",
-          "closed",
-          "it is closed"
-        ],
-        "rejectedIdeas": [],
-        "exampleAnswer": "yes"
-      }
+      "choices": [
+        {
+          "id": "a",
+          "label": "Yes, because the watermark of 14:35 is past the window's end"
+        },
+        {
+          "id": "b",
+          "label": "No, because a record stamped 14:29 could still arrive"
+        },
+        {
+          "id": "c",
+          "label": "No, because a window closes only when its last record arrives"
+        }
+      ]
     },
     {
       "id": "date-streaming-and-event-time-behind-watermark",
@@ -11708,14 +11730,20 @@
         "watermark-stream",
         "delivery"
       ],
-      "prompt": "A consumer committed offset 300, processed the records at offsets 300 to 306, and crashed before committing again. How many records does it process a second time after restarting?",
-      "responseType": "numeric",
+      "prompt": "A consumer committed offset 300, then processed the records at offsets 300 to 306 and crashed before committing again. Which records does it process a second time after restarting?",
+      "responseType": "short_text",
       "difficulty": 1.2,
       "hints": [
-        "Where does the consumer restart?",
-        "Which records did it already process after that offset?",
-        "Count offsets 300 through 306, both ends included."
+        "After a crash the consumer restarts from its last committed offset."
       ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "The records at offsets 300 to 306, processed since the commit"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "The records at offsets 300 to 306, processed since the commit"
+      },
       "sourceIds": [
         "spark-streaming",
         "kafka-docs",
@@ -11727,31 +11755,37 @@
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              0
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That would be exactly-once. The consumer restarts at the committed offset, so processed records are read again."
+          "feedback": "The commit marks where the consumer restarts, and it was made before offsets 300 to 306 were processed, so those records are read again."
         },
         {
           "match": {
-            "numeric": [
-              6
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "Both ends count: offsets 300 and 306 are each processed again."
+          "feedback": "The committed offset survives the crash, so the consumer restarts from 300 and not from the start of the log."
         }
       ],
       "skill": "count-replays",
       "calculator": "off",
-      "answerAuthority": {
-        "kind": "numeric",
-        "value": 7,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "It restarts from the committed offset 300 and reads offsets 300 to 306 again, which is 7 records."
-      }
+      "choices": [
+        {
+          "id": "a",
+          "label": "None, because offset 300 was committed"
+        },
+        {
+          "id": "b",
+          "label": "The records at offsets 300 to 306, processed since the commit"
+        },
+        {
+          "id": "c",
+          "label": "Every record from offset 0, because the crash lost its place"
+        }
+      ]
     },
     {
       "id": "date-streaming-and-event-time-arrival-window",
@@ -12065,13 +12099,20 @@
         "quarantine",
         "fail-fast"
       ],
-      "prompt": "A source renames the column cust to customer_id. Does an existing query that selects cust still run? Answer yes or no.",
+      "prompt": "A source renames the column cust to customer_id, and nothing else changes. What happens to an existing downstream query that selects the column cust?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Think about a query that names a missing column.",
-        "The column carries a different label after the change."
+        "Does the table still have a column with the name the query uses?"
       ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "It fails, because there is no longer a column called cust"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "It fails, because there is no longer a column called cust"
+      },
       "sourceIds": [
         "fabric-docs",
         "delta-protocol",
@@ -12081,28 +12122,37 @@
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "yes"
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "The query names a column that has gone, so the database reports an error."
+          "feedback": "The query names cust, and nothing tells the database that customer_id is the same column under a new name, so it cannot find what the query asks for."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "A column that is missing is not the same as a column of nulls. The database rejects a query that names a column the table does not have."
         }
       ],
       "skill": "classify-schema-change",
       "calculator": "off",
-      "answerAuthority": {
-        "kind": "text",
-        "acceptedIdeas": [
-          "no"
-        ],
-        "acceptedAlternatives": [
-          "No",
-          "it fails",
-          "it does not"
-        ],
-        "rejectedIdeas": [],
-        "exampleAnswer": "no"
-      }
+      "choices": [
+        {
+          "id": "a",
+          "label": "It runs and returns the same rows as before"
+        },
+        {
+          "id": "b",
+          "label": "It runs and returns cust as empty values"
+        },
+        {
+          "id": "c",
+          "label": "It fails, because there is no longer a column called cust"
+        }
+      ]
     },
     {
       "id": "date-checking-data-in-motion-widen-safe",
@@ -12112,13 +12162,20 @@
         "quarantine",
         "fail-fast"
       ],
-      "prompt": "A source widens a column from a 32-bit integer to a 64-bit integer. Is the change safe or breaking? Give one word.",
+      "prompt": "A source widens a column from a 32-bit integer to a 64-bit integer, so every old value still fits. Is the change safe or breaking?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Does every old value still fit, and do old queries give the same answers?",
-        "Widening keeps the values and changes only the room for them."
+        "Ask whether any query written against the old schema would fail or change its result."
       ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Safe, because every old query still gives the same answer"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Safe, because every old query still gives the same answer"
+      },
       "sourceIds": [
         "fabric-docs",
         "delta-protocol",
@@ -12128,27 +12185,37 @@
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "breaking"
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "Old values all fit in the wider type, so existing queries keep working."
+          "feedback": "A change of type breaks a reader only when an old value no longer fits or an old query changes its answer. Every 32-bit value is also a 64-bit value, so neither happens."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Storage size does not change what a query returns. Every value and every result stays as it was."
         }
       ],
       "skill": "classify-schema-change",
       "calculator": "off",
-      "answerAuthority": {
-        "kind": "text",
-        "acceptedIdeas": [
-          "safe"
-        ],
-        "acceptedAlternatives": [
-          "Safe",
-          "safe change"
-        ],
-        "rejectedIdeas": [],
-        "exampleAnswer": "safe"
-      }
+      "choices": [
+        {
+          "id": "a",
+          "label": "Breaking, because the column's type has changed"
+        },
+        {
+          "id": "b",
+          "label": "Safe, because every old query still gives the same answer"
+        },
+        {
+          "id": "c",
+          "label": "Breaking, because the column now takes twice the space"
+        }
+      ]
     },
     {
       "id": "date-checking-data-in-motion-most-failures",
@@ -12438,13 +12505,20 @@
         "quarantine",
         "fail-fast"
       ],
-      "prompt": "A gate has a 2% rejection threshold and 3% of the batch fails. Should it stop the run or let it continue? Give one word: stop or continue.",
+      "prompt": "A gate has a 2% rejection threshold and 3% of the batch fails. What should the gate do?",
       "responseType": "short_text",
       "difficulty": 1.1,
       "hints": [
-        "Compare 3% with the threshold.",
-        "A share above the threshold is a sign of a wider problem."
+        "Compare 3% with the threshold."
       ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Stop the run and alert someone"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Stop the run and alert someone"
+      },
       "sourceIds": [
         "fabric-docs",
         "delta-protocol",
@@ -12454,28 +12528,37 @@
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "continue"
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "3% is over the 2% threshold, so quarantining the rows is not enough."
+          "feedback": "Quarantine is for a share of failures below the threshold. At 3%, above the 2% line, the failures suggest something upstream is broken and the batch as a whole should not be trusted."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "The threshold exists so that a batch with this many failures is not published. Letting it through replaces yesterday's good data with today's doubtful data."
         }
       ],
       "skill": "choose-gate-action",
       "calculator": "off",
-      "answerAuthority": {
-        "kind": "text",
-        "acceptedIdeas": [
-          "stop"
-        ],
-        "acceptedAlternatives": [
-          "Stop",
-          "stop the run",
-          "halt"
-        ],
-        "rejectedIdeas": [],
-        "exampleAnswer": "stop"
-      }
+      "choices": [
+        {
+          "id": "a",
+          "label": "Quarantine the failing rows and let the rest continue"
+        },
+        {
+          "id": "b",
+          "label": "Stop the run and alert someone"
+        },
+        {
+          "id": "c",
+          "label": "Let the whole batch continue, since most rows passed"
+        }
+      ]
     },
     {
       "id": "date-monitoring-and-tuning-minutes-late",
@@ -12631,6 +12714,69 @@
       }
     },
     {
+      "id": "date-monitoring-and-tuning-status-misses-volume",
+      "conceptIds": [
+        "date-freshness",
+        "throughput-latency",
+        "run-signals",
+        "tuning-causes"
+      ],
+      "prompt": "A job usually writes 1,200,000 rows. Tonight it ran in its usual time and reported success, but it wrote only 600,000 rows. Which check would notice that something is wrong?",
+      "responseType": "short_text",
+      "difficulty": 1.1,
+      "hints": [
+        "Which number about tonight's run differs from a usual night?"
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "A check on how many rows the job wrote compared with a usual night"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "A check on how many rows the job wrote compared with a usual night"
+      },
+      "sourceIds": [
+        "fabric-docs",
+        "spark-sql-tuning",
+        "dp700-guide"
+      ],
+      "onCorrect": "Only the number of rows is out of line: 600,000 is half the usual 1,200,000, although the job succeeded on time.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "The job reported success, so a check on failure sees nothing wrong."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "The job ran in its usual time, so its duration looks normal."
+        }
+      ],
+      "skill": "compute-freshness",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "A check on whether the job failed"
+        },
+        {
+          "id": "b",
+          "label": "A check on how long the job took"
+        },
+        {
+          "id": "c",
+          "label": "A check on how many rows the job wrote compared with a usual night"
+        }
+      ]
+    },
+    {
       "id": "date-monitoring-and-tuning-alert-rows",
       "conceptIds": [
         "date-freshness",
@@ -12689,13 +12835,20 @@
         "run-signals",
         "tuning-causes"
       ],
-      "prompt": "A table has grown to 80,000 files of about 100 KB each, and queries are slow to start. What is the likely cause? Give the term.",
+      "prompt": "A table has grown to 80,000 files of about 100 KB each, and every query on it is slow to start. What is the likely cause?",
       "responseType": "short_text",
       "difficulty": 1.2,
       "hints": [
-        "Think about the cost of opening each file.",
-        "Which problem, from the lesson on layout, has this symptom?"
+        "What does a query have to do for each file before it reads any data?"
       ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Too many small files"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Too many small files"
+      },
       "sourceIds": [
         "fabric-docs",
         "spark-sql-tuning",
@@ -12705,30 +12858,49 @@
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "skew"
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "Skew shows as one task running far longer than the others, not as slow starts over many files."
+          "feedback": "Skew makes one task run far longer than the others once the work has started. Here the delay is at the start, before any rows are read."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "A late source makes the data stale, not the queries slow. These queries are slow every time they run, whatever the data's age."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "More cores would open the files faster but would not change the fixed cost of opening, reading the footer of and scheduling each of 80,000 tiny files."
         }
       ],
       "skill": "diagnose-slow-job",
       "calculator": "off",
-      "answerAuthority": {
-        "kind": "text",
-        "acceptedIdeas": [
-          "small files"
-        ],
-        "acceptedAlternatives": [
-          "small-files problem",
-          "tiny files",
-          "too many small files",
-          "small file problem",
-          "many small files"
-        ],
-        "rejectedIdeas": [],
-        "exampleAnswer": "small files"
-      }
+      "choices": [
+        {
+          "id": "a",
+          "label": "Data skew, with one key holding most of the rows"
+        },
+        {
+          "id": "b",
+          "label": "Too many small files"
+        },
+        {
+          "id": "c",
+          "label": "A source that delivered late"
+        },
+        {
+          "id": "d",
+          "label": "Too few cores in the cluster"
+        }
+      ]
     },
     {
       "id": "date-monitoring-and-tuning-overnight-late",
@@ -12942,13 +13114,20 @@
         "run-signals",
         "tuning-causes"
       ],
-      "prompt": "In a shuffle stage, 199 tasks finish in a minute and one runs for twenty minutes. What is the likeliest cause? Give the term.",
+      "prompt": "In a shuffle stage, 199 tasks finish in a minute and one runs for twenty minutes. What is the likeliest cause?",
       "responseType": "short_text",
       "difficulty": 1.2,
       "hints": [
-        "One task is far slower than its siblings.",
-        "A key holding most of the rows sends them to one task."
+        "Ask why one task in a shuffle would receive far more rows than its siblings."
       ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Data skew, with one key holding most of the rows"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Data skew, with one key holding most of the rows"
+      },
       "sourceIds": [
         "fabric-docs",
         "spark-sql-tuning",
@@ -12958,29 +13137,37 @@
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "small files"
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "Many tiny files slow every task a little, but they do not make one task far slower than the others."
+          "feedback": "Small files slow every task at the start in the same way, so they would not leave one task running twenty times longer than the rest."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Too few cores would make tasks wait in more waves, but each task would still take about the same time. One task taking twenty minutes points to one task with far more data."
         }
       ],
       "skill": "diagnose-slow-job",
       "calculator": "off",
-      "answerAuthority": {
-        "kind": "text",
-        "acceptedIdeas": [
-          "data skew"
-        ],
-        "acceptedAlternatives": [
-          "skew",
-          "skewed key",
-          "key skew",
-          "data-skew"
-        ],
-        "rejectedIdeas": [],
-        "exampleAnswer": "data skew"
-      }
+      "choices": [
+        {
+          "id": "a",
+          "label": "Too many small files"
+        },
+        {
+          "id": "b",
+          "label": "Too few cores in the cluster"
+        },
+        {
+          "id": "c",
+          "label": "Data skew, with one key holding most of the rows"
+        }
+      ]
     },
     {
       "id": "date-environments-security-and-release-sample-rows",
@@ -13040,13 +13227,20 @@
         "date-access-control",
         "secrets"
       ],
-      "prompt": "After a change is reviewed and merged to main, which environment does it deploy to first? Give the environment's name.",
+      "prompt": "A change has been reviewed and merged to the main branch. Which environment is it deployed to first?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "It is not production, which comes last.",
-        "Where are the pipeline's checks run on a sample?"
+        "Where does the pipeline run on a sample so that its checks can be made cheaply?"
       ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Test"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Test"
+      },
       "sourceIds": [
         "fabric-docs",
         "dp700-guide"
@@ -13055,28 +13249,37 @@
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "production"
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "Production comes last. A merged change is validated on a sample first."
+          "feedback": "Development is where the change was made, on a branch, before review. Merging to main is what sends it onward."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Production comes last, once the change has run on a sample of the data and its checks have passed."
         }
       ],
       "skill": "order-a-release",
       "calculator": "off",
-      "answerAuthority": {
-        "kind": "text",
-        "acceptedIdeas": [
-          "test"
-        ],
-        "acceptedAlternatives": [
-          "Test",
-          "the test environment",
-          "test environment"
-        ],
-        "rejectedIdeas": [],
-        "exampleAnswer": "test"
-      }
+      "choices": [
+        {
+          "id": "a",
+          "label": "Development"
+        },
+        {
+          "id": "b",
+          "label": "Test"
+        },
+        {
+          "id": "c",
+          "label": "Production"
+        }
+      ]
     },
     {
       "id": "date-environments-security-and-release-manager-rows",
@@ -13086,14 +13289,20 @@
         "date-access-control",
         "secrets"
       ],
-      "prompt": "A shared table holds 12,000 orders, split equally over 4 regions. A regional manager may see only their own region's rows. How many rows should the manager see?",
-      "responseType": "numeric",
+      "prompt": "A shared table holds 12,000 orders, split equally across 4 regions. A regional manager is allowed to see only the orders of their own region. What should the manager see when they query the table?",
+      "responseType": "short_text",
       "difficulty": 1.1,
       "hints": [
-        "How many rows belong to one region?",
-        "Divide the rows by the regions.",
-        "12,000 divided by 4."
+        "The limit is on which orders, that is which rows, the manager may see."
       ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Only the rows for their own region, about a quarter of the table"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Only the rows for their own region, about a quarter of the table"
+      },
       "sourceIds": [
         "fabric-docs",
         "dp700-guide"
@@ -13102,31 +13311,37 @@
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              12000
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That is every row in the table. The manager may see only one region's."
+          "feedback": "Hiding values in some columns still shows every order, and the manager is not allowed to see other regions' orders at all."
         },
         {
           "match": {
-            "numeric": [
-              4
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "That is the number of regions, not the rows in one of them."
+          "feedback": "A separate copy for each region is one way to do it, but the same shared table can show each reader only their own rows, with no copy to keep in step."
         }
       ],
       "skill": "choose-access-control",
       "calculator": "off",
-      "answerAuthority": {
-        "kind": "numeric",
-        "value": 3000,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "Each region holds 12,000 ÷ 4 = 3,000 rows, so the manager sees 3,000 rows."
-      }
+      "choices": [
+        {
+          "id": "a",
+          "label": "All 12,000 rows, with the other regions' amounts hidden"
+        },
+        {
+          "id": "b",
+          "label": "Only the rows for their own region, about a quarter of the table"
+        },
+        {
+          "id": "c",
+          "label": "Nothing, until a separate table is made for their region"
+        }
+      ]
     },
     {
       "id": "date-environments-security-and-release-email-control",
@@ -13136,13 +13351,20 @@
         "date-access-control",
         "secrets"
       ],
-      "prompt": "Analysts may see every order but must not see customers' email addresses. Which control fits, row-level security or column-level security? Give the control.",
+      "prompt": "Analysts may see every order but must not see customers' email addresses. Which control fits?",
       "responseType": "short_text",
       "difficulty": 1.1,
       "hints": [
-        "Are some rows hidden, or are all rows visible with one field obscured?",
-        "The restriction applies to one field."
+        "Is the restriction on some rows or on some columns?"
       ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Column-level security"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Column-level security"
+      },
       "sourceIds": [
         "fabric-docs",
         "dp700-guide"
@@ -13151,30 +13373,37 @@
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "row-level security"
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "Row-level security hides rows, but here every row stays visible and only one field is hidden."
+          "feedback": "Row-level security decides which rows a person sees. Here the analysts may see every row, and the restriction is on one column."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Read-only access stops a reader from changing the table, but they could still read every email address."
         }
       ],
       "skill": "choose-access-control",
       "calculator": "off",
-      "answerAuthority": {
-        "kind": "text",
-        "acceptedIdeas": [
-          "column-level security"
-        ],
-        "acceptedAlternatives": [
-          "column-level",
-          "column level security",
-          "masking",
-          "data masking",
-          "column security"
-        ],
-        "rejectedIdeas": [],
-        "exampleAnswer": "column-level security"
-      }
+      "choices": [
+        {
+          "id": "a",
+          "label": "Row-level security"
+        },
+        {
+          "id": "b",
+          "label": "Column-level security"
+        },
+        {
+          "id": "c",
+          "label": "Read-only access"
+        }
+      ]
     },
     {
       "id": "date-environments-security-and-release-password-readers",
@@ -13184,14 +13413,20 @@
         "date-access-control",
         "secrets"
       ],
-      "prompt": "A password sits in a notebook shared with 12 people, and the notebook is also in a repository that 30 other people can read. The two groups do not overlap. How many people can read the password?",
-      "responseType": "numeric",
+      "prompt": "A password was pasted into a notebook shared with 12 people, and the notebook was also committed to a repository that 30 other people can read. Who can read the password?",
+      "responseType": "short_text",
       "difficulty": 1.1,
       "hints": [
-        "Who can read the notebook?",
-        "Who can read the repository?",
-        "Add the two groups, since they do not overlap."
+        "Count everyone who can read either copy of the notebook."
       ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "All 42 people who can open the notebook or read the repository"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "All 42 people who can open the notebook or read the repository"
+      },
       "sourceIds": [
         "fabric-docs",
         "dp700-guide"
@@ -13200,31 +13435,37 @@
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              12
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That counts only the notebook. The repository copy is readable by 30 more people."
+          "feedback": "Anyone who can open a notebook can read every line in it, whoever wrote the line."
         },
         {
           "match": {
-            "numeric": [
-              30
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That counts only the repository. The notebook is shared with 12 more."
+          "feedback": "The repository holds a copy of the notebook, so its 30 readers can read the password as well, and it stays in the repository's history even if it is later deleted."
         }
       ],
       "skill": "handle-secrets",
       "calculator": "off",
-      "answerAuthority": {
-        "kind": "numeric",
-        "value": 42,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "Everyone with access to either copy can read it, so 12 + 30 = 42 people."
-      }
+      "choices": [
+        {
+          "id": "a",
+          "label": "Only the person who pasted it, since it is their notebook"
+        },
+        {
+          "id": "b",
+          "label": "The 12 people the notebook is shared with"
+        },
+        {
+          "id": "c",
+          "label": "All 42 people who can open the notebook or read the repository"
+        }
+      ]
     },
     {
       "id": "date-environments-security-and-release-parameter-total",
@@ -13284,13 +13525,20 @@
         "date-access-control",
         "secrets"
       ],
-      "prompt": "An external auditor must be able to query the monthly revenue table but must not change it. Which kind of access fits? Give the access type.",
+      "prompt": "An external auditor must be able to query the monthly revenue table but must not be able to change it. Which kind of access fits?",
       "responseType": "short_text",
       "difficulty": 1.2,
       "hints": [
-        "Apply least privilege: what is the smallest role that lets them do the job?",
-        "They need to query, not to write."
+        "What is the smallest role that lets the auditor query the table?"
       ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Read-only access to the table"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Read-only access to the table"
+      },
       "sourceIds": [
         "fabric-docs",
         "dp700-guide"
@@ -13299,30 +13547,37 @@
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "admin"
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "Administrator rights would let the auditor change the table, which is far more than the job needs."
+          "feedback": "An administrator can change and delete anything in the workspace, which is far more than the auditor needs and the opposite of least privilege."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Row-level security decides which rows a reader sees, not whether they can change them. The auditor's need is to read everything and change nothing."
         }
       ],
       "skill": "choose-access-control",
       "calculator": "off",
-      "answerAuthority": {
-        "kind": "text",
-        "acceptedIdeas": [
-          "read-only"
-        ],
-        "acceptedAlternatives": [
-          "read only",
-          "read access",
-          "viewer",
-          "read-only access",
-          "reader"
-        ],
-        "rejectedIdeas": [],
-        "exampleAnswer": "read-only"
-      }
+      "choices": [
+        {
+          "id": "a",
+          "label": "Workspace administrator"
+        },
+        {
+          "id": "b",
+          "label": "Read-only access to the table"
+        },
+        {
+          "id": "c",
+          "label": "Row-level security on the table"
+        }
+      ]
     },
     {
       "id": "date-environments-security-and-release-practice-1",
