@@ -33,9 +33,8 @@
     "status": "available",
     "introduction": {
       "paragraphs": [
-        "A working system design begins with numbers, not with boxes. This course starts from a request as vague as \"build a service that shortens links\" and turns it into measurable requirements, an estimate of requests, storage and bandwidth, and only then into components, each of which has to be justified by one of those numbers.",
-        "Along the way it builds the arithmetic that large systems are reasoned about with: percentiles and Little's law for delay, utilisation and queueing for the size of a fleet, hit rates for caches, page reads for indexes, and quorum sizes and availabilities for replicated data. The later lessons add queues, retries and circuit breakers, error budgets, and two complete designs, a link shortener and a social feed, finished with a review that asks what fails first.",
-        "The course assumes that you can read code and have met databases and web requests. It does not teach how code inside a service is structured, which belongs to the software design course, and it uses a little algebra and probability, always with the working shown."
+        "A service that handles a thousand requests a day and one that handles a thousand requests a second have the same purpose, but they cannot have the same design. The second has to decide where its data lives, which work is repeated for every request, and what happens when one of its machines stops, and each of those decisions is costly to reverse once other parts of the system rely on it. System design is the study of how a service too large for one machine is divided into parts, and of how each choice is judged against the number of users, the amount of data and the failures that the service must survive.",
+        "Most of those judgements come down to arithmetic. The number of requests per second shows whether one machine is enough, the share of lookups that a cache answers shows how much load still reaches the database, and the availabilities of two components show how often a service built from both will be down. A design checked in this way is an argument, with each part present because a figure called for it, and when the figure changes you can see which parts have to change with it."
       ],
       "outcomes": [
         "You'll be able to turn a vague request into measurable requirements and estimate load, storage and bandwidth.",
@@ -678,12 +677,7 @@
           "id": "try-a-statement",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Decide which kind of requirement this statement is, using the two kinds from the previous screen."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -730,12 +724,7 @@
           "id": "name-the-property",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Match the statement below to one of the four properties just defined."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -751,21 +740,16 @@
           "id": "predict-the-reads",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Estimate the redirect rate before the idea is named. The figures are 10 creations per second and 100 opens for each creation."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "The two rates multiply, because every creation brings its own 100 opens. The next screen gives this multiplier a name and shows what it implies for the design."
+              "text": "The reads outnumber the writes a hundred to one, and the two rates multiply, because every creation brings its own 100 opens: 10 creations a second mean about 1,000 redirects a second. The next screen gives this multiplier a name and shows what it implies for the design."
             }
           ],
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
-          "checkQuestionId": "sysd-requirements-and-scope-reads-per-second",
+          "checkQuestionId": "sysd-requirements-and-scope-busier-side",
           "activityId": ""
         },
         {
@@ -776,7 +760,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The estimate you just made rests on one number, the **read/write ratio**, which counts the reads for every write. A ratio of 100 to 1 means that each time a link is created it is opened 100 times, so 10 writes per second imply 100 × 10 = 1,000 reads per second. The ratio fixes one rate from the other: you usually know one rate from the product's numbers, and the ratio supplies the second."
+              "text": "The choice you just made rests on one number, the **read/write ratio**, which counts the reads for every write. A ratio of 100 to 1 means that each time a link is created it is opened 100 times, so 10 writes per second imply 100 × 10 = 1,000 reads per second. The ratio fixes one rate from the other: you usually know one rate from the product's numbers, and the ratio supplies the second."
             },
             {
               "kind": "paragraph",
@@ -923,12 +907,7 @@
           "id": "spot-the-skipped-step",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Apply the order of work to a design review. The details below are from a real kind of mistake: components first, numbers later, with the [[quality target|A measurable property such as a latency percentile or an availability figure. Met earlier in this lesson.]] never stated."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -969,12 +948,7 @@
           "id": "run-the-ratio-backwards",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The ratio can be used the other way round. This time the read rate is known and the write rate is not."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1028,7 +1002,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "Design begins by turning such a sentence into statements that can be checked, which means separating what the system does from how well it does it, and putting a number on the second. One further number, the ratio of reads to writes, then tells you where the load falls, and the rest of the method follows from it."
+              "text": "Design begins by turning such a sentence into statements that can be checked, which means separating what the system does from how well it does it and putting a number on the second. One further number, the ratio of reads to writes, then tells you which side of the service the load falls on, and so which components are worth drawing."
             }
           ]
         },
@@ -1114,12 +1088,7 @@
           "id": "estimate-a-rate",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Use the chain from the figure on a smaller service: 4 million daily users, 30 requests each."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1163,12 +1132,7 @@
           "id": "apply-the-peak",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Apply the peak factor to the average that the first screen produced."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1184,16 +1148,11 @@
           "id": "predict-storage",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Estimate the monthly storage before the method is stated. Each record is small, and there are many of them."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "The two numbers multiply, and the unit conversion is the only delicate part. The next screen puts the units on a scale so that you can check an answer by its size."
+              "text": "The two numbers multiply to 50 billion bytes, and the unit conversion is the only delicate part. The next screen puts the units on a scale so that you can check an answer by its size."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -1354,12 +1313,7 @@
           "id": "link-in-bytes",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Convert the link rating into the unit that response sizes use, so that the two can be compared."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1401,12 +1355,7 @@
           "id": "which-runs-out",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Apply the comparison to a different service and a different mix of limits, working out each resource before you choose."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1460,7 +1409,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "Estimates of this kind need only multiplication and a handful of round constants, and their aim is the right power of ten, not the right digit: a design for 2,000 requests per second is the same design at 2,300, and not the same design at 230,000."
+              "text": "Estimates of this kind need only multiplication and a handful of round constants, and what they have to get right is the power of ten: a design for 2,000 requests per second is the same design at 2,300, and a different one at 230,000."
             }
           ]
         },
@@ -1493,16 +1442,11 @@
           "id": "predict-the-mean",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Work out the average time of this sample before deciding what it says about the service."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "The mean is a legitimate number, and the next screen shows what it does and does not tell you about this sample."
+              "text": "The mean is 29.8 ms. It is a legitimate number, and the next screen shows what it does and does not tell you about this sample."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -1567,12 +1511,7 @@
           "id": "read-a-percentile",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Find the position in the sorted list first, then read the latency found there."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1635,12 +1574,7 @@
           "id": "use-littles-law",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Use L = λW with the time converted into seconds."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1656,12 +1590,7 @@
           "id": "predict-fan-out",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Predict how often a request is slow when it must wait for 100 backends that are each slow 1% of the time, before the calculation is shown."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1803,12 +1732,7 @@
           "id": "double-the-arrivals",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Hold the latency fixed and double the arrival rate. Say what happens to the number of requests in flight."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1824,12 +1748,7 @@
           "id": "rarer-slow-calls",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Change the formula's p instead of n. Each of the 100 backends is now ten times better than before, and slow only 0.1% of the time."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1880,7 +1799,7 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "Take 100 requests to a service and sort them by how long each took. Ninety-eight finish in 10 ms and two take a full second, so the mean of the times is 29.8 ms, which looks excellent. It describes no request that happened, though, and it hides the two that a user would remember."
+              "text": "Of 100 requests to a service, 98 finish in 10 ms and two take a full second. The usual way to summarise such a sample is its mean, but a mean describes no request that actually happened, and here it would hide the two that a user would remember."
             },
             {
               "kind": "paragraph",
@@ -1966,12 +1885,7 @@
           "id": "lose-a-server",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Follow the second view of the figure and work out what each remaining server must now carry."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1987,16 +1901,11 @@
           "id": "predict-the-delay",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Predict the delay at higher load before the formula is given. The server is the same and only the arrivals change."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "The delay grew by far more than the load did, and the next screen gives the formula and the reason."
+              "text": "The delay was 100 ms, five times the delay at 50 requests per second, although the load rose by less than a factor of two. The next screen gives the formula and the reason."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -2055,12 +1964,7 @@
           "id": "delay-near-the-limit",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Apply the formula to a server that is nearly full."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2202,12 +2106,7 @@
           "id": "why-it-scales",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Use the cart example to say what statelessness makes possible."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2251,12 +2150,7 @@
           "id": "update-at-peak",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Change the case: three of the 18 servers are taken out of service together, and the peak load stays where it was."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2307,11 +2201,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A single server that handles 100 requests per second answers in about 10 ms when it is idle. Give it 50 requests a second and the average request takes 20 ms; give it 90 and the average takes 100 ms; give it 95 and the average takes 200 ms. The server has not slowed down at all, and the only thing that changed is how little room it has left."
+              "text": "A server that can handle 100 requests per second answers in about 10 ms when it is idle, and when 50 requests arrive each second the average request already takes 20 ms. The server has not slowed down at all, and the only thing that has changed is how little room it has left to absorb requests that arrive close together."
             },
             {
               "kind": "paragraph",
-              "text": "That curve is what decides how many servers a design needs, since the aim is to have enough machines that none of them nears the steep part of it. The remaining question is how to spread requests over several machines without any of them having to remember anything, which is where the load balancer and the stateless server come in."
+              "text": "How quickly that delay grows as a server fills is what decides how many servers a design needs, since the aim is to have enough machines that none of them comes near the steep part of the curve. Spreading requests across them is the job of a load balancer, and the size of the fleet can be worked out from the expected load before any server is bought."
             }
           ]
         },
@@ -2377,16 +2271,11 @@
           "id": "predict-the-average",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Work out the average latency before the rule is named. Everyone pays for the lookup, and some go on to the database."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "The average is the lookup plus the miss rate times the database time, and the next screen draws it for three hit rates."
+              "text": "The average is the lookup plus the miss rate times the database time, here 1 + 0.1 × 20 = 3 ms. The next screen draws it for three hit rates."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -2445,12 +2334,7 @@
           "id": "average-at-80",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Use the same lookup and database times as the figure, with the lower hit rate."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2488,12 +2372,7 @@
           "id": "load-at-98",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Work out the load on the database when the hit rate is a little higher than in the example."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2535,12 +2414,7 @@
           "id": "how-stale",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Apply the time-to-live rule to the product page that the previous screen described."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2602,12 +2476,7 @@
           "id": "name-it",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Give the name of the burst described on the previous screen."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2676,12 +2545,7 @@
           "id": "break-even-rate",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Change the numbers and find where a cache stops paying for itself. The lookup is now slower, as it would be for a cache on another machine across a network."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2732,7 +2596,7 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A database that takes 20 ms to answer a read can be given a neighbour that answers in 1 ms, and the average request then costs 2 ms, provided that 95% of lookups find what they need there. At 80% the same arrangement averages 5 ms, and at 5% it averages 20 ms, which is the time the database needed alone. The cache is the same device in all three cases, and only the hit rate has changed."
+              "text": "A database takes 20 ms to answer a read, and a cache that sits beside it answers in 1 ms. A request whose answer is already in the cache costs 1 ms, while one whose answer is not pays for the lookup and then for the database as well, 21 ms in all, so the average cost of a request depends on how often the cache already holds what is asked for."
             },
             {
               "kind": "paragraph",
@@ -2794,12 +2658,7 @@
           "id": "name-the-pattern",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Name the access pattern of the product page described below, using the four patterns from the previous screen."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2815,16 +2674,11 @@
           "id": "predict-the-scan",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Count the pages that a query reads when it has no index to help it and has to look at the whole table."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "Every added row adds work to a scan, which is the reason that a query fast on a small table can fail on a large one. The next screen shows how an index avoids it."
+              "text": "The table fills 1,000,000 ÷ 100 = 10,000 pages. Every added row adds work to a scan, which is the reason that a query fast on a small table can fail on a large one. The next screen shows how an index avoids it."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -2840,7 +2694,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A query such as \"find the order with id 123\" can be run in two ways. A **scan** reads every page of the table until it finds the row, and for 1,000,000 rows at 100 rows per page that is the 10,000 page reads you just counted. An **index** is a separate sorted structure that maps keys to where the rows live, so the database can go straight to the row. In PostgreSQL the default index is a **B-tree**, which keeps its keys in sorted order across pages arranged as a tree: the root page points to pages at the next level down, each of those to the next level, and so on until the leaf pages, which hold the keys with pointers to the rows."
+              "text": "A query such as \"find the order with id 123\" can be run in two ways. A **scan** reads every page of the table until it finds the row, and for 1,000,000 rows at 100 rows per page that is 10,000 page reads. An **index** is a separate sorted structure that maps keys to where the rows live, so the database can go straight to the row. In PostgreSQL the default index is a **B-tree**, which keeps its keys in sorted order across pages arranged as a tree: the root page points to pages at the next level down, each of those to the next level, and so on until the leaf pages, which hold the keys with pointers to the rows."
             },
             {
               "kind": "paragraph",
@@ -2913,12 +2767,7 @@
           "id": "levels-for-more-keys",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Find the depth for a much larger table, using the idea that each level multiplies the reach by the fan-out."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2963,12 +2812,7 @@
           "id": "which-query",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Apply the rule that a composite index serves queries starting with its first column."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3030,12 +2874,7 @@
           "id": "count-the-queries",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Count the queries when the code fetches the list and then each item's customer separately."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3104,12 +2943,7 @@
           "id": "count-matching-rows",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Read a query result for the same table in a different way, counting instead of adding."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3160,7 +2994,7 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A table of 1,000,000 rows stores about 10,000 pages of 100 rows each, and a query that has to read all of them does 10,000 page reads to find one order. The same table with an index on the order id answers the same query by reading 3 pages and then the row, and a table a hundred times larger needs only one page more. The query is the same in both cases, and what differs is whether the database has a sorted structure to walk."
+              "text": "A query for one order in a table of 1,000,000 rows can be answered in two ways. The database can read the table page by page until it meets the row, or it can walk a sorted index that leads to the row in a handful of page reads, and a table a hundred times larger needs only one page more. The query is the same in both cases, and what differs is whether the database has a sorted structure to walk."
             },
             {
               "kind": "paragraph",
@@ -3251,12 +3085,7 @@
           "id": "read-before-apply",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Use the figure's timeline to decide what the follower holds at the moment of the read."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3272,12 +3101,7 @@
           "id": "add-followers",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Decide what adding followers does to the write limit of the cluster."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3322,12 +3146,7 @@
           "id": "predict-resharding",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Count how many keys keep the same shard number when the number of shards goes from 4 to 5. Check a few keys by hand before you answer."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3394,12 +3213,7 @@
           "id": "ninth-node",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Use the fact that a joining node takes only its own share of the ring."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3501,12 +3315,7 @@
           "id": "remove-a-shard",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Change the case: instead of adding a shard, the cluster loses one. Ten shards become nine, and the keys are placed again with the new modulus."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3558,11 +3367,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "Twenty keys, numbered 0 to 19, sit on four shards by the rule that key k goes to shard k mod 4. Add a fifth shard, change the rule to k mod 5, and look at where the keys land: only keys 0, 1, 2 and 3 are on the shard they were on before, and the other sixteen have to move. A cluster that grew by a quarter has to copy four fifths of its data."
+              "text": "When a database keeps a copy of its data on a second machine, the copy is always a little behind. The original accepts a write at once and passes the change on, so for the milliseconds that the change takes to arrive the two machines disagree, and a read that lands on the copy returns the value from before the write."
             },
             {
               "kind": "paragraph",
-              "text": "That arithmetic is the first of two ideas. The other is the delay with which a copy of the data catches up with the original, since the machines that give a system its capacity and its resilience are, for a short time after every write, not in agreement."
+              "text": "Copying is one of two ways for data to outgrow a single machine, and splitting it by a key is the other. Each has a cost that can be counted before anything is built: for copies, how out of date a read can be, and for splits, how many records have to move when the number of machines changes."
             }
           ]
         },
@@ -3625,12 +3434,7 @@
           "id": "name-the-promise",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Name the guarantee described below, which is the weaker of the two defined on the previous screen."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3693,12 +3497,7 @@
           "id": "what-refusing-costs",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Decide which property a system gives up when it chooses to refuse requests during a partition."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3714,12 +3513,7 @@
           "id": "predict-the-read-size",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Work out how many replicas a read must ask for the latest write to be certain to appear, before the rule is stated."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3786,12 +3580,7 @@
           "id": "read-for-w3",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Apply the rule R + W > N to a write that is acknowledged by 3 of 5 replicas."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3854,12 +3643,7 @@
           "id": "seven-node-group",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Count how many failures a larger group tolerates, using the rule that a majority must remain."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3954,12 +3738,7 @@
           "id": "write-to-all",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Change the case: writes are made to all replicas and a read asks just one. The sum R + W is 4, which exceeds N = 3."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4011,11 +3790,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "Three replicas hold a value, and a write is acknowledged once two of them have it. A read that asks two replicas is certain to include one of those two, because only one replica can have missed the write; a read that asks only one may land on that replica and return the old value. The whole of quorum design is that one observation, counted out for any number of replicas."
+              "text": "When the network between two replicas of a value fails, a client that has just updated one of them leaves the other holding a value that is out of date. A second client that reads from that other replica can be given the stale value or be told that no answer is available, and no system can avoid the choice, because its users would like both an answer to every request and an answer that is always the latest."
             },
             {
               "kind": "paragraph",
-              "text": "It sits inside a larger question that every replicated system has to answer, which is what to do when the copies cannot reach one another. The answer cannot be both to carry on answering and to stay consistent, and the choice is made per feature, by what a stale answer would cost."
+              "text": "Every replicated system has to make that choice, and it makes it feature by feature, according to what a stale answer would cost. The choice comes with arithmetic: how many replicas must acknowledge a write, and how many a read must ask, decide how many failures a service survives and whether a read is certain to see the latest write."
             }
           ]
         },
@@ -4075,21 +3854,16 @@
           "id": "predict-the-backlog",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Predict how many messages are waiting after two minutes of arrivals that are faster than the consumers' capacity."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "The backlog is a running difference between two rates, and the next screen draws it for steady rates."
+              "text": "The backlog is a running difference between two rates, here 50 messages per second, which makes 6,000 after two minutes. The next screen draws it for steady rates."
             }
           ],
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
-          "checkQuestionId": "sysd-queues-and-event-streams-predict-backlog",
+          "checkQuestionId": "sysd-queues-and-event-streams-backlog-shape",
           "activityId": ""
         },
         {
@@ -4138,12 +3912,7 @@
           "id": "backlog-after-four-minutes",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Use the same rule with different rates and a different time. Convert the time to seconds before multiplying."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4291,12 +4060,7 @@
           "id": "name-the-guarantee",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Match the guarantee to its behaviour: it never repeats a message, and it can lose one."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4391,12 +4155,7 @@
           "id": "compute-lag",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Compute the lag of a consumer from its position in the log."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4412,12 +4171,7 @@
           "id": "two-phase-queue",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Combine the two halves of the lesson: a burst of arrivals above capacity, followed by arrivals below it."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4468,11 +4222,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A queue between two parts of a system changes one number: the producer no longer has to wait for the consumer. If messages arrive at 120 per second and the consumers handle 100, the queue grows by 20 each second, and after 10 minutes 12,000 messages are waiting. If arrivals then fall to 80 per second, the same 12,000 take another 600 seconds to clear."
+              "text": "A queue between two parts of a system lets the producer carry on without waiting for the consumer, and the price is a line of waiting messages whenever the producer sends them faster than the consumer can handle them. That line is the delay that users eventually notice, and how long it becomes depends on two rates that can be measured."
             },
             {
               "kind": "paragraph",
-              "text": "The queue has hidden the imbalance, not cured it, and it adds a new question as well, because a message that crosses a network can be lost or delivered twice. The lesson works through both: how fast a backlog grows and drains, and what a consumer has to be for a repeat to do no harm."
+              "text": "A message that crosses a network can also be lost or delivered twice, so a queue raises a second question, which is what a consumer must be like for a repeated message to do no harm. Both questions have exact answers, and together they decide whether a queue protects a system from a failing part or only postpones the failure."
             }
           ]
         },
@@ -4534,16 +4288,11 @@
           "id": "predict-the-calls",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Use Little's law from the earlier lesson to predict how many calls are waiting when every call runs to its full timeout."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "The number waiting is the product of the rate and the timeout, so shortening the timeout is the direct way to hold fewer."
+              "text": "The number waiting is the product of the rate and the timeout, here 100 × 30 = 3,000, so shortening the timeout is the direct way to hold fewer."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -4555,12 +4304,7 @@
           "id": "shorter-timeout",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Change the timeout and the rate, and apply the same rule."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4623,12 +4367,7 @@
           "id": "four-deep-chain",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Count the calls at the bottom of a longer chain. Each caller makes 2 attempts and the database always fails."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4691,12 +4430,7 @@
           "id": "sum-a-schedule",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Add up a backoff schedule that starts at a different value from the one in the figure."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4762,12 +4496,7 @@
           "id": "which-state",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Read the state from what the breaker is doing with calls."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4862,12 +4591,7 @@
           "id": "retry-at-one-layer",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Apply the remedy from the retries screen: retry at only one layer, and count what the database receives."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4922,7 +4646,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The calls between services are the weak points of a distributed system, because each can be slow, lost or repeated, and the habits that make them safe are all quantitative: a timeout that is short enough, a retry count that multiplies to something bearable, waits that spread out, and a switch that stops the calls when they are doomed."
+              "text": "Every call between services can be slow, lost or repeated, and what a caller does about it comes down to a few numbers: how long it waits, how many attempts it makes at each layer and how long it pauses between them. Choosing those numbers well decides whether a fault in one service stays there or climbs the chain to every service that depends on it."
             }
           ]
         },
@@ -5008,12 +4732,7 @@
           "id": "predict-the-downtime",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Convert a target that is not a round number of nines into minutes, before the rule is stated."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5029,12 +4748,7 @@
           "id": "four-nines",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Use the same rule for a longer period and a stricter target."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5098,12 +4812,7 @@
           "id": "chain-of-four",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Multiply the availabilities of components that must all work."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5119,12 +4828,7 @@
           "id": "three-copies",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Extend the parallel rule from two replicas to three."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5164,12 +4868,7 @@
           "id": "shared-supply",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Put the shared component in series with the pair, and multiply."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5269,12 +4968,7 @@
           "id": "meet-an-rpo",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Reverse the question: start from the data the business can afford to lose and work out how often to take backups."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5325,11 +5019,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A service that is 99.9% available may be down for 43.2 minutes in 30 days, and one that is 99.99% available for only 4.32, so the extra nine is worth ten times as much as the two characters suggest. Each extra nine also costs more, and a design that cannot say how its components combine cannot say which target it can meet."
+              "text": "A service that is 99.9% available may be down for 43.2 minutes in 30 days, and one that is 99.99% available for only 4.32, so a single extra digit divides the downtime by ten. Each extra nine also costs more, and a design that cannot say how its components combine cannot say which target it can meet."
             },
             {
               "kind": "paragraph",
-              "text": "The combining is arithmetic. Components that all must work multiply their availabilities and so lose ground in a chain, whereas independent replicas fail together only when all of them fail, which is why two copies at two nines make four. The arithmetic is honest only while the replicas really are independent, and the rack, the power supply and the region that they share decide whether they are."
+              "text": "The combining is arithmetic: components that all must work multiply their availabilities and so lose ground in a chain, whereas independent replicas fail together only when all of them fail, which is why a second independent copy removes nearly all of the downtime of the first. The arithmetic is honest only while the replicas really are independent, and the rack, the power supply and the region that they share decide whether they are."
             }
           ]
         },
@@ -5411,12 +5105,7 @@
           "id": "name-the-telemetry",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Choose the kind of record that answers the question where in the chain the time was spent."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5459,12 +5148,7 @@
           "id": "how-full",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Match the description to one of the four signals."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5480,12 +5164,7 @@
           "id": "predict-the-budget",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Work out how many requests may fail under a target of 99.9% before the idea of a budget is named."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5531,12 +5210,7 @@
           "id": "budget-at-a-stricter-target",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Apply the same rule to a stricter target and a larger window."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5594,12 +5268,7 @@
           "id": "burn-after-six-days",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Find the even pace for the point in the window first, then compare the failures so far with it."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5696,12 +5365,7 @@
           "id": "time-to-exhaustion",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Use the burn rate to work out how long the budget lasts, which is what decides whether an alert should page someone."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5751,11 +5415,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A request that takes 520 ms passes through a gateway and three services, and the question that matters in an incident is which of the four held it up. A trace answers it by laying the steps side by side on one time axis, and here it shows 400 ms spent in the payment service. A system that is not instrumented can only guess, and it guesses at the service that is easiest to blame."
+              "text": "A request that takes 520 ms passes through a gateway and three services, and when it is slow the first question in an incident is which of the four held it up. If every service records when it received the request and when it replied, laying those records side by side on one time axis shows at once that 400 ms went to the payment service, whereas a system that records nothing can only guess."
             },
             {
               "kind": "paragraph",
-              "text": "Seeing the system is the first half of operating it. The second half is deciding in advance how much failure is acceptable, so that a team can tell a bad day from a normal one, and that decision is a number: a target for a measurement, and the amount of failure the target allows."
+              "text": "Knowing where the time went is only half of operating a system. The other half is agreeing in advance how much failure is acceptable, so that a team can tell a bad day from a normal one, and that agreement takes the form of a number: a target for a measurement, and the amount of failure the target allows. It tells a team when to ship, when to slow down and when to wake someone."
             }
           ]
         },
@@ -5890,12 +5554,7 @@
           "id": "estimate-a-variant",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Apply the procedure of the worked example to a smaller service with a higher ratio."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5939,12 +5598,7 @@
           "id": "smallest-code-length",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Find the shortest code that could hold five years of links, using the two powers given."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -6009,12 +5663,7 @@
           "id": "database-load",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Use the load on the database to judge how much the hit rate matters."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -6056,12 +5705,7 @@
           "id": "monthly-budget",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Compute the error budget for the month from the redirects and the SLO."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -6102,12 +5746,7 @@
           "id": "which-status",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Name the status code that browsers may cache."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -6123,12 +5762,7 @@
           "id": "a-hundred-times-more",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Change the retention number and see which parts of the design have to change and which do not."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -6179,11 +5813,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "Writing out the numbers for a link shortener takes a few lines. A hundred million new links a month is 38.6 per second, a ratio of 100 reads to each write makes 3,858 redirects per second, and 3 TB covers five years. The same few lines say that the writes are small, that the reads are the load to worry about, and that a seven-character code is enough with a wide margin, which already shapes most of the design."
+              "text": "A link shortener that gains a hundred million new links a month is writing 38.6 links per second, and at 100 redirects for every link created it handles 3,858 redirects per second, while five years of records come to 3 TB. Those figures say at once that the writes are small, that the reads are the load to worry about, and that a seven-character code leaves a wide margin, and that is enough to shape most of the design."
             },
             {
               "kind": "paragraph",
-              "text": "The rest of the design follows from asking, for each component, which of those numbers calls for it. A cache is justified by the read ratio, replicas by the availability target, and a queue or a shard by nothing at all, so neither is drawn."
+              "text": "What remains is to ask, for each component, which number or requirement calls for it. The read ratio justifies a cache, the availability target justifies replicas, and nothing in the estimate justifies a queue or a shard, so neither is drawn."
             }
           ]
         },
@@ -6264,12 +5898,7 @@
           "id": "writes-for-an-account",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Count the feed writes for an ordinary account under fan-out on write."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -6313,12 +5942,7 @@
           "id": "lookups-for-a-user",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Count the lookups that one user causes under fan-out on read."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -6334,16 +5958,11 @@
           "id": "predict-the-celebrity",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Predict how long a fan-out takes when the poster has a very large following, before the usual remedy is described."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "Three minutes is tolerable for one post, but a stream of such posts would build a queue that never drains."
+              "text": "That is a little over three minutes, which is tolerable for one post, but a stream of such posts would build a queue that never drains."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -6383,12 +6002,7 @@
           "id": "hybrid-cost",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Count the work for one feed view under the hybrid."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -6451,12 +6065,7 @@
           "id": "name-the-weakness",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Name the flaw in a design whose one database has no replica."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -6525,12 +6134,7 @@
           "id": "fix-the-review",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Apply a fix to the flaw that the review found: give the email call a timeout of 2 seconds, and count the threads it holds."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -6600,11 +6204,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "An account with 200 followers that posts five times a day causes 1,000 feed writes a day, which is nothing. An account with 20,000,000 followers that posts once causes 20,000,000, which at 100,000 writes per second is more than three minutes of work for a single post. The same strategy is trivial for one account and a storm for another, and a design for a feed has to decide what to do about both."
+              "text": "An account with 200 followers that posts five times a day causes 1,000 feed writes a day when each post is copied into every follower's feed, which is nothing. An account with 20,000,000 followers causes 20,000,000 writes with a single post, so the same strategy that is trivial for the first account is a storm for the second."
             },
             {
               "kind": "paragraph",
-              "text": "The question has two halves. One is where to do the work of building a feed, when a post is made or when a feed is opened, and the answer depends on a ratio. The other is how to look at a finished design and find what will fail first, which is a separate skill and one that the numbers of the earlier lessons make precise."
+              "text": "Whether the work of building a feed should be done when a post is made or when a feed is opened turns on how often each happens, and a platform with both kinds of account has to choose with numbers. The same numbers let you review any finished design by asking what fails first, which is a different skill from building one and shows what a design has left unmeasured."
             }
           ]
         },
@@ -6633,39 +6237,56 @@
         "read-write-ratio",
         "design-method"
       ],
-      "prompt": "Is \"Users can open a short link and be sent to the original page\" a functional requirement or a quality target? Answer with the kind.",
+      "prompt": "Which kind of requirement is the statement \"Users can open a short link and be sent to the original page\"?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Does the statement say what the system does, or how well it does it?",
-        "It describes a behaviour that you could check by trying it once."
+        "Ask whether the statement says what the service does or how well it does it."
       ],
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "functional"
-        ],
-        "acceptedAlternatives": [
-          "functional requirement",
-          "a functional requirement"
+          "A functional requirement, because it names a behaviour that can be checked by trying it once"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "functional"
+        "exampleAnswer": "A functional requirement, because it names a behaviour that can be checked by trying it once"
       },
       "sourceIds": [
         "system-design-primer",
         "sre-book",
         "mit-6824"
       ],
-      "onCorrect": "The statement names a behaviour and no number, so it leaves every quality target, such as speed or availability, still to be set.",
+      "choices": [
+        {
+          "id": "b",
+          "label": "A quality target, because the redirect has to work for every visitor"
+        },
+        {
+          "id": "a",
+          "label": "A functional requirement, because it names a behaviour that can be checked by trying it once"
+        },
+        {
+          "id": "c",
+          "label": "Neither kind, because it carries no number"
+        }
+      ],
+      "onCorrect": "A functional requirement can be tested once, and the numbers belong to the separate quality targets for the same behaviour.",
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "quality"
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "A quality target carries a number, such as a time or a percentage. This statement names only a behaviour."
+          "feedback": "Working for every visitor would be a claim about how reliably the redirect happens, and that needs a figure such as 99.9%. The statement only says that the redirect happens."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "A requirement does not need a number to be a requirement. Only a quality target does, while a functional requirement is checked by trying the behaviour once."
         }
       ],
       "skill": "classify-a-requirement",
@@ -6679,54 +6300,68 @@
         "read-write-ratio",
         "design-method"
       ],
-      "prompt": "Which of latency, availability, durability and consistency does this describe: \"a link created today can still be opened next year, even if a disk fails\"? Answer with one word.",
+      "prompt": "Which property does this statement describe: \"a link created today can still be opened next year, even if a disk fails\"?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "The statement is about data surviving, not about how fast or how often the service answers.",
-        "Which property is about data that was accepted still being readable later?"
+        "Ask what has to still be true after the disk fails."
       ],
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "durability"
-        ],
-        "acceptedAlternatives": [
           "Durability"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "durability"
+        "exampleAnswer": "Durability"
       },
       "sourceIds": [
         "system-design-primer",
         "sre-book",
         "mit-6824"
       ],
-      "onCorrect": "Durability concerns accepted data, and it is met by keeping copies on more than one disk, a choice later lessons make with numbers.",
+      "choices": [
+        {
+          "id": "c",
+          "label": "Availability"
+        },
+        {
+          "id": "d",
+          "label": "Durability"
+        },
+        {
+          "id": "b",
+          "label": "Latency"
+        },
+        {
+          "id": "a",
+          "label": "Consistency"
+        }
+      ],
+      "onCorrect": "Durability concerns whether data that was accepted can still be read later, which is why a failed disk matters to it.",
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "availability"
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "Availability asks whether the service answers right now. This statement is about the data still existing next year."
+          "feedback": "Consistency asks whether a reader sees the most recent write. The statement says nothing about which version is seen, only that the link can still be opened."
         },
         {
           "match": {
-            "textIdeas": [
-              "consistency"
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "Consistency asks whether a reader sees the latest write. Here the question is whether the data survives at all."
+          "feedback": "Latency is how long a request takes. The statement puts no limit on the time of a request, only on how long the link survives."
         },
         {
           "match": {
-            "textIdeas": [
-              "latency"
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "Latency is about how long a request takes. Nothing in the statement concerns time."
+          "feedback": "Availability is the fraction of time the service answers. The statement is about data surviving a disk failure, whatever the state of the service at a given moment."
         }
       ],
       "skill": "classify-a-requirement",
@@ -6794,6 +6429,69 @@
             ]
           },
           "feedback": "That is the creation rate, which the question gives. The redirects are 100 times more frequent."
+        }
+      ],
+      "skill": "derive-load-from-ratio",
+      "calculator": "off"
+    },
+    {
+      "id": "sysd-requirements-and-scope-busier-side",
+      "conceptIds": [
+        "functional-requirement",
+        "sysd-quality-attribute",
+        "read-write-ratio",
+        "design-method"
+      ],
+      "prompt": "A link shortener receives 10 new links per second, and every link that is created is opened about 100 times. Which part of the service carries most of the load?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Compare how many times a link is created with how many times it is opened."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Opening links, because there are far more opens than creations"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Opening links, because there are far more opens than creations"
+      },
+      "sourceIds": [
+        "system-design-primer",
+        "sre-book",
+        "mit-6824"
+      ],
+      "choices": [
+        {
+          "id": "b",
+          "label": "Both about equally, because every link is created once and used afterwards"
+        },
+        {
+          "id": "a",
+          "label": "Creating links, because each one has to be stored safely"
+        },
+        {
+          "id": "c",
+          "label": "Opening links, because there are far more opens than creations"
+        }
+      ],
+      "onCorrect": "At about 100 opens for each creation, the opens outnumber the creations a hundred to one, so most of the load comes from reading.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "Creating a link is a single write, and only 10 happen each second, whereas each link is opened about 100 times, so about 1,000 opens arrive in the same second."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "A link is created once but opened about 100 times, so the opens outnumber the creations a hundred to one and the two sides are far from equal."
         }
       ],
       "skill": "derive-load-from-ratio",
@@ -6888,16 +6586,16 @@
       ],
       "choices": [
         {
+          "id": "c",
+          "label": "Estimating the load, because the load says whether either component is needed"
+        },
+        {
           "id": "a",
           "label": "Probing failures, because every component can fail"
         },
         {
           "id": "b",
           "label": "Defining the interface, because components need names for their calls"
-        },
-        {
-          "id": "c",
-          "label": "Estimating the load, because the load says whether either component is needed"
         },
         {
           "id": "d",
@@ -7023,6 +6721,10 @@
       ],
       "choices": [
         {
+          "id": "d",
+          "label": "The service should scale"
+        },
+        {
           "id": "a",
           "label": "The service should be fast"
         },
@@ -7033,10 +6735,6 @@
         {
           "id": "c",
           "label": "Users can create short links"
-        },
-        {
-          "id": "d",
-          "label": "The service should scale"
         }
       ],
       "onCorrect": "The statement fixes a quantity, a threshold and a share, so a day of redirect times is enough to check it.",
@@ -7355,51 +7053,68 @@
         "storage-estimate",
         "bandwidth-estimate"
       ],
-      "prompt": "A service adds 100 million new records a month, and each record takes 500 bytes. How many gigabytes does it add each month? Use 1 GB = 1,000,000,000 bytes.",
-      "responseType": "numeric",
+      "prompt": "A service adds 100 million new records a month, and each record takes 500 bytes. Which is closest to the storage it adds each month?",
+      "responseType": "short_text",
       "difficulty": 1.2,
       "hints": [
-        "Multiply the number of records by the bytes in each.",
-        "100,000,000 × 500 is 50 with nine zeros after it.",
-        "Divide the bytes by 1,000,000,000 to get gigabytes."
+        "Multiply the number of records by the bytes in each to get a number of bytes, then ask which unit that many bytes fills.",
+        "A gigabyte is a billion bytes."
       ],
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 50,
-        "unit": "GB per month",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "100,000,000 × 500 = 50,000,000,000 bytes, which is 50 GB."
+        "kind": "text",
+        "acceptedIdeas": [
+          "About 50 GB"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "About 50 GB"
       },
       "sourceIds": [
         "system-design-primer",
         "sre-book"
       ],
-      "onCorrect": "The total is 50,000,000,000 bytes, which is 50 GB each month.",
+      "choices": [
+        {
+          "id": "c",
+          "label": "About 50 GB"
+        },
+        {
+          "id": "a",
+          "label": "About 50 MB"
+        },
+        {
+          "id": "b",
+          "label": "About 5 GB"
+        },
+        {
+          "id": "d",
+          "label": "About 5 TB"
+        }
+      ],
+      "onCorrect": "100 million records of 500 bytes come to 50 billion bytes, which is 50 GB.",
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              50000000000
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That is the number of bytes. The question asks for gigabytes, so divide by 1,000,000,000."
+          "feedback": "A megabyte is a million bytes, so 50 MB would hold only 100,000 records of 500 bytes, a thousandth of the 100 million that arrive."
         },
         {
           "match": {
-            "numeric": [
-              50000
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That divides by 1,000,000, which gives megabytes, not gigabytes."
+          "feedback": "5 GB would hold 10 million records of 500 bytes, a tenth of the 100 million that arrive each month."
         },
         {
           "match": {
-            "numeric": [
-              0.05
+            "choiceIds": [
+              "d"
             ]
           },
-          "feedback": "That divides by 10^12, which gives terabytes. A gigabyte is 10^9 bytes."
+          "feedback": "5 TB would hold 10 billion records of 500 bytes, a hundred times the 100 million that arrive each month."
         }
       ],
       "skill": "estimate-storage",
@@ -7579,48 +7294,56 @@
         "storage-estimate",
         "bandwidth-estimate"
       ],
-      "prompt": "One machine has a 1 Gbit/s link, which is 125 MB/s, and can process 5,000 requests per second. A service must send 3,000 responses per second of 60,000 bytes each. Which resource runs out first: processing or network?",
+      "prompt": "One machine has a 1 Gbit/s link, which is 125 MB/s, and can process 5,000 requests per second. A service must send 3,000 responses per second of 60,000 bytes each. Which resource runs out first?",
       "responseType": "short_text",
       "difficulty": 1.5,
       "hints": [
-        "Compare the processing need with 5,000 requests per second.",
-        "The data flow is 3,000 × 60,000 bytes per second; compare it with 125 MB/s."
+        "Work out the bytes per second that the responses need, then compare with 125 MB/s.",
+        "Compare the request rate with the 5,000 per second that the machine can process."
       ],
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "network"
-        ],
-        "acceptedAlternatives": [
-          "the network",
-          "network bandwidth",
-          "bandwidth",
-          "the link"
+          "The network, because the responses need more than the link can carry"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "network"
+        "exampleAnswer": "The network, because the responses need more than the link can carry"
       },
       "sourceIds": [
         "system-design-primer",
         "sre-book"
       ],
-      "onCorrect": "The data flow is 180 MB/s against a 125 MB/s link, while 3,000 requests per second is under the 5,000 the machine can process.",
+      "choices": [
+        {
+          "id": "c",
+          "label": "Neither, because the machine can process more than 3,000 requests per second"
+        },
+        {
+          "id": "a",
+          "label": "Processing, because 3,000 requests per second is a high rate"
+        },
+        {
+          "id": "b",
+          "label": "The network, because the responses need more than the link can carry"
+        }
+      ],
+      "onCorrect": "Processing has headroom, at 3,000 of 5,000 requests per second, whereas the link cannot carry what the responses need.",
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "processing"
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "Processing is needed for 3,000 requests per second, under the 5,000 available. The data flow is the one that exceeds its limit."
+          "feedback": "3,000 requests per second is below the 5,000 that the machine can process, so processing still has headroom."
         },
         {
           "match": {
-            "textIdeas": [
-              "cpu"
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "Processing is needed for 3,000 requests per second, under the 5,000 available. The data flow is the one that exceeds its limit."
+          "feedback": "Processing is within its limit, but the responses add up to 3,000 × 60,000 bytes, or 180 MB per second, which is more than the 125 MB per second that the link carries."
         }
       ],
       "skill": "estimate-bandwidth",
@@ -7791,52 +7514,68 @@
         "sysd-littles-law",
         "tail-amplification"
       ],
-      "prompt": "In 100 requests, 98 took 10 ms and 2 took 1,000 ms. What is the mean latency in milliseconds?",
-      "responseType": "numeric",
+      "prompt": "In 100 requests, 98 took 10 ms and 2 took 1,000 ms. Which is closest to the mean latency?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "The mean is the total time divided by the number of requests.",
-        "Add 98 × 10 and 2 × 1,000 for the total time.",
-        "Divide that total by 100."
+        "Add up the time taken by all 100 requests, then divide by 100."
       ],
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 29.8,
-        "unit": "ms",
-        "absoluteTolerance": 0.05,
-        "relativeTolerance": 0,
-        "workedAnswer": "The total time is 98 × 10 + 2 × 1,000 = 2,980 ms, and 2,980 ÷ 100 = 29.8 ms."
+        "kind": "text",
+        "acceptedIdeas": [
+          "About 30 ms, above a typical request but far below the slow ones"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "About 30 ms, above a typical request but far below the slow ones"
       },
       "sourceIds": [
         "tail-at-scale",
         "sre-book",
         "mit-6824"
       ],
-      "onCorrect": "The mean is 29.8 ms, a figure that matches none of the requests, since each took either 10 or 1,000.",
+      "choices": [
+        {
+          "id": "c",
+          "label": "About 500 ms, halfway between the two groups"
+        },
+        {
+          "id": "b",
+          "label": "About 30 ms, above a typical request but far below the slow ones"
+        },
+        {
+          "id": "a",
+          "label": "About 10 ms, since 98 of the 100 requests took that long"
+        },
+        {
+          "id": "d",
+          "label": "About 1,000 ms, since the slow requests dominate"
+        }
+      ],
+      "onCorrect": "The two slow requests add about 20 ms to the average of the fast ones, which gives 29.8 ms, a figure that matches no request in the sample.",
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              505
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That averages the two latencies, 10 and 1,000, as though the two groups were equal in size. There are 98 fast requests and only 2 slow ones."
+          "feedback": "The two slow requests add 2 × 990 = 1,980 ms beyond the 10 ms of the others, and spread over 100 requests that raises the mean by about 20 ms."
         },
         {
           "match": {
-            "numeric": [
-              10
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "That is what 98 of the requests took. The two slow requests still pull the mean upward."
+          "feedback": "A mean of 500 ms would need about half of the requests to be slow, and only 2 in 100 are."
         },
         {
           "match": {
-            "numeric": [
-              2980
+            "choiceIds": [
+              "d"
             ]
           },
-          "feedback": "That is the total time. The mean divides it by the 100 requests."
+          "feedback": "A mean near 1,000 ms would need almost every request to be slow, and 98 of the 100 took 10 ms."
         }
       ],
       "skill": "compute-mean",
@@ -7965,52 +7704,69 @@
         "sysd-littles-law",
         "tail-amplification"
       ],
-      "prompt": "A request must wait for 100 backends, called in parallel. Each backend is slow 1% of the time, independently of the others. To the nearest percent, how often is the whole request slow?",
-      "responseType": "numeric",
+      "prompt": "A request must wait for 100 backends, called in parallel. Each backend is slow 1% of the time, independently of the others. Roughly how often is the whole request slow?",
+      "responseType": "short_text",
       "difficulty": 1.4,
       "hints": [
-        "The request is fast only if every backend is fast.",
-        "Each backend is fast with probability 0.99, and the 100 probabilities multiply.",
-        "Work out 1 − 0.99^100."
+        "The request is fast only if every one of the 100 backends is fast.",
+        "Chances that must all hold multiply, and they do not add."
       ],
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 63,
-        "unit": "%",
-        "absoluteTolerance": 1,
-        "relativeTolerance": 0,
-        "workedAnswer": "All 100 are fast with probability 0.99^100 ≈ 0.366, so the request is slow 1 − 0.366 = 0.634, about 63%."
+        "kind": "text",
+        "acceptedIdeas": [
+          "Well over half of the requests"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Well over half of the requests"
       },
       "sourceIds": [
         "tail-at-scale",
         "sre-book",
         "mit-6824"
       ],
-      "onCorrect": "Whole requests are slow about 63% of the time, although each backend is slow only 1% of the time.",
+      "choices": [
+        {
+          "id": "b",
+          "label": "About 10%, one request in ten"
+        },
+        {
+          "id": "a",
+          "label": "About 1%, the same as for a single backend"
+        },
+        {
+          "id": "d",
+          "label": "Nearly every request, because 100 chances of 1% add up to 100%"
+        },
+        {
+          "id": "c",
+          "label": "Well over half of the requests"
+        }
+      ],
+      "onCorrect": "The request is fast only when all 100 backends are, which happens about 37% of the time, so it is slow about 63% of the time.",
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              1
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That is the chance for a single backend. The request is slow if any of the 100 is slow, and that happens far more often."
+          "feedback": "A single backend is slow 1% of the time, but this request has 100 chances to meet a slow one, and any one of them makes the whole request slow."
         },
         {
           "match": {
-            "numeric": [
-              100
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That adds the 1% 100 times, which would be certain slowness. The chances are not simply added, because the same request can have several slow calls."
+          "feedback": "That is close to the answer for 10 backends. With 100 backends the chance of meeting at least one slow call is far higher."
         },
         {
           "match": {
-            "numeric": [
-              99
+            "choiceIds": [
+              "d"
             ]
           },
-          "feedback": "That is the share of requests in which a given backend is fast. The question asks for the share in which at least one backend is slow."
+          "feedback": "The 100 chances overlap, because one request can meet several slow backends at once, and the overlap is counted only once, so the total stays below 100%."
         }
       ],
       "skill": "compute-fan-out-tail",
@@ -8457,52 +8213,56 @@
         "utilisation",
         "sysd-load-balancer"
       ],
-      "prompt": "A server that handles 100 requests per second has a mean time in the system of 20 ms when 50 requests arrive each second. What is the mean time, in ms, when 90 requests arrive each second?",
-      "responseType": "numeric",
+      "prompt": "A server that handles 100 requests per second has a mean time in the system of 20 ms when 50 requests arrive each second. When 90 requests arrive each second, what is the mean time likely to be?",
+      "responseType": "short_text",
       "difficulty": 1.4,
       "hints": [
-        "Arrivals have risen by less than a factor of 2, but delay does not follow them in proportion.",
-        "The delay depends on how little spare capacity remains: 100 − 90 per second.",
-        "Take 1 divided by the spare capacity, in seconds."
+        "Think about what happens to a request that arrives while the server is still busy with the ones before it."
       ],
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 100,
-        "unit": "ms",
-        "absoluteTolerance": 1,
-        "relativeTolerance": 0,
-        "workedAnswer": "1 ÷ (100 − 90) = 0.1 seconds, which is 100 ms, five times the delay at 50 requests per second."
+        "kind": "text",
+        "acceptedIdeas": [
+          "Several times longer, 80 ms or more"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Several times longer, 80 ms or more"
       },
       "sourceIds": [
         "sre-book",
         "k8s-docs-lb",
         "system-design-primer"
       ],
-      "onCorrect": "The delay grew fivefold for an 80% rise in arrivals, because the spare capacity shrank from 50 to 10 requests per second.",
+      "choices": [
+        {
+          "id": "c",
+          "label": "A little longer, under 40 ms, in proportion to the load"
+        },
+        {
+          "id": "a",
+          "label": "Several times longer, 80 ms or more"
+        },
+        {
+          "id": "b",
+          "label": "About the same, near 20 ms"
+        }
+      ],
+      "onCorrect": "With little room left at 90 requests per second, requests queue behind one another, and the delay grows much faster than the load.",
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              36
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That scales the delay in proportion to arrivals, 20 × 1.8. Delay grows much faster than the load as spare capacity shrinks."
+          "feedback": "The server is no slower, but at 90 arrivals per second a request often finds others already being served and must wait for them, so the delay cannot stay at 20 ms."
         },
         {
           "match": {
-            "numeric": [
-              20
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "That is the delay at 50 per second. Arrivals have risen, and the server has less spare capacity."
-        },
-        {
-          "match": {
-            "numeric": [
-              10
-            ]
-          },
-          "feedback": "That is the time to serve one request when the server is idle. Waiting behind others adds to it."
+          "feedback": "In proportion to the load, 90 arrivals instead of 50 would give about 36 ms. The delay grows faster than the load, because less room is left for bursts, and it reaches 100 ms."
         }
       ],
       "skill": "predict-queueing-delay",
@@ -8719,16 +8479,16 @@
           "label": "Each server remembers its own users"
         },
         {
+          "id": "d",
+          "label": "Requests are never repeated"
+        },
+        {
           "id": "b",
           "label": "Servers share one processor"
         },
         {
           "id": "c",
           "label": "Any server can answer any request"
-        },
-        {
-          "id": "d",
-          "label": "Requests are never repeated"
         }
       ],
       "onCorrect": "Because no server holds anything the others lack, the balancer is free to send each request anywhere, and a new server is useful at once.",
@@ -8992,52 +8752,68 @@
         "invalidation",
         "stampede"
       ],
-      "prompt": "A cache lookup takes 1 ms and a database read takes 20 ms, and every request does the lookup. The hit rate is 90%. What is the average latency in milliseconds?",
-      "responseType": "numeric",
+      "prompt": "A cache lookup takes 1 ms and a database read takes 20 ms, and every request does the lookup. The hit rate is 90%. Which is closest to the average latency?",
+      "responseType": "short_text",
       "difficulty": 1.2,
       "hints": [
-        "Every request pays for the lookup, and only the misses pay for the database as well.",
-        "The miss rate is 10%, which is 0.1.",
-        "Add the lookup to the miss rate times the database time."
+        "Every request pays for the lookup, and only the requests that miss pay for the database as well."
       ],
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 3,
-        "unit": "ms",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "The 10% of requests that miss pay 20 ms more: 1 + 0.1 × 20 = 3 ms."
+        "kind": "text",
+        "acceptedIdeas": [
+          "A few milliseconds, much nearer a hit than a database read"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "A few milliseconds, much nearer a hit than a database read"
       },
       "sourceIds": [
         "azure-patterns",
         "system-design-primer",
         "sre-book"
       ],
-      "onCorrect": "The lookup is paid by everyone and the 20 ms only by the 10% that miss, which averages 2 ms on top of the 1 ms.",
+      "choices": [
+        {
+          "id": "d",
+          "label": "A few milliseconds, much nearer a hit than a database read"
+        },
+        {
+          "id": "a",
+          "label": "About 10 ms, halfway between a hit and a database read"
+        },
+        {
+          "id": "c",
+          "label": "About 1 ms, as fast as a hit"
+        },
+        {
+          "id": "b",
+          "label": "About 19 ms, almost as slow as the database alone"
+        }
+      ],
+      "onCorrect": "One request in ten misses and adds a 20 ms database read, which adds 2 ms to the average and makes it 3 ms.",
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              2
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That counts only the 10% who miss, 0.1 × 20, and leaves out the 1 ms lookup that every request pays."
+          "feedback": "An average of 10 ms would need about half of the requests to miss. Only one in ten does, so only a tenth of the requests pay for the database."
         },
         {
           "match": {
-            "numeric": [
-              19
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That weights the database time by the hit rate, 0.9 × 20 + 1. It is the misses that go to the database."
+          "feedback": "An average near 19 ms would need almost every request to go to the database. Here only one in ten does."
         },
         {
           "match": {
-            "numeric": [
-              18
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "That weights the database time by the hit rate and leaves out the lookup. The misses, 10%, are the ones that read the database."
+          "feedback": "Every hit costs 1 ms, but the one request in ten that misses also pays 20 ms for the database, and that adds about 2 ms to the average."
         }
       ],
       "skill": "compute-average-latency",
@@ -9530,16 +9306,16 @@
           "label": "Making the TTL shorter"
         },
         {
-          "id": "b",
-          "label": "Clearing the whole cache"
-        },
-        {
           "id": "c",
           "label": "Adding more databases"
         },
         {
           "id": "d",
           "label": "Letting one request refresh the key while others wait or use the stale value"
+        },
+        {
+          "id": "b",
+          "label": "Clearing the whole cache"
         }
       ],
       "onCorrect": "One refresh is enough for every waiting request, so the database sees a single read for the key.",
@@ -9679,52 +9455,56 @@
         "btree-depth",
         "n-plus-one"
       ],
-      "prompt": "A table has 1,000,000 rows and 100 rows fit on a page. A query with no index must read every page. How many pages does a full scan read?",
-      "responseType": "numeric",
+      "prompt": "A table has 1,000,000 rows and 100 rows fit on a page. A query with no index must read every page. About how many pages does it read?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "A full scan reads every page of the table.",
-        "The number of pages is the number of rows divided by the rows per page.",
-        "Divide 1,000,000 by 100."
+        "A page holds 100 rows, so one page read covers 100 rows of the table."
       ],
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 10000,
-        "unit": "pages",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "1,000,000 rows ÷ 100 rows per page = 10,000 pages."
+        "kind": "text",
+        "acceptedIdeas": [
+          "About 10,000 pages"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "About 10,000 pages"
       },
       "sourceIds": [
         "postgres-indexes",
         "system-design-primer",
         "mit-6824"
       ],
-      "onCorrect": "The scan reads 10,000 pages for a table that stores a million rows, and the count grows in step with the table.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "About 100 pages"
+        },
+        {
+          "id": "c",
+          "label": "About 10,000 pages"
+        },
+        {
+          "id": "b",
+          "label": "About 1,000,000 pages, one for each row"
+        }
+      ],
+      "onCorrect": "A page holds 100 rows, so 1,000,000 rows fill 10,000 pages, and a scan reads each of them.",
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              1000000
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That is the number of rows, and a page holds 100 of them. A scan reads whole pages."
+          "feedback": "100 is the number of rows on one page. The table has 1,000,000 rows, so it fills 10,000 such pages."
         },
         {
           "match": {
-            "numeric": [
-              100
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That is the number of rows in one page. The table has many pages."
-        },
-        {
-          "match": {
-            "numeric": [
-              100000
-            ]
-          },
-          "feedback": "That divides 1,000,000 by 10. Each page holds 100 rows."
+          "feedback": "A page holds 100 rows, so a scan reads each page once and not once for each row, which makes 100 times fewer reads than rows."
         }
       ],
       "skill": "compute-btree-levels",
@@ -9819,20 +9599,20 @@
       ],
       "choices": [
         {
-          "id": "a",
-          "label": "All orders created in March, for every customer"
-        },
-        {
-          "id": "b",
-          "label": "Orders whose total is above 100"
-        },
-        {
           "id": "c",
           "label": "Orders for customer 7 created in March"
         },
         {
+          "id": "a",
+          "label": "All orders created in March, for every customer"
+        },
+        {
           "id": "d",
           "label": "Customers whose name starts with A"
+        },
+        {
+          "id": "b",
+          "label": "Orders whose total is above 100"
         }
       ],
       "onCorrect": "The query names the first column and then the second, so the database can jump to customer 7 and read the March entries in sequence.",
@@ -10262,26 +10042,19 @@
         "sysd-sharding",
         "consistent-hashing"
       ],
-      "prompt": "A write reaches the leader at 0 ms and a follower applies it at 80 ms. A read from that follower at 50 ms returns the old value or the new value? Answer old or new.",
+      "prompt": "A write reaches the leader at 0 ms and a follower applies it at 80 ms. What does a read from that follower at 50 ms return?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Compare the time of the read with the time at which the follower applies the write.",
-        "At 50 ms the follower has not yet applied the change."
+        "Compare the time of the read with the time at which the follower applies the write."
       ],
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "old"
-        ],
-        "acceptedAlternatives": [
-          "the old value",
-          "old value",
-          "stale",
-          "the old one"
+          "The old value, because the follower has not applied the write yet"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "old"
+        "exampleAnswer": "The old value, because the follower has not applied the write yet"
       },
       "sourceIds": [
         "karger",
@@ -10289,15 +10062,37 @@
         "system-design-primer",
         "mit-6824"
       ],
-      "onCorrect": "The follower returns what it held before the change, which is the situation behind a user who saves a profile and then sees the old version.",
+      "choices": [
+        {
+          "id": "c",
+          "label": "An error, because the leader and the follower disagree"
+        },
+        {
+          "id": "a",
+          "label": "The new value, because the leader already has it"
+        },
+        {
+          "id": "b",
+          "label": "The old value, because the follower has not applied the write yet"
+        }
+      ],
+      "onCorrect": "The follower holds the old value until 80 ms, so a read before then returns it.",
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "new"
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "The follower applies the write at 80 ms, so at 50 ms it has not yet seen the change, although the leader already has it."
+          "feedback": "The leader has the new value, but a read sent to the follower returns what the follower holds, and it does not apply the change until 80 ms."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "A follower does not know that it is behind, so it answers with the value it holds. The read succeeds and returns the old value."
         }
       ],
       "skill": "reason-about-lag",
@@ -10311,21 +10106,19 @@
         "sysd-sharding",
         "consistent-hashing"
       ],
-      "prompt": "A leader can accept at most 1,000 writes per second. You add four followers to the cluster. At most how many writes per second can the cluster now accept?",
-      "responseType": "numeric",
+      "prompt": "A leader can accept at most 1,000 writes per second. Four followers are added to the cluster. What is the most that the cluster can now accept?",
+      "responseType": "short_text",
       "difficulty": 1.2,
       "hints": [
-        "Which machine accepts writes in leader-follower replication?",
-        "The followers only copy what the leader has already accepted.",
-        "The write capacity is that of the leader."
+        "Ask which machine accepts each write, and what the followers do with it."
       ],
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 1000,
-        "unit": "writes per second",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "Every write is still accepted by the single leader, so the limit stays at 1,000 writes per second."
+        "kind": "text",
+        "acceptedIdeas": [
+          "1,000 writes per second, because the leader still has to make every write"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "1,000 writes per second, because the leader still has to make every write"
       },
       "sourceIds": [
         "karger",
@@ -10333,31 +10126,37 @@
         "system-design-primer",
         "mit-6824"
       ],
-      "onCorrect": "Followers add read capacity and survive failures, but only splitting the data across machines raises the write capacity.",
+      "choices": [
+        {
+          "id": "b",
+          "label": "2,000 writes per second, because the followers share the work of accepting writes"
+        },
+        {
+          "id": "c",
+          "label": "5,000 writes per second, because each of the five machines can accept 1,000"
+        },
+        {
+          "id": "a",
+          "label": "1,000 writes per second, because the leader still has to make every write"
+        }
+      ],
+      "onCorrect": "Every write is made by the leader and then repeated on each follower, so followers add read capacity and leave the write limit at 1,000.",
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              5000
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That treats each follower as another machine that can accept writes. Followers only repeat the leader's writes."
+          "feedback": "Followers do not accept writes. They only apply the changes that the leader sends them, so they cannot share the work of accepting."
         },
         {
           "match": {
-            "numeric": [
-              4000
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "That counts the followers alone. They accept no writes of their own."
-        },
-        {
-          "match": {
-            "numeric": [
-              200
-            ]
-          },
-          "feedback": "That divides the writes across five machines. Each write still passes through the one leader."
+          "feedback": "Only the leader accepts writes, and each follower repeats every change instead of adding capacity for new ones."
         }
       ],
       "skill": "reason-about-lag",
@@ -10371,21 +10170,19 @@
         "sysd-sharding",
         "consistent-hashing"
       ],
-      "prompt": "Keys 0 to 19 are placed with k mod 4. The cluster grows to 5 shards and the keys are placed with k mod 5. How many of the 20 keys stay on the same shard number?",
-      "responseType": "numeric",
+      "prompt": "Keys 0 to 19 are placed on 4 shards with k mod 4. The cluster grows to 5 shards and the keys are placed with k mod 5. Roughly how many of the 20 keys stay on the same shard number?",
+      "responseType": "short_text",
       "difficulty": 1.3,
       "hints": [
-        "Work out k mod 4 and k mod 5 for the first few keys.",
-        "The two agree while k is smaller than both 4 and 5.",
-        "Look for the point where k mod 4 and k mod 5 first differ, and check whether they agree again later."
+        "Work out the shard of keys 4, 5 and 6 under both rules and see whether they agree."
       ],
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 4,
-        "unit": "keys",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "The two rules give the same shard only for k = 0, 1, 2 and 3, so 4 keys stay and 16 move."
+        "kind": "text",
+        "acceptedIdeas": [
+          "Only a few of them"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Only a few of them"
       },
       "sourceIds": [
         "karger",
@@ -10393,31 +10190,49 @@
         "system-design-primer",
         "mit-6824"
       ],
-      "onCorrect": "Only 4 of the 20 keys keep their shard, so growing the cluster by one shard moves 80% of the data.",
+      "choices": [
+        {
+          "id": "b",
+          "label": "About three quarters of them"
+        },
+        {
+          "id": "a",
+          "label": "Nearly all of them, since only one shard was added"
+        },
+        {
+          "id": "c",
+          "label": "About half of them"
+        },
+        {
+          "id": "d",
+          "label": "Only a few of them"
+        }
+      ],
+      "onCorrect": "Only keys 0 to 3 stay, because their remainders agree under both rules, so 16 of the 20 keys have to move.",
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              16
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That is the number of keys that move. The question asks for the number that stay."
+          "feedback": "Adding a shard changes the modulus for every key, and a key stays only if its two remainders agree. Key 4, for instance, is on shard 0 under mod 4 and on shard 4 under mod 5."
         },
         {
           "match": {
-            "numeric": [
-              15
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That counts a key as staying when its shard is only close. The shard number has to be identical."
+          "feedback": "Three quarters would be 15 keys. Keys 4 to 19 all have different remainders under the two rules, so only keys 0 to 3 stay."
         },
         {
           "match": {
-            "numeric": [
-              20
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "That would mean that adding a shard changes nothing, but k mod 4 and k mod 5 differ for most keys."
+          "feedback": "Half would be 10 keys. Only keys 0 to 3 have the same remainder under both rules."
         }
       ],
       "skill": "count-moved-keys",
@@ -10742,16 +10557,16 @@
           "label": "The write was lost"
         },
         {
-          "id": "b",
-          "label": "The disk is full"
+          "id": "d",
+          "label": "The cache is cold"
         },
         {
           "id": "c",
           "label": "The read was served by a follower that had not yet applied the write"
         },
         {
-          "id": "d",
-          "label": "The cache is cold"
+          "id": "b",
+          "label": "The disk is full"
         }
       ],
       "onCorrect": "The leader had the new value, but the follower that answered had not applied it yet, so the data was late and not lost.",
@@ -10890,23 +10705,19 @@
         "sysd-quorum",
         "consensus"
       ],
-      "prompt": "During a partition, a system refuses writes on the side that cannot reach the other replicas. Which property does it give up on that side: consistency or availability? Answer with one word.",
+      "prompt": "During a partition, a system refuses writes on the side that cannot reach the other replicas. What does it give up on that side?",
       "responseType": "short_text",
       "difficulty": 1.1,
       "hints": [
-        "Refusing a request means that the system does not answer it.",
-        "Stale data is never returned, so one property is kept."
+        "Ask what a client on that side experiences when its write is refused."
       ],
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "availability"
-        ],
-        "acceptedAlternatives": [
-          "Availability"
+          "Availability, because some requests receive no answer"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "availability"
+        "exampleAnswer": "Availability, because some requests receive no answer"
       },
       "sourceIds": [
         "raft",
@@ -10914,15 +10725,37 @@
         "dynamo",
         "mit-6824"
       ],
-      "onCorrect": "Refusing keeps the data consistent and costs availability, which is the opposite trade to the shopping-cart service that keeps accepting writes.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Consistency, because that side may now return stale data"
+        },
+        {
+          "id": "b",
+          "label": "Durability, because the refused writes are lost"
+        },
+        {
+          "id": "c",
+          "label": "Availability, because some requests receive no answer"
+        }
+      ],
+      "onCorrect": "Refusing keeps the copies from drifting apart, and the price is that some clients on that side get no answer.",
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "consistency"
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "Refusing the write keeps the copies consistent, so consistency is the property that is kept."
+          "feedback": "Refusing writes keeps the two sides from holding different versions, which preserves consistency."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "A refused write was never accepted, so nothing that was stored has been lost. Durability concerns data that was accepted."
         }
       ],
       "skill": "apply-cap",
@@ -10935,21 +10768,19 @@
         "sysd-quorum",
         "consensus"
       ],
-      "prompt": "A store keeps N = 3 replicas, and a write is acknowledged once W = 2 of them have it. What is the smallest number of replicas R that a read must ask to be sure of seeing the latest acknowledged write?",
-      "responseType": "numeric",
+      "prompt": "A store keeps N = 3 replicas, and a write is acknowledged once W = 2 of them have it. What is the smallest number of replicas that a read must ask to be sure of seeing the latest acknowledged write?",
+      "responseType": "short_text",
       "difficulty": 1.3,
       "hints": [
-        "The write is on 2 of the 3 replicas, and one replica does not have it.",
-        "A read of one replica might land on the replica that missed the write.",
-        "Find the smallest R for which R + 2 is more than 3."
+        "Ask how many replicas can lack the write, and how large a read must be to avoid choosing only those."
       ],
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 2,
-        "unit": "replicas",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "A read set must share a replica with every write set of 2. With R = 2, 2 + 2 = 4 is more than 3, so the sets must overlap, whereas R = 1 could land on the one replica without the write."
+        "kind": "text",
+        "acceptedIdeas": [
+          "Two replicas, since only one replica can have missed the write"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Two replicas, since only one replica can have missed the write"
       },
       "sourceIds": [
         "raft",
@@ -10957,31 +10788,37 @@
         "dynamo",
         "mit-6824"
       ],
-      "onCorrect": "Reading 2 of 3 replicas means at least one of them holds the latest write, since only one replica lacks it.",
+      "choices": [
+        {
+          "id": "b",
+          "label": "Two replicas, since only one replica can have missed the write"
+        },
+        {
+          "id": "c",
+          "label": "All three replicas, since any smaller set might miss it"
+        },
+        {
+          "id": "a",
+          "label": "One replica, since the write reached most of them"
+        }
+      ],
+      "onCorrect": "Only one replica can lack the write, so any two replicas include at least one that has it.",
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              1
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "A read of one replica can land on the single replica that missed the write, so it may return an old value."
+          "feedback": "The one replica asked might be the one that missed the write, and then the read returns the old value. Most replicas having the write does not make any single one of them reliable."
         },
         {
           "match": {
-            "numeric": [
-              3
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "Reading all three would work, but a smaller number already guarantees an overlap."
-        },
-        {
-          "match": {
-            "numeric": [
-              5
-            ]
-          },
-          "feedback": "That is the sum of the write and read counts for a different case. R must satisfy R + 2 > 3."
+          "feedback": "Asking all three would work but is more than needed. Only one replica can lack the write, so two replicas cannot both be without it."
         }
       ],
       "skill": "compute-read-quorum",
@@ -11406,12 +11243,12 @@
       ],
       "choices": [
         {
-          "id": "a",
-          "label": "Availability"
-        },
-        {
           "id": "b",
           "label": "Partition tolerance"
+        },
+        {
+          "id": "a",
+          "label": "Availability"
         },
         {
           "id": "c",
@@ -11506,6 +11343,81 @@
             ]
           },
           "feedback": "That counts all of the messages that were processed, 100 × 120. The backlog is the difference."
+        }
+      ],
+      "skill": "compute-backlog",
+      "calculator": "off"
+    },
+    {
+      "id": "sysd-queues-and-event-streams-backlog-shape",
+      "conceptIds": [
+        "sysd-queue",
+        "delivery-semantics",
+        "sysd-backpressure",
+        "sysd-stream"
+      ],
+      "prompt": "Messages arrive at 150 per second and the consumers process 100 per second, starting from an empty queue. How does the number of waiting messages change over the next two minutes?",
+      "responseType": "short_text",
+      "difficulty": 1.2,
+      "hints": [
+        "Count how many more messages arrive in one second than the consumers handle, and ask whether that number changes as the queue grows."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "It grows by the same number of messages every second"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "It grows by the same number of messages every second"
+      },
+      "sourceIds": [
+        "kafka-docs",
+        "azure-patterns",
+        "sre-book"
+      ],
+      "choices": [
+        {
+          "id": "b",
+          "label": "It stays short, because the consumers are busy the whole time"
+        },
+        {
+          "id": "c",
+          "label": "It grows slowly at first and faster as the queue gets longer"
+        },
+        {
+          "id": "d",
+          "label": "It grows for a while and then levels off"
+        },
+        {
+          "id": "a",
+          "label": "It grows by the same number of messages every second"
+        }
+      ],
+      "onCorrect": "The queue gains the same 50 messages every second, because the gap between the two rates does not depend on how long the queue is.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Consumers that are busy all the time still handle only 100 messages a second, so the 50 extra messages that arrive each second wait in the queue."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Each second adds the same 50 extra messages whatever the length of the queue, so the growth is steady and does not speed up."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "The queue levels off only if the consumers speed up or the arrivals slow down. At these fixed rates the gap of 50 messages per second never closes."
         }
       ],
       "skill": "compute-backlog",
@@ -11984,20 +11896,20 @@
       ],
       "choices": [
         {
-          "id": "a",
-          "label": "Faster"
-        },
-        {
           "id": "b",
           "label": "Single-threaded"
         },
         {
-          "id": "c",
-          "label": "Idempotent"
-        },
-        {
           "id": "d",
           "label": "Stateless only"
+        },
+        {
+          "id": "a",
+          "label": "Faster"
+        },
+        {
+          "id": "c",
+          "label": "Idempotent"
         }
       ],
       "onCorrect": "An idempotent consumer treats a repeated message as already done, so at-least-once delivery produces an effect only once.",
@@ -12038,52 +11950,68 @@
         "backoff-jitter",
         "circuit-breaker"
       ],
-      "prompt": "A service makes 100 calls per second to a dependency that has stopped answering, and each call waits for its timeout of 30 seconds before failing. How many calls are waiting at any moment, once the service has settled?",
-      "responseType": "numeric",
+      "prompt": "A service makes 100 calls per second to a dependency that has stopped answering, and each call waits for its timeout of 30 seconds before failing. Once the service has settled, about how many calls are waiting at any moment?",
+      "responseType": "short_text",
       "difficulty": 1.2,
       "hints": [
-        "Little's law gives the number in the system as the arrival rate times the time spent there.",
-        "The rate is 100 per second and the time is 30 seconds.",
-        "Multiply 100 by 30."
+        "Picture the calls that arrived in the last 30 seconds and have not yet timed out."
       ],
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 3000,
-        "unit": "calls",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "By Little's law the number waiting is the arrival rate times the wait, 100 × 30 = 3,000."
+        "kind": "text",
+        "acceptedIdeas": [
+          "A few thousand, because calls keep arriving during the 30 seconds that each one waits"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "A few thousand, because calls keep arriving during the 30 seconds that each one waits"
       },
       "sourceIds": [
         "aws-builders-retries",
         "azure-patterns",
         "sre-book"
       ],
-      "onCorrect": "Three thousand waiting calls are three thousand threads or connections, which is more than many services have.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "About 100, the calls that arrive in one second"
+        },
+        {
+          "id": "b",
+          "label": "A few thousand, because calls keep arriving during the 30 seconds that each one waits"
+        },
+        {
+          "id": "d",
+          "label": "The number grows without limit, because none of the calls ever finishes"
+        },
+        {
+          "id": "c",
+          "label": "About 30, one for each second of the timeout"
+        }
+      ],
+      "onCorrect": "Each call waits 30 seconds while 100 more arrive every second, so about 100 × 30 = 3,000 are waiting at any moment.",
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              100
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That is the arrival rate. Each call waits 30 seconds, so many more calls are waiting at once."
+          "feedback": "100 is the number of calls that arrive in a single second, but each call stays for 30 seconds, so the calls of 30 different seconds are waiting together."
         },
         {
           "match": {
-            "numeric": [
-              30
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "That is the wait of a single call. The number waiting is the rate times the wait."
+          "feedback": "30 is the length of the timeout in seconds. Calls arrive 100 times a second, so far more than 30 are waiting."
         },
         {
           "match": {
-            "numeric": [
-              130
+            "choiceIds": [
+              "d"
             ]
           },
-          "feedback": "That adds the two numbers. Little's law multiplies the rate by the time."
+          "feedback": "Each call ends when its timeout runs out, so calls leave as well as arrive, and the number waiting settles at a fixed value."
         }
       ],
       "skill": "compute-amplification",
@@ -12613,16 +12541,16 @@
       ],
       "choices": [
         {
+          "id": "c",
+          "label": "Half-open"
+        },
+        {
           "id": "a",
           "label": "Closed"
         },
         {
           "id": "b",
           "label": "Open"
-        },
-        {
-          "id": "c",
-          "label": "Half-open"
         },
         {
           "id": "d",
@@ -12667,52 +12595,68 @@
         "failure-domain",
         "sysd-rpo-rto"
       ],
-      "prompt": "A service must be 99.5% available over 30 days, which is 43,200 minutes. How many minutes of downtime does that allow?",
-      "responseType": "numeric",
+      "prompt": "A service must be 99.5% available over 30 days, which is 43,200 minutes. Which is closest to the downtime that allows?",
+      "responseType": "short_text",
       "difficulty": 1.2,
       "hints": [
-        "The service may be down for the part of the time that it is not available.",
-        "That part is 100% − 99.5% = 0.5%, which is 0.005.",
-        "Multiply 0.005 by 43,200."
+        "Find the share of time the service may be down, then take that share of 43,200 minutes."
       ],
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 216,
-        "unit": "minutes",
-        "absoluteTolerance": 0.5,
-        "relativeTolerance": 0,
-        "workedAnswer": "The allowed downtime is 0.5% of 43,200 minutes, which is 0.005 × 43,200 = 216 minutes."
+        "kind": "text",
+        "acceptedIdeas": [
+          "About 3½ hours"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "About 3½ hours"
       },
       "sourceIds": [
         "sre-book",
         "sre-workbook",
         "azure-patterns"
       ],
-      "onCorrect": "Half a percent of a month is 216 minutes, which is 3.6 hours.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "About 20 minutes"
+        },
+        {
+          "id": "c",
+          "label": "About 15 hours"
+        },
+        {
+          "id": "d",
+          "label": "About 3 days"
+        },
+        {
+          "id": "b",
+          "label": "About 3½ hours"
+        }
+      ],
+      "onCorrect": "The service may be down for 0.5% of the period, and 0.5% of 43,200 minutes is 216 minutes, or about three and a half hours.",
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              43200
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That is the whole period. The allowed downtime is the 0.5% that is not available."
+          "feedback": "About 20 minutes is 0.05% of the period. A target of 99.5% leaves 0.5% for downtime, which is ten times as much."
         },
         {
           "match": {
-            "numeric": [
-              215.5
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "That subtracts 0.5 from 216 by mistake or rounds the product. The downtime is 0.005 × 43,200, which is exactly 216."
+          "feedback": "About 15 hours is 900 minutes, or about 2% of the period. A target of 99.5% leaves only 0.5% for downtime."
         },
         {
           "match": {
-            "numeric": [
-              21600
+            "choiceIds": [
+              "d"
             ]
           },
-          "feedback": "That takes 50% of the period. The allowed fraction is 0.5%, which is 0.005."
+          "feedback": "About 3 days is a tenth of the period. A target of 99.5% leaves 0.5% for downtime, which is far less."
         }
       ],
       "skill": "compute-downtime",
@@ -13407,51 +13351,67 @@
         "sysd-slo",
         "burn-rate"
       ],
-      "prompt": "An SLO says that 99.9% of requests must succeed. Over a window with 5,000,000 requests, how many may fail?",
-      "responseType": "numeric",
+      "prompt": "An SLO says that 99.9% of requests must succeed. In a window with 5,000,000 requests, about how many may fail?",
+      "responseType": "short_text",
       "difficulty": 1.1,
       "hints": [
-        "The share that may fail is 100% − 99.9%.",
-        "That share is 0.1%, which is 0.001.",
-        "Multiply 0.001 by 5,000,000."
+        "Find the share of requests that may fail, then take that share of 5,000,000."
       ],
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 5000,
-        "unit": "requests",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "0.1% of 5,000,000 is 0.001 × 5,000,000 = 5,000 requests."
+        "kind": "text",
+        "acceptedIdeas": [
+          "About 5,000"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "About 5,000"
       },
       "sourceIds": [
         "sre-book",
         "sre-workbook"
       ],
-      "onCorrect": "This number of failures that the target allows is the error budget for the window.",
+      "choices": [
+        {
+          "id": "b",
+          "label": "About 500"
+        },
+        {
+          "id": "a",
+          "label": "None, because a promise of 99.9% means that no request may fail"
+        },
+        {
+          "id": "d",
+          "label": "About 50,000"
+        },
+        {
+          "id": "c",
+          "label": "About 5,000"
+        }
+      ],
+      "onCorrect": "A target of 99.9% lets 0.1% of requests fail, and 0.1% of 5,000,000 is 5,000.",
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              5000000
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That is the number of requests in the window. Only 0.1% of them may fail."
+          "feedback": "A target of 99.9% is below 100%, so it allows a small share of failures. Only a target of 100% would allow none."
         },
         {
           "match": {
-            "numeric": [
-              500
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That takes 0.01% of the requests. The share that may fail is 0.1%."
+          "feedback": "500 is 0.01% of 5,000,000. A target of 99.9% leaves 0.1% for failures, which is ten times as much."
         },
         {
           "match": {
-            "numeric": [
-              50000
+            "choiceIds": [
+              "d"
             ]
           },
-          "feedback": "That takes 1% of the requests. The share that may fail is 0.1%."
+          "feedback": "50,000 is 1% of 5,000,000, which a target of 99% would allow. A target of 99.9% leaves only 0.1%."
         }
       ],
       "skill": "compute-error-budget",
@@ -14434,20 +14394,20 @@
       ],
       "choices": [
         {
-          "id": "a",
-          "label": "301"
-        },
-        {
           "id": "b",
           "label": "200"
         },
         {
-          "id": "c",
-          "label": "404"
+          "id": "a",
+          "label": "301"
         },
         {
           "id": "d",
           "label": "302"
+        },
+        {
+          "id": "c",
+          "label": "404"
         }
       ],
       "onCorrect": "A 302 is not normally cached, so every visit reaches the service and can be counted.",
@@ -14606,52 +14566,68 @@
         "hybrid",
         "design-review"
       ],
-      "prompt": "An account with 20,000,000 followers posts once, and feed writes are done at 100,000 per second. How many seconds does it take to fan out the post?",
-      "responseType": "numeric",
+      "prompt": "An account with 20,000,000 followers posts once, and feed writes are done at 100,000 per second. About how long does it take to fan out the post?",
+      "responseType": "short_text",
       "difficulty": 1.2,
       "hints": [
-        "The total work is one write per follower.",
-        "That is 20,000,000 writes at 100,000 per second.",
-        "Divide the writes by the rate."
+        "Divide the number of feed writes by the number of writes done in one second."
       ],
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 200,
-        "unit": "seconds",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "There are 20,000,000 writes, and 20,000,000 ÷ 100,000 = 200 seconds."
+        "kind": "text",
+        "acceptedIdeas": [
+          "A few minutes"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "A few minutes"
       },
       "sourceIds": [
         "system-design-primer",
         "sre-book",
         "azure-patterns"
       ],
-      "onCorrect": "For those 200 seconds the fan-out queue is occupied, and ordinary posts wait behind it unless they have their own capacity.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Well under a second"
+        },
+        {
+          "id": "c",
+          "label": "A few minutes"
+        },
+        {
+          "id": "b",
+          "label": "A few seconds"
+        },
+        {
+          "id": "d",
+          "label": "Several hours"
+        }
+      ],
+      "onCorrect": "The post needs 20,000,000 writes, which at 100,000 per second takes 200 seconds.",
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              2000
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That divides by 10,000. The rate is 100,000 per second."
+          "feedback": "100,000 writes per second is fast, but this post needs 20,000,000 writes, which is 200 times as many as one second's worth."
         },
         {
           "match": {
-            "numeric": [
-              20
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That divides by 1,000,000. The rate is 100,000 per second."
+          "feedback": "A few seconds would complete only a few hundred thousand writes, and this post needs 20,000,000."
         },
         {
           "match": {
-            "numeric": [
-              20000000
+            "choiceIds": [
+              "d"
             ]
           },
-          "feedback": "That is the number of writes. The question asks for the time it takes at the given rate."
+          "feedback": "At 100,000 writes per second an hour of work completes 360,000,000 writes, so 20,000,000 take a small fraction of an hour."
         }
       ],
       "skill": "compute-fan-out-writes",
@@ -14665,52 +14641,68 @@
         "hybrid",
         "design-review"
       ],
-      "prompt": "A user follows 200 accounts, of which 3 are very large and are fetched at read time. The other accounts are fanned out on write into one precomputed feed. How many reads and lookups does one feed view cause?",
-      "responseType": "numeric",
+      "prompt": "A user follows 200 accounts, of which 3 are very large and are fetched at read time. The other accounts are fanned out on write into one precomputed feed. What work does one feed view cause?",
+      "responseType": "short_text",
       "difficulty": 1.2,
       "hints": [
-        "The ordinary accounts are already in the precomputed feed.",
-        "That feed is one read.",
-        "Add one lookup for each large account."
+        "Ask which posts are already in the precomputed feed and which still have to be fetched when the feed is opened."
       ],
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 4,
-        "unit": "reads and lookups",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "One read fetches the precomputed feed and 3 lookups fetch the large accounts, so 1 + 3 = 4."
+        "kind": "text",
+        "acceptedIdeas": [
+          "One read of the precomputed feed and 3 lookups for the large accounts"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "One read of the precomputed feed and 3 lookups for the large accounts"
       },
       "sourceIds": [
         "system-design-primer",
         "sre-book",
         "azure-patterns"
       ],
-      "onCorrect": "The hybrid cuts 200 lookups to 4, without a write storm for the large accounts.",
+      "choices": [
+        {
+          "id": "b",
+          "label": "One read of the precomputed feed and 3 lookups for the large accounts"
+        },
+        {
+          "id": "c",
+          "label": "3 lookups, one for each large account"
+        },
+        {
+          "id": "d",
+          "label": "One read of the precomputed feed, since the feed holds everything"
+        },
+        {
+          "id": "a",
+          "label": "200 lookups, one for each account the user follows"
+        }
+      ],
+      "onCorrect": "The view reads the precomputed feed once and looks up the 3 large accounts, which is 4 operations where fan-out on read would need 200.",
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              200
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That is the cost under fan-out on read. The hybrid has the ordinary accounts in a precomputed feed."
+          "feedback": "Looking up every followed account is fan-out on read. Here the posts of the other 197 accounts are already in the precomputed feed."
         },
         {
           "match": {
-            "numeric": [
-              3
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "That counts only the large accounts and leaves out the read of the precomputed feed."
+          "feedback": "The precomputed feed still has to be read, since it holds the posts of the other 197 accounts."
         },
         {
           "match": {
-            "numeric": [
-              203
+            "choiceIds": [
+              "d"
             ]
           },
-          "feedback": "That adds the precomputed read to all 200 accounts. Only the 3 large ones are looked up."
+          "feedback": "The very large accounts are not copied into feeds, so their posts have to be fetched at read time."
         }
       ],
       "skill": "compute-fan-out-writes",
@@ -15013,20 +15005,20 @@
       ],
       "choices": [
         {
-          "id": "a",
-          "label": "Emails arrive twice"
-        },
-        {
-          "id": "b",
-          "label": "The database grows too fast"
+          "id": "d",
+          "label": "A slow provider ties up the web servers and takes the site down"
         },
         {
           "id": "c",
           "label": "The load balancer rejects requests"
         },
         {
-          "id": "d",
-          "label": "A slow provider ties up the web servers and takes the site down"
+          "id": "b",
+          "label": "The database grows too fast"
+        },
+        {
+          "id": "a",
+          "label": "Emails arrive twice"
         }
       ],
       "onCorrect": "Without a timeout, calls to a stalled provider hold threads for ever until none remain for any request.",

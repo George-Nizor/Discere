@@ -32,9 +32,9 @@
     "status": "available",
     "introduction": {
       "paragraphs": [
-        "A web service is a conversation in text. A client sends a request made of a line, some header fields and perhaps a body, and the server answers with a status code, more header fields and a body of its own. The first lessons read these messages directly, and from them come the rules that decide whether a request may be repeated, whether a response may be stored for reuse, and which status code says what happened.",
-        "The middle of the course moves from the protocol to the design of an API. It covers how resources are named, how bodies are written in JSON, how an interface is described in OpenAPI so that tools can check it, how long collections are paged, and how errors are reported and a POST is made safe to retry. Wherever an idea has a quantity in it, such as the freshness of a cached copy, the number of pages in a list or the wait between retries, you will work the number out.",
-        "The last lessons deal with an API that has to live among real users. They cover how it changes without breaking the clients that already use it, how callers prove who they are, what a server must refuse to trust, how it limits the load it accepts, and how the code behind it is arranged in layers with a queue for slow work. The course teaches the protocol and the decisions, and it does not depend on any one framework."
+        "A request to a web service is a few lines of text. The first line names a method and an address, such as POST /orders, and the answer begins with a status code, such as 201 for an order that now exists, followed by header fields and a body. An API built on HTTP is a set of agreements about what those lines mean: which requests only read and which change something, which status code reports which outcome, and what shape the data in the body takes.",
+        "Other programs rely on those agreements and cannot ask what you meant by them. A client whose request times out can repeat it safely only if the method promised that a repeat leaves the server as one copy would, a cache can reuse a stored response only if the headers say how long it stays fresh, and renaming one field in a response breaks every program that reads it. Backend development is the work of keeping those promises with real callers, some of whom make mistakes and some of whom are hostile.",
+        "Most of the questions this raises can be settled by following what one particular request would do, and some can be settled by arithmetic: how long a cached copy stays fresh, how many pages a collection of 137 items takes at 25 to a page, how long a client waits before its fifth retry. With that habit you can read a raw request and say what it asks for, judge whether an API's methods and status codes mean what they say, and find the places where a caller could read another person's data or make the server do something it should not."
       ],
       "outcomes": [
         "You'll be able to read and write a raw HTTP request and response.",
@@ -547,12 +547,7 @@
           "visualStateId": "",
           "checkQuestionId": "bacad-anatomy-of-an-http-exchange-which-line",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Before the next screen, decide which request line the server will receive when a browser opens the address https://shop.example/search?q=rust&page=2#reviews."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -614,14 +609,9 @@
           "kind": "try",
           "blocks": [],
           "visualStateId": "",
-          "checkQuestionId": "bacad-anatomy-of-an-http-exchange-count-pairs",
+          "checkQuestionId": "bacad-anatomy-of-an-http-exchange-split-the-query",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Count the pairs in the query of this request line, remembering that the query is everything after the question mark: GET /items?tag=red&tag=large&sort=price HTTP/1.1."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -659,12 +649,7 @@
           "visualStateId": "",
           "checkQuestionId": "bacad-anatomy-of-an-http-exchange-which-type",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A client sends a JSON body in a POST request. Say which header field tells the server how to read that body."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -809,12 +794,7 @@
           "visualStateId": "",
           "checkQuestionId": "bacad-anatomy-of-an-http-exchange-which-location",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A server answers a POST to /orders with the status line HTTP/1.1 201 Created, the headers Content-Type: application/json, Content-Length: 25 and Location: /orders/812, and a short JSON body. The client wants to fetch the order it has just created."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -863,11 +843,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "Every conversation between a browser and a web server, or between two programs, is carried by messages made of plain lines of text. The figure shows a complete request that a client might send to a shop's server, and the reply it might get back, written exactly as they travel. The request asks the server to create an order for three pens, and the reply says that the order exists and where to find it."
+              "text": "A browser that asks a shop to create an order sends text that begins POST /orders HTTP/1.1, continues with lines such as Content-Type: application/json, and ends with the order itself, {\"item\":\"pen\",\"qty\":3}. The server replies with text of the same layout, starting HTTP/1.1 201 Created and ending with a body of its own, {\"id\":812,\"status\":\"new\"}. An **HTTP exchange** is that pair of messages, one request and the response to it."
             },
             {
               "kind": "paragraph",
-              "text": "Every message of this kind is built from the same parts in the same order, so a server can read one line by line and know at each point what it is looking at. Once you can read these lines, each behaviour of the APIs in the rest of this course can be traced to a particular line of text in a request or a response."
+              "text": "Both messages have the same parts in the same order, a first line, header fields, a blank line and a body, so a server can read one line by line and know at each point what it is looking at. Once you can read those lines, you can take any request and say what it asks for, what it carries and how large it is, and you can trace behaviours that later lessons take up, such as whether a request may be repeated or a response stored, to a particular line of one of these messages."
             }
           ],
           "diagram": {
@@ -921,12 +901,7 @@
           "visualStateId": "",
           "checkQuestionId": "bacad-methods-and-safety-post-twice",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A client sends a request that adds 5 to a counter. No reply arrives, so the client sends the identical request again, and both reach the server. Work out the final value of the counter before reading on."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -994,12 +969,7 @@
           "visualStateId": "",
           "checkQuestionId": "bacad-methods-and-safety-put-twice",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Apply the definition to a PUT. The request PUT /counter with the body {\"value\": 15} states the value the counter should hold."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1035,14 +1005,9 @@
           "kind": "try",
           "blocks": [],
           "visualStateId": "",
-          "checkQuestionId": "bacad-methods-and-safety-delete-count",
+          "checkQuestionId": "bacad-methods-and-safety-delete-state",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "An order list holds orders 1 to 5, and a client's DELETE for order 4 is delivered three times because of retries. Count what the shop holds afterwards."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1151,14 +1116,9 @@
           "kind": "transfer",
           "blocks": [],
           "visualStateId": "",
-          "checkQuestionId": "bacad-methods-and-safety-crawler",
+          "checkQuestionId": "bacad-methods-and-safety-crawler-effect",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A shop's admin page uses links of the form /items/9/remove, written as GET requests, to delete items."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1197,12 +1157,7 @@
           "visualStateId": "",
           "checkQuestionId": "bacad-methods-and-safety-which-replaces",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Decide which method fits this description: the client holds a complete new version of a resource and sends it to the resource's own address."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1249,11 +1204,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A client sends a request that adds 5 to a counter on a server, and then waits for the answer. None comes, because the network dropped something, and the client now has to decide whether to send the request again. If the server never received the first copy, sending it again is what the client wants; if the server received it and only the reply was lost, sending it again adds 5 a second time."
+              "text": "The first word of a request line, such as GET, PUT, POST or DELETE, tells every program that handles the request what it may do with it. A client library whose request has timed out will send a GET or a PUT again without asking anyone, yet it will not send a POST again on its own, because with no reply it cannot know whether the server received the first copy and acted on it or never saw it at all."
             },
             {
               "kind": "paragraph",
-              "text": "The client cannot tell these cases apart, as the figure shows, so the question it faces is what a repeat would do. The answer depends on the kind of request, and HTTP names the kinds so that clients, caches and crawlers can act on it without asking."
+              "text": "The difference lies in what a second delivery would do. A method is **idempotent** when delivering the same request several times leaves the server as one delivery would, and GET and PUT have that property while POST does not. Sorting methods this way is what lets you say what a request does when it arrives twice, decide whether a failed request may be repeated, and see why a link that deletes something through GET is a mistake."
             }
           ],
           "diagram": {
@@ -1307,12 +1262,7 @@
           "visualStateId": "",
           "checkQuestionId": "bacad-status-codes-created-code",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A client POSTs a new order to /orders, and the server creates it as order 42. Decide which status code you would return before reading about the classes."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1351,12 +1301,7 @@
           "visualStateId": "",
           "checkQuestionId": "bacad-status-codes-no-content",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A client's DELETE for an order has worked, and the server has nothing to send back. Say which code reports that."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1396,12 +1341,7 @@
           "visualStateId": "",
           "checkQuestionId": "bacad-status-codes-not-allowed",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A client presents a valid token that identifies user A, and asks for the private invoice that belongs to user B. Work out which code reports the refusal, remembering what each of 401 and 403 asserts about the caller."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1458,12 +1398,7 @@
           "visualStateId": "",
           "checkQuestionId": "bacad-status-codes-unexpected",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A request is valid and permitted and the resource exists, but the server's own code throws an exception it did not expect. Choose the code that reports a fault of the server."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1558,12 +1493,7 @@
           "visualStateId": "",
           "checkQuestionId": "bacad-status-codes-which-4xx",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Decide which code best describes a registration request that is valid in every respect except that the email address belongs to an existing account."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1579,12 +1509,7 @@
           "visualStateId": "",
           "checkQuestionId": "bacad-status-codes-transfer-200",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A developer builds an API that answers every request with 200 OK, and puts the outcome in a field called error in the JSON body."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1632,11 +1557,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "Suppose a client posts a payment, and the server answers HTTP/1.1 200 OK with the body {\"error\": \"card declined\"}. A person reading the body can see that the payment failed, but a retry library, a cache, a load balancer and a monitoring dashboard never open the body. They read the first line, see 200, and report that all is well."
+              "text": "Every HTTP response begins with a line such as HTTP/1.1 404 Not Found or HTTP/1.1 503 Service Unavailable, and the three-digit **status code** in it is written to be read by software. The first digit sorts the outcome: 2 says the request worked, 4 says the request was at fault, and 5 says the server was. A retry library or a monitoring dashboard can act on that digit without ever opening the body, which is why the code has to be chosen to match what happened."
             },
             {
               "kind": "paragraph",
-              "text": "That is why a response begins with a code, and why the code has to be chosen with care. The figure shows how the codes are grouped by their first digit, so that software can decide who should change something before any person looks at the detail."
+              "text": "Within a class the exact code says more. A 401 and a 403 both refuse a request, but one tells the caller to identify itself and the other tells it that identifying itself again will not help, and a 400 and a 409 both reject a request, but one reports that it could not be read and the other that it clashes with what the server already holds. Knowing these distinctions lets you choose, for any outcome, the code that tells a client what to change, and lets you read the code in a response and say which side has to act."
             }
           ],
           "diagram": {
@@ -1698,14 +1623,9 @@
           "kind": "predict",
           "blocks": [],
           "visualStateId": "",
-          "checkQuestionId": "bacad-caching-and-conditional-requests-remaining",
+          "checkQuestionId": "bacad-caching-and-conditional-requests-reuse-at-95",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A response arrives with Cache-Control: max-age=120 and is stored at t = 0. A request for the same resource comes in at t = 95 seconds. Work out how much freshness the stored copy has left."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1746,12 +1666,7 @@
           "visualStateId": "",
           "checkQuestionId": "bacad-caching-and-conditional-requests-remaining-2",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A copy was fetched at t = 0 with Cache-Control: max-age=150. Use the rule that a copy is fresh while its age is below its lifetime to work out how long it still has."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1810,12 +1725,7 @@
           "visualStateId": "",
           "checkQuestionId": "bacad-caching-and-conditional-requests-code-304",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A stale copy carries the ETag \"v7\", and the cache sends If-None-Match: \"v7\". The resource has not changed since. State the status code that the origin sends back."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1855,12 +1765,7 @@
           "visualStateId": "",
           "checkQuestionId": "bacad-caching-and-conditional-requests-which-directive",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A response contains a customer's card details, and the API wants no cache anywhere to keep a copy. Name the directive."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1941,12 +1846,7 @@
           "visualStateId": "",
           "checkQuestionId": "bacad-caching-and-conditional-requests-bytes-96",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A client fetches a 48,000-byte resource and keeps its ETag. It then revalidates nine more times, and the resource changes once along the way."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1994,11 +1894,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A product list is a JSON body of 48,000 bytes, and a thousand people request it in an hour. If the server builds and sends it every time, it produces 48,000,000 bytes of identical output, and the data may have changed twice in that hour. The work was needed only twice."
+              "text": "A response can carry the header Cache-Control: max-age=300, which allows any program between the server and the reader to keep a copy and reuse it for the next 300 seconds without asking the server again. A **cache** is a program that does this, and the saving can be large: a product list of 48,000 bytes that a thousand people request in an hour would otherwise be built and sent a thousand times, which is 48,000,000 bytes of identical output, although the data may have changed only twice in that hour."
             },
             {
               "kind": "paragraph",
-              "text": "A cache avoids the repeats. It keeps a copy of a response and, for a time the server chooses, hands that copy out without troubling the server at all. The figure shows what that looks like for a stream of requests: those inside the green bars are answered by the cache, and only those outside reach the origin."
+              "text": "Once the 300 seconds have passed the copy is not thrown away, because the cache can ask the server whether it is still current, and if it is, the server answers with a short reply and no body. Whether a copy is still fresh, and how many requests still reach the server, are matters of simple arithmetic, so you can work out for any series of requests which ones a cache will answer itself, and you can choose how long a response may be kept."
             }
           ],
           "diagram": {
@@ -2095,12 +1995,7 @@
           "visualStateId": "",
           "checkQuestionId": "bacad-resources-and-urls-count-segments",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Count the segments in the path of the address from the figure, which is /v1/customers/17/orders. The query and the fragment are separate parts."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2139,12 +2034,7 @@
           "visualStateId": "",
           "checkQuestionId": "bacad-resources-and-urls-add-method",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Decide which method asks the server to add a new order to the collection /orders, where the server will choose the new order's address."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2160,12 +2050,7 @@
           "visualStateId": "",
           "checkQuestionId": "bacad-resources-and-urls-break-safe",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A shop needs a way to cancel order 42. Four designs are on the table, and one of them breaks the rule that GET must be safe. Decide which, before the next screen explains the reasoning."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2317,14 +2202,9 @@
           "kind": "transfer",
           "blocks": [],
           "visualStateId": "",
-          "checkQuestionId": "bacad-resources-and-urls-three-named",
+          "checkQuestionId": "bacad-resources-and-urls-captured-values",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "An API uses the template /customers/{cid}/orders/{oid}/items/{iid} to reach one item of one order of one customer, and the router is given the path /customers/17/orders/42/items/7."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2373,11 +2253,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "The address of a page in a browser looks like https://api.shop.example/v1/customers/17/orders?status=open&limit=20#top, and every part of it has a job. Some parts reach the server and some do not, and one part names the thing being asked for while another only narrows the answer. An API is mostly a decision about what its URLs name."
+              "text": "The address https://api.shop.example/v1/customers/17/orders?status=open&limit=20#top is built from parts that do different jobs. The path, /v1/customers/17/orders, names a thing, here the orders of customer 17. The query after the question mark only narrows what comes back, and the fragment at the end stays in the browser and is never sent. A **resource** is a thing of this kind that an API exposes, such as an order or a customer, and its URL is its name."
             },
             {
               "kind": "paragraph",
-              "text": "A good decision makes the whole interface guessable. If /orders is the set of orders and /orders/42 is one of them, a client that has seen those two can work out the rest without a manual, since the methods from the previous lessons do the rest."
+              "text": "The names an API gives its resources decide how easily it can be used, because a client that has seen /orders and /orders/42 can guess that the first is the set of orders and the second is one of them, and the methods from the earlier lessons then supply the verbs without any new vocabulary. Once you can read a URL this way, you can design paths for resources and collections, decide where a path should stop being nested, and see how a server matches a path to the code that handles it."
             }
           ],
           "diagram": {
@@ -2429,18 +2309,13 @@
           "kind": "predict",
           "blocks": [],
           "visualStateId": "",
-          "checkQuestionId": "bacad-json-representations-count-valid",
+          "checkQuestionId": "bacad-json-representations-trailing-comma",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Five texts are written below, and your task is to decide how many of them a JSON parser would accept: {\"a\":1}, {\"a\":1,}, {'a':1}, [1,2,] and {\"a\":null}."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "The next screen sets out the rules, and the figure shows why the others fail."
+              "text": "The next screen sets out the rules of the grammar, and the figure shows three that catch people out."
             }
           ],
           "answerVisibility": "hidden-until-response"
@@ -2523,12 +2398,7 @@
           "visualStateId": "",
           "checkQuestionId": "bacad-json-representations-which-word",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Look at the third of the five texts from the first screen of this lesson, {\"a\":null}, which was valid. Name the literal word that it uses for the value."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2607,12 +2477,7 @@
           "visualStateId": "",
           "checkQuestionId": "bacad-json-representations-cents-of-425",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A unit price is 4.25 and an order has 12 units. Work out the total in integer cents, converting before you multiply."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2701,14 +2566,9 @@
           "kind": "transfer",
           "blocks": [],
           "visualStateId": "",
-          "checkQuestionId": "bacad-json-representations-patch-fields",
+          "checkQuestionId": "bacad-json-representations-patch-result",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A profile holds nick \"ann\", bio \"hi\" and city \"Rome\", and a client sends a PATCH whose body is {\"nick\": null, \"bio\": \"\"}."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2757,11 +2617,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A client asks for order 42 and receives text in which every character is significant: {\"id\": \"42\", \"item\": \"pen\", \"qty\": 3}. A comma left at the end of that object, or a pair of single quotes in place of double ones, would make it unreadable to a JSON parser, even though a person would read it without difficulty."
+              "text": "What a server sends when a client asks for order 42 is text such as {\"id\": \"42\", \"item\": \"pen\", \"qty\": 3}, because the order itself cannot travel over a network. That text is a **representation**, an encoding of the order's current state, and the encoding most APIs use is JSON, which a program reads by following a strict grammar and then either accepts the whole text or rejects it."
             },
             {
               "kind": "paragraph",
-              "text": "The body is the part of an API that other programs parse, so its rules are strict, and some of its behaviour is surprising. A number that looks exact can change on the way, and a field that is missing can mean something different from one that is empty."
+              "text": "A person forgives a stray character and a parser does not, so the rules for writing a body are stricter than they first appear. Some values also fail to survive the journey: a price that is exact on paper may not be exact in a parser's number type, and a field that is missing from a body can mean something different from one that is empty. Knowing where these rules bite lets you judge whether a text is valid, design a body whose names and types stay stable, and carry money and large identifiers without losing a digit."
             }
           ],
           "diagram": {
@@ -2861,12 +2721,7 @@
           "visualStateId": "",
           "checkQuestionId": "bacad-describing-an-api-with-openapi-which-body",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "An API says that an order is an object with the properties item, qty and note, where item and qty are required. Before the next screens set out how that is written, decide which of the four bodies would satisfy it."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2905,12 +2760,7 @@
           "visualStateId": "",
           "checkQuestionId": "bacad-describing-an-api-with-openapi-operation-id",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A code generator reads the document and writes a function for each operation. Name the field it uses to decide what to call the function for POST /orders."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2971,14 +2821,9 @@
           "kind": "try",
           "blocks": [],
           "visualStateId": "",
-          "checkQuestionId": "bacad-describing-an-api-with-openapi-count-valid-1",
+          "checkQuestionId": "bacad-describing-an-api-with-openapi-reject-one",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Apply the schema to five bodies. Item and qty are required, with the types string and integer, and note is an optional string."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3071,14 +2916,9 @@
           "kind": "transfer",
           "blocks": [],
           "visualStateId": "",
-          "checkQuestionId": "bacad-describing-an-api-with-openapi-errors-count-2",
+          "checkQuestionId": "bacad-describing-an-api-with-openapi-faults-reported",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A client sends the body {\"qty\":\"3\"} to POST /orders, where the Order schema is as before. A validator reports every fault it finds."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3094,7 +2934,7 @@
       "activityId": "",
       "questionIds": [
         "bacad-describing-an-api-with-openapi-practice-1",
-        "bacad-describing-an-api-with-openapi-practice-2",
+        "bacad-describing-an-api-with-openapi-accepted-body",
         "bacad-describing-an-api-with-openapi-practice-3"
       ],
       "flashcardIds": [
@@ -3126,11 +2966,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "Here is the entire description of one operation in a small shop API, written as data: POST /orders takes an order with an item and a quantity, and answers either 201 or 400. It takes about eighteen lines, and from those lines a tool can produce documentation, a client library in any language, a mock server and a set of tests."
+              "text": "A description of the operation POST /orders, written as data and not as prose, says that the operation is called createOrder, that its request body must match a schema named Order, which requires an item and a quantity, and that it answers either 201 or 400. A file of such descriptions is an **OpenAPI document**, and because a program can read it as easily as a person can, the same file can produce reference documentation, a client library in any language, a mock server and a set of tests."
             },
             {
               "kind": "paragraph",
-              "text": "The format is called OpenAPI, and the reason to learn it is that it turns the shape of an API into something that can be checked. Instead of a page that a person reads and may misread, the description becomes a contract that the client, the server and the tests can all be compared with."
+              "text": "A page of documentation can be misread, whereas a description can be checked: a request body either matches its schema or it does not, and a server whose answers differ from the file is shown to be wrong. Once you can read one, you can say from the file alone which fields a request must carry, which responses a client has to handle, and whether a given body is valid."
             }
           ]
         },
@@ -3207,12 +3047,7 @@
           "visualStateId": "",
           "checkQuestionId": "bacad-pagination-and-filtering-page-count",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Apply the rule that the page count is the item count divided by the page size, rounded up, to a collection of 90 orders served 25 at a time."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3226,14 +3061,9 @@
           "kind": "predict",
           "blocks": [],
           "visualStateId": "",
-          "checkQuestionId": "bacad-pagination-and-filtering-predict-drift",
+          "checkQuestionId": "bacad-pagination-and-filtering-drift-effect",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A client reads a list of ids 50 down to 41, newest first, four at a time. It fetches page 1, which is 50, 49, 48 and 47. Before it asks for page 2 with offset 4, three new rows, 51, 52 and 53, are added at the top. Work out how many items of page 2 were already on page 1."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3289,12 +3119,7 @@
           "visualStateId": "",
           "checkQuestionId": "bacad-pagination-and-filtering-keyset-last",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Apply the keyset rule to a list of ids 80 down to 61, newest first: the page begins with the row immediately after the key and holds up to limit rows."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3426,12 +3251,7 @@
           "visualStateId": "",
           "checkQuestionId": "bacad-pagination-and-filtering-tiebreaker",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A list is sorted newest first, by creation time, and a cursor stores only that time. Several orders were created in the same second, and one page ends in the middle of them."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3479,11 +3299,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "An orders list has 137 items. Returned in one response it might be megabytes, and each new order makes it larger, so sooner or later the response will time out. The usual answer is to return it in pages of 25, each asked for by the position at which it begins. For the first page that position is 0, and for the sixth it is 125."
+              "text": "A list of 137 orders returned in a single response grows with every new order, and sooner or later it is too large to send before the client gives up. The usual remedy is to return the list in pages and to ask for each page by the position at which it begins: with pages of 25 the first begins at position 0 and the sixth at position 125. That position is called an **offset**, and the sixth page holds only 12 orders, since 137 is not a multiple of 25."
             },
             {
               "kind": "paragraph",
-              "text": "Asking for the start of a page by counting is simple, and for a list that never changes it is exact. Orders arrive all the time, though, and in a list that changes the count may begin in the wrong place. Offset pagination has that fault, and there is an alternative that avoids it."
+              "text": "An offset is exact only while the list stays still, and a list of orders does not. When a new order arrives at the front, every later row moves down one place, so a client that counts from the start may no longer begin where it left off. Working out how many pages a collection needs, and which rows a changing list repeats, shows you where offset paging goes wrong, and gives you the reason to page by the last key the client saw instead."
             }
           ]
         },
@@ -3517,14 +3337,9 @@
           "kind": "predict",
           "blocks": [],
           "visualStateId": "",
-          "checkQuestionId": "bacad-errors-and-idempotency-three-no-key",
+          "checkQuestionId": "bacad-errors-and-idempotency-no-key-effect",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A client posts a charge of 30 against a balance of 100. The response times out, and the client resends the request twice more, so the server receives it three times and does nothing to recognise repeats. Decide what the balance will be."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3603,12 +3418,7 @@
           "visualStateId": "",
           "checkQuestionId": "bacad-errors-and-idempotency-four-with-key",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A balance is 80, and a client sends POST /charges for 20 with the same Idempotency-Key four times, because of retries. The server stores the result under the key. Work out the balance afterwards."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3646,12 +3456,7 @@
           "visualStateId": "",
           "checkQuestionId": "bacad-errors-and-idempotency-total-30",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A server charges the amount of a request on the first sight of its key and ignores repeats of that key. It receives these requests in order: key x for 10, key y for 15, key x for 10, key y for 15 and key z for 5. Work out the total charged."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3765,12 +3570,7 @@
           "visualStateId": "",
           "checkQuestionId": "bacad-errors-and-idempotency-which-member",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A client wants to react to the insufficient-funds error with code of its own, without parsing any wording. Choose the member of the problem-details body that it should read."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3786,12 +3586,7 @@
           "visualStateId": "",
           "checkQuestionId": "bacad-errors-and-idempotency-dont-show",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A server fails while running a database query, and a developer is deciding what the error response should say."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3839,11 +3634,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A client sends POST /charges for 30 against an account holding 100, and then waits. The connection times out before any reply arrives, so the client sends the request again, and then once more. If the first request had in fact succeeded, the account now holds 10, and the customer has paid three times for one purchase."
+              "text": "A header named Idempotency-Key, carrying a unique value that the client chooses for each operation, lets a server recognise that a POST it has received is a repeat of one it has already carried out, and answer with the stored result instead of acting a second time. Without an **idempotency key** a client that retries a charge after a timeout has no safe way to ask again, because nothing in a plain POST tells the server whether it has met this request before."
             },
             {
               "kind": "paragraph",
-              "text": "A retry is the correct reaction to a timeout, and it is also what caused the harm. The way out is for the server to recognise a repeat, and for its errors to say clearly what went wrong."
+              "text": "The other half of a failed request is what the server says about it. An error body with a stable, machine-readable type and a short explanation lets a client decide what to do and lets a person see what happened, and RFC 9457 defines a JSON shape for it. With these two pieces you can make a POST safe to retry, and shape an error that tells the caller what to change without exposing the server's internals."
             }
           ]
         },
@@ -3879,12 +3674,7 @@
           "visualStateId": "",
           "checkQuestionId": "bacad-versioning-and-change-which-safe",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "An API is in use by apps installed on many phones, and its owners cannot make users update. Decide which of four changes to a response or request would leave every one of those existing clients working."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3967,18 +3757,13 @@
           "kind": "try",
           "blocks": [],
           "visualStateId": "",
-          "checkQuestionId": "bacad-versioning-and-change-count-breaking",
+          "checkQuestionId": "bacad-versioning-and-change-which-breaking",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Sort five proposed changes into breaking and not breaking, using the test that an old client could fail. The changes are listed in the question."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "The changes that only add something are left out of the count."
+              "text": "The changes that only add something are left out of the list."
             }
           ],
           "answerVisibility": "hidden-until-response"
@@ -3988,14 +3773,9 @@
           "kind": "try",
           "blocks": [],
           "visualStateId": "",
-          "checkQuestionId": "bacad-versioning-and-change-clients-fail",
+          "checkQuestionId": "bacad-versioning-and-change-who-fails",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Five client apps use an API, and three of them read the field qty. Work out what happens when the server removes qty and adds quantity in the same version."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4117,14 +3897,9 @@
           "kind": "transfer",
           "blocks": [],
           "visualStateId": "",
-          "checkQuestionId": "bacad-versioning-and-change-six-fields",
+          "checkQuestionId": "bacad-versioning-and-change-failing-fields-six",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "An old response has six fields: id, name, qty, price, note and status. The new version drops note, renames status to state, changes the type of price from integer to string, and adds a field tags."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4139,7 +3914,7 @@
       "visualKind": "none",
       "activityId": "",
       "questionIds": [
-        "bacad-versioning-and-change-practice-1",
+        "bacad-versioning-and-change-only-breaking",
         "bacad-versioning-and-change-practice-2",
         "bacad-versioning-and-change-practice-3"
       ],
@@ -4172,11 +3947,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "An API returns {\"id\": 7, \"name\": \"Ana\"}, and an app on thousands of phones reads both fields. The team that owns the API decides that name should be called full_name, and makes the change on a Tuesday. By Wednesday the app, which was written before the change and cannot be updated on demand, finds no name in any response."
+              "text": "Renaming the field name to full_name in a response such as {\"id\": 7, \"name\": \"Ana\"} takes a moment, and every program that was written to read name finds nothing there afterwards. The programs that read it may be apps on phones, scripts on other companies' servers and tools that nobody remembers writing, and the team that owns the API cannot update any of them on demand. A change is **breaking** when a client written against the old contract can fail because of it."
             },
             {
               "kind": "paragraph",
-              "text": "The change was small and the damage is large, because the contract of an API is promised to people who are not in the room. Some changes break that promise, and others can be made without leaving anyone behind."
+              "text": "That definition turns the question into something concrete for any proposed change: take the response a client used to receive, take the one it receives now, and ask what the client does with the difference. A team can still make a breaking change by running a migration, which keeps the old form working for a period that it announces, until nobody depends on it. Knowing how to run that test and plan that migration lets you classify a change as breaking or not, and move an API forward without stranding the clients that cannot move at once."
             }
           ],
           "diagram": {
@@ -4230,12 +4005,7 @@
           "visualStateId": "",
           "checkQuestionId": "bacad-identity-and-sessions-no-token",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A request arrives at a protected endpoint with no token and no cookie at all. Decide which status code the server should send, before the lesson separates the two questions that are being asked of every request."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4316,12 +4086,7 @@
           "visualStateId": "",
           "checkQuestionId": "bacad-identity-and-sessions-which-flag",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A script injected into a page could read the session cookie and send it to an attacker. Name the cookie attribute that prevents scripts from reading it."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4459,12 +4224,7 @@
           "visualStateId": "",
           "checkQuestionId": "bacad-identity-and-sessions-pin-time",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Apply the rule that guessing time is the number of possibilities divided by the guessing rate, to a 6-digit PIN and an attacker making 1,000 guesses every second."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4480,12 +4240,7 @@
           "visualStateId": "",
           "checkQuestionId": "bacad-identity-and-sessions-slow-hash",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The same PIN is now protected by a hash that is 100 times slower, so that the attacker can make only 10 guesses each second."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4501,12 +4256,7 @@
           "visualStateId": "",
           "checkQuestionId": "bacad-identity-and-sessions-who-reads",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A service issues tokens of the form payload.signature, where the payload is the base64 encoding of {\"user\": 7, \"role\": \"admin\"}. A developer proposes keeping a database password in the payload as well, on the grounds that it is encoded."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4555,11 +4305,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A server receives GET /orders with a cookie containing a long random string. Nothing in the request says who sent it, since HTTP carries no memory from one request to the next, so the server has to decide from that string alone whether this is user 7, an attacker, or nobody it knows. The way it decides is the subject of authentication."
+              "text": "HTTP carries no memory from one request to the next, so a GET /orders that arrives with a cookie holding a long random string says nothing by itself about who sent it. The server has to decide from that string whether the caller is user 7, an attacker, or nobody it knows, and the work of deciding is called **authentication**. It is a separate question from whether the caller may do what it asks, which is authorisation and is settled afterwards."
             },
             {
               "kind": "paragraph",
-              "text": "Two designs are in common use. One keeps a table on the server and gives the client a key to it, and the other puts the facts in the token and signs them, so that the server can check without a table. Each has a cost, and each protects a different thing."
+              "text": "There are two common ways to answer the first question. A server can keep a table of the ids it has issued and look each one up, or it can put the facts, such as the user number, in the token and sign them, so that it can check a token without a table. Knowing how each works, and what each exposes, lets you tell authentication from authorisation, judge what belongs in a token, and work out how long an attacker needs to guess a password against a fast hash and against a slow one."
             }
           ]
         },
@@ -4593,14 +4343,9 @@
           "kind": "predict",
           "blocks": [],
           "visualStateId": "",
-          "checkQuestionId": "bacad-authorisation-and-input-trust-rows-concat",
+          "checkQuestionId": "bacad-authorisation-and-input-trust-concat-effect",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A users table holds three rows. A handler builds the query SELECT * FROM users WHERE name = '<input>' by joining strings, and the input it receives is x' OR '1'='1. Decide how many rows the query returns."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4638,12 +4383,7 @@
           "visualStateId": "",
           "checkQuestionId": "bacad-authorisation-and-input-trust-which-fix",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A handler for GET /invoices/{id} returns the invoice to any caller who is logged in. Decide which of the four fixes addresses the flaw."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4698,14 +4438,9 @@
           "kind": "try",
           "blocks": [],
           "visualStateId": "",
-          "checkQuestionId": "bacad-authorisation-and-input-trust-rows-param",
+          "checkQuestionId": "bacad-authorisation-and-input-trust-param-effect",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Run the same input through a parameterised query: the query is SELECT * FROM users WHERE name = ?, and the value x' OR '1'='1 is sent separately, on a table with three rows."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4744,12 +4479,7 @@
           "visualStateId": "",
           "checkQuestionId": "bacad-authorisation-and-input-trust-fields-copied",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Apply an allowlist of name and email to the body {\"name\": \"Ana\", \"role\": \"admin\", \"email\": \"a@x\"}, copying only the keys it names."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4820,14 +4550,9 @@
           "kind": "transfer",
           "blocks": [],
           "visualStateId": "",
-          "checkQuestionId": "bacad-authorisation-and-input-trust-invoices-returned",
+          "checkQuestionId": "bacad-authorisation-and-input-trust-which-invoices",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Invoices 17, 18, 19 and 20 belong to users 4, 9, 4 and 9, in that order. User 9 requests all four in turn, and the handler now checks the owner on each request."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4875,11 +4600,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "An invoice at /invoices/18 belongs to user 4, and user 9 is logged in with a perfectly valid token. User 9 changes the 18 in the address to 17, then to 16, and reads the invoices of strangers one after another. No password was guessed and no token was forged: the server only ever asked who was calling, and never whether that caller was allowed to see that invoice."
+              "text": "A request for GET /invoices/18 with a valid token tells the server who is asking, and the server still has to decide whether that caller may have invoice 18. A handler that loads the invoice by its id and returns it has answered only the first question, so any logged-in caller can read every invoice by changing the number in the address. This fault is called **broken object-level authorisation**, and it heads the OWASP API Security Top 10 of 2023."
             },
             {
               "kind": "paragraph",
-              "text": "That failure is the most common one in APIs, and it belongs to a family of faults that all come from trusting what a caller sends. Three of them stand out, and one habit prevents each."
+              "text": "Two other faults share its cause, which is trusting what a caller sends: input joined into a query, which lets the caller change the query itself, and a request body copied whole onto a stored object, which lets the caller set fields such as a role. Each of the three has its own repair, which is an ownership check, a parameterised query or an allowlist of fields, and being able to name the repair lets you read a handler, point to the line that trusts too much, and say what should replace it."
             }
           ],
           "diagram": {
@@ -4931,14 +4656,9 @@
           "kind": "predict",
           "blocks": [],
           "visualStateId": "",
-          "checkQuestionId": "bacad-rate-limits-and-retries-burst",
+          "checkQuestionId": "bacad-rate-limits-and-retries-burst-outcome",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A bucket holds at most 3 tokens, refills at 1 token a second, and starts full. Four requests arrive at the same instant, and each allowed request spends one token. Decide how many of the four are allowed."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5002,12 +4722,7 @@
           "visualStateId": "",
           "checkQuestionId": "bacad-rate-limits-and-retries-bucket-4",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A bucket has capacity 4, refills 2 tokens per second and starts full. Trace six requests: five arrive at t = 0 and one at t = 1 second."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5046,12 +4761,7 @@
           "visualStateId": "",
           "checkQuestionId": "bacad-rate-limits-and-retries-which-retry",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A client sends idempotent requests, and one of its calls fails. Decide which of the four responses is worth trying again after a short wait."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5118,12 +4828,7 @@
           "visualStateId": "",
           "checkQuestionId": "bacad-rate-limits-and-retries-fifth-delay",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A client begins with a wait of 100 ms and doubles it after every failed retry, with no cap. Work out the wait that comes before the fifth retry."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5194,14 +4899,9 @@
           "kind": "transfer",
           "blocks": [],
           "visualStateId": "",
-          "checkQuestionId": "bacad-rate-limits-and-retries-count-retries",
+          "checkQuestionId": "bacad-rate-limits-and-retries-which-results-retry",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A client sent six idempotent requests and received these results: 200, 400, 429, 503, 404 and a timeout. It has a retry budget for anything that can reasonably be retried."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5249,11 +4949,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A client that sends five hundred requests a second to a service built for fifty is not a danger to the service alone. Every other client shares the same servers, and while the one noisy client is being answered, the rest are made to wait. A rate limit is the rule that keeps a shared service fair, and it is as much a matter of courtesy among clients as of defence against attackers."
+              "text": "When a client sends requests faster than a service allows, the service answers HTTP/1.1 429 Too Many Requests, and it may add a Retry-After header giving the number of seconds to wait. That reply is the visible end of a **rate limit**, a rule that stops one client from using capacity that every client shares, and the rule is usually applied by giving each client something it can spend and refilling it at a fixed pace."
             },
             {
               "kind": "paragraph",
-              "text": "A limit has two sides. The server has to decide which requests to refuse and say so clearly, and the client has to decide how to retry the ones that were refused, or that failed for other reasons, without making things worse. Both rest on a little arithmetic."
+              "text": "The refusal is only half of the arrangement. A client that has been refused, or whose request failed for another reason, has to decide whether to try again and how long to wait, and a client that retries at once makes a struggling service worse. Tracing how many requests a limit lets through, and working out how long each wait should be, are short pieces of arithmetic, and together they let you say what a server should send when its limit is reached and how a client should retry without making matters worse."
             }
           ]
         },
@@ -5289,12 +4989,7 @@
           "visualStateId": "",
           "checkQuestionId": "bacad-layers-and-background-work-where-rule",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A service has a rule that an order cannot ship before it is paid. Decide where in the code that rule should live, before the lesson separates the jobs of a handler, a service and a repository."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5352,12 +5047,7 @@
           "visualStateId": "",
           "checkQuestionId": "bacad-layers-and-background-work-which-layer",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A service reports that an order has not been paid. Decide which layer turns that outcome into the status code 409 for the client."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5396,12 +5086,7 @@
           "visualStateId": "",
           "checkQuestionId": "bacad-layers-and-background-work-crash-total",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Apply the transfer without a transaction. Account A holds 100 and B holds 50, 30 is debited from A, and the server crashes before B is credited."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5457,18 +5142,13 @@
           "kind": "try",
           "blocks": [],
           "visualStateId": "",
-          "checkQuestionId": "bacad-layers-and-background-work-count-emails-3",
+          "checkQuestionId": "bacad-layers-and-background-work-which-orders-emailed",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Apply the rule that a worker sends one email per order, the first time it sees a paid event for that order, to a stream of events that contains repeats."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "The remembered set of orders is what keeps the count equal to the number of orders."
+              "text": "The remembered set of orders is what keeps each order to a single email."
             }
           ],
           "answerVisibility": "hidden-until-response"
@@ -5560,12 +5240,7 @@
           "visualStateId": "",
           "checkQuestionId": "bacad-layers-and-background-work-which-endpoint",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A service is running but has not yet connected to its database, and the load balancer must not send it traffic. Name the kind of check that reports 503 in this state."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5581,12 +5256,7 @@
           "visualStateId": "",
           "checkQuestionId": "bacad-layers-and-background-work-counter-30",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A worker adds 10 to a counter for each message, and it remembers the ids of the messages it has handled. The queue delivers m1, m2, m2 and m3, and the counter starts at 0."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5601,7 +5271,7 @@
       "visualKind": "none",
       "activityId": "",
       "questionIds": [
-        "bacad-layers-and-background-work-practice-1",
+        "bacad-layers-and-background-work-emailed-in-order",
         "bacad-layers-and-background-work-practice-2",
         "bacad-layers-and-background-work-practice-3"
       ],
@@ -5633,11 +5303,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A request to confirm an order has to charge the customer, update the stock, record the order and send an email, and each of those can fail in a different way. If every step is written in one function that reads the request, runs the SQL and calls the mail server, then a failure at any point leaves the system in a state nobody planned, and no part of the function can be tested without all the others."
+              "text": "A request to confirm an order has to charge the customer, update the stock, record the order and send an email, and each of those can fail in a different way. If every step is written in one function that reads the request, runs the SQL and calls the mail server, then a failure at any point leaves the system in a state nobody planned, and no part of the function can be tested without all the others. The remedy is to give each job a layer of its own and to move the work that can wait out of the request, onto a **queue**."
             },
             {
               "kind": "paragraph",
-              "text": "The work is easier to reason about when each job is in its own place, and when the work that can wait is moved out of the request altogether. The question is where each job belongs, and what changes when a queue is involved."
+              "text": "Each of these choices changes what a failure leaves behind. A rule that sits among SQL and status codes is hard to test, a pair of related changes made without a transaction can be left half done by a crash, and a message on a queue that retries can be delivered twice. Knowing where each job belongs lets you place code in the right layer, say what a crash or a retry will leave behind, and make a consumer safe against duplicates."
             }
           ]
         },
@@ -5725,12 +5395,12 @@
           "label": "GET /search?q=rust&page=2 HTTP/1.1"
         },
         {
-          "id": "c",
-          "label": "GET /search HTTP/1.1"
-        },
-        {
           "id": "d",
           "label": "GET shop.example/search?q=rust&page=2 HTTP/1.1"
+        },
+        {
+          "id": "c",
+          "label": "GET /search HTTP/1.1"
         }
       ]
     },
@@ -6109,20 +5779,20 @@
       "calculator": "off",
       "choices": [
         {
-          "id": "a",
-          "label": "method POST, path /orders, query express=1"
-        },
-        {
           "id": "b",
           "label": "method /orders, path POST, query express=1"
         },
         {
-          "id": "c",
-          "label": "method POST, path /orders?express=1, host express"
+          "id": "a",
+          "label": "method POST, path /orders, query express=1"
         },
         {
           "id": "d",
           "label": "method POST, path /orders, body express=1"
+        },
+        {
+          "id": "c",
+          "label": "method POST, path /orders?express=1, host express"
         }
       ]
     },
@@ -6537,8 +6207,8 @@
       "calculator": "off",
       "choices": [
         {
-          "id": "a",
-          "label": "POST"
+          "id": "d",
+          "label": "DELETE"
         },
         {
           "id": "b",
@@ -6549,8 +6219,8 @@
           "label": "GET"
         },
         {
-          "id": "d",
-          "label": "DELETE"
+          "id": "a",
+          "label": "POST"
         }
       ]
     },
@@ -6610,48 +6280,61 @@
         "auth-codes",
         "conflict-codes"
       ],
-      "prompt": "A POST to /orders has just created order 42, and the server answers with a Location header. Which status code reports that a new resource was created?",
-      "responseType": "numeric",
+      "prompt": "A POST to /orders has just created order 42, and the server sends a Location header with its address. Which status line should it send?",
       "difficulty": 1,
       "hints": [
-        "It belongs to the class for success, which starts with the digit 2.",
-        "Plain success is one code; a code for creation is the next one up.",
-        "The code immediately follows the one that means plain success."
+        "The code belongs to the class for success, which starts with the digit 2.",
+        "One of the success codes reports that something new was made, and its reason phrase says so."
       ],
-      "answerAuthority": {
-        "kind": "numeric",
-        "value": 201,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "A successful creation answers 201 Created, with Location: /orders/42."
-      },
       "sourceIds": [
         "rfc9110",
         "rfc6585",
         "mdn-http"
       ],
       "onCorrect": "201 says that a resource was created, and its Location header gives the new address.",
+      "skill": "pick-status",
+      "calculator": "off",
+      "responseType": "short_text",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "HTTP/1.1 201 Created"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "HTTP/1.1 201 Created"
+      },
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              200
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "200 reports plain success. A request that created something has a code of its own, which tells the client to look at Location."
+          "feedback": "A 200 reports plain success. A request that created something has a code of its own, which tells the client to look at Location."
         },
         {
           "match": {
-            "numeric": [
-              204
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "204 means success with nothing to return. Here the new address is returned in Location, which is what the creation code is for."
+          "feedback": "A 204 means success with nothing to return. Here the new address is returned in Location, which is what the creation code is for."
         }
       ],
-      "skill": "pick-status",
-      "calculator": "off"
+      "choices": [
+        {
+          "id": "c",
+          "label": "HTTP/1.1 204 No Content"
+        },
+        {
+          "id": "b",
+          "label": "HTTP/1.1 201 Created"
+        },
+        {
+          "id": "a",
+          "label": "HTTP/1.1 200 OK"
+        }
+      ]
     },
     {
       "id": "bacad-status-codes-no-content",
@@ -6703,47 +6386,72 @@
         "conflict-codes"
       ],
       "prompt": "A request carries a valid token for user A and asks for user B's private invoice. Which status code reports that A is not allowed?",
-      "responseType": "numeric",
       "difficulty": 1,
       "hints": [
         "The server knows who the caller is.",
-        "Identity is established, and the permission is missing.",
-        "The code for a missing or invalid token is the other one, close to this."
+        "Identity is established, and the permission is missing. The code for a missing or invalid token is a different one."
       ],
-      "answerAuthority": {
-        "kind": "numeric",
-        "value": 403,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "The token is valid, so the caller is known, and the invoice is not theirs, so the answer is 403."
-      },
       "sourceIds": [
         "rfc9110",
         "rfc6585",
         "mdn-http"
       ],
       "onCorrect": "403 means the caller is identified but not permitted, whereas 401 is for credentials that are missing or invalid.",
+      "skill": "distinguish-auth",
+      "calculator": "off",
+      "responseType": "short_text",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "403, because the caller is identified but not allowed"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "403, because the caller is identified but not allowed"
+      },
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              401
+            "choiceIds": [
+              "a"
             ]
           },
           "feedback": "401 means the credentials are missing or invalid, and here the token is valid. The caller is known and simply not permitted."
         },
         {
           "match": {
-            "numeric": [
-              404
+            "choiceIds": [
+              "b"
             ]
           },
           "feedback": "404 would say the invoice does not exist, which is not what is being reported. The caller has been identified and refused."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "400 says the request could not be read, and this one is well formed. The fault lies in who is asking, not in what was asked."
         }
       ],
-      "skill": "distinguish-auth",
-      "calculator": "off"
+      "choices": [
+        {
+          "id": "b",
+          "label": "404, because the invoice is not at that address"
+        },
+        {
+          "id": "a",
+          "label": "401, because the caller has not been identified"
+        },
+        {
+          "id": "c",
+          "label": "400, because the request could not be understood"
+        },
+        {
+          "id": "d",
+          "label": "403, because the caller is identified but not allowed"
+        }
+      ]
     },
     {
       "id": "bacad-status-codes-unexpected",
@@ -6857,16 +6565,16 @@
           "label": "400, because the request could not be understood"
         },
         {
-          "id": "b",
-          "label": "404, because the account was not found"
+          "id": "d",
+          "label": "500, because the server could not finish"
         },
         {
           "id": "c",
           "label": "409, because the request conflicts with current state"
         },
         {
-          "id": "d",
-          "label": "500, because the server could not finish"
+          "id": "b",
+          "label": "404, because the account was not found"
         }
       ]
     },
@@ -6932,16 +6640,16 @@
           "label": "Nothing, because the body says what happened"
         },
         {
-          "id": "b",
-          "label": "Retry logic, caches and logs treat the response as a success"
-        },
-        {
           "id": "c",
           "label": "The client cannot read JSON from a 200"
         },
         {
           "id": "d",
           "label": "The server will run out of status codes"
+        },
+        {
+          "id": "b",
+          "label": "Retry logic, caches and logs treat the response as a success"
         }
       ]
     },
@@ -7715,12 +7423,12 @@
       "calculator": "off",
       "choices": [
         {
-          "id": "a",
-          "label": "Never store the response"
-        },
-        {
           "id": "b",
           "label": "Store the response, but revalidate it before every reuse"
+        },
+        {
+          "id": "a",
+          "label": "Never store the response"
         },
         {
           "id": "c",
@@ -7790,7 +7498,7 @@
         "bacad-url-parts",
         "bacad-template"
       ],
-      "prompt": "Which method adds a new order to the collection /orders?",
+      "prompt": "Which method adds a new order to the collection /orders, when the server chooses the new order's address?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -7895,20 +7603,20 @@
       "calculator": "off",
       "choices": [
         {
-          "id": "a",
-          "label": "POST /orders/42/cancellation"
-        },
-        {
-          "id": "b",
-          "label": "GET /orders/42/cancel"
-        },
-        {
           "id": "c",
           "label": "PATCH /orders/42 with {\"status\":\"cancelled\"}"
         },
         {
           "id": "d",
           "label": "DELETE /orders/42"
+        },
+        {
+          "id": "a",
+          "label": "POST /orders/42/cancellation"
+        },
+        {
+          "id": "b",
+          "label": "GET /orders/42/cancel"
         }
       ]
     },
@@ -8218,20 +7926,20 @@
       "calculator": "off",
       "choices": [
         {
-          "id": "a",
-          "label": "/orders"
-        },
-        {
           "id": "b",
           "label": "/orders/42"
         },
         {
-          "id": "c",
-          "label": "/orders/42/items"
-        },
-        {
           "id": "d",
           "label": "/getOrders"
+        },
+        {
+          "id": "a",
+          "label": "/orders"
+        },
+        {
+          "id": "c",
+          "label": "/orders/42/items"
         }
       ]
     },
@@ -8603,20 +8311,20 @@
       "calculator": "off",
       "choices": [
         {
-          "id": "a",
-          "label": "{'a': 1}"
+          "id": "d",
+          "label": "{\"a\": 01}"
         },
         {
-          "id": "b",
-          "label": "{\"a\": 1,}"
+          "id": "a",
+          "label": "{'a': 1}"
         },
         {
           "id": "c",
           "label": "{\"a\": null}"
         },
         {
-          "id": "d",
-          "label": "{\"a\": 01}"
+          "id": "b",
+          "label": "{\"a\": 1,}"
         }
       ]
     },
@@ -8774,20 +8482,20 @@
       "calculator": "off",
       "choices": [
         {
-          "id": "a",
-          "label": "{\"item\":\"pen\"}"
-        },
-        {
-          "id": "b",
-          "label": "{\"item\":\"pen\",\"qty\":\"three\"}"
+          "id": "d",
+          "label": "{\"qty\":3,\"note\":\"x\"}"
         },
         {
           "id": "c",
           "label": "{\"item\":\"pen\",\"qty\":3}"
         },
         {
-          "id": "d",
-          "label": "{\"qty\":3,\"note\":\"x\"}"
+          "id": "b",
+          "label": "{\"item\":\"pen\",\"qty\":\"three\"}"
+        },
+        {
+          "id": "a",
+          "label": "{\"item\":\"pen\"}"
         }
       ]
     },
@@ -9197,20 +8905,20 @@
       "calculator": "off",
       "choices": [
         {
-          "id": "a",
-          "label": "Nothing, since errors are not part of an API"
-        },
-        {
-          "id": "b",
-          "label": "The documented error responses, such as 400, that clients must handle"
-        },
-        {
           "id": "c",
           "label": "The request body, which is optional in OpenAPI"
         },
         {
           "id": "d",
           "label": "The path, which is implied by the method"
+        },
+        {
+          "id": "a",
+          "label": "Nothing, since errors are not part of an API"
+        },
+        {
+          "id": "b",
+          "label": "The documented error responses, such as 400, that clients must handle"
         }
       ]
     },
@@ -9522,20 +9230,20 @@
       "calculator": "off",
       "choices": [
         {
-          "id": "a",
-          "label": "Times are stored as strings"
-        },
-        {
           "id": "b",
           "label": "Rows with equal times have no fixed order, so a cursor cannot say which comes next"
         },
         {
-          "id": "c",
-          "label": "Cursors can only hold numbers"
+          "id": "a",
+          "label": "Times are stored as strings"
         },
         {
           "id": "d",
           "label": "Sorting by time is not allowed"
+        },
+        {
+          "id": "c",
+          "label": "Cursors can only hold numbers"
         }
       ]
     },
@@ -9600,32 +9308,32 @@
       "responseType": "numeric",
       "difficulty": 1.4,
       "hints": [
-        "Each added row shifts the list by one place.",
-        "Page 2 holds five items.",
-        "It cannot repeat more than page 1 contained."
+        "Each added row shifts the list down by one place.",
+        "Page 1's five rows now sit at positions 7 to 11, counting from 0, and page 2 covers positions 5 to 9.",
+        "Count the places in 5 to 9 that page 1's rows occupy."
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 5,
+        "value": 3,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "The shift of 7 exceeds the page size of 5, so all 5 items of page 2 repeat page 1."
+        "workedAnswer": "The seven new rows take positions 0 to 6, and page 2 covers positions 5 to 9. Positions 5 and 6 are new rows, and positions 7, 8 and 9 are the first three rows of page 1, so 3 items repeat."
       },
       "sourceIds": [
         "rfc9110",
         "owasp-api",
         "mdn-http"
       ],
-      "onCorrect": "The shift is larger than the page, so the second page is made of rows that all appeared on page 1.",
+      "onCorrect": "Seven new rows push page 1 down to positions 7 to 11, and page 2 covers positions 5 to 9, so its last three items are the first three rows of page 1.",
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              7
+              5
             ]
           },
-          "feedback": "Page 2 holds only five items, so no more than five can repeat."
+          "feedback": "Page 2 covers positions 5 to 9 of the new list. Positions 5 and 6 are still new rows, so only the three after them come from page 1."
         },
         {
           "match": {
@@ -9633,7 +9341,15 @@
               2
             ]
           },
-          "feedback": "The number added is seven, which is more than a page, so every item repeats."
+          "feedback": "Two of page 2's items are the new rows at positions 5 and 6, but the other three are the first three rows of page 1."
+        },
+        {
+          "match": {
+            "numeric": [
+              7
+            ]
+          },
+          "feedback": "Page 2 holds only five items, so no more than five can repeat."
         }
       ],
       "skill": "predict-repeats",
@@ -9697,20 +9413,20 @@
       "calculator": "off",
       "choices": [
         {
-          "id": "a",
-          "label": "Offset paging with a larger limit"
-        },
-        {
           "id": "b",
           "label": "Keyset paging with a cursor"
+        },
+        {
+          "id": "d",
+          "label": "Asking for page 1 repeatedly"
         },
         {
           "id": "c",
           "label": "Offset paging, but requested twice"
         },
         {
-          "id": "d",
-          "label": "Asking for page 1 repeatedly"
+          "id": "a",
+          "label": "Offset paging with a larger limit"
         }
       ]
     },
@@ -10079,16 +9795,16 @@
           "label": "A stable type for the error"
         },
         {
+          "id": "d",
+          "label": "A detail saying which field was wrong"
+        },
+        {
           "id": "b",
           "label": "A short title"
         },
         {
           "id": "c",
           "label": "A stack trace and the SQL that failed"
-        },
-        {
-          "id": "d",
-          "label": "A detail saying which field was wrong"
         }
       ]
     },
@@ -10295,12 +10011,12 @@
       "calculator": "off",
       "choices": [
         {
-          "id": "a",
-          "label": "Renaming a response field"
-        },
-        {
           "id": "b",
           "label": "Changing id from integer to string"
+        },
+        {
+          "id": "a",
+          "label": "Renaming a response field"
         },
         {
           "id": "c",
@@ -10670,20 +10386,20 @@
       "calculator": "off",
       "choices": [
         {
-          "id": "a",
-          "label": "None, because JSON is flexible"
-        },
-        {
           "id": "b",
           "label": "Clients that read qty"
+        },
+        {
+          "id": "d",
+          "label": "Only clients that send POST"
         },
         {
           "id": "c",
           "label": "Only clients written in statically typed languages"
         },
         {
-          "id": "d",
-          "label": "Only clients that send POST"
+          "id": "a",
+          "label": "None, because JSON is flexible"
         }
       ]
     },
@@ -11126,6 +10842,10 @@
       "calculator": "off",
       "choices": [
         {
+          "id": "d",
+          "label": "Nobody without the secret key"
+        },
+        {
           "id": "a",
           "label": "Only the server, because it is encoded"
         },
@@ -11136,10 +10856,6 @@
         {
           "id": "c",
           "label": "Anyone who holds the token"
-        },
-        {
-          "id": "d",
-          "label": "Nobody without the secret key"
         }
       ]
     },
@@ -11303,16 +11019,16 @@
           "label": "It produces hashes that are too long"
         },
         {
+          "id": "d",
+          "label": "It makes passwords case sensitive"
+        },
+        {
           "id": "b",
           "label": "It lets an attacker who steals the table try guesses very quickly"
         },
         {
           "id": "c",
           "label": "It cannot be run on a server"
-        },
-        {
-          "id": "d",
-          "label": "It makes passwords case sensitive"
         }
       ]
     },
@@ -11474,16 +11190,16 @@
       "calculator": "off",
       "choices": [
         {
-          "id": "a",
-          "label": "Make invoice ids longer"
+          "id": "c",
+          "label": "Hide the invoice link in the interface"
         },
         {
           "id": "b",
           "label": "Check that the invoice belongs to the caller before returning it"
         },
         {
-          "id": "c",
-          "label": "Hide the invoice link in the interface"
+          "id": "a",
+          "label": "Make invoice ids longer"
         },
         {
           "id": "d",
@@ -11799,20 +11515,20 @@
       "calculator": "off",
       "choices": [
         {
-          "id": "a",
-          "label": "Remove quotation marks from the input by hand"
-        },
-        {
-          "id": "b",
-          "label": "Pass input as parameters of a parameterised query"
+          "id": "d",
+          "label": "Limit the length of every input"
         },
         {
           "id": "c",
           "label": "Show a generic error page"
         },
         {
-          "id": "d",
-          "label": "Limit the length of every input"
+          "id": "a",
+          "label": "Remove quotation marks from the input by hand"
+        },
+        {
+          "id": "b",
+          "label": "Pass input as parameters of a parameterised query"
         }
       ]
     },
@@ -12020,8 +11736,8 @@
       "calculator": "off",
       "choices": [
         {
-          "id": "a",
-          "label": "400 Bad Request"
+          "id": "d",
+          "label": "403 Forbidden"
         },
         {
           "id": "b",
@@ -12032,8 +11748,8 @@
           "label": "503 Service Unavailable"
         },
         {
-          "id": "d",
-          "label": "403 Forbidden"
+          "id": "a",
+          "label": "400 Bad Request"
         }
       ]
     },
@@ -12395,16 +12111,16 @@
       "calculator": "off",
       "choices": [
         {
-          "id": "a",
-          "label": "To make each retry cheaper for the server"
-        },
-        {
           "id": "b",
           "label": "So that many clients do not all retry at the same moment"
         },
         {
           "id": "c",
           "label": "So that retries always succeed"
+        },
+        {
+          "id": "a",
+          "label": "To make each retry cheaper for the server"
         },
         {
           "id": "d",
@@ -12469,20 +12185,20 @@
       "calculator": "off",
       "choices": [
         {
-          "id": "a",
-          "label": "The handler, as an if before the response"
-        },
-        {
-          "id": "b",
-          "label": "The service layer"
-        },
-        {
           "id": "c",
           "label": "The repository SQL"
         },
         {
           "id": "d",
           "label": "The client"
+        },
+        {
+          "id": "b",
+          "label": "The service layer"
+        },
+        {
+          "id": "a",
+          "label": "The handler, as an if before the response"
         }
       ]
     },
@@ -12992,20 +12708,1651 @@
       "calculator": "off",
       "choices": [
         {
-          "id": "a",
-          "label": "Emails cannot be sent from a server"
+          "id": "c",
+          "label": "Transactions cannot contain more than one statement"
         },
         {
           "id": "b",
           "label": "A slow mail server holds the transaction open, and a rollback cannot unsend the email"
         },
         {
-          "id": "c",
-          "label": "Transactions cannot contain more than one statement"
+          "id": "a",
+          "label": "Emails cannot be sent from a server"
         },
         {
           "id": "d",
           "label": "Email must always be sent by the client"
+        }
+      ]
+    },
+    {
+      "id": "bacad-anatomy-of-an-http-exchange-split-the-query",
+      "conceptIds": [
+        "request",
+        "response",
+        "header"
+      ],
+      "prompt": "The request line is GET /items?tag=red&tag=large&sort=price HTTP/1.1. Which list gives the name=value pairs in its query?",
+      "difficulty": 1,
+      "hints": [
+        "The query is everything after the question mark, and an ampersand separates one pair from the next.",
+        "Ask whether a name that appears twice is joined into one pair or kept as two."
+      ],
+      "sourceIds": [
+        "rfc9110",
+        "rfc9112",
+        "mdn-http",
+        "py-stdlib"
+      ],
+      "onCorrect": "A name may repeat, as tag does here, and each repetition is its own pair. That is how a client sends several values for one parameter.",
+      "skill": "parse-a-request",
+      "calculator": "off",
+      "responseType": "short_text",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "tag=red and tag=large and sort=price"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "tag=red and tag=large and sort=price"
+      },
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "The query is not merged: each occurrence of tag is written out as its own pair, and the server decides what to do with the two values."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "The path /items and the question mark come before the query. The query is only what follows the question mark."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "The second tag=large is a pair too. A repeated name does not cancel the first one, so the query holds three pairs."
+        }
+      ],
+      "choices": [
+        {
+          "id": "d",
+          "label": "tag=red and sort=price"
+        },
+        {
+          "id": "b",
+          "label": "/items?tag=red, tag=large and sort=price"
+        },
+        {
+          "id": "c",
+          "label": "tag=red and tag=large and sort=price"
+        },
+        {
+          "id": "a",
+          "label": "tag=red,large and sort=price"
+        }
+      ]
+    },
+    {
+      "id": "bacad-methods-and-safety-crawler-effect",
+      "conceptIds": [
+        "safe-method",
+        "idempotent-method",
+        "retry-rule"
+      ],
+      "prompt": "A shop's admin page has GET links of the form /items/9/remove that delete an item, and a search crawler follows every link on the page. What happens?",
+      "difficulty": 1.3,
+      "hints": [
+        "A crawler assumes that a GET changes nothing.",
+        "Each link names a different item, and following it sends the request that removes that item."
+      ],
+      "sourceIds": [
+        "rfc9110",
+        "rfc9112",
+        "mdn-http",
+        "py-stdlib"
+      ],
+      "onCorrect": "Crawlers, caches and prefetching browsers all assume that a GET is read-only, so a GET that deletes data gets triggered by software nobody was watching.",
+      "skill": "classify-methods",
+      "calculator": "off",
+      "responseType": "short_text",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "The crawler deletes the item behind every link it follows"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "The crawler deletes the item behind every link it follows"
+      },
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "A crawler reads a page by sending a GET request for each link, and the server carries out whatever that request does, so a link that deletes an item deletes it when the crawler follows the link."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Idempotence covers repeats of the same request. These links name different items, so each one is a different request and each removes its own item."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "HTTP only defines GET as read-only. Nothing stops a server from deleting on a GET, and a server that does so will carry out the deletions for any client that asks."
+        }
+      ],
+      "choices": [
+        {
+          "id": "b",
+          "label": "Nothing is deleted, because a crawler only reads pages"
+        },
+        {
+          "id": "a",
+          "label": "The crawler deletes the item behind every link it follows"
+        },
+        {
+          "id": "d",
+          "label": "The server refuses the requests, because a GET may not change data"
+        },
+        {
+          "id": "c",
+          "label": "Only the first item is deleted, because GET is idempotent"
+        }
+      ]
+    },
+    {
+      "id": "bacad-caching-and-conditional-requests-reuse-at-95",
+      "conceptIds": [
+        "bacad-freshness",
+        "validator",
+        "revalidation"
+      ],
+      "prompt": "A response with Cache-Control: max-age=120 was stored by a cache at t = 0 seconds. A request for the same resource arrives at t = 95 seconds. What does the cache do?",
+      "difficulty": 1,
+      "hints": [
+        "max-age=120 allows the copy to be reused for 120 seconds after it was generated.",
+        "Compare the 95 seconds that have passed with the 120 seconds allowed."
+      ],
+      "sourceIds": [
+        "rfc9111",
+        "rfc9110",
+        "mdn-http"
+      ],
+      "onCorrect": "The copy is 95 seconds old and its lifetime is 120, so it is still fresh for another 25 seconds and the origin is not contacted.",
+      "skill": "compute-freshness",
+      "calculator": "off",
+      "responseType": "short_text",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "It answers from the stored copy without contacting the origin"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "It answers from the stored copy without contacting the origin"
+      },
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "A cache checks only when a copy is stale. This one is 95 seconds old and its lifetime is 120 seconds, so it is fresh and can be reused without any contact."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Freshness has no margin: a copy is fresh for as long as its age is below its lifetime. At 95 seconds the copy has 25 seconds left, so no check is needed yet."
+        }
+      ],
+      "choices": [
+        {
+          "id": "b",
+          "label": "It sends the request to the origin, because 95 seconds is close to 120"
+        },
+        {
+          "id": "c",
+          "label": "It answers from the stored copy without contacting the origin"
+        },
+        {
+          "id": "a",
+          "label": "It sends the request to the origin, because a cache must check every request"
+        }
+      ]
+    },
+    {
+      "id": "bacad-resources-and-urls-captured-values",
+      "conceptIds": [
+        "resource",
+        "bacad-url-parts",
+        "bacad-template"
+      ],
+      "prompt": "A router matches the path /customers/17/orders/42/items/7 against the template /customers/{cid}/orders/{oid}/items/{iid}. Which values does it capture?",
+      "difficulty": 1.2,
+      "hints": [
+        "Only the segments in braces capture a value; the others must simply be equal.",
+        "Each braces segment takes the path segment in the same position."
+      ],
+      "sourceIds": [
+        "rfc3986",
+        "rfc9110",
+        "mdn-http",
+        "fielding-2000"
+      ],
+      "onCorrect": "Each braces segment captures the path segment in the same position, so the router returns cid = 17, oid = 42 and iid = 7 and hands them to the code for that template.",
+      "skill": "match-templates",
+      "calculator": "off",
+      "responseType": "short_text",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "cid = 17, oid = 42, iid = 7"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "cid = 17, oid = 42, iid = 7"
+      },
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "Those words are the fixed segments, which have to be equal in the path and the template and capture nothing. Only the segments in braces capture, and they capture the values between the fixed words."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "The template has a third segment in braces, {iid}, and it captures 7. A path fits only when every segment of the template is matched, so none is left over."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "Captures follow position from left to right. The first segment in braces takes the first value in the same place in the path, which is 17."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "cid = customers, oid = orders, iid = items"
+        },
+        {
+          "id": "c",
+          "label": "cid = 17, oid = 42, iid = 7"
+        },
+        {
+          "id": "b",
+          "label": "cid = 17 and oid = 42, with the last segment left unmatched"
+        },
+        {
+          "id": "d",
+          "label": "cid = 7, oid = 42, iid = 17"
+        }
+      ]
+    },
+    {
+      "id": "bacad-json-representations-trailing-comma",
+      "conceptIds": [
+        "representation",
+        "json-syntax",
+        "number-care"
+      ],
+      "prompt": "A program passes the text {\"a\":1,} to a JSON parser. What does the parser do?",
+      "difficulty": 1,
+      "hints": [
+        "Ask whether the grammar has any room for a comma that separates nothing from nothing.",
+        "A parser works on the text as a whole, and it has to give one answer for it."
+      ],
+      "sourceIds": [
+        "rfc8259",
+        "rfc9110",
+        "mdn-http",
+        "py-stdlib"
+      ],
+      "onCorrect": "JSON allows a comma only between two members, so the trailing comma makes the whole text invalid and no part of it is used.",
+      "skill": "validate-json",
+      "calculator": "off",
+      "responseType": "short_text",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "It rejects the whole text as invalid"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "It rejects the whole text as invalid"
+      },
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "Some programming languages tolerate a trailing comma, but the JSON grammar does not. The comma separates two members, and here there is no second member."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "A JSON parser has no partial credit: the text is either valid or it is not, and an invalid text yields no object at all, not even the part before the fault."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "It accepts the text and ignores the extra comma"
+        },
+        {
+          "id": "b",
+          "label": "It rejects the whole text as invalid"
+        },
+        {
+          "id": "c",
+          "label": "It reads a = 1 and discards the rest of the text"
+        }
+      ]
+    },
+    {
+      "id": "bacad-json-representations-patch-result",
+      "conceptIds": [
+        "representation",
+        "json-syntax",
+        "number-care"
+      ],
+      "prompt": "A profile holds nick \"ann\", bio \"hi\" and city \"Rome\". A PATCH sends {\"nick\": null, \"bio\": \"\"}. What does the profile hold afterwards?",
+      "difficulty": 1.3,
+      "hints": [
+        "Null, an empty string and a field left out are three different instructions.",
+        "A field that is left out of a PATCH body is not mentioned, so it is left as it was."
+      ],
+      "sourceIds": [
+        "rfc8259",
+        "rfc9110",
+        "mdn-http",
+        "py-stdlib"
+      ],
+      "onCorrect": "Null clears the nickname, the empty string is a value of its own, and city was not mentioned, so it keeps its old value.",
+      "skill": "handle-missing-fields",
+      "calculator": "off",
+      "responseType": "short_text",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "nick null, bio \"\", city \"Rome\""
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "nick null, bio \"\", city \"Rome\""
+      },
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "An empty string is not null. {\"bio\": \"\"} sets the bio to a string with no characters, which is a value, whereas null would clear it."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "A null in a PATCH clears the field it names, so the nickname is cleared rather than left as it was."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "A field that is left out of the body is not mentioned, so city keeps the value it had. Only fields named in the body change."
+        }
+      ],
+      "choices": [
+        {
+          "id": "c",
+          "label": "nick null, bio \"\", city null"
+        },
+        {
+          "id": "a",
+          "label": "nick null, bio null, city \"Rome\""
+        },
+        {
+          "id": "b",
+          "label": "nick \"ann\", bio \"\", city \"Rome\""
+        },
+        {
+          "id": "d",
+          "label": "nick null, bio \"\", city \"Rome\""
+        }
+      ]
+    },
+    {
+      "id": "bacad-describing-an-api-with-openapi-reject-one",
+      "conceptIds": [
+        "openapi-doc",
+        "bacad-schema",
+        "bacad-contract"
+      ],
+      "prompt": "The Order schema requires item (string) and qty (integer), and note (string) is optional. Properties the schema does not list are allowed. Which of these bodies does a validator reject?",
+      "difficulty": 1.2,
+      "hints": [
+        "Check each required property for presence, and then each property that is present for its declared type.",
+        "A property that the schema does not list is not an error."
+      ],
+      "sourceIds": [
+        "openapi",
+        "rfc8259",
+        "mdn-http"
+      ],
+      "onCorrect": "The qty is the string \"two\", where the schema declares an integer, so the validator reports a type error even though both required properties are present.",
+      "skill": "validate-against-schema",
+      "calculator": "off",
+      "responseType": "short_text",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "{\"item\":\"ink\",\"qty\":\"two\"}"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "{\"item\":\"ink\",\"qty\":\"two\"}"
+      },
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "Both required properties are present with the right types, and a property the schema does not list is allowed, so this body passes."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "The optional note is a string, as declared, and both required properties are present and correctly typed, so this body passes."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "The order in which properties appear does not matter. Both required properties are present with the right types, so this body passes."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "{\"item\":\"pen\",\"qty\":3,\"colour\":\"red\"}"
+        },
+        {
+          "id": "c",
+          "label": "{\"item\":\"pen\",\"qty\":3,\"note\":\"gift\"}"
+        },
+        {
+          "id": "d",
+          "label": "{\"qty\":2,\"item\":\"ink\"}"
+        },
+        {
+          "id": "b",
+          "label": "{\"item\":\"ink\",\"qty\":\"two\"}"
+        }
+      ]
+    },
+    {
+      "id": "bacad-describing-an-api-with-openapi-faults-reported",
+      "conceptIds": [
+        "openapi-doc",
+        "bacad-schema",
+        "bacad-contract"
+      ],
+      "prompt": "The Order schema requires item (string) and qty (integer). A validator reports every fault it finds in the body {\"qty\":\"3\"}. What does it report?",
+      "difficulty": 1.3,
+      "hints": [
+        "Check each required property for presence first.",
+        "Then check each property that is present for its declared type."
+      ],
+      "sourceIds": [
+        "openapi",
+        "rfc8259",
+        "mdn-http"
+      ],
+      "onCorrect": "The body has two separate faults, a missing required property and a value of the wrong type, and a validator reports each of them so that the client can fix both at once.",
+      "skill": "validate-against-schema",
+      "calculator": "off",
+      "responseType": "short_text",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Both faults: item is missing, and qty is a string where an integer is declared"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Both faults: item is missing, and qty is a string where an integer is declared"
+      },
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "The missing item is one fault, but the qty is the string \"3\" where an integer is declared, which is a second fault. A validator reports each fault it finds."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "The wrong type of qty is one fault, but item is required and absent, which is a second fault. A validator reports each fault it finds."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Properties listed under required must be present. The optional ones may be left out, and item is not optional."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "Only that item is missing"
+        },
+        {
+          "id": "c",
+          "label": "Nothing, because a body may leave out properties"
+        },
+        {
+          "id": "d",
+          "label": "Both faults: item is missing, and qty is a string where an integer is declared"
+        },
+        {
+          "id": "b",
+          "label": "Only that qty is a string where an integer is declared"
+        }
+      ]
+    },
+    {
+      "id": "bacad-pagination-and-filtering-drift-effect",
+      "conceptIds": [
+        "offset-paging",
+        "keyset-paging",
+        "cursor"
+      ],
+      "prompt": "Ids 50 down to 41 are listed newest first. A client fetches page 1 with limit=4 and offset=0 and receives 50, 49, 48 and 47. Then ids 51, 52 and 53 are added at the top, and the client fetches page 2 with limit=4 and offset=4. What does page 2 contain?",
+      "difficulty": 1.3,
+      "hints": [
+        "Write the new list from 53 downwards, and count four places from the top to find where page 2 begins.",
+        "Compare what page 2 contains with 50, 49, 48 and 47."
+      ],
+      "sourceIds": [
+        "rfc9110",
+        "owasp-api",
+        "mdn-http"
+      ],
+      "onCorrect": "The three new rows push everything down three places, so page 2 is 49, 48, 47 and 46, and three of its four rows were already on page 1.",
+      "skill": "predict-repeats",
+      "calculator": "off",
+      "responseType": "short_text",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Mostly rows the client has already seen on page 1"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Mostly rows the client has already seen on page 1"
+      },
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "An offset counts from the top of the list as it is now, and the three new rows have moved everything down. Four places from the top is no longer the row after 47."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "The new rows are at the top of the list, in places 0 to 2, and an offset of 4 skips past them. Page 2 begins at the fifth row from the top."
+        }
+      ],
+      "choices": [
+        {
+          "id": "c",
+          "label": "Mainly the three new rows, followed by one old row"
+        },
+        {
+          "id": "a",
+          "label": "Rows 46, 45, 44 and 43, which continue where page 1 stopped"
+        },
+        {
+          "id": "b",
+          "label": "Mostly rows the client has already seen on page 1"
+        }
+      ]
+    },
+    {
+      "id": "bacad-errors-and-idempotency-no-key-effect",
+      "conceptIds": [
+        "problem-details",
+        "bacad-idempotency-key",
+        "exactly-once-effect"
+      ],
+      "prompt": "A balance is 100. A client sends POST /charges for 30 and, after two timeouts, sends the same request twice more, so the server receives it three times. The server does nothing to recognise repeats. What is the balance afterwards?",
+      "difficulty": 1,
+      "hints": [
+        "Ask what the server has to go on when the third copy arrives.",
+        "A plain POST carries nothing that says it is a repeat."
+      ],
+      "sourceIds": [
+        "rfc9457",
+        "rfc9110",
+        "mdn-http"
+      ],
+      "onCorrect": "With no way to recognise a repeat, the server carries out each copy as a new charge, so 100 - 30 - 30 - 30 leaves 10.",
+      "skill": "dedupe-with-a-key",
+      "calculator": "off",
+      "responseType": "short_text",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "10, because the server carries out all three copies"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "10, because the server carries out all three copies"
+      },
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Nothing in a plain POST tells the server that it has seen the request before, so each copy is carried out as a new charge. Charging once is what an idempotency key makes possible."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "A server keeps no memory of requests it has seen unless it is built to. Without a key or a similar record it treats every copy as new and carries it out."
+        }
+      ],
+      "choices": [
+        {
+          "id": "b",
+          "label": "70, because the server charges once however many copies arrive"
+        },
+        {
+          "id": "a",
+          "label": "10, because the server carries out all three copies"
+        },
+        {
+          "id": "c",
+          "label": "100, because the server rejects a request it has already seen"
+        }
+      ]
+    },
+    {
+      "id": "bacad-versioning-and-change-which-breaking",
+      "conceptIds": [
+        "bacad-breaking-change",
+        "bacad-tolerant-reader",
+        "deprecation"
+      ],
+      "prompt": "Five changes are proposed. (a) add an optional response field nick. (b) remove the response field name. (c) change id from integer to string. (d) add the endpoint /orders/{id}/notes. (e) make the request field currency required, though it was optional. Which of these lists contains every breaking change?",
+      "difficulty": 1,
+      "hints": [
+        "Ask for each change whether a client written against the old contract could fail.",
+        "Removing, retyping and newly requiring are the three kinds to look for, and additions do not break old clients."
+      ],
+      "sourceIds": [
+        "openapi",
+        "rfc9110",
+        "mdn-http"
+      ],
+      "onCorrect": "Removing a field, changing its type and making a request field required each make a client written against the old contract fail, whereas the new optional field and the new endpoint are additions.",
+      "skill": "classify-change",
+      "calculator": "off",
+      "responseType": "short_text",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Removing name, changing the type of id and requiring currency"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Removing name, changing the type of id and requiring currency"
+      },
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Changing id from an integer to a string also breaks a client that reads it as an integer, and requiring currency breaks every caller that used to leave it out."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Making currency required breaks callers that used to leave it out, so it belongs with the breaking changes."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "The new optional field nick and the new endpoint are additions. A client ignores what it has never heard of, so neither breaks anything."
+        }
+      ],
+      "choices": [
+        {
+          "id": "c",
+          "label": "Removing name and changing the type of id"
+        },
+        {
+          "id": "d",
+          "label": "All five, because every change alters the contract"
+        },
+        {
+          "id": "b",
+          "label": "Only removing name"
+        },
+        {
+          "id": "a",
+          "label": "Removing name, changing the type of id and requiring currency"
+        }
+      ]
+    },
+    {
+      "id": "bacad-versioning-and-change-who-fails",
+      "conceptIds": [
+        "bacad-breaking-change",
+        "bacad-tolerant-reader",
+        "deprecation"
+      ],
+      "prompt": "Five client apps use an API. Three read the field qty, and two read only id and name. The server removes qty and adds quantity in the same version. Which clients fail?",
+      "difficulty": 1,
+      "hints": [
+        "Ask which clients depend on the field that has gone.",
+        "A client that never reads a field does not notice that it has changed."
+      ],
+      "sourceIds": [
+        "openapi",
+        "rfc9110",
+        "mdn-http"
+      ],
+      "onCorrect": "A client fails when it relies on something that is gone, and only the three that read qty rely on it. The new field quantity does not help them, because they were never written to look for it.",
+      "skill": "classify-change",
+      "calculator": "off",
+      "responseType": "short_text",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "The three that read qty"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "The three that read qty"
+      },
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "The two clients that read only id and name do not depend on qty, so they keep working."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "A client ignores a field it has never heard of, so the addition of quantity breaks nothing. The removal of qty is what causes failures."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "The three old clients look for qty by name, and the same value under a new name does not help them. They find nothing where they expect it."
+        }
+      ],
+      "choices": [
+        {
+          "id": "c",
+          "label": "None, because quantity carries the same value as qty"
+        },
+        {
+          "id": "a",
+          "label": "All five, because the contract changed"
+        },
+        {
+          "id": "b",
+          "label": "The two that read only id and name, because a new field appeared"
+        },
+        {
+          "id": "d",
+          "label": "The three that read qty"
+        }
+      ]
+    },
+    {
+      "id": "bacad-versioning-and-change-failing-fields-six",
+      "conceptIds": [
+        "bacad-breaking-change",
+        "bacad-tolerant-reader",
+        "deprecation"
+      ],
+      "prompt": "An old response has six fields: id, name, qty, price, note and status. The new one drops note, renames status to state, changes price from an integer to a string, and adds a field tags. Which old fields fail the compatibility check?",
+      "difficulty": 1.3,
+      "hints": [
+        "An old field fails if it is missing or if its type has changed.",
+        "A renamed field is missing under its old name, and a field that was added is not an old field."
+      ],
+      "sourceIds": [
+        "openapi",
+        "rfc9110",
+        "mdn-http"
+      ],
+      "onCorrect": "Each old field is checked for presence and type: note and status are missing and price has changed type, while id, name and qty are untouched and adding tags breaks nothing.",
+      "skill": "classify-change",
+      "calculator": "off",
+      "responseType": "short_text",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "note, status and price"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "note, status and price"
+      },
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Changing price from an integer to a string also fails the check, because a client that reads it as a number can no longer do so."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "A field that is dropped or renamed is missing under its old name, and a client that reads it finds nothing, so note and status fail as well."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "The field tags is an addition. The check is made on the old fields, and an extra field in the new response fails nothing."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "note, status and price"
+        },
+        {
+          "id": "d",
+          "label": "note, status, price and tags"
+        },
+        {
+          "id": "c",
+          "label": "price only"
+        },
+        {
+          "id": "b",
+          "label": "note and status only"
+        }
+      ]
+    },
+    {
+      "id": "bacad-authorisation-and-input-trust-concat-effect",
+      "conceptIds": [
+        "bola",
+        "bacad-injection",
+        "mass-assignment"
+      ],
+      "prompt": "The users table has 3 rows. A handler builds SELECT * FROM users WHERE name = '<input>' by joining strings, and receives the input x' OR '1'='1. How many rows come back?",
+      "difficulty": 1.2,
+      "hints": [
+        "Write out the query after the input has been joined into it, and read the condition as the database will.",
+        "The quotation mark in the input closes the string that was meant to hold a name."
+      ],
+      "sourceIds": [
+        "owasp-api",
+        "owasp-cheats",
+        "py-stdlib"
+      ],
+      "onCorrect": "The joined query reads name = 'x' OR '1'='1', and the second condition is true for every row, so all three rows come back.",
+      "skill": "parameterise-queries",
+      "calculator": "off",
+      "responseType": "short_text",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "All three rows"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "All three rows"
+      },
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "No rows would come back if the input were compared as a name, because nobody has that name. Joined into the query, though, it becomes part of the condition, and OR '1'='1' is true for every row."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Nothing in the joined query picks out a single user. The added condition is true for every row, so every row matches."
+        }
+      ],
+      "choices": [
+        {
+          "id": "c",
+          "label": "All three rows"
+        },
+        {
+          "id": "b",
+          "label": "One row"
+        },
+        {
+          "id": "a",
+          "label": "No rows"
+        }
+      ]
+    },
+    {
+      "id": "bacad-authorisation-and-input-trust-param-effect",
+      "conceptIds": [
+        "bola",
+        "bacad-injection",
+        "mass-assignment"
+      ],
+      "prompt": "A handler runs SELECT * FROM users WHERE name = ? and sends the value x' OR '1'='1 separately as a parameter. What does the database do with that value?",
+      "difficulty": 1.2,
+      "hints": [
+        "Ask whether the database ever reads the value as part of the query.",
+        "The value is sent separately from the query text."
+      ],
+      "sourceIds": [
+        "owasp-api",
+        "owasp-cheats",
+        "py-stdlib"
+      ],
+      "onCorrect": "The value is compared as an ordinary string, so the query looks for a user with exactly that name, and none exists.",
+      "skill": "parameterise-queries",
+      "calculator": "off",
+      "responseType": "short_text",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "It compares the value as an ordinary name, so no row matches"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "It compares the value as an ordinary name, so no row matches"
+      },
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "That happens when the input is joined into the query text. A parameter is sent separately, so the database never treats any part of it as query syntax."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "The quotation mark is only a character in the value. The database does not parse the value as part of the query, so nothing about it is malformed."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "It compares the value as an ordinary name, so no row matches"
+        },
+        {
+          "id": "b",
+          "label": "It reads the OR as part of the query, so every row matches"
+        },
+        {
+          "id": "c",
+          "label": "It rejects the query as malformed because of the quotation mark"
+        }
+      ]
+    },
+    {
+      "id": "bacad-authorisation-and-input-trust-which-invoices",
+      "conceptIds": [
+        "bola",
+        "bacad-injection",
+        "mass-assignment"
+      ],
+      "prompt": "Invoices 17, 18, 19 and 20 belong to users 4, 9, 4 and 9 in that order. User 9 requests all four, and the handler checks the owner on each request. Which invoices are returned?",
+      "difficulty": 1.2,
+      "hints": [
+        "The check compares each invoice's owner with the caller, user 9.",
+        "A request for an invoice that fails the check is refused."
+      ],
+      "sourceIds": [
+        "owasp-api",
+        "owasp-cheats",
+        "py-stdlib"
+      ],
+      "onCorrect": "The check passes only where the owner is the caller, which is invoices 18 and 20. The requests for 17 and 19 are refused.",
+      "skill": "spot-missing-check",
+      "calculator": "off",
+      "responseType": "short_text",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Invoices 18 and 20"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Invoices 18 and 20"
+      },
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "Being logged in only says who is asking. The check compares each invoice's owner with the caller, and user 4 owns 17 and 19."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Those belong to user 4. The check lets a caller through only for invoices that the caller owns, and the caller here is user 9."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "Each request is checked on its own, so a request that fails the check does not stop the others from passing it."
+        }
+      ],
+      "choices": [
+        {
+          "id": "b",
+          "label": "Invoices 18 and 20"
+        },
+        {
+          "id": "d",
+          "label": "None, because the first request already failed the check"
+        },
+        {
+          "id": "a",
+          "label": "All four, because user 9 is logged in"
+        },
+        {
+          "id": "c",
+          "label": "Invoices 17 and 19"
+        }
+      ]
+    },
+    {
+      "id": "bacad-rate-limits-and-retries-burst-outcome",
+      "conceptIds": [
+        "token-bucket",
+        "retry-after",
+        "backoff"
+      ],
+      "prompt": "A bucket holds at most 3 tokens, refills at 1 token a second and starts full. Each allowed request spends one token. Four requests arrive at the same instant. What happens?",
+      "difficulty": 1,
+      "hints": [
+        "Ask how many tokens the bucket holds when the first request arrives.",
+        "No time passes between the four requests, so nothing is added to the bucket."
+      ],
+      "sourceIds": [
+        "rfc6585",
+        "rfc9110",
+        "owasp-api"
+      ],
+      "onCorrect": "The full bucket holds 3 tokens and no time passes, so the first three requests spend them and the fourth finds the bucket empty.",
+      "skill": "trace-token-bucket",
+      "calculator": "off",
+      "responseType": "short_text",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Three are allowed and the fourth is refused"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Three are allowed and the fourth is refused"
+      },
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "The refill adds tokens only as time passes, at 1 a second. Four requests at the same instant leave no time for any to be added."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "The refill rate sets the long-run pace. A bucket that starts full has 3 tokens to spend at once, so a burst of up to its capacity gets through."
+        }
+      ],
+      "choices": [
+        {
+          "id": "c",
+          "label": "Three are allowed and the fourth is refused"
+        },
+        {
+          "id": "b",
+          "label": "Only one is allowed, because the refill rate is 1 token a second"
+        },
+        {
+          "id": "a",
+          "label": "All four are allowed, because the bucket refills as the requests arrive"
+        }
+      ]
+    },
+    {
+      "id": "bacad-rate-limits-and-retries-which-results-retry",
+      "conceptIds": [
+        "token-bucket",
+        "retry-after",
+        "backoff"
+      ],
+      "prompt": "A client sent six idempotent requests and got these results: 200, 400, 429, 503, 404 and a timeout. Which of them are worth retrying after a wait?",
+      "difficulty": 1.2,
+      "hints": [
+        "A request that succeeded needs no retry, and a request that is wrong will fail the same way again.",
+        "The failures that may clear with time are a timeout, a 429 and a 503."
+      ],
+      "sourceIds": [
+        "rfc6585",
+        "rfc9110",
+        "owasp-api"
+      ],
+      "onCorrect": "The 429, the 503 and the timeout may succeed later. The 200 needs no retry, and the 400 and the 404 will fail again until the request itself changes.",
+      "skill": "decide-what-to-retry",
+      "calculator": "off",
+      "responseType": "short_text",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "429, 503 and the timeout"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "429, 503 and the timeout"
+      },
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "A timeout is also worth retrying, because the request may simply have been lost and a later attempt can succeed. For an idempotent request a repeat is safe."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "A 400 and a 404 fail in the same way every time until the request is changed, so retrying them only adds load. The 429 and the 503 clear with time."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "A 400 means the request was malformed and a 404 means nothing exists at that address. Neither will change by waiting, so retrying them only adds load."
+        }
+      ],
+      "choices": [
+        {
+          "id": "d",
+          "label": "429, 503 and the timeout"
+        },
+        {
+          "id": "a",
+          "label": "429 and 503 only"
+        },
+        {
+          "id": "b",
+          "label": "400, 404 and the timeout"
+        },
+        {
+          "id": "c",
+          "label": "Every result except the 200"
+        }
+      ]
+    },
+    {
+      "id": "bacad-layers-and-background-work-which-orders-emailed",
+      "conceptIds": [
+        "bacad-layers",
+        "transaction-boundary",
+        "at-least-once"
+      ],
+      "prompt": "A worker sends one email per order, the first time it sees a paid event for that order. The events arrive as (4, paid), (4, paid), (5, paid), (5, paid), (5, paid), (6, created) and (7, paid). Which orders are emailed?",
+      "difficulty": 1.2,
+      "hints": [
+        "A created event is not a paid event, so it sends no email.",
+        "The worker remembers the orders it has already handled, and skips a repeat."
+      ],
+      "sourceIds": [
+        "owasp-cheats",
+        "rfc9110"
+      ],
+      "onCorrect": "Orders 4, 5 and 7 each have a paid event, and the worker emails each one only on its first. The repeats are skipped, and the created event for order 6 sends nothing.",
+      "skill": "reason-about-duplicates",
+      "calculator": "off",
+      "responseType": "short_text",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Orders 4, 5 and 7"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Orders 4, 5 and 7"
+      },
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "A queue that retries delivers some messages more than once, and a worker that emailed on every delivery would send duplicates. This worker remembers the orders it has handled and skips a repeat."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Order 6 has only a created event, and the worker sends an email on a paid event. A created event sends nothing."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "Order 5 has paid events too, and the worker emails it on the first of them. Several deliveries of one event still count as one email, not none."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "Orders 4, 4, 5, 5, 5 and 7, once for every paid event"
+        },
+        {
+          "id": "b",
+          "label": "Orders 4, 5 and 7"
+        },
+        {
+          "id": "d",
+          "label": "Orders 4 and 7"
+        },
+        {
+          "id": "c",
+          "label": "Orders 4, 5, 6 and 7"
+        }
+      ]
+    },
+    {
+      "id": "bacad-methods-and-safety-delete-state",
+      "conceptIds": [
+        "safe-method",
+        "idempotent-method",
+        "retry-rule"
+      ],
+      "prompt": "A shop has 5 orders, numbered 1 to 5. The request DELETE /orders/4 is delivered three times. Which orders does the shop hold afterwards?",
+      "difficulty": 1,
+      "hints": [
+        "Order 4 can be removed only once.",
+        "Ask what the second and third deliveries find when they look for order 4."
+      ],
+      "sourceIds": [
+        "rfc9110",
+        "mdn-http"
+      ],
+      "onCorrect": "The state after three deliveries is the state after one. Only the response differs, a 404 for the later ones, because order 4 is no longer there to remove.",
+      "skill": "predict-duplicate-effect",
+      "calculator": "off",
+      "responseType": "short_text",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Orders 1, 2, 3 and 5, the same as after one delivery"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Orders 1, 2, 3 and 5, the same as after one delivery"
+      },
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "Each delivery names order 4, and only the first finds it. The later ones have nothing to remove, so they cannot take any other order away."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "A DELETE only removes. Nothing in the later deliveries puts order 4 back, so it stays gone."
+        }
+      ],
+      "choices": [
+        {
+          "id": "b",
+          "label": "All five orders, because the later deliveries restore what the first removed"
+        },
+        {
+          "id": "c",
+          "label": "Orders 1, 2, 3 and 5, the same as after one delivery"
+        },
+        {
+          "id": "a",
+          "label": "Only two orders, because each of the three deliveries removes one"
+        }
+      ]
+    },
+    {
+      "id": "bacad-describing-an-api-with-openapi-accepted-body",
+      "conceptIds": [
+        "openapi-doc",
+        "bacad-schema",
+        "bacad-contract"
+      ],
+      "prompt": "The Order schema requires item (string) and qty (integer), and note (string) is optional. Which of these bodies does a validator accept?",
+      "difficulty": 1.3,
+      "hints": [
+        "Check each required property for presence, and then each property that is present for its declared type.",
+        "A string with no characters is still a string, and zero is still an integer."
+      ],
+      "sourceIds": [
+        "openapi",
+        "rfc8259",
+        "mdn-http"
+      ],
+      "onCorrect": "Both required properties are present, and an empty string is still a string and 0 is still an integer, so the body matches the schema.",
+      "skill": "validate-against-schema",
+      "calculator": "off",
+      "responseType": "short_text",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "{\"item\":\"\",\"qty\":0}"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "{\"item\":\"\",\"qty\":0}"
+      },
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "The number 2.5 is not an integer, so qty fails its declared type."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "The number 7 is not a string, so item fails its declared type."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "The property qty is listed under required, so a body without it is invalid."
+        }
+      ],
+      "choices": [
+        {
+          "id": "b",
+          "label": "{\"item\":7,\"qty\":1}"
+        },
+        {
+          "id": "a",
+          "label": "{\"item\":\"cup\",\"qty\":2.5}"
+        },
+        {
+          "id": "c",
+          "label": "{\"item\":\"\",\"qty\":0}"
+        },
+        {
+          "id": "d",
+          "label": "{\"item\":\"cup\"}"
+        }
+      ]
+    },
+    {
+      "id": "bacad-layers-and-background-work-emailed-in-order",
+      "conceptIds": [
+        "bacad-layers",
+        "transaction-boundary",
+        "at-least-once"
+      ],
+      "prompt": "A worker sends one email per order the first time it sees a paid event for that order. The events arrive as (10, paid), (11, created), (10, paid), (12, paid), (12, paid) and (11, paid). Which orders are emailed, and in what order?",
+      "difficulty": 1.3,
+      "hints": [
+        "A created event sends no email, and it does not use up the order's one email.",
+        "Go through the events in order, and note each order at its first paid event."
+      ],
+      "sourceIds": [
+        "owasp-cheats",
+        "rfc9110"
+      ],
+      "onCorrect": "Order 10 is emailed at its first paid event, order 12 at its first, and order 11 only at its paid event, which comes last, since its created event sent nothing.",
+      "skill": "reason-about-duplicates",
+      "calculator": "off",
+      "responseType": "short_text",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Orders 10, 12 and 11, in that order"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Orders 10, 12 and 11, in that order"
+      },
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "Order 11 first appears in a created event, which sends no email. Its paid event comes after the first paid event for order 12, so it is emailed last."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Order 11 has a paid event at the end of the stream, and nothing has been sent for it before then, so that event sends its email."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "A worker that emailed on every delivery would send duplicates. This one remembers the orders it has handled and skips a repeat."
+        }
+      ],
+      "choices": [
+        {
+          "id": "b",
+          "label": "Orders 10, 12 and 11, in that order"
+        },
+        {
+          "id": "c",
+          "label": "Orders 10 and 12 only, because order 11 was only created"
+        },
+        {
+          "id": "a",
+          "label": "Orders 10, 11 and 12, in that order"
+        },
+        {
+          "id": "d",
+          "label": "Orders 10, 10, 12, 12 and 11, once for every paid event"
+        }
+      ]
+    },
+    {
+      "id": "bacad-versioning-and-change-only-breaking",
+      "conceptIds": [
+        "bacad-breaking-change",
+        "bacad-tolerant-reader",
+        "deprecation"
+      ],
+      "prompt": "Which of these groups of changes contains only breaking changes?",
+      "difficulty": 1.3,
+      "hints": [
+        "A change is breaking if a client written against the old contract can fail because of it.",
+        "Additions, such as a new endpoint or an optional field, do not break old clients."
+      ],
+      "sourceIds": [
+        "openapi",
+        "rfc9110",
+        "mdn-http"
+      ],
+      "onCorrect": "Renaming a field, newly requiring a request field and changing a type each make an old client fail, whereas the additions in the other groups do not.",
+      "skill": "classify-change",
+      "calculator": "off",
+      "responseType": "short_text",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Renaming a response field, making an optional request field required and changing a field from integer to string"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Renaming a response field, making an optional request field required and changing a field from integer to string"
+      },
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "All three are additions, and a client ignores what it has never heard of, so none of them breaks an old client."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "The rename breaks clients that read the old name, but the endpoint and the optional field are additions that break nothing."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "Making a field required and lowering a length limit break callers that used to succeed, but a new optional query parameter breaks nobody."
+        }
+      ],
+      "choices": [
+        {
+          "id": "d",
+          "label": "Adding an optional query parameter, making an optional request field required and lowering a length limit"
+        },
+        {
+          "id": "b",
+          "label": "Adding an endpoint, adding an optional response field and adding an optional query parameter"
+        },
+        {
+          "id": "c",
+          "label": "Renaming a response field, adding an endpoint and adding an optional response field"
+        },
+        {
+          "id": "a",
+          "label": "Renaming a response field, making an optional request field required and changing a field from integer to string"
         }
       ]
     }

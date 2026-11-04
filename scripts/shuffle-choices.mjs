@@ -5,16 +5,15 @@
  *
  * Writers tended to list the correct option first, so a learner could score by always picking
  * it. Each question's options are reordered by a permutation drawn from a hash of its id, so the
- * order is stable from run to run, and are then given the ids a, b, c, d in their new order, with
- * every misconception that names an option moved along with it. Options that are all numbers are
- * put in ascending order instead, which is how a reader expects to scan them. Course-check items
- * are reordered the same way.
+ * order is stable from run to run. Each option keeps its id, so misconceptions, recorded answers
+ * and tests that name an option by id still point at the same option; the app never shows ids.
+ * Options that are all numbers are put in ascending order instead, which is how a reader expects to
+ * scan them. Course-check items are left as their
+ * independent review approved them.
  */
 import { createHash } from "node:crypto";
 import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
-
-const IDS = "abcdefgh";
 
 function seededOrder(seed, length) {
   const bytes = createHash("sha256").update(seed).digest();
@@ -38,13 +37,9 @@ function reorder(question) {
           Number.parseFloat(choices[b].label.replace(/,/gu, "")),
       )
     : seededOrder(question.id, choices.length);
-  const renamed = new Map(order.map((from, to) => [choices[from].id, IDS[to]]));
-  const next = order.map((from, to) => ({ ...choices[from], id: IDS[to] }));
-  const changed = next.some((choice, i) => choice.label !== choices[i].label);
+  const next = order.map((from) => choices[from]);
+  const changed = next.some((choice, i) => choice.id !== choices[i].id);
   question.choices = next;
-  for (const misconception of question.misconceptions ?? [])
-    if (misconception.match.choiceIds)
-      misconception.match.choiceIds = misconception.match.choiceIds.map((id) => renamed.get(id) ?? id);
   return changed;
 }
 
@@ -56,10 +51,7 @@ if (!ids.length) {
 for (const courseId of ids) {
   const file = path.resolve(import.meta.dirname, "..", "content", courseId, "bundle.json");
   const bundle = JSON.parse(readFileSync(file, "utf8"));
-  const questions = [
-    ...bundle.questions,
-    ...(bundle.courseChecks ?? []).flatMap((check) => check.items.map((item) => item.question)),
-  ];
+  const questions = bundle.questions;
   let changed = 0;
   let first = 0;
   let total = 0;

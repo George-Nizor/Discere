@@ -32,9 +32,9 @@
     "status": "available",
     "introduction": {
       "paragraphs": [
-        "An agent is a program in which a language model chooses its own next step, calls tools and reads what comes back, and building one raises problems that a single model call does not. The number of steps a run takes, what the run costs, what the agent is allowed to touch, what happens when a hostile sentence reaches it and how anyone can tell that it works all have to be decided before it is trusted with real work. This course takes those problems in the order a developer meets them.",
-        "It begins with the loop at the core of an agent and with the choice between a workflow, a copilot and an agent, and then takes up the tools an agent calls, the protocols that connect them, and what the agent keeps in its context as a run grows. The middle lessons compare the patterns for planning, for composing model calls and for dividing work among several agents, with the arithmetic of what each one costs. The last lessons turn to governing agents: permissions enforced on the server, prompt injection and the lethal trifecta, traces and measures, evaluation by repeated trials, and the staged rollout of autonomy.",
-        "Most lessons ask you to work something out, such as the cost of a run, the time of parallel branches, the chance that a vote is right or the reliability of ten steps in a row, and a calculator is allowed where the arithmetic is incidental. The course assumes that you have called a language model from code and know what tokens and prompts are, which AI Engineering covers, and it leaves coding assistants to a course of their own."
+        "Give a language model a goal, a set of tools and a loop, and it becomes an agent: at each step it reads everything that has happened so far, chooses a tool, and reads the result before it chooses again. An agent asked to deal with a damaged order might look the order up, read the refund policy, issue a refund and write to the customer, and nobody wrote that sequence in advance, because the model chose each step as it went. That freedom is what lets an agent handle a request that no programmer anticipated, and it is also the source of almost every difficulty in building one.",
+        "Much of the engineering follows from that one fact. A run whose length the model decides has a cost, a duration and a chance of failure that the code around the model has to bound, and since each step re-reads everything before it, the cost grows faster than the number of steps. An agent that reads email or web pages is also reading text that strangers wrote, which it cannot reliably tell apart from its user's instructions, so what it is permitted to do has to be enforced outside the model, where no sentence can argue with the rule.",
+        "The subject is often argued in terms of how capable a model seems, yet most of its questions can be settled with arithmetic on a design you can see. Multiplying the success rate of one step by itself tells you how often a ten-step run finishes, adding up the context a loop re-reads tells you what a run will cost, and multiplying a refund cap by a rate limit tells you the most money that can leave in a day without anyone approving it. Those numbers are what let you decide how much freedom an agent should have, and what evidence would justify giving it more."
       ],
       "outcomes": [
         "You'll be able to choose between a workflow, a copilot and an agent for a task.",
@@ -508,12 +508,7 @@
           "id": "fixed-pipeline",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A support system runs three model calls in an order fixed by its code: it classifies the message, then retrieves the matching policy text, then writes the answer. Apply the question from the last screen to this design."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -582,12 +577,7 @@
           "id": "predict-cost",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Suppose the refund workflow makes 3 model calls per request, at $0.01 a call. An agent built for the same task makes more calls, because each tool result is followed by another model call, and over many requests it averages 12 calls at the same price. Before the next screen explains why, work out how much more the agent costs."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -805,7 +795,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "Both designs answer the customer, but they differ in who decides what happens next, and that difference changes what the system costs, how long the customer waits and how easily anyone can explain afterwards what it did. The figure draws the two designs for this one request: the steps are much the same, but in the first the code draws the arrows in advance and in the second the model draws them as it goes."
+              "text": "Both designs answer the customer, but they differ in who decides what happens next. In the first, every arrow from one step to the next was drawn by a programmer before the message arrived, while in the second the model draws each arrow as it goes, after reading what the last step returned. That one difference changes what the system costs, how long the customer waits and how easily anyone can explain afterwards what it did, and it is the basis for deciding how much freedom a model should be given for any particular task."
             }
           ],
           "diagram": {
@@ -901,12 +891,7 @@
           "id": "count-the-calls",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The run in the figure ended at step 3 with a final answer and no tool call. Think about what the code around the model did at each step before you answer."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -922,12 +907,7 @@
           "id": "never-done",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A tool returns an error every time the model calls it, and the model keeps choosing the same tool in the hope that the next attempt will work. It never decides that it is finished, and nothing in the code limits the run."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -951,7 +931,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The first three depend on something outside the code behaving as hoped: the model must decide that it is finished, the error must be recognised, a person must be watching. Only the budget is enforced by the loop itself. The program in the figure has no answer to wait for, and it still ends when the step reaches the budget of 4, because the condition `step < budget` is then false. An agent without such a limit runs until the model decides to stop, and a model that never decides to stop costs money on every pass."
+              "text": "The first three depend on something outside the code behaving as hoped: the model must decide that it is finished, the error must be recognised, a person must be watching. Only the budget is enforced by the loop itself. The program in the figure has no answer to wait for, and it still ends when the step reaches the budget of 4, because the condition \"step < budget\" is then false. An agent without such a limit runs until the model decides to stop, and a model that never decides to stop costs money on every pass."
             }
           ],
           "introducesTerms": [
@@ -993,12 +973,7 @@
           "id": "six-steps",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Use the same pattern as the trace you have just followed: the input to step 1 is 1,000 tokens, and each later step adds 400. Add up the inputs for a run of six steps."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1014,12 +989,7 @@
           "id": "three-steps-at-ninety",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Suppose each step of an agent's run succeeds 90% of the time, and a step that fails spoils the run. The run needs three steps in a row, and the steps do not affect one another. Make a guess before the next screen explains how to work it out."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1039,7 +1009,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The arithmetic of the last question holds for any run. If each step succeeds with probability p, the steps are independent, and the task needs every one of n steps to succeed, then the chance of finishing is p multiplied by itself n times, written pⁿ. This is **compounding error**: a small chance of failure at each step, repeated, adds up to a large chance of failure over the run. It also means that the usual reading of a per-step figure is too generous, since a step that is right 95% of the time sounds dependable, and a ten-step task built from such steps is dependable only *about 60% of the time*."
+              "text": "Three steps that each succeed 90% of the time all succeed with probability 0.9 × 0.9 × 0.9 = 0.729, and the same arithmetic holds for any run. If each step succeeds with probability p, the steps are independent, and the task needs every one of n steps to succeed, then the chance of finishing is p multiplied by itself n times, written pⁿ. This is **compounding error**: a small chance of failure at each step, repeated, adds up to a large chance of failure over the run. It also means that the usual reading of a per-step figure is too generous, since a step that is right 95% of the time sounds dependable, and a ten-step task built from such steps is dependable only *about 60% of the time*."
             }
           ],
           "afterFigure": [
@@ -1187,7 +1157,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "That growth is one reason an agent's behaviour has to be bounded, and compounding reliability is another: a step that works 95 times in 100 sounds dependable, but ten of them in a row do not. The figure shows the growth step by step, in tokens read at each step."
+              "text": "That growth is one reason an agent's run has to be bounded, and reliability is another, because a step that works 95 times in 100 sounds dependable, yet ten such steps in a row all succeed only about 60 times in 100. Both effects depend on how many times the loop goes round, so once you know how the loop works you can predict what a run will cost and how often it will finish, and decide where the code around the model has to stop it."
             }
           ],
           "diagram": {
@@ -1245,7 +1215,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "A description that does this work says what the tool does, when to use it and when not to, what each input means and in what form, and what comes back. The vague version in the figure leaves the model to guess at all of these, whereas the precise version tells it, for instance, that the order identifier comes from an earlier tool and that the amount may not exceed the order total. The *name* matters less than people expect, because two tools called `lookup` and `find` with the same thin description are indistinguishable to the model however well they are named."
+              "text": "A description that does this work says what the tool does, when to use it and when not to, what each input means and in what form, and what comes back. The vague version in the figure leaves the model to guess at all of these, whereas the precise version tells it, for instance, that the order identifier comes from an earlier tool and that the amount may not exceed the order total. The *name* matters less than people expect, because two tools called lookup and find with the same thin description are indistinguishable to the model however well they are named."
             }
           ],
           "introducesTerms": [
@@ -1276,12 +1246,7 @@
           "id": "pick-the-description",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Here are three descriptions of one refund tool. Think about what a model that has never seen the tool, and cannot ask anyone about it, would need to be told."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1301,7 +1266,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The five tools in the figure are easy to place once you ask what each leaves behind. `search_orders`, `get_customer` and `read_policy` only *fetch*: after any number of calls the shop is exactly as it was, which is why they are called **read tools**. `issue_refund` and `send_email` leave something behind, since money has left the shop and a message has reached a customer, and a tool of that kind is a **write tool**. Anything that creates, changes, deletes, sends or pays is a write tool, whatever its name suggests."
+              "text": "The five tools in the figure are easy to place once you ask what each leaves behind. The tools search_orders, get_customer and read_policy only *fetch*: after any number of calls the shop is exactly as it was, which is why they are called **read tools**. The tools issue_refund and send_email leave something behind, since money has left the shop and a message has reached a customer, and a tool of that kind is a **write tool**. Anything that creates, changes, deletes, sends or pays is a write tool, whatever its name suggests."
             }
           ],
           "afterFigure": [
@@ -1340,12 +1305,7 @@
           "id": "classify-new-tool",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The support team adds a tool, `cancel_subscription(customer_id)`, which ends a customer's plan from the next billing date. Use the test from the last screen: what does the tool leave behind?"
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1365,7 +1325,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "What a tool returns when it fails is read by the model in the same way as everything else in its context, and it decides what the model does next. An error that says only `400` leaves the model to guess, and a model that guesses often repeats the same call. An error that says `amount 5000 is more than the order total of 3800 cents; retry with an amount of at most 3800` gives the model the fact it lacked and the action to take, so the next step is likely to be the right one."
+              "text": "What a tool returns when it fails is read by the model in the same way as everything else in its context, and it decides what the model does next. An error that says only \"400\" leaves the model to guess, and a model that guesses often repeats the same call. An error that says \"amount 5000 is more than the order total of 3800 cents; retry with an amount of at most 3800\" gives the model the fact it lacked and the action to take, so the next step is likely to be the right one."
             },
             {
               "kind": "paragraph",
@@ -1381,12 +1341,7 @@
           "id": "retry-without-a-key",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A write tool, `issue_refund(order_id, amount)`, pays out on every call. The agent calls it, the refund goes through, and the reply is lost in a network timeout. Hearing nothing, the agent calls it again, and then a third time, and both retries reach the server. Make a prediction before the next screen sets out the remedy."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1410,7 +1365,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The key identifies the *action*, not the attempt. The caller makes one for each refund it intends and reuses it on every retry of that refund, so that three attempts at one refund make one refund; a different refund gets a different key. The figure shows the server in the two cases, and the second is the version that the tool in the lesson uses, `issue_refund(order_id, amount, idempotency_key)`."
+              "text": "The key identifies the *action*, not the attempt. The caller makes one for each refund it intends and reuses it on every retry of that refund, so that three attempts at one refund make one refund; a different refund gets a different key. The figure shows the server in the two cases, and the second is the version that the tool in the lesson uses, issue_refund(order_id, amount, idempotency_key)."
             }
           ],
           "introducesTerms": [
@@ -1479,7 +1434,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A team builds the key for each refund from the order number alone, so that every call about order 4471 carries the key `refund-4471`. A customer is owed two partial refunds on that order, $10 and then $15, and the agent makes the two calls on different days."
+              "text": "A team builds the key for each refund from the order number alone, so that every call about order 4471 carries the key refund-4471. A customer is owed two partial refunds on that order, $10 and then $15, and the agent makes the two calls on different days."
             }
           ],
           "reveal": [
@@ -1535,7 +1490,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "That makes the description the place where most mistakes either start or are prevented, and it raises a second problem for the tools that change things outside the conversation, which is what to do when the agent calls one and never hears back. The figure shows the tools and then one definition as the model receives it."
+              "text": "That makes the description the place where most mistakes either start or are prevented, since a model that misreads one will call the wrong tool, or pass the wrong input, with complete confidence. The tools that change things outside the conversation raise a second problem, which is what the agent should do when it calls one and never hears back, and the design of the tool decides whether the agent can then safely try again."
             }
           ],
           "diagram": {
@@ -1607,12 +1562,7 @@
           "id": "count-integrations",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Four applications each need to use six tools, and no protocol is shared, so every application is wired to every tool separately. Use the idea from the last screen to count the work."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1669,12 +1619,7 @@
           "id": "who-runs-it",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The model has decided to call `search_orders`, and the client has sent the call over the connection. Think about which of the three roles holds the code that looks up the orders."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1694,13 +1639,13 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "MCP's messages are written in **JSON-RPC** 2.0, a small standard for calling a named operation on another program. A request has four members. The `jsonrpc` member gives the version, `method` names the operation, `params` holds its inputs, and `id` is a number or string chosen by the sender. The reply carries the same `id`, which is how the sender knows which request it answers, and it holds either a `result` or an `error`, never both."
+              "text": "MCP's messages are written in **JSON-RPC** 2.0, a small standard for calling a named operation on another program. A request has four members. The jsonrpc member gives the version, method names the operation, params holds its inputs, and id is a number or string chosen by the sender. The reply carries the same id, which is how the sender knows which request it answers, and it holds either a result or an error, never both."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "The request in the figure asks for the operation `tools/call`, and its `params` say which tool to run, `search_orders`, and with what arguments, a customer identifier. The response repeats `id` 7 and carries the tool's output as text. A tool that ran and failed also returns a result, with `isError` set to true, so that the model can read the error message, whereas a request the server cannot understand at all comes back as a JSON-RPC `error`. A message with no `id` is a notification, to which no reply is made."
+              "text": "The request in the figure asks for the operation tools/call, and its params say which tool to run, search_orders, and with what arguments, a customer identifier. The response repeats id 7 and carries the tool's output as text. A tool that ran and failed also returns a result, with isError set to true, so that the model can read the error message, whereas a request the server cannot understand at all comes back as a JSON-RPC error. A message with no id is a notification, to which no reply is made."
             }
           ],
           "introducesTerms": [
@@ -1733,16 +1678,11 @@
           "id": "find-the-method",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Here is a request from the same session: {\"jsonrpc\": \"2.0\", \"id\": 3, \"method\": \"tools/list\"}. Read its members against the figure."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "The `method` member holds the operation, here `tools/list`, which asks the server for the tools it offers. The `id` of 3 will come back on the reply."
+              "text": "The method member holds the operation, here tools/list, which asks the server for the tools it offers. The id of 3 will come back on the reply."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -1758,11 +1698,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A connection starts with a short exchange in which each side states what it can do. The client sends an `initialize` request giving the protocol version it supports and its capabilities, and the server answers with its own version and capabilities, which include whether it offers tools. The client then sends a notification that it is ready. Only after this exchange does the client send `tools/list`, whose result is the list of tools, each with a name, a description and a schema for its inputs, and these are exactly the descriptions the model reads when it chooses."
+              "text": "A connection starts with a short exchange in which each side states what it can do. The client sends an initialize request giving the protocol version it supports and its capabilities, and the server answers with its own version and capabilities, which include whether it offers tools. The client then sends a notification that it is ready. Only after this exchange does the client send tools/list, whose result is the list of tools, each with a name, a description and a schema for its inputs, and these are exactly the descriptions the model reads when it chooses."
             },
             {
               "kind": "paragraph",
-              "text": "The third phase is the one the agent loop uses, and it repeats: each time the model chooses a tool, the client sends a `tools/call` and waits for the result, which joins the context. The figure shows the order of the messages, with the current phase marked in blue and the later ones dashed."
+              "text": "The third phase is the one the agent loop uses, and it repeats: each time the model chooses a tool, the client sends a tools/call and waits for the result, which joins the context. The figure shows the order of the messages, with the current phase marked in blue and the later ones dashed."
             }
           ],
           "introducesTerms": [],
@@ -1796,12 +1736,7 @@
           "id": "which-channel",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A tool server runs on the same machine as the host, and the host starts it as a program of its own. The messages have to travel between the two programs in some way. Before the next screen, name the simplest channel the two could use."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1810,7 +1745,7 @@
           ],
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
-          "checkQuestionId": "aia-mcp-and-protocols-stdio-guess",
+          "checkQuestionId": "aia-mcp-and-protocols-local-channel",
           "activityId": ""
         },
         {
@@ -1820,11 +1755,11 @@
           "headline": "Match the reply to the request, then read what it says.",
           "workedSteps": [
             {
-              "text": "The client sent a `tools/call` request with `id` 7 for the tool `search_orders` with the customer c-42.",
+              "text": "The client sent a tools/call request with id 7 for the tool search_orders with the customer c-42.",
               "math": "request: id 7"
             },
             {
-              "text": "A reply arrives. JSON-RPC pairs a reply with its request by the `id` alone, so the reply must carry the same id as the request it answers.",
+              "text": "A reply arrives. JSON-RPC pairs a reply with its request by the id alone, so the reply must carry the same id as the request it answers.",
               "math": "same id as the request"
             },
             {
@@ -1834,7 +1769,7 @@
               }
             },
             {
-              "text": "Inside `result`, the `content` holds the text `orders 4471, 4502`, and `isError` is false, so the tool ran and found two orders.",
+              "text": "Inside result, the content holds the text \"orders 4471, 4502\", and isError is false, so the tool ran and found two orders.",
               "math": "2 orders"
             }
           ],
@@ -1847,12 +1782,7 @@
           "id": "scale-up",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A company has 6 applications and 9 tool servers. Count the work done by a protocol: compare the number of bespoke integrations with the number of implementations of the shared protocol, and find the difference."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1962,11 +1892,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "Suppose three applications each need to use five tools. If every application is wired directly to every tool, someone writes and maintains 15 separate integrations, and the sixth tool or the fourth application adds another five or three. The work grows as a product, and it is repeated by every team that builds an agent."
+              "text": "Suppose three applications each need to use five tools. If every application is wired directly to every tool, someone writes and maintains 15 separate integrations, and a sixth tool adds another three and a fourth application another five. The work grows as a product, and it is repeated by every team that builds an agent."
             },
             {
               "kind": "paragraph",
-              "text": "A shared protocol changes the arithmetic, since each application and each tool then has to speak the protocol once, which makes 3 + 5 = 8 pieces of work. The Model Context Protocol is such a protocol for agents and tools. The figure shows the two wirings side by side."
+              "text": "A shared protocol changes the arithmetic, since each application and each tool then has to speak the protocol only once, which makes 3 + 5 = 8 pieces of work, and a sixth tool adds one more piece instead of three. The Model Context Protocol is such a protocol for agents and their tools, and reading its messages is how you can tell what a tool server offers an agent and what the agent asked it to do."
             }
           ],
           "diagram": {
@@ -1996,7 +1926,7 @@
         "blocks": [
           {
             "kind": "paragraph",
-            "text": "A host contains the model, a client holds one connection to one server, and the server describes its tools and runs them. A request names its operation in `method`, carries inputs in `params` and is answered by a reply with the same `id`, and a session runs through initialisation, `tools/list` and then `tools/call`, over stdio for a local server or HTTP for a remote one. A2A is a different protocol, for an agent that hands work to another agent, so the two are used together and not instead of one another."
+            "text": "A host contains the model, a client holds one connection to one server, and the server describes its tools and runs them. A request names its operation in method, carries inputs in params and is answered by a reply with the same id, and a session runs through initialisation, tools/list and then tools/call, over stdio for a local server or HTTP for a remote one. A2A is a different protocol, for an agent that hands work to another agent, so the two are used together and not instead of one another."
           }
         ],
         "nextHook": "The next lesson turns to what an agent keeps in its context as a run grows, and what it does when the context fills."
@@ -2058,12 +1988,7 @@
           "id": "how-much-room",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A different agent has a window of 200,000 tokens and is set to compact when usage reaches 75% of the window. Its context now holds 120,000 tokens. Work out how much room is left before compaction runs."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2079,12 +2004,7 @@
           "id": "how-small",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "An agent's history has grown to 30,000 tokens, and it asks the model to summarise it in 1,500 tokens. Think about what such a summary can contain, and begin by working out how much smaller it is than the history."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2093,7 +2013,7 @@
           ],
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
-          "checkQuestionId": "aia-memory-and-context-shrink-factor",
+          "checkQuestionId": "aia-memory-and-context-summary-keeps",
           "activityId": ""
         },
         {
@@ -2139,12 +2059,7 @@
           "id": "name-it",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The figure replaced the older turns with a short passage that the model had written. Use the name this lesson gives to that process."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2201,12 +2116,7 @@
           "id": "metric-preference",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A user tells the agent during a session that all lengths should be given in metric units, and the agent is expected to remember it in every later session. Use the three places from the last screen."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2282,12 +2192,7 @@
           "id": "bigger-window",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The team doubles the window to 200,000 tokens and keeps the trigger at 80% of it. The history is again 62,000 tokens, and the same 21,000-token result arrives. Work out whether and how far the trigger is now from the total."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2361,7 +2266,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The figure draws the window to scale early in a run and later in the same run, with the point at which this agent compacts marked on it."
+              "text": "Getting that decision right is what lets an agent keep working for hours without losing what it was told at the start. Knowing how much of the window each part of the context uses, and how far the total is from the point where the agent must make room, tells you when it has to act, and knowing what a summary keeps and what it loses tells you which facts have to be written somewhere safer."
             }
           ],
           "diagram": {
@@ -2457,12 +2362,7 @@
           "id": "unknown-steps",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A failing job must be fixed, and the steps depend on what the logs show. Compare the three flows in the opening figure and decide which fits."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2519,12 +2419,7 @@
           "id": "count-the-actions",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "An agent writes an eight-step plan, and step 5 fails. It keeps steps 1 to 4, which succeeded, and writes a new four-step plan to finish the task from step 5, which it carries out in full. Count every action it took, including the failed attempt at step 5."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2540,12 +2435,7 @@
           "id": "cost-of-each-pattern",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A form-filling task has eight steps that never change. A reason-act loop makes one model call per step. A plan-then-execute agent makes one call to write the plan and uses the model again in only two of the eight steps, because the other six are mechanical. Work out how many model calls the plan-then-execute agent makes."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2602,12 +2492,7 @@
           "id": "tests-passing",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A coding agent runs a suite of 20 tests and 5 fail. It reflects on the failures, edits the code, and runs the suite again, when 2 fail. Use the count of passing tests as the signal."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2616,7 +2501,7 @@
           ],
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
-          "checkQuestionId": "aia-planning-patterns-more-passing",
+          "checkQuestionId": "aia-planning-patterns-why-it-improved",
           "activityId": ""
         },
         {
@@ -2682,7 +2567,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The plan-then-execute agent from the cost question makes one call for the plan and uses the model in two steps. This time a step fails, so it makes one more call to write a new plan, and the new plan again uses the model in two steps. Count the calls."
+              "text": "The plan-then-execute agent from the cost question makes one call for the plan and uses the model in two steps. This time a step fails, so it makes one more call to write a new plan, and the new plan again uses the model in two steps."
             }
           ],
           "reveal": [
@@ -2755,11 +2640,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A nightly export job has failed and nobody knows why. The first sensible action is to read its log, and the second depends on what the log says, so the agent cannot be given its steps in advance. A different task, filing an expense claim, has steps that are known before the first action. And a third, writing code that must pass a test suite, has a result that can be checked and improved. Each of these calls for a different way of organising the agent's steps."
+              "text": "Three tasks can be handed to the same agent with the same tools. To fix a nightly export job that has failed, the agent must read the log before it can know what to do next, whereas to file an expense claim it can list every step before it starts, and to write code that passes a test suite it can try, read the failures and try again. The tasks differ in what the agent knows at the start and in whether anything outside the model can tell it that a result is wrong."
             },
             {
               "kind": "paragraph",
-              "text": "The figure sets out three such patterns, and the arithmetic shows what each costs."
+              "text": "Those two differences decide how the agent should organise its steps: choosing each one after seeing the last result, writing a plan first, or critiquing a finished attempt. The choice settles how many model calls the task takes, what happens when a step fails and whether the agent can improve a result at all, so matching a task to a pattern is a decision you can make, and price, before the agent runs."
             }
           ],
           "diagram": {
@@ -2837,12 +2722,7 @@
           "id": "name-the-chain",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A document is turned into a summary, the summary is turned into an email, and the email is checked for tone, always in that order and always using the output of the previous call. Look at the five patterns in the opening figure."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2858,12 +2738,7 @@
           "id": "how-long-in-parallel",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Three independent branches of a task each need one model call, and they take 4 seconds, 6 seconds and 5 seconds. Nothing in one branch depends on another. Estimate how long the three take if they are started at the same moment, before the next screen explains how."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2920,12 +2795,7 @@
           "id": "with-a-merge",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A document is checked in three independent sections that take 7, 3 and 9 seconds when run at the same moment. A merge step, which cannot begin until all three have finished, then takes 2 seconds. Use what the last screen said about the merge."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3081,12 +2951,7 @@
           "id": "unknown-subtasks",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A task is to add tests for every function in a codebase that has no test. Which functions need tests, and so how many subtasks there are, is not known until the code is read."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3180,7 +3045,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "Each arrangement is a workflow in the sense of the first lesson, because code fixes the structure, though the last two begin to blur the line with an agent. The figure draws all five, and the rest of the lesson puts numbers on the two that are easiest to get wrong."
+              "text": "Each arrangement is a workflow in the sense of the first lesson, because code fixes the structure, though the last two begin to blur the line with an agent. Two of their effects are easy to misjudge, since calls run side by side save time but not money, and taking the majority answer of several calls helps only under conditions that are often missing, so knowing the arrangements lets you predict the wait, the bill and the accuracy of a design before anything is built."
             }
           ],
           "diagram": {
@@ -3284,12 +3149,7 @@
           "id": "add-the-bars",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Use the figure's numbers: the lead spends 10 thousand tokens planning, each of the four workers spends 20 thousand, and the lead spends 10 thousand on the synthesis. Count the whole run."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3325,12 +3185,7 @@
           "id": "how-many-times",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The multi-agent run used 100 thousand tokens, and the single agent working serially would have needed about 35 thousand. Compare them as a ratio."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3346,12 +3201,7 @@
           "id": "summary-size",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A worker reads 18,000 tokens of web pages and returns a summary of 600 tokens to the lead. Before the next screen explains what the lead can then see, work out how much smaller the summary is than what the worker read."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3360,7 +3210,7 @@
           ],
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
-          "checkQuestionId": "aia-multi-agent-systems-summary-factor",
+          "checkQuestionId": "aia-multi-agent-systems-what-lead-sees",
           "activityId": ""
         },
         {
@@ -3470,11 +3320,11 @@
           "headline": "Check a worker's reply against its contract, and count the claims that meet it.",
           "workedSteps": [
             {
-              "text": "The contract says every claim must have a `text` and a `source_url`. The worker returns three claims: A has both, B has a text and no source, and C has both.",
+              "text": "The contract says every claim must have a text and a source_url. The worker returns three claims: A has both, B has a text and no source, and C has both.",
               "math": "3 claims"
             },
             {
-              "text": "Test each claim against the schema. Claim A passes, and claim B fails because it has no `source_url`, which means no one can check it.",
+              "text": "Test each claim against the schema. Claim A passes, and claim B fails because it has no source_url, which means no one can check it.",
               "math": "A passes, B fails"
             },
             {
@@ -3582,7 +3432,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The figure shows the arrangement with each agent's token use drawn to scale."
+              "text": "Splitting the work buys time and keeps each search's pages out of a single crowded context, and it is paid for in tokens, in the detail that a worker's summary leaves out, and in every message between agents that can be misread. Counting those costs is how you decide whether a second agent is worth adding, and it also shows what the lead has to tell each worker for the split to work at all."
             }
           ],
           "diagram": {
@@ -3672,12 +3522,7 @@
           "id": "never-alone",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The tiers in the figure end with an action that is never offered to the agent. Think about what a wrong call would cost in each of the four candidates."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3732,12 +3577,7 @@
           "id": "where-to-enforce",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The team wants the $20 refund limit to hold even if the model is confused or misled by its input. Think about what the model can and cannot affect in the path shown in the figure."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3753,12 +3593,7 @@
           "id": "how-long-to-click",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A team decides that every action must be approved by a person, to be safe. The agent issues 1,000 actions a day, and a person needs about 5 seconds to read and approve each one. Before the next screen, work out how many minutes of approving that is in a day."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3778,7 +3613,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The arithmetic of the last question points to a design problem. Approving every action looks safe, but 1,000 approvals a day is about 83 minutes of clicking, and a person who is asked that often soon stops reading what is shown and approves by reflex. An approval that nobody reads protects nothing, and it takes the place of a control that would have worked. An **approval gate**, a human decision required before a risky action runs, is worth its cost only where the stakes call for human judgement."
+              "text": "The last question points to a design problem. Approving every action looks safe, but 1,000 approvals a day is about 83 minutes of clicking, and a person who is asked that often soon stops reading what is shown and approves by reflex. An approval that nobody reads protects nothing, and it takes the place of a control that would have worked. An **approval gate**, a human decision required before a risky action runs, is worth its cost only where the stakes call for human judgement."
             },
             {
               "kind": "paragraph",
@@ -3796,12 +3631,7 @@
           "id": "fewer-approvals",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Of the day's 1,000 refund requests, 940 are for $20 or less and run without approval under the small-write rule. The other 60 need a person, who takes 5 seconds on each."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3960,11 +3790,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A support agent can search orders, read the policy, send emails, issue refunds and delete accounts. The tools are not equally dangerous, and a design that treats them alike is either unsafe, if it lets the agent do everything, or unusable, if it asks a person to approve every call. A day with 1,000 actions at 5 seconds of approval each is 83 minutes of clicking, which is more attention than anyone can give."
+              "text": "A support agent can search orders, read the policy, send emails, issue refunds and delete accounts, and these tools are not equally dangerous. A wrong search costs a call and nothing more, a wrong refund of $15 is a small loss that a business can absorb, and a wrong deletion cannot be undone at all. A design that treats them alike is therefore either unsafe, if it lets the agent do everything, or unworkable, if it asks a person to approve every call, since a busy agent makes far more calls than anyone can read with care."
             },
             {
               "kind": "paragraph",
-              "text": "Tools can be sorted by what a wrong call would cost, and each tier then gets its own rule, enforced in a particular place, with something to record and limit around it."
+              "text": "The way out is to sort the tools by what a wrong call would cost and to give each group its own rule, enforced by the code that runs the tool and not by the model. That gives you a permission model you can reason about, in which you can say which actions need a person, where each rule is checked so that no prompt can talk the agent past it, and the most money that could leave in a day if everything else went wrong."
             }
           ]
         },
@@ -4020,12 +3850,7 @@
           "id": "is-a-page-trusted",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "An agent searches the web and reads the text of a page that anyone could have edited. Use the definition of untrusted content from the last screen."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4049,7 +3874,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The figure counts the capabilities for three designs. An agent that reads the inbox has the first two, since the inbox is private and anyone can send into it, but with no way to send anything out it has only two of the three and cannot exfiltrate. Adding a `send_email` tool adds the third. A browser agent with a logged-in session has private data through the session, untrusted content in every page it opens, and a way out in every link it follows or form it submits. What matters is how many of the three an agent has, and removing any one of them takes away the attack."
+              "text": "The figure counts the capabilities for three designs. An agent that reads the inbox has the first two, since the inbox is private and anyone can send into it, but with no way to send anything out it has only two of the three and cannot exfiltrate. Adding a send_email tool adds the third. A browser agent with a logged-in session has private data through the session, untrusted content in every page it opens, and a way out in every link it follows or form it submits. What matters is how many of the three an agent has, and removing any one of them takes away the attack."
             }
           ],
           "introducesTerms": [
@@ -4086,12 +3911,7 @@
           "id": "count-the-circles",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "An agent reads the user's inbox and has one other tool, a search over the company's own approved knowledge base. It has no web access and no tool that sends anything outside. Use the three capabilities from the last screen."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4111,7 +3931,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Exfiltration does not need a tool named `send_email`. A tool that fetches a web address can carry data out in the address itself: if a hostile email tells the agent to fetch `https://attacker.example/c?d=` followed by a summary of the inbox, the request delivers the summary to the attacker's server, and the agent has done nothing that looks like sending. The same is true of a chat window that renders a markdown image, because drawing the image requests its address, and of a comment posted where an outsider can read it."
+              "text": "Exfiltration does not need a tool named send_email. A tool that fetches a web address can carry data out in the address itself: if a hostile email tells the agent to fetch https://attacker.example/c?d= followed by a summary of the inbox, the request delivers the summary to the attacker's server, and the agent has done nothing that looks like sending. The same is true of a chat window that renders a markdown image, because drawing the image requests its address, and of a comment posted where an outsider can read it."
             },
             {
               "kind": "paragraph",
@@ -4127,12 +3947,7 @@
           "id": "filter-arithmetic",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A team adds a filter that catches 95% of injection attempts, in the hope that this will make the email agent safe. Attackers send 200 different attempts. Estimate how many get past the filter on average."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4152,7 +3967,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A filter that looks for a phrase such as *ignore* fails for the reason the arithmetic showed, and for a second one: attackers rephrase, write in another language, split the instruction across sentences or hide it in a document the agent reads. The controls that hold remove or limit one of the three capabilities. The simplest is to **remove a leg**: if the agent never needs to send mail outside the company, give it no external sending, and the exfiltration path is closed whatever the model is persuaded to do. A second is to restrict the outbound channel to an allow-list of destinations the task requires."
+              "text": "A filter that looks for a phrase such as *ignore* fails for the reason the last question showed, and for a second one: attackers rephrase, write in another language, split the instruction across sentences or hide it in a document the agent reads. The controls that hold remove or limit one of the three capabilities. The simplest is to **remove a leg**: if the agent never needs to send mail outside the company, give it no external sending, and the exfiltration path is closed whatever the model is persuaded to do. A second is to restrict the outbound channel to an allow-list of destinations the task requires."
             },
             {
               "kind": "paragraph",
@@ -4187,12 +4002,7 @@
           "id": "which-leg",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "An agent reads email and can send email, and the team agrees that it never needs to message anyone outside the company. They want the most direct change that removes one of the three capabilities."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4340,11 +4150,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "An email agent that summarises the inbox is reading text that strangers wrote. If one of those messages says to forward the finance emails to an outside address, the agent receives that sentence in the same stream of tokens as the user's own request, and it may act on it. The attack needs no break-in. It needs only that the attacker can put text in front of the agent."
+              "text": "An email agent that summarises an inbox is reading text that strangers wrote. If one of those messages tells it to forward the finance emails to an outside address, the agent receives that sentence in the same stream of tokens as the user's own request, and it may act on it, so the attacker needs no password and no break-in, only a way to put text in front of the agent."
             },
             {
               "kind": "paragraph",
-              "text": "Whether it can do harm then depends on what else the agent can do, and a short list of three capabilities decides it. The figure shows an email and a hostile email arriving at the same agent."
+              "text": "Whether that sentence can do harm depends on what else the agent is able to do. An agent that holds private data, reads text from outsiders and has some way to send information out can be turned against its user, while one that lacks any of the three cannot be made to send the data away, however it is instructed, and designing so that the combination never forms is a defence that does not depend on catching every attack."
             }
           ],
           "diagram": {
@@ -4434,12 +4244,7 @@
           "id": "add-the-spans",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Look at the waterfall: the four child spans run one after another, with no overlap and no gaps, and the run lasts exactly as long as they do."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4475,12 +4280,7 @@
           "id": "mean-hides-tail",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Ten runs are timed. Nine of them take 2 seconds each, and one takes 20 seconds. Before the next screen shows a better measure, work out the mean latency, which is the number a dashboard would show by default."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4535,12 +4335,7 @@
           "id": "find-the-p95",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Twenty runs are timed, and the latencies in seconds, sorted from smallest to largest, are 1.1, 1.2, 1.2, 1.3, 1.4, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.4, 2.6, 2.9, 3.4, 4.8 and 9.5. Use the nearest-rank method from the last screen."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4604,12 +4399,7 @@
           "id": "price-a-success",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Over one week an agent makes 150 runs that cost $27 in total, and 90 of them succeed. Divide the whole spend among the runs that delivered."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4745,7 +4535,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The figure shows such a record as a waterfall. The lesson then uses it to compute the measures a team watches, and to decide what must not be kept."
+              "text": "A record that notes the start, the end and the tokens of every step answers both questions, and once many runs have been recorded it gives a team the measures it needs: how long an unlucky user waits, what each successful run really costs, and which runs went wrong and why. Because such a record holds whatever the agent handled, including customers' emails and secrets, deciding what to leave out of it is part of the same design."
             }
           ],
           "diagram": {
@@ -4835,12 +4625,7 @@
           "id": "right-but-forbidden",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "An agent processes a refund correctly, and the order shows the right amount. In the same run it deleted a record of another customer's order, which the task rules forbid. Use the two checks from the last screen."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4877,12 +4662,7 @@
           "id": "a-ninety-percent-agent",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "An agent handles a daily task, and each day it succeeds with probability 90%. The task runs every day for 30 days. Before the next screen explains repeated trials, estimate how many of the 30 days it will fail on average."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4938,12 +4718,7 @@
           "id": "all-three",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Each trial of a task succeeds with probability 0.8, independently of the others. The agent must succeed on all three of three trials. Use the formula for the chance that all k succeed."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4959,12 +4734,7 @@
           "id": "at-least-one",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The same task, with the same per-trial chance of 0.8, is tried three times, and now one success is enough. Find the chance that at least one of the three trials succeeds."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5054,12 +4824,7 @@
           "id": "a-month-of-days",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The 90%-a-day agent runs daily for 30 days, and each day is independent. Think of the month as 30 trials that must all succeed for a flawless month."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5151,11 +4916,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "An agent processes a refund, the order shows the right amount, and the reply to the customer says that the refund is done. By its final answer the run has succeeded. Its trace, however, contains a fourth step that deleted the record of a different order, which the task rules forbid, and a grader that looked only at the answer would never see it."
+              "text": "An agent processes a refund, the order shows the right amount, and the reply tells the customer that the refund is done. The run's trace holds a fourth step as well, in which the agent deleted the record of a different order, an action that the task's rules forbid and that nothing in the final answer mentions."
             },
             {
               "kind": "paragraph",
-              "text": "Evaluating an agent therefore means grading what it did as well as what it said, and doing so across repeated trials, since the same agent does not behave the same way twice. The figure shows the run in two views."
+              "text": "Whether a run like that has passed depends on what an evaluation looks at, and the same agent given the same task will not behave in the same way the next time, so a single run says little about how often it succeeds. Settling what counts as success, and how many trials it takes to measure it, is what lets you say how reliable an agent is before its customers find out."
             }
           ],
           "diagram": {
@@ -5249,12 +5014,7 @@
           "id": "sample-size",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A team will review 2% of the agent's actions each day after they have run. The agent makes 1,500 actions a day. Work out how many actions a person reads each day."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5270,12 +5030,7 @@
           "id": "agreement-rate",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Before an agent is allowed to act, it runs in shadow for two weeks: it proposes an action for each case, and nothing executes. Of 400 proposals, 372 match what the human staff actually decided. Work out the agreement rate as a percentage."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5284,7 +5039,7 @@
           ],
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
-          "checkQuestionId": "aia-human-oversight-and-rollout-agreement",
+          "checkQuestionId": "aia-human-oversight-and-rollout-shadow-evidence",
           "activityId": ""
         },
         {
@@ -5335,12 +5090,7 @@
           "id": "which-stage",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A team wants a stage in which the agent produces a proposal for every case, so that its quality can be measured against human decisions, but in which nothing it proposes is carried out."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5415,12 +5165,7 @@
           "id": "sampled-errors",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The weekly sample is 30 actions, and the reviewer finds that 2 of them were wrong. The record's trigger for stepping down is a sampled error rate over 3%."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5478,12 +5223,7 @@
           "id": "which-function",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The framework has a function for the policies, roles and accountability that an organisation sets up so that risk work can be done at all. Use the descriptions from the last screen."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5614,7 +5354,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The first lesson of this course set out an autonomy ladder and a rule to choose the lowest rung that meets the need. This last lesson says how to move up that ladder safely, with evidence at every step."
+              "text": "The autonomy ladder gives the answer a shape, since an agent can be moved up it one rung at a time, from proposing actions that nobody carries out to acting alone within its permissions. What makes each move safe is evidence gathered on the rung below, such as how often the agent's proposals matched what people decided, together with a condition, written down in advance, under which the agent steps back down."
             }
           ]
         },
@@ -5642,7 +5382,7 @@
         "agent",
         "autonomy-ladder"
       ],
-      "prompt": "Code always runs classify, then retrieve, then answer, each a model call. This system is a",
+      "prompt": "A support system runs three model calls in an order fixed by its code: it classifies the message, then retrieves the matching policy text, then writes the answer. This system is a",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -5670,16 +5410,16 @@
           "label": "Agent"
         },
         {
-          "id": "b",
-          "label": "Workflow"
-        },
-        {
           "id": "c",
           "label": "Copilot"
         },
         {
           "id": "d",
           "label": "Script"
+        },
+        {
+          "id": "b",
+          "label": "Workflow"
         }
       ],
       "misconceptions": [
@@ -5716,13 +5456,11 @@
         "agent",
         "autonomy-ladder"
       ],
-      "prompt": "How many times more does the agent cost per request than the workflow?",
-      "responseType": "numeric",
+      "prompt": "A refund workflow makes 3 model calls per request at $0.01 a call. An agent built for the same task averages 12 calls at the same price, because every tool result is followed by another model call. Roughly how does the agent's cost per request compare with the workflow's?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Find each design's cost per request first: calls multiplied by the price of a call.",
-        "The workflow costs 3 × $0.01 and the agent 12 × $0.01.",
-        "Divide the agent's cost by the workflow's."
+        "Both designs pay the same price per call, so compare the numbers of calls."
       ],
       "sourceIds": [
         "anthropic-agents",
@@ -5732,37 +5470,55 @@
       "skill": "compare-cost",
       "calculator": "off",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 4,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "The workflow costs 3 × $0.01 = $0.03 and the agent 12 × $0.01 = $0.12, and $0.12 ÷ $0.03 = 4."
+        "kind": "text",
+        "acceptedIdeas": [
+          "About four times as much"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "About four times as much"
       },
+      "choices": [
+        {
+          "id": "b",
+          "label": "About four times as much"
+        },
+        {
+          "id": "c",
+          "label": "A little more, since only the agent's extra tool calls are charged"
+        },
+        {
+          "id": "d",
+          "label": "About twelve times as much"
+        },
+        {
+          "id": "a",
+          "label": "About the same, since both use the same model at the same price"
+        }
+      ],
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              9
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "Nine is how many extra calls the agent makes. The question asks how many times as much it costs, which is a ratio."
+          "feedback": "The price per call is the same, but the agent makes 12 calls where the workflow makes 3, and the number of calls is what sets the cost."
         },
         {
           "match": {
-            "numeric": [
-              0.25
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "That divides the workflow's cost by the agent's. Put the agent's cost on top."
+          "feedback": "Every one of the agent's 12 model calls is charged at $0.01, against 3 for the workflow, so the extra calls are most of the bill and not a small addition to it."
         },
         {
           "match": {
-            "numeric": [
-              0.09
+            "choiceIds": [
+              "d"
             ]
           },
-          "feedback": "That is the difference in dollars per request. Divide the costs instead."
+          "feedback": "Twelve is the agent's number of calls, but the workflow makes 3 of its own, so the agent costs 12 to 3, or four times as much."
         }
       ]
     },
@@ -6076,16 +5832,16 @@
       },
       "choices": [
         {
-          "id": "a",
-          "label": "Workflow"
-        },
-        {
           "id": "b",
           "label": "Copilot"
         },
         {
           "id": "c",
           "label": "Script"
+        },
+        {
+          "id": "a",
+          "label": "Workflow"
         },
         {
           "id": "d",
@@ -6181,7 +5937,7 @@
         "step-budget",
         "compounding-error"
       ],
-      "prompt": "How many times was the model called during the run?",
+      "prompt": "An agent's run takes three steps. At steps 1 and 2 the model calls a tool, and at step 3 it replies with a final answer and no tool call, which ends the run. How many times was the model called during the run?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -6230,7 +5986,7 @@
         "step-budget",
         "compounding-error"
       ],
-      "prompt": "Which of these stops an endless loop?",
+      "prompt": "A tool returns an error every time the model calls it, and the model keeps choosing the same tool in the hope that the next attempt will work. It never decides that it is finished, and nothing in the code limits the run. Which of these stops the loop?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -6254,8 +6010,8 @@
       },
       "choices": [
         {
-          "id": "a",
-          "label": "A longer prompt"
+          "id": "d",
+          "label": "A step budget"
         },
         {
           "id": "b",
@@ -6266,8 +6022,8 @@
           "label": "More tools"
         },
         {
-          "id": "d",
-          "label": "A step budget"
+          "id": "a",
+          "label": "A longer prompt"
         }
       ],
       "misconceptions": [
@@ -6353,13 +6109,11 @@
         "step-budget",
         "compounding-error"
       ],
-      "prompt": "What is the chance that all three steps succeed? Give it as a decimal to two places.",
-      "responseType": "numeric",
+      "prompt": "Each step of an agent's run succeeds 90% of the time, independently of the others, and a step that fails spoils the run. Roughly how often does a run of three steps succeed?",
+      "responseType": "short_text",
       "difficulty": 1.2,
       "hints": [
-        "The run succeeds only if step 1, step 2 and step 3 all succeed.",
-        "For independent events that must all happen, multiply their probabilities.",
-        "Multiply 0.9 by itself three times."
+        "A run succeeds only if the first, the second and the third steps all succeed."
       ],
       "sourceIds": [
         "anthropic-agents",
@@ -6369,37 +6123,43 @@
       "skill": "compute-reliability",
       "calculator": "available",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 0.73,
-        "unit": "",
-        "absoluteTolerance": 0.005,
-        "relativeTolerance": 0,
-        "workedAnswer": "All three must succeed and the steps are independent, so 0.9 × 0.9 × 0.9 = 0.729, which is 0.73 to two places."
+        "kind": "text",
+        "acceptedIdeas": [
+          "Noticeably less often than one step, roughly three runs in four"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Noticeably less often than one step, roughly three runs in four"
       },
+      "choices": [
+        {
+          "id": "b",
+          "label": "About one run in three"
+        },
+        {
+          "id": "c",
+          "label": "Noticeably less often than one step, roughly three runs in four"
+        },
+        {
+          "id": "a",
+          "label": "About 90% of the time, the same as one step"
+        }
+      ],
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              0.9
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That is the chance that one step succeeds. All three must, so the chance is lower."
+          "feedback": "The run needs all three steps to succeed, and each carries its own 10% chance of failing, so the run fails more often than any single step does."
         },
         {
           "match": {
-            "numeric": [
-              0.81
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That multiplies two steps. The run has three."
-        },
-        {
-          "match": {
-            "numeric": [
-              0.27
-            ]
-          },
-          "feedback": "That is the chance that at least one step fails, which is the opposite of what the question asks."
+          "feedback": "Each step fails only one time in ten, so most runs still get through all three, and the chance falls only to about 0.73."
         }
       ]
     },
@@ -6748,12 +6508,12 @@
           "label": "\"refund: Refunds a customer.\""
         },
         {
-          "id": "b",
-          "label": "\"issue_refund: A powerful tool for everything to do with refunds. Use it whenever a customer is unhappy.\""
-        },
-        {
           "id": "c",
           "label": "\"issue_refund: Pays money back for one order. Use after read_policy shows the order is eligible. Inputs: order_id from search_orders, amount_cents up to the order total, idempotency_key. Returns a refund id or an error code.\""
+        },
+        {
+          "id": "b",
+          "label": "\"issue_refund: A powerful tool for everything to do with refunds. Use it whenever a customer is unhappy.\""
         }
       ],
       "misconceptions": [
@@ -6782,7 +6542,7 @@
         "read-write",
         "aia-idempotency-key"
       ],
-      "prompt": "Is cancel_subscription a read tool or a write tool? Answer with one word, read or write.",
+      "prompt": "A support team adds a tool, cancel_subscription(customer_id), which ends a customer's plan from the next billing date. Is it a read tool or a write tool? Answer with one word, read or write.",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -6829,13 +6589,11 @@
         "read-write",
         "aia-idempotency-key"
       ],
-      "prompt": "How many refunds does the customer receive?",
-      "responseType": "numeric",
+      "prompt": "A write tool, issue_refund(order_id, amount), pays out on every call. The agent calls it, the refund goes through, and the reply is lost in a network timeout. Hearing nothing, the agent calls it twice more, and both retries reach the server. How many refunds does the customer receive?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Each call that reached the server did something.",
-        "The first call succeeded even though the agent never saw the reply.",
-        "Count the calls that reached the server."
+        "Ask what the server can see in each call that would tell it the call is a repeat."
       ],
       "sourceIds": [
         "anthropic-agents",
@@ -6846,29 +6604,43 @@
       "skill": "retry-safely",
       "calculator": "off",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 3,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "The first call succeeded and the two retries each reached the server, and a tool with no way to recognise a repeat pays out on every call, so there are 3 refunds."
+        "kind": "text",
+        "acceptedIdeas": [
+          "Three, one for each call that reached the server"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Three, one for each call that reached the server"
       },
+      "choices": [
+        {
+          "id": "b",
+          "label": "One, because the server can tell that the later calls are repeats"
+        },
+        {
+          "id": "c",
+          "label": "None, because the agent never received a confirmation"
+        },
+        {
+          "id": "a",
+          "label": "Three, one for each call that reached the server"
+        }
+      ],
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              1
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "One refund was due, but the tool pays on every call that reaches it, and all three did."
+          "feedback": "Each call carries only an order and an amount, so nothing in it lets the server tell a retry from a new request, and it pays out every time."
         },
         {
           "match": {
-            "numeric": [
-              2
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "That counts only the two retries. The first call also paid out."
+          "feedback": "The first call succeeded at the server even though its reply was lost, and a lost reply does not undo a payment that has already been made."
         }
       ]
     },
@@ -7004,16 +6776,16 @@
       },
       "choices": [
         {
+          "id": "c",
+          "label": "issue_refund"
+        },
+        {
           "id": "a",
           "label": "search_orders"
         },
         {
           "id": "b",
           "label": "get_customer"
-        },
-        {
-          "id": "c",
-          "label": "issue_refund"
         },
         {
           "id": "d",
@@ -7152,7 +6924,7 @@
         "json-rpc",
         "transport"
       ],
-      "prompt": "How many separate integrations are needed?",
+      "prompt": "Four applications each need to use six tools, and no protocol is shared, so every application is wired to every tool separately. How many separate integrations are needed?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -7210,7 +6982,7 @@
         "json-rpc",
         "transport"
       ],
-      "prompt": "Which of the three roles, host, client or server, runs the tool?",
+      "prompt": "The model has decided to call search_orders, and the client has sent the call over the connection. Which of the three roles, host, client or server, runs the tool?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -7375,6 +7147,68 @@
       ]
     },
     {
+      "id": "aia-mcp-and-protocols-local-channel",
+      "conceptIds": [
+        "mcp",
+        "json-rpc",
+        "transport"
+      ],
+      "prompt": "A host starts a tool server as a separate program on the same machine. What is the simplest channel for the two programs to exchange messages?",
+      "responseType": "short_text",
+      "difficulty": 1.3,
+      "hints": [
+        "A program already has a place where it reads input and a place where it writes output."
+      ],
+      "sourceIds": [
+        "mcp-spec",
+        "jsonrpc",
+        "a2a"
+      ],
+      "onCorrect": "The host writes to the server's standard input and reads its standard output, which needs no network at all, and this transport is called stdio.",
+      "skill": "assign-roles",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Through the server's standard input and output, which the host holds once it has started the program"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Through the server's standard input and output, which the host holds once it has started the program"
+      },
+      "choices": [
+        {
+          "id": "b",
+          "label": "Through the server's standard input and output, which the host holds once it has started the program"
+        },
+        {
+          "id": "a",
+          "label": "Over the network, through a web address that the server publishes"
+        },
+        {
+          "id": "c",
+          "label": "Through a shared database that both programs check for new rows"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "A web address is how a remote server is reached, and a program the host has started on its own machine can be reached without any network."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "A shared database would need a third program and constant checking, while a program the host has started already has an input and an output that the host can use."
+        }
+      ]
+    },
+    {
       "id": "aia-mcp-and-protocols-reply-id",
       "conceptIds": [
         "mcp",
@@ -7431,7 +7265,7 @@
         "json-rpc",
         "transport"
       ],
-      "prompt": "How many fewer pieces of work does the shared protocol need than the bespoke integrations?",
+      "prompt": "A company has 6 applications and 9 tool servers. How many fewer pieces of work does a shared protocol need than bespoke integrations of every application with every server?",
       "responseType": "numeric",
       "difficulty": 1.3,
       "hints": [
@@ -7510,12 +7344,12 @@
           "label": "A2A for the delivery dispute and MCP for the order database"
         },
         {
-          "id": "b",
-          "label": "MCP for the delivery dispute and A2A for the order database"
-        },
-        {
           "id": "c",
           "label": "MCP for both, since both involve calling something"
+        },
+        {
+          "id": "b",
+          "label": "MCP for the delivery dispute and A2A for the order database"
         },
         {
           "id": "d",
@@ -7708,7 +7542,7 @@
         "compaction",
         "external-memory"
       ],
-      "prompt": "How many more tokens can be added before compaction triggers?",
+      "prompt": "An agent has a window of 200,000 tokens and compacts its context when usage reaches 75% of the window. Its context now holds 120,000 tokens. How many more tokens can be added before compaction triggers?",
       "responseType": "numeric",
       "difficulty": 1.1,
       "hints": [
@@ -7808,6 +7642,67 @@
       ]
     },
     {
+      "id": "aia-memory-and-context-summary-keeps",
+      "conceptIds": [
+        "working-context",
+        "compaction",
+        "external-memory"
+      ],
+      "prompt": "An agent's history of 30,000 tokens is replaced by a summary of 1,500 tokens. What can the summary hold?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Compare the two sizes: the summary has one token for every twenty in the history."
+      ],
+      "sourceIds": [
+        "anthropic-agents",
+        "anthropic-multi"
+      ],
+      "onCorrect": "Which details survive depends on what the summariser is told to keep, and that instruction is part of the design.",
+      "skill": "budget-context",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "The outline of what happened, with most exact values and wording left out"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "The outline of what happened, with most exact values and wording left out"
+      },
+      "choices": [
+        {
+          "id": "b",
+          "label": "The outline of what happened, with most exact values and wording left out"
+        },
+        {
+          "id": "a",
+          "label": "Everything in the history, written more compactly"
+        },
+        {
+          "id": "c",
+          "label": "Only the most recent turn, copied word for word"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "The summary is twenty times shorter than the history, and no rewording packs that much text into a twentieth of the space, so most of the detail has to go."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "A summary is written by the model about the whole history, so it covers the earlier turns as well, though in far less detail."
+        }
+      ]
+    },
+    {
       "id": "aia-memory-and-context-compaction-term",
       "conceptIds": [
         "working-context",
@@ -7863,7 +7758,7 @@
         "compaction",
         "external-memory"
       ],
-      "prompt": "Where should the agent keep the user's standing preference for metric units?",
+      "prompt": "During a session a user tells the agent that all lengths should be given in metric units, and expects this to be remembered in every later session. Where should the agent keep that preference?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -7887,20 +7782,20 @@
       },
       "choices": [
         {
-          "id": "a",
-          "label": "In an old turn of the conversation"
+          "id": "c",
+          "label": "In external memory, read when it is relevant"
         },
         {
           "id": "b",
           "label": "Added to every prompt as the whole of the past chat"
         },
         {
-          "id": "c",
-          "label": "In external memory, read when it is relevant"
-        },
-        {
           "id": "d",
           "label": "Nowhere, because the user will repeat it"
+        },
+        {
+          "id": "a",
+          "label": "In an old turn of the conversation"
         }
       ],
       "misconceptions": [
@@ -8035,7 +7930,7 @@
         "compaction",
         "external-memory"
       ],
-      "prompt": "How many more tokens can be added after the result before compaction triggers?",
+      "prompt": "An agent's window is 200,000 tokens and it compacts at 80% of the window. The history is 62,000 tokens when a tool result of 21,000 tokens arrives. How many more tokens can be added after the result before compaction triggers?",
       "responseType": "numeric",
       "difficulty": 1.4,
       "hints": [
@@ -8116,12 +8011,12 @@
           "label": "The agent treats the note as true and may act on it"
         },
         {
-          "id": "c",
-          "label": "The note is corrected automatically when the session starts"
-        },
-        {
           "id": "d",
           "label": "The agent asks the model whether the note is current, and the model knows"
+        },
+        {
+          "id": "c",
+          "label": "The note is corrected automatically when the session starts"
         }
       ],
       "misconceptions": [
@@ -8341,16 +8236,16 @@
           "label": "A fixed plan written before the first action"
         },
         {
+          "id": "d",
+          "label": "No tools, only a long prompt"
+        },
+        {
           "id": "b",
           "label": "Reflection with no outside check"
         },
         {
           "id": "c",
           "label": "The reason-act loop"
-        },
-        {
-          "id": "d",
-          "label": "No tools, only a long prompt"
         }
       ],
       "misconceptions": [
@@ -8387,7 +8282,7 @@
         "plan-execute",
         "reflection"
       ],
-      "prompt": "How many actions did the agent take in total?",
+      "prompt": "An agent writes an eight-step plan, and step 5 fails. It keeps steps 1 to 4, which succeeded, and writes a new four-step plan to finish the task from step 5, which it carries out in full. Counting the failed attempt at step 5, how many actions did the agent take in total?",
       "responseType": "numeric",
       "difficulty": 1.2,
       "hints": [
@@ -8437,13 +8332,11 @@
         "plan-execute",
         "reflection"
       ],
-      "prompt": "How many model calls does the plan-then-execute agent make?",
-      "responseType": "numeric",
+      "prompt": "A form-filling task has eight steps that never change. A reason-act loop makes one model call per step. A plan-then-execute agent writes its plan in one model call and then needs the model in only two of the eight steps, since the other six are mechanical. How do the two compare in model calls?",
+      "responseType": "short_text",
       "difficulty": 1.1,
       "hints": [
-        "Count the call that writes the plan separately from the calls inside steps.",
-        "The plan is one call, and two of the eight steps use the model.",
-        "Add them."
+        "Count the calls each makes: one per step for the loop, and the plan plus two steps for the other."
       ],
       "sourceIds": [
         "react-paper",
@@ -8454,29 +8347,43 @@
       "skill": "trace-replan",
       "calculator": "off",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 3,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "One call writes the plan and two steps use the model, so 1 + 2 = 3 calls."
+        "kind": "text",
+        "acceptedIdeas": [
+          "The plan-then-execute agent makes far fewer, under half as many"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "The plan-then-execute agent makes far fewer, under half as many"
       },
+      "choices": [
+        {
+          "id": "a",
+          "label": "The plan-then-execute agent makes far fewer, under half as many"
+        },
+        {
+          "id": "b",
+          "label": "About the same, since both carry out all eight steps"
+        },
+        {
+          "id": "c",
+          "label": "The plan-then-execute agent makes more, since writing the plan is an extra call"
+        }
+      ],
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              8
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That is the reason-act loop's count, one call per step. This agent calls the model only for the plan and for two steps."
+          "feedback": "Both carry out eight steps, but six of the plan-then-execute agent's steps are mechanical and need no model, while the loop calls the model at every step."
         },
         {
           "match": {
-            "numeric": [
-              2
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "That counts the steps that use the model but leaves out the call that wrote the plan."
+          "feedback": "The plan costs one call, but it saves the loop's call at each of the six mechanical steps, so the total is three calls against eight."
         }
       ]
     },
@@ -8527,6 +8434,68 @@
             ]
           },
           "feedback": "That is the number failing at the start. The question asks how many more pass the second time."
+        }
+      ]
+    },
+    {
+      "id": "aia-planning-patterns-why-it-improved",
+      "conceptIds": [
+        "react",
+        "plan-execute",
+        "reflection"
+      ],
+      "prompt": "A coding agent runs a suite of 20 tests and 5 fail. It reflects on the failures, edits the code and runs the suite again, and this time only 2 fail. What made the reflection useful?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Ask what the agent knew before its second attempt that it did not know before its first."
+      ],
+      "sourceIds": [
+        "react-paper",
+        "reflexion",
+        "anthropic-agents"
+      ],
+      "onCorrect": "Three more tests pass after the second attempt, and the improvement came from a signal that does not depend on what the model believes about its own work.",
+      "skill": "trace-replan",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "The failing tests told the critique what was wrong, which the model did not know before"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "The failing tests told the critique what was wrong, which the model did not know before"
+      },
+      "choices": [
+        {
+          "id": "b",
+          "label": "The failing tests told the critique what was wrong, which the model did not know before"
+        },
+        {
+          "id": "a",
+          "label": "The model was asked to check its own work more carefully"
+        },
+        {
+          "id": "c",
+          "label": "Any second attempt does better than the first, whatever the critique says"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "Asking the model to check itself gives it no new fact, so a second attempt tends to repeat the first, and here it was the test results that supplied the fact."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "A second attempt with nothing new in its context is likely to make the same mistakes, and what changed here was the list of failing tests."
         }
       ]
     },
@@ -8730,20 +8699,20 @@
       },
       "choices": [
         {
-          "id": "a",
-          "label": "Nothing yet, because the reasoning is text the model wrote and the proposal needs a check from outside the model"
-        },
-        {
-          "id": "b",
-          "label": "That it is right, because every line of reasoning was sound"
+          "id": "d",
+          "label": "That it is wrong, because reasoning shown to a reader is usually a cover for a guess"
         },
         {
           "id": "c",
           "label": "That it is right, because longer reasoning is more reliable"
         },
         {
-          "id": "d",
-          "label": "That it is wrong, because reasoning shown to a reader is usually a cover for a guess"
+          "id": "a",
+          "label": "Nothing yet, because the reasoning is text the model wrote and the proposal needs a check from outside the model"
+        },
+        {
+          "id": "b",
+          "label": "That it is right, because every line of reasoning was sound"
         }
       ],
       "misconceptions": [
@@ -8990,13 +8959,11 @@
         "parallelisation",
         "evaluator-optimiser"
       ],
-      "prompt": "How long, in seconds, does the parallel version take?",
-      "responseType": "numeric",
+      "prompt": "Three independent branches of a task each need one model call, taking 4 seconds, 6 seconds and 5 seconds. If all three start at the same moment, roughly how long does the task take?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Branches that run together overlap in time.",
-        "The work is done when the last branch finishes.",
-        "Find the longest of the three times."
+        "Ask which branch is still running when the other two have finished."
       ],
       "sourceIds": [
         "anthropic-agents"
@@ -9005,29 +8972,43 @@
       "skill": "compute-parallel",
       "calculator": "off",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 6,
-        "unit": "seconds",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "The branches run together, so the total is the longest of 4, 6 and 5, which is 6 seconds."
+        "kind": "text",
+        "acceptedIdeas": [
+          "About as long as the slowest branch"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "About as long as the slowest branch"
       },
+      "choices": [
+        {
+          "id": "b",
+          "label": "About as long as the three times added together"
+        },
+        {
+          "id": "a",
+          "label": "About as long as the slowest branch"
+        },
+        {
+          "id": "c",
+          "label": "About as long as the quickest branch"
+        }
+      ],
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              15
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That is the time if the branches ran one after another. Run together, they overlap."
+          "feedback": "Adding the times is right when the branches run one after another, but these run at the same time, so their times overlap."
         },
         {
           "match": {
-            "numeric": [
-              5
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "That is the average of the three times. The work waits for the slowest branch."
+          "feedback": "The task is not finished until every branch is, so the quickest branch has to wait for the other two."
         }
       ]
     },
@@ -9038,7 +9019,7 @@
         "parallelisation",
         "evaluator-optimiser"
       ],
-      "prompt": "How long does the whole task take, in seconds?",
+      "prompt": "A document is checked in three independent sections that start at the same moment and take 7, 3 and 9 seconds. A merge step, which cannot begin until all three have finished, then takes 2 seconds. How long does the whole task take, in seconds?",
       "responseType": "numeric",
       "difficulty": 1.2,
       "hints": [
@@ -9205,6 +9186,10 @@
       },
       "choices": [
         {
+          "id": "d",
+          "label": "Sectioning"
+        },
+        {
           "id": "a",
           "label": "Prompt chaining"
         },
@@ -9215,10 +9200,6 @@
         {
           "id": "c",
           "label": "Orchestrator-workers"
-        },
-        {
-          "id": "d",
-          "label": "Sectioning"
         }
       ],
       "misconceptions": [
@@ -9326,20 +9307,20 @@
       },
       "choices": [
         {
-          "id": "a",
-          "label": "It raises the accuracy, as it would for five independent voters"
+          "id": "d",
+          "label": "It makes the answer faster, because the voters run in parallel"
         },
         {
           "id": "b",
           "label": "Nothing, because five identical outputs are one answer repeated and the voters are not independent"
         },
         {
-          "id": "c",
-          "label": "It lowers the accuracy, because every voter is wrong more often when there are more of them"
+          "id": "a",
+          "label": "It raises the accuracy, as it would for five independent voters"
         },
         {
-          "id": "d",
-          "label": "It makes the answer faster, because the voters run in parallel"
+          "id": "c",
+          "label": "It lowers the accuracy, because every voter is wrong more often when there are more of them"
         }
       ],
       "misconceptions": [
@@ -9527,7 +9508,7 @@
         "context-isolation",
         "aia-contract"
       ],
-      "prompt": "What is the total number of tokens used, in thousands?",
+      "prompt": "A lead agent spends 10 thousand tokens on its plan, each of its four workers spends 20 thousand, and the lead spends 10 thousand on the synthesis. What is the total number of tokens used, in thousands?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -9585,7 +9566,7 @@
         "context-isolation",
         "aia-contract"
       ],
-      "prompt": "How many times as many tokens does the multi-agent run use as the single agent? Give it to one decimal place.",
+      "prompt": "A multi-agent run used 100 thousand tokens, and a single agent working serially would have needed about 35 thousand. How many times as many tokens does the multi-agent run use as the single agent? Give it to one decimal place.",
       "responseType": "numeric",
       "difficulty": 1.2,
       "hints": [
@@ -9679,6 +9660,68 @@
       ]
     },
     {
+      "id": "aia-multi-agent-systems-what-lead-sees",
+      "conceptIds": [
+        "handoff",
+        "context-isolation",
+        "aia-contract"
+      ],
+      "prompt": "A worker reads 18,000 tokens of web pages and returns a summary of 600 tokens to its lead. What can the lead know about those pages?",
+      "responseType": "short_text",
+      "difficulty": 1.1,
+      "hints": [
+        "Ask what actually arrives in the lead's context."
+      ],
+      "sourceIds": [
+        "anthropic-multi",
+        "a2a",
+        "anthropic-agents"
+      ],
+      "onCorrect": "The small summary is what keeps the lead's context small, and it is also why the lead cannot answer a question about a detail that the summary dropped.",
+      "skill": "count-multi-agent-cost",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Only what the summary kept, a small part of what the worker read"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Only what the summary kept, a small part of what the worker read"
+      },
+      "choices": [
+        {
+          "id": "c",
+          "label": "Nothing, since the pages never enter the lead's context"
+        },
+        {
+          "id": "a",
+          "label": "Everything in them, since the summary was written from the pages"
+        },
+        {
+          "id": "b",
+          "label": "Only what the summary kept, a small part of what the worker read"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "The summary is thirty times smaller than the pages, so it cannot carry everything in them, and the summary is all the lead receives."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "The pages stay with the worker, but the summary does reach the lead, so the lead knows whatever the worker chose to keep."
+        }
+      ]
+    },
+    {
       "id": "aia-multi-agent-systems-narrow-choice",
       "conceptIds": [
         "handoff",
@@ -9710,20 +9753,20 @@
       },
       "choices": [
         {
-          "id": "a",
-          "label": "It makes the model smarter"
-        },
-        {
-          "id": "b",
-          "label": "It is required by the protocol"
-        },
-        {
           "id": "c",
           "label": "It keeps the task focused and the main context small"
         },
         {
           "id": "d",
           "label": "It lowers the temperature"
+        },
+        {
+          "id": "a",
+          "label": "It makes the model smarter"
+        },
+        {
+          "id": "b",
+          "label": "It is required by the protocol"
         }
       ],
       "misconceptions": [
@@ -9889,12 +9932,12 @@
           "label": "Both sets of findings are kept, because the agents coordinate by chat"
         },
         {
-          "id": "b",
-          "label": "One write may overwrite the other, so give the notes a single owner who merges the workers' results"
-        },
-        {
           "id": "c",
           "label": "The file grows without limit, so give each worker a larger budget"
+        },
+        {
+          "id": "b",
+          "label": "One write may overwrite the other, so give the notes a single owner who merges the workers' results"
         },
         {
           "id": "d",
@@ -10135,12 +10178,12 @@
           "label": "Search orders"
         },
         {
-          "id": "b",
-          "label": "Read a policy"
-        },
-        {
           "id": "c",
           "label": "Delete a customer account"
+        },
+        {
+          "id": "b",
+          "label": "Read a policy"
         },
         {
           "id": "d",
@@ -10181,12 +10224,11 @@
         "approval-gate",
         "aia-audit-log"
       ],
-      "prompt": "Where must the refund limit be enforced: in the system prompt, in the user's browser, or on which other side of the path? Answer with the place that executes the tool.",
+      "prompt": "A team wants its $20 refund limit to hold even when the model is confused or misled by its input. Where must the limit be enforced?",
       "responseType": "short_text",
       "difficulty": 1.1,
       "hints": [
-        "The place that holds the limit must be one that the model cannot change by what it writes.",
-        "It is the component that runs the tool and checks each call before it runs."
+        "The place that holds the limit must be one that the model cannot change by what it writes."
       ],
       "sourceIds": [
         "owasp-llm",
@@ -10199,39 +10241,41 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "server"
-        ],
-        "acceptedAlternatives": [
-          "the server",
-          "tool server",
-          "the tool server",
-          "on the server",
-          "the server that executes the tool",
-          "the server that runs the tool"
+          "On the server that runs the refund tool, before the tool runs"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "server"
+        "exampleAnswer": "On the server that runs the refund tool, before the tool runs"
       },
+      "choices": [
+        {
+          "id": "a",
+          "label": "In the system prompt, as a rule the model is told to follow"
+        },
+        {
+          "id": "c",
+          "label": "In the user's browser, before the request is sent"
+        },
+        {
+          "id": "b",
+          "label": "On the server that runs the refund tool, before the tool runs"
+        }
+      ],
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "system prompt",
-              "prompt",
-              "the system prompt"
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "A prompt is text that the model reads, and a model can disregard it, so a limit placed there is only a request."
+          "feedback": "A prompt is text the model reads, and a confused or misled model may not follow it, so a rule there is a request and not a control."
         },
         {
           "match": {
-            "textIdeas": [
-              "browser",
-              "the browser",
-              "user's browser"
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "A browser belongs to the user and can be altered, so it cannot enforce a limit against a mistaken agent."
+          "feedback": "The browser is on the user's side of the path, where anyone can change what is sent, so a check there can be bypassed."
         }
       ]
     },
@@ -10242,13 +10286,11 @@
         "approval-gate",
         "aia-audit-log"
       ],
-      "prompt": "How many minutes of approving is that per day, to one decimal place?",
-      "responseType": "numeric",
+      "prompt": "A team decides that a person must approve every action an agent takes. The agent takes 1,000 actions a day, and each approval takes a person about 5 seconds. Roughly how long does approving take each day?",
+      "responseType": "short_text",
       "difficulty": 1.2,
       "hints": [
-        "Find the total number of seconds first.",
-        "1,000 approvals at 5 seconds each.",
-        "Divide the seconds by 60."
+        "Multiply the number of actions by the seconds each takes, then turn the seconds into minutes."
       ],
       "sourceIds": [
         "owasp-llm",
@@ -10259,29 +10301,55 @@
       "skill": "estimate-approval-load",
       "calculator": "off",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 83.3,
-        "unit": "",
-        "absoluteTolerance": 0.05,
-        "relativeTolerance": 0,
-        "workedAnswer": "1,000 × 5 s = 5,000 s, and 5,000 ÷ 60 is about 83.3 minutes."
+        "kind": "text",
+        "acceptedIdeas": [
+          "Well over an hour"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Well over an hour"
       },
+      "choices": [
+        {
+          "id": "b",
+          "label": "About a quarter of an hour"
+        },
+        {
+          "id": "c",
+          "label": "Well over an hour"
+        },
+        {
+          "id": "a",
+          "label": "A few minutes"
+        },
+        {
+          "id": "d",
+          "label": "A full working day"
+        }
+      ],
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              5000
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That is the total in seconds. The question asks for minutes."
+          "feedback": "Five seconds is short, but it is spent 1,000 times, which is 5,000 seconds a day."
         },
         {
           "match": {
-            "numeric": [
-              1.4
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That is the number of hours. The question asks for minutes."
+          "feedback": "A quarter of an hour is 900 seconds, enough for 180 approvals, and the agent takes 1,000 actions."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "A working day of eight hours is 28,800 seconds, while 1,000 approvals at 5 seconds take 5,000, a little under an hour and a half."
         }
       ]
     },
@@ -10292,7 +10360,7 @@
         "approval-gate",
         "aia-audit-log"
       ],
-      "prompt": "How many minutes of approving is that per day?",
+      "prompt": "Of 1,000 refund requests a day, 940 are for $20 or less and run without approval. The other 60 need a person, who takes 5 seconds on each. How many minutes of approving is that per day?",
       "responseType": "numeric",
       "difficulty": 1.2,
       "hints": [
@@ -10471,16 +10539,16 @@
           "label": "Nothing is wrong, because the employee has approved the agent"
         },
         {
-          "id": "b",
-          "label": "It gives the agent more access than its task needs, so give it its own identity with only the scopes the task requires"
-        },
-        {
           "id": "c",
           "label": "It is too slow, so cache the credentials"
         },
         {
           "id": "d",
           "label": "It works only if the system prompt forbids deleting accounts"
+        },
+        {
+          "id": "b",
+          "label": "It gives the agent more access than its task needs, so give it its own identity with only the scopes the task requires"
         }
       ],
       "misconceptions": [
@@ -10731,7 +10799,7 @@
         "untrusted-content",
         "privilege-separation"
       ],
-      "prompt": "How many of the three capabilities does this agent have?",
+      "prompt": "An agent reads the user's inbox and has one other tool, a search over the company's own approved knowledge base. It has no web access and no tool that sends anything outside. How many of the three capabilities, private data, untrusted content and external communication, does it have?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -10781,13 +10849,11 @@
         "untrusted-content",
         "privilege-separation"
       ],
-      "prompt": "On average, how many of the 200 attempts get past the filter?",
-      "responseType": "numeric",
+      "prompt": "A team adds a filter that catches 95% of injection attempts, and attackers send 200 different attempts. What happens, on average?",
+      "responseType": "short_text",
       "difficulty": 1.1,
       "hints": [
-        "Find the share that the filter misses.",
-        "The filter catches 95%, so it misses 5%.",
-        "Take 5% of 200."
+        "Work out what share of the attempts the filter misses."
       ],
       "sourceIds": [
         "willison-trifecta",
@@ -10798,29 +10864,43 @@
       "skill": "break-the-trifecta",
       "calculator": "off",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 10,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "The filter misses 5% of attempts, and 5% of 200 is 10."
+        "kind": "text",
+        "acceptedIdeas": [
+          "A few attempts get through, and the attacker needs only one"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "A few attempts get through, and the attacker needs only one"
       },
+      "choices": [
+        {
+          "id": "c",
+          "label": "Most get through, since a filter catches only the attempts it was built for"
+        },
+        {
+          "id": "a",
+          "label": "A few attempts get through, and the attacker needs only one"
+        },
+        {
+          "id": "b",
+          "label": "None get through, since a 95% filter stops nearly everything"
+        }
+      ],
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              190
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That is the number the filter catches. The question asks how many get through."
+          "feedback": "The filter misses 5 attempts in every 100, so about ten of the 200 get past it, and the attacker can keep sending more."
         },
         {
           "match": {
-            "numeric": [
-              5
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "That is the percentage that gets through, and the question asks for the number of attempts out of 200."
+          "feedback": "A filter that catches 95% stops most attempts, and the risk lies in the few it misses, about ten in 200."
         }
       ]
     },
@@ -10856,20 +10936,20 @@
       },
       "choices": [
         {
-          "id": "a",
-          "label": "Add a stronger system prompt"
-        },
-        {
-          "id": "b",
-          "label": "Remove the ability to send to external addresses"
-        },
-        {
           "id": "c",
           "label": "Raise the temperature"
         },
         {
+          "id": "a",
+          "label": "Add a stronger system prompt"
+        },
+        {
           "id": "d",
           "label": "Add more examples to the prompt"
+        },
+        {
+          "id": "b",
+          "label": "Remove the ability to send to external addresses"
         }
       ],
       "misconceptions": [
@@ -11093,16 +11173,16 @@
           "label": "Yes, because a person sees every email"
         },
         {
-          "id": "b",
-          "label": "Yes, because the agent cannot send without approval"
+          "id": "d",
+          "label": "No, because approval is never useful"
         },
         {
           "id": "c",
           "label": "No, because a hurried approver can miss the hidden address, so the recipients should also be restricted in code"
         },
         {
-          "id": "d",
-          "label": "No, because approval is never useful"
+          "id": "b",
+          "label": "Yes, because the agent cannot send without approval"
         }
       ],
       "misconceptions": [
@@ -11344,13 +11424,11 @@
         "p95",
         "cost-per-success"
       ],
-      "prompt": "What is the mean latency, in seconds?",
-      "responseType": "numeric",
+      "prompt": "Ten runs are timed: nine take 2 seconds each and one takes 20 seconds. What does the mean latency, the number a dashboard shows by default, tell you about them?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Find the total time of the ten runs.",
-        "Nine runs of 2 seconds and one of 20 seconds.",
-        "Divide the total by 10."
+        "Add the ten times, divide by ten, and compare the result with what each user actually waited."
       ],
       "sourceIds": [
         "otel-genai",
@@ -11361,29 +11439,43 @@
       "skill": "compute-metrics",
       "calculator": "off",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 3.8,
-        "unit": "seconds",
-        "absoluteTolerance": 0.05,
-        "relativeTolerance": 0,
-        "workedAnswer": "The total is 9 × 2 + 20 = 38 seconds, and 38 ÷ 10 = 3.8 seconds."
+        "kind": "text",
+        "acceptedIdeas": [
+          "It comes out between the two, near 4 seconds, and describes neither the typical run nor the slow one"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "It comes out between the two, near 4 seconds, and describes neither the typical run nor the slow one"
       },
+      "choices": [
+        {
+          "id": "b",
+          "label": "It comes out between the two, near 4 seconds, and describes neither the typical run nor the slow one"
+        },
+        {
+          "id": "a",
+          "label": "It matches the typical run, about 2 seconds"
+        },
+        {
+          "id": "c",
+          "label": "It matches the slow run, since one long run dominates the average"
+        }
+      ],
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              2
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That is the time of the typical run. The mean includes the slow run as well."
+          "feedback": "The one 20-second run pulls the mean up, so it lands well above the 2 seconds that nine users waited."
         },
         {
           "match": {
-            "numeric": [
-              20
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "That is the slowest run. The mean averages all ten."
+          "feedback": "The slow run counts as only one of ten, so it raises the mean to 3.8 seconds without bringing it anywhere near 20."
         }
       ]
     },
@@ -11394,7 +11486,7 @@
         "p95",
         "cost-per-success"
       ],
-      "prompt": "What is the nearest-rank p95 of these twenty latencies, in seconds?",
+      "prompt": "Twenty runs are timed, and the latencies in seconds, sorted from smallest to largest, are 1.1, 1.2, 1.2, 1.3, 1.4, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.4, 2.6, 2.9, 3.4, 4.8 and 9.5. What is their nearest-rank p95, in seconds?",
       "responseType": "numeric",
       "difficulty": 1.3,
       "hints": [
@@ -11502,7 +11594,7 @@
         "p95",
         "cost-per-success"
       ],
-      "prompt": "What is the cost per success, in dollars?",
+      "prompt": "Over one week an agent makes 150 runs that cost $27 in total, and 90 of them succeed. What is the cost per success, in dollars?",
       "responseType": "numeric",
       "difficulty": 1.2,
       "hints": [
@@ -11627,20 +11719,20 @@
       },
       "choices": [
         {
-          "id": "a",
-          "label": "Keep the raw text, because debugging needs everything"
-        },
-        {
-          "id": "b",
-          "label": "Redact personal data and secrets, and set a retention period"
-        },
-        {
           "id": "c",
           "label": "Delete every span, because traces are unsafe"
         },
         {
+          "id": "a",
+          "label": "Keep the raw text, because debugging needs everything"
+        },
+        {
           "id": "d",
           "label": "Share the traces publicly so that others can help debug"
+        },
+        {
+          "id": "b",
+          "label": "Redact personal data and secrets, and set a retention period"
         }
       ],
       "misconceptions": [
@@ -11833,7 +11925,7 @@
         "pass-at-k",
         "pass-hat-k"
       ],
-      "prompt": "The final answer is right, but the agent deleted a record it should not touch. How is the run graded?",
+      "prompt": "An agent processes a refund correctly and its final answer is right, but in the same run it deleted the record of another customer's order, which the task rules forbid. How is the run graded?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -11858,20 +11950,20 @@
       },
       "choices": [
         {
-          "id": "a",
-          "label": "Pass"
+          "id": "d",
+          "label": "It cannot be graded"
         },
         {
-          "id": "b",
-          "label": "Fail"
+          "id": "a",
+          "label": "Pass"
         },
         {
           "id": "c",
           "label": "Partial credit, always"
         },
         {
-          "id": "d",
-          "label": "It cannot be graded"
+          "id": "b",
+          "label": "Fail"
         }
       ],
       "misconceptions": [
@@ -11966,13 +12058,11 @@
         "pass-at-k",
         "pass-hat-k"
       ],
-      "prompt": "On average, on how many of the 30 days does the agent fail?",
-      "responseType": "numeric",
+      "prompt": "An agent runs a daily task and succeeds on any given day with probability 90%. Over 30 days, roughly how often will it fail?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Find the chance of failing on one day.",
-        "It succeeds on 90% of days, so it fails on 10%.",
-        "Take 10% of 30."
+        "On average, one day in ten is a failure."
       ],
       "sourceIds": [
         "tau-bench",
@@ -11983,29 +12073,43 @@
       "skill": "compute-pass-k",
       "calculator": "off",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 3,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "The agent fails on 10% of days, and 10% of 30 days is 3 days."
+        "kind": "text",
+        "acceptedIdeas": [
+          "On about three days"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "On about three days"
       },
+      "choices": [
+        {
+          "id": "b",
+          "label": "Almost never, since 90% is a reliable figure"
+        },
+        {
+          "id": "a",
+          "label": "On about three days"
+        },
+        {
+          "id": "c",
+          "label": "On about half the days"
+        }
+      ],
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              27
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That is the average number of successful days. The question asks about failures."
+          "feedback": "A 10% chance of failure each day adds up over a month, since one day in ten fails on average, which is three days out of thirty."
         },
         {
           "match": {
-            "numeric": [
-              0.1
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "That is the chance of failing on one day. The question asks about 30 days."
+          "feedback": "The agent succeeds nine days in ten, so failures are far rarer than one day in two, and one day in ten is about three days a month."
         }
       ]
     },
@@ -12016,7 +12120,7 @@
         "pass-at-k",
         "pass-hat-k"
       ],
-      "prompt": "What is pass^3, the chance that all three trials succeed?",
+      "prompt": "Each trial of a task succeeds with probability 0.8, independently of the others. What is pass^3, the chance that all three of three trials succeed?",
       "responseType": "numeric",
       "difficulty": 1.3,
       "hints": [
@@ -12074,7 +12178,7 @@
         "pass-at-k",
         "pass-hat-k"
       ],
-      "prompt": "What is pass@3, the chance that at least one of the three trials succeeds?",
+      "prompt": "Each trial of a task succeeds with probability 0.8, independently of the others. What is pass@3, the chance that at least one of three trials succeeds?",
       "responseType": "numeric",
       "difficulty": 1.3,
       "hints": [
@@ -12232,7 +12336,7 @@
         "pass-at-k",
         "pass-hat-k"
       ],
-      "prompt": "What is the chance of no failure at all in 30 days? Give it as a decimal to two places.",
+      "prompt": "An agent succeeds on any given day with probability 0.9, and the days are independent. What is the chance of no failure at all in 30 days? Give it as a decimal to two places.",
       "responseType": "numeric",
       "difficulty": 1.6,
       "hints": [
@@ -12357,6 +12461,10 @@
       },
       "choices": [
         {
+          "id": "d",
+          "label": "The mean latency"
+        },
+        {
           "id": "a",
           "label": "pass@k, because one success in k trials is enough"
         },
@@ -12367,10 +12475,6 @@
         {
           "id": "c",
           "label": "pass^k, because every trial has to succeed"
-        },
-        {
-          "id": "d",
-          "label": "The mean latency"
         }
       ],
       "misconceptions": [
@@ -12657,6 +12761,68 @@
       ]
     },
     {
+      "id": "aia-human-oversight-and-rollout-shadow-evidence",
+      "conceptIds": [
+        "oversight-point",
+        "staged-rollout",
+        "autonomy-record"
+      ],
+      "prompt": "Before an agent may act, it runs in shadow for two weeks: it proposes an action for each case, nothing it proposes is carried out, and 372 of its 400 proposals match what staff decided. What does this give the team?",
+      "responseType": "short_text",
+      "difficulty": 1.1,
+      "hints": [
+        "Ask what the team can compare each proposal with."
+      ],
+      "sourceIds": [
+        "nist-rmf",
+        "anthropic-agents",
+        "owasp-llm"
+      ],
+      "onCorrect": "The agreement here is 93%, and whether that is enough depends on the gate the team set before the shadow period began.",
+      "skill": "place-oversight",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "A measure of how often the agent's judgement matches people's, gathered with no customer affected"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "A measure of how often the agent's judgement matches people's, gathered with no customer affected"
+      },
+      "choices": [
+        {
+          "id": "a",
+          "label": "Proof that the agent is ready to act alone, since most proposals matched"
+        },
+        {
+          "id": "c",
+          "label": "A measure of how often the agent's judgement matches people's, gathered with no customer affected"
+        },
+        {
+          "id": "b",
+          "label": "Nothing useful, since proposals that are never carried out cannot be judged"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "Agreement in shadow is evidence, but whether it is enough depends on a threshold the team sets in advance, and the 28 disagreements are cases still to be understood."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Each proposal can be compared with what a person actually decided for the same case, which judges the agent's choice without the risk of carrying it out."
+        }
+      ]
+    },
+    {
       "id": "aia-human-oversight-and-rollout-stage-choice",
       "conceptIds": [
         "oversight-point",
@@ -12688,6 +12854,10 @@
       },
       "choices": [
         {
+          "id": "d",
+          "label": "Retire"
+        },
+        {
           "id": "a",
           "label": "Act"
         },
@@ -12698,10 +12868,6 @@
         {
           "id": "c",
           "label": "Shadow"
-        },
-        {
-          "id": "d",
-          "label": "Retire"
         }
       ],
       "misconceptions": [
@@ -12738,7 +12904,7 @@
         "staged-rollout",
         "autonomy-record"
       ],
-      "prompt": "What is the sampled error rate, as a percentage to one decimal place?",
+      "prompt": "A weekly sample of 30 actions finds 2 that were wrong. What is the sampled error rate, as a percentage to one decimal place?",
       "responseType": "numeric",
       "difficulty": 1.2,
       "hints": [
@@ -12982,12 +13148,12 @@
           "label": "Approving at that speed becomes a reflex, so it delays the work without checking it"
         },
         {
-          "id": "c",
-          "label": "Approval is never useful, so the agent should act alone"
-        },
-        {
           "id": "d",
           "label": "The agent will run out of tokens if a person approves"
+        },
+        {
+          "id": "c",
+          "label": "Approval is never useful, so the agent should act alone"
         }
       ],
       "misconceptions": [
@@ -13160,20 +13326,20 @@
       },
       "choices": [
         {
-          "id": "a",
-          "label": "The temperature setting of the model"
+          "id": "d",
+          "label": "The full text of every prompt the agent saw"
         },
         {
           "id": "b",
           "label": "The trigger that would change the autonomy level"
         },
         {
-          "id": "c",
-          "label": "The names of the customers the agent served"
+          "id": "a",
+          "label": "The temperature setting of the model"
         },
         {
-          "id": "d",
-          "label": "The full text of every prompt the agent saw"
+          "id": "c",
+          "label": "The names of the customers the agent served"
         }
       ],
       "misconceptions": [

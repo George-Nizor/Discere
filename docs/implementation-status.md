@@ -1,6 +1,14 @@
 # Implementation status
 
-Updated: 2026-11-03
+Updated: 2026-11-05
+
+Release 1.9.6 finishes the fix pass: every remaining course now has an introduction about its
+subject instead of a list of lessons, openers that start on something concrete and give nothing
+away, question screens without a lead that repeats the question, and choice questions where the
+learner judges between options (predict screens ask for a rough outcome). Choice options are
+reordered across every course so the correct one is not usually first (it was first in 47% of
+questions, now 29%); options keep their ids, so recorded answers still point at the same option,
+and course-check items keep the order their review approved.
 
 Release 1.9.5 carries the fix pass to fifteen more courses: Maths Foundations, Geometry,
 Trigonometry, Linear Algebra, Calculus, Calculus II, Probability and Statistics, Statistical and

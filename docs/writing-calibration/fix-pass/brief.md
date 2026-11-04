@@ -28,7 +28,9 @@ learner nothing. Rewrite `course.introduction.paragraphs` as two or three paragr
 introduce the subject itself, in the course's voice, as the approved openers do: start from the
 subject's own material, say what the subject is, and say what it lets you do or see that you could
 not before. Do not list topics or lessons, and do not promise anything the course does not do
-(such as running code it only shows). No emphasis marks. `voice-check` reports a syllabus
+(such as running code it only shows). No paragraph about prerequisites, the maths needed, the
+course's figures or what the course leaves out: the course page shows prerequisites separately. No
+rhetorical questions, no emphasis marks, and nothing that answers a question in lesson 1. `voice-check` reports a syllabus
 paragraph as `INTRODUCTION_IS_A_SYLLABUS`.
 
 ### 2. Lesson openers that stage a scene or talk about themselves

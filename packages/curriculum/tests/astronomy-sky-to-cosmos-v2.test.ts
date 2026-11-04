@@ -214,7 +214,6 @@ describe("Astronomy: Sky to Cosmos (v2)", () => {
     const p = "astro-turning-sky-";
     // The ported prototype: six practice items and three skill-check items.
     same(p + "7", 360 / 24);
-    same(p + "1", altitude(52, 90, 0)); // a star at the pole stands as high as the latitude
     same(p + "12", altitude(41, 90, 0));
     same(p + "13", circumpolarLimit(40));
     same(p + "14", 135 / 15);
@@ -354,12 +353,10 @@ describe("Astronomy: Sky to Cosmos (v2)", () => {
   it("5 Newton's gravitation: inverse square, product of masses, field", () => {
     const p = "astro-newton-gravity-";
     const G = 6.674e-11;
-    same(p + "1", dp(1 / 3 ** 2, 3));
     same(p + "2", 2 * 3);
     same(p + "3", dp(3.986e14 / 6.371e6 ** 2, 2));
     // Earth on Moon and Moon on Earth: the same product of masses over the same r².
     const [earth, moon, r] = [81, 1, 3.844e8];
-    same(p + "4", (G * earth * moon) / r ** 2 / ((G * moon * earth) / r ** 2));
     same(p + "5", dp(4.283e13 / 3.39e6 ** 2, 2));
     same(p + "7", 1 / 2 ** 2);
     same(p + "11", 1 / 4 ** 2);

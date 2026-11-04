@@ -25,9 +25,8 @@
     "status": "available",
     "introduction": {
       "paragraphs": [
-        "A robot is a computer joined to the world by sensors that turn a physical quantity into a number and by motors that turn a number back into motion. The course follows that path from the pins of a microcontroller, through the converter that reads a voltage and the driver that switches a motor, to the geometry that says where an arm's hand or a wheeled robot is.",
-        "Each idea is worked in numbers that you can check yourself: a timer that overflows after 1.024 ms, a motor that draws 6 A when it is held still, a two-link arm whose hand sits at a computed point. The code that appears is short and is read, not run, so the emphasis stays on what the hardware does.",
-        "The course assumes Electronics Foundations, some programming, and the basic ideas of force and motion. No hardware is needed, since every lesson is built on calculation and on figures that you can step through."
+        "A small DC motor held still on a 12 V supply draws 6 A, while the same motor spinning freely draws almost nothing, because a turning motor is also a generator and pushes back against the supply. Facts like this decide whether a robot works, and they cannot be settled by programming or by mechanics alone. Mechatronics is the engineering of the place where the two meet: the sensors that turn a distance, a temperature or the angle of a shaft into a number, the microcontroller that runs a program on those numbers, and the motors and drivers that turn a number back into force and motion.",
+        "Most of the questions the subject asks can be answered with a few lines of arithmetic. A clock frequency and a prescaler tell you how long a timer takes to overflow, the time an echo takes to return tells you how far away a wall is, and the lengths and joint angles of an arm tell you where its hand will be. Once you can do these sums you can read a data sheet and say what a part will do in a design, choose a motor and gearbox that will carry a robot up a slope, and see in advance why a robot that works on the bench might stall on a ramp or reset itself every time its motors start."
       ],
       "outcomes": [
         "You'll be able to read a microcontroller's timing and I/O.",
@@ -411,12 +410,7 @@
           "id": "which-memory",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Power is switched off and then on again. One kind of memory still holds the program, and the other has lost the variables."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -432,12 +426,7 @@
           "id": "one-tick",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A chip is driven by a 16 MHz clock, which ticks 16 million times every second. Before reading how it is used, work out how long one tick lasts."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -457,11 +446,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The 16 MHz clock of the previous screen produces a tick every 62.5 nanoseconds, and each tick is called a **cycle**. A simple instruction takes one or a few cycles, so the clock rate sets how much work the chip can do in a second. The figure shows the usual shape of a program on such a chip, written in the Arduino style: `setup` runs once at power-on, and `loop` is run again every time it finishes, for as long as the power lasts."
+              "text": "The 16 MHz clock of the previous screen produces a tick every 62.5 nanoseconds, and each tick is called a **cycle**. A simple instruction takes one or a few cycles, so the clock rate sets how much work the chip can do in a second. The figure shows the usual shape of a program on such a chip, written in the Arduino style: setup runs once at power-on, and loop is run again every time it finishes, for as long as the power lasts."
             },
             {
               "kind": "paragraph",
-              "text": "That repetition is the answer to the question of what the chip does when its program ends, because it never ends. A microcontroller runs one program *forever*, so a program that read a switch once and stopped would never notice the second press. Suppose each pass through `loop` takes 2000 cycles. At 16 MHz the chip completes 16,000,000 / 2000 = 8000 passes every second, so the switch is read every 125 microseconds."
+              "text": "That repetition is the answer to the question of what the chip does when its program ends, because it never ends. A microcontroller runs one program *forever*, so a program that read a switch once and stopped would never notice the second press. Suppose each pass through loop takes 2000 cycles. At 16 MHz the chip completes 16,000,000 / 2000 = 8000 passes every second, so the switch is read every 125 microseconds."
             }
           ],
           "introducesTerms": [
@@ -494,12 +483,7 @@
           "id": "loop-rate",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Each pass through loop takes 4000 cycles on the 16 MHz chip. Use the method above to find how many passes it makes every second."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -638,7 +622,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The Arduino function `delay(250)` does the opposite: it holds the CPU in a loop for 250 ms and does nothing else meanwhile. A program of the form `readSwitch(); delay(250);` reads its switch only four times a second, so a press shorter than a quarter of a second can fall between two reads. The wait is not free, because the processor is *occupied* for its whole duration."
+              "text": "The Arduino function delay(250) does the opposite: it holds the CPU in a loop for 250 ms and does nothing else meanwhile. A program of the form readSwitch(); delay(250); reads its switch only four times a second, so a press shorter than a quarter of a second can fall between two reads. The wait is not free, because the processor is *occupied* for its whole duration."
             }
           ],
           "introducesTerms": [],
@@ -656,12 +640,7 @@
           "id": "check-the-switch",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A program ends its loop with delay(250) and checks a switch once per pass, and everything else in the loop takes a negligible time. Work out how many times the switch is checked in one second."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -706,11 +685,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "The washing machine in the kitchen runs on a chip no larger than a thumbnail, and one that a hobbyist can buy for the price of a sandwich. It has no screen, no keyboard and no operating system. When the power comes on it begins to run a single program, which reads the door switch and the water-level sensor, switches a pump and a motor, and then returns to the start and does it all again, thousands of times a second."
+              "text": "The ATmega328P on an Arduino Uno is a chip a little larger than a thumbnail, costing a few pounds, and it holds a processor, 32 kilobytes of memory for its program and 2 kilobytes for its variables, with no screen, no keyboard and no operating system. When the power comes on it starts a single program, which in a washing machine would read the door switch and the water-level sensor, switch a pump and a motor, and then go back to the start and do it all again, thousands of times a second."
             },
             {
               "kind": "paragraph",
-              "text": "The chip is called a microcontroller, and it is the part that turns a collection of motors and sensors into a machine that behaves. Its speed is measured by a clock, 16 million ticks a second on a chip such as the Arduino Uno's, and every delay that the machine can produce is some number of those ticks. Every one of those delays comes from the chip's clock and a counter that counts it."
+              "text": "A chip of this kind is called a **microcontroller**, and it is the part that turns a collection of motors and sensors into a machine that behaves. It keeps time with a clock, which on the Uno ticks 16 million times a second, so every delay the machine produces, from the blink of an LED to the gap between two readings of a switch, is a count of those ticks. Knowing how a count of ticks becomes a time is what lets you make a program act when you mean it to, and say how quickly it can notice the world changing."
             }
           ]
         },
@@ -783,12 +762,7 @@
           "id": "open-switch",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A switch joins an input pin to ground, and nothing else is connected to the pin. The switch is open. Before reading on, decide what the program will read from the pin."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -857,12 +831,7 @@
           "id": "pull-up-current",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A 10 kΩ pull-up resistor is connected to a 3.3 V supply, and the switch is pressed so that the whole supply voltage lies across the resistor. Work out the current in milliamps."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -984,7 +953,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Only 220 Ω resistors are in the drawer, so the 2 V red LED on the 5 V pin has a 220 Ω resistor and not the 200 Ω calculated. Work out the current that flows now, in milliamps."
+              "text": "Resistors are not sold in 200 Ω, so the next standard value up is fitted instead."
             }
           ],
           "reveal": [
@@ -1054,12 +1023,7 @@
           "id": "count-edges",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A program adds 1 to a counter each time the pin goes from high to low. One press of the button makes the pin go from high to low 4 times during the bounce, as in the figure. How much does the counter rise?"
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1075,12 +1039,7 @@
           "id": "pull-power",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A designer fits a 4.7 kΩ pull-up to a 3.3 V supply. While the switch is held down, the resistor turns the whole supply voltage into heat. Work out the power in milliwatts, using P = V² / R."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1124,11 +1083,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A push button wired to a microcontroller seems about as simple as an input can be: the pin reads high until the button is pressed and low afterwards. It rarely works the first time. With the wire connected to nothing the pin reads random values, and with a pull-up fitted a single press may be counted three or four times."
+              "text": "A push button wired between an input pin and ground looks like the simplest input a microcontroller can have, since the program only has to ask whether the pin is high or low. A first attempt rarely behaves, though, and a single press is often counted three or four times, because a pin is a comparator on a voltage and a switch is a piece of metal, and neither is as tidy as the program assumes."
             },
             {
               "kind": "paragraph",
-              "text": "Both faults come from the physical side of the pin and not from the program. A pin is a comparator on a voltage, and a switch is a piece of metal, so the chip needs a resistor to give the pin a level and a short delay in the software to see past the bounce. The same attention to voltages and currents is needed on the output side, where an LED wired straight to a pin can burn out."
+              "text": "Getting it right takes a resistor that gives the pin a defined level and a short wait in the software that sees past the moment the contacts meet. The output side needs the same care, since an LED wired straight to a pin can burn out, and with Ohm's law and a few resistors chosen correctly you can connect any switch or indicator to a chip and trust what the program reads from it."
             }
           ]
         },
@@ -1223,20 +1182,15 @@
           "id": "how-many-steps",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Before the conversion rule is given, work out how many different readings a 12-bit converter can return, counting the reading for 0 V."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "Twelve bits give 2 × 2 × … twelve times, which is 4096 values from 0 to 4095, and the next screen uses that number."
+              "text": "The count says how far up the scale the voltage lies, and 512 is half of 1024, so the voltage is half of the 5 V reference, about 2.5 V."
             }
           ],
           "answerVisibility": "hidden-until-response",
-          "checkQuestionId": "mecr-analog-sensing-steps",
+          "checkQuestionId": "mecr-analog-sensing-half-count",
           "visualStateId": "",
           "activityId": ""
         },
@@ -1252,7 +1206,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "A program on an Arduino Uno shows the same arithmetic. The call `int n = analogRead(A0);` returns a number from 0 to 1023, which is a 10-bit reading, and `float v = n * 5.0 / 1024.0;` turns it into volts for the 5 V reference. The code is a direct copy of the formula, which is why it is worth having it in your head."
+              "text": "A program on an Arduino Uno shows the same arithmetic. The call int n = analogRead(A0); returns a number from 0 to 1023, which is a 10-bit reading, and float v = n * 5.0 / 1024.0; turns it into volts for the 5 V reference. The code is a direct copy of the formula, which is why it is worth having it in your head."
             }
           ],
           "introducesTerms": [],
@@ -1323,12 +1277,7 @@
           "id": "voltage-to-count",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A 10-bit converter has Vref = 5 V and 1.0 V is applied to the pin. Work out the count the converter returns, rounded down to a whole number."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1391,12 +1340,7 @@
           "id": "divider-voltage",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The same divider has a 10 kΩ fixed resistor on the top, a 3.3 V supply, and a thermistor of 2 kΩ below. Use the divider equation to find the voltage at the node, in volts."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1479,12 +1423,7 @@
           "id": "code-reading",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A program on a 10-bit, 5 V board runs int n = analogRead(A0); float v = n * 5.0 / 1024.0; and n comes back as 307. Work out v, in volts, to three decimal places."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1500,12 +1439,7 @@
           "id": "average-more",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A single reading of a steady signal has random noise of 8 mV. The program averages 64 readings. Work out the noise left, in millivolts."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1549,11 +1483,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A 12-bit reading of 2048 on a pin looks like a number with no units, and in a sense it is. It is a position in a scale of 4096 steps that stretches from 0 V to a reference voltage, so that with a 3.3 V reference it stands for 1.650 V, and with a 5 V reference it would stand for 2.5 V. Nothing in the number itself tells you which."
+              "text": "A converter on a microcontroller hands the program a reading of 2048, and the number carries no unit. It is a position on a scale that runs from 0 V up to a reference voltage, so with a 3.3 V reference on a 12-bit converter this reading stands for 1.650 V, while against a 5 V reference it would stand for 2.5 V, and nothing in the number itself says which voltage was on the pin."
             },
             {
               "kind": "paragraph",
-              "text": "The sensor sits behind that number, and a sensor often changes resistance and not voltage, so a second step comes before the first: a resistor in a divider turns the resistance into a voltage that the converter can see."
+              "text": "Every sensor on a robot reaches the program in this form, as a count, and many sensors do not produce a voltage in the first place, since a thermistor changes its resistance as it warms. Turning a count back into volts, and volts back into the resistance of a sensor, is therefore the first step of any measurement, and once you can do it you can read a temperature or a light level from a raw number and say how far that reading can be trusted."
             }
           ]
         },
@@ -1619,12 +1553,7 @@
           "id": "counts-per-rev",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "An encoder disc has 600 pulses per revolution on channel A. The chip counts every rising and every falling edge on both of its two channels. Before reading how the channels work, estimate how many counts one revolution gives."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1796,12 +1725,7 @@
           "id": "echo-try",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "An echo returns after 8.7 ms. The speed of sound is 343 m/s. Work out the distance to the object, in metres, to two decimal places."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1865,12 +1789,7 @@
           "id": "gyro-drift",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A gyroscope has a constant bias of 0.5°/s, and the program adds up its rate for 60 s while the robot sits still. By how many degrees is the angle wrong?"
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1886,12 +1805,7 @@
           "id": "pick",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A robot must know how far each of its wheels has turned and in which direction. Choose the sensor that measures this directly."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1935,11 +1849,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A wheel with a disc of 600 slots turns under a pair of sensors, and the chip counts 7200 edges. The edges are only numbers, and in 7200 counts there is a distance, 612.6 mm for a wheel 65 mm across, that the robot can use. Getting from one to the other takes a unit conversion that is easy to get wrong by a factor of four."
+              "text": "An encoder on a robot's wheel is a disc of 600 slots that turns between a light and a pair of sensors, and as the wheel turns the chip counts the edges of the pulses that the sensors produce. After a short run it might have counted 7200 edges, which is only a number until the program turns it into a distance, and for a wheel 65 mm across that means knowing exactly how many counts make one turn and how far one turn carries the robot, which here comes to 612.6 mm."
             },
             {
               "kind": "paragraph",
-              "text": "A second sensor sends out a click of sound and measures when its echo returns, which gives a distance of 0.995 m for a gap of 5.8 ms. The two sensors give one answer by counting and the other by timing, and both give estimates with scatter."
+              "text": "An ultrasonic sensor measures distance in a different way, by sending out a click of sound and timing its echo, so that a gap of 5.8 ms means a wall 0.995 m away. One sensor counts and the other times, and both give estimates with some scatter, so the two conversions, together with what limits each sensor, let you turn the raw output of the commonest position sensors into distances that a robot can steer by."
             }
           ]
         },
@@ -2040,20 +1954,15 @@
           "id": "pairs",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A machine has 3 states and 3 events, and each state may have a different next state for each event. Before the table is introduced, work out how many state and event pairs there are."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "Each of the three states pairs with each of the three events, so there are 3 × 3 = 9 pairs, and the next screen lists them in a grid."
+              "text": "A timeout has nothing to end while the machine is idle, so the sensible choice is to ignore it and stay in idle, and the next screen shows how a table records that."
             }
           ],
           "answerVisibility": "hidden-until-response",
-          "checkQuestionId": "mecr-mecr-state-machines-pairs",
+          "checkQuestionId": "mecr-mecr-state-machines-ignored-event",
           "visualStateId": "",
           "activityId": ""
         },
@@ -2168,11 +2077,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The table becomes a program in a very direct way. The Python version holds the table as a dictionary whose keys are the pairs (state, event), and the loop runs `s = table.get((s, e), s)` for each event. The second argument is the value to use if the pair is not in the table, and passing the current state *s* is what makes a blank cell leave the state unchanged."
+              "text": "The table becomes a program in a very direct way. The Python version holds the table as a dictionary whose keys are the pairs (state, event), and the loop runs s = table.get((s, e), s) for each event. The second argument is the value to use if the pair is not in the table, and passing the current state *s* is what makes a blank cell leave the state unchanged."
             },
             {
               "kind": "paragraph",
-              "text": "On a microcontroller the same machine is written with a single variable, often a `switch (state)` with a `case` for each state, and an `if` on the event inside it. The variable is the only place that remembers the history, so there is nothing to keep in step. Adding a state means adding a row, and the program does not become more tangled as it grows."
+              "text": "On a microcontroller the same machine is written with a single variable, often a switch (state) with a case for each state, and an if on the event inside it. The variable is the only place that remembers the history, so there is nothing to keep in step. Adding a state means adding a row, and the program does not become more tangled as it grows."
             }
           ],
           "introducesTerms": [],
@@ -2184,12 +2093,7 @@
           "id": "trace-try",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Given table = {('idle','press'):'run', ('run','press'):'pause', ('pause','press'):'run', ('run','timeout'):'idle', ('pause','reset'):'idle'} and s = 'idle', the code runs s = table.get((s, e), s) for each event e in ['press', 'reset', 'press']. Name the state at the end."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2209,11 +2113,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Suppose the pause state must last one second. The obvious code calls `delay(1000)`, and during that second the processor does nothing else, so a button pressed and released within it is never seen, as the figure shows. A state machine is only useful if it looks at its events all the time."
+              "text": "Suppose the pause state must last one second. The obvious code calls delay(1000), and during that second the processor does nothing else, so a button pressed and released within it is never seen, as the figure shows. A state machine is only useful if it looks at its events all the time."
             },
             {
               "kind": "paragraph",
-              "text": "The remedy is to check the clock instead of waiting. The program records the time when the state was entered, `start = millis();`, where `millis()` returns the milliseconds since the chip started, and on every pass it asks `if (millis() - start >= 1000)`. The loop keeps running, so it reads the button on every pass, and the timeout becomes one more event that the table handles."
+              "text": "The remedy is to check the clock instead of waiting. The program records the time when the state was entered, start = millis();, where millis() returns the milliseconds since the chip started, and on every pass it asks if (millis() - start >= 1000). The loop keeps running, so it reads the button on every pass, and the timeout becomes one more event that the table handles."
             }
           ],
           "introducesTerms": [
@@ -2251,12 +2155,7 @@
           "id": "first-toggle",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A program records start = 0 and checks if (millis() - start >= 1000) once per pass, and each pass takes 30 ms, so the checks happen at 30, 60, 90 ms and so on. At what time, in milliseconds, does the check first succeed?"
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2300,20 +2199,15 @@
           "id": "light-count",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A traffic light has states red, green, yellow and flashing, and two events, timer and fault. Timer moves red to green, green to yellow and yellow to red. Fault moves each of red, green and yellow to flashing. How many transitions are listed?"
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "Six of the 8 cells are used, and the two blank ones, flashing with timer and flashing with fault, decide how the light leaves its safe state."
+              "text": "A fault can arrive in any state, so every state other than halted needs a fault cell that leads to halted, and a blank cell would leave the controller carrying on as if nothing had gone wrong."
             }
           ],
           "answerVisibility": "hidden-until-response",
-          "checkQuestionId": "mecr-mecr-state-machines-light-count",
+          "checkQuestionId": "mecr-mecr-state-machines-fault-column",
           "visualStateId": "",
           "activityId": ""
         }
@@ -2349,11 +2243,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A garage door opener responds to one button in four different ways. Pressed while the door is closed it starts the motor upward, pressed while the door is moving it stops, pressed while it is stopped it sets off the other way, and none of these is a property of the button. What the press means depends on what has already happened, and the controller has to remember it."
+              "text": "A garage door opener responds to its one button in several different ways. Pressed while the door is closed it starts the motor upward, pressed while the door is moving it stops it, and pressed while the door is stopped it sets it off the other way, so what a press means is a property of what has already happened and not of the button, and the controller has to remember it."
             },
             {
               "kind": "paragraph",
-              "text": "A program that remembers in a handful of separate flags soon contradicts itself, with one flag saying the door is moving and another that it is stopped. A **finite state machine** puts all of the memory in one variable, so that it cannot."
+              "text": "A program that keeps that memory in a handful of separate flags soon contradicts itself, with one flag saying the door is moving and another saying it has stopped. A **finite state machine** keeps all of the memory in one variable and lists, for each situation and each event, what happens next, so you can check a controller's behaviour cell by cell in a table and write it as a program that never stops to wait."
             }
           ]
         },
@@ -2447,12 +2341,7 @@
           "id": "held-still",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A motor with a winding of 2 Ω is connected to 12 V, and its shaft is held so that it cannot turn. Before reading on, decide the current in amps, using what you know of how the back-EMF depends on speed."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2460,7 +2349,7 @@
             }
           ],
           "answerVisibility": "hidden-until-response",
-          "checkQuestionId": "mecr-dc-motors-stall-i",
+          "checkQuestionId": "mecr-dc-motors-stall-compare",
           "visualStateId": "",
           "activityId": ""
         },
@@ -2516,12 +2405,7 @@
           "id": "no-load-try",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A different motor has Ke = 0.04 V s/rad, and it runs on 12 V with nothing attached. Work out its no-load speed in rad/s."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2622,12 +2506,7 @@
           "id": "stall-heat",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A robot's motor (12 V, 2 Ω winding) is blocked by an obstacle while still powered. How much power, in watts, is dissipated as heat in the winding?"
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2643,12 +2522,7 @@
           "id": "peak-power",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The motor runs at 120 rad/s, half its no-load speed, where it gives 0.15 N m. Work out the mechanical power in watts."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2692,11 +2566,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "Hold the shaft of a small motor still and connect a 12 V supply to it, and the winding, which has a resistance of only 2 Ω, draws 12 / 2 = 6 A. Let the shaft go and it spins up, and the current falls steadily until, with nothing attached, it is almost zero at 240 rad/s. The same piece of wire, on the same supply, draws far less current once it is turning."
+              "text": "A small DC motor connected to 12 V spins up to 240 rad/s in a fraction of a second, and its winding, a coil of copper wire with a resistance of only 2 Ω, is the same piece of wire whether the shaft is turning fast, turning slowly or held still. The current through that wire is very different in each case, however, because a motor is also a generator, and a turning shaft produces a voltage that opposes the supply."
             },
             {
               "kind": "paragraph",
-              "text": "The reason is that a motor is also a generator, so a turning motor produces a voltage that opposes the supply. That single fact, together with torque proportional to current, fixes the motor's whole behaviour as a straight line between stall and no load, and it is the starting point for sizing the motors of any robot."
+              "text": "That fact, together with the rule that torque is proportional to current, fixes a motor's whole behaviour as a straight line between two ends, stall, where the shaft is held still, and no load, where it turns freely. Once those two ends are found you can say what current a motor draws and what torque it gives at any speed in between, which is the starting point for choosing and driving the motors of a robot."
             }
           ]
         },
@@ -2790,12 +2664,7 @@
           "id": "half-time",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A 12 V supply is switched fully on for half of each short period and fully off for the other half. The motor responds only to the average. Estimate the voltage that it sees, in volts."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2811,12 +2680,7 @@
           "id": "pwm-try",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A 12 V supply is switched with a duty cycle of 35%. Use the rule above to work out the average voltage, in volts."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2873,12 +2737,7 @@
           "id": "tau",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A motor winding has an inductance of 3 mH and a resistance of 2 Ω. Work out its time constant L / R, in milliseconds."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2951,12 +2810,7 @@
           "id": "reverse",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Which switches must be on to run the motor in reverse, taking forward as Q1 and Q4?"
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3047,12 +2901,7 @@
           "id": "bridge-loss",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A motor driver has two switches in the current path, each with Rds(on) = 20 mΩ, and the motor draws 3 A. How much power do the two switches waste together, in watts?"
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3096,11 +2945,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "To run a 12 V motor at half speed from a 12 V supply with a resistor, a robot would have to waste about as much power in the resistor as it gives to the motor. The usual solution is to throw the switch on and off, 20,000 times a second, and let the motor respond to the average: at 35% duty the 12 V supply gives 4.2 V."
+              "text": "A 12 V motor can be slowed by putting a resistor in series with it, but at half speed the resistor turns about as much power into heat as the motor turns into motion. Motor drivers do something else, switching the full supply on and off, typically 20,000 times a second, and the motor responds to the average voltage, which is set by the fraction of each period for which the switch is on."
             },
             {
               "kind": "paragraph",
-              "text": "The motor takes the average because its winding resists changes in current, and a bridge of four switches lets the same drive turn it in either direction."
+              "text": "The motor can follow that average because its winding resists sudden changes in current, and a bridge of four such switches lets the same drive turn it in either direction or brake it. Knowing how these parts work lets you set a motor's speed from a single number, work out how much heat the switches will produce, and avoid the one combination of switches that destroys a driver."
             }
           ]
         },
@@ -3200,12 +3049,7 @@
           "id": "rate-predict",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A stepper has 200 steps per revolution and has to turn at 120 revolutions per minute. Before the rule is given, estimate how many steps per second the controller must send."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3270,12 +3114,7 @@
           "id": "rate-try",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A stepper has 200 steps per revolution and runs at 150 rpm. How many steps per second must it be sent?"
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3391,12 +3230,7 @@
           "id": "servo-try",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A servo follows the convention in which 1 ms means 0° and 2 ms means 180°. The controller sends a pulse of 1.75 ms. At what angle, in degrees, does the horn settle?"
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3412,12 +3246,7 @@
           "id": "lead-speed",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A stepper makes 3200 steps per revolution with 16× microstepping and drives an 8 mm lead screw. The controller sends 6400 steps per second. How fast does the nut move, in millimetres per second?"
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3433,12 +3262,7 @@
           "id": "skip",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A stepper moving a heavy load is told to accelerate hard, and the rotor cannot follow. No sensor reports the position. What happens?"
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3482,11 +3306,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A 3D printer moves a nozzle to within a few hundredths of a millimetre, and its controller does it without ever looking. It counts: a motor of 200 steps per revolution, microstepped 16 times and turning a screw with an 8 mm lead, moves the carriage 0.0025 mm for each step it commands."
+              "text": "A 3D printer moves its nozzle to within a few hundredths of a millimetre, and its controller does it without ever looking. It counts instead: a motor of 200 steps per revolution, microstepped 16 times and turning a screw with an 8 mm lead, moves the carriage 0.0025 mm for each step it commands, so the position is known from the number of steps sent."
             },
             {
               "kind": "paragraph",
-              "text": "A hobby servo does the opposite, because it looks and does not count. It carries a sensor and a feedback loop, and the controller gives it only the angle it should hold, in the width of a pulse."
+              "text": "A hobby servo works the other way, because it looks and does not count. It carries its own position sensor and feedback loop, and the controller tells it only the angle to hold, coded in the width of a pulse. Between them these two motors position most of the small mechanisms in a robot, and a few conversions, from speed to step rate, from steps to millimetres and from pulse width to angle, are enough to command either one."
             }
           ]
         },
@@ -3579,12 +3403,7 @@
           "id": "share",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The 6 kg robot needs 10.22 N along the slope, and two of its wheels are driven equally. Before the next screen works through it, estimate the force each driven wheel has to supply, in newtons."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3727,12 +3546,7 @@
           "id": "ratio-try",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A robot must travel at 0.8 m/s on wheels of radius 0.04 m, so the wheels turn at 20 rad/s, which is 191 rpm. The motor turns at 4500 rpm. What gear ratio does it need, to one decimal place?"
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3771,12 +3585,7 @@
           "id": "motor-try",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A wheel needs 0.30 N m. The gearbox has a ratio of 25 and an efficiency of 0.75. Work out the torque the motor must give, in millinewton metres."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3792,12 +3601,7 @@
           "id": "current",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The design needs 21 mN m of motor torque, and the motor's torque constant is Kt = 0.05 N m/A. Work out the current it draws, in amps, to two decimal places. Use T = Kt I."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3813,12 +3617,7 @@
           "id": "what-missing",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A robot with a well chosen top speed cannot climb a ramp, although its motors are suitable for the speed. What did the sizing leave out?"
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3862,11 +3661,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A 6 kg robot on a slope of 10° has to be held against 58.9 N × sin 10° = 10.22 N, whether or not it moves, and the same arithmetic runs through the rest of its drive. The force is shared between wheels, turned into torque by the wheel radius, and then reduced by a gearbox to something a small motor can supply."
+              "text": "A 6 kg robot weighs 58.9 N, and on a slope of 10° the part of that weight pulling it back down is 58.9 N × sin 10° = 10.22 N, which the drive has to supply whether or not the robot moves. That force is shared between the driven wheels, turned into a torque by the wheel radius, and then reduced by a gearbox to something a small motor can supply."
             },
             {
               "kind": "paragraph",
-              "text": "A robot that is sized only for its top speed fails at the first ramp, so each requirement is worked back from the wheel to the motor."
+              "text": "A robot sized only for its top speed is quick on the flat and stops at the first ramp, so a drive is worked out backwards, from the force the wheels must push with to the torque the motor must give. Done in that order, the arithmetic tells you which gear ratio to choose and which motor will hold the robot on its steepest slope before any part is ordered."
             }
           ]
         },
@@ -3956,12 +3755,7 @@
           "id": "angles-add",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Link 1 points at 60° from the x axis, and the elbow bends link 2 by θ2 = −30° relative to link 1. Before the next screen explains it, estimate the angle of link 2 measured from the x axis, in degrees."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4063,12 +3857,7 @@
           "id": "fk-try",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "An arm has l1 = 0.30 m and l2 = 0.20 m, with θ1 = 0° and θ2 = 90°, so that link 1 lies along the x axis and link 2 stands up from its end. Find the y coordinate of the hand, in metres."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4142,12 +3931,7 @@
           "id": "reach-try",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "An arm has l1 = 0.40 m and l2 = 0.25 m. What is its greatest reach, in metres?"
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4163,12 +3947,7 @@
           "id": "hole",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "An arm has l1 = 0.30 m and l2 = 0.20 m, and a camera target lies 0.08 m from the base. Can the hand reach it?"
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4287,12 +4066,7 @@
           "id": "how-many",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The cosine 0.4167 has been found for the elbow bend. A cosine does not distinguish an angle from its negative, so cos 65.4° and cos (−65.4°) are equal. Before the next screen, decide how many different sets of joint angles can put the hand on the target."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4463,12 +4237,7 @@
           "id": "reach-check",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "For the arm with l1 = 0.30 m and l2 = 0.20 m, find cos θ2 for a target at (0.60, 0.00) m, and decide whether the arm can reach it. Give the value of cos θ2."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4484,12 +4253,7 @@
           "id": "code",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A program computes cos_t2 = (x*x + y*y - 0.13) / 0.12 with x = 0.2 and y = 0.3, and then t2 = degrees(acos(cos_t2)). What value does t2 hold, in degrees?"
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4505,12 +4269,7 @@
           "id": "pick",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The shoulder joint can turn only from 0° to 90° and the elbow joint only from 0° to 150°. The target (0.30, 0.30) m can be reached with the elbow down, θ1 = 19.6° and θ2 = +65.4°, or with the elbow up, θ1 = 70.4° and θ2 = −65.4°. Which can the arm use?"
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4554,11 +4313,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "Telling an arm to put its hand at (0.30, 0.30) m means working out two angles, and the answer turns out not to be one pair but two. The elbow can bend either way, and the two arms, elbow down at 19.6° and 65.4° or elbow up at 70.4° and −65.4°, reach the same point. A person picking up a cup makes this choice without noticing, and a program has to make it on purpose."
+              "text": "To put an arm's hand at the point (0.30, 0.30) m, a program has to send each joint an angle, so it has to work backwards from a position to the angles that produce it. For an arm with links of 0.30 m and 0.20 m the law of cosines gives the bend at the elbow as 65.4°, and the shoulder angle then follows from the direction of the target and the offset that the bent elbow causes."
             },
             {
               "kind": "paragraph",
-              "text": "Before it chooses, the program has to ask whether the target can be reached at all, since a distance outside the ring has no solution, and a target at full stretch has just one."
+              "text": "This reverse calculation is **inverse kinematics**, and before it starts a program has to ask whether the target can be reached at all, since a point outside the arm's ring of reach has no answer. With it you can turn a plan given in positions, such as the place of a cup on a table, into angles the joints can follow, and see in advance where an arm has a choice to make and where it will struggle to move."
             }
           ]
         },
@@ -4652,12 +4411,7 @@
           "id": "opposite",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The right wheel of a differential-drive robot runs at +0.3 m/s and the left wheel at −0.3 m/s, that is, backwards. Before the formulas are given, say what the robot's forward speed is, in metres per second."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4751,12 +4505,7 @@
           "id": "pose-try",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A robot at heading 60° travels at 0.5 m/s for one step of dt = 0.2 s. Use x ← x + v cos θ dt to find how far it moves in x, in metres."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4772,12 +4521,7 @@
           "id": "heading-error",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The robot's heading estimate is wrong by 1.0°, and it drives straight for 1 m. How far to one side of the intended line does it end up, in centimetres, to one decimal place?"
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4923,12 +4667,7 @@
           "id": "tau",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A complementary filter has α = 0.98 and runs at dt = 0.01 s. The influence of the accelerometer lasts for about α dt / (1 − α). Work out that time, in seconds."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4944,12 +4683,7 @@
           "id": "ten-min",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A robot navigates for ten minutes by odometry alone, with no landmark to correct it. What happens to its position error?"
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4993,11 +4727,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "Two wheels at 0.6 and 0.4 m/s put a robot into a circle of radius 0.5 m, turning at 1.0 rad/s. That is all the wheels can say about the motion, and a program that adds it up, step by step, can follow the robot across a room. It will also be wrong, and wrong by more with every step: a heading off by 1° puts the robot 1.7 cm to one side after a metre."
+              "text": "Two wheels running at 0.6 and 0.4 m/s put a robot into a circle of radius 0.5 m, turning at 1.0 rad/s. That is all the wheels can say about the motion, and a program that adds it up, step by step, can follow the robot across a room, although its estimate grows worse with every step, since a heading that is off by 1° puts the robot 1.7 cm to one side after a metre."
             },
             {
               "kind": "paragraph",
-              "text": "A gyroscope offers a better heading over a short time and an accelerometer a better one over a long time, and neither alone is good."
+              "text": "A gyroscope gives a better angle over a short time and an accelerometer a better one over a long time, and a simple filter that blends the two keeps the strength of each. With these pieces you can work out how a two-wheeled robot moves from the speeds of its wheels, keep track of where it is, and hold its estimate of its own angle close to the truth."
             }
           ]
         },
@@ -5091,12 +4825,7 @@
           "id": "period-predict",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The motor control loop runs at 100 Hz. Before the rule is stated for the next screen, say how long one period of the loop lasts, in milliseconds."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5134,12 +4863,7 @@
           "id": "echo-wait",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "An ultrasonic sensor looks at an object 2 m away, and the speed of sound is 343 m/s. How long does the loop wait for the echo, in milliseconds, to one decimal place?"
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5286,12 +5010,7 @@
           "id": "peak-i",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The peak power of the robot is 32.0 W and the battery is at 7.4 V. Work out the peak current, in amps, to one decimal place."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5330,12 +5049,7 @@
           "id": "watchdog",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A robot moves at 0.5 m/s and its watchdog timeout is 100 ms. How far can it travel, in centimetres, after its program hangs and before the reset?"
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5379,11 +5093,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A robot of two drive motors, a gripper and a handful of sensors draws an average of 12.0 W from a 14.8 Wh battery, and it runs for 74 minutes. In the first second of that time a motor starting against a load takes the whole system to 32.0 W, a current of 4.3 A at 7.4 V, which is almost three times the average current, and a robot designed only on the average resets at that moment."
+              "text": "A small robot with two drive motors, a gripper and a handful of sensors draws an average of 12.0 W from a 14.8 Wh battery, so it runs for 74 minutes. When a motor starts against a load the total briefly rises to 32.0 W, almost three times the average, and a robot whose wiring and battery were chosen for the average sags and resets at exactly that moment."
             },
             {
               "kind": "paragraph",
-              "text": "The parts of the earlier lessons now have to be arranged in time. Motor control runs every 10 ms, the distance sensors are read every 50 ms, and decisions are made every 200 ms, while a watchdog and a stop state make sure that a failure ends with the robot at rest."
+              "text": "The parts of the earlier lessons also have to be arranged in time, since the motors need correcting far more often than the decisions need making, and a failure has to end with the robot at rest. Working out the power budget, the rate of each loop and the safe state is what turns a set of working parts into a robot you can leave running."
             }
           ]
         },
@@ -5466,48 +5180,72 @@
         "mcu",
         "timer"
       ],
-      "prompt": "A clock runs at 16 MHz. How long is one cycle, in nanoseconds?",
-      "responseType": "numeric",
+      "prompt": "A clock runs at 16 MHz, which means it ticks 16 million times every second. Roughly how long does one tick last?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "One cycle is one over the frequency.",
-        "16 MHz is 16,000,000 ticks per second.",
-        "Write each quantity with its unit, then combine them in the order the question describes."
+        "One tick lasts one second divided by the number of ticks in a second."
       ],
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 62.5,
-        "unit": "ns",
-        "absoluteTolerance": 0.3125,
-        "relativeTolerance": 0,
-        "workedAnswer": "1 / 16,000,000 s = 62.5 ns."
+        "kind": "text",
+        "acceptedIdeas": [
+          "Less than a ten-millionth of a second"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Less than a ten-millionth of a second"
       },
       "sourceIds": [
         "arduino-docs",
         "rp2040-ds",
         "mit-2-737"
       ],
-      "onCorrect": "One second split into 16 million equal parts gives 62.5 ns, so 16 cycles take 1 µs.",
+      "onCorrect": "One second split into 16 million equal parts is 62.5 nanoseconds, so 16 ticks take a microsecond.",
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              0.0625
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That is the length in microseconds. Multiply by 1000 for nanoseconds."
+          "feedback": "A tick of a millisecond would give only a thousand ticks a second, which is sixteen thousand times too few."
         },
         {
           "match": {
-            "numeric": [
-              16
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That is the number of cycles in a microsecond, not the length of one."
+          "feedback": "A tick of a few millionths of a second gives a few hundred thousand ticks a second, still far short of 16 million."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "That would be 16 ticks a second. The M in MHz means million, so the second is split into 16 million parts."
         }
       ],
       "skill": "compute-timer-period",
-      "calculator": "available"
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "d",
+          "label": "About a sixteenth of a second"
+        },
+        {
+          "id": "a",
+          "label": "About a millisecond"
+        },
+        {
+          "id": "b",
+          "label": "A few millionths of a second"
+        },
+        {
+          "id": "c",
+          "label": "Less than a ten-millionth of a second"
+        }
+      ]
     },
     {
       "id": "mecr-what-a-microcontroller-is-loop-rate",
@@ -5662,7 +5400,7 @@
         "mcu",
         "timer"
       ],
-      "prompt": "The loop calls delay(250) and checks the switch once per pass. How many checks per second?",
+      "prompt": "A program checks a switch once per pass of its loop and ends each pass with delay(250), and nothing else in the loop takes a measurable time. How many times per second is the switch checked?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -5860,16 +5598,16 @@
       "calculator": "off",
       "choices": [
         {
-          "id": "a",
-          "label": "Ends after one run"
-        },
-        {
           "id": "b",
           "label": "Waits for an operating system to start it"
         },
         {
           "id": "c",
           "label": "Repeats forever"
+        },
+        {
+          "id": "a",
+          "label": "Ends after one run"
         },
         {
           "id": "d",
@@ -5883,7 +5621,7 @@
         "pull",
         "bounce"
       ],
-      "prompt": "The switch is open and nothing else is connected to the pin. What does the program read?",
+      "prompt": "A switch joins an input pin to ground, and nothing else is connected to the pin. While the switch is open, what does the program read?",
       "responseType": "short_text",
       "difficulty": 1.2,
       "hints": [
@@ -5933,16 +5671,16 @@
       "calculator": "off",
       "choices": [
         {
+          "id": "c",
+          "label": "Sometimes high and sometimes low"
+        },
+        {
           "id": "a",
           "label": "Always low, 0"
         },
         {
           "id": "b",
           "label": "Always high, 1"
-        },
-        {
-          "id": "c",
-          "label": "Sometimes high and sometimes low"
         },
         {
           "id": "d",
@@ -6148,39 +5886,59 @@
         "pull",
         "bounce"
       ],
-      "prompt": "One press bounces so that the pin falls 4 times. By how much does the edge counter rise?",
-      "responseType": "numeric",
+      "prompt": "A program adds 1 to a counter each time an input pin falls from high to low, and it checks the pin thousands of times a second. One press of the button bounces, so that the pin falls 4 times before it settles low. What happens to the counter?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Every high-to-low change adds one.",
-        "Count the falling edges in the figure.",
-        "Write each quantity with its unit, then combine them in the order the question describes."
+        "Ask what the program counts: presses, or falls of the voltage on the pin."
       ],
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 4,
-        "unit": "counts",
-        "absoluteTolerance": 0.02,
-        "relativeTolerance": 0,
-        "workedAnswer": "Each falling edge adds 1, so 4 edges add 4."
+        "kind": "text",
+        "acceptedIdeas": [
+          "It rises by 4, one for each fall during the bounce"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "It rises by 4, one for each fall during the bounce"
       },
       "sourceIds": [
         "arduino-docs",
         "sparkfun-learn"
       ],
-      "onCorrect": "A single press registers as several, which is the standard symptom of a bouncing switch.",
+      "onCorrect": "A single press registering as several is the standard symptom of a bouncing switch, and the cure is in the program.",
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              1
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That is what the person pressing meant. The chip counts every edge."
+          "feedback": "One press is what the person meant, but the chip is fast enough to see every fall of the voltage, and it counts each one."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "The pin falls 4 times and rises in between, and the program counts only the falls, so nothing is subtracted."
         }
       ],
       "skill": "debounce",
-      "calculator": "available"
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "b",
+          "label": "It rises by 4, one for each fall during the bounce"
+        },
+        {
+          "id": "c",
+          "label": "It does not change, because the bounces cancel out"
+        },
+        {
+          "id": "a",
+          "label": "It rises by 1, because there was one press"
+        }
+      ]
     },
     {
       "id": "mecr-digital-inputs-and-outputs-pull-power",
@@ -6188,7 +5946,7 @@
         "pull",
         "bounce"
       ],
-      "prompt": "A 4.7 kΩ pull-up has 3.3 V across it. What power, in mW, does it turn into heat?",
+      "prompt": "A 4.7 kΩ pull-up resistor has the whole 3.3 V supply across it while the switch is held down. What power, in mW, does it turn into heat?",
       "responseType": "numeric",
       "difficulty": 1.3,
       "hints": [
@@ -6382,20 +6140,20 @@
       "calculator": "off",
       "choices": [
         {
-          "id": "a",
-          "label": "By running the chip at a faster clock"
-        },
-        {
           "id": "b",
           "label": "By ignoring changes on the pin for a few milliseconds after the first"
         },
         {
-          "id": "c",
-          "label": "By using a larger LED"
+          "id": "a",
+          "label": "By running the chip at a faster clock"
         },
         {
           "id": "d",
           "label": "By lowering the supply voltage"
+        },
+        {
+          "id": "c",
+          "label": "By using a larger LED"
         }
       ]
     },
@@ -6446,6 +6204,78 @@
       ],
       "skill": "convert-adc",
       "calculator": "available"
+    },
+    {
+      "id": "mecr-analog-sensing-half-count",
+      "conceptIds": [
+        "adc",
+        "divider"
+      ],
+      "prompt": "A 10-bit converter divides the range from 0 V to a 5 V reference into 1024 equal steps, and it returns 512. Roughly what voltage is on the pin?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Ask what fraction of the 1024 steps the count 512 is."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "About 2.5 V"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "About 2.5 V"
+      },
+      "sourceIds": [
+        "arduino-docs",
+        "sparkfun-learn"
+      ],
+      "onCorrect": "512 is half of 1024, so the voltage is half of the reference, and the next screen turns that into a rule for any count.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "A count is a position on the scale, and 512 of 1024 steps is half of the way from 0 V to 5 V, not a tenth of it."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "The count has no unit of its own, so 512 does not mean 512 millivolts; it means 512 of the 1024 steps."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "5 V is the top of the scale, which the converter reports as a count near 1023, and 512 is only halfway up."
+        }
+      ],
+      "skill": "convert-adc",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "About 0.5 V"
+        },
+        {
+          "id": "c",
+          "label": "About 2.5 V"
+        },
+        {
+          "id": "b",
+          "label": "About 512 mV"
+        },
+        {
+          "id": "d",
+          "label": "About 5 V"
+        }
+      ]
     },
     {
       "id": "mecr-analog-sensing-faded-count",
@@ -6501,7 +6331,7 @@
         "adc",
         "divider"
       ],
-      "prompt": "A 10-bit converter has Vref = 5 V. What count does 1.0 V give?",
+      "prompt": "A 10-bit converter has Vref = 5 V and 1.0 V is applied to its pin. What count does it return, rounded down to a whole number?",
       "responseType": "numeric",
       "difficulty": 1.1,
       "hints": [
@@ -6645,7 +6475,7 @@
         "adc",
         "divider"
       ],
-      "prompt": "With int n = 307 and v = n * 5.0 / 1024.0, what is v in volts (three decimals)?",
+      "prompt": "A program on a 10-bit board with a 5 V reference runs v = n * 5.0 / 1024.0, and the reading n is 307. What is v, in volts, to three decimal places?",
       "responseType": "numeric",
       "difficulty": 1.1,
       "hints": [
@@ -6933,47 +6763,71 @@
         "encoder",
         "tof"
       ],
-      "prompt": "How many counts does one revolution give with 600 pulses per revolution and 4× counting?",
-      "responseType": "numeric",
+      "prompt": "An encoder has two channels, each giving 600 pulses per revolution, and the chip counts every rising and every falling edge on both channels. Roughly how many counts does one revolution give?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Each pulse cycle has four edges.",
-        "Multiply the pulses per revolution by 4.",
-        "Write each quantity with its unit, then combine them in the order the question describes."
+        "Count the edges in one pulse of one channel, then remember there are two channels."
       ],
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 2400,
-        "unit": "counts",
-        "absoluteTolerance": 12,
-        "relativeTolerance": 0,
-        "workedAnswer": "600 × 4 = 2400."
+        "kind": "text",
+        "acceptedIdeas": [
+          "2400, four for each pulse"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "2400, four for each pulse"
       },
       "sourceIds": [
         "mit-2-737",
         "sparkfun-learn"
       ],
-      "onCorrect": "Two channels with two edges each give four counts per pulse cycle.",
+      "onCorrect": "A rising and a falling edge on each of two channels make four counts per pulse, so 600 pulses give 2400 counts.",
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              600
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That is the pulses per revolution, one count per cycle."
+          "feedback": "One count per pulse would mean counting only one kind of edge on one channel, but every edge on both channels is counted."
         },
         {
           "match": {
-            "numeric": [
-              1200
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That counts the edges of one channel only."
+          "feedback": "Each pulse has a rising and a falling edge, so counting both edges on both channels gives two counts per pulse on each channel."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "Each channel gives its own 600 pulses, so the second channel adds edges to the count and never halves it."
         }
       ],
       "skill": "compute-encoder-distance",
-      "calculator": "available"
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "d",
+          "label": "300, since the two channels share each pulse"
+        },
+        {
+          "id": "c",
+          "label": "2400, four for each pulse"
+        },
+        {
+          "id": "b",
+          "label": "1200, one for each pulse on each channel"
+        },
+        {
+          "id": "a",
+          "label": "600, one for each pulse"
+        }
+      ]
     },
     {
       "id": "mecr-position-and-motion-sensors-cpr-worked",
@@ -7077,7 +6931,7 @@
         "encoder",
         "tof"
       ],
-      "prompt": "An echo returns after 8.7 ms at 343 m/s. How far away is the object, in metres?",
+      "prompt": "An ultrasonic echo returns after 8.7 ms, and sound travels at 343 m/s. How far away is the object, in metres, to two decimal places?",
       "responseType": "numeric",
       "difficulty": 1.2,
       "hints": [
@@ -7125,7 +6979,7 @@
         "encoder",
         "tof"
       ],
-      "prompt": "The gyroscope bias is 0.5°/s for 60 s. How many degrees is the angle wrong?",
+      "prompt": "A gyroscope has a constant bias of 0.5°/s, and the program adds up its rate for 60 s while the robot sits still. By how many degrees is the angle wrong?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -7173,7 +7027,7 @@
         "encoder",
         "tof"
       ],
-      "prompt": "Which sensor measures how far and in which direction a wheel has turned?",
+      "prompt": "A robot must know how far each of its wheels has turned and in which direction. Which sensor measures this directly?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -7433,6 +7287,78 @@
       "calculator": "available"
     },
     {
+      "id": "mecr-mecr-state-machines-ignored-event",
+      "conceptIds": [
+        "mecr-fsm",
+        "nonblocking"
+      ],
+      "prompt": "A machine has the states idle, run and pause, and the events press, timeout and reset. A timeout means nothing while the machine is idle. What should the machine do when a timeout arrives in idle?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Ask what a timeout could sensibly change in a machine that is not running."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Stay in idle, as if nothing had happened"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Stay in idle, as if nothing had happened"
+      },
+      "sourceIds": [
+        "arduino-docs",
+        "wiki-mecha"
+      ],
+      "onCorrect": "An event that means nothing in a state leaves the state as it is, and the next screen shows how a table records that choice.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Moving to run would start the machine on an event that has nothing to do with starting it, so the machine's behaviour would depend on stray events."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "An event that does not apply is a normal part of running, and stopping the program would leave the robot unable to respond to the events that do apply."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "Here the first state is idle, but in general restarting would throw away what the machine remembers, which is the reason for having states at all."
+        }
+      ],
+      "skill": "count-transitions",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "b",
+          "label": "Move on to the next state in order, run"
+        },
+        {
+          "id": "c",
+          "label": "Stop the program with an error"
+        },
+        {
+          "id": "a",
+          "label": "Stay in idle, as if nothing had happened"
+        },
+        {
+          "id": "d",
+          "label": "Go back to its first state and start again"
+        }
+      ]
+    },
+    {
       "id": "mecr-mecr-state-machines-blank-cell",
       "conceptIds": [
         "mecr-fsm",
@@ -7534,7 +7460,7 @@
         "mecr-fsm",
         "nonblocking"
       ],
-      "prompt": "Name the final state.",
+      "prompt": "Given table = {('idle','press'):'run', ('run','press'):'pause', ('pause','press'):'run', ('run','timeout'):'idle', ('pause','reset'):'idle'} and s = 'idle', the code runs s = table.get((s, e), s) for each event e in ['press', 'reset', 'press']. Name the final state.",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -7585,7 +7511,7 @@
         "mecr-fsm",
         "nonblocking"
       ],
-      "prompt": "At what time, in ms, does the check first succeed?",
+      "prompt": "A program records start = 0 and checks if (millis() - start >= 1000) once per pass, and each pass takes 30 ms, so the checks happen at 30, 60, 90 ms and so on. At what time, in ms, does the check first succeed?",
       "responseType": "numeric",
       "difficulty": 1.2,
       "hints": [
@@ -7674,6 +7600,66 @@
       ],
       "skill": "count-transitions",
       "calculator": "available"
+    },
+    {
+      "id": "mecr-mecr-state-machines-fault-column",
+      "conceptIds": [
+        "mecr-fsm",
+        "nonblocking"
+      ],
+      "prompt": "A garage door controller has the states closed, opening, stopped, closing and halted, where halted is its safe state with the motor off. An obstruction sensor raises a fault event. Which cells of the fault column should be filled in?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Ask in which states a fault could arrive, and what a blank cell would do there."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Every state except halted, each leading to halted"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Every state except halted, each leading to halted"
+      },
+      "sourceIds": [
+        "arduino-docs",
+        "wiki-mecha"
+      ],
+      "onCorrect": "No cell of a fault column may be blank, so that whatever the controller is doing, a fault always ends in the safe state.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "A fault can arrive in any state, such as a motor that stalls the moment it is started from closed, and a blank cell in that state would leave the fault ignored."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "A blank cell keeps the current state, so a fault while opening would leave the motor running, which is exactly what the safe state is meant to prevent."
+        }
+      ],
+      "skill": "count-transitions",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Only opening and closing, since the door moves only then"
+        },
+        {
+          "id": "c",
+          "label": "None, since a blank cell already leaves the door where it is"
+        },
+        {
+          "id": "b",
+          "label": "Every state except halted, each leading to halted"
+        }
+      ]
     },
     {
       "id": "mecr-mecr-state-machines-practice-1",
@@ -7833,12 +7819,12 @@
           "label": "Crash with an error"
         },
         {
-          "id": "b",
-          "label": "Reset to idle every time"
-        },
-        {
           "id": "c",
           "label": "Leave the state unchanged"
+        },
+        {
+          "id": "b",
+          "label": "Reset to idle every time"
         },
         {
           "id": "d",
@@ -7893,6 +7879,78 @@
       ],
       "skill": "compute-stall",
       "calculator": "available"
+    },
+    {
+      "id": "mecr-dc-motors-stall-compare",
+      "conceptIds": [
+        "kt",
+        "stall"
+      ],
+      "prompt": "A motor with a 2 Ω winding runs on 12 V. Compared with the current it draws while spinning freely, what current does it draw when its shaft is held so that it cannot turn?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Ask what the back-EMF is when the speed is zero."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Much more, since nothing opposes the supply when the shaft is still"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Much more, since nothing opposes the supply when the shaft is still"
+      },
+      "sourceIds": [
+        "mit-2-737",
+        "wiki-mecha"
+      ],
+      "onCorrect": "With no back-EMF the whole 12 V lies across the 2 Ω winding, so the current is 6 A, far more than the motor draws when it spins freely.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "The winding and the supply are the same, but a spinning motor makes a back-EMF that opposes the supply, and a still one makes none."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Doing no mechanical work does not limit the current, which is set by the voltage left across the winding, and with no back-EMF that is the whole supply."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "The winding is a plain conductor joined across the supply, so current flows through it whether or not the shaft moves."
+        }
+      ],
+      "skill": "compute-stall",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "c",
+          "label": "Much more, since nothing opposes the supply when the shaft is still"
+        },
+        {
+          "id": "d",
+          "label": "None, since current flows only while the shaft turns"
+        },
+        {
+          "id": "a",
+          "label": "About the same, since the winding and the supply have not changed"
+        },
+        {
+          "id": "b",
+          "label": "Much less, since a motor that is not turning does no work"
+        }
+      ]
     },
     {
       "id": "mecr-dc-motors-no-load-04",
@@ -8044,7 +8102,7 @@
         "kt",
         "stall"
       ],
-      "prompt": "How much power is dissipated in the winding of a stalled 12 V, 2 Ω motor, in watts?",
+      "prompt": "A motor with a 2 Ω winding on a 12 V supply is blocked by an obstacle while it is still powered. How much power is dissipated as heat in the winding, in watts?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -8284,47 +8342,71 @@
         "pwm",
         "hbridge"
       ],
-      "prompt": "What average voltage does a 12 V supply give when it is on for half of each period?",
-      "responseType": "numeric",
+      "prompt": "A 12 V supply is switched fully on for half of each short period and fully off for the other half, and the motor responds only to the average. Roughly what voltage does the motor see?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "The average is the supply weighted by the time it is on.",
-        "Half of the time at 12 V and half at 0 V.",
-        "Write each quantity with its unit, then combine them in the order the question describes."
+        "Average the two levels, weighting each by the share of the period it lasts."
       ],
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 6,
-        "unit": "V",
-        "absoluteTolerance": 0.03,
-        "relativeTolerance": 0,
-        "workedAnswer": "12 V × 0.5 = 6 V."
+        "kind": "text",
+        "acceptedIdeas": [
+          "About 6 V"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "About 6 V"
       },
       "sourceIds": [
         "mit-2-737",
         "sparkfun-learn"
       ],
-      "onCorrect": "The average is the duty cycle times the supply.",
+      "onCorrect": "Half of the time at 12 V and half at 0 V average to 6 V, so the fraction of time on sets the voltage.",
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              12
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That is the supply while it is on, not the average."
+          "feedback": "The motor responds to the average, and for half of every period the voltage is 0 V, which pulls the average down from 12 V."
         },
         {
           "match": {
-            "numeric": [
-              3
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "That is the 25% average."
+          "feedback": "3 V would be the average for a switch that is on for a quarter of each period, and this one is on for half."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "The other half of each period is at 12 V, so the average lies between the two levels and not at the bottom."
         }
       ],
       "skill": "compute-pwm-average",
-      "calculator": "available"
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "d",
+          "label": "0 V, since the switch spends half its time off"
+        },
+        {
+          "id": "b",
+          "label": "About 6 V"
+        },
+        {
+          "id": "a",
+          "label": "About 12 V, since the switch is fully on whenever it is on"
+        },
+        {
+          "id": "c",
+          "label": "About 3 V"
+        }
+      ]
     },
     {
       "id": "mecr-pwm-and-h-bridges-avg35",
@@ -8478,20 +8560,20 @@
       "calculator": "off",
       "choices": [
         {
-          "id": "a",
-          "label": "Q1 and Q3"
-        },
-        {
           "id": "b",
           "label": "Q2 and Q3"
         },
         {
-          "id": "c",
-          "label": "Q3 and Q4"
-        },
-        {
           "id": "d",
           "label": "Q1 and Q2"
+        },
+        {
+          "id": "a",
+          "label": "Q1 and Q3"
+        },
+        {
+          "id": "c",
+          "label": "Q3 and Q4"
         }
       ]
     },
@@ -8791,20 +8873,20 @@
       "calculator": "off",
       "choices": [
         {
-          "id": "a",
-          "label": "The motor brakes"
-        },
-        {
-          "id": "b",
-          "label": "The motor reverses"
+          "id": "d",
+          "label": "The motor idles"
         },
         {
           "id": "c",
           "label": "The supply is shorted to ground through the switches"
         },
         {
-          "id": "d",
-          "label": "The motor idles"
+          "id": "a",
+          "label": "The motor brakes"
+        },
+        {
+          "id": "b",
+          "label": "The motor reverses"
         }
       ]
     },
@@ -8814,47 +8896,59 @@
         "stepper",
         "servo"
       ],
-      "prompt": "A stepper with 200 steps per revolution turns at 120 rpm. How many steps per second?",
-      "responseType": "numeric",
+      "prompt": "A stepper has 200 steps per revolution and has to turn at 120 revolutions per minute, which is 2 revolutions every second. Roughly how many steps per second must the controller send?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Revolutions per second first.",
-        "Multiply by the steps per revolution.",
-        "Write each quantity with its unit, then combine them in the order the question describes."
+        "Each revolution takes 200 steps, and there are 2 revolutions every second."
       ],
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 400,
-        "unit": "steps/s",
-        "absoluteTolerance": 2,
-        "relativeTolerance": 0,
-        "workedAnswer": "120 / 60 = 2 rev/s; 2 × 200 = 400 steps/s."
+        "kind": "text",
+        "acceptedIdeas": [
+          "A few hundred"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "A few hundred"
       },
       "sourceIds": [
         "mit-2-737",
         "sparkfun-learn"
       ],
-      "onCorrect": "The step rate is the revolutions per second times the steps per revolution.",
+      "onCorrect": "Two revolutions a second at 200 steps each is 400 steps a second.",
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              24000
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That multiplies by 200 without dividing the rpm by 60."
+          "feedback": "Two is the number of revolutions per second, and every revolution needs 200 separate steps."
         },
         {
           "match": {
-            "numeric": [
-              200
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "That is one revolution per second."
+          "feedback": "Tens of thousands would come from multiplying the revolutions per minute by the steps, which counts a minute's worth of steps in place of a second's."
         }
       ],
       "skill": "compute-step-rate",
-      "calculator": "available"
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "c",
+          "label": "Tens of thousands"
+        },
+        {
+          "id": "a",
+          "label": "About 2"
+        },
+        {
+          "id": "b",
+          "label": "A few hundred"
+        }
+      ]
     },
     {
       "id": "mecr-steppers-and-servos-rps",
@@ -8970,7 +9064,7 @@
         "kind": "numeric",
         "value": 0.00125,
         "unit": "mm",
-        "absoluteTolerance": 1e-06,
+        "absoluteTolerance": 0.000001,
         "relativeTolerance": 0,
         "workedAnswer": "2 / 1600 = 0.00125 mm."
       },
@@ -9054,7 +9148,7 @@
         "stepper",
         "servo"
       ],
-      "prompt": "How fast does the nut move, in millimetres per second?",
+      "prompt": "A stepper makes 3200 steps per revolution with 16× microstepping and drives a lead screw with an 8 mm lead. The controller sends 6400 steps per second. How fast does the nut move, in millimetres per second?",
       "responseType": "numeric",
       "difficulty": 1.2,
       "hints": [
@@ -9102,7 +9196,7 @@
         "stepper",
         "servo"
       ],
-      "prompt": "What happens when an open-loop stepper is overloaded?",
+      "prompt": "A stepper with no position sensor is moving a heavy load and is told to accelerate harder than its rotor can follow. What happens?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -9160,12 +9254,12 @@
           "label": "It stops and signals a fault"
         },
         {
-          "id": "c",
-          "label": "It speeds up to compensate"
-        },
-        {
           "id": "d",
           "label": "It reverses to recover"
+        },
+        {
+          "id": "c",
+          "label": "It speeds up to compensate"
         }
       ]
     },
@@ -9235,7 +9329,7 @@
         "kind": "numeric",
         "value": 0.005,
         "unit": "mm",
-        "absoluteTolerance": 1e-06,
+        "absoluteTolerance": 0.000001,
         "relativeTolerance": 0,
         "workedAnswer": "5 / 1000 = 0.005 mm."
       },
@@ -9319,47 +9413,59 @@
         "wheel-torque",
         "reflect"
       ],
-      "prompt": "What force must each of two driven wheels supply when the robot needs 10.22 N along the slope, in newtons?",
-      "responseType": "numeric",
+      "prompt": "A robot needs a force of 10.22 N along a slope to hold its place, and two of its wheels are driven equally. Roughly how much force must each driven wheel supply?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "The total is shared equally between the driven wheels.",
-        "Divide by 2.",
-        "Write each quantity with its unit, then combine them in the order the question describes."
+        "The forces of the driven wheels add up to the total."
       ],
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 5.11,
-        "unit": "N",
-        "absoluteTolerance": 0.025550000000000003,
-        "relativeTolerance": 0,
-        "workedAnswer": "10.22 / 2 = 5.11 N."
+        "kind": "text",
+        "acceptedIdeas": [
+          "About 5 N, half of the total"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "About 5 N, half of the total"
       },
       "sourceIds": [
         "mit-2-12",
         "mit-2-737"
       ],
-      "onCorrect": "Each driven wheel supplies half of the total force.",
+      "onCorrect": "Two wheels sharing equally supply 5.11 N each, which is the force the wheel torque must produce at the ground.",
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              10.22
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "That is the total for the robot, not for one wheel."
+          "feedback": "The two wheels push together, so their forces add up to the 10.22 N needed, and neither has to cover for the other."
         },
         {
           "match": {
-            "numeric": [
-              20.44
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That doubles the force instead of sharing it."
+          "feedback": "Each wheel supplying 10.22 N would give 20.44 N in total, twice what the slope needs, because the two driven wheels share the load."
         }
       ],
       "skill": "compute-wheel-torque",
-      "calculator": "available"
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "About 5 N, half of the total"
+        },
+        {
+          "id": "c",
+          "label": "About 20 N, since each wheel must do its own share and the other's"
+        },
+        {
+          "id": "b",
+          "label": "10.22 N, the full force"
+        }
+      ]
     },
     {
       "id": "mecr-sizing-a-drive-per-wheel",
@@ -9511,7 +9617,7 @@
         "wheel-torque",
         "reflect"
       ],
-      "prompt": "The wheel needs 0.30 N m. Ratio 25, efficiency 0.75. What torque must the motor give, in mN m?",
+      "prompt": "A wheel needs 0.30 N m, and the gearbox has a ratio of 25 and an efficiency of 0.75. What torque must the motor give, in mN m?",
       "responseType": "numeric",
       "difficulty": 1.2,
       "hints": [
@@ -9559,7 +9665,7 @@
         "wheel-torque",
         "reflect"
       ],
-      "prompt": "The motor must give 21 mN m, with Kt = 0.05 N m/A. What current is that, in amps?",
+      "prompt": "A motor must give 21 mN m of torque, and its torque constant is Kt = 0.05 N m/A. What current does it draw, in amps, to two decimal places?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -9607,7 +9713,7 @@
         "wheel-torque",
         "reflect"
       ],
-      "prompt": "What did the designer leave out?",
+      "prompt": "A robot's motors suit its top speed well, but the robot cannot climb a ramp. What did the sizing leave out?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -9661,12 +9767,12 @@
           "label": "A check of the torque needed on the steepest slope"
         },
         {
-          "id": "b",
-          "label": "The colour of the wheels"
-        },
-        {
           "id": "c",
           "label": "A faster microcontroller"
+        },
+        {
+          "id": "b",
+          "label": "The colour of the wheels"
         },
         {
           "id": "d",
@@ -9824,47 +9930,71 @@
         "fk",
         "workspace"
       ],
-      "prompt": "Link 1 is at 60° and the elbow bend is −30°. At what angle from the x axis does link 2 point, in degrees?",
-      "responseType": "numeric",
+      "prompt": "Link 1 of an arm points at 60° from the x axis, and the elbow bends link 2 by −30° relative to link 1. Roughly which way does link 2 point, measured from the x axis?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Joint angles are relative, so they add.",
-        "Add the two angles.",
-        "Write each quantity with its unit, then combine them in the order the question describes."
+        "Start from the direction of link 1 and turn by the elbow bend."
       ],
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 30,
-        "unit": "degrees",
-        "absoluteTolerance": 0.15,
-        "relativeTolerance": 0,
-        "workedAnswer": "60° + (−30°) = 30°."
+        "kind": "text",
+        "acceptedIdeas": [
+          "At about 30°"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "At about 30°"
       },
       "sourceIds": [
         "modern-robotics",
         "mit-2-12"
       ],
-      "onCorrect": "The sum of the angles gives the absolute direction of the second link.",
+      "onCorrect": "The relative angles add, 60° + (−30°) = 30°, which is the angle link 2's own cosine and sine must use.",
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              -30
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That is the relative angle, measured from link 1 and not from the x axis."
+          "feedback": "−30° is measured from link 1, not from the x axis, and link 1 already points 60° up from the axis."
         },
         {
           "match": {
-            "numeric": [
-              90
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That subtracts the bend instead of adding it."
+          "feedback": "The elbow bend turns link 2 away from the line of link 1, so the two links point in the same direction only when the bend is 0°."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "The bend is −30°, which turns link 2 back towards the x axis, so the angle falls below 60° rather than rising above it."
         }
       ],
       "skill": "compute-fk",
-      "calculator": "available"
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "At −30°, the elbow angle"
+        },
+        {
+          "id": "d",
+          "label": "At about 30°"
+        },
+        {
+          "id": "c",
+          "label": "At about 90°"
+        },
+        {
+          "id": "b",
+          "label": "At 60°, the same as link 1"
+        }
+      ]
     },
     {
       "id": "mecr-arm-kinematics-sum-angle",
@@ -10114,12 +10244,12 @@
       "calculator": "off",
       "choices": [
         {
-          "id": "a",
-          "label": "Yes, by folding the elbow"
-        },
-        {
           "id": "b",
           "label": "No, it is inside the hole of the ring"
+        },
+        {
+          "id": "a",
+          "label": "Yes, by folding the elbow"
         },
         {
           "id": "c",
@@ -10281,47 +10411,71 @@
         "ik",
         "elbow"
       ],
-      "prompt": "How many sets of joint angles put the hand on a reachable target that is not at full stretch?",
-      "responseType": "numeric",
+      "prompt": "For a target that is within reach but not at full stretch, an arm's elbow angle has been found from its cosine, 0.4167. Since cos 65.4° and cos(−65.4°) are equal, how many different sets of joint angles put the hand on the target?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "The cosine has two angles, a positive and a negative one.",
-        "Write each quantity with its unit, then combine them in the order the question describes.",
-        "Write each quantity with its unit, then combine them in the order the question describes."
+        "Ask whether bending the elbow the other way by the same amount could still reach the target."
       ],
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 2,
-        "unit": "sets",
-        "absoluteTolerance": 0.01,
-        "relativeTolerance": 0,
-        "workedAnswer": "One with the elbow down and one with the elbow up."
+        "kind": "text",
+        "acceptedIdeas": [
+          "Two, one with the elbow bent each way"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Two, one with the elbow bent each way"
       },
       "sourceIds": [
         "modern-robotics",
         "mit-2-12"
       ],
-      "onCorrect": "The two sets mirror each other about the line from the base to the target.",
+      "onCorrect": "Each sign of the elbow angle has its own shoulder angle, so there are two sets, the elbow-down and the elbow-up arm.",
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              1
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "A cosine is the same for an angle and its negative, so there are two angles."
+          "feedback": "The cosine fixes the size of the elbow bend but not its sign, and both signs give a triangle with the same sides that reaches the same point."
         },
         {
           "match": {
-            "numeric": [
-              4
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "There are two signs, but each gives a single pair of angles, so two pairs."
+          "feedback": "A two-link arm in a plane has only the elbow's two signs to choose between, and each sign fixes its own shoulder angle, so the choices are finite."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "The cosine leaves only the sign open, and each sign gives a real set of angles that reaches the target."
         }
       ],
       "skill": "solve-ik",
-      "calculator": "off"
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "One"
+        },
+        {
+          "id": "c",
+          "label": "Infinitely many"
+        },
+        {
+          "id": "d",
+          "label": "None, since the cosine does not fix the angle"
+        },
+        {
+          "id": "b",
+          "label": "Two, one with the elbow bent each way"
+        }
+      ]
     },
     {
       "id": "mecr-inverse-kinematics-acos-worked",
@@ -10521,7 +10675,7 @@
         "ik",
         "elbow"
       ],
-      "prompt": "Which solution can the arm use, with the shoulder limited to 0° to 90° and the elbow to 0° to 150°?",
+      "prompt": "The shoulder of an arm can turn only from 0° to 90° and its elbow only from 0° to 150°. A target can be reached elbow down, with θ1 = 19.6° and θ2 = +65.4°, or elbow up, with θ1 = 70.4° and θ2 = −65.4°. Which solution can the arm use?",
       "responseType": "short_text",
       "difficulty": 1.3,
       "hints": [
@@ -10579,12 +10733,12 @@
           "label": "Elbow up only"
         },
         {
-          "id": "c",
-          "label": "Both"
-        },
-        {
           "id": "d",
           "label": "Neither"
+        },
+        {
+          "id": "c",
+          "label": "Both"
         }
       ]
     },
@@ -10700,12 +10854,12 @@
           "label": "The target is reachable"
         },
         {
-          "id": "c",
-          "label": "One solution"
-        },
-        {
           "id": "d",
           "label": "Two solutions"
+        },
+        {
+          "id": "c",
+          "label": "One solution"
         }
       ]
     },
@@ -10788,47 +10942,71 @@
         "diff-drive",
         "complementary"
       ],
-      "prompt": "What is the forward speed of a robot whose wheels run at +0.3 and −0.3 m/s, in m/s?",
-      "responseType": "numeric",
+      "prompt": "The right wheel of a two-wheeled robot runs forwards at 0.3 m/s and the left wheel backwards at 0.3 m/s. What does the robot do?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "The speed is the mean of the two wheel speeds.",
-        "Opposite speeds cancel.",
-        "Write each quantity with its unit, then combine them in the order the question describes."
+        "Ask how fast the point midway between the wheels moves."
       ],
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 0,
-        "unit": "m/s",
-        "absoluteTolerance": 0.01,
-        "relativeTolerance": 0,
-        "workedAnswer": "(0.3 − 0.3) / 2 = 0."
+        "kind": "text",
+        "acceptedIdeas": [
+          "Turns on the spot without moving forwards"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Turns on the spot without moving forwards"
       },
       "sourceIds": [
         "modern-robotics",
         "wiki-mecha"
       ],
-      "onCorrect": "Opposite wheel speeds turn the robot on the spot.",
+      "onCorrect": "The forward speed is the average, which is 0, while the difference between the wheels turns the robot about its own centre.",
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              0.3
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That is one wheel's speed. Take the mean."
+          "feedback": "The left wheel pushes backwards as hard as the right wheel pushes forwards, so the centre of the axle has no forward speed."
         },
         {
           "match": {
-            "numeric": [
-              0.6
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "That adds the two speeds without halving, and uses their magnitudes."
+          "feedback": "A curve needs the centre of the axle to move forwards, and here the two wheel speeds cancel at the centre."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "The wheel speeds cancel at the centre of the axle, but their difference still swings the robot round."
         }
       ],
       "skill": "compute-diff-drive",
-      "calculator": "available"
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "c",
+          "label": "Drives in a wide curve to the left"
+        },
+        {
+          "id": "b",
+          "label": "Turns on the spot without moving forwards"
+        },
+        {
+          "id": "d",
+          "label": "Stays completely still"
+        },
+        {
+          "id": "a",
+          "label": "Drives forwards at 0.3 m/s"
+        }
+      ]
     },
     {
       "id": "mecr-mobile-robots-and-sensor-fusion-omega",
@@ -11222,20 +11400,20 @@
       "calculator": "off",
       "choices": [
         {
-          "id": "a",
-          "label": "It stays about the same"
-        },
-        {
           "id": "b",
           "label": "It cancels out over time"
+        },
+        {
+          "id": "d",
+          "label": "It grows only on straight lines"
         },
         {
           "id": "c",
           "label": "It grows, since the errors are summed and never removed"
         },
         {
-          "id": "d",
-          "label": "It grows only on straight lines"
+          "id": "a",
+          "label": "It stays about the same"
         }
       ]
     },
@@ -11389,47 +11567,71 @@
         "sense-plan-act",
         "mecr-budget"
       ],
-      "prompt": "What is the period of a 100 Hz loop, in milliseconds?",
-      "responseType": "numeric",
+      "prompt": "A motor control loop runs 100 times a second. Roughly how long does one pass of the loop have?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Period = 1 / rate.",
-        "Convert seconds to milliseconds.",
-        "Write each quantity with its unit, then combine them in the order the question describes."
+        "Split one second into 100 equal passes."
       ],
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 10,
-        "unit": "ms",
-        "absoluteTolerance": 0.05,
-        "relativeTolerance": 0,
-        "workedAnswer": "1 / 100 s = 0.01 s = 10 ms."
+        "kind": "text",
+        "acceptedIdeas": [
+          "About a hundredth of a second"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "About a hundredth of a second"
       },
       "sourceIds": [
         "modern-robotics",
         "mit-2-737"
       ],
-      "onCorrect": "Everything in the 100 Hz loop must finish in 10 ms.",
+      "onCorrect": "A hundredth of a second is 10 ms, and everything the loop does has to fit inside it.",
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              100
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That is the rate, not the period."
+          "feedback": "A tenth of a second per pass would give only 10 passes a second."
         },
         {
           "match": {
-            "numeric": [
-              0.01
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "That is the period in seconds, not milliseconds."
+          "feedback": "A millisecond per pass would give 1000 passes a second, ten times too many."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "100 is the number of passes in one second, so each pass is a small fraction of a second."
         }
       ],
       "skill": "design-loop",
-      "calculator": "available"
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "d",
+          "label": "About 100 seconds"
+        },
+        {
+          "id": "a",
+          "label": "About a tenth of a second"
+        },
+        {
+          "id": "b",
+          "label": "About a hundredth of a second"
+        },
+        {
+          "id": "c",
+          "label": "About a millisecond"
+        }
+      ]
     },
     {
       "id": "mecr-whole-robot-echo-wait",
@@ -11437,7 +11639,7 @@
         "sense-plan-act",
         "mecr-budget"
       ],
-      "prompt": "How long is the echo wait for an object 2 m away at 343 m/s, in milliseconds?",
+      "prompt": "An ultrasonic sensor looks at an object 2 m away, and sound travels at 343 m/s. How long does the loop wait for the echo, in milliseconds, to one decimal place?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -11629,7 +11831,7 @@
         "sense-plan-act",
         "mecr-budget"
       ],
-      "prompt": "How far does a robot at 0.5 m/s travel in 100 ms, in centimetres?",
+      "prompt": "A robot moves at 0.5 m/s and its watchdog timeout is 100 ms. How far can it travel after its program hangs and before the reset, in centimetres?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -11827,16 +12029,16 @@
           "label": "Speed up"
         },
         {
-          "id": "b",
-          "label": "Ignore it and carry on"
+          "id": "d",
+          "label": "Turn left"
         },
         {
           "id": "c",
           "label": "Stop"
         },
         {
-          "id": "d",
-          "label": "Turn left"
+          "id": "b",
+          "label": "Ignore it and carry on"
         }
       ]
     }

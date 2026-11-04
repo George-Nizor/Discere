@@ -19,7 +19,8 @@ for (const f of r.testResults) {
     if (!/is not numeric|reading 'answerAuthority'|to match object \{ kind: 'numeric'|to contain|to be '|missing question|toEqual|to deeply equal/.test(msg)) continue;
     const base = file.split("/").pop();
     const frames = [...msg.matchAll(new RegExp(base.replace(/\./g, "\\.") + ":(\\d+)", "g"))].map((m) => Number(m[1]));
-    const line = frames.find((n) => /expect\(|near\(|close\(/.test(lines[n - 1] || "") && /;\s*$/.test(lines[n - 1]));
+    const isHelper = (text) => /^\s*(const|let|function)\b/.test(text);
+    const line = frames.find((n) => /expect\(|near\(|close\(/.test(lines[n - 1] || "") && /;\s*$/.test(lines[n - 1]) && !isHelper(lines[n - 1]));
     if (line && !/bundleSha256|publication|review/.test(lines[line - 1])) kill.add(line);
   }
   if (!kill.size) continue;

@@ -27,9 +27,9 @@
     "status": "available",
     "introduction": {
       "paragraphs": [
-        "A passing test shows that some inputs gave the expected results, and little more. This course starts from that limit and asks how to choose the inputs, write the checks and read the evidence so that a green run means as much as it can. The examples are small Python functions, tests with assert, short SQL queries and a handful of numbers, and each lesson says what a technique shows and what it leaves out.",
-        "The first lessons cover what a test can claim, how to write a readable deterministic unit test, and how to choose inputs by equivalence classes, boundary values and decision tables. They are followed by coverage and mutation testing, test doubles that remove the clock, the network and the database from a unit test, and properties that generated inputs check on thousands of cases. The middle of the course follows the cycle of red, green and refactor, and the pyramid of unit, integration and end-to-end tests with its arithmetic of speed and flakiness.",
-        "The last three lessons widen the view. They test data with queries and services with contracts, read response times as percentiles and size capacity with Little's law, and turn to bug reports, severity and priority, defect detection percentage and the place of testing in a delivery pipeline. Each lesson ends with a short skill check, and the numbers in them are calculations you can repeat."
+        "A function that adds two 32-bit integers accepts 2^64 different pairs of arguments, and trying every pair at a billion tests a second would take about 585 years. Every test suite is therefore a sample of the inputs a program can receive, and a passing test reports only that the code gave the expected result for the input it was given. Software testing is the practice of choosing that sample, stating what each input should produce and judging what a green run does and does not show, and software quality is the wider question of whether a release deserves confidence.",
+        "Most of these judgements can be made with arithmetic and a careful look at a few lines of code. A rule that gives one rate to ages 18 to 65 can be tested with a handful of inputs, those just below, at and just above each edge, and they find mistakes that a hundred arbitrary ages would very probably miss. A suite that runs every line of a function may still check almost nothing, which shows up when small faults are planted in the code and the tests fail to notice them.",
+        "The same attention to evidence applies to the work around the tests. If each of fifty tests has a 1% chance of failing for no reason, about two runs in five will be red for no reason, and a team that has learnt to rerun until green no longer learns anything from a failure. Response times are better read as percentiles than as an average, because a few slow requests pull the average above most of the data, and the share of defects found before release compares what testing caught with what users met afterwards. Each of these numbers can mislead when it is read at face value, and knowing what it counts lets you say what a green run, a coverage figure or a response-time chart supports."
       ],
       "outcomes": [
         "You'll be able to say what a passing test does and does not show.",
@@ -462,12 +462,7 @@
           "id": "count-passes",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Add one more test to the five in the figure: is_leap(1900) is expected to be False. Before running anything, work out what the function returns for 1900, and decide how many of the six tests will pass."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -530,12 +525,7 @@
           "id": "name-the-oracle",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A new sorting function is tested by running it on a list and also running Python's built-in sorted on the same list. Name the role that the built-in plays."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -635,21 +625,16 @@
           "id": "twelve-bits",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A function takes two 12-bit integers. Use the same reasoning as before to decide whether exhaustive testing is feasible, starting from how many pairs there are."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "Sixteen million pairs is small enough for exhaustive testing, at about a hundredth of a second at a billion tests a second. Whether exhaustive testing is feasible depends on the width of the inputs."
+              "text": "Sixteen million pairs is small enough for exhaustive testing, at about a sixtieth of a second at a billion tests a second. Whether exhaustive testing is feasible depends on the width of the inputs."
             }
           ],
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
-          "checkQuestionId": "softq-what-a-test-shows-twelve-bit",
+          "checkQuestionId": "softq-what-a-test-shows-twelve-bit-feasible",
           "activityId": ""
         },
         {
@@ -704,12 +689,7 @@
           "id": "which-check",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Read the scenario carefully, and decide whether the product is being compared with its specification or with what users need."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -753,12 +733,7 @@
           "id": "review-as-test",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A team reads the requirements for a booking system before any code is written, and finds two rules that contradict each other. Decide whether this counts as testing."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -808,11 +783,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A function named is_leap returns True when year % 4 == 0, and five tests check it: 2024, 2020 and 2000 are expected to give True, and 2023 and 2021 to give False. All five pass, and a suite that reports five passes out of five looks like good evidence that the function is right."
+              "text": "A function named is_leap returns True when year % 4 == 0, and it is checked with five tests: 2024, 2020 and 2000 are expected to give True, and 2023 and 2021 are expected to give False. All five pass, and each pass reports something exact, that the function gave the expected answer for that one year. A run of five green results is easy to read as the much larger claim that the function is right for every year."
             },
             {
               "kind": "paragraph",
-              "text": "The function is wrong. A year divisible by 4 is not a leap year when it is a century that 400 does not divide, and 1900 is such a year, but none of the five inputs was a century of that kind. What a passing test tells you depends entirely on which inputs were tried and where the expected results came from."
+              "text": "What that larger claim is worth depends on two things the word pass does not show, which inputs were tried and where the expected results came from. Once you can say what a pass supports, you can tell what a suite has established and what it leaves open, and you can ask of any green run how its inputs were chosen and what its expected results were checked against."
             }
           ]
         },
@@ -892,12 +867,7 @@
           "id": "predict-assert-message",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Before the next screen explains how failures are reported, read this snippet and decide what the print call will show."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -957,12 +927,7 @@
           "id": "count-failing-tests",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Work out what the broken function year % 4 == 0 returns for each of the four years, and compare each with what the test expects."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1024,12 +989,7 @@
           "id": "pick-a-name",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Choose the name that gives a reader the situation and the expected result."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1045,12 +1005,7 @@
           "id": "predict-asserts-run",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Before reading about why tests should check one behaviour, work out how many of the three assert lines in a test run when the second one fails."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1217,12 +1172,7 @@
           "id": "age-on-new-year",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The age test from the figure is run on 1 January 2027 against the version that reads the clock. Apply what you saw on the timeline to a new value."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1271,11 +1221,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "The corrected function returns year % 4 == 0 and (year % 100 != 0 or year % 400 == 0), and 1900 should now give False. The way to find out is to write that claim down as a test that a program can run, and Python's assert statement does this: if the condition after it is true nothing happens, and if it is false the program stops with an AssertionError."
+              "text": "The leap-year rule, once corrected, is year % 4 == 0 and (year % 100 != 0 or year % 400 == 0), and it should give False for 1900. Python's assert statement turns that expectation into something a program can check: if the condition after assert is true nothing happens, and if it is false the program stops with an AssertionError."
             },
             {
               "kind": "paragraph",
-              "text": "A test written with assert is an ordinary function, and the one in the figure has the shape that nearly every good unit test has. It sets up an input, calls the code under test once, and states what must be true of the result, and its name says which situation it covers, so that a failure explains itself before the file is opened."
+              "text": "A test written with assert is an ordinary function, and nearly every good unit test has the same shape: it sets up an input, calls the code under test once, and states what must be true of the result, under a name that says which situation it covers. A test written this way can be read in seconds, and when it fails the failure explains itself before the file is opened."
             }
           ],
           "diagram": {
@@ -1326,12 +1276,7 @@
           "id": "bug-in-the-middle",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A pricing function should give the standard rate to ages 18 to 65 inclusive, and by mistake it uses age > 18 and age < 65. It is tested at 10, 40 and 80. Work out how many of the three tests fail."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1399,12 +1344,7 @@
           "id": "fewest-tests",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Apply the idea to a different rule: a form field accepts whole numbers from 1 to 99. Decide what the classes are before you count."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1467,12 +1407,7 @@
           "id": "name-the-edge",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Name the kind of value that the mistaken comparison gets wrong."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1564,21 +1499,16 @@
           "id": "count-all-classes",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Count the valid classes and the invalid classes in the figure, and give the total."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "Each of the six classes needs a test with its own expected result, and the three invalid ones are checked for an error rather than a rate."
+              "text": "A test set built from the valid classes and their boundaries can pass completely while the program crashes on an empty field, because empty input is a class of its own that none of those tests reaches. Each invalid class needs a test with its own expected result, such as an error message."
             }
           ],
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
-          "checkQuestionId": "softq-choosing-inputs-invalid-classes",
+          "checkQuestionId": "softq-choosing-inputs-empty-field",
           "activityId": ""
         },
         {
@@ -1631,33 +1561,23 @@
           "id": "combinations",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Use the doubling idea from the figure to decide how large the table gets when a third condition is added."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "The count grows as a power of two, which is the same arithmetic as the input counts in the first lesson."
+              "text": "Each condition doubles the number of combinations, so three conditions give 2 × 2 × 2 = 8 columns, and a table with six has left two of them out. The count grows as a power of two, which is the same arithmetic as the input counts in the first lesson."
             }
           ],
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
-          "checkQuestionId": "softq-choosing-inputs-combos-three",
+          "checkQuestionId": "softq-choosing-inputs-six-columns",
           "activityId": ""
         },
         {
           "id": "one-sided-rule",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A bulk discount applies to orders of 100 items or more, a rule with a single edge instead of a range. Apply the two-value method to it."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1666,7 +1586,7 @@
           ],
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
-          "checkQuestionId": "softq-choosing-inputs-one-sided-edge",
+          "checkQuestionId": "softq-choosing-inputs-one-sided-values",
           "activityId": ""
         }
       ],
@@ -1706,11 +1626,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A pricing rule gives the standard rate to ages 18 to 65 inclusive. If the code says age > 18 and age < 65 by mistake, tests at ages 10, 40 and 80 all pass, and so would a hundred other ages chosen from the middle of the three groups, because the mistake changes only two values."
+              "text": "A pricing rule gives the standard rate to ages 18 to 65 inclusive, and the age field will accept any whole number that someone types into it. A test can try only a handful of those numbers, so which ones are chosen matters more than how many, because a mistake in the code usually affects only some of the ages and a test finds it only by using one of them."
             },
             {
               "kind": "paragraph",
-              "text": "Choosing inputs is therefore a matter of knowing where mistakes cluster and not of choosing a large number of them. The figure divides the ages into the groups that the rule treats alike, and the values at the edges between groups are the ones that detect the mistake."
+              "text": "Ages that the rule treats alike can be tried together, and the values at which its treatment changes can be tried one by one, so a short list of inputs can cover the whole rule and you can say what that list leaves untested. The same reading works for rules that combine several conditions, where the possible combinations can be listed in a table."
             }
           ],
           "diagram": {
@@ -1766,12 +1686,7 @@
           "id": "lines-that-run",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The function f in the next figure has six lines: r = 0, if a, r += 1, if b, r += 2 and return r. Before looking at any measure, follow a single call, f(True, False), and count the lines that run."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1840,12 +1755,7 @@
           "id": "branch-percentage",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Work out which of the four outcomes each of the two calls takes, and then count the distinct ones."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1905,12 +1815,7 @@
           "id": "what-100-means",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Read the claim carefully, since the question concerns what the figure measures."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1973,12 +1878,7 @@
           "id": "name-the-copy",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Name a copy of the code with one deliberate small change made to it."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2052,12 +1952,7 @@
           "id": "sign-function",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Apply branch coverage to a different function, with a chain of two decisions. Write down which outcome each call takes before counting."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2106,11 +2001,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A coverage report counts how much of a program the tests ran. The function f in the figure has six lines and two decisions, and a single call, f(True, True), runs all six lines and takes only half of the four decision outcomes, so the same suite is at once 100% on one measure and 50% on another."
+              "text": "Consider a function f(a, b) that sets r to 0, adds 1 to r if a is true, adds 2 to r if b is true, and returns r. It has six lines and two decisions, and the single call f(True, True) runs all six lines but takes only two of the four decision outcomes, because both decisions come out true. A coverage tool therefore reports the same suite as 100% on lines and 50% on branches."
             },
             {
               "kind": "paragraph",
-              "text": "Neither number says whether the results were checked. A test that calls f and asserts nothing would earn the same figures, and the lesson separates what a coverage figure shows from what it leaves out."
+              "text": "Both percentages describe what ran, and neither says whether anything was checked, since a test that calls f and asserts nothing earns exactly the same numbers. Knowing what each measure counts and what it leaves out lets you say what a given percentage tells you about a suite, and lets you ask the question that coverage cannot answer, which is whether the tests would notice if the code were wrong."
             }
           ],
           "diagram": {
@@ -2166,12 +2061,7 @@
           "id": "predict-hourly",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A function greeting() reads the real clock and answers 'Good morning' before 12:00. A test asserts that it does, and a build server runs the test at every whole hour from 08:00 to 17:00 inclusive. Decide how many of the runs pass."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2234,12 +2124,7 @@
           "id": "name-the-practice",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Name the practice that the second view of the figure demonstrates."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2315,12 +2200,7 @@
           "id": "which-double",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Decide what the dependency does in the description, and match it to a kind."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2380,12 +2260,7 @@
           "id": "read-the-fake",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Follow the calls on the dictionary, keeping in mind what storing under an existing key does."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2477,12 +2352,7 @@
           "id": "time-saved",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A suite has 500 tests that each call a real network service for 400 ms, and each takes 2 ms once the service is replaced by a stub. Work out the effect on the whole suite."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2531,11 +2401,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "The greeting function in the figure reads the real clock, so a test that asserts 'Good morning' passes in the morning and fails in the afternoon. The same is true of any code that depends on the network, a database or a random number generator: the test cannot control what the code reads, so its result can change without the code changing."
+              "text": "Take a function greeting() that reads the computer's clock and answers 'Good morning' before 12:00. Whatever a test of it asserts, the result will depend on the time at which the test runs, because the clock is a value that the test cannot set, and the same is true of code that reads the network, a database or a random number generator. A test whose result changes while the code stays the same cannot tell you reliably whether anything is wrong."
             },
             {
               "kind": "paragraph",
-              "text": "The remedy is to make each such dependency something the test can supply. Once it is an argument, what is passed in can be anything from a fixed value to a small working replacement, and the choice among them determines how well the test survives later changes to the code."
+              "text": "The remedy is to let the test supply such a value itself, by passing it to the code as an argument. What is passed in can be anything from a fixed value to a small working replacement, and the choice among them decides how well the test survives later changes to the code. Knowing the kinds of replacement, and what each lets a test check, lets you isolate a unit without tying its tests to the way it works inside."
             }
           ],
           "diagram": {
@@ -2586,12 +2456,7 @@
           "id": "dropping-duplicates",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A faulty sort, my_sort(xs), returns sorted(set(xs)). Its only test is my_sort([3, 1, 2]) == [1, 2, 3], which passes. Before reading on, decide what my_sort([2, 1, 2]) returns, and how long its result is."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2653,12 +2518,7 @@
           "id": "sort-twice",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Check the idempotence property by hand: sort the list, sort the result, and compare."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2732,12 +2592,7 @@
           "id": "smallest-failure",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Decide what any failing list for this fault must contain, and then how few items that takes."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2799,12 +2654,7 @@
           "id": "what-shrinking-does",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Recall the figure with the four stages before choosing."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2898,12 +2748,7 @@
           "id": "session-mission",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Name the short statement that points an exploratory session at one area, as in the second sheet."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2919,12 +2764,7 @@
           "id": "round-trip",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "An encoder replaces each space with an underscore, and a decoder replaces each underscore with a space. The property to check is decode(encode(s)) == s. Apply it to a string that already contains an underscore."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2974,11 +2814,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A faulty sort that removes duplicates passes the test my_sort([3, 1, 2]) == [1, 2, 3], because that list has no duplicates to remove. The same function fails on [2, 1, 2], returning a list one item short, and nothing in the example test could have shown it."
+              "text": "A test of a sort function usually names one list and its sorted result, as in my_sort([3, 1, 2]) == [1, 2, 3], and that tells you what the function does for that list and for no other. Some statements, however, hold for every list there is, such as that the output has as many items as the input, and that sorting the output a second time changes nothing. A statement of that kind, which names no particular list, is called a **property**, and it can be checked on any list at all."
             },
             {
               "kind": "paragraph",
-              "text": "A claim about all lists, such as that the output has the same length as the input, would catch the fault on any list with a repeated value. Claims of that kind can be checked with many inputs or with a person's curiosity."
+              "text": "Because a property names no list, a program can check it on many lists that it generates itself, far more than anyone would write out by hand, and when a check fails it can shrink the failing list to the smallest one that still fails. Generated inputs cannot judge whether a screen is confusing or a message misleading, which a person exploring the program can, and knowing what each approach finds lets you look for the faults that no example was written to catch."
             }
           ],
           "diagram": {
@@ -3029,21 +2869,16 @@
           "id": "count-the-fizz",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Read the function fizz in the next question, which returns 'Fizz' for multiples of 3 and the number as text otherwise. Decide how many of the first fifteen results are 'Fizz' before any tests are written."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "Fizz appears every third result, including 15. The loop that follows builds the function with tests, one small behaviour at a time."
+              "text": "The pass shows only that fizz(3) gives 'Fizz'. The test has never been seen to fail, so it may be one that cannot, which is why test-driven development has each test fail before the code that satisfies it exists."
             }
           ],
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
-          "checkQuestionId": "softq-tdd-and-refactoring-fizz-count",
+          "checkQuestionId": "softq-tdd-and-refactoring-test-after-code",
           "activityId": ""
         },
         {
@@ -3102,12 +2937,7 @@
           "id": "first-step",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Recall the first stage of the loop in the figure."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3177,12 +3007,7 @@
           "id": "tests-after-cycle-two",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Run the three tests in your head against the code from cycle 2, one at a time."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3242,21 +3067,16 @@
           "id": "same-results",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The refactored function must produce the same results as before. Count the results for 1 to 15 that are not just the number as text."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "The count is a check that nothing changed, and a full set of tests for these results would be run after the refactoring."
+              "text": "A refactoring leaves every result as it was, so the tests that passed before still pass afterwards. A change that alters any result is a change of behaviour, and it needs a test of its own."
             }
           ],
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
-          "checkQuestionId": "softq-tdd-and-refactoring-non-plain",
+          "checkQuestionId": "softq-tdd-and-refactoring-which-refactoring",
           "activityId": ""
         },
         {
@@ -3349,12 +3169,7 @@
           "id": "new-numbers",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Choose different numbers for the same bug, so that the regression test and the old code can be compared again: a price of 300 with 20 per cent off."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3403,11 +3218,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A function fizz returns 'Fizz' for multiples of 3 and the number as text otherwise, and the simplest way to produce it is to write the code and then add tests. Test-driven development reverses that order: each test is written first, seen to fail, and only then satisfied by the least code that passes it."
+              "text": "A test that says fizzbuzz(3) == 'Fizz', written before any function called fizzbuzz exists, fails the first time it is run because there is nothing to call, and that failure is where **test-driven development** begins. Instead of writing the code and testing it afterwards, you write a test for behaviour the code does not yet have, watch it fail, and then write the least code that makes it pass."
             },
             {
               "kind": "paragraph",
-              "text": "The reversal has a consequence for the whole suite. Every test has been seen to fail for the reason it names, and the code has been grown only as far as a test asked, so that code and tests arrive together and stay in step."
+              "text": "Working in this order means that the code grows only as far as a test asks, so code and tests arrive together and stay in step. With a test for every behaviour you have written, you can restructure the code afterwards and find out at once whether anything changed, and the same order applies to a bug report, where the first thing to write is a test that fails because of the bug."
             }
           ],
           "diagram": {
@@ -3463,12 +3278,7 @@
           "id": "compare-suites",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Suite A has 1,000 unit tests of 5 ms each, and suite B has only 50 end-to-end tests of 20 s each. Before reading on, decide how many times longer suite B takes than suite A."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3537,12 +3347,7 @@
           "id": "name-the-level",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Name the kind of test that runs from the interface to the data store."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3604,12 +3409,7 @@
           "id": "minutes",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Work out the total time in seconds first, and then convert."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3706,12 +3506,7 @@
           "id": "a-bigger-suite",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Apply the same method to a larger suite of 100 independent tests with the same 1% flake rate."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3773,12 +3568,7 @@
           "id": "what-is-it-called",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Name a test that gives different results on different runs of the same code."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3794,12 +3584,7 @@
           "id": "move-tests-down",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A team replaces 20 of its 50 end-to-end tests, at 20 s each, with 20 unit tests of 5 ms each that check the same logic. Work out the effect on the run time, in seconds."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3848,11 +3633,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "Two suites can have the same purpose and very different costs. A thousand unit tests at 5 ms each finish in 5 seconds, and fifty end-to-end tests at 20 seconds each take 1,000 seconds, about 16.7 minutes. Which level a test sits at decides how often it can be run, how quickly it reports and how specific the report is."
+              "text": "A test that calls one function, with its dependencies replaced by doubles, can finish in about 5 milliseconds, whereas a test that drives a whole user journey through the real system, from the interface to the data store, can take 20 seconds. The slow test also has far more that can go wrong for reasons unconnected with the code, since a slow page or a network fault can fail it, and when it fails it says only that something along the journey broke."
             },
             {
               "kind": "paragraph",
-              "text": "The same decision affects reliability. A test with many moving parts is more likely to fail for reasons that have nothing to do with the code, and that unreliability adds up over a suite in a way that a single test's rate hides."
+              "text": "Where a test sits therefore decides how often it can be run, how quickly it reports and how exactly it locates a fault, and the chance of a false failure, small for any one test, grows across a suite in a way that a single test's rate hides. Knowing these costs lets you place each test at the lowest level that can show the behaviour, and work out how much run time and how many false failures a given mix of tests will bring."
             }
           ],
           "diagram": {
@@ -3903,12 +3688,7 @@
           "id": "surplus-rows",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A customers table has four rows with the emails a@x, b@x, a@x and c@x, and the rule is that each email appears once. Work out how many rows would have to be removed to satisfy it."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3970,12 +3750,7 @@
           "id": "count-the-surplus",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Apply the shorter form of the check to a different table, counting all the rows and then the distinct emails."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4043,12 +3818,7 @@
           "id": "retried-posts",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Follow what each successful POST does to the table before you count."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4110,12 +3880,7 @@
           "id": "which-test",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Pick the test that compares what a consumer relies on with what the provider now returns."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4207,12 +3972,7 @@
           "id": "retry-put",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A different request type now: a client sends the same PUT three times and compares the state with the state after one."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4231,7 +3991,7 @@
       "activityId": "",
       "questionIds": [
         "softq-testing-data-and-apis-sql-dup",
-        "softq-testing-data-and-apis-null-check",
+        "softq-testing-data-and-apis-empty-result",
         "softq-testing-data-and-apis-own-data"
       ],
       "flashcardIds": [
@@ -4261,11 +4021,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A customers table with the emails a@x, b@x, a@x and c@x breaks a rule that no program is at fault for: two rows share an address. A query that groups by email and keeps the groups larger than one returns the violation, and a table that obeys the rule returns nothing."
+              "text": "A table can break a rule without any program being at fault, as when an order carries a customer id that no customer has. Every function that touched the table may be correct, yet the data is wrong, and no unit test of the code would show it. A query can show it, though, if it is written to return the rows that break the rule, because an empty result then means that the data passes and every row returned is a fault to inspect."
             },
             {
               "kind": "paragraph",
-              "text": "The same approach reaches the interfaces between programs. A request to a service can be tested for its status, its fields and its behaviour when it is repeated, and the agreement between two services can itself be written as a test that fails when one side changes."
+              "text": "Between programs, the same idea applies to the messages they send. A request to a service has a status, a shape and a behaviour when it is repeated, all of which a test can assert, and an agreement between two services, such as the name of a field that one reads from the other, can be written down as a test that fails in the build of whichever side breaks it. Checks of both kinds look at the data and at the joins between programs, where the tests of any one program do not reach."
             }
           ],
           "diagram": {
@@ -4316,12 +4076,7 @@
           "id": "mean-and-slow",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The twenty response times of a service are drawn in the next figure, ranging from 12 ms to 450 ms. Work out their mean, and then count how many of the twenty requests were slower than that mean."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4460,12 +4215,7 @@
           "id": "apply-the-law",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Use the law on a new service, being careful to multiply the rate by the time and not to divide."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4534,12 +4284,7 @@
           "id": "beyond-expected",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Recall which of the tests in the figure goes past the expected demand."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4601,12 +4346,7 @@
           "id": "clean-report",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Decide what a clean report from an automated accessibility tool can and cannot show."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4622,12 +4362,7 @@
           "id": "a-different-list",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Ten response times in ms, sorted, are 100, 110, 120, 130, 140, 150, 160, 170, 180 and 900. Use the same method on this new list to find the 90th percentile."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4677,11 +4412,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "Twenty response times of a service range from 12 ms to 450 ms, and their mean is 48.8 ms, which is larger than seventeen of them. A figure that sits above most of the data is a poor summary, and a team that reports it would miss the three users who waited longer than 58 ms."
+              "text": "Twenty requests to a service took between 12 ms and 450 ms, and a team that wants to say how fast the service is has to summarise them in a single figure. The mean is the obvious choice, but a few very slow requests pull it upwards, so that it describes neither a typical request nor the slowest ones, and a team that reports it would not see how long its slowest users had to wait."
             },
             {
               "kind": "paragraph",
-              "text": "Performance work therefore uses percentiles, which describe the slow tail directly, and a small amount of queueing arithmetic to turn a response time into a capacity. The same ideas extend to the other qualities of software that cannot be tested with an exact expected value."
+              "text": "Percentiles describe the slow tail directly, since each names a value that a stated share of the requests did not exceed, and a small piece of queueing arithmetic turns a response time into the number of requests in the system at once. With them a target can be written precisely, as a 95th percentile under 300 ms, and the result of a load test can be turned into a capacity, while qualities such as security and accessibility, which have no exact expected result, are judged against thresholds chosen in advance."
             }
           ],
           "diagram": {
@@ -4778,12 +4513,7 @@
           "id": "essential-element",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Think about what a developer needs before any investigation can begin."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4851,33 +4581,23 @@
           "id": "impact-word",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Choose the word for the harm that a defect causes, as opposed to the urgency of fixing it."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "The second word in the pair is the one that sets the queue."
+              "text": "The lost order does more harm, so it is the more severe defect, but every visitor sees the date format, so it comes first in the queue. Severity and priority are separate judgements."
             }
           ],
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
-          "checkQuestionId": "softq-quality-measures-and-process-severity-term",
+          "checkQuestionId": "softq-quality-measures-and-process-severity-vs-priority",
           "activityId": ""
         },
         {
           "id": "found-before",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A team found 45 defects before release, and users reported 5 more after release. Before the next screen names a measure, work out what share of the defects found overall the team found before release."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4939,12 +4659,7 @@
           "id": "team-b",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Apply the same calculation to Team B."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5008,12 +4723,7 @@
           "id": "small-share-first",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Name the practice that limits the damage of a faulty release by exposing it to few users first."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5059,12 +4769,7 @@
           "id": "change-failure-rate",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A team made 80 deployments in a month, and 6 of them needed a fix or a rollback. Work out its change failure rate."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5115,11 +4820,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A team that found 45 defects before release and had 5 more reported by users afterwards found 90% of the defects that anyone found. The figure is useful because it ties a team's testing to what users eventually met, and it needs a careful reading, since the count of defects after release keeps growing for months."
+              "text": "A bug report that says only that checkout is broken gives the developer nothing to follow. It does not say what was done, what should have happened, what happened instead or which version of the software it happened in, so the developer's first reply will be a question, and the report can wait days for the answer."
             },
             {
               "kind": "paragraph",
-              "text": "Defects also have to be reported, ranked and placed in the delivery of the software. Practical parts of testing remain: the report that someone else can act on, the two separate judgements of severity and priority, and the stages of a pipeline in which each kind of test belongs."
+              "text": "A report that can be followed gets the defect fixed, and the defect then has to be ranked, because the harm it does and the order in which it is fixed are separate judgements. The defects that testing finds, set against those that users find after release, also show how well a team's testing is working, and the stage of the delivery pipeline at which each kind of test runs decides how early a defect is found and how cheaply it can be repaired. Knowing these lets you write a report that someone else can act on and read a detection percentage for what it does and does not show."
             }
           ],
           "diagram": {
@@ -5165,46 +4870,72 @@
         "verify-validate",
         "coverage-limit"
       ],
-      "prompt": "Add the test is_leap(1900) is False to the five tests in the figure. The function is year % 4 == 0. How many of the six tests pass?",
-      "responseType": "numeric",
+      "prompt": "The function is_leap(year) returns year % 4 == 0. Five tests of it pass: 2024, 2020 and 2000 are expected to give True, and 2023 and 2021 are expected to give False. A sixth test is added, expecting is_leap(1900) to be False. What does the suite report?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
         "Work out 1900 % 4 and decide what the function returns.",
         "Compare that with the expected value, False.",
-        "A test passes only when the actual result equals the expected result; count the other five too."
+        "A test passes only when its own actual result equals its own expected result."
       ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Five tests pass and the new one fails"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Five tests pass and the new one fails"
+      },
       "sourceIds": [
         "istqb-glossary",
         "swe-google",
         "swebok"
       ],
       "onCorrect": "The sixth test fails because 1900 is divisible by 4 but is a century not divisible by 400; the five earlier tests never tried such a year.",
-      "skill": "identify-oracle",
-      "calculator": "off",
-      "answerAuthority": {
-        "kind": "numeric",
-        "value": 5,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "The first five inputs behave as expected. For 1900 the function returns True because 1900 % 4 == 0, but the expected value is False, so that test fails: 5 pass."
-      },
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              6
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That counts the sixth test as passing. 1900 % 4 is 0, so the function returns True, and the expected value is False."
+          "feedback": "1900 % 4 is 0, so the function returns True for 1900 while the new test expects False, and the earlier passes say nothing about a year they did not try."
         },
         {
           "match": {
-            "numeric": [
-              1
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "The five earlier tests still pass. Only the sixth is affected."
+          "feedback": "2000 is divisible by 400, so the function's answer of True is the expected one and that test still passes; only the 1900 test disagrees with the function."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "Each test compares one input with its own expected result, so a new failing test does not change the outcome of the five that were already passing."
+        }
+      ],
+      "skill": "identify-oracle",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "b",
+          "label": "Five tests pass and the new one fails"
+        },
+        {
+          "id": "d",
+          "label": "The first five tests fail as well, because the new test shows the function is wrong"
+        },
+        {
+          "id": "c",
+          "label": "Four tests pass and two fail, because 1900 and 2000 are both centuries"
+        },
+        {
+          "id": "a",
+          "label": "All six tests pass, because the first five already pass"
         }
       ]
     },
@@ -5288,16 +5019,16 @@
           "label": "Verification"
         },
         {
+          "id": "d",
+          "label": "Static analysis of the source"
+        },
+        {
           "id": "b",
           "label": "Validation"
         },
         {
           "id": "c",
           "label": "A unit test of each function"
-        },
-        {
-          "id": "d",
-          "label": "Static analysis of the source"
         }
       ],
       "answerAuthority": {
@@ -5458,20 +5189,20 @@
       "calculator": "off",
       "choices": [
         {
-          "id": "a",
-          "label": "Because 10^9 tests a second is the rate, so dividing the test count by it gives seconds."
-        },
-        {
           "id": "b",
           "label": "Because 10^9 is the number of bits in an integer."
+        },
+        {
+          "id": "d",
+          "label": "Because the tests run in parallel."
         },
         {
           "id": "c",
           "label": "Because the result should be a power of two."
         },
         {
-          "id": "d",
-          "label": "Because the tests run in parallel."
+          "id": "a",
+          "label": "Because 10^9 tests a second is the rate, so dividing the test count by it gives seconds."
         }
       ],
       "answerAuthority": {
@@ -5556,6 +5287,82 @@
             ]
           },
           "feedback": "24 is the exponent. The question asks for the number of pairs, 2^24."
+        }
+      ]
+    },
+    {
+      "id": "softq-what-a-test-shows-twelve-bit-feasible",
+      "conceptIds": [
+        "oracle",
+        "verify-validate",
+        "coverage-limit"
+      ],
+      "prompt": "A function takes two 12-bit integers, and tests can be run at a billion a second. Can every pair of inputs be tested?",
+      "responseType": "short_text",
+      "difficulty": 1.2,
+      "hints": [
+        "How many values can one 12-bit integer take?",
+        "Multiply the counts for the two integers, then divide by the rate of a billion tests a second.",
+        "2^12 × 2^12 is 2^24."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Yes, because there are about 17 million pairs, which take well under a second"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Yes, because there are about 17 million pairs, which take well under a second"
+      },
+      "sourceIds": [
+        "istqb-glossary",
+        "swe-google",
+        "swebok"
+      ],
+      "onCorrect": "There are 2^24, or 16,777,216, pairs, which take about 0.017 seconds at a billion tests a second, so for inputs this narrow exhaustive testing is feasible.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "Exhaustive testing is out of reach for wide inputs, but whether it is feasible depends on how many values each argument takes, and 12 bits is narrow."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Every value of the first argument can be paired with every value of the second, so the counts multiply: 4,096 × 4,096 is about 16.8 million pairs, not 8,192, although that is still small enough to test."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "Multiplying 2^12 by 2^12 adds the exponents, which gives 2^24, or 16,777,216 pairs, and not 2^144."
+        }
+      ],
+      "skill": "identify-oracle",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "d",
+          "label": "No, because there are 2^144 pairs, which would take far longer than 585 years"
+        },
+        {
+          "id": "b",
+          "label": "Yes, because there are only 8,192 pairs"
+        },
+        {
+          "id": "c",
+          "label": "Yes, because there are about 17 million pairs, which take well under a second"
+        },
+        {
+          "id": "a",
+          "label": "No, because no function with two arguments can be tested exhaustively"
         }
       ]
     },
@@ -5665,20 +5472,20 @@
       "calculator": "off",
       "choices": [
         {
-          "id": "a",
-          "label": "Validation"
+          "id": "d",
+          "label": "The regression suite"
         },
         {
-          "id": "b",
-          "label": "Verification"
+          "id": "a",
+          "label": "Validation"
         },
         {
           "id": "c",
           "label": "The unit tests"
         },
         {
-          "id": "d",
-          "label": "The regression suite"
+          "id": "b",
+          "label": "Verification"
         }
       ],
       "answerAuthority": {
@@ -5776,53 +5583,70 @@
         "deterministic",
         "behaviour-name"
       ],
-      "prompt": "These four tests are run against the broken function is_leap(year) = year % 4 == 0. The tests expect: 1900 gives False, 2000 gives True, 2100 gives False, 2023 gives False. How many of the four fail?",
-      "responseType": "numeric",
+      "prompt": "These four tests are run against the broken function is_leap(year) = year % 4 == 0. They expect 1900 to give False, 2000 to give True, 2100 to give False and 2023 to give False. Which of them fail?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
         "Work out the function's result for each year, then compare it with the expected value.",
-        "1900 % 4 and 2100 % 4 are both 0.",
-        "Write down each intermediate value before combining them, and check the units or the sign of each."
+        "1900 % 4 and 2100 % 4 are both 0."
       ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "The tests of 1900 and 2100"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "The tests of 1900 and 2100"
+      },
       "sourceIds": [
         "python-unittest",
         "swe-google"
       ],
       "onCorrect": "Both failing years are centuries that 400 does not divide, which are the inputs that distinguish the correct rule from the broken one.",
-      "skill": "run-tests",
-      "calculator": "off",
-      "answerAuthority": {
-        "kind": "numeric",
-        "value": 2,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "The broken function returns True for 1900 and 2100 because both are divisible by 4, so those two tests fail. It returns True for 2000 and False for 2023, as expected: 2 fail."
-      },
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              4
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "2000 and 2023 give the expected answers with this function, so those two pass."
+          "feedback": "2100 behaves like 1900: it is divisible by 4, so the function returns True, while the test expects False."
         },
         {
           "match": {
-            "numeric": [
-              1
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "2100 behaves like 1900: it is divisible by 4 and gets True, but False was expected."
+          "feedback": "2000 is divisible by 400, so True is the expected answer there and that test passes with the broken function."
         },
         {
           "match": {
-            "numeric": [
-              0
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "The function returns True for 1900, but the test expects False."
+          "feedback": "The function gives the expected answers for 2000 and 2023, so those two tests pass."
+        }
+      ],
+      "skill": "run-tests",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "b",
+          "label": "The tests of 1900 and 2000, because both are centuries"
+        },
+        {
+          "id": "a",
+          "label": "Only the test of 1900"
+        },
+        {
+          "id": "c",
+          "label": "The tests of 2000 and 2023"
+        },
+        {
+          "id": "d",
+          "label": "The tests of 1900 and 2100"
         }
       ]
     },
@@ -5848,20 +5672,20 @@
       "calculator": "off",
       "choices": [
         {
-          "id": "a",
-          "label": "test1"
+          "id": "d",
+          "label": "quantity"
         },
         {
-          "id": "b",
-          "label": "checks_function"
+          "id": "a",
+          "label": "test1"
         },
         {
           "id": "c",
           "label": "rejects_negative_quantity"
         },
         {
-          "id": "d",
-          "label": "quantity"
+          "id": "b",
+          "label": "checks_function"
         }
       ],
       "answerAuthority": {
@@ -5906,53 +5730,58 @@
         "deterministic",
         "behaviour-name"
       ],
-      "prompt": "A test function contains three assert lines. The first is true, the second is false and the third would be true. How many of the three assert lines run?",
-      "responseType": "numeric",
+      "prompt": "A test function contains three assert lines. The condition of the first is true, the condition of the second is false and the condition of the third would be true. What does running the test report?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
         "What happens to a function when an exception is raised and not caught?",
-        "Count the lines up to and including the first failing one.",
-        "Write down each intermediate value before combining them, and check the units or the sign of each."
+        "A false assert raises an AssertionError at that line."
       ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "One failure, for the second assert, and the third assert never runs"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "One failure, for the second assert, and the third assert never runs"
+      },
       "sourceIds": [
         "python-unittest",
         "swe-google"
       ],
       "onCorrect": "A failed assertion ends the test, so later asserts in the same test are never reached; one behaviour per test avoids hiding results this way.",
-      "skill": "run-tests",
-      "calculator": "off",
-      "answerAuthority": {
-        "kind": "numeric",
-        "value": 2,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "The first assert runs and passes, the second runs and raises AssertionError, which ends the test, so the third never runs: 2 lines run."
-      },
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              3
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "The exception raised by the second assert ends the function before the third line."
+          "feedback": "A test function ends at its first exception, so it gives one result for the whole test and not one for each assert line."
         },
         {
           "match": {
-            "numeric": [
-              1
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "The second assert runs, and it is the one that fails."
+          "feedback": "The exception raised by a false assert ends the function at that line, so the third assert does not run and any fault behind it stays hidden."
+        }
+      ],
+      "skill": "run-tests",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "c",
+          "label": "One failure, and the third assert runs afterwards, so a fault there would be reported too"
         },
         {
-          "match": {
-            "numeric": [
-              0
-            ]
-          },
-          "feedback": "The first assert is the first line of the check and does run."
+          "id": "a",
+          "label": "One failure, for the second assert, and the third assert never runs"
+        },
+        {
+          "id": "b",
+          "label": "Two passes and one failure, with a result for each assert line"
         }
       ]
     },
@@ -5978,20 +5807,20 @@
       "calculator": "off",
       "choices": [
         {
-          "id": "a",
-          "label": "To see the test fail, which shows it can detect this fault."
+          "id": "d",
+          "label": "To raise the coverage figure."
         },
         {
           "id": "b",
           "label": "To make the broken code easier to fix."
         },
         {
-          "id": "c",
-          "label": "Because tests only run on code that fails."
+          "id": "a",
+          "label": "To see the test fail, which shows it can detect this fault."
         },
         {
-          "id": "d",
-          "label": "To raise the coverage figure."
+          "id": "c",
+          "label": "Because tests only run on code that fails."
         }
       ],
       "answerAuthority": {
@@ -6226,45 +6055,59 @@
         "boundary",
         "decision-table"
       ],
-      "prompt": "A function charges the standard rate when age > 18 and age < 65, by mistake. The rule says 18 to 65 inclusive. It is tested at ages 10, 40 and 80, each expecting the right rate for the rule. How many of the three tests fail?",
-      "responseType": "numeric",
+      "prompt": "A pricing function should charge the standard rate for ages 18 to 65 inclusive, but by mistake its code reads age > 18 and age < 65. It is tested at the ages 10, 40 and 80, each expecting the rate that the rule gives. What do the three tests show?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
         "Work out the rate the mistaken code gives for 10, for 40 and for 80.",
         "Compare each with what the rule says.",
         "Which ages does the mistake change?"
       ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "None of the tests fail, so the mistake goes unnoticed"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "None of the tests fail, so the mistake goes unnoticed"
+      },
       "sourceIds": [
         "istqb-glossary",
         "swebok"
       ],
       "onCorrect": "The mistake moves the edges by one, and tests in the middle of a class cannot see it.",
-      "skill": "partition-input",
-      "calculator": "off",
-      "answerAuthority": {
-        "kind": "numeric",
-        "value": 0,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "10 gets the child rate, 40 gets standard, and 80 gets the senior rate, exactly as the rule says, so all three pass and 0 fail. The mistake changes only 18 and 65."
-      },
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              3
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "The mistake changes only ages 18 and 65, and none of these three tests uses them."
+          "feedback": "The mistake changes the result only for 18 and 65, the two edges of the standard class, so 10 and 80 still get the other rates, as the rule says."
         },
         {
           "match": {
-            "numeric": [
-              1
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "All three ages are well inside their classes, where the mistaken code agrees with the rule."
+          "feedback": "Every age from 19 to 64 still gets the standard rate, so 40 behaves as the rule says; only 18 and 65 are affected."
+        }
+      ],
+      "skill": "partition-input",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "c",
+          "label": "None of the tests fail, so the mistake goes unnoticed"
+        },
+        {
+          "id": "a",
+          "label": "The tests at 10 and 80 fail, because the mistake changes the rate at both ends"
+        },
+        {
+          "id": "b",
+          "label": "The test at 40 fails, because the mistaken code leaves out some of the middle ages"
         }
       ]
     },
@@ -6275,45 +6118,70 @@
         "boundary",
         "decision-table"
       ],
-      "prompt": "A form field accepts whole numbers from 1 to 99. Counting numbers below 1, numbers from 1 to 99 and numbers above 99 as the three classes, what is the fewest tests that put one value in every class?",
-      "responseType": "numeric",
+      "prompt": "A form field accepts whole numbers from 1 to 99. Which set of test values puts one value in every equivalence class with the fewest tests?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
         "Each class needs at least one test.",
-        "One value represents the whole class.",
-        "Write down each intermediate value before combining them, and check the units or the sign of each."
+        "One value represents the whole class."
       ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "0, 50, 100"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "0, 50, 100"
+      },
       "sourceIds": [
         "istqb-glossary",
         "swebok"
       ],
       "onCorrect": "One value stands for its whole class because the program is meant to treat all of them alike.",
-      "skill": "partition-input",
-      "calculator": "off",
-      "answerAuthority": {
-        "kind": "numeric",
-        "value": 3,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "The three classes need one value each, so 3 tests suffice."
-      },
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              99
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "There are 99 valid values, but they all belong to one class and are meant to behave the same."
+          "feedback": "One test covers only the class of accepted numbers; numbers below 1 and numbers above 99 are classes of their own, and the program should treat each of them differently."
         },
         {
           "match": {
-            "numeric": [
-              2
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "There are three classes, and each needs a representative."
+          "feedback": "1, 50, 99 all lie in the class of accepted numbers, so they test that class three times and leave the classes below 1 and above 99 untested."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "These four values reach all three classes, but 1 and 99 belong to the same class, so one of them is a second test of a class that is already covered; three values are enough."
+        }
+      ],
+      "skill": "partition-input",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "50 alone"
+        },
+        {
+          "id": "d",
+          "label": "0, 1, 99, 100"
+        },
+        {
+          "id": "c",
+          "label": "1, 50, 99"
+        },
+        {
+          "id": "b",
+          "label": "0, 50, 100"
         }
       ]
     },
@@ -6453,6 +6321,80 @@
       ]
     },
     {
+      "id": "softq-choosing-inputs-empty-field",
+      "conceptIds": [
+        "equivalence",
+        "boundary",
+        "decision-table"
+      ],
+      "prompt": "The standard rate applies to ages 18 to 65 inclusive. A test set covers every class of valid ages and the values at and next to both edges, and every test uses a whole number. Which fault could the test set still miss?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Which kinds of input does the test set never use?",
+        "A negative number, text and an empty value are all inputs that the age field might receive."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "The program crashes when the age field is left empty"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "The program crashes when the age field is left empty"
+      },
+      "sourceIds": [
+        "istqb-glossary",
+        "swebok"
+      ],
+      "onCorrect": "Invalid input needs an expected result too, such as an error message, and it is often where the defects are.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "40 lies in the class of standard-rate ages, which the test set covers, so a wrong rate there would make a test fail."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "65 is one of the edge values in the test set, so a comparison that mishandled it would make the test at 65 fail."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Ages over 65 form a valid class that the test set covers, so a wrong rate there would show in the results."
+        }
+      ],
+      "skill": "partition-input",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "The standard rate is wrong for the age 40"
+        },
+        {
+          "id": "c",
+          "label": "The rate for ages over 65 is wrong"
+        },
+        {
+          "id": "d",
+          "label": "The program crashes when the age field is left empty"
+        },
+        {
+          "id": "b",
+          "label": "The comparison at 65 treats 65 as outside the range"
+        }
+      ]
+    },
+    {
       "id": "softq-choosing-inputs-combos-three",
       "conceptIds": [
         "equivalence",
@@ -6502,6 +6444,68 @@
       ]
     },
     {
+      "id": "softq-choosing-inputs-six-columns",
+      "conceptIds": [
+        "equivalence",
+        "boundary",
+        "decision-table"
+      ],
+      "prompt": "A decision table has one column for each combination of the conditions in a rule. A loan rule has three yes/no conditions, and its table has six columns. What does that show?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Each condition doubles the number of combinations.",
+        "Multiply the number of values of each condition."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Two combinations of the conditions are missing from the table"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Two combinations of the conditions are missing from the table"
+      },
+      "sourceIds": [
+        "istqb-glossary",
+        "swebok"
+      ],
+      "onCorrect": "Three yes/no conditions give 2 × 2 × 2 = 8 combinations, so a table with six columns has left two of them out.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Each condition doubles the number of columns, so three conditions give 2 × 2 × 2 = 8 combinations and not 2 + 2 + 2."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Each column stands for one combination of the conditions, and a missing column can hide a case that the specification forgot; the usual answer to a large table is to split the rule into smaller tables, not to leave columns out."
+        }
+      ],
+      "skill": "partition-input",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Two combinations of the conditions are missing from the table"
+        },
+        {
+          "id": "c",
+          "label": "The table is complete, because combinations that give the same action can share a column"
+        },
+        {
+          "id": "b",
+          "label": "The table is complete, because each condition adds two columns and 2 + 2 + 2 is six"
+        }
+      ]
+    },
+    {
       "id": "softq-choosing-inputs-one-sided-edge",
       "conceptIds": [
         "equivalence",
@@ -6547,6 +6551,80 @@
             ]
           },
           "feedback": "The value at the edge and the value just below it are both needed."
+        }
+      ]
+    },
+    {
+      "id": "softq-choosing-inputs-one-sided-values",
+      "conceptIds": [
+        "equivalence",
+        "boundary",
+        "decision-table"
+      ],
+      "prompt": "A bulk discount applies to orders of 100 items or more. Which pair of order sizes are the two-value boundary tests for this rule?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "How many edges does the rule have?",
+        "Take the value just below the edge and the value at the edge."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "99 and 100"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "99 and 100"
+      },
+      "sourceIds": [
+        "istqb-glossary",
+        "swebok"
+      ],
+      "onCorrect": "A one-sided rule has one edge, so the two-value method gives two tests, 99 and 100, where a range has two edges and gives four.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "100 is the edge, but 1 is far from it; the two-value method takes the value just below the edge, which is 99."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "100 is the edge, but 101 lies inside the discounted class; the value that detects a mistake in the comparison is the one just outside it, 99."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "50 and 150 are representatives of the two classes, as equivalence partitioning would choose them, and they sit far from the edge where a mistaken comparison would go undetected."
+        }
+      ],
+      "skill": "pick-boundaries",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "d",
+          "label": "50 and 150"
+        },
+        {
+          "id": "b",
+          "label": "100 and 101"
+        },
+        {
+          "id": "c",
+          "label": "99 and 100"
+        },
+        {
+          "id": "a",
+          "label": "1 and 100"
         }
       ]
     },
@@ -6753,45 +6831,58 @@
         "mutation",
         "goodhart"
       ],
-      "prompt": "In the function f shown above, the six lines are r = 0, if a, r += 1, if b, r += 2 and return r. A single call f(True, False) is made. How many of the six lines run?",
-      "responseType": "numeric",
+      "prompt": "def f(a, b):\n    r = 0\n    if a:\n        r += 1\n    if b:\n        r += 2\n    return r\nA single call f(True, False) is made. Which lines of the body run?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
         "Follow the call: which if conditions are true?",
-        "A line inside an if runs only when its condition is true.",
-        "Write down each intermediate value before combining them, and check the units or the sign of each."
+        "A line inside an if runs only when its condition is true, but the if line itself always runs."
       ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Five lines: every line except r += 2"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Five lines: every line except r += 2"
+      },
       "sourceIds": [
         "swe-google",
         "istqb-glossary"
       ],
       "onCorrect": "Five of six lines gives 83% line coverage, while only two of the four branch outcomes were taken.",
-      "skill": "compute-coverage",
-      "calculator": "off",
-      "answerAuthority": {
-        "kind": "numeric",
-        "value": 5,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "The lines r = 0, if a, r += 1, if b and return r run. The line r += 2 is skipped because b is False, so 5 lines run."
-      },
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              6
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "The line r += 2 sits under if b, and b is False in this call."
+          "feedback": "The line r += 2 sits under if b, and b is False in this call, so that line is skipped."
         },
         {
           "match": {
-            "numeric": [
-              4
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "Count the two if lines themselves as lines that run."
+          "feedback": "The line if b runs on every call, because the condition has to be evaluated to decide; only the line under it is skipped."
+        }
+      ],
+      "skill": "compute-coverage",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "b",
+          "label": "Five lines: every line except r += 2"
+        },
+        {
+          "id": "c",
+          "label": "Four lines: both r += 2 and the line if b are skipped"
+        },
+        {
+          "id": "a",
+          "label": "All six lines, because both if lines are reached"
         }
       ]
     },
@@ -6802,7 +6893,7 @@
         "mutation",
         "goodhart"
       ],
-      "prompt": "Two calls are made: f(True, True) and f(False, False). What percentage of the four branch outcomes do they take?",
+      "prompt": "def f(a, b):\n    r = 0\n    if a: r += 1\n    if b: r += 2\n    return r\nTwo calls are made: f(True, True) and f(False, False). What percentage of the four branch outcomes do they take?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -6870,16 +6961,16 @@
           "label": "The code is correct"
         },
         {
-          "id": "b",
-          "label": "All branches are covered"
+          "id": "d",
+          "label": "No mutants survive"
         },
         {
           "id": "c",
           "label": "The code ran, not that it behaved correctly"
         },
         {
-          "id": "d",
-          "label": "No mutants survive"
+          "id": "b",
+          "label": "All branches are covered"
         }
       ],
       "answerAuthority": {
@@ -7220,53 +7311,58 @@
         "softq-injection",
         "overmock"
       ],
-      "prompt": "A test of greeting() asserts the result is 'Good morning', and greeting() reads the real clock and answers 'Good morning' before 12:00. The test runs at every whole hour from 08:00 to 17:00 inclusive. How many of those runs pass?",
-      "responseType": "numeric",
+      "prompt": "A test of greeting() asserts that the result is 'Good morning'. The function greeting() reads the real clock and answers 'Good morning' before 12:00. A build server runs the test at every whole hour from 08:00 to 17:00 inclusive. Which runs pass?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
         "List the hours at which the test runs.",
-        "Which of them are before 12:00?",
-        "Write down each intermediate value before combining them, and check the units or the sign of each."
+        "Which of them are before 12:00?"
       ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "The runs from 08:00 to 11:00 pass and the runs from 12:00 to 17:00 fail"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "The runs from 08:00 to 11:00 pass and the runs from 12:00 to 17:00 fail"
+      },
       "sourceIds": [
         "swe-google",
         "python-unittest"
       ],
       "onCorrect": "The test is correct in the morning and wrong in the afternoon with no change in the code, because the clock is a hidden input.",
-      "skill": "choose-double",
-      "calculator": "off",
-      "answerAuthority": {
-        "kind": "numeric",
-        "value": 4,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "The runs at 08, 09, 10, 11, 12, 13, 14, 15, 16 and 17 number 10. Only the first four are before 12:00, so 4 pass."
-      },
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              10
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That is the number of runs. Only those before 12:00 pass."
+          "feedback": "The test reads the real clock, so its result depends on the hour at which it runs, even though the code and the test stay the same."
         },
         {
           "match": {
-            "numeric": [
-              5
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "The run at 12:00 is not before 12, so greeting() says 'Good afternoon' then."
+          "feedback": "At 12:00 the time is not before 12:00, so greeting() gives its afternoon greeting and the run at 12:00 fails."
+        }
+      ],
+      "skill": "choose-double",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "b",
+          "label": "Every run passes, because neither the code nor the test changes"
         },
         {
-          "match": {
-            "numeric": [
-              6
-            ]
-          },
-          "feedback": "Count only the hours before 12:00, which are 8, 9, 10 and 11."
+          "id": "a",
+          "label": "The runs from 08:00 to 11:00 pass and the runs from 12:00 to 17:00 fail"
+        },
+        {
+          "id": "c",
+          "label": "The runs from 08:00 to 12:00 pass and the runs from 13:00 to 17:00 fail"
         }
       ]
     },
@@ -7344,20 +7440,20 @@
       "calculator": "off",
       "choices": [
         {
-          "id": "a",
-          "label": "Stub"
-        },
-        {
-          "id": "b",
-          "label": "Mock"
+          "id": "d",
+          "label": "Fixture"
         },
         {
           "id": "c",
           "label": "Spy"
         },
         {
-          "id": "d",
-          "label": "Fixture"
+          "id": "b",
+          "label": "Mock"
+        },
+        {
+          "id": "a",
+          "label": "Stub"
         }
       ],
       "answerAuthority": {
@@ -7402,7 +7498,7 @@
         "softq-injection",
         "overmock"
       ],
-      "prompt": "A fake repository stores users in a dictionary keyed by id. The test calls add(1, 'a'), add(2, 'b') and then add(1, 'c'), which replaces the entry for id 1. What is len(repo.users) at the end?",
+      "prompt": "A fake repository stores users in a dictionary keyed by id. The test calls add(1, 'a'), add(2, 'b') and then add(1, 'c'). What is len(repo.users) at the end?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -7572,12 +7668,12 @@
           "label": "Stub"
         },
         {
-          "id": "c",
-          "label": "Mock"
-        },
-        {
           "id": "d",
           "label": "Driver"
+        },
+        {
+          "id": "c",
+          "label": "Mock"
         }
       ],
       "answerAuthority": {
@@ -7723,46 +7819,71 @@
         "shrink",
         "exploratory"
       ],
-      "prompt": "The faulty function my_sort(xs) returns sorted(set(xs)), which removes duplicates. What does len(my_sort([2, 1, 2])) return?",
-      "responseType": "numeric",
+      "prompt": "A faulty sort is my_sort(xs) = sorted(set(xs)), and its only test, my_sort([3, 1, 2]) == [1, 2, 3], passes. What does my_sort([2, 1, 2]) return?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "set() removes repeated values.",
-        "Count the items left after set() is applied.",
-        "Write down each intermediate value before combining them, and check the units or the sign of each."
+        "A set holds each value once.",
+        "sorted turns the items of the set into an ordered list."
       ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "[1, 2], which is one item shorter than the input"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "[1, 2], which is one item shorter than the input"
+      },
       "sourceIds": [
         "hypothesis-docs",
         "swe-google",
         "swebok"
       ],
       "onCorrect": "The single example test with [3, 1, 2] never showed this, because that list has no repeated value.",
-      "skill": "write-property",
-      "calculator": "off",
-      "answerAuthority": {
-        "kind": "numeric",
-        "value": 2,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "set([2, 1, 2]) holds {1, 2}, and sorted of that is [1, 2], whose length is 2. The input had 3 items, so the length is wrong."
-      },
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              3
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That is the length of the input. set() removes the repeated value before sorting."
+          "feedback": "set removes the repeated 2 before sorted is applied, so the result has fewer items than the input."
         },
         {
           "match": {
-            "numeric": [
-              1
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "Only the duplicate is removed; both distinct values remain, so count them."
+          "feedback": "set removes the repeated 2 and sorted puts what is left in order, so the list is neither unchanged nor unsorted."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "sorted accepts any collection of items, including a set, and returns them as an ordered list."
+        }
+      ],
+      "skill": "write-property",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "c",
+          "label": "An error, because a set cannot be sorted"
+        },
+        {
+          "id": "b",
+          "label": "[2, 1, 2]"
+        },
+        {
+          "id": "a",
+          "label": "[1, 2, 2]"
+        },
+        {
+          "id": "d",
+          "label": "[1, 2], which is one item shorter than the input"
         }
       ]
     },
@@ -7818,46 +7939,71 @@
         "shrink",
         "exploratory"
       ],
-      "prompt": "The property len(my_sort(x)) == len(x) fails for [5, 2, 8, 2, 9] because the function drops duplicates. How many items does the smallest failing list have?",
-      "responseType": "numeric",
+      "prompt": "The property len(my_sort(x)) == len(x) fails for [5, 2, 8, 2, 9] because my_sort drops duplicates. Which is the smallest list for which the property still fails?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
         "What must a list contain for duplicates to be dropped?",
-        "Can a list with fewer items fail?",
-        "Write down each intermediate value before combining them, and check the units or the sign of each."
+        "Can a list with fewer items fail?"
       ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "[2, 2], two equal items"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "[2, 2], two equal items"
+      },
       "sourceIds": [
         "hypothesis-docs",
         "swe-google",
         "swebok"
       ],
       "onCorrect": "A shrunk failure shows only what matters: here, two equal values and nothing else.",
-      "skill": "compare-approaches",
-      "calculator": "off",
-      "answerAuthority": {
-        "kind": "numeric",
-        "value": 2,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "A duplicate needs at least two equal items, and a list of two equal items such as [0, 0] already fails: 2 items."
-      },
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              1
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "A list with one item has no duplicate to drop, so it passes."
+          "feedback": "A list with one item has no repeated value to drop, so its length is unchanged and the property holds."
         },
         {
           "match": {
-            "numeric": [
-              3
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "A three-item list with a repeat still fails, but a shorter list fails as well."
+          "feedback": "[2, 8, 2] fails, but removing the 8 leaves a shorter list that still fails, so it is not the smallest."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "Only the repeated 2 matters; the other three items can be removed and the list still fails."
+        }
+      ],
+      "skill": "compare-approaches",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "b",
+          "label": "[2, 2], two equal items"
+        },
+        {
+          "id": "d",
+          "label": "[5, 2, 8, 2, 9], because the failure needs all of its items"
+        },
+        {
+          "id": "c",
+          "label": "[2, 8, 2]"
+        },
+        {
+          "id": "a",
+          "label": "[2]"
         }
       ]
     },
@@ -7884,20 +8030,20 @@
       "calculator": "off",
       "choices": [
         {
-          "id": "a",
-          "label": "Removes failing tests"
-        },
-        {
           "id": "b",
           "label": "Reduces a failing input to a minimal one"
+        },
+        {
+          "id": "d",
+          "label": "Speeds the run"
         },
         {
           "id": "c",
           "label": "Compresses logs"
         },
         {
-          "id": "d",
-          "label": "Speeds the run"
+          "id": "a",
+          "label": "Removes failing tests"
         }
       ],
       "answerAuthority": {
@@ -8045,41 +8191,71 @@
         "shrink",
         "exploratory"
       ],
-      "prompt": "Run this code and give the value printed.\ns = 'a_b c'\nenc = s.replace(' ', '_')\ndec = enc.replace('_', ' ')\nprint(dec == s)",
+      "prompt": "An encoder replaces each space in a string with an underscore, and a decoder replaces each underscore with a space. A property test checks that decode(encode(s)) == s. Which input makes the property fail?",
       "responseType": "short_text",
       "difficulty": 1.3,
       "hints": [
-        "Work out enc, then dec, and compare it with s.",
-        "The underscore in s already stood for itself."
+        "Work out the encoded string, then the decoded one, and compare it with the original.",
+        "An underscore in the original already stands for itself."
       ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "A string that already contains an underscore, such as a_b c"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "A string that already contains an underscore, such as a_b c"
+      },
       "sourceIds": [
         "hypothesis-docs",
         "swe-google",
         "swebok"
       ],
       "onCorrect": "The round trip fails for inputs that already contain an underscore, which is the sort of case a generator finds and an example test seldom tries.",
-      "skill": "write-property",
-      "calculator": "off",
-      "answerAuthority": {
-        "kind": "text",
-        "acceptedIdeas": [
-          "False"
-        ],
-        "acceptedAlternatives": [
-          "false",
-          "False."
-        ],
-        "rejectedIdeas": [],
-        "exampleAnswer": "False."
-      },
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "true"
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "enc is 'a_b_c', and dec is 'a b c', which is not 'a_b c'."
+          "feedback": "A string such as abc has no spaces and no underscores, so encoding and decoding leave it unchanged."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "A string such as a b c encodes to a_b_c and decodes back to a b c, because every underscore in the encoded text came from a space."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "The empty string has nothing to replace, so it comes back unchanged."
+        }
+      ],
+      "skill": "write-property",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "d",
+          "label": "The empty string"
+        },
+        {
+          "id": "a",
+          "label": "A string with no spaces or underscores, such as abc"
+        },
+        {
+          "id": "b",
+          "label": "A string whose only separators are spaces, such as a b c"
+        },
+        {
+          "id": "c",
+          "label": "A string that already contains an underscore, such as a_b c"
         }
       ]
     },
@@ -8106,20 +8282,20 @@
       "calculator": "off",
       "choices": [
         {
-          "id": "a",
-          "label": "sorted([3, 1, 2]) == [1, 2, 3]"
+          "id": "d",
+          "label": "Sorting a list of 1,000 numbers takes under a second"
         },
         {
-          "id": "b",
-          "label": "Sorting any list twice gives the same result as sorting it once"
+          "id": "a",
+          "label": "sorted([3, 1, 2]) == [1, 2, 3]"
         },
         {
           "id": "c",
           "label": "sorted([]) == []"
         },
         {
-          "id": "d",
-          "label": "Sorting a list of 1,000 numbers takes under a second"
+          "id": "b",
+          "label": "Sorting any list twice gives the same result as sorting it once"
         }
       ],
       "answerAuthority": {
@@ -8301,6 +8477,68 @@
       ]
     },
     {
+      "id": "softq-tdd-and-refactoring-test-after-code",
+      "conceptIds": [
+        "tdd",
+        "refactor",
+        "regression"
+      ],
+      "prompt": "A developer writes the function fizz(n) = 'Fizz' if n % 3 == 0 else str(n), and then writes the test assert fizz(3) == 'Fizz'. The test passes the first time it is run. What has that pass shown?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "How many inputs does the test use?",
+        "Has the test ever been seen to fail?"
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "That fizz(3) gives 'Fizz', but not that the test is able to fail"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "That fizz(3) gives 'Fizz', but not that the test is able to fail"
+      },
+      "sourceIds": [
+        "swe-google",
+        "swebok"
+      ],
+      "onCorrect": "A test that passes the first time it is run has not shown that it can detect a fault, and seeing it fail first is what the red step is for.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "The test uses one input, 3, so it says nothing about the other values of n."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "The test has never been seen to fail, so nothing yet shows that it could; a test that cannot fail also passes the first time it is run."
+        }
+      ],
+      "skill": "apply-tdd",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "c",
+          "label": "That fizz(3) gives 'Fizz', but not that the test is able to fail"
+        },
+        {
+          "id": "b",
+          "label": "That the test would fail if fizz were wrong"
+        },
+        {
+          "id": "a",
+          "label": "That fizz is correct for every value of n"
+        }
+      ]
+    },
+    {
       "id": "softq-tdd-and-refactoring-first-step",
       "conceptIds": [
         "tdd",
@@ -8326,16 +8564,16 @@
           "label": "Write the code"
         },
         {
-          "id": "b",
-          "label": "Write a failing test"
-        },
-        {
           "id": "c",
           "label": "Refactor the existing code"
         },
         {
           "id": "d",
           "label": "Deploy to production"
+        },
+        {
+          "id": "b",
+          "label": "Write a failing test"
         }
       ],
       "answerAuthority": {
@@ -8380,45 +8618,70 @@
         "refactor",
         "regression"
       ],
-      "prompt": "This is the code after cycle 2: def fizzbuzz(n): if n % 3 == 0: return 'Fizz'; return str(n). Three tests assert fizzbuzz(3) == 'Fizz', fizzbuzz(1) == '1' and fizzbuzz(5) == 'Buzz'. How many of the three pass?",
-      "responseType": "numeric",
+      "prompt": "This is the code after cycle 2: def fizzbuzz(n): if n % 3 == 0: return 'Fizz'; return str(n). Three tests assert fizzbuzz(3) == 'Fizz', fizzbuzz(1) == '1' and fizzbuzz(5) == 'Buzz'. Which of the three tests fails?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
         "Evaluate each call against the two lines of code.",
-        "5 is not a multiple of 3.",
-        "Write down each intermediate value before combining them, and check the units or the sign of each."
+        "5 is not a multiple of 3."
       ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "The test of fizzbuzz(5) == 'Buzz'"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "The test of fizzbuzz(5) == 'Buzz'"
+      },
       "sourceIds": [
         "swe-google",
         "swebok"
       ],
       "onCorrect": "The failing third test is the red step of the next cycle, and it states the next behaviour to add.",
-      "skill": "apply-tdd",
-      "calculator": "off",
-      "answerAuthority": {
-        "kind": "numeric",
-        "value": 2,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "fizzbuzz(3) gives 'Fizz' and fizzbuzz(1) gives '1', so those pass. fizzbuzz(5) gives '5', not 'Buzz', so 2 pass and the next cycle starts red."
-      },
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              3
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "fizzbuzz(5) returns '5' with this code, since 5 is not a multiple of 3 and there is no rule for 5 yet."
+          "feedback": "fizzbuzz(5) returns '5', because 5 is not a multiple of 3 and the code has no rule for 5 yet, so the test for 'Buzz' fails."
         },
         {
           "match": {
-            "numeric": [
-              1
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "Both the first and the second test pass; only the one for 5 fails."
+          "feedback": "3 is a multiple of 3, so the code returns 'Fizz' and that test passes."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "1 is not a multiple of 3, so the code falls through to str(1), which is '1', and that test passes."
+        }
+      ],
+      "skill": "apply-tdd",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "c",
+          "label": "The test of fizzbuzz(1) == '1'"
+        },
+        {
+          "id": "b",
+          "label": "The test of fizzbuzz(3) == 'Fizz'"
+        },
+        {
+          "id": "a",
+          "label": "None of them; all three pass"
+        },
+        {
+          "id": "d",
+          "label": "The test of fizzbuzz(5) == 'Buzz'"
         }
       ]
     },
@@ -8468,6 +8731,80 @@
             ]
           },
           "feedback": "That adds the multiples of 3 and 5 as 6 + 3; there are 5 multiples of 3 up to 15, including 15."
+        }
+      ]
+    },
+    {
+      "id": "softq-tdd-and-refactoring-which-refactoring",
+      "conceptIds": [
+        "tdd",
+        "refactor",
+        "regression"
+      ],
+      "prompt": "All the tests for fizzbuzz pass. A developer changes the function and runs the tests again. Which change counts as a refactoring?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "A refactoring changes the structure of the code and not its behaviour.",
+        "Ask whether any result of fizzbuzz differs before and after the change."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Rewriting the function to build its result from a Fizz piece and a Buzz piece, so that every result stays the same"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Rewriting the function to build its result from a Fizz piece and a Buzz piece, so that every result stays the same"
+      },
+      "sourceIds": [
+        "swe-google",
+        "swebok"
+      ],
+      "onCorrect": "A refactoring leaves every result unchanged, which is what the passing tests confirm.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "A change that alters any result is a change of behaviour, whatever the reason for it, and the test for 15 would fail."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "A new rule changes what the function returns for 7, which is a change of behaviour and belongs in a step of its own, with its own test."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "A refactoring relies on the passing tests to show that nothing changed, and deleting a test removes some of that evidence."
+        }
+      ],
+      "skill": "apply-tdd",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Making fizzbuzz(15) return 'Fizz', because the function is simpler without the special case"
+        },
+        {
+          "id": "c",
+          "label": "Adding a rule so that fizzbuzz(7) returns 'Bazz'"
+        },
+        {
+          "id": "b",
+          "label": "Rewriting the function to build its result from a Fizz piece and a Buzz piece, so that every result stays the same"
+        },
+        {
+          "id": "d",
+          "label": "Deleting the test for 15 so that a simpler function passes"
         }
       ]
     },
@@ -8527,7 +8864,7 @@
         "refactor",
         "regression"
       ],
-      "prompt": "Using the same buggy total(price, pct), which applies the discount twice, what does total(300, 20) return?",
+      "prompt": "The function total(price, pct) applies a percentage discount twice: after = price * (100 - pct) // 100, and it returns after * (100 - pct) // 100. What does total(300, 20) return?",
       "responseType": "numeric",
       "difficulty": 1.3,
       "hints": [
@@ -8644,16 +8981,16 @@
           "label": "A comment in the code"
         },
         {
-          "id": "b",
-          "label": "A regression test that fails before the fix"
-        },
-        {
           "id": "c",
           "label": "A manual check before each release"
         },
         {
           "id": "d",
           "label": "Naming a code owner"
+        },
+        {
+          "id": "b",
+          "label": "A regression test that fails before the fix"
         }
       ],
       "answerAuthority": {
@@ -8750,45 +9087,70 @@
         "pyramid",
         "flaky"
       ],
-      "prompt": "Suite A has 1,000 unit tests of 5 ms each. Suite B has 50 end-to-end tests of 20 s each. How many times longer does suite B take to run than suite A?",
-      "responseType": "numeric",
+      "prompt": "Suite A has 1,000 unit tests of 5 ms each. Suite B has only 50 end-to-end tests of 20 s each. How does the run time of suite B compare with that of suite A?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
         "Work out each suite's total time in the same unit.",
-        "Divide the longer time by the shorter.",
-        "Write down each intermediate value before combining them, and check the units or the sign of each."
+        "Divide the longer time by the shorter."
       ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Suite B takes more than a hundred times as long as suite A"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Suite B takes more than a hundred times as long as suite A"
+      },
       "sourceIds": [
         "fowler-pyramid",
         "swe-google"
       ],
       "onCorrect": "A suite with fewer tests can run much longer, because the cost per test differs by a factor of four thousand.",
-      "skill": "balance-suite",
-      "calculator": "available",
-      "answerAuthority": {
-        "kind": "numeric",
-        "value": 200,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "Suite A takes 1,000 × 5 ms = 5 s. Suite B takes 50 × 20 s = 1,000 s. The ratio is 1,000 ÷ 5 = 200."
-      },
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              20
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That divides the number of tests, 1,000, by the number of tests, 50; the question compares the total times."
+          "feedback": "Suite B has fewer tests, but each takes 4,000 times as long as one of suite A's tests, so the smaller number of tests does not make the suite shorter."
         },
         {
           "match": {
-            "numeric": [
-              1000
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That is the length of suite B in seconds, not the ratio."
+          "feedback": "The totals are 1,000 s for suite B and 5 s for suite A, which are far from equal."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "Suite A takes 1,000 × 5 ms = 5 s and suite B takes 50 × 20 s = 1,000 s, a ratio of 200, which is far more than a few times."
+        }
+      ],
+      "skill": "balance-suite",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Suite B is shorter, because it has twenty times fewer tests"
+        },
+        {
+          "id": "c",
+          "label": "Suite B takes more than a hundred times as long as suite A"
+        },
+        {
+          "id": "b",
+          "label": "The two take about the same time, because the fewer tests of suite B are each longer"
+        },
+        {
+          "id": "d",
+          "label": "Suite B takes a few times as long as suite A"
         }
       ]
     },
@@ -8951,7 +9313,7 @@
         "pyramid",
         "flaky"
       ],
-      "prompt": "The same 1% flake rate applies to a suite of 100 independent tests. What is the chance that a run has at least one false failure, as a percentage to one decimal place?",
+      "prompt": "Each of 100 independent tests has a 1% chance of failing falsely in a run. What is the chance that a run has at least one false failure, as a percentage to one decimal place?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -9434,20 +9796,20 @@
       "calculator": "off",
       "choices": [
         {
-          "id": "a",
-          "label": "A unit test of the consumer's logic only"
-        },
-        {
-          "id": "b",
-          "label": "A contract test"
+          "id": "d",
+          "label": "A usability test"
         },
         {
           "id": "c",
           "label": "A load test"
         },
         {
-          "id": "d",
-          "label": "A usability test"
+          "id": "a",
+          "label": "A unit test of the consumer's logic only"
+        },
+        {
+          "id": "b",
+          "label": "A contract test"
         }
       ],
       "answerAuthority": {
@@ -9635,6 +9997,80 @@
       ]
     },
     {
+      "id": "softq-testing-data-and-apis-empty-result",
+      "conceptIds": [
+        "data-check",
+        "softq-contract",
+        "test-data"
+      ],
+      "prompt": "A not-null check for the email column of a customers table is written as SELECT * FROM customers WHERE email IS NULL; and it returns no rows. What does that mean?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Which rows does the query select?",
+        "A check returns the rows that break the rule."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Every row has an email, so the data passes the check"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Every row has an email, so the data passes the check"
+      },
+      "sourceIds": [
+        "swe-google",
+        "owasp-wstg"
+      ],
+      "onCorrect": "An empty result is a pass, because the check returns only the violations, and a not-null rule is broken only by a row whose email IS NULL.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "A check returns the rows that break the rule, so an empty result is the pass; the check would return rows only if some email were missing."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "A table with rows in it can pass the check; the result is empty because no row has a NULL email, whatever the number of rows."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "The check selects exactly the rows whose email IS NULL, so any such row would appear in the result."
+        }
+      ],
+      "skill": "write-data-check",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "d",
+          "label": "Some rows have no email, but the check hides them"
+        },
+        {
+          "id": "c",
+          "label": "The table is empty"
+        },
+        {
+          "id": "b",
+          "label": "The check is broken, because a working check always returns some rows"
+        },
+        {
+          "id": "a",
+          "label": "Every row has an email, so the data passes the check"
+        }
+      ]
+    },
+    {
       "id": "softq-testing-data-and-apis-own-data",
       "conceptIds": [
         "data-check",
@@ -9656,20 +10092,20 @@
       "calculator": "off",
       "choices": [
         {
-          "id": "a",
-          "label": "It is faster"
-        },
-        {
           "id": "b",
           "label": "To avoid order-dependent failures from shared state"
         },
         {
-          "id": "c",
-          "label": "It uses less storage"
+          "id": "a",
+          "label": "It is faster"
         },
         {
           "id": "d",
           "label": "It needs no cleanup"
+        },
+        {
+          "id": "c",
+          "label": "It uses less storage"
         }
       ],
       "answerAuthority": {
@@ -9763,46 +10199,59 @@
         "softq-littles-law",
         "nfr"
       ],
-      "prompt": "The twenty response times in ms, sorted, are 12, 13, 13, 14, 15, 15, 16, 17, 18, 19, 21, 22, 24, 26, 29, 33, 41, 58, 120 and 450. Work out the mean, and then count how many of the twenty requests are slower than it.",
-      "responseType": "numeric",
+      "prompt": "The twenty response times in ms, sorted, are 12, 13, 13, 14, 15, 15, 16, 17, 18, 19, 21, 22, 24, 26, 29, 33, 41, 58, 120 and 450. How many of the twenty requests are slower than their mean?",
+      "responseType": "short_text",
       "difficulty": 1.2,
       "hints": [
         "Add the twenty times and divide by 20.",
-        "Then count the times larger than the mean.",
-        "Write down each intermediate value before combining them, and check the units or the sign of each."
+        "Then see how many of the times are larger than the mean."
       ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Only a few of them, because the slowest requests pull the mean above most of the data"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Only a few of them, because the slowest requests pull the mean above most of the data"
+      },
       "sourceIds": [
         "swe-google",
         "sre-book",
         "owasp-wstg"
       ],
       "onCorrect": "Seventeen of twenty requests were faster than the mean, so it describes few of them well.",
-      "skill": "read-percentile",
-      "calculator": "available",
-      "answerAuthority": {
-        "kind": "numeric",
-        "value": 3,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "The sum is 976 ms and the mean is 976 ÷ 20 = 48.8 ms. Only 58, 120 and 450 exceed it, so 3 requests are slower."
-      },
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              17
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That is the number of requests faster than the mean. The question asks for those slower."
+          "feedback": "The two slowest requests, 120 ms and 450 ms, pull the mean up to 48.8 ms, which is well above the middle of the sorted list."
         },
         {
           "match": {
-            "numeric": [
-              1
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "Two other requests besides the slowest are slower than the mean."
+          "feedback": "The times add up to 976 ms, so the mean is 48.8 ms, and the few slow requests pull it up much further than the many fast ones pull it down."
+        }
+      ],
+      "skill": "read-percentile",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "b",
+          "label": "More than half of them, because the many fast requests pull the mean down"
+        },
+        {
+          "id": "a",
+          "label": "About half of them, because the mean lies near the middle of the list"
+        },
+        {
+          "id": "c",
+          "label": "Only a few of them, because the slowest requests pull the mean above most of the data"
         }
       ]
     },
@@ -9986,12 +10435,12 @@
           "label": "The page meets every accessibility requirement"
         },
         {
-          "id": "b",
-          "label": "No problems that the tool can detect; manual checks are still needed"
-        },
-        {
           "id": "c",
           "label": "The page passed a stress test"
+        },
+        {
+          "id": "b",
+          "label": "No problems that the tool can detect; manual checks are still needed"
         },
         {
           "id": "d",
@@ -10257,20 +10706,20 @@
       "calculator": "off",
       "choices": [
         {
-          "id": "a",
-          "label": "The reporter's opinion of the developer"
-        },
-        {
-          "id": "b",
-          "label": "Steps that reproduce it"
-        },
-        {
           "id": "c",
           "label": "A screenshot of the desktop"
         },
         {
           "id": "d",
           "label": "A suggested fix"
+        },
+        {
+          "id": "a",
+          "label": "The reporter's opinion of the developer"
+        },
+        {
+          "id": "b",
+          "label": "Steps that reproduce it"
         }
       ],
       "answerAuthority": {
@@ -10350,6 +10799,82 @@
             ]
           },
           "feedback": "Priority is the order in which defects should be fixed, which depends on more than impact."
+        }
+      ]
+    },
+    {
+      "id": "softq-quality-measures-and-process-severity-vs-priority",
+      "conceptIds": [
+        "severity-priority",
+        "ddp",
+        "shift"
+      ],
+      "prompt": "Two defects are waiting to be fixed. One loses a customer's saved order, but only in an export feature that a handful of people use. The other shows the wrong date format on the home page, which every visitor sees. The team fixes the date format first. Which statement describes that decision?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Severity is how much harm a defect does.",
+        "Priority is the order of fixing, which also depends on how many people see the defect and what else is waiting."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "The date format has the higher priority, although the lost order is the more severe defect"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "The date format has the higher priority, although the lost order is the more severe defect"
+      },
+      "sourceIds": [
+        "swebok",
+        "istqb-glossary",
+        "dora",
+        "sre-book"
+      ],
+      "onCorrect": "Severity measures impact and priority sets the order, and they can point in different directions.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Severity is the impact of a defect, how much harm it does, and the number of people who see it affects priority and not severity."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Losing a customer's order does more harm than a wrong date format, so the lost order is the more severe defect even though it is fixed second."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "Priority depends on impact together with other things, such as how many people see a defect and what else is waiting, so it can be higher for the less severe defect."
+        }
+      ],
+      "skill": "write-bug-report",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "b",
+          "label": "The date format has the higher severity, because more people see it"
+        },
+        {
+          "id": "a",
+          "label": "The date format has the higher priority, although the lost order is the more severe defect"
+        },
+        {
+          "id": "c",
+          "label": "The two defects have the same severity, and priority only decides the order"
+        },
+        {
+          "id": "d",
+          "label": "The date format has the higher priority because it has the higher severity"
         }
       ]
     },
@@ -10742,16 +11267,16 @@
           "label": "High severity, high priority"
         },
         {
-          "id": "b",
-          "label": "Low severity, high priority"
-        },
-        {
           "id": "c",
           "label": "High severity, low priority"
         },
         {
           "id": "d",
           "label": "Low severity, low priority"
+        },
+        {
+          "id": "b",
+          "label": "Low severity, high priority"
         }
       ],
       "answerAuthority": {
