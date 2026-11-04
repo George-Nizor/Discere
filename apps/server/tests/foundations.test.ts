@@ -64,7 +64,7 @@ describe("foundation lessons and recall", () => {
   it("binds coaching and pasted replies to a question inside the requested lesson", async () => {
     const body = {
       lessonId,
-      questionId: "maths-what-a-letter-stands-for-order-in-a-check",
+      questionId: "maths-what-a-letter-stands-for-minus",
       question: "How should I substitute an input?",
       mode: "coach",
     };
@@ -74,7 +74,7 @@ describe("foundation lessons and recall", () => {
       payload: body,
     });
     expect(packet.statusCode).toBe(200);
-    expect(packet.json().packet.text).toContain("Enter the value of the left side when x = 8");
+    expect(packet.json().packet.text).toContain("Evaluate 20 − 2x when x = 6.");
     expect(packet.body).not.toContain("answerAuthority");
     expect(
       (
@@ -91,7 +91,7 @@ describe("foundation lessons and recall", () => {
       requestId: packet.json().requestId,
       generatedAt: new Date().toISOString(),
       payload: {
-        answer: "The final value is 10.",
+        answer: "The final value is 8.",
         followUpQuestion: "Which input did you use?",
         sourceIds: [],
         uncertainty: [],
@@ -112,7 +112,7 @@ describe("foundation lessons and recall", () => {
     expect(imported.json().accepted).toBe(false);
   });
   it("records accepted coaching before a response as assisted evidence", async () => {
-    const questionId = "maths-what-a-letter-stands-for-order-in-a-check";
+    const questionId = "maths-what-a-letter-stands-for-minus";
     const requestId = "8dd34e9e-3c12-4fa5-a6e5-43f7f4e1af38";
     const envelope = {
       protocolVersion: "0.2",
@@ -141,7 +141,7 @@ describe("foundation lessons and recall", () => {
     const answered = await app.inject({
       method: "POST",
       url: "/api/attempts",
-      payload: { questionId, mode: "coach", response: "10" },
+      payload: { questionId, mode: "coach", response: "8" },
     });
     expect(answered.json().correct).toBe(true);
     expect(answered.json().independent).toBe(false);
