@@ -31,6 +31,18 @@ describe("api client", () => {
     await expect(requestJson<{ status: string }>("/api/health")).resolves.toEqual({ status: "ok" });
   });
 
+  it("says a request is JSON only when it has a body, so a bodyless DELETE is accepted", async () => {
+    const fetch = vi.fn(async () => reply(200, {}));
+    vi.stubGlobal("fetch", fetch);
+    await requestJson("/api/courses/maths-foundations/progress", { method: "DELETE" });
+    await requestJson("/api/attempts", { method: "POST", body: "{}" });
+    const headers = fetch.mock.calls.map(
+      (call) => ((call as unknown[])[1] as RequestInit).headers as Record<string, string>,
+    );
+    expect(headers[0]).not.toHaveProperty("content-type");
+    expect(headers[1]).toHaveProperty("content-type", "application/json");
+  });
+
   it("keeps the server code and status on failure", async () => {
     vi.stubGlobal(
       "fetch",

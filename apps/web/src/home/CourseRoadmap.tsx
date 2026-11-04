@@ -7,6 +7,7 @@ import { paths } from "../lib/paths.js";
 import { reducedMotionEnabled } from "../study/experience.js";
 import { LearningCompanion } from "../ui/LearningCompanion.js";
 import { usePlacement } from "../checks/check-model.js";
+import { CourseReset } from "./CourseReset.js";
 
 export function CourseRoadmap({ detail }: { detail: CourseDetailResponse }) {
   const lessons = detail.lessons.filter((lesson) => lesson.available);
@@ -185,6 +186,7 @@ export function CourseOverview({ detail }: { detail: CourseDetailResponse }) {
             {course.completedLessonCount} of {course.lessonCount} lessons completed
           </p>
         ) : null}
+        <CourseReset detail={detail} />
       </div>
     </aside>
   );
