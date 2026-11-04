@@ -75,6 +75,10 @@ service?" with the answer 13). That rule is gone. Choose the type that tests the
 - **number** when the skill is the calculation itself;
 - **single term** when the skill is recalling a name.
 
+A **predict** screen comes before the idea is taught, so it asks for an intuition the learner can
+have without the method: a choice between rough outcomes ("about the same", "a little less",
+"much less"), never an exact calculation the lesson has not yet shown how to do.
+
 Change a question when its number or term tests something other than the lesson's idea (whether
 you remembered to count one more item, a word you could only guess). Keep its `id` when it still
 asks essentially the same thing, so learners' history stays attached; otherwise give a new id
