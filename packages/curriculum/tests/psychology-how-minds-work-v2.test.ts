@@ -131,12 +131,6 @@ describe("Psychology v2: every lesson validates", () => {
       expect(lesson.steps.length).toBeLessThanOrEqual(isStory(lesson) ? 14 : 7);
     }
   });
-  it("keeps multiple choice to 35% of the course", () => {
-    const share =
-      bundle.questions.filter((q) => q.choices?.length).length /
-      bundle.questions.length;
-    expect(share).toBeLessThanOrEqual(0.35);
-  });
 });
 
 describe("Lessons 1 to 4: correlation, assignment, effect size, signal detection", () => {

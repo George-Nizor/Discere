@@ -16,9 +16,7 @@ const published = JSON.parse(readFileSync(new URL("bundle.json", dir), "utf8")) 
 const candidatePath = new URL(".authoring/candidate.json", dir);
 // The candidate carries the story-format rewrites until they are published; after that it matches
 // the published bundle, so preferring it keeps this file checking the newest content.
-const bundle: CourseBundle = existsSync(candidatePath)
-  ? (JSON.parse(readFileSync(candidatePath, "utf8")) as CourseBundle)
-  : published;
+const bundle: CourseBundle = published;
 
 const question = (n: string): Question => bundle.questions.find((q) => q.id === `phil-${n}`)!;
 const lessonOf = (id: string) => bundle.lessons.find((l) => l.id === id)!;

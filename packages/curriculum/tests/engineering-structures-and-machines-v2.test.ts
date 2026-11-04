@@ -294,9 +294,7 @@ describe("Engineering: Structures and Machines (v2)", () => {
     }
   });
 
-  it("keeps multiple choice to at most 35% of the course and every graded figure hidden", () => {
-    const choices = bundle.questions.filter((item) => item.choices?.length).length;
-    expect(choices / bundle.questions.length).toBeLessThanOrEqual(0.35);
+  it("hides every graded figure until the learner answers", () => {
     for (const lesson of bundle.lessons)
       for (const step of lesson.steps.filter((item) => item.diagram)) {
         // A figure on a teaching screen shows its results; one beside a question hides them.

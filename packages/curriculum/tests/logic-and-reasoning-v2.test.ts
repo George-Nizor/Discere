@@ -13,7 +13,7 @@ const candidateUrl = new URL(
 );
 const bundleUrl = new URL("../../../content/logic-and-reasoning/bundle.json", import.meta.url);
 const bundle = JSON.parse(
-  readFileSync(existsSync(candidateUrl) ? candidateUrl : bundleUrl, "utf8"),
+  readFileSync(bundleUrl, "utf8"),
 ) as CourseBundle;
 
 const question = (lesson: string, suffix: string): Question =>

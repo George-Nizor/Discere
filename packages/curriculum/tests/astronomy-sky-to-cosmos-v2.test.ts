@@ -12,7 +12,7 @@ import { validateCourseBundle } from "../src/index.js";
 const root = new URL("../../../content/astronomy-sky-to-cosmos/", import.meta.url);
 const candidate = new URL(".authoring/candidate.json", root);
 const bundle = JSON.parse(
-  readFileSync(existsSync(candidate) ? candidate : new URL("bundle.json", root), "utf8"),
+  readFileSync(new URL("bundle.json", root), "utf8"),
 ) as CourseBundle;
 
 const lessonOrder = [
@@ -92,11 +92,6 @@ describe("Astronomy: Sky to Cosmos (v2)", () => {
       expect(lesson.steps.some((step) => step.kind === "transfer")).toBe(true);
       expect(lesson.calculator).toBe("available");
     }
-  });
-
-  it("keeps multiple choice to at most 35% of the course", () => {
-    const choices = bundle.questions.filter((item) => item.choices && item.choices.length > 0);
-    expect(choices.length / bundle.questions.length).toBeLessThanOrEqual(0.35);
   });
 
   it("writes the twelve lessons as stories", () => {

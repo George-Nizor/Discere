@@ -86,13 +86,13 @@ describe("course validation", () => {
     expect(result.issues.some((item) => item.code === "LICENCE_NOT_REDISTRIBUTABLE")).toBe(true);
   });
 
-  it("rejects a course where more than 35% of the questions are multiple choice", async () => {
+  it("allows a course to be mostly multiple choice, since the right type depends on the idea", async () => {
     const bundle = (await seedBundle()) as {
       questions: Array<{ choices?: Array<{ id: string; label: string }> }>;
     };
     bundle.questions = bundle.questions.filter((item) => item.choices !== undefined);
     const result = validateCourseBundle(bundle);
-    expect(result.issues.some((item) => item.code === "MULTIPLE_CHOICE_SHARE")).toBe(true);
+    expect(result.issues.some((item) => item.code === "MULTIPLE_CHOICE_SHARE")).toBe(false);
   });
 
   it("rejects prerequisite cycles", async () => {

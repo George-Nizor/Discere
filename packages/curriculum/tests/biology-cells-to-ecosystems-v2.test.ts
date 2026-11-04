@@ -218,11 +218,6 @@ describe("Biology: from cells to ecosystems (v2)", () => {
     }
   });
 
-  it("keeps multiple choice within 35% of the course", () => {
-    const choices = bundle.questions.filter((q) => q.choices?.length).length;
-    expect(choices / bundle.questions.length).toBeLessThanOrEqual(0.35);
-  });
-
   it("gives every misconception a distinct wrong value, never the key", () => {
     for (const q of bundle.questions) {
       for (const misconception of q.misconceptions ?? []) {

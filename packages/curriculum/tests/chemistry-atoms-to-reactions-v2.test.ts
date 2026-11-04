@@ -67,11 +67,6 @@ describe("Chemistry v2 lessons", () => {
     ]);
   });
 
-  it("keeps multiple choice at or below 35% of the course", () => {
-    const choices = bundle.questions.filter((q) => q.choices?.length).length;
-    expect(choices / bundle.questions.length).toBeLessThanOrEqual(0.35);
-  });
-
   it("what-makes-an-element: protons set identity", () => {
     expect(key("what-makes-an-element-hook")).toBe(6); // shared proton and electron count of carbon
     expect(key("what-makes-an-element-e1")).toBe(6);

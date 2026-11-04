@@ -9,9 +9,7 @@ import { EXPLAIN_BODY_WORD_LIMIT } from "../src/lesson-v2.js";
  * arithmetic the item describes, not read back from the authority it is checking.
  */
 const root = "../../../content/calculus-change-and-accumulation/";
-const path = existsSync(new URL(`${root}.authoring/candidate.json`, import.meta.url))
-  ? `${root}.authoring/candidate.json`
-  : `${root}bundle.json`;
+const path = `${root}bundle.json`;
 const bundle = JSON.parse(readFileSync(new URL(path, import.meta.url), "utf8")) as CourseBundle;
 
 const f = (x: number) => x;

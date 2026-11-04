@@ -32,9 +32,8 @@
     "status": "available",
     "introduction": {
       "paragraphs": [
-        "A program that works today can still be hard to change tomorrow, and most of the cost of software falls on that second part. Architecture is the set of decisions about structure that are costly to reverse, and this course is about making those decisions on purpose: which parts hide which choices, which way their dependencies point, and what each choice gives up.",
-        "You begin with measurements that need no vocabulary beyond arithmetic, such as the number of links between modules, the cost of reversing a decision, and the availability of a chain of services. Each idea is then tried on short Python, where a function, a class or a message can be traced by hand, and the figures show the same structures as boxes and arrows.",
-        "The middle lessons take the design principles and patterns that most teams use and say where each stops helping, then model a domain and arrange code in layers and ports so that it can be tested. The later lessons compare a modular monolith with microservices, treat messages and contracts as things that must be kept compatible, and end with drawing, recording and changing a system that is already running."
+        "A program that works today can still be hard to change tomorrow, and over the life of most software the cost of changing it is the larger cost. Some decisions are cheap to revisit, such as the name of a variable inside one function, while others become expensive the moment other code depends on them, such as the shape of the data a service sends out or the rule about which module may call which. Software architecture is the study of that second kind of decision, and of how to make such decisions deliberately, knowing what each one gives up.",
+        "The subject has a reputation for diagrams and vocabulary, yet most of its questions can be settled with arithmetic and a careful look at code. Counting the links between two modules tells you how far a change in one will spread, multiplying the availabilities of the services in a chain tells you how often the chain will fail, and asking how many programs read a field tells you what renaming it will cost. Every principle and pattern you meet here is judged in the same way, by what it costs and what it buys in a system you can see."
       ],
       "outcomes": [
         "You'll be able to name the decisions that are architectural and state a quality attribute as a testable scenario.",
@@ -673,16 +672,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-what-architecture-decides-rename-field",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A service returns a customer record as JSON, and one field in it is called cust. Twelve other programs read that field. A developer wants to rename it to customer_id and drop the old name."
-            },
-            {
-              "kind": "paragraph",
-              "text": "Work out how many programs have to change before you read on."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -702,7 +692,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The rename in the last question costs one edit when the field is private and thirteen when it is public, although the edit itself is identical. What separates the two cases is how many other things have come to depend on the decision, and that is the property which makes a decision **architectural**. Choosing the name of a local variable is a design decision, but it is a small one, because nothing outside the function knows the name. Choosing the shape of a public data format is architectural, because every client copies it into its own code."
+              "text": "Renaming tmp costs one edit, because only its own function uses the name, and renaming cust costs thirteen, because twelve other programs use it too, although the two edits are the same size. What separates the two cases is how many other things have come to depend on the decision, and that is the property which makes a decision **architectural**. Choosing the name of a local variable is a design decision, but it is a small one, because nothing outside the function knows the name. Choosing the shape of a public data format is architectural, because every client copies it into its own code."
             },
             {
               "kind": "paragraph",
@@ -744,12 +734,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-what-architecture-decides-hardest",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Apply the test from the last screen. Ask, for each change in the list, how many other things must move if it is undone."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1011,11 +996,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A project can receive two renames on the same morning. In one, a variable called tmp inside a billing function becomes total; in the other, a field called cust in the data a service returns becomes customer_id. Both edits are a few characters long, and yet the first is reviewed in a minute while the second may need a plan, a version number and a message to every team that reads the field."
+              "text": "Here are two renames of the same size. Inside a billing function, a variable called tmp becomes total, and in the JSON that a customer service sends out, a field called cust becomes customer_id. Each is a change of a few characters in a single file."
             },
             {
               "kind": "paragraph",
-              "text": "The difference lies in who else had written the old name into their code. The figure shows the two cases side by side, and the gap between them is the point, because the decisions that cost the most to change are the ones that architecture is about."
+              "text": "The first is finished as soon as it is saved. The second can take weeks, with a new version of the service, a notice to other teams and a period in which both names have to be supported, although the edit itself is no larger. What makes one decision so much dearer to undo than another is the question **software architecture** is built on, and the answer lies in what else has been written on the assumption that the decision will not change."
             }
           ],
           "diagram": {
@@ -6293,12 +6278,10 @@
         "quality-scenario",
         "reversibility"
       ],
-      "prompt": "A service returns a JSON field called cust, and 12 other programs read it. The field is renamed in the service and the old name is not kept. How many programs have to change in total, counting the service?",
+      "prompt": "A service returns a JSON field called cust, and twelve other programs read it. The field is renamed to customer_id and the old name is dropped. What has to change?",
       "difficulty": 1,
       "hints": [
-        "Count the program that owns the field as well as the programs that read it.",
-        "Each reader still asks for the old name.",
-        "Add the service to the number of readers."
+        "Each program that reads the field has the name cust written into its own code."
       ],
       "sourceIds": [
         "iso-25010",
@@ -6306,34 +6289,60 @@
         "fowler-articles",
         "arc42"
       ],
-      "onCorrect": "Thirteen programs change for one new name, because each reader names the field itself.",
+      "onCorrect": "Every reader has its own copy of the name, so the edit is made thirteen times in thirteen programs.",
       "skill": "classify-a-decision",
       "calculator": "off",
-      "responseType": "numeric",
+      "responseType": "short_text",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 13,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "The service changes, and so does each of the 12 programs that read the field: 1 + 12 = 13."
+        "kind": "text",
+        "acceptedIdeas": [
+          "The service and all twelve programs that read the field"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "The service and all twelve programs that read the field"
       },
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              12
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That counts the readers only. The service has to change as well."
+          "feedback": "The service is where the name is defined, but each of the twelve readers looks the field up by the old name and breaks when it disappears."
         },
         {
           "match": {
-            "numeric": [
-              1
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "That is the cost of a local rename. Here other programs read the field."
+          "feedback": "The readers must change, and so must the service, since it is the one that stops sending cust."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "Redeploying runs the same code again. The twelve readers still ask for cust until their code is edited."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "Only the service"
+        },
+        {
+          "id": "b",
+          "label": "The service and all twelve programs that read the field"
+        },
+        {
+          "id": "c",
+          "label": "Only the twelve programs that read the field"
+        },
+        {
+          "id": "d",
+          "label": "Nothing, as long as everything is redeployed on the same day"
         }
       ]
     },
