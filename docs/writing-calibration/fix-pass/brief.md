@@ -103,6 +103,9 @@ line and at least one hint. Vary where the correct option sits. Remove a numeric
    `python3 -I scripts/check-sql-figures.py <course>`. For rust-foundations, run
    `pnpm -s rust:prepare` and leave every code question's code untouched.
 
+Never delete a question from the bundle: one a lesson no longer asks stays, so learners' history
+still resolves. Do not reorder choice options; that is done for every course separately.
+
 Touch only `content/<course>/` and `.author/<course>/`. Do not commit, do not edit code, and do not
 run the test suites. Other agents are fixing other courses at the same time.
 
