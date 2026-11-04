@@ -42,7 +42,10 @@ why it matters through what it lets you do, in two connected paragraphs. Rewrite
 - describes its own figure or itself ("The figure shows…", "the gap between them is the point");
 - ends on a moral or announcement instead of the subject;
 - gives away the answer to the lesson's first question;
-- reads as short separate statements rather than connected sentences.
+- reads as short separate statements rather than connected sentences;
+- starts on an abstract description ("A square corner, a straight edge and the point where several
+  lines meet look like different things, but…") instead of a concrete thing the learner can
+  picture or work out ("Stand facing a wall and turn until it is directly on your right…").
 
 An opener that already reads like the references stays as it is. Keep every fact and number you
 keep, keep `**bold**` at the term the opener names, and do not add a fact you cannot support. Do
