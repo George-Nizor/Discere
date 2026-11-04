@@ -101,7 +101,9 @@ describe("Discere API", () => {
   it("persists assessed journey progress and restores the next active stage", async () => {
     // Every question asked inside the lesson has to be answered before the explainer completes.
     for (const [questionId, response] of [
-      ["current-after-resistor", "0.05 A"],
+      ["elec-current-in-one-loop-after-the-resistor", "Exactly 0.05 A"],
+      ["why-divide-by-resistance", "A bigger resistance holds the current back, so it gives a smaller current"],
+      ["calculate-current-6v-150ohm", "0.04 A"],
       ["calculate-current-5v-100ohm", "0.05 A"],
       ["choose-change-that-raises-current", "Raising the supply voltage"],
       ["current-at-second-meter", "0.2 A"],
