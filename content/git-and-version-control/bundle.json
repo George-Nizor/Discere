@@ -27,9 +27,9 @@
     "status": "available",
     "introduction": {
       "paragraphs": [
-        "Git is usually learned as a list of commands, and the commands are easy to forget and easy to misuse because nothing about them explains what they do. This course starts from what Git stores instead: snapshots of a whole project, each named by a hash of its content and linked to the snapshot before it, and branches and tags that are small pointers to those snapshots. Once that picture is clear, most of what Git does can be worked out rather than memorised.",
-        "The lessons follow the picture outwards. They begin with the three places a change can live and the way a commit is built from objects, then treat branches as pointers and merging as a comparison against a shared ancestor. Rebase, undoing and the reflog come next, with the question of which operations are safe on history that other people already have, and the course ends with remotes, team workflows, tags and version numbers.",
-        "Throughout, you are asked to predict what Git will show before it shows it: the output of git status, the number of commits in a range, whether a merge will conflict, how many tests a bisect needs. Each prediction can be checked by counting, and the counting uses the same few ideas every time."
+        "Git is a program that keeps the history of a project, and its design is simple enough to describe completely. Each saved state, called a commit, is a snapshot of every file in the project at one moment, named by a hash computed from its contents and linked to the commit that came before it. A branch or a tag is a small pointer that holds the name of one commit, so making a new branch copies nothing, and moving one changes which commit it names.",
+        "Git is usually learned as a list of commands, which are easy to forget and easy to misuse when nothing explains what they do. With the picture of commits and pointers in mind, each command becomes a description of what happens to them. A merge of two diverged branches compares each tip with the commit where their histories split, a rebase copies commits onto a new parent and so gives them new hashes, and a reset moves the current branch to another commit. The result of each can be worked out before it is run.",
+        "That matters most when something goes wrong. Commits are never altered once they exist, so a commit that seems to be lost is usually still in the repository, whereas edits that were never committed have no such protection. The other danger is rewriting history that other people have already copied, because their copies then no longer match yours, and with the picture you can tell which commands do that before you run them."
       ],
       "outcomes": [
         "You'll be able to predict what git status shows after a sequence of edits.",
@@ -543,12 +543,7 @@
           "id": "count-the-descriptions",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Five copies of a report sit in a folder, named report.docx, report_v2.docx and so on up to report_final.docx. Before reading on, count what the names themselves tell you."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -556,7 +551,7 @@
             }
           ],
           "visualStateId": "",
-          "checkQuestionId": "gitvc-why-version-control-copies",
+          "checkQuestionId": "gitvc-why-version-control-names",
           "activityId": "",
           "answerVisibility": "hidden-until-response"
         },
@@ -611,12 +606,7 @@
           "id": "find-the-parent",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Four commits were made in this order: A, then B, then C, then D. Each one records the commit that was current when it was made."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -660,12 +650,7 @@
           "id": "whole-snapshot",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A project has ten files. You change one line in one of them and make a commit. Think about what the new commit holds, using the photograph picture."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -673,7 +658,7 @@
             }
           ],
           "visualStateId": "",
-          "checkQuestionId": "gitvc-why-version-control-snapshot",
+          "checkQuestionId": "gitvc-why-version-control-snapshot-holds",
           "activityId": "",
           "answerVisibility": "hidden-until-response"
         },
@@ -681,12 +666,7 @@
           "id": "uncommitted-work",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "You edit three files this morning and make no commit. At noon the disk in your laptop fails. Decide what the repository on that laptop can give you back."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -774,12 +754,7 @@
           "id": "offline-clone",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A project has 3,000 commits on a hosting service. Ben clones it, and the service then goes offline for a day. Apply the idea of a clone to what Ben can read."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -787,7 +762,7 @@
             }
           ],
           "visualStateId": "",
-          "checkQuestionId": "gitvc-why-version-control-offline",
+          "checkQuestionId": "gitvc-why-version-control-offline-clone",
           "activityId": "",
           "answerVisibility": "hidden-until-response"
         }
@@ -828,11 +803,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A folder on a laptop holds five files: report.docx, report_v2.docx, report_v3.docx, report_final.docx and report_final_REAL.docx. Each is a copy of the one before, saved because the writer was afraid of losing it. The names suggest an order, but they do not say what changed between one file and the next, and the only way to find out is to open two of them and compare by eye."
+              "text": "A **version control system** keeps a project's history as a series of saved states, each stored with a message that says what it adds. A report saved five times might have the messages first draft, add outline, fix totals, add chart and final edits, and because every state also records the one that came before it, the five form a chain that can be followed from the newest to the oldest."
             },
             {
               "kind": "paragraph",
-              "text": "A version control system keeps that record for you. The figure shows the same five versions twice, first as copies and then as a history in which every saved state has a message and a link to the state before it."
+              "text": "A record of that kind lets you return to the state before a mistake and see exactly what separates any two states, which makes it safe to try a change you are not sure of. Git is the version control system that most software teams use, and the saved state it records, with its message and its place in the chain, is called a **commit**."
             }
           ],
           "diagram": {
@@ -944,12 +919,7 @@
           "id": "edit-add-edit",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A tracked file a.txt is edited, then staged with git add a.txt, and then edited a second time. Choose what git status --short prints for it; the answer depends on what git add actually records."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1012,16 +982,11 @@
           "id": "name-untracked",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A new file u.txt has been created in the project and never added. Use the code table to name the state Git puts it in."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "Git has no earlier version of u.txt to compare against, so it reports the file as untracked, with ?? in both columns, until you add it."
+              "text": "Git has no earlier version of such a file to compare against, so it reports the file as untracked, with ?? in both columns, until you add it."
             }
           ],
           "visualStateId": "",
@@ -1115,12 +1080,7 @@
           "id": "split-the-work",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "You changed five files: three for a typo fix and two for an unfinished feature. You stage only the three typo files and commit them. Count what is left behind."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1128,7 +1088,7 @@
             }
           ],
           "visualStateId": "",
-          "checkQuestionId": "gitvc-working-tree-index-repository-partial",
+          "checkQuestionId": "gitvc-working-tree-index-repository-left-behind",
           "activityId": "",
           "answerVisibility": "hidden-until-response"
         },
@@ -1156,12 +1116,7 @@
           "id": "which-diff",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "You have staged some changes and want to read exactly what the next commit would contain before you make it. Name the command that compares the index with the last commit; the option is the one named on the previous screen."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1177,12 +1132,7 @@
           "id": "commit-a",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A tracked file a.txt has been edited, and a new file new.txt has been created but never added. You run git commit -am followed by a message. Count the files the new commit changes."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1190,7 +1140,7 @@
             }
           ],
           "visualStateId": "",
-          "checkQuestionId": "gitvc-working-tree-index-repository-commit-a",
+          "checkQuestionId": "gitvc-working-tree-index-repository-commit-a-contents",
           "activityId": "",
           "answerVisibility": "hidden-until-response"
         }
@@ -1231,11 +1181,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "You open a project, change a file, and run git status. Git replies that the file is modified, but it also says it is *not staged*, which suggests that there is some other state a change can be in. There is: a change can be on disk, or in the index, or in a commit, and Git always tells you which of these it has found."
+              "text": "After you edit a file in a Git project, git status lists it as modified but *not staged for commit*, and after git add the same file is listed under *changes to be committed*, although the file on disk is exactly the same in both reports. The difference is where Git is holding the change: it can be in the files on disk, called the **working tree**, in a draft of the next commit called the **index**, or in a commit that has already been made, and git status works by comparing these three places."
             },
             {
               "kind": "paragraph",
-              "text": "The figure follows a single file, a.txt, through all three. Learning where a change is at any moment is what makes git status readable, and it is also the basis for deciding what goes into a commit."
+              "text": "Knowing which place a change is in tells you what git add and git commit will do with it, and therefore what the next commit will contain and what will be left behind. It is also what lets you build a history in which each commit holds one piece of work, since you choose what goes into the draft before you commit it."
             }
           ],
           "diagram": {
@@ -1346,12 +1296,7 @@
           "id": "hash-length",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "SHA-1 produces 160 bits and each hexadecimal character carries 4 bits. Work out how many characters a full SHA-1 hash has when written in hexadecimal."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1414,12 +1359,7 @@
           "id": "name-the-folder-object",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Of the three object types, one holds a list of names, each paired with the hash of a file or a sub-folder. Name that type."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1507,12 +1447,7 @@
           "id": "two-blobs",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Three files are committed: d1/x and d2/y both contain same, and z contains other. Apply the rule that identical content is stored once, and count the blobs."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1528,12 +1463,7 @@
           "id": "rewrite-one",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A project has eight commits in a line. You edit the message of commit 2. Decide how many commits end up with a different hash than before, and notice what the commit object records that might affect the later ones."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1541,7 +1471,7 @@
             }
           ],
           "visualStateId": "",
-          "checkQuestionId": "gitvc-objects-and-hashes-rewrite",
+          "checkQuestionId": "gitvc-objects-and-hashes-rewrite-which",
           "activityId": "",
           "answerVisibility": "hidden-until-response"
         },
@@ -1595,12 +1525,7 @@
           "id": "rewrite-and-share",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A teammate has already pulled your commit 5. You then rewrite commit 3 on your own copy. Decide what the teammate will find when they next compare histories."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1651,11 +1576,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "Run git log in any repository and each commit is identified by a string such as 2b3e8c9f., forty hexadecimal characters long. It looks like a serial number, but it is not one: it is computed from the commit's content, and the same content gives the same string on every computer. The first lesson said a commit is a snapshot with a parent; here is what that snapshot is made of."
+              "text": "Run git log in any repository and every commit appears under a name made of hexadecimal characters. The name is computed from the commit's content, so the same content gives the same name on every computer, and a name made in this way is called a **hash**. Git gives one to everything it stores, to the files, the folders and the commits themselves."
             },
             {
               "kind": "paragraph",
-              "text": "Git stores everything as a small number of kinds of object, each named by the hash of its content. The figure starts with the hashing step itself, on a single word, and the rest of the lesson builds a commit out of such objects."
+              "text": "Because the name follows the content, changing a single letter in a file gives it a completely different name, while two objects with the same name have the same content. That makes a name a reliable check that a file or a commit is the one you expect, and it is why a commit that has been altered can be recognised by its new name."
             }
           ],
           "diagram": {
@@ -1766,12 +1691,7 @@
           "id": "seven-back",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A project has seven commits in a straight line, C1 oldest and C7 newest, and HEAD is C7. Before the next screen explains the notation, say which commit HEAD~2 names."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1779,7 +1699,7 @@
             }
           ],
           "visualStateId": "",
-          "checkQuestionId": "gitvc-reading-history-resolve",
+          "checkQuestionId": "gitvc-reading-history-resolve-which",
           "activityId": "",
           "answerVisibility": "hidden-until-response"
         },
@@ -1848,12 +1768,7 @@
           "id": "count-back",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Eight commits C1 to C8 sit in a line with HEAD at C8. Use HEAD~n to find which of them HEAD~3 names, and give its number."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1897,12 +1812,7 @@
           "id": "count-a-range",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "On a project, main holds c1 to c5. A branch feature was started after c2 and holds c1, c2, f1 and f2. Give the number of commits that feature..main selects."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1999,12 +1909,7 @@
           "id": "who-touched-it",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "You find an odd line in a file and want to see which commit last changed it, line by line. Name the command that prints each line with the commit that last touched it."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2020,12 +1925,7 @@
           "id": "log-from-branch",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "In the first figure feature holds f1 and shares c1 and c2 with main. You are on feature and run git log --oneline. Count the lines it prints."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2033,7 +1933,7 @@
             }
           ],
           "visualStateId": "",
-          "checkQuestionId": "gitvc-reading-history-logcount",
+          "checkQuestionId": "gitvc-reading-history-logcount-which",
           "activityId": "",
           "answerVisibility": "hidden-until-response"
         }
@@ -2075,11 +1975,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A project's history is only useful if you can ask it questions, and the questions come in a few shapes: what happened recently, what did this one commit change, what does my branch have that main lacks, and who touched this line. Each shape has a short command, and each depends on being able to name a commit."
+              "text": "Run git log and Git prints the commits of a project from the newest to the oldest, which it does by starting at the commit you are on and following each commit's record of its parent. The other commands that read history follow the same links, and comparing where two branches can reach shows which commits one has that the other lacks."
             },
             {
               "kind": "paragraph",
-              "text": "The figure shows the history that the commands read: two shared commits, then a split.feature, and say how many commits a range holds."
+              "text": "With the chain to follow, you can find the commit that last changed a line, see exactly what it changed and read the message that says why it was made. Each of these questions needs a way to name one commit, and Git's names for commits are short expressions built from the same parent links."
             }
           ],
           "diagram": {
@@ -2205,12 +2105,7 @@
           "id": "two-labels",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "main points at c3. You run git branch x, which creates a new branch at the commit you are on. Count how many branch names point at c3 afterwards."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2218,7 +2113,7 @@
             }
           ],
           "visualStateId": "",
-          "checkQuestionId": "gitvc-branches-are-pointers-labels",
+          "checkQuestionId": "gitvc-branches-are-pointers-new-branch",
           "activityId": "",
           "answerVisibility": "hidden-until-response"
         },
@@ -2252,12 +2147,7 @@
           "id": "head-file",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Git records which branch you are on in one small file inside the .git folder. Give that file's name."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2307,20 +2197,15 @@
           "id": "old-commit",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "You check out an old commit directly, so that HEAD points at it with no branch, make two commits, and then switch to main. Predict how many branch names point at the newest of your two commits."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "Commits are only kept alive by something that reaches them. Think about what pointed at them while you were making them."
+              "text": "Commits are only kept alive by something that reaches them. While you made these two, only HEAD pointed at them, and switching to main moved HEAD away."
             }
           ],
           "visualStateId": "",
-          "checkQuestionId": "gitvc-branches-are-pointers-detached-count",
+          "checkQuestionId": "gitvc-branches-are-pointers-detached-names",
           "activityId": "",
           "answerVisibility": "hidden-until-response"
         },
@@ -2384,12 +2269,7 @@
           "id": "save-the-work",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "You are in a detached HEAD state and have made a commit you want to keep. Choose what the command git switch -c rescue does."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2405,12 +2285,7 @@
           "id": "sha256-ref",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "In a repository that uses SHA-256 hashes, which are 64 characters long, a branch is still a file holding one hash and a newline. Apply the earlier calculation and give the file's size in bytes."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2460,11 +2335,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "Open .git/refs/heads/main in a text editor and you find a single line: forty hexadecimal characters, which is the hash of one commit. That file is the whole of the branch called main. It has no copy of the project in it and no list of commits, only the name of the commit at its tip."
+              "text": "Open .git/refs/heads/main in a repository and you find a single line, the hash of one commit. Nothing else is in the file, neither a copy of the project nor a list of commits, because the commit it names already leads back through its parents to the rest of the history. A **branch** is therefore a name for one commit, and creating one is as cheap as writing that line."
             },
             {
               "kind": "paragraph",
-              "text": "The figure steps through five commands and shows which label moves at each. The rule behind them is short, and it explains branching, merging and the dangerous-looking detached HEAD state in the lessons that follow."
+              "text": "Because a branch holds nothing but that name, questions about branching become questions about which names point at which commits. Git keeps one more marker, HEAD, that says which branch you are on, and a commit moves the branch HEAD is on and no other. Knowing which of the two moves with each command is what lets you follow branching, merging and undoing without guessing."
             }
           ],
           "diagram": {
@@ -2591,20 +2466,15 @@
           "id": "ff-commits",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "main ends at c2, and feature holds c1, c2 and f1. You are on main and run git merge feature. Predict how many new commits the merge creates, bearing in mind that main's tip is an ancestor of feature's tip."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "Count what Git has to build when one branch's history already contains the other's."
+              "text": "When one branch's history already contains the other's, Git has nothing to combine, so it only moves a label."
             }
           ],
           "visualStateId": "",
-          "checkQuestionId": "gitvc-merging-ffnew",
+          "checkQuestionId": "gitvc-merging-ff-result",
           "activityId": "",
           "answerVisibility": "hidden-until-response"
         },
@@ -2659,12 +2529,7 @@
           "id": "find-the-base",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "main holds c1, c2, c3 and c4. feature was started after c2 and holds c1, c2, f1 and f2. Name the merge base of the two branches."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2680,12 +2545,7 @@
           "id": "why-base",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Git could, in principle, compare only the two branch tips. Choose the reason it also needs the merge base."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2759,12 +2619,7 @@
           "id": "no-ff",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "main ends at c2 and feature holds c1, c2 and f1, as in the first screen. You now run git merge --no-ff feature. Count the new commits it creates."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2772,7 +2627,7 @@
             }
           ],
           "visualStateId": "",
-          "checkQuestionId": "gitvc-merging-noff",
+          "checkQuestionId": "gitvc-merging-noff-result",
           "activityId": "",
           "answerVisibility": "hidden-until-response"
         },
@@ -2780,12 +2635,7 @@
           "id": "file-level",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A file has three lines, one, two and three. On main, line one is changed to ONE. On feature, line three is changed to THREE. Count how many lines of the merged file differ from the base."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2793,7 +2643,7 @@
             }
           ],
           "visualStateId": "",
-          "checkQuestionId": "gitvc-merging-lines",
+          "checkQuestionId": "gitvc-merging-lines-result",
           "activityId": "",
           "answerVisibility": "hidden-until-response"
         }
@@ -2834,11 +2684,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "Two people start from the same commit, c2. One adds c3 to main and the other adds f1 on a branch called feature, and each commit is correct on its own. Getting both into one history is a merge, and Git can often do it without being told anything, by comparing each side with the commit where they split."
+              "text": "Take a repository in which main and feature both grew from the commit c2, main by one commit c3 and feature by one commit f1. Combining the two lines of history is called a **merge**, and Git can usually do it without being told which changes to keep, because it compares each tip with the commit where the lines split, c2, and takes a change from whichever side made it."
             },
             {
               "kind": "paragraph",
-              "text": "The figure shows the two forms a merge takes. In one, a branch label slides forward and nothing new is created. In the other, Git builds a commit with two parents. Which of the two happens depends on one fact about the graph, and by the end of the lesson you will be able to read it off."
+              "text": "That comparison is what allows several people to work on one project at once and still arrive at a single history. A merge can take one of two forms, and which one depends on a single fact about the graph, whether either tip already contains the other, and telling the forms apart is what lets you predict what a merge will do to the log."
             }
           ],
           "diagram": {
@@ -2959,20 +2809,15 @@
           "id": "far-apart",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A five-line file is edited on one branch at line 1 and on the other at line 4, with lines 2 and 3 untouched. Predict how many conflicts the merge reports."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "Look at how far apart the two edited lines are, and whether either edit overlaps the other."
+              "text": "Two unchanged lines separate the edits, so neither one overlaps the other and the merge combines them without a conflict."
             }
           ],
           "visualStateId": "",
-          "checkQuestionId": "gitvc-merge-conflicts-gap",
+          "checkQuestionId": "gitvc-merge-conflicts-gap-result",
           "activityId": "",
           "answerVisibility": "hidden-until-response"
         },
@@ -3002,12 +2847,7 @@
           "id": "count-regions",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Ours edits line 2 and theirs edits line 3 of the same five-line file. Count the conflicted regions the merged file will contain."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3075,12 +2915,7 @@
           "id": "count-lines",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A conflicted file contains the following, in order: <<<<<<< HEAD, main, 3, =======, 2, other, >>>>>>> o2. Count the lines of text that lie on the incoming branch's side, between the equals line and the closing marker."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3088,7 +2923,7 @@
             }
           ],
           "visualStateId": "",
-          "checkQuestionId": "gitvc-merge-conflicts-theirs-lines",
+          "checkQuestionId": "gitvc-merge-conflicts-theirs-side",
           "activityId": "",
           "answerVisibility": "hidden-until-response"
         },
@@ -3146,20 +2981,15 @@
           "id": "three-files",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A merge stops with conflicts in three files, shown as UU. You resolve two of them, remove their markers and run git add on each. Count the files that git status --short still lists as UU."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "A file stops being unmerged once you have added it, so count the files you have not added."
+              "text": "A file stops being unmerged once you have added it, so only the file you have not added is still listed as UU."
             }
           ],
           "visualStateId": "",
-          "checkQuestionId": "gitvc-merge-conflicts-unmerged",
+          "checkQuestionId": "gitvc-merge-conflicts-unmerged-third",
           "activityId": "",
           "answerVisibility": "hidden-until-response"
         }
@@ -3200,11 +3030,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A five-line file starts as 1, 2, 3, 4, 5. On one branch line 5 becomes five, and on another line 1 becomes one, and Git merges them without a word to give one, 2, 3, 4, five. Change instead line 2 on one branch and line 3 on the other, and Git stops and leaves a file full of angle brackets. Nothing about the second pair looks more dangerous than the first."
+              "text": "In a configuration file, one line reads timeout = 10. One branch changes it to timeout = 30 and another changes it to timeout = 60. A line cannot hold both, and Git has no way of knowing which value is right, so when the branches are merged it stops and writes both versions into the file between marker lines, leaving the decision to you. This is a **merge conflict**."
             },
             {
               "kind": "paragraph",
-              "text": "The difference lies in how Git decides what it can combine, and the figure shows four pairs of edits with the verdict for each. Once you can predict the verdict, a conflict stops being a surprise and becomes a short job."
+              "text": "Conflicts are rarer than they sound, because Git combines edits that do not disturb one another without asking anything of you. Being able to tell from where two edits sit whether they will collide, and then to read the markers and finish the merge, makes a conflict a short, routine job."
             }
           ],
           "diagram": {
@@ -3320,12 +3150,7 @@
           "id": "keep-hash",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "feat holds three commits and is rebased onto a main that has moved two commits ahead. Predict how many of those three commits keep their original hash afterwards, recalling what a hash is computed from."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3333,7 +3158,7 @@
             }
           ],
           "visualStateId": "",
-          "checkQuestionId": "gitvc-rebase-and-rewriting-history-keep",
+          "checkQuestionId": "gitvc-rebase-and-rewriting-history-keep-which",
           "activityId": "",
           "answerVisibility": "hidden-until-response"
         },
@@ -3369,12 +3194,7 @@
           "id": "count-the-range",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "feat holds four commits and main has moved two commits ahead of the branch point. After git rebase main on feat, count the commits in main..feat."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3436,12 +3256,7 @@
           "id": "squash-command",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Rebase has an interactive mode that lets you reorder, combine and reword commits. Name the command that starts it by giving git rebase and the option it takes; answer with the option, one letter after a dash."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3502,12 +3317,7 @@
           "id": "squash-three",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A branch history has seven commits. You run git rebase -i HEAD~3 and squash the last three into one. Count the commits in the history afterwards."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3551,12 +3361,7 @@
           "id": "teammate-pulled",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A teammate has pulled your three commits f1, f2 and f3. You rebase your branch onto main, which gives each commit a new hash, and force-push it. Count how many of the teammate's three commits still exist in your branch."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3564,7 +3369,7 @@
             }
           ],
           "visualStateId": "",
-          "checkQuestionId": "gitvc-rebase-and-rewriting-history-survive",
+          "checkQuestionId": "gitvc-rebase-and-rewriting-history-survive-which",
           "activityId": "",
           "answerVisibility": "hidden-until-response"
         }
@@ -3605,11 +3410,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "Suppose your branch feat has three commits and main has moved on by two since you started. You could merge main in and leave a merge commit, as the last lesson showed. You could instead ask Git to take your three commits and *replay* them on top of main's new tip, so that the history reads as one line, base, m1, m2, f1, f2, f3, as though you had started after main's last commit."
+              "text": "A **rebase** takes the commits that are on your branch and not on another, and replays them one after another on top of the other branch's tip, so that your branch appears to have started there. Where a merge would join the two lines of history with a commit of its own, a rebase leaves a single line, in which your commits come after the other branch's latest as though you had begun your work later."
             },
             {
               "kind": "paragraph",
-              "text": "That second option is called rebase. The figure shows the history before it, after it, and after a merge for comparison. What the figure cannot show is the one cost: replayed commits are new commits, and the cost depends on who else has the old ones."
+              "text": "That gives a history that reads as one thing done after another, and the same replaying lets you reorder, combine and reword commits before you share them. Whether it is safe to do so depends on who else already has the commits being replayed."
             }
           ],
           "diagram": {
@@ -3727,12 +3532,7 @@
           "id": "discard-edit",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "You edited a.txt and have not staged or committed anything. You want the file back as it was at the last commit. Name the command, git followed by one word, that copies the saved version over your edit."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3768,12 +3568,7 @@
           "id": "three-commits",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A branch has three commits, one, two and three. You run git reset --mixed HEAD~2. Before the modes are explained, predict how many commits the branch has afterwards, bearing in mind that reset moves the branch pointer back."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3781,7 +3576,7 @@
             }
           ],
           "visualStateId": "",
-          "checkQuestionId": "gitvc-undoing-things-mixed3",
+          "checkQuestionId": "gitvc-undoing-things-mixed3-which",
           "activityId": "",
           "answerVisibility": "hidden-until-response"
         },
@@ -3840,12 +3635,7 @@
           "id": "mixed-status",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "After git reset --mixed HEAD~1 removes the commit that added two.txt, the file is still on disk but Git no longer tracks it. Write what git status --short prints for it: two characters, a space and the name."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3853,7 +3643,7 @@
             }
           ],
           "visualStateId": "",
-          "checkQuestionId": "gitvc-undoing-things-mixedcode",
+          "checkQuestionId": "gitvc-undoing-things-mixed-status-which",
           "activityId": "",
           "answerVisibility": "hidden-until-response"
         },
@@ -3911,12 +3701,7 @@
           "id": "count-after-revert",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A history holds commits A, B and C. You run git revert B, which adds a commit that reverses B's change. Count the commits on the branch afterwards."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3924,7 +3709,7 @@
             }
           ],
           "visualStateId": "",
-          "checkQuestionId": "gitvc-undoing-things-revertcount",
+          "checkQuestionId": "gitvc-undoing-things-revert-result",
           "activityId": "",
           "answerVisibility": "hidden-until-response"
         },
@@ -3960,12 +3745,7 @@
           "id": "recover-three",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A branch has commits one, two and three. You run git reset --hard HEAD~2, then change your mind and run git reset --hard HEAD@{1}. Count the commits on the branch."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3973,7 +3753,7 @@
             }
           ],
           "visualStateId": "",
-          "checkQuestionId": "gitvc-undoing-things-recover3",
+          "checkQuestionId": "gitvc-undoing-things-recover-which",
           "activityId": "",
           "answerVisibility": "hidden-until-response"
         }
@@ -4014,11 +3794,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "Every Git user eventually types the wrong thing: an edit that should not have been saved, a commit that holds the wrong files, a reset that appears to have deleted a day's work. Git has several undo commands, and which one fits depends on where the mistake lives. Using the wrong one either does nothing useful or throws something away."
+              "text": "Run git reset --hard HEAD~1 and the newest commit seems to have vanished, since it no longer appears in git log and its files are gone from the working tree. The commit still exists, though, as an object in the repository, and Git keeps a record of where HEAD has been, the **reflog**, from which the commit can be brought back. An edit that was never committed has no such record, so a command that discards it destroys it for good."
             },
             {
               "kind": "paragraph",
-              "text": "The figure sorts mistakes by location, from a file that has only been edited out to a commit that others already have. Alongside it runs one fact that takes most of the fear out of the rest: a commit is very hard to lose, while an edit that was never committed is very easy to lose."
+              "text": "That difference, between work Git has recorded and work it has not, is what the choice of undo rests on. Which command fits depends on where the mistake lives, in a file, in the index, in a commit only you have or in a commit that other people already have, and with that in mind you can tell in advance which undos can themselves be reversed."
             }
           ],
           "diagram": {
@@ -4144,12 +3924,7 @@
           "id": "after-three",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A range of 1,000 commits is searched by testing the middle commit each time and keeping the half that holds the bug. Predict how many commits are still under suspicion after three tests."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4199,12 +3974,7 @@
           "id": "five-thousand",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Work out the most tests bisect needs for 5,000 commits. Find the smallest number of tests k for which 2 to the power k reaches 5,000, remembering that 2 to the 10th power is 1,024."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4280,12 +4050,7 @@
           "id": "exit-code",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "git bisect run runs your script at each step and reads its exit code. Give the exit code that tells Git the commit is good."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4323,16 +4088,11 @@
           "id": "flaky-test",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A test used with bisect fails at random about one run in five, even on good commits. Decide what that does to the search."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "Think about what a wrong answer at one step does to the half that is kept."
+              "text": "A wrong answer at one step sends the search into the wrong half, and the commit it is looking for is then in the half that was discarded."
             }
           ],
           "visualStateId": "",
@@ -4344,12 +4104,7 @@
           "id": "double-history",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A history has 1,000 commits and then grows to 2,000. Apply the doubling rule from the table and count how many extra tests, at most, bisect needs for the longer history."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4398,11 +4153,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A function worked in March and returns the wrong answer now. In between there are 1,000 commits, and one of them broke it. Reading them one by one would take a day, but testing the commit in the middle of the range takes a minute, and its result removes half of the suspects, whichever way it falls."
+              "text": "A test that passed on one commit fails on a later one, and between the two lie 1,000 commits, one of which introduced the failure. Testing every commit would take a long time, but the commit in the middle of the range can be tested at once, and whichever way its result falls it rules out half of the commits that remain."
             },
             {
               "kind": "paragraph",
-              "text": "That is the idea behind git bisect, and the figure follows it on a range of 1,000 commits. The count of tests it needs, at most ten, grows so slowly with the size of the history that it is practical on a project with a million commits."
+              "text": "Repeating that step is a binary search through the history, and Git automates it as **git bisect**. The number of tests it needs grows so slowly with the length of the history that the method stays practical on a project with a million commits."
             }
           ],
           "diagram": {
@@ -4529,12 +4284,7 @@
           "id": "stale-bookmark",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Bob has pushed two commits to the host, and Alice has run no Git command since. Predict how many commits Alice's origin/main has that her own main lacks, thinking about when that label moves."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4542,7 +4292,7 @@
             }
           ],
           "visualStateId": "",
-          "checkQuestionId": "gitvc-remotes-and-sharing-stale",
+          "checkQuestionId": "gitvc-remotes-and-sharing-stale-which",
           "activityId": "",
           "answerVisibility": "hidden-until-response"
         },
@@ -4574,12 +4324,7 @@
           "id": "pull-is",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "git pull is described as a fetch followed by one more operation that brings origin/main into your branch. Name that operation."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4681,12 +4426,7 @@
           "id": "ahead-after-merge",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Alice has pulled with git pull --no-rebase, so that her main is a merge of her a1 and origin/main, which holds b1 and b2. Count the commits on her main that origin/main lacks."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4694,7 +4434,7 @@
             }
           ],
           "visualStateId": "",
-          "checkQuestionId": "gitvc-remotes-and-sharing-aheadmerge",
+          "checkQuestionId": "gitvc-remotes-and-sharing-aheadmerge-which",
           "activityId": "",
           "answerVisibility": "hidden-until-response"
         },
@@ -4702,12 +4442,7 @@
           "id": "ahead-after-rebase",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Instead of merging, Alice rebases her a1 onto origin/main, which holds b1 and b2. Her single commit is replayed as a copy. Count how many commits she is now ahead of origin/main."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4715,7 +4450,7 @@
             }
           ],
           "visualStateId": "",
-          "checkQuestionId": "gitvc-remotes-and-sharing-aheadrebase",
+          "checkQuestionId": "gitvc-remotes-and-sharing-aheadrebase-which",
           "activityId": "",
           "answerVisibility": "hidden-until-response"
         },
@@ -4745,12 +4480,7 @@
           "id": "usual-fix",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Your push is rejected with fetch first. Choose the usual fix."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4799,11 +4529,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "Alice and Bob have each cloned the same project from a hosting service, and each has the whole history. Bob makes two commits and pushes them. Alice, meanwhile, has made one commit of her own, and when she pushes it the host answers with the words rejected and fetch first. Nothing is wrong with her commit, and nothing is wrong with the host."
+              "text": "When git push to a **remote** is refused with the words rejected and fetch first, nothing is wrong with the commit being pushed and nothing is wrong with the host. The host holds commits that your repository has never seen, and it will move its branch only to a commit that contains its current tip, so a push from a history that has diverged cannot be accepted as it stands. The message makes sense once you can see where each commit is and what your repository believes about the host."
             },
             {
               "kind": "paragraph",
-              "text": "The figure follows the two of them from the clone. The rejection is easy to understand once you can see where each commit is and what Alice's repository believes about the host."
+              "text": "Three commands, fetch, pull and push, carry commits between your repository and the host's, and they differ in whether they change your own branch. Knowing which one does lets you share work without being surprised by a rejected push or by a merge you did not intend, and it is the basis for deciding how to join your commits to the host's."
             }
           ],
           "diagram": {
@@ -4868,16 +4598,11 @@
           "id": "what-is-a-pr",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Teams talk about opening a pull request before a change goes into main. Decide what a pull request is, bearing in mind that the git program has commands such as commit, merge and push."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "Think about where review comments and automatic checks live."
+              "text": "Review comments and automatic checks live on the hosting service's page for the branch, and not in Git itself."
             }
           ],
           "visualStateId": "",
@@ -4982,12 +4707,7 @@
           "id": "revert-one",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A 1,000-line change was shipped as ten equal pull requests of 100 lines each. One of them turns out to contain a bug, and you revert just that one. Count how many lines are reverted."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4995,7 +4715,7 @@
             }
           ],
           "visualStateId": "",
-          "checkQuestionId": "gitvc-collaboration-workflows-onlyone",
+          "checkQuestionId": "gitvc-collaboration-workflows-onlyone-which",
           "activityId": "",
           "answerVisibility": "hidden-until-response"
         },
@@ -5032,12 +4752,7 @@
           "id": "hide-unfinished",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A team merges unfinished work into main every day, yet users never see it until it is ready. Name the technique that keeps the new behaviour switched off, in two words."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5098,16 +4813,11 @@
           "id": "pick-for-library",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A library has users on version 2.x who need security fixes, while version 3.x is being developed. Choose the workflow that fits."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "Think about whether there is one live version or several."
+              "text": "A library with two supported versions needs fixes in each, and release branches keep the versions apart."
             }
           ],
           "visualStateId": "",
@@ -5159,20 +4869,15 @@
           "id": "approvals",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A protected branch requires two approvals before merging, and a pull request has one. Count the approvals it still needs."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "Subtract the approvals it has from the number required."
+              "text": "The protection counts approvals, so with one of the two required the merge button stays blocked."
             }
           ],
           "visualStateId": "",
-          "checkQuestionId": "gitvc-collaboration-workflows-approvalsleft",
+          "checkQuestionId": "gitvc-collaboration-workflows-approvals-blocked",
           "activityId": "",
           "answerVisibility": "hidden-until-response"
         }
@@ -5215,11 +4920,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A team of ten using the same repository needs rules that Git itself does not supply. Git will let anyone push to main, or keep a branch for six months, or merge a thousand-line change with no one looking. Teams therefore settle on a workflow: a shared habit about how long branches live, how changes are reviewed, and what a release looks like."
+              "text": "Git places no limit on how a team uses it. It will let anyone with access push straight to main, leave a branch unmerged for six months, or merge a change of a thousand lines that no one else has read. A team that wants to avoid those outcomes has to agree a **workflow** on top of Git, a shared habit about how long branches live, how changes are reviewed and what a release looks like."
             },
             {
               "kind": "paragraph",
-              "text": "The figure follows one such habit from a branch to a merge, using the pull request, which hosting services built on top of Git. The rest of the lesson compares the three workflows you will meet most often, and the single factor that separates them."
+              "text": "What matters in a workflow is how long a branch stays apart from main, because the longer it does, the more there is to review, the more is likely to conflict and the harder a mistake is to take back. Workflows differ chiefly in how they limit that gap, and the right one depends on how the product is delivered."
             }
           ],
           "diagram": {
@@ -5290,20 +4995,15 @@
           "id": "tag-vs-branch",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A tag v1.0 and the branch main both point at the newest commit. Two more commits are then made on main. Predict how many commits main is ahead of v1.0 afterwards, thinking about which of the two labels moves."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "You saw in the lesson on branches which label a commit moves."
+              "text": "A commit moves the branch that HEAD is on, as the lesson on branches showed, and a tag is not a branch, so it stays where it was put."
             }
           ],
           "visualStateId": "",
-          "checkQuestionId": "gitvc-tags-versions-and-messages-tagahead",
+          "checkQuestionId": "gitvc-tags-versions-and-messages-tagahead-which",
           "activityId": "",
           "answerVisibility": "hidden-until-response"
         },
@@ -5357,12 +5057,7 @@
           "id": "tag-type",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "You make a release with git tag -a v2 -m 'release two', an annotated tag. Run git cat-file -t v2 in your mind: name the object type Git prints."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5434,12 +5129,7 @@
           "id": "bump-minor",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The current version is 1.9.3 and you add a backwards-compatible feature. Give the new version, using the rule that a bump resets the numbers on its right."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5525,12 +5215,7 @@
           "id": "good-message",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Pick the commit message that will help someone who reads the log in a year."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5568,12 +5253,7 @@
           "id": "ignored-logs",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The pattern *.log is in .gitignore, and you create three new files ending in .log. Count how many of them git status --short lists as untracked."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5581,7 +5261,7 @@
             }
           ],
           "visualStateId": "",
-          "checkQuestionId": "gitvc-tags-versions-and-messages-ignored",
+          "checkQuestionId": "gitvc-tags-versions-and-messages-ignored-which",
           "activityId": "",
           "answerVisibility": "hidden-until-response"
         },
@@ -5589,12 +5269,7 @@
           "id": "pushed-password",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A teammate commits a password and pushes, then deletes it in the next commit. Name what you should do to the password itself, in one word."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5645,11 +5320,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A release of a program is a particular commit, and a project that has shipped version 2.4.1 needs a way to say which one, so that a bug report from a user of that version can be matched to the code. Branches cannot do this, because they move on with every commit. Git offers a name that does not move, the tag, and semantic versioning adds a convention for what the numbers inside the name should mean."
+              "text": "A release of a program is one particular commit, and a project that has shipped version 2.4.1 has to be able to say which commit that is. Git provides a name for this purpose, the **tag**, and semantic versioning adds a convention for what the numbers inside such a name should mean, so that a version number tells a user what an upgrade is likely to change."
             },
             {
               "kind": "paragraph",
-              "text": "This last lesson covers those, then the habits that make the history readable and safe: messages that give reasons, an ignore file for what should never be committed, and what to do when a secret slips in."
+              "text": "With releases named in this way, a bug report from a user of one version can be matched to the exact code that user was running, and the commit messages written along the way, if they give reasons, let someone who was not there understand why that code is as it is."
             }
           ],
           "diagram": {
@@ -5740,6 +5415,80 @@
       ],
       "skill": "name-the-parts",
       "calculator": "off"
+    },
+    {
+      "id": "gitvc-why-version-control-names",
+      "conceptIds": [
+        "repository",
+        "gitvc-commit",
+        "distributed"
+      ],
+      "prompt": "A folder holds report.docx, report_v2.docx, report_v3.docx, report_final.docx and report_final_REAL.docx. What do the file names tell you about how the versions differ?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Read the names as a stranger would, and ask what you could infer about report_v3 from its name alone.",
+        "A name can put files in an order. Ask whether it can also describe a difference between two of them."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "The names suggest an order, but say nothing about what changed"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "The names suggest an order, but say nothing about what changed"
+      },
+      "sourceIds": [
+        "pro-git",
+        "git-docs"
+      ],
+      "onCorrect": "A name identifies a file but cannot hold a description of a change, which is what a commit message is for.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "A name such as report_v2 says only that the file is a second copy, and any description of the change would have to be written somewhere else."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Nothing in a name such as report_v3 records an author or a time, so the name cannot say who made the version or when."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "Names such as v2, v3 and final do suggest an order, although they still say nothing about what changed between one version and the next."
+        }
+      ],
+      "skill": "name-the-parts",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "The names list the changes made in each version"
+        },
+        {
+          "id": "b",
+          "label": "The names suggest an order, but say nothing about what changed"
+        },
+        {
+          "id": "c",
+          "label": "The names record who made each version and when"
+        },
+        {
+          "id": "d",
+          "label": "The names are arbitrary, so they give no sign of which version came last"
+        }
+      ]
     },
     {
       "id": "gitvc-why-version-control-parent",
@@ -5833,6 +5582,80 @@
       ],
       "skill": "name-the-parts",
       "calculator": "off"
+    },
+    {
+      "id": "gitvc-why-version-control-snapshot-holds",
+      "conceptIds": [
+        "repository",
+        "gitvc-commit",
+        "distributed"
+      ],
+      "prompt": "A project has ten files. You change one line in one of them and commit. What does the new commit's snapshot contain?",
+      "responseType": "short_text",
+      "difficulty": 1.2,
+      "hints": [
+        "Think of a commit as a photograph of the project.",
+        "A photograph shows everything in the project, not just what moved."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "All ten files, as they are after the change"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "All ten files, as they are after the change"
+      },
+      "sourceIds": [
+        "pro-git",
+        "git-docs"
+      ],
+      "onCorrect": "Git reuses the nine unchanged files from the previous commit, so storing the full snapshot costs very little extra space.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "A commit is a snapshot of the whole project, so it holds every file and not just the lines that changed."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "The nine unchanged files are in the snapshot too, and so is the file you changed."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "Git does reuse the nine unchanged files from the earlier commit when it stores the new one, but as far as you are concerned the new commit holds all ten and you can ask for any of them."
+        }
+      ],
+      "skill": "name-the-parts",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Only the one line that changed"
+        },
+        {
+          "id": "b",
+          "label": "Only the one file that changed"
+        },
+        {
+          "id": "c",
+          "label": "All ten files, as they are after the change"
+        },
+        {
+          "id": "d",
+          "label": "The one changed line, with the other nine files left in the earlier commit"
+        }
+      ]
     },
     {
       "id": "gitvc-why-version-control-backup",
@@ -5956,6 +5779,81 @@
       ],
       "skill": "name-the-parts",
       "calculator": "off"
+    },
+    {
+      "id": "gitvc-why-version-control-offline-clone",
+      "conceptIds": [
+        "repository",
+        "gitvc-commit",
+        "distributed"
+      ],
+      "prompt": "Ben cloned a project of 3,000 commits, and the hosting service is now offline for a day. What can he do with his clone?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Ask what a clone downloads.",
+        "A clone downloads the whole history, not only the newest files.",
+        "Reading and committing happen on your own machine, and only pushing and fetching need the other one."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Read all 3,000 commits, compare any two of them and make new commits"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Read all 3,000 commits, compare any two of them and make new commits"
+      },
+      "sourceIds": [
+        "pro-git",
+        "git-docs"
+      ],
+      "onCorrect": "Reading history, comparing commits and committing locally all work offline, since only pushing and fetching need the other machine.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "A clone downloads every commit back to the first one, so the older commits are on Ben's own disk as well."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "The history was copied to Ben's machine when he cloned, so reading it needs no connection to the service."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "Making a commit writes only to the local repository, and the service is needed just to push or fetch."
+        }
+      ],
+      "skill": "name-the-parts",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Read all 3,000 commits, compare any two of them and make new commits"
+        },
+        {
+          "id": "b",
+          "label": "Read only the newest commit, because the older ones stay on the service"
+        },
+        {
+          "id": "c",
+          "label": "Read nothing until the service is back, because the history is kept there"
+        },
+        {
+          "id": "d",
+          "label": "Read the history, but make no new commits until the service is back"
+        }
+      ]
     },
     {
       "id": "gitvc-why-version-control-sc-commit",
@@ -6342,6 +6240,80 @@
       "calculator": "off"
     },
     {
+      "id": "gitvc-working-tree-index-repository-left-behind",
+      "conceptIds": [
+        "working-tree",
+        "gitvc-index",
+        "tracked"
+      ],
+      "prompt": "You changed five files, staged three of them and committed. What happens to the other two files?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "The commit contained only what was in the index.",
+        "Ask what git commit does with files that were never added."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "They stay modified in the working tree, neither staged nor committed"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "They stay modified in the working tree, neither staged nor committed"
+      },
+      "sourceIds": [
+        "pro-git",
+        "git-docs"
+      ],
+      "onCorrect": "Files you leave unstaged stay modified in the working tree, ready for a later commit of their own.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "A plain git commit records only what is in the index, and the two files were never added to it."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Leaving a file unstaged does not touch its content, so the edits are still in the working tree."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Git stages a file only when you run git add on it, so nothing is staged for the next commit unless you add it."
+        }
+      ],
+      "skill": "stage-deliberately",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "They are committed too, because git commit saves every modified file"
+        },
+        {
+          "id": "b",
+          "label": "They are discarded, because they were not staged"
+        },
+        {
+          "id": "c",
+          "label": "They are staged automatically, ready for the next commit"
+        },
+        {
+          "id": "d",
+          "label": "They stay modified in the working tree, neither staged nor committed"
+        }
+      ]
+    },
+    {
       "id": "gitvc-working-tree-index-repository-diff",
       "conceptIds": [
         "working-tree",
@@ -6436,6 +6408,80 @@
       ],
       "skill": "stage-deliberately",
       "calculator": "off"
+    },
+    {
+      "id": "gitvc-working-tree-index-repository-commit-a-contents",
+      "conceptIds": [
+        "working-tree",
+        "gitvc-index",
+        "tracked"
+      ],
+      "prompt": "A tracked file a.txt has been edited, and a new file new.txt has never been added. You run git commit -am with a message. What does the new commit contain?",
+      "responseType": "short_text",
+      "difficulty": 1.2,
+      "hints": [
+        "Ask which of the two files Git already tracks.",
+        "commit -a stages tracked files and ignores untracked ones."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "The changes to a.txt only, with new.txt left out"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "The changes to a.txt only, with new.txt left out"
+      },
+      "sourceIds": [
+        "pro-git",
+        "git-docs"
+      ],
+      "onCorrect": "new.txt remains untracked after the commit, so a forgotten new file never sneaks in through -a, and has to be added by name.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "The -a option stages changes to tracked files only, and new.txt is untracked, so it is not included."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Git commits as usual when untracked files are present, leaving them out and listing them as untracked afterwards."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "The -a option does not add new.txt, and a.txt is tracked, so its edit is in the commit."
+        }
+      ],
+      "skill": "stage-deliberately",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "The changes to both a.txt and new.txt"
+        },
+        {
+          "id": "b",
+          "label": "The changes to a.txt only, with new.txt left out"
+        },
+        {
+          "id": "c",
+          "label": "Nothing, because git refuses to commit while an untracked file exists"
+        },
+        {
+          "id": "d",
+          "label": "The new file new.txt only, because it is the newer change"
+        }
+      ]
     },
     {
       "id": "gitvc-working-tree-index-repository-sc-mm",
@@ -6858,6 +6904,81 @@
       "calculator": "off"
     },
     {
+      "id": "gitvc-objects-and-hashes-rewrite-which",
+      "conceptIds": [
+        "content-addressing",
+        "object-types",
+        "hash-chain"
+      ],
+      "prompt": "A project has eight commits in a line. You edit the message of commit 2. Which commits have a different hash afterwards?",
+      "responseType": "short_text",
+      "difficulty": 1.3,
+      "hints": [
+        "The edit changes commit 2's content, so its hash changes.",
+        "Each commit contains the hash of its parent. Ask what that means for the commit that follows one whose hash has changed."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Commit 2 and every commit after it"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Commit 2 and every commit after it"
+      },
+      "sourceIds": [
+        "git-internals",
+        "pro-git",
+        "git-glossary"
+      ],
+      "onCorrect": "Commit 1 does not contain anything that changed, so it keeps its hash, while every commit from 2 onwards has a new one.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "Each commit contains its parent's hash, so the new hash of commit 2 changes the content of commit 3, and then of commit 4, and so on to the newest commit."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "A commit records its parent's hash and not its child's, so commit 1 contains nothing that changed and keeps its hash."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "Commit 1 comes before the edit and contains nothing that changed, so it keeps its hash."
+        }
+      ],
+      "skill": "predict-hash-change",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Only commit 2, because it is the only one that was edited"
+        },
+        {
+          "id": "b",
+          "label": "Commit 2 and the commit before it"
+        },
+        {
+          "id": "c",
+          "label": "Commit 2 and every commit after it"
+        },
+        {
+          "id": "d",
+          "label": "All eight commits"
+        }
+      ]
+    },
+    {
       "id": "gitvc-objects-and-hashes-shared",
       "conceptIds": [
         "content-addressing",
@@ -7128,6 +7249,81 @@
       "calculator": "off"
     },
     {
+      "id": "gitvc-reading-history-resolve-which",
+      "conceptIds": [
+        "revision-name",
+        "range",
+        "diff"
+      ],
+      "prompt": "A project has seven commits in a line, C1 oldest and C7 newest, and HEAD is C7. Git writes HEAD~2 for one of them. Which commit is it?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "HEAD~1 is the parent of HEAD.",
+        "Ask whether the number counts from the oldest commit or from HEAD."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "C5, two commits before HEAD"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "C5, two commits before HEAD"
+      },
+      "sourceIds": [
+        "git-docs",
+        "pro-git",
+        "git-glossary"
+      ],
+      "onCorrect": "Each ~ is one step along the parent links, so two steps back from C7 reaches C5.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "The number after the tilde counts steps back from HEAD along the parent links, so the count starts at the newest commit and not at the oldest."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "The commit just before HEAD is its parent, which is HEAD~1. HEAD~2 is one step further back."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "HEAD alone names C7. The number after the tilde says how many parent links to follow from it, so HEAD~2 is a different commit."
+        }
+      ],
+      "skill": "resolve-a-name",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "C2, because the number counts from the oldest commit"
+        },
+        {
+          "id": "b",
+          "label": "C6, the commit just before HEAD"
+        },
+        {
+          "id": "c",
+          "label": "C7, because HEAD is where the count starts and the number is ignored"
+        },
+        {
+          "id": "d",
+          "label": "C5, two commits before HEAD"
+        }
+      ]
+    },
+    {
       "id": "gitvc-reading-history-headn",
       "conceptIds": [
         "revision-name",
@@ -7381,6 +7577,81 @@
       "calculator": "off"
     },
     {
+      "id": "gitvc-reading-history-logcount-which",
+      "conceptIds": [
+        "revision-name",
+        "range",
+        "diff"
+      ],
+      "prompt": "main holds c1, c2 and c3. feature started after c2 and holds c1, c2 and f1. You are on feature and run git log --oneline. Which commits does it list?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Follow the parent links from f1 all the way back.",
+        "Commits before the branch point are reachable from f1 too."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "f1, c2 and c1"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "f1, c2 and c1"
+      },
+      "sourceIds": [
+        "git-docs",
+        "pro-git",
+        "git-glossary"
+      ],
+      "onCorrect": "The commit c3 is not listed, because feature cannot reach it by following parent links.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "The commits on feature that main lacks are what main..feature selects, whereas git log lists everything reachable from where you are, including the commits before the branch point."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "git log lists the commits reachable from the one you are on, and c3 is not among them, because feature cannot reach it by following parent links."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "git log follows the parent links from the commit you are on, which here is f1, and does not switch to another branch."
+        }
+      ],
+      "skill": "count-a-range",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "f1, c2 and c1"
+        },
+        {
+          "id": "b",
+          "label": "f1 only, because it is the only commit that feature has and main lacks"
+        },
+        {
+          "id": "c",
+          "label": "f1, c2, c1 and c3, because git log lists every commit in the repository"
+        },
+        {
+          "id": "d",
+          "label": "c3, c2 and c1, because git log lists the main branch"
+        }
+      ]
+    },
+    {
       "id": "gitvc-reading-history-sc-name",
       "conceptIds": [
         "revision-name",
@@ -7601,6 +7872,81 @@
       "calculator": "off"
     },
     {
+      "id": "gitvc-branches-are-pointers-new-branch",
+      "conceptIds": [
+        "branch",
+        "head",
+        "detached-head"
+      ],
+      "prompt": "main points at c3 and HEAD is on main. You run git branch x. What is true afterwards?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "git branch x puts a new label on the commit you are on.",
+        "The existing label does not move, and neither does HEAD."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Both main and x point at c3, and HEAD is still on main"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Both main and x point at c3, and HEAD is still on main"
+      },
+      "sourceIds": [
+        "pro-git",
+        "git-docs",
+        "git-internals"
+      ],
+      "onCorrect": "A commit can carry any number of labels, and creating one copies no files.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "Creating a branch copies no files. It adds one new name that points at the commit you are on."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "git branch x makes no commit, so there is no new commit for x to point at."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "git branch only creates the name. HEAD stays on main until you run git switch x."
+        }
+      ],
+      "skill": "follow-the-pointers",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "x is a copy of the project, and main is unchanged"
+        },
+        {
+          "id": "b",
+          "label": "x points at a new commit that the command creates"
+        },
+        {
+          "id": "c",
+          "label": "Both main and x point at c3, and HEAD is still on main"
+        },
+        {
+          "id": "d",
+          "label": "Both main and x point at c3, and HEAD is now on x"
+        }
+      ]
+    },
+    {
       "id": "gitvc-branches-are-pointers-headfile",
       "conceptIds": [
         "branch",
@@ -7746,6 +8092,69 @@
       ],
       "skill": "spot-a-detached-head",
       "calculator": "off"
+    },
+    {
+      "id": "gitvc-branches-are-pointers-detached-names",
+      "conceptIds": [
+        "branch",
+        "head",
+        "detached-head"
+      ],
+      "prompt": "You check out an old commit directly, so that HEAD points at it with no branch, make two commits, and then switch to main. What points at the newer of your two commits?",
+      "responseType": "short_text",
+      "difficulty": 1.3,
+      "hints": [
+        "A commit made while HEAD is detached moves only HEAD.",
+        "Switching away leaves the commits behind."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "No branch name at all"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "No branch name at all"
+      },
+      "sourceIds": [
+        "pro-git",
+        "git-docs",
+        "git-internals"
+      ],
+      "onCorrect": "Without a name the commits are easy to lose, and the reflog is the usual way back, as a later lesson shows.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "Switching to main moves HEAD to main's commit and leaves main where it was, so main does not carry the new commits along."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Git does not create a branch for you. It warns that the commits belong to no branch and leaves the choice to you."
+        }
+      ],
+      "skill": "spot-a-detached-head",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "main, which moves forward to take them with it"
+        },
+        {
+          "id": "b",
+          "label": "A branch that Git creates automatically, so the commits are not lost"
+        },
+        {
+          "id": "c",
+          "label": "No branch name at all"
+        }
+      ]
     },
     {
       "id": "gitvc-branches-are-pointers-rescue",
@@ -8050,6 +8459,80 @@
       "calculator": "off"
     },
     {
+      "id": "gitvc-merging-ff-result",
+      "conceptIds": [
+        "fast-forward",
+        "three-way-merge",
+        "merge-commit"
+      ],
+      "prompt": "main ends at c2 and feature holds c1, c2 and f1. You are on main and run git merge feature. What happens?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Is main's tip an ancestor of feature's tip?",
+        "If it is, main's label can simply move forward."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Git moves main forward to f1 and creates no new commit"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Git moves main forward to f1 and creates no new commit"
+      },
+      "sourceIds": [
+        "pro-git",
+        "git-docs"
+      ],
+      "onCorrect": "After the fast-forward main and feature point at the same commit.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "A merge commit is needed only when both branches have new work. Here main has none since c2, so there is nothing to combine."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "The branches have not diverged, because main's tip c2 is an ancestor of feature's tip f1, and Git can merge them without any help."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "Git does not copy commits in a merge. Moving the label main to f1 gives main the same history as feature, so nothing new is needed."
+        }
+      ],
+      "skill": "classify-a-merge",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Git creates a merge commit with two parents, c2 and f1"
+        },
+        {
+          "id": "b",
+          "label": "Git stops, because the two branches have diverged"
+        },
+        {
+          "id": "c",
+          "label": "Git moves main forward to f1 and creates no new commit"
+        },
+        {
+          "id": "d",
+          "label": "Git copies f1 onto main as a new commit with its own hash"
+        }
+      ]
+    },
+    {
       "id": "gitvc-merging-base",
       "conceptIds": [
         "fast-forward",
@@ -8267,6 +8750,80 @@
       "calculator": "off"
     },
     {
+      "id": "gitvc-merging-noff-result",
+      "conceptIds": [
+        "fast-forward",
+        "three-way-merge",
+        "merge-commit"
+      ],
+      "prompt": "main ends at c2 and feature holds c1, c2 and f1. You are on main and run git merge --no-ff feature. What happens?",
+      "responseType": "short_text",
+      "difficulty": 1.2,
+      "hints": [
+        "The option is named for what it forbids, which is the fast-forward.",
+        "Without the label sliding forward, Git has to record the join some other way."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Git makes a merge commit with two parents, c2 and f1"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Git makes a merge commit with two parents, c2 and f1"
+      },
+      "sourceIds": [
+        "pro-git",
+        "git-docs"
+      ],
+      "onCorrect": "The merge commit records that a branch existed, which a fast-forward would have hidden.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "That is what a plain git merge does here. The --no-ff option asks for a merge commit even when a fast-forward is possible."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Stopping when a fast-forward is not possible is what --ff-only does. --no-ff works the other way, forcing a merge commit where a fast-forward would have been possible."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "A merge commit has two parents, the old tip of the branch you are on and the tip of the branch you merged in, and not a single parent with copied files."
+        }
+      ],
+      "skill": "classify-a-merge",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "main slides forward to f1 and no new commit is made, as with a plain merge"
+        },
+        {
+          "id": "b",
+          "label": "Git makes a merge commit with two parents, c2 and f1"
+        },
+        {
+          "id": "c",
+          "label": "Git stops with an error, because a fast-forward is possible"
+        },
+        {
+          "id": "d",
+          "label": "Git makes a new commit with one parent, f1, that holds a copy of feature's files"
+        }
+      ]
+    },
+    {
       "id": "gitvc-merging-lines",
       "conceptIds": [
         "fast-forward",
@@ -8314,6 +8871,80 @@
       ],
       "skill": "count-after-merge",
       "calculator": "off"
+    },
+    {
+      "id": "gitvc-merging-lines-result",
+      "conceptIds": [
+        "fast-forward",
+        "three-way-merge",
+        "merge-commit"
+      ],
+      "prompt": "A file has three lines: one, two and three. On main, line one is changed to ONE, and on feature, line three is changed to THREE. You merge feature into main. What does the merged file contain?",
+      "responseType": "short_text",
+      "difficulty": 1.2,
+      "hints": [
+        "Each line was changed by only one side.",
+        "Git keeps a change when the other side left the line alone."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Line one reads ONE and line three reads THREE"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Line one reads ONE and line three reads THREE"
+      },
+      "sourceIds": [
+        "pro-git",
+        "git-docs"
+      ],
+      "onCorrect": "Changes to different, non-adjacent lines merge with no conflict, and the next lesson shows when that stops being true.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Git compares each tip with the merge base and keeps every change that only one side made, so feature's change to line three is kept as well."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Git compares each tip with the merge base and keeps every change that only one side made, so main's change to line one is kept as well."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "A conflict needs both sides to change the same lines or lines that touch. Here the changes are on separate lines, so Git keeps both without asking."
+        }
+      ],
+      "skill": "count-after-merge",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Line one reads ONE and line three reads THREE"
+        },
+        {
+          "id": "b",
+          "label": "Line one reads ONE and line three still reads three, because main is the branch you are on"
+        },
+        {
+          "id": "c",
+          "label": "Line one still reads one and line three reads THREE, because feature is the branch being merged in"
+        },
+        {
+          "id": "d",
+          "label": "A conflict, because both branches changed the same file"
+        }
+      ]
     },
     {
       "id": "gitvc-merging-sc-count",
@@ -8537,6 +9168,80 @@
       "calculator": "off"
     },
     {
+      "id": "gitvc-merge-conflicts-gap-result",
+      "conceptIds": [
+        "conflict",
+        "conflict-markers",
+        "resolution"
+      ],
+      "prompt": "One branch edits line 1 of a five-line file and the other edits line 4. What does the merge do?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Check whether the two edited lines touch.",
+        "Unchanged lines lie between them."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "It merges cleanly and keeps both edits"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "It merges cleanly and keeps both edits"
+      },
+      "sourceIds": [
+        "pro-git",
+        "git-docs"
+      ],
+      "onCorrect": "Had the edits been on lines 1 and 2, Git would have reported a conflict, since neighbouring changes are treated as one place.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "Editing the same file is not enough for a conflict. Git compares each branch with the merge base, and edits that do not disturb one another are combined."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Line 4 is edited on only one branch, and the unchanged lines between the two edits leave nothing for the branches to disagree about."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "A merge keeps changes from both sides when they do not overlap, and it does not choose one branch's version."
+        }
+      ],
+      "skill": "predict-conflict",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "It stops with a conflict, because the same file was edited on both branches"
+        },
+        {
+          "id": "b",
+          "label": "It merges cleanly and keeps both edits"
+        },
+        {
+          "id": "c",
+          "label": "It stops with a conflict at line 4 only, because that edit was made later"
+        },
+        {
+          "id": "d",
+          "label": "It keeps the edit from the branch being merged in and drops the other"
+        }
+      ]
+    },
+    {
       "id": "gitvc-merge-conflicts-regions",
       "conceptIds": [
         "conflict",
@@ -8635,6 +9340,80 @@
       "calculator": "off"
     },
     {
+      "id": "gitvc-merge-conflicts-theirs-side",
+      "conceptIds": [
+        "conflict",
+        "conflict-markers",
+        "resolution"
+      ],
+      "prompt": "A conflicted file holds <<<<<<< HEAD, main, 3, =======, 2, other and >>>>>>> o2, in that order. Which lines are the version from the branch being merged in?",
+      "responseType": "short_text",
+      "difficulty": 1.2,
+      "hints": [
+        "The incoming side starts after the equals line.",
+        "It ends at the closing marker."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "2 and other"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "2 and other"
+      },
+      "sourceIds": [
+        "pro-git",
+        "git-docs"
+      ],
+      "onCorrect": "The lines above the equals line, main and 3, are your side, the one named HEAD.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "Those lines sit above the equals line, in the section after <<<<<<< HEAD, which holds the version from the branch you were on."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "That is both versions together. The equals line divides them, and the incoming branch's lines are the ones between it and the closing marker."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "Those are the last line of one version and the first of the other, but each version is the whole run of lines on its side of the equals line."
+        }
+      ],
+      "skill": "read-markers",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "main and 3"
+        },
+        {
+          "id": "b",
+          "label": "All four lines of text"
+        },
+        {
+          "id": "c",
+          "label": "2 and other"
+        },
+        {
+          "id": "d",
+          "label": "3 and 2"
+        }
+      ]
+    },
+    {
       "id": "gitvc-merge-conflicts-leftover-markers",
       "conceptIds": [
         "conflict",
@@ -8731,6 +9510,68 @@
       ],
       "skill": "read-markers",
       "calculator": "off"
+    },
+    {
+      "id": "gitvc-merge-conflicts-unmerged-third",
+      "conceptIds": [
+        "conflict",
+        "conflict-markers",
+        "resolution"
+      ],
+      "prompt": "A merge conflicts in three files. You edit out the markers in two of them and run git add on each. What does git status --short show for the third file?",
+      "responseType": "short_text",
+      "difficulty": 1.2,
+      "hints": [
+        "A file leaves the unmerged list once it is added.",
+        "Ask whether adding one file can resolve another."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "UU, because it is still unresolved"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "UU, because it is still unresolved"
+      },
+      "sourceIds": [
+        "pro-git",
+        "git-docs"
+      ],
+      "onCorrect": "Only when no file is left as UU can git commit finish the merge.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Git does not resolve a conflicted file on its own. Each one stays UU until you edit it and run git add on it."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Adding a file marks only that file as resolved, so the third is unaffected and stays unmerged."
+        }
+      ],
+      "skill": "read-markers",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "UU, because it is still unresolved"
+        },
+        {
+          "id": "b",
+          "label": "M, because Git merges the last file by itself once the others are done"
+        },
+        {
+          "id": "c",
+          "label": "Nothing, because adding the other two files cleared the conflict"
+        }
+      ]
     },
     {
       "id": "gitvc-merge-conflicts-sc-clean",
@@ -8982,6 +9823,80 @@
       "calculator": "off"
     },
     {
+      "id": "gitvc-rebase-and-rewriting-history-keep-which",
+      "conceptIds": [
+        "rebase",
+        "linear-history",
+        "shared-history"
+      ],
+      "prompt": "feat holds three commits and is rebased onto main, which has moved two commits ahead. Which of the three commits keep their original hash?",
+      "responseType": "short_text",
+      "difficulty": 1.2,
+      "hints": [
+        "A commit's hash covers its parent's hash.",
+        "The first replayed commit has a different parent, and the change runs down the branch."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "None of them"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "None of them"
+      },
+      "sourceIds": [
+        "pro-git",
+        "git-docs"
+      ],
+      "onCorrect": "The copies carry the same changes and messages but are new objects, and the originals remain until garbage collection.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "A rebase copies each commit onto a new parent, and a commit's hash covers its parent, so the copies cannot have the originals' hashes."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "The second and third commits have the copy of the first as their parent, and its hash is new, so their hashes change as well."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "The last commit's parent is a copy with a new hash, so its own hash changes too."
+        }
+      ],
+      "skill": "count-after-rebase",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "All three, because the commits are only moved"
+        },
+        {
+          "id": "b",
+          "label": "Only the first, because it is the only one whose parent is replaced"
+        },
+        {
+          "id": "c",
+          "label": "Only the last, because it is the tip that the branch points at"
+        },
+        {
+          "id": "d",
+          "label": "None of them"
+        }
+      ]
+    },
+    {
       "id": "gitvc-rebase-and-rewriting-history-mainfeat",
       "conceptIds": [
         "rebase",
@@ -9211,6 +10126,80 @@
       ],
       "skill": "judge-safety",
       "calculator": "off"
+    },
+    {
+      "id": "gitvc-rebase-and-rewriting-history-survive-which",
+      "conceptIds": [
+        "rebase",
+        "linear-history",
+        "shared-history"
+      ],
+      "prompt": "A teammate pulled your three commits. You rebase your branch, which replaces them with copies, and force-push it. What is true of the teammate's three commits?",
+      "responseType": "short_text",
+      "difficulty": 1.3,
+      "hints": [
+        "Compare hashes, not messages.",
+        "Your branch now holds the copies, with new hashes."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "None of them is in your branch, because it now holds copies with new hashes"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "None of them is in your branch, because it now holds copies with new hashes"
+      },
+      "sourceIds": [
+        "pro-git",
+        "git-docs"
+      ],
+      "onCorrect": "Their repository and yours disagree from the first rewritten commit, and they have to reconcile it.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "The messages and changes match, but a commit is identified by its hash, and the copies are different objects with different hashes."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "All three were replayed, so none of the old hashes is left in your branch, and that includes the tip."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "A force-push changes the branch on the server and does not touch the teammate's repository. Their commits stay where they are, and the two histories now disagree."
+        }
+      ],
+      "skill": "judge-safety",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "All three are still in your branch, because the copies carry the same changes and messages"
+        },
+        {
+          "id": "b",
+          "label": "None of them is in your branch, because it now holds copies with new hashes"
+        },
+        {
+          "id": "c",
+          "label": "Only the last one is still in your branch, because it is the tip"
+        },
+        {
+          "id": "d",
+          "label": "None of them is in your branch, and Git deletes them from the teammate's repository too"
+        }
+      ]
     },
     {
       "id": "gitvc-rebase-and-rewriting-history-sc-range",
@@ -9479,6 +10468,69 @@
       "calculator": "off"
     },
     {
+      "id": "gitvc-undoing-things-mixed3-which",
+      "conceptIds": [
+        "restore",
+        "reset-modes",
+        "gitvc-revert",
+        "reflog"
+      ],
+      "prompt": "A branch has three commits, one, two and three. You run git reset --mixed HEAD~2. What does the branch look like afterwards?",
+      "responseType": "short_text",
+      "difficulty": 1.2,
+      "hints": [
+        "reset moves the branch label back to the named commit.",
+        "The commits after that point leave the branch."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "It ends at commit one, and commits two and three are no longer on it"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "It ends at commit one, and commits two and three are no longer on it"
+      },
+      "sourceIds": [
+        "pro-git",
+        "git-docs"
+      ],
+      "onCorrect": "The mode changes only what happens to the files, and the branch is moved back in all three modes.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "Reset moves the branch label back along the parent links, so it takes off every commit after the one it lands on, and not a single commit from the middle."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Reset does not mark commits as undone. It moves the branch label, and the commits after the new position are no longer on the branch."
+        }
+      ],
+      "skill": "predict-reset",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "It holds commits one and three, because only the commit two steps back is removed"
+        },
+        {
+          "id": "b",
+          "label": "It ends at commit one, and commits two and three are no longer on it"
+        },
+        {
+          "id": "c",
+          "label": "It still holds all three commits, with the last two marked as undone"
+        }
+      ]
+    },
+    {
       "id": "gitvc-undoing-things-mixedcode",
       "conceptIds": [
         "restore",
@@ -9521,6 +10573,81 @@
       ],
       "skill": "predict-reset",
       "calculator": "off"
+    },
+    {
+      "id": "gitvc-undoing-things-mixed-status-which",
+      "conceptIds": [
+        "restore",
+        "reset-modes",
+        "gitvc-revert",
+        "reflog"
+      ],
+      "prompt": "After git reset --mixed HEAD~1 has removed the commit that added two.txt, what does git status --short print for it?",
+      "responseType": "short_text",
+      "difficulty": 1.3,
+      "hints": [
+        "The file is no longer in the index or in any commit on the branch.",
+        "Ask which of the two columns of git status --short could still hold a letter for it."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "?? two.txt, because Git does not track the file"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "?? two.txt, because Git does not track the file"
+      },
+      "sourceIds": [
+        "pro-git",
+        "git-docs"
+      ],
+      "onCorrect": "The file stays on disk, and Git treats it as new because no commit on the branch contains it.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "That is the result of --soft, which leaves the file staged. --mixed resets the index too."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "M is shown for a tracked file that has changed, and after --mixed the file is no longer in the index or in any commit on the branch, so Git does not track it."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "That is the result of --hard. --mixed resets only the index, so the file is still on disk."
+        }
+      ],
+      "skill": "predict-reset",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "A  two.txt"
+        },
+        {
+          "id": "b",
+          "label": "M  two.txt"
+        },
+        {
+          "id": "c",
+          "label": "Nothing, because the file has been deleted"
+        },
+        {
+          "id": "d",
+          "label": "?? two.txt, because Git does not track the file"
+        }
+      ]
     },
     {
       "id": "gitvc-undoing-things-recovered",
@@ -9623,6 +10750,81 @@
       "calculator": "off"
     },
     {
+      "id": "gitvc-undoing-things-revert-result",
+      "conceptIds": [
+        "restore",
+        "reset-modes",
+        "gitvc-revert",
+        "reflog"
+      ],
+      "prompt": "A history holds commits A, B and C. You run git revert B. What does the branch look like afterwards?",
+      "responseType": "short_text",
+      "difficulty": 1.2,
+      "hints": [
+        "Revert never deletes a commit.",
+        "It adds a commit that applies the reverse change."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "A, B and C, followed by a new commit that reverses B's change"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "A, B and C, followed by a new commit that reverses B's change"
+      },
+      "sourceIds": [
+        "pro-git",
+        "git-docs"
+      ],
+      "onCorrect": "The original B stays in the history next to its revert.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "Removing B from the history would be a rewrite, which is what revert avoids. B stays where it is."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Moving the branch back and removing commits is what reset does. Revert never removes a commit."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "A commit cannot be edited once it exists. Revert records the reverse change as a commit of its own."
+        }
+      ],
+      "skill": "pick-an-undo",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "A and C, with B removed from the history"
+        },
+        {
+          "id": "b",
+          "label": "A only, with B and C removed"
+        },
+        {
+          "id": "c",
+          "label": "A, B and C unchanged, with B's change cancelled inside B"
+        },
+        {
+          "id": "d",
+          "label": "A, B and C, followed by a new commit that reverses B's change"
+        }
+      ]
+    },
+    {
       "id": "gitvc-undoing-things-recover3",
       "conceptIds": [
         "restore",
@@ -9671,6 +10873,81 @@
       ],
       "skill": "predict-reset",
       "calculator": "off"
+    },
+    {
+      "id": "gitvc-undoing-things-recover-which",
+      "conceptIds": [
+        "restore",
+        "reset-modes",
+        "gitvc-revert",
+        "reflog"
+      ],
+      "prompt": "A branch has commits one, two and three. You run git reset --hard HEAD~2 and then git reset --hard HEAD@{1}. What does the branch hold afterwards?",
+      "responseType": "short_text",
+      "difficulty": 1.3,
+      "hints": [
+        "HEAD@{1} names where HEAD was one move ago.",
+        "The first reset moved HEAD away from the newest commit."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Commits one, two and three, because HEAD@{1} is where HEAD was one move ago"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Commits one, two and three, because HEAD@{1} is where HEAD was one move ago"
+      },
+      "sourceIds": [
+        "pro-git",
+        "git-docs"
+      ],
+      "onCorrect": "Because the reflog kept the position, the reset --hard cost nothing here.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "The reflog still records where HEAD was before the first reset, so the commits were not lost, and HEAD@{1} names commit three."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "HEAD@{1} counts moves of HEAD and not parent links, as HEAD~1 does. One move ago, HEAD was at commit three."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "--hard moves the branch and changes the files, but the commits themselves stay in the repository as objects, and the reflog still names them."
+        }
+      ],
+      "skill": "predict-reset",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Commits one, two and three, because HEAD@{1} is where HEAD was one move ago"
+        },
+        {
+          "id": "b",
+          "label": "Commit one only, because the second reset has nothing to go back to"
+        },
+        {
+          "id": "c",
+          "label": "Commits one and two, because HEAD@{1} is one commit back from the current one"
+        },
+        {
+          "id": "d",
+          "label": "Nothing, because reset --hard deletes the commits"
+        }
+      ]
     },
     {
       "id": "gitvc-undoing-things-sc-undo",
@@ -10391,6 +11668,68 @@
       "calculator": "off"
     },
     {
+      "id": "gitvc-remotes-and-sharing-stale-which",
+      "conceptIds": [
+        "remote",
+        "fetch-pull",
+        "non-fast-forward"
+      ],
+      "prompt": "Bob has pushed two commits to the host, and Alice has run no Git command since. What does Alice's origin/main show?",
+      "responseType": "short_text",
+      "difficulty": 1.2,
+      "hints": [
+        "Think about when origin/main is updated.",
+        "Nothing has moved it since Bob pushed."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "The host's main as of her last fetch, pull or push, without Bob's commits"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "The host's main as of her last fetch, pull or push, without Bob's commits"
+      },
+      "sourceIds": [
+        "pro-git",
+        "git-docs"
+      ],
+      "onCorrect": "After a fetch the label would include Bob's two commits.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "origin/main is a label stored in Alice's own repository, and the host cannot move it. It changes only when she runs fetch, pull or push."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "The label stays where it was after the clone. It is not removed, but it is out of date."
+        }
+      ],
+      "skill": "read-divergence",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "The host's main as it is now, including Bob's two commits"
+        },
+        {
+          "id": "b",
+          "label": "Nothing, because the label is removed until she fetches"
+        },
+        {
+          "id": "c",
+          "label": "The host's main as of her last fetch, pull or push, without Bob's commits"
+        }
+      ]
+    },
+    {
       "id": "gitvc-remotes-and-sharing-pullterm",
       "conceptIds": [
         "remote",
@@ -10535,6 +11874,80 @@
       "calculator": "off"
     },
     {
+      "id": "gitvc-remotes-and-sharing-aheadmerge-which",
+      "conceptIds": [
+        "remote",
+        "fetch-pull",
+        "non-fast-forward"
+      ],
+      "prompt": "After git pull --no-rebase, Alice's main is a merge of her commit a1 with origin/main, which holds b1 and b2. Which commits does her main have that origin/main lacks?",
+      "responseType": "short_text",
+      "difficulty": 1.3,
+      "hints": [
+        "Ahead means on main but not on origin/main.",
+        "The commits from Bob are on both."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Both a1 and the merge commit"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Both a1 and the merge commit"
+      },
+      "sourceIds": [
+        "pro-git",
+        "git-docs"
+      ],
+      "onCorrect": "Pushing now uploads those two commits, and the host accepts it as a plain advance.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "The merge commit is new as well, and the host has never seen it, so it counts among the commits that main has and origin/main lacks."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "A merge commit does not absorb a1. The commit a1 stays a commit of its own, reachable through one of the merge's two parents, and the host lacks it."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "The commits Bob pushed are on the host already, since origin/main holds them, so they are not among the commits that main has and origin/main lacks."
+        }
+      ],
+      "skill": "read-divergence",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Only a1, because b1 and b2 are already on the host"
+        },
+        {
+          "id": "b",
+          "label": "Only the merge commit, because a1 is now part of it"
+        },
+        {
+          "id": "c",
+          "label": "b1, b2, a1 and the merge commit"
+        },
+        {
+          "id": "d",
+          "label": "Both a1 and the merge commit"
+        }
+      ]
+    },
+    {
       "id": "gitvc-remotes-and-sharing-aheadrebase",
       "conceptIds": [
         "remote",
@@ -10582,6 +11995,80 @@
       ],
       "skill": "read-divergence",
       "calculator": "off"
+    },
+    {
+      "id": "gitvc-remotes-and-sharing-aheadrebase-which",
+      "conceptIds": [
+        "remote",
+        "fetch-pull",
+        "non-fast-forward"
+      ],
+      "prompt": "Alice rebases her single commit a1 onto origin/main, which holds b1 and b2. Which commits does her main now have that origin/main lacks?",
+      "responseType": "short_text",
+      "difficulty": 1.3,
+      "hints": [
+        "A rebase replays each of her commits as a copy.",
+        "It adds no merge commit."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Only a copy of a1, placed on top of b2"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Only a copy of a1, placed on top of b2"
+      },
+      "sourceIds": [
+        "pro-git",
+        "git-docs"
+      ],
+      "onCorrect": "Compared with a merge, the rebase leaves one commit ahead, and history stays a straight line.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "A rebase creates no merge commit. It replays the commit on top of origin/main, which leaves a straight line."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "The rebase moves main to the copy, so the original a1 is no longer on main. It stays in the repository only until garbage collection removes it."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "The copy of a1 is a commit that origin/main does not have, so main is one commit ahead."
+        }
+      ],
+      "skill": "read-divergence",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "a1 and a merge commit"
+        },
+        {
+          "id": "b",
+          "label": "Only a copy of a1, placed on top of b2"
+        },
+        {
+          "id": "c",
+          "label": "The original a1 and a copy of it"
+        },
+        {
+          "id": "d",
+          "label": "Nothing, because the rebase makes main identical to origin/main"
+        }
+      ]
     },
     {
       "id": "gitvc-remotes-and-sharing-fix",
@@ -10830,7 +12317,7 @@
         "gitvc-trunk-based",
         "long-lived-branch"
       ],
-      "prompt": "A pull request is...",
+      "prompt": "Teams open a pull request before a change goes into main. What is a pull request?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -10949,6 +12436,82 @@
       ],
       "skill": "review-a-change",
       "calculator": "off"
+    },
+    {
+      "id": "gitvc-collaboration-workflows-onlyone-which",
+      "conceptIds": [
+        "pull-request",
+        "gitvc-trunk-based",
+        "long-lived-branch"
+      ],
+      "prompt": "A 1,000-line change was shipped as ten equal pull requests. One of them has a bug and you revert it alone. What does the revert undo?",
+      "responseType": "short_text",
+      "difficulty": 1.1,
+      "hints": [
+        "A revert undoes one pull request.",
+        "Think about how much of the work that pull request holds."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Only the lines of that pull request, leaving the rest of the change in place"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Only the lines of that pull request, leaving the rest of the change in place"
+      },
+      "sourceIds": [
+        "github-flow",
+        "trunk-based",
+        "driessen",
+        "pro-git"
+      ],
+      "onCorrect": "Had the change shipped as one pull request, undoing it would have meant reverting every line, good or bad.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "A revert applies the reverse of one change. The other pull requests are separate changes and stay in place, which is the advantage of small pull requests."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Reverting a change adds a commit that reverses that change only, and later changes stay unless they depend on it."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "Revert works on any commit in the history, and merged work is exactly what it is used for."
+        }
+      ],
+      "skill": "review-a-change",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Only the lines of that pull request, leaving the rest of the change in place"
+        },
+        {
+          "id": "b",
+          "label": "The whole change, because the pull requests belong together"
+        },
+        {
+          "id": "c",
+          "label": "That pull request and every pull request merged after it"
+        },
+        {
+          "id": "d",
+          "label": "Nothing, because a merged pull request cannot be reverted"
+        }
+      ]
     },
     {
       "id": "gitvc-collaboration-workflows-flagterm",
@@ -11124,6 +12687,82 @@
       ],
       "skill": "review-a-change",
       "calculator": "off"
+    },
+    {
+      "id": "gitvc-collaboration-workflows-approvals-blocked",
+      "conceptIds": [
+        "pull-request",
+        "gitvc-trunk-based",
+        "long-lived-branch"
+      ],
+      "prompt": "A protected branch requires two approvals, and a pull request into it has one. What happens when its author tries to merge it?",
+      "responseType": "short_text",
+      "difficulty": 1.1,
+      "hints": [
+        "Compare the number of approvals required with the number given.",
+        "Ask who enforces the rule."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "The merge stays blocked until a second approval arrives"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "The merge stays blocked until a second approval arrives"
+      },
+      "sourceIds": [
+        "github-flow",
+        "trunk-based",
+        "driessen",
+        "pro-git"
+      ],
+      "onCorrect": "Until the rule is met, the merge button stays blocked.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "Approvals are a rule that the hosting service enforces on a protected branch, and Git itself has no notion of review."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "The protection requires the stated number of approvals, and a pull request with fewer cannot be merged."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "A protected branch accepts a merge only when its rules are met, whoever wrote the branch."
+        }
+      ],
+      "skill": "review-a-change",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Git refuses the merge with an error, because approvals are part of Git"
+        },
+        {
+          "id": "b",
+          "label": "The merge goes through, because one approval is enough once the checks pass"
+        },
+        {
+          "id": "c",
+          "label": "The merge stays blocked until a second approval arrives"
+        },
+        {
+          "id": "d",
+          "label": "The merge goes through, because the author of a branch can always merge it"
+        }
+      ]
     },
     {
       "id": "gitvc-collaboration-workflows-sc-fit",
@@ -11351,6 +12990,83 @@
       ],
       "skill": "bump-a-version",
       "calculator": "off"
+    },
+    {
+      "id": "gitvc-tags-versions-and-messages-tagahead-which",
+      "conceptIds": [
+        "tag",
+        "gitvc-semver",
+        "commit-message",
+        "gitignore"
+      ],
+      "prompt": "A tag v1.0 and the branch main point at the same commit. Two more commits are then made on main. Where do the two labels point afterwards?",
+      "responseType": "short_text",
+      "difficulty": 1.1,
+      "hints": [
+        "Only a branch label follows new commits.",
+        "The tag stays where it was put."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "v1.0 stays at the original commit and main moves to the newest"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "v1.0 stays at the original commit and main moves to the newest"
+      },
+      "sourceIds": [
+        "semver",
+        "conventional-commits",
+        "pro-git",
+        "git-docs"
+      ],
+      "onCorrect": "git tag --list shows v1.0 still naming the commit that was released.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "A commit moves the branch that HEAD is on, so main follows each new commit."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "A tag is a name that never moves, so only the branch follows the new commits."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "It is the other way round: a commit moves the branch HEAD is on, and a tag stays where it was put."
+        }
+      ],
+      "skill": "bump-a-version",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Both stay at the original commit"
+        },
+        {
+          "id": "b",
+          "label": "Both move to the newest commit"
+        },
+        {
+          "id": "c",
+          "label": "v1.0 moves to the newest commit and main stays"
+        },
+        {
+          "id": "d",
+          "label": "v1.0 stays at the original commit and main moves to the newest"
+        }
+      ]
     },
     {
       "id": "gitvc-tags-versions-and-messages-tagtype",
@@ -11632,6 +13348,71 @@
       ],
       "skill": "spot-a-secret-risk",
       "calculator": "off"
+    },
+    {
+      "id": "gitvc-tags-versions-and-messages-ignored-which",
+      "conceptIds": [
+        "tag",
+        "gitvc-semver",
+        "commit-message",
+        "gitignore"
+      ],
+      "prompt": "The pattern *.log is in .gitignore, and you create three new files ending in .log. What does git status --short show for them?",
+      "responseType": "short_text",
+      "difficulty": 1.1,
+      "hints": [
+        "Ignore patterns hide matching untracked files.",
+        "The new files match the pattern."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Nothing for any of them, because Git treats files that match the pattern as invisible"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Nothing for any of them, because Git treats files that match the pattern as invisible"
+      },
+      "sourceIds": [
+        "semver",
+        "conventional-commits",
+        "pro-git",
+        "git-docs"
+      ],
+      "onCorrect": "A file that matches a pattern but was already tracked would still show when edited.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "A new file is listed as untracked only if no ignore pattern matches it, and these files match *.log."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "The pattern applies from the start. A new file that matches it is never listed as untracked, whether or not you run git add on it."
+        }
+      ],
+      "skill": "spot-a-secret-risk",
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "?? for all three, because a new file is always untracked"
+        },
+        {
+          "id": "b",
+          "label": "Nothing for any of them, because Git treats files that match the pattern as invisible"
+        },
+        {
+          "id": "c",
+          "label": "?? for all three until you run git add, and nothing afterwards"
+        }
+      ]
     },
     {
       "id": "gitvc-tags-versions-and-messages-rotate",
