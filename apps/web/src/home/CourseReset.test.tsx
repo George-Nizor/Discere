@@ -28,11 +28,11 @@ describe("CourseReset", () => {
       "DELETE /api/courses/maths-foundations/progress": { body: { stages: 4, checks: 0 } },
     });
     renderWithProviders(<CourseReset detail={detail("2026-11-03T10:00:00.000Z", 2)} />);
-    await userEvent.click(screen.getByRole("button", { name: "Start again…" }));
+    await userEvent.click(screen.getByRole("button", { name: "Start the course again…" }));
     expect(screen.getByText(/Your XP, review cards and past answers are kept/)).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "Cancel" }));
     expect(fetch.calls).toHaveLength(0);
-    await userEvent.click(screen.getByRole("button", { name: "Start again…" }));
+    await userEvent.click(screen.getByRole("button", { name: "Start the course again…" }));
     await userEvent.click(screen.getByRole("button", { name: "Start again" }));
     expect(fetch.calls.map((call) => call.key)).toEqual([
       "DELETE /api/courses/maths-foundations/progress",

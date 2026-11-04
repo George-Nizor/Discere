@@ -6,8 +6,8 @@ import { errorMessage } from "../api/client.js";
 import { resetCourseProgress } from "../api/endpoints.js";
 
 /**
- * Starts a course over, so its lessons can be played again from the beginning. Shown only once
- * the learner has started the course. It asks once before doing anything, because the places
+ * Starts a course over, so its lessons can be played again from the beginning. It sits in the
+ * course overview, under the progress line, and is shown only once the learner has started. It asks once before doing anything, because the places
  * saved in every lesson are lost; XP, review cards and past answers are kept.
  */
 export function CourseReset({ detail }: { detail: CourseDetailResponse }) {
@@ -25,8 +25,7 @@ export function CourseReset({ detail }: { detail: CourseDetailResponse }) {
   if (!started) return null;
 
   return (
-    <section className="course-reset" aria-labelledby="course-reset-title">
-      <h2 id="course-reset-title">Start the course again</h2>
+    <div className="course-reset">
       {confirming ? (
         <>
           <p>
@@ -55,27 +54,16 @@ export function CourseReset({ detail }: { detail: CourseDetailResponse }) {
           </div>
         </>
       ) : (
-        <>
-          <p>
-            Clears your place in every lesson so you can work through the course from the start.
-          </p>
-          <div className="button-row">
-            <button
-              className="button button-quiet"
-              onClick={() => setConfirming(true)}
-              type="button"
-            >
-              <RotateCcw aria-hidden="true" size={16} strokeWidth={1.8} />
-              Start again…
-            </button>
-          </div>
-        </>
+        <button className="course-reset-open" onClick={() => setConfirming(true)} type="button">
+          <RotateCcw aria-hidden="true" size={15} strokeWidth={1.8} />
+          Start the course again…
+        </button>
       )}
       {reset.error ? (
         <p className="course-reset-error" role="alert">
           {errorMessage(reset.error, "The course could not be reset.")}
         </p>
       ) : null}
-    </section>
+    </div>
   );
 }

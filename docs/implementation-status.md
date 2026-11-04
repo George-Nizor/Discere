@@ -2,6 +2,13 @@
 
 Updated: 2026-11-03
 
+Release 1.9.3 fixes starting a course again, which failed in the app with "Discere could not
+complete the request": the web client labelled every request as JSON, and the server refuses a
+JSON request with an empty body, which a DELETE has. The client now sends the header only with a
+body. The control moves into the course overview, under the progress line, and the course checks
+and projects move under the lesson path, so the two columns of a course page end at about the
+same height.
+
 Release 1.9.2 archives Drawing and Visual Art Fundamentals, because Delineare already teaches
 drawing; the course stays in `content/` for saved history and leaves the library. The plan for
 testing the courses with learner agents is `docs/learner-agent-testing-plan.md`, ready to start.

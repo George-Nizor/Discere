@@ -11,7 +11,6 @@ import { PythonProjects } from "../python-projects/PythonProjects.js";
 import { RustProjects } from "../rust/RustProjects.js";
 import { CourseIntroduction } from "./CourseIntroduction.js";
 import { CourseOverview, CourseRoadmap } from "./CourseRoadmap.js";
-import { CourseReset } from "./CourseReset.js";
 
 export function CourseListScreen() {
   const courses = useCourses();
@@ -69,13 +68,16 @@ export function CourseScreen() {
       <div className="course-overview-column">
         <CourseOverview detail={course.data} />
         <CourseIntroduction detail={course.data} />
+      </div>
+      {/* The checks and projects belong to the path, so they follow the lessons on the right,
+          which also keeps the two columns a similar length. */}
+      <div className="course-path-column">
+        <CourseRoadmap key={courseId} detail={course.data} />
         <CourseChecks courseId={courseId} />
         <SqlProjects courseId={courseId} />
         <PythonProjects courseId={courseId} />
         <RustProjects courseId={courseId} />
-        <CourseReset detail={course.data} />
       </div>
-      <CourseRoadmap key={courseId} detail={course.data} />
     </main>
   );
 }

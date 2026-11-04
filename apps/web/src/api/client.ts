@@ -33,9 +33,14 @@ const GATEWAY_STATUSES = new Set([502, 503, 504]);
 export async function requestJson<T>(url: string, init?: RequestInit): Promise<T> {
   let response: Response;
   try {
+    // Only a request with a body says it is JSON: the server refuses a JSON request whose body
+    // is empty, which is what a DELETE has.
     response = await fetch(url, {
-      headers: { "content-type": "application/json", ...init?.headers },
       ...init,
+      headers: {
+        ...(init?.body !== undefined ? { "content-type": "application/json" } : {}),
+        ...init?.headers,
+      },
     });
   } catch {
     reportEngineUnreachable();
