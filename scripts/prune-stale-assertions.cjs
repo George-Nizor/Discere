@@ -15,7 +15,7 @@ for (const f of r.testResults) {
   let lines = fs.readFileSync(file, "utf8").split("\n");
   const kill = new Set();
   for (const a of f.assertionResults.filter((x) => x.status === "failed")) {
-    const msg = (a.failureMessages[0] || "").replace(/\x1b\[[0-9;]*m/g, "");
+    const msg = (a.failureMessages[0] || "").replace(new RegExp(`${String.fromCharCode(27)}\\[[0-9;]*m`, "g"), "");
     if (!/is not numeric|reading 'answerAuthority'|to match object \{ kind: 'numeric'|to contain|to be '|missing question|toEqual|to deeply equal/.test(msg)) continue;
     const base = file.split("/").pop();
     const frames = [...msg.matchAll(new RegExp(base.replace(/\./g, "\\.") + ":(\\d+)", "g"))].map((m) => Number(m[1]));
