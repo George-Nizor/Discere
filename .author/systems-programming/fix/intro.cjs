@@ -1,0 +1,8 @@
+const { load } = require("./lib.cjs");
+const t = load();
+t.bundle.course.introduction.paragraphs = [
+  "A Rust program can be correct on paper and still surprise you, because every value in it lives in some particular place, and the place decides what the program costs and what it is allowed to do. A four-byte integer occupies four consecutive bytes in an order the machine chose, a struct leaves gaps so that its fields start where the processor likes them, and a Vec keeps a small handle on the stack that points at a buffer on the heap. Systems programming is the study of those places, and of the operating system and the hardware that provide them.",
+  "The same view explains why Rust is built as it is. In C, a pointer can outlive the memory it points to, a buffer can be written past its end, and the same block can be freed twice, all without a word from the compiler, and Rust's rules about ownership and borrowing exist to rule out faults like these. Once you have met the fault, the rule stops looking like an arbitrary restriction and reads as the compiler checking something that C leaves to the programmer.",
+  "The places a value can live extend beyond the program itself. The operating system gives each process its own address space and its own table of open files, and a program asks it for anything outside that space through a system call, while the processor keeps recently used memory in small caches, so that the order in which a program touches its data changes how fast it runs. Most of this can be worked out with arithmetic on paper before the program is run, which is what lets you say how a piece of code will behave, and why, without waiting to see it fail.",
+];
+t.save();

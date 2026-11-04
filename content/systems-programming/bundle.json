@@ -30,9 +30,9 @@
     "status": "available",
     "introduction": {
       "paragraphs": [
-        "A Rust program can be correct on paper and still surprise you, because every value in it lives in some particular place, and the place decides what the program costs and what it is allowed to do. A four-byte integer occupies four consecutive bytes in an order the machine chose, a struct leaves gaps so that its fields start where the processor likes them, and a Vec keeps a small handle on the stack that points at a buffer on the heap. This course starts from those facts and builds upward from them.",
-        "The first six lessons follow a value through memory: how integers are stored and how they overflow, how a struct is laid out, where the stack and the heap divide the work, and why Rust gives every value exactly one owner. C appears beside Rust throughout, where a pointer can dangle and a buffer can overflow without a word from the compiler, so that each rule of ownership and borrowing is met first as the fault it prevents. The next four lessons move out to the operating system, with processes, system calls, file descriptors, threads and scheduling, and the last three turn to the hardware, with virtual memory, caches and the boundary where safe Rust calls into C.",
-        "Rust is the one language that runs in the lessons, and the C fragments are for reading and tracing. Most questions ask you to work something out, such as an offset, a process count, a schedule or a number of cache lines, because these are the calculations that systems programmers do by hand before they run anything."
+        "A Rust program can be correct on paper and still surprise you, because every value in it lives in some particular place, and the place decides what the program costs and what it is allowed to do. A four-byte integer occupies four consecutive bytes in an order the machine chose, a struct leaves gaps so that its fields start where the processor likes them, and a Vec keeps a small handle on the stack that points at a buffer on the heap. Systems programming is the study of those places, and of the operating system and the hardware that provide them.",
+        "The same view explains why Rust is built as it is. In C, a pointer can outlive the memory it points to, a buffer can be written past its end, and the same block can be freed twice, all without a word from the compiler. Rust's rules about ownership and borrowing exist to rule out faults like these, and once you have met the fault, each rule reads as the compiler checking something that C leaves to the programmer.",
+        "The places a value can live extend beyond the program itself. The operating system gives each process its own address space and its own table of open files, and a program asks it for anything outside that space through a system call. The processor, for its part, keeps recently used memory in small caches, so the order in which a program touches its data changes how fast it runs. Most of this can be worked out with arithmetic on paper, which lets you say how a piece of code will behave, and why, before you run it."
       ],
       "outcomes": [
         "You'll be able to predict how a fixed-width integer, a struct or a Vec is laid out in memory.",
@@ -528,12 +528,7 @@
           "id": "convert-1f4",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Use the place values 256, 16 and 1 to convert the three-digit hex number 0x1F4 into decimal."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -596,12 +591,7 @@
           "id": "largest-i16",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Apply the range rule for a signed type to the two-byte type i16."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -735,12 +725,7 @@
           "id": "offset-one",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "On a little-endian machine, a u32 holds 0x01020304. The bytes sit at offsets 0, 1, 2 and 3, counting from the lowest address."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -756,12 +741,7 @@
           "id": "wrap-around",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The program adds 10 to a u8 holding 250 in four different ways. Only the first line matters for the question, and wrapping_add does what an eight-bit counter does when it passes 255."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -823,12 +803,7 @@
           "id": "which-method",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Choose the method that reports an overflow by giving back no number at all."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -844,12 +819,7 @@
           "id": "signed-wrap",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The methods work for signed types as well. An i8 holds 127, the largest value it can store, and 1 is added to it with wrapping_add."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -901,11 +871,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "The Rust statement let x: u32 = 258; looks like one thing, but the machine has to put the number somewhere, and that somewhere is a long row of numbered boxes, each able to hold a single number from 0 to 255. Four boxes are needed, and in them the number 258 appears as 2, 1, 0 and 0, with the 2 first, a fact that surprises almost everyone the first time they see it."
+              "text": "The Rust statement let x: u32 = 258; puts a number in memory, which is a long row of numbered boxes that can each hold a single value from 0 to 255. Because 258 is too large for one box, a u32 takes four consecutive boxes, and they contain 2, 1, 0 and 0, with the 2 first. The number exists in memory only as those four small values, and what it means depends on their order and on the type used to read them."
             },
             {
               "kind": "paragraph",
-              "text": "Why the bytes come in that order, and what happens when arithmetic produces a number too large for the boxes it was given, both matter, because every later idea in this course, from structs to threads, concerns what sits in those boxes and how a program is allowed to read it."
+              "text": "Knowing how the boxes are filled lets you read the bytes of any integer and say what the same pattern means as a signed or an unsigned number. It also lets you predict what an addition does when its result is too big for the boxes it was given, a case with more than one possible outcome in Rust, since the program can panic, wrap around, stop at the largest value or report the problem, and the programmer has to choose which."
             }
           ],
           "diagram": {
@@ -1006,12 +976,7 @@
           "id": "next-address",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Use the alignment rule for a u64 to find where such a value may start once the bytes before it are in use."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1153,16 +1118,11 @@
           "id": "pack-the-bytes",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The two u8 fields are now declared next to each other, with the u32 last. Work out each offset from the rule before the program runs."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "Both u8 fields fit before the first multiple of 4, so no padding is needed in the middle, and the struct is smaller than the one in the worked example."
+              "text": "Both u8 fields fit in the first four bytes, so only two bytes of padding remain before b, and the struct is smaller than the one in the worked example."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -1218,12 +1178,7 @@
           "id": "big-first",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Apply the largest-first idea to the struct T from the walk-through, now declared as b, then c, then a."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1239,12 +1194,7 @@
           "id": "changed-fields",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The fields now start with the widest type and are followed by two smaller ones, so the padding falls in a different place from the earlier structs."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1296,11 +1246,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "The struct { a: u8, b: u32 } holds five bytes of data, a one-byte field and a four-byte field, yet Rust reports its size as eight. The three missing bytes are not an error or a leftover from some other value. The compiler put them there on purpose, and the reason has to do with how a processor reads memory."
+              "text": "The struct { a: u8, b: u32 } has a one-byte field and a four-byte field, so its data adds up to five bytes, yet Rust reports its size as eight. The three extra bytes are inserted by the compiler after a, so that b starts at an address divisible by four, which is where a processor can load a four-byte value in a single step."
             },
             {
               "kind": "paragraph",
-              "text": "Knowing where those bytes go lets you work out the size of any struct on paper, predict how much memory a million of them need, and see why a change as small as swapping two field declarations can alter that figure. The figure prints both numbers for the struct above."
+              "text": "The gap follows from a rule that is simple enough to apply on paper. Applied to any struct, it gives the size, and so the memory a million of them occupy, and it shows why swapping two field declarations can shrink a struct without removing any data."
             }
           ],
           "diagram": {
@@ -1403,12 +1353,7 @@
           "id": "count-frames",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Use the picture of the stack from the figure, in the state where g is running."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1447,12 +1392,7 @@
           "id": "name-the-region",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Name the region that the first half of this lesson described."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1516,12 +1456,7 @@
           "id": "room-to-grow",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A Vec<i32> begins with room for four elements, and the program pushes five. Think about what a full buffer allows."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1597,12 +1532,7 @@
           "id": "what-push-does",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A Vec<i32> has length 4 and capacity 4, and a fifth element is pushed."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1670,12 +1600,7 @@
           "id": "borrowed-text",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A &str looks like a String, but it holds text that somebody else owns. Think about which of the three parts of a String's handle it still needs."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1727,11 +1652,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "Take a program in which main calls f, and f calls g. The processor needs somewhere to keep the variables of each call, and it needs to return to the right place when each call ends. It does both with one region of memory that grows by a fixed amount at every call and shrinks by the same amount at every return, which makes it one of the cheapest things a program does."
+              "text": "In a program where main calls f and f calls g, the processor has to keep the variables of every call and remember where each call returns to. It does both in one region of memory that grows by a fixed amount at every call and shrinks by the same amount at every return, which makes it one of the cheapest things a program does."
             },
             {
               "kind": "paragraph",
-              "text": "That arrangement has a price, which is that the amount must be known before the program runs. Anything whose size is decided during a run, such as the text a user types, needs a different home. A small program uses both regions, and a Vec uses them together."
+              "text": "That arrangement works only because the amount is known before the program runs. A value whose size is decided during a run, such as the text a user types, needs a second region that hands out blocks of whatever size is asked for, at a higher cost for each request. A Vec keeps a small fixed-size part in the first region and its elements in the second, and seeing how the two fit together explains what happens when its buffer fills up."
             }
           ],
           "diagram": {
@@ -1824,12 +1749,7 @@
           "id": "will-it-compile",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The program makes b from a, and then prints both. Decide, from the single-owner rule alone, what the compiler does with it."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1900,12 +1820,7 @@
           "id": "bytes-in-a-move",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Think about what the figure showed being copied in the move, and what stayed where it was."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1958,12 +1873,7 @@
           "id": "error-code",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The compiler message in the figure begins with error and then a code in square brackets."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1979,12 +1889,7 @@
           "id": "drop-order",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The type Noisy prints a line when it is dropped. Locals a and b are declared in main in that order, and a block in the middle declares c. Work out the output from the ownership rule."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2103,12 +2008,7 @@
           "id": "an-i32-copy",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Unlike a String, an i32 has no heap buffer. Decide whether the second line moves x or copies it, and then follow the program to its output."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2168,11 +2068,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "Suppose two variables hold the same heap buffer, as they would after copying a handle byte for byte, and both go out of scope. Each one frees the buffer on the way out, so the same block is returned to the allocator twice. In C this is a classic fault known as a double free, and it damages the bookkeeping the allocator relies on, often long before the program visibly fails."
+              "text": "A String is a handle of three words on the stack that points to a buffer on the heap, so copying the handle byte for byte would leave two variables pointing at one buffer. When both went out of scope, each would free it, and the same block would be returned to the allocator twice. In C this is a classic fault known as a double free, and it damages the records the allocator keeps about which blocks are free, often long before the program visibly fails."
             },
             {
               "kind": "paragraph",
-              "text": "Rust prevents the fault with a rule about who is responsible for each buffer, enforced when the program is compiled. The rule has a single owner for every value, and its consequences are moves, drops and one family of compiler errors."
+              "text": "Rust rules the fault out by giving every buffer a single owner, the one variable responsible for freeing it. With that rule you can follow a program line by line and say which variable owns each value, what an assignment or a function call does to it, and when it is freed."
             }
           ]
         },
@@ -2295,12 +2195,7 @@
           "id": "which-error",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The program takes a shared reference to the first element and then pushes a second one. Decide which rule it breaks, and so which error code the compiler gives."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2309,7 +2204,7 @@
           ],
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
-          "checkQuestionId": "sysp-borrowing-and-lifetimes-which-code",
+          "checkQuestionId": "sysp-borrowing-and-lifetimes-which-rule",
           "activityId": "",
           "diagram": {
             "type": "rust_program",
@@ -2360,12 +2255,7 @@
           "id": "one-mutable",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Use the rule from the opening of this lesson to state how many mutable borrows of a value may be alive at the same time."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2453,12 +2343,7 @@
           "id": "what-a-does",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Think about what the annotation changes about the program and what it only records."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2474,12 +2359,7 @@
           "id": "borrow-ends",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "This is the earlier program with the print moved above the push. Follow it line by line, and decide whether f is still needed when the push runs."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2574,12 +2454,7 @@
           "id": "tied-parameters",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A signature names the lifetime 'a on some parameters and the result, and leaves one parameter unnamed. Decide which parameters the result is promised to be valid alongside."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2634,7 +2509,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "Rust takes the same situation seriously enough to prevent it when the program is compiled. A Vec can grow while a reference into it is held, so the compiler needs rules about references that make the dangling pointer impossible."
+              "text": "Rust prevents the same situation when the program is compiled. A Vec can grow while a reference into it is held, just as the malloc'd buffer can, so the compiler restricts how references to one value may overlap. Those restrictions are what its error messages report, and a reader who knows them can say which one a program breaks and repair it, often by moving a single line."
             }
           ]
         },
@@ -2699,12 +2574,7 @@
           "id": "write-through-p",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Follow the program from the line that stores an address in p to the line that writes through it."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2771,12 +2641,7 @@
           "id": "deref-offset",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Take the three-element array from the figure, with q pointing at its first element, and read through the pointer two elements along."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2821,12 +2686,7 @@
           "id": "sizeof-in-a-function",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "An array of ten ints is passed to a function that prints sizeof of its parameter. The type of the parameter decides the answer."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2870,12 +2730,7 @@
           "id": "sizeof-own-scope",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Compare this question with the one about the function parameter. Here the array has not been passed to anything."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2944,12 +2799,7 @@
           "id": "name-the-fault",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Look at the order of the three operations on p."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2991,12 +2841,7 @@
           "id": "second-fragment",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The same three operations appear again, in a different order, on a pointer that is freed twice. Name the fault in a few words."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3052,7 +2897,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "That freedom is what the last two lessons of Rust guarded against, and seeing it unguarded explains what the rules were for. Short C fragments show what their pointers do and name the faults they commit, which are the same ones that Rust's ownership and borrowing turn into compile errors."
+              "text": "A pointer is only an address, so a program can add to it, keep using it after its block has been freed, or pass it to a function that has no way to tell how long the array behind it is, and the language checks none of these. Following the arithmetic by hand shows where each pointer lands and which memory fault a fragment commits, and Rust's ownership and borrowing rule out every one of those faults."
             }
           ]
         },
@@ -3176,12 +3021,7 @@
           "id": "which-switches",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Use the picture of the boundary to decide which operation needs the kernel."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3245,12 +3085,7 @@
           "id": "return-in-child",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Think of how the child process can tell that it is the child."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3266,12 +3101,7 @@
           "id": "two-forks",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The program calls fork twice, one after the other, and then prints a line. Every process that exists after a fork continues to the next line."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3354,12 +3184,7 @@
           "id": "three-forks",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Use the doubling from the figure for a program with three forks, and count the original process too."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3453,12 +3278,7 @@
           "id": "changing-x",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The child gets its own copy of every variable, as the figure showed. Decide what the parent still sees after the child has changed x and exited, and the parent has waited for it."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3522,11 +3342,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "The line fork(); fork(); printf(\"x\\n\"); looks as though it should print one line, since it contains a single printf, yet it prints four. Each call to fork makes a copy of the process that calls it, and the copy carries on from the same place, so the printf is run by four processes and not by one."
+              "text": "In the C line fork(); fork(); printf(\"x\\n\"); there is a single printf, yet the program prints more than one line. Each call to fork makes a copy of the process that calls it, and the copy carries on from the same place, so the printf is run by every process that exists when it is reached."
             },
             {
               "kind": "paragraph",
-              "text": "That behaviour makes sense once you know what a process is and who creates it. Both come down to the line the operating system draws between itself and your program, the system call, and fork, exec and wait follow a shell as it starts a command."
+              "text": "A process is a running program that the operating system keeps apart from every other one, and creating a new process, like anything else beyond a program's own memory, needs a request to the operating system called a system call. What fork returns in each of the processes it creates decides which lines each one goes on to run, and that is enough to work out by hand how many times a line like this prints."
             }
           ],
           "diagram": {
@@ -3620,12 +3440,7 @@
           "id": "standard-error",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Recall the three descriptors every process starts with, and the order in which they are listed."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3697,12 +3512,7 @@
           "id": "reuse-after-close",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Follow the rule from the figure: each open takes the lowest number that is free at that moment."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3764,12 +3574,7 @@
           "id": "hi-twice",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The program prints hi and a newline, and then forks. The same two lines are run twice, once with the output at a terminal, and once with it redirected into a file, and here the file is the case. Think about where the text is while the fork happens."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3837,12 +3642,7 @@
           "id": "count-characters",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Work out what each process holds in its buffer at the fork, and what each adds afterwards."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3919,12 +3719,7 @@
           "id": "closed-zero",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The rule that the lowest free number is used applies to every number, including the three that every process starts with."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3976,11 +3771,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "The two lines printf(\"hi\\n\"); fork(); print hi once at a terminal. Run the same program with its output sent to a file and hi appears twice. Nothing in the source has changed, and the two processes made by the fork each printed only what the program told them to."
+              "text": "The two lines printf(\"hi\\n\"); fork(); print hi once when the program runs at a terminal, yet with its output sent to a file the same program prints it a different number of times, although the source has not changed. The difference lies in where the text waits before it leaves the process, and in what the process uses to refer to its output at all."
             },
             {
               "kind": "paragraph",
-              "text": "The difference lies in where the text waits before it leaves the process, and in how the process refers to its output at all. Both are explained by one small idea, the file descriptor, and one rule for how the C library treats it, buffering."
+              "text": "Both come down to the file descriptor, the small number by which a process names everything it has open, and to the way the C library collects text before writing it. Between them they explain how many times a line appears after a fork, and what a shell changes when it redirects a program's output to a file."
             }
           ],
           "diagram": {
@@ -4081,12 +3876,7 @@
           "id": "smallest-final",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Two threads each add 1 to the same counter, which starts at 0, with nothing to coordinate them. Think about what counter += 1 really asks the processor to do."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4149,12 +3939,7 @@
           "id": "stale-value",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Take the interleaved order from the figure, with the counter starting at 10 instead of 0."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4205,12 +3990,7 @@
           "id": "name-the-code",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Recall the title of the message in the figure: a closure that may outlive the current function."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4264,12 +4044,7 @@
           "id": "three-by-five",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Use the same pattern with a smaller number of increments per thread."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4320,12 +4095,7 @@
           "id": "which-type",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Think of what each thread needs: a share in owning the same value, counted so that it is freed once."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4376,12 +4146,7 @@
           "id": "share-a-vec",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Apply the same pattern to a Vec: one Arc clone is moved into each of three threads, each pushes one number, and the main thread joins them all before reading."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4446,7 +4211,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The cause is that the statement is not one step, and when two threads share memory their steps can interleave. The interleaving can be traced, Rust refuses to compile the racy version, and Arc and Mutex make the safe one."
+              "text": "When two threads share memory, a statement that looks like a single step can be broken up by the other thread, and a result that depends on that timing changes from run to run. Tracing what each thread does to the counter shows which results are possible and why Rust refuses to compile the racy version. A lock, together with shared ownership, makes the counter come out the same on every run."
             }
           ]
         },
@@ -4560,12 +4325,7 @@
           "id": "fcfs-turnaround",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Take the completion times of the first order in the figure, and average them."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4581,12 +4341,7 @@
           "id": "shortest-first",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The three jobs of 8, 4 and 2 arrive together once more, and this time the scheduler runs the shortest job first. Work out the completion times in that order, and their mean."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4595,7 +4350,7 @@
           ],
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
-          "checkQuestionId": "sysp-scheduling-and-deadlock-sjf-mean",
+          "checkQuestionId": "sysp-scheduling-and-deadlock-best-order",
           "activityId": ""
         },
         {
@@ -4681,12 +4436,7 @@
           "id": "rr-two-jobs",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Work out which job finishes first, and when, and then when the longer job finishes."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4775,12 +4525,7 @@
           "id": "break-the-ring",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Look at which condition the second view of the figure no longer has."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4796,12 +4541,7 @@
           "id": "fewest-locks",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The misconception to avoid is that deadlock needs a tangle of many locks. Decide how few locks it takes for two threads."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4851,11 +4591,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "Three jobs, taking 8, 4 and 2 time units, arrive together, and one processor has to run them. If the 8 runs first, the 4 and the 2 wait twelve and fourteen units for their results. If the 2 runs first, the 8 still finishes at time 14, but the other two finish at 2 and 6. The same work, in a different order, gives a very different average wait."
+              "text": "Three jobs needing 8, 4 and 2 units of processor time are ready together, and a single processor has to run them one after another. The last job finishes at time 14 whatever the order, because the total work is 14 units, but the earlier jobs finish at very different times depending on which goes first, and so the average time a job waits for its result depends on the order as well."
             },
             {
               "kind": "paragraph",
-              "text": "Choosing an order is the scheduler's job, and different choices have costs that can be computed; threads can also stop making progress in a second way, when two threads hold locks that each other need."
+              "text": "The scheduler makes that choice, and the cost of each policy it might use can be worked out by hand, which lets you compare policies by what they give up. Order matters in a second way when threads take locks, because two threads that hold one lock each and wait for the other's can never continue, and agreeing on one order for taking locks rules this out."
             }
           ]
         },
@@ -4969,12 +4709,7 @@
           "id": "count-offset-bits",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Use the size of a page, in bytes, to find how many bits are needed to name one byte inside it."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5063,12 +4798,7 @@
           "id": "translate-the-address",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Replace the page number of the address with the frame number the table gives, and keep the offset."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5138,12 +4868,7 @@
           "id": "table-size-mib",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Count the entries from the number of page-number bits, and multiply by the size of each."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5159,12 +4884,7 @@
           "id": "loads-without-tlb",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Suppose the page table is a single array in ordinary memory and there is nothing to speed up the translation. Think about what the processor must read to load one value."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5227,12 +4947,7 @@
           "id": "eat-120",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Take the costs of a hit and of a miss from the lesson, with the numbers given, and weight them."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5248,12 +4963,7 @@
           "id": "higher-hit-ratio",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Keep the same costs, but let the hit ratio rise from 0.9 to 0.99, which is about what real programs achieve. Decide how far the average moves."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5308,7 +5018,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The translation cuts an address into a page number and an offset and replaces the page number using a table; it has a cost, and a small cache keeps that cost low."
+              "text": "That translation is arithmetic you can do by hand. The address is cut into a page number and an offset, and a table supplies a replacement for the page number, which gives the physical address behind any virtual one. A little more arithmetic shows how much the translation adds to each memory access once a small cache in the processor absorbs most of the cost."
             }
           ]
         },
@@ -5426,12 +5136,7 @@
           "id": "count-sequential",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Work out how many bytes the integers occupy in all, and how many 64-byte lines that covers."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5494,12 +5199,7 @@
           "id": "stride-lines",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A stride of 32 integers is 128 bytes, which is more than a line."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5561,12 +5261,7 @@
           "id": "column-order",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The cache holds only four lines, and the matrix has eight rows. Follow the first column, and ask whether the first row's line is still in the cache when the second column starts."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5617,12 +5312,7 @@
           "id": "sixteen-lines",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Change one thing about the figure: the cache can now hold 16 lines instead of 8, and the loop reads column by column."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5664,12 +5354,7 @@
           "id": "bigger-elements",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The element size changes the number of elements in a line. Work out the number of lines for a sequential read of the same number of elements, each now eight bytes wide."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5720,11 +5405,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "Adding up every number in a matrix can be done by rows or by columns. Both loops perform the same additions on the same numbers, and both give the same total, yet on a large matrix one of them is often several times slower than the other. Nothing in the arithmetic accounts for the difference."
+              "text": "Adding up every number in a matrix can be done by rows or by columns. Both loops perform the same additions on the same numbers and give the same total, yet on a large matrix one of them is often several times slower than the other, although nothing in the arithmetic accounts for the difference."
             },
             {
               "kind": "paragraph",
-              "text": "The difference comes from memory. The processor does not read one number at a time from the chips; it reads a block, and the next read is cheap only if it falls in a block already held. Counting the blocks a loop loads is a more useful measure of its cost than counting its additions."
+              "text": "The difference comes from memory, because the processor does not read one number at a time from the chips but a whole block, and the next read is cheap only if it falls in a block already held. Counting the blocks a loop loads is therefore a better measure of its cost than counting its additions, and it lets you say, before running anything, which of two loops will be the faster."
             }
           ]
         },
@@ -5789,12 +5474,7 @@
           "id": "which-operation",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Use the list of five operations to pick the one that really needs unsafe."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5847,12 +5527,7 @@
           "id": "name-e0133",
           "kind": "try",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Read the first line of the message in the figure, which names the code in square brackets."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5903,12 +5578,7 @@
           "id": "call-abs",
           "kind": "predict",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The program declares C's abs and strlen and calls them. C's abs returns the absolute value of an int, and the call is made inside an unsafe block."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -6080,12 +5750,7 @@
           "id": "strlen-another-word",
           "kind": "transfer",
           "blocks": [],
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Use the same declaration for another byte string. Remember what strlen counts and what it leaves out."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -6146,11 +5811,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "Every Rust program already depends on code that is not Rust. When println! prints a line, the standard library eventually calls the operating system's write, and on Linux it does so through the C library. The safe language rests on a layer that its own rules do not cover, and the layer has to be reached somehow."
+              "text": "Every Rust program already depends on code that is not Rust. When println! prints a line, the standard library eventually calls the operating system's write, and on Linux it does so through the C library, which is a layer that Rust's own rules do not cover."
             },
             {
               "kind": "paragraph",
-              "text": "Rust reaches it with unsafe, which allows a few things, lets you declare and call a C function, and makes the programmer take on some responsibilities. The bytes, pointers, system calls and caches of the earlier lessons are what lie on the other side of this boundary."
+              "text": "Rust reaches that layer through unsafe. An unsafe block allows a small, fixed set of extra operations, such as calling a function written in C, and each one depends on a fact that the compiler cannot check and the programmer therefore has to. Knowing exactly which operations those are makes the unsafe code in a systems library readable and tells you what to check when you write a call into C."
             }
           ]
         },
@@ -6418,13 +6083,12 @@
         "twos-complement",
         "endianness"
       ],
-      "prompt": "What does the first println! print?",
-      "responseType": "numeric",
+      "prompt": "In the program shown, a u8 holds 250, and the first println! prints a.wrapping_add(10), which keeps only the bits that fit in a u8. What does it print?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "A u8 has no pattern for 260, so think of an eight-bit counter that returns to 0 after 255.",
-        "wrapping_add keeps the result modulo 256.",
-        "260 − 256 is the answer."
+        "A u8 has no pattern for 260, so think of an eight-bit counter that starts again after its largest value.",
+        "Counting up ten from 250, the counter runs out of room after five steps and carries on from the start."
       ],
       "sourceIds": [
         "rust-book",
@@ -6436,37 +6100,55 @@
       "skill": "predict-overflow-behaviour",
       "calculator": "off",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 4,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "260 − 256 = 4."
+        "kind": "text",
+        "acceptedIdeas": [
+          "4, because the count wraps past the largest value and starts again"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "4, because the count wraps past the largest value and starts again"
       },
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              260
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "A u8 cannot hold 260. wrapping_add drops the bit that would carry out and keeps the rest."
+          "feedback": "A u8 has no pattern for 260, because its eight bits end at 255, so the sum cannot be stored as it stands."
         },
         {
           "match": {
-            "numeric": [
-              255
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That is what saturating_add returns, on the second line."
+          "feedback": "Stopping at the largest value is what saturating_add does, on the second line. wrapping_add keeps the bits that fit."
         },
         {
           "match": {
-            "numeric": [
-              0
+            "choiceIds": [
+              "d"
             ]
           },
-          "feedback": "The counter passes 0 on its way, but ten steps from 250 carry on past it."
+          "feedback": "wrapping_add never reports a problem, and a plain + would be the one to panic in a debug build. This method simply drops the bit that does not fit."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "260, the exact sum"
+        },
+        {
+          "id": "b",
+          "label": "255, the largest value a u8 holds"
+        },
+        {
+          "id": "c",
+          "label": "4, because the count wraps past the largest value and starts again"
+        },
+        {
+          "id": "d",
+          "label": "An error, because the sum does not fit"
         }
       ]
     },
@@ -7038,13 +6720,12 @@
         "padding",
         "repr-c"
       ],
-      "prompt": "What does the program print?",
-      "responseType": "numeric",
+      "prompt": "The struct S { a: u8, b: u32, c: u8 } in the worked example is 12 bytes with #[repr(C)]. The program declares the same three fields in the order a, c, b. How does its size compare with 12?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "The fields are laid out in the order written: a, c, then b.",
-        "a is at offset 0 and c fits at the next offset; b needs a multiple of 4.",
-        "b starts at offset 4 and is four bytes long."
+        "Lay the fields out in the order written: a is at offset 0, and the next free byte is 1.",
+        "Check whether c can start at byte 1 without padding, and where b has to start after that."
       ],
       "sourceIds": [
         "rust-ref",
@@ -7052,41 +6733,59 @@
         "csapp",
         "c-ref"
       ],
-      "onCorrect": "The two u8 fields share the first four bytes, so b starts at 4 with no padding before it and the size is 8.",
+      "onCorrect": "Both u8 fields fit in the first four bytes, so b starts at offset 4 and only two bytes of padding remain, which makes the struct 8 bytes long.",
       "skill": "reorder-to-shrink",
       "calculator": "off",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 8,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "a at 0, c at 1, b at 4 to 7, so the size is 8, a multiple of 4."
+        "kind": "text",
+        "acceptedIdeas": [
+          "Smaller than 12, because the two u8 fields can share the space before b"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Smaller than 12, because the two u8 fields can share the space before b"
       },
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              6
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That is the sum of the field sizes. b still has to start on a multiple of 4."
+          "feedback": "c is a single byte with alignment 1, so it fits straight after a, and b still starts at the next multiple of 4, which leaves less padding than before."
         },
         {
           "match": {
-            "numeric": [
-              12
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That is the size when the two u8 fields are on either side of b."
+          "feedback": "The size depends on where the padding falls as well as on the fields. In the order a, b, c there are three bytes of padding before b and three after c, and a different order places them differently."
         },
         {
           "match": {
-            "numeric": [
-              9
+            "choiceIds": [
+              "d"
             ]
           },
-          "feedback": "The data ends exactly on a multiple of 4, so nothing is added at the end."
+          "feedback": "b is still a u32, so it must start at a multiple of 4, and the struct is then rounded up to a multiple of 4 as well. Some padding remains."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "Larger than 12, because c now sits between a and b"
+        },
+        {
+          "id": "b",
+          "label": "The same, because the struct holds the same fields"
+        },
+        {
+          "id": "c",
+          "label": "Smaller than 12, because the two u8 fields can share the space before b"
+        },
+        {
+          "id": "d",
+          "label": "Equal to the sum of the field sizes, 6"
         }
       ]
     },
@@ -7097,7 +6796,7 @@
         "padding",
         "repr-c"
       ],
-      "prompt": "Reorder T to #[repr(C)] struct T2 { b: u64, c: u16, a: u8 }. What is its size?",
+      "prompt": "The fields of #[repr(C)] struct T { a: u8, b: u64, c: u16 } are reordered as #[repr(C)] struct T2 { b: u64, c: u16, a: u8 }. What is the size of T2?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -7421,7 +7120,7 @@
         "heap",
         "fat-value"
       ],
-      "prompt": "How many frames exist on the stack while g is running?",
+      "prompt": "A program's main calls f, and f calls g. How many frames exist on the stack while g is running?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -7515,13 +7214,12 @@
         "heap",
         "fat-value"
       ],
-      "prompt": "A Vec<i32> is created with room for 4 elements and four values are pushed. What capacity does it report after the fifth push?",
-      "responseType": "numeric",
+      "prompt": "A Vec<i32> is created with room for 4 elements, and five values are pushed one after another. After the fifth push, how does its capacity compare with the five elements it now holds?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
         "The buffer is full, so the fifth push has to get a new one.",
-        "The standard library does not grow by one slot at a time.",
-        "A common choice is to make the new capacity a multiple of the old one."
+        "The standard library does not grow by one slot at a time."
       ],
       "sourceIds": [
         "rust-book",
@@ -7533,37 +7231,43 @@
       "skill": "trace-vec-growth",
       "calculator": "off",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 8,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "The old capacity 4 is doubled to 8."
+        "kind": "text",
+        "acceptedIdeas": [
+          "It is larger than the number of elements, so that later pushes need no copying"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "It is larger than the number of elements, so that later pushes need no copying"
       },
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              5
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "Growing by one slot would copy the whole buffer on every push. The library leaves room for more."
+          "feedback": "Growing by one slot would mean copying every element on each push, so the library makes room for several more pushes at once."
         },
         {
           "match": {
-            "numeric": [
-              4
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "The capacity cannot stay the same once all four slots hold values."
+          "feedback": "A full Vec allocates a new, larger buffer instead of refusing the element, which is how it can hold more elements than it was created with room for."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "It is exactly the number of elements, because the Vec grows one slot at a time"
         },
         {
-          "match": {
-            "numeric": [
-              10
-            ]
-          },
-          "feedback": "The new buffer is twice the old one, not twice the new length."
+          "id": "b",
+          "label": "It is larger than the number of elements, so that later pushes need no copying"
+        },
+        {
+          "id": "c",
+          "label": "It is still the original capacity, because capacity is fixed when the Vec is created"
         }
       ]
     },
@@ -7978,7 +7682,7 @@
         "move",
         "drop"
       ],
-      "prompt": "What happens when this program is compiled?",
+      "prompt": "A program creates a String a holding the text x, assigns it to b with let b = a;, and then prints both a and b. What happens when it is compiled?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -8144,7 +7848,7 @@
         "move",
         "drop"
       ],
-      "prompt": "What does this program print?",
+      "prompt": "The type Noisy prints a line such as drop c when it is dropped. In main, a and then b are declared. An inner block then declares c and prints inner, and after the block main prints end. What does the program print?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -8277,46 +7981,59 @@
         "move",
         "drop"
       ],
-      "prompt": "What does this program print?",
-      "responseType": "numeric",
+      "prompt": "A program declares let x: i32 = 7; and let y = x;, and then prints x + y. What happens?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
         "An i32 is small and its whole value is copied.",
-        "After let y = x, both x and y hold 7.",
-        "Add the two values."
+        "Ask whether an i32 owns a buffer that two owners could both free."
       ],
       "sourceIds": [
         "rust-book",
         "rust-errors",
         "rust-ref"
       ],
-      "onCorrect": "An i32 is Copy: assigning it copies the whole value, so x is still usable and x + y is 14.",
+      "onCorrect": "An i32 is Copy, so let y = x duplicates the value and leaves x valid, and the two variables hold 7 each.",
       "skill": "choose-clone-or-move",
       "calculator": "off",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 14,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "7 + 7 = 14."
+        "kind": "text",
+        "acceptedIdeas": [
+          "It prints 14, because x is copied and stays valid"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "It prints 14, because x is copied and stays valid"
       },
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              7
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "x and y both hold 7, and the program adds them."
+          "feedback": "A move is what happens to a type that owns a heap buffer. An i32 owns nothing on the heap, so the assignment copies it and x stays usable."
         },
         {
           "match": {
-            "numeric": [
-              0
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "x is still valid after the assignment because i32 is copied, not moved."
+          "feedback": "A clone is only needed when a second owner of a buffer is wanted. An i32 is Copy, so the plain assignment already leaves x valid."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "It prints 14, because x is copied and stays valid"
+        },
+        {
+          "id": "b",
+          "label": "It is rejected, because x was moved into y"
+        },
+        {
+          "id": "c",
+          "label": "It is rejected unless the assignment is written let y = x.clone();"
         }
       ]
     },
@@ -8327,54 +8044,71 @@
         "move",
         "drop"
       ],
-      "prompt": "A program declares Noisy x and Noisy y in main, in that order. An inner block then creates Noisy z and ends, and afterwards main prints end. The output lines are numbered from 1. At which line does drop x appear?",
-      "responseType": "numeric",
+      "prompt": "A program declares Noisy x and then Noisy y in main. An inner block then creates Noisy z and ends, and afterwards main prints end. Noisy prints drop and its name when it is dropped. In what order do the lines appear?",
+      "responseType": "short_text",
       "difficulty": 1.3,
       "hints": [
         "z is dropped first, because its block ends first.",
-        "end is printed after the inner block and before main finishes.",
-        "At the end of main, y is dropped before x."
+        "end is printed after the inner block and before main finishes."
       ],
       "sourceIds": [
         "rust-book",
         "rust-errors",
         "rust-ref"
       ],
-      "onCorrect": "The output is drop z, end, drop y, drop x, so x is dropped last.",
+      "onCorrect": "z is dropped when its inner block ends, and y and x are dropped at the end of main in reverse declaration order.",
       "skill": "predict-drop-order",
       "calculator": "off",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 4,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "Lines: 1 drop z, 2 end, 3 drop y, 4 drop x."
+        "kind": "text",
+        "acceptedIdeas": [
+          "drop z, end, drop y, drop x"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "drop z, end, drop y, drop x"
       },
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              1
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That is where drop z appears, since the inner block ends first."
+          "feedback": "z belongs to the inner block, so it is dropped when that block ends, before main prints end. At the end of main the later declaration goes first."
         },
         {
           "match": {
-            "numeric": [
-              2
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "That line is end, which main prints before its own locals are dropped."
+          "feedback": "Within main the last value declared is dropped first, so y is dropped before x."
         },
         {
           "match": {
-            "numeric": [
-              3
+            "choiceIds": [
+              "d"
             ]
           },
-          "feedback": "That is drop y. Locals are dropped in reverse order, so x comes after y."
+          "feedback": "z is dropped as soon as its inner block ends, and that happens before main prints end."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "drop z, end, drop y, drop x"
+        },
+        {
+          "id": "b",
+          "label": "end, drop z, drop x, drop y"
+        },
+        {
+          "id": "c",
+          "label": "drop z, end, drop x, drop y"
+        },
+        {
+          "id": "d",
+          "label": "end, drop z, drop y, drop x"
         }
       ]
     },
@@ -8385,54 +8119,71 @@
         "move",
         "drop"
       ],
-      "prompt": "The program has five lines. 1: let a = String::from(\"x\");  2: let b = a;  3: let c = b.len();  4: println!(\"{}\", a);  5: println!(\"{}\", b);  Which line number is the first that the compiler rejects?",
-      "responseType": "numeric",
+      "prompt": "A program has five lines. 1: let a = String::from(\"x\");  2: let b = a;  3: let c = b.len();  4: println!(\"{}\", a);  5: println!(\"{}\", b);  Which is the first line that the compiler rejects?",
+      "responseType": "short_text",
       "difficulty": 1.3,
       "hints": [
         "Find the line that moves a value.",
-        "Which names are still valid after that line?",
-        "Line 3 only borrows b to measure it."
+        "Which names are still valid after that line?"
       ],
       "sourceIds": [
         "rust-book",
         "rust-errors",
         "rust-ref"
       ],
-      "onCorrect": "Line 2 moves a into b, so line 4 is the first use of a name that no longer owns its value.",
+      "onCorrect": "Line 2 moved the String into b, so a is no longer valid, and line 4 is the first line that tries to use it.",
       "skill": "spot-use-after-move",
       "calculator": "off",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 4,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "a is moved on line 2, and line 4 uses it."
+        "kind": "text",
+        "acceptedIdeas": [
+          "Line 4, where a is printed"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Line 4, where a is printed"
       },
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              2
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "Line 2 is where the move happens, which is allowed. The error is at a later use."
+          "feedback": "Moving a value is allowed. The assignment hands the String to b, and an error only arises when a is used afterwards."
         },
         {
           "match": {
-            "numeric": [
-              5
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "b owns the value after line 2, so using it is fine."
+          "feedback": "The method len only borrows b to measure it, and b still owns the String at that point."
         },
         {
           "match": {
-            "numeric": [
-              3
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "Line 3 uses b, which is valid. It does not touch a."
+          "feedback": "b is the owner after line 2, and printing only borrows it, so this line is allowed."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "Line 2, where a is assigned to b"
+        },
+        {
+          "id": "b",
+          "label": "Line 3, where b.len() is called"
+        },
+        {
+          "id": "c",
+          "label": "Line 5, where b is printed"
+        },
+        {
+          "id": "d",
+          "label": "Line 4, where a is printed"
         }
       ]
     },
@@ -8592,60 +8343,140 @@
       ]
     },
     {
-      "id": "sysp-borrowing-and-lifetimes-mutable-references",
+      "id": "sysp-borrowing-and-lifetimes-which-rule",
       "conceptIds": [
         "borrow",
         "aliasing-rule",
         "lifetime"
       ],
-      "prompt": "How many mutable references to one value may be alive at the same time?",
-      "responseType": "numeric",
+      "prompt": "A program creates a Vec v holding one number, takes a shared reference f to its first element, pushes a second number onto v, and then prints f. Which rule does it break?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "A mutable reference may change the value, so nobody else may look at it meanwhile.",
-        "The rule says many shared borrows or a single mutable one.",
-        "Count the mutable ones allowed."
+        "The program holds a shared reference and then changes the Vec through its owner.",
+        "Compare what the push needs with what the reference f is still going to be used for."
       ],
       "sourceIds": [
         "rust-book",
         "rust-errors",
         "rustonomicon"
       ],
-      "onCorrect": "A mutable borrow must be exclusive, so a second one, or a shared one, is rejected while it is alive.",
+      "onCorrect": "The push needs mutable access to v while f, a shared borrow, is still going to be used on the next line, which the rule forbids. The compiler reports it as E0502.",
       "skill": "classify-borrow-errors",
       "calculator": "off",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 1,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "Exactly one mutable reference may be alive at a time."
+        "kind": "text",
+        "acceptedIdeas": [
+          "A shared borrow and a mutable borrow of one value may not be alive together"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "A shared borrow and a mutable borrow of one value may not be alive together"
+      },
+      "choices": [
+        {
+          "id": "a",
+          "label": "A shared borrow and a mutable borrow of one value may not be alive together"
+        },
+        {
+          "id": "b",
+          "label": "A moved value may not be used again"
+        },
+        {
+          "id": "c",
+          "label": "Two mutable borrows of one value may not be alive together"
+        },
+        {
+          "id": "d",
+          "label": "A reference may not outlive the value it points to"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Nothing is moved here. v keeps its value throughout, and the push borrows v mutably without taking it."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "There is only one mutable borrow, made by the push. The conflict is between that borrow and the shared reference f, which is still going to be used."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "v lives to the end of the program, so f never refers to a dropped value. The danger is that the push may move the buffer that f points into."
+        }
+      ]
+    },
+    {
+      "id": "sysp-borrowing-and-lifetimes-mutable-references",
+      "conceptIds": [
+        "borrow",
+        "aliasing-rule",
+        "lifetime"
+      ],
+      "prompt": "Which of these sets of borrows of one value may all be alive at the same time?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Reading does not interfere with reading.",
+        "A mutable borrow changes the value, so no other borrow may be alive to see it half changed."
+      ],
+      "sourceIds": [
+        "rust-book",
+        "rust-errors",
+        "rustonomicon"
+      ],
+      "onCorrect": "Any number of shared borrows may coexist, because none of them changes the value, whereas a mutable borrow has to be the only borrow alive.",
+      "skill": "classify-borrow-errors",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Three shared borrows"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Three shared borrows"
       },
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              2
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "Two mutable references to one value is the situation that E0499 reports."
+          "feedback": "A mutable borrow must be the only way to reach the value while it lasts, so a second one is refused with E0499."
         },
         {
           "match": {
-            "numeric": [
-              0
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "A single mutable reference is allowed, provided no other reference to the value is alive."
+          "feedback": "The holder of the shared borrow would see the value change under it, which is the conflict E0502 reports."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "Three shared borrows"
         },
         {
-          "match": {
-            "numeric": [
-              3
-            ]
-          },
-          "feedback": "No number above one is allowed for mutable references."
+          "id": "b",
+          "label": "Two mutable borrows"
+        },
+        {
+          "id": "c",
+          "label": "One shared borrow and one mutable borrow"
         }
       ]
     },
@@ -8730,13 +8561,12 @@
         "aliasing-rule",
         "lifetime"
       ],
-      "prompt": "What is the last number the program prints?",
-      "responseType": "numeric",
+      "prompt": "A program creates a Vec v holding the number 1, takes a shared reference f to its first element, and prints f. It then pushes 2 onto v and prints v.len(). What happens?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
         "Follow the program in order, and ask whether the borrow f is still needed when the push runs.",
-        "f is last used on the print line, which comes before the push.",
-        "After the push, the Vec holds two elements, and the last line prints its length."
+        "f is last used on the line that prints it, which comes before the push."
       ],
       "sourceIds": [
         "rust-book",
@@ -8747,37 +8577,43 @@
       "skill": "classify-borrow-errors",
       "calculator": "off",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 2,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "The program compiles, prints 1, pushes, and then prints the length 2."
+        "kind": "text",
+        "acceptedIdeas": [
+          "It compiles and prints 1, then 2"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "It compiles and prints 1, then 2"
       },
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              1
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That is the first line printed, the value f refers to. The last line prints the length after the push."
+          "feedback": "A borrow lasts only until its last use. f is last used on the print before the push, so no borrow is alive when the push needs mutable access."
         },
         {
           "match": {
-            "numeric": [
-              3
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "The push adds one element to a Vec that held one, so the length is not that large."
+          "feedback": "The push may move the buffer, but f is not used afterwards, so nothing can read the stale address."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "It is rejected, because the push happens while f still exists"
         },
         {
-          "match": {
-            "numeric": [
-              0
-            ]
-          },
-          "feedback": "The program compiles, so it prints both lines."
+          "id": "b",
+          "label": "It compiles, but the push moves the buffer out from under f"
+        },
+        {
+          "id": "c",
+          "label": "It compiles and prints 1, then 2"
         }
       ]
     },
@@ -8846,54 +8682,71 @@
         "aliasing-rule",
         "lifetime"
       ],
-      "prompt": "In fn pick<'a>(x: &'a str, y: &'a str, z: &str) -> &'a str, how many of the three parameters is the returned reference tied to?",
-      "responseType": "numeric",
+      "prompt": "In fn pick<'a>(x: &'a str, y: &'a str, z: &str) -> &'a str, which parameters is the returned reference tied to?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Look at which parameters carry the name 'a.",
-        "The result is declared with 'a.",
-        "z has no named lifetime."
+        "The result is tied to the parameters that carry the same lifetime name as the result.",
+        "Look for the parameter that has no name written after its ampersand."
       ],
       "sourceIds": [
         "rust-book",
         "rust-errors",
         "rustonomicon"
       ],
-      "onCorrect": "Only parameters that share the lifetime named in the result are tied to it, so x and y matter and z does not.",
+      "onCorrect": "The result carries 'a, and x and y carry it too, so it is valid only while both are alive. z has no name, so the result is not tied to it.",
       "skill": "annotate-lifetimes",
       "calculator": "off",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 2,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "x and y carry 'a, and z does not."
+        "kind": "text",
+        "acceptedIdeas": [
+          "x and y"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "x and y"
       },
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              3
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "z has a different, unnamed lifetime, so the result is not promised to be valid for as long as it is."
+          "feedback": "y carries the same name 'a, so the result may refer to y as well as x and is valid only while both are alive."
         },
         {
           "match": {
-            "numeric": [
-              1
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "Both x and y use the same name as the result, so both are tied to it."
+          "feedback": "z has no name in common with the result, so the signature promises nothing about it, and the body cannot return anything borrowed from z."
         },
         {
           "match": {
-            "numeric": [
-              0
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "The result takes its lifetime from the parameters that share its name."
+          "feedback": "z is the parameter that does not carry the name 'a, which is why the result is not tied to it."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "Only x"
+        },
+        {
+          "id": "b",
+          "label": "x, y and z"
+        },
+        {
+          "id": "c",
+          "label": "Only z"
+        },
+        {
+          "id": "d",
+          "label": "x and y"
         }
       ]
     },
@@ -9195,12 +9048,12 @@
         "undefined-behaviour"
       ],
       "prompt": "void f(int a[]) { printf(\"%zu\", sizeof(a)); } is called with an int array of 10 elements, on a 64-bit Linux target where an int is 4 bytes. What does it print?",
-      "responseType": "numeric",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
         "Think about what the compiler really receives when an array is passed to a function.",
         "A function parameter written int a[] is adjusted to another type.",
-        "The type is a pointer, and a pointer on a 64-bit target has a fixed size."
+        "The type is a pointer, and every pointer has the same fixed size on a given target."
       ],
       "sourceIds": [
         "c-ref",
@@ -9212,37 +9065,55 @@
       "skill": "explain-array-decay",
       "calculator": "off",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 8,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "int a[] is int *a, and a pointer on a 64-bit target is 8 bytes."
+        "kind": "text",
+        "acceptedIdeas": [
+          "8, the size of one address"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "8, the size of one address"
       },
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              40
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That would be sizeof of the whole array, which is only available where the array is declared. Here a is a pointer."
+          "feedback": "That is sizeof of the array where it is declared. In a parameter, int a[] is adjusted to int *a, so sizeof reports the pointer."
         },
         {
           "match": {
-            "numeric": [
-              10
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That is the element count, which sizeof does not report."
+          "feedback": "sizeof reports bytes, never an element count, and the parameter no longer carries the length at all."
         },
         {
           "match": {
-            "numeric": [
-              4
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "That is the size of one int. a is a pointer, not an int."
+          "feedback": "a is not an int. It is a pointer to the first int, and a pointer has the size of an address."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "40, the size of the whole array"
+        },
+        {
+          "id": "b",
+          "label": "10, the number of elements"
+        },
+        {
+          "id": "c",
+          "label": "4, the size of one int"
+        },
+        {
+          "id": "d",
+          "label": "8, the size of one address"
         }
       ]
     },
@@ -9712,13 +9583,12 @@
         "system-call",
         "fork-exec"
       ],
-      "prompt": "What does fork return in the child process?",
-      "responseType": "numeric",
+      "prompt": "A process calls fork and the call succeeds. What does fork return in the child process?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
         "The parent and the child run the same code after fork, and need a way to tell themselves apart.",
-        "The parent receives the child's pid, which is never zero.",
-        "The child receives the one value that is not a valid pid."
+        "The parent receives the child's pid, which is never zero."
       ],
       "sourceIds": [
         "ostep",
@@ -9729,37 +9599,43 @@
       "skill": "distinguish-parent-child",
       "calculator": "off",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 0,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "In the child, fork returns 0."
+        "kind": "text",
+        "acceptedIdeas": [
+          "0"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "0"
       },
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              101
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That is the kind of value the parent receives: the child's process number."
+          "feedback": "The child's pid is what the parent receives, so that the parent can refer to the child. The child gets a different value."
         },
         {
           "match": {
-            "numeric": [
-              1
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "The child receives zero. A positive number is the pid given to the parent."
+          "feedback": "Neither process is given the parent's pid by fork: the parent receives the child's pid, and the child receives a value that is not a valid pid."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "0"
         },
         {
-          "match": {
-            "numeric": [
-              -1
-            ]
-          },
-          "feedback": "A result of minus one means fork failed, and the child does not exist in that case."
+          "id": "b",
+          "label": "The child's own pid"
+        },
+        {
+          "id": "c",
+          "label": "The parent's pid"
         }
       ]
     },
@@ -9770,13 +9646,12 @@
         "system-call",
         "fork-exec"
       ],
-      "prompt": "How many lines does this program print?",
-      "responseType": "numeric",
+      "prompt": "A C program calls fork() twice in a row, with no conditions, and then calls printf once to print a line. Every process that exists after a fork continues to the next line. How many lines does the program print?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
         "Each fork is called by every process that exists at that moment.",
-        "After the first fork there are two processes, and both call the second fork.",
-        "Each of the processes that exists at the end runs the printf."
+        "After the first fork there are two processes, and both call the second fork."
       ],
       "sourceIds": [
         "ostep",
@@ -9787,37 +9662,55 @@
       "skill": "count-forked-processes",
       "calculator": "off",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 4,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "1, then 2, then 4 processes, each printing once."
+        "kind": "text",
+        "acceptedIdeas": [
+          "Four lines"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Four lines"
       },
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              1
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "The printf is run by every process that exists after the two forks, not only the original."
+          "feedback": "The printf appears once in the code, but every process that exists after the two forks runs it, and there is more than one."
         },
         {
           "match": {
-            "numeric": [
-              2
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That counts one fork. The second fork is called by both processes that exist by then."
+          "feedback": "That counts the forks. The child made by the first fork also calls the second, so the second fork is run by two processes."
         },
         {
           "match": {
-            "numeric": [
-              3
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "Each fork doubles the count, so the total is a power of two."
+          "feedback": "That is the original process plus one child per fork. The child of the first fork also reaches the second fork and makes a child of its own."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "One line"
+        },
+        {
+          "id": "b",
+          "label": "Two lines"
+        },
+        {
+          "id": "c",
+          "label": "Three lines"
+        },
+        {
+          "id": "d",
+          "label": "Four lines"
         }
       ]
     },
@@ -10330,7 +10223,7 @@
         "stdio-buffer"
       ],
       "prompt": "A C program runs printf(\"hi\\n\"); fork(); and then both processes exit. Its output is redirected to a file. How many times does hi appear in the file?",
-      "responseType": "numeric",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
         "When output goes to a file, the C library collects it in a buffer and writes it later.",
@@ -10347,37 +10240,43 @@
       "skill": "predict-buffered-output",
       "calculator": "off",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 2,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "Two processes each flush a buffer containing hi, so hi appears twice."
+        "kind": "text",
+        "acceptedIdeas": [
+          "Twice"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Twice"
       },
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              1
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That would be the result at a terminal, where the newline flushes the buffer first. In a file the buffer is still full at the fork."
+          "feedback": "Text still in the buffer is written when a process exits, so it is not lost, and both processes exit."
         },
         {
           "match": {
-            "numeric": [
-              0
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "Both processes flush their buffers on exit, so the text is written."
+          "feedback": "printf ran once, but the fork copied the process's memory, buffer included, and each process writes its own copy when it exits."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "Not at all"
         },
         {
-          "match": {
-            "numeric": [
-              4
-            ]
-          },
-          "feedback": "Each process writes the buffer once, so the line appears once per process."
+          "id": "b",
+          "label": "Once"
+        },
+        {
+          "id": "c",
+          "label": "Twice"
         }
       ]
     },
@@ -10718,8 +10617,8 @@
         "data-race",
         "arc-mutex"
       ],
-      "prompt": "Two threads each run counter += 1 once on a shared counter that starts at 0, with no synchronisation. What is the smallest final value the counter can have?",
-      "responseType": "numeric",
+      "prompt": "Two threads each run counter += 1 once on a shared counter that starts at 0, with no synchronisation. Which final values can the program produce?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
         "The increment is not a single indivisible step.",
@@ -10732,41 +10631,47 @@
         "rust-errors",
         "rust-std"
       ],
-      "onCorrect": "If both threads read the counter before either writes, both write the same new value, and one update is lost.",
+      "onCorrect": "If both threads read the counter before either writes, both write the same new value and one update is lost, so the result is 1 when the steps interleave and 2 when they do not.",
       "skill": "explain-lost-update",
       "calculator": "off",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 1,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "Both read 0 and both write 1, so the final value is 1."
+        "kind": "text",
+        "acceptedIdeas": [
+          "Either 1 or 2, depending on how the threads interleave"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Either 1 or 2, depending on how the threads interleave"
       },
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              2
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That is the result when the threads run one after the other. Without synchronisation they may interleave."
+          "feedback": "Each thread does add one, but if both read the counter before either writes it back, the second write replaces the first and only one addition survives."
         },
         {
           "match": {
-            "numeric": [
-              0
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "Each thread writes something, so the counter cannot end at its starting value."
+          "feedback": "Every store writes a value one greater than the one that was loaded, so the counter cannot end at its starting value."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "Either 1 or 2, depending on how the threads interleave"
         },
         {
-          "match": {
-            "numeric": [
-              3
-            ]
-          },
-          "feedback": "Two additions of one cannot produce more than the sum, which is the largest possible value."
+          "id": "b",
+          "label": "Only 2, because each thread adds one"
+        },
+        {
+          "id": "c",
+          "label": "0, 1 or 2, depending on how the threads interleave"
         }
       ]
     },
@@ -11063,12 +10968,12 @@
         "data-race",
         "arc-mutex"
       ],
-      "prompt": "Three threads each push one number into an Arc<Mutex<Vec<i32>>>, and the main thread waits for all of them. How many elements does the Vec hold afterwards?",
-      "responseType": "numeric",
+      "prompt": "Three threads each push one number into an Arc<Mutex<Vec<i32>>>, and the main thread waits for all of them. What does the Vec hold afterwards?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
         "The order in which the threads push is not fixed.",
-        "Each thread pushes once.",
+        "Each thread pushes once, and the main thread waits for every one of them.",
         "The mutex ensures that no push is lost."
       ],
       "sourceIds": [
@@ -11077,41 +10982,47 @@
         "rust-errors",
         "rust-std"
       ],
-      "onCorrect": "The order may vary, but the mutex means every push takes effect, so the length is the number of threads.",
+      "onCorrect": "The order may vary, but the mutex means every push takes effect, so the Vec holds one number from each thread.",
       "skill": "share-with-arc-mutex",
       "calculator": "off",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 3,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "Three threads push once each, so the length is 3."
+        "kind": "text",
+        "acceptedIdeas": [
+          "All three numbers, in whichever order the threads ran"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "All three numbers, in whichever order the threads ran"
       },
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              1
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "Each push takes effect, because the mutex makes each one wait its turn."
+          "feedback": "Each push happens while its thread holds the lock, so no two pushes overlap and none can overwrite another."
         },
         {
           "match": {
-            "numeric": [
-              0
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "The threads are joined, so their pushes have happened by the time the length is read."
+          "feedback": "A Vec can be shared when it sits inside a Mutex that is owned through an Arc, which is the pattern used for the counter."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "Fewer than three numbers, because pushes at the same moment can overwrite each other"
         },
         {
-          "match": {
-            "numeric": [
-              6
-            ]
-          },
-          "feedback": "Each thread pushes once, not twice."
+          "id": "b",
+          "label": "The program is rejected, because a Vec cannot be shared between threads"
+        },
+        {
+          "id": "c",
+          "label": "All three numbers, in whichever order the threads ran"
         }
       ]
     },
@@ -11396,6 +11307,68 @@
       ]
     },
     {
+      "id": "sysp-scheduling-and-deadlock-best-order",
+      "conceptIds": [
+        "turnaround",
+        "round-robin",
+        "deadlock"
+      ],
+      "prompt": "Three jobs with run lengths 8, 4 and 2 arrive together on one processor and run one after another. Which order gives the lowest mean turnaround time?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "The turnaround time of a job is the time at which it completes, because all of them arrive at time 0.",
+        "A job that runs early makes every job behind it wait, so ask which jobs should be made to wait."
+      ],
+      "sourceIds": [
+        "ostep",
+        "csapp"
+      ],
+      "onCorrect": "In the order 2, 4, 8 the jobs finish at 2, 6 and 14, which sum to 22, and 22 divided by 3 is 7.33, lower than any other order.",
+      "skill": "compute-turnaround",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Shortest job first"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Shortest job first"
+      },
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Running the 8 first finishes the jobs at 8, 12 and 14, so the two short jobs wait for the long one and the mean is 11.33."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "The last job finishes at 14 in every order, but the earlier jobs do not, and the mean counts all three completion times."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "Shortest job first"
+        },
+        {
+          "id": "b",
+          "label": "Longest job first"
+        },
+        {
+          "id": "c",
+          "label": "All orders give the same mean"
+        }
+      ]
+    },
+    {
       "id": "sysp-scheduling-and-deadlock-rr-small",
       "conceptIds": [
         "turnaround",
@@ -11516,53 +11489,59 @@
         "round-robin",
         "deadlock"
       ],
-      "prompt": "What is the smallest number of locks with which two threads can deadlock?",
-      "responseType": "numeric",
+      "prompt": "Which of these setups can make two threads deadlock?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
         "Each thread must hold one lock while it waits for another.",
         "Two threads that need the same single lock cannot hold one each.",
-        "Count the locks in the cycle."
+        "The waiting must form a ring, with each thread waiting for a lock the next one holds."
       ],
       "sourceIds": [
         "ostep",
         "csapp"
       ],
-      "onCorrect": "Each thread holds one lock and waits for the one the other holds, and that needs two distinct locks.",
+      "onCorrect": "Each thread holds one lock and waits for the one the other holds, and that needs two distinct locks taken in opposite orders.",
       "skill": "break-deadlock-condition",
       "calculator": "off",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 2,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "Two locks acquired in opposite order are enough."
+        "kind": "text",
+        "acceptedIdeas": [
+          "Two locks, taken in opposite orders by the two threads"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Two locks, taken in opposite orders by the two threads"
       },
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              1
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "With one lock the thread that holds it can always finish, so nobody waits forever."
+          "feedback": "A thread holding the only lock is waiting for nothing, so it finishes and releases it, and the other thread can then take it. Each thread must hold one lock while it waits for another."
         },
         {
           "match": {
-            "numeric": [
-              3
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "A third lock is not needed. Two locks taken in opposite order already make a cycle."
+          "feedback": "The thread that takes the first lock is the only one that can reach the second, so the waiting never forms a ring."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "Two locks, taken in opposite orders by the two threads"
         },
         {
-          "match": {
-            "numeric": [
-              4
-            ]
-          },
-          "feedback": "Two locks are enough for a cycle of two threads."
+          "id": "b",
+          "label": "Both threads take the same single lock"
+        },
+        {
+          "id": "c",
+          "label": "Two locks, taken in the same order by both threads"
         }
       ]
     },
@@ -12055,8 +12034,8 @@
         "page-table",
         "tlb"
       ],
-      "prompt": "With no TLB, and a page table that is a single array in memory, how many memory accesses does one load of a data value take?",
-      "responseType": "numeric",
+      "prompt": "The page table is a single array in ordinary memory, and nothing speeds up the translation. Compared with a machine that needs no translation, how long does a load of one data value take?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
         "The page table lives in memory too.",
@@ -12068,41 +12047,47 @@
         "csapp",
         "drepper-memory"
       ],
-      "onCorrect": "One access reads the page table entry and the second reads the data, which is why a cache of translations is needed.",
+      "onCorrect": "One access reads the page table entry and a second reads the data, which is why a cache of translations is needed.",
       "skill": "compute-effective-access-time",
       "calculator": "off",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 2,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "One read of the page table and one of the data make 2."
+        "kind": "text",
+        "acceptedIdeas": [
+          "About twice as long, because the table entry has to be read from memory before the data"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "About twice as long, because the table entry has to be read from memory before the data"
       },
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              1
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That counts the data read only. The translation also has to be read from memory."
+          "feedback": "The table sits in ordinary memory, so finding the frame means reading an entry from it, and that read costs a memory access of its own."
         },
         {
           "match": {
-            "numeric": [
-              3
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "A single-level table needs only one table read before the data read."
+          "feedback": "The page number indexes the table directly, so one read finds the entry, and a single-level table adds one access, not many."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "About twice as long, because the table entry has to be read from memory before the data"
         },
         {
-          "match": {
-            "numeric": [
-              0
-            ]
-          },
-          "feedback": "Every load reads memory at least once."
+          "id": "b",
+          "label": "About the same, because the hardware translates addresses instantly"
+        },
+        {
+          "id": "c",
+          "label": "Many times as long, because the processor must search the whole table"
         }
       ]
     },
@@ -12518,12 +12503,12 @@
         "sysp-locality",
         "row-major"
       ],
-      "prompt": "An 8 by 16 matrix of four-byte integers is stored row by row, so each row is one 64-byte line. The cache holds 4 lines and drops the least recently used line when it is full. How many misses occur when the program reads the matrix column by column?",
-      "responseType": "numeric",
+      "prompt": "An 8 by 16 matrix of four-byte integers is stored row by row, so each row is one 64-byte line. The cache holds 4 lines and drops the least recently used line when it is full. Compared with reading the matrix row by row, how many misses does reading it column by column cause?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "A column read touches one integer of every row, so it touches all 8 lines in turn.",
-        "The cache holds only 4 of those 8 lines.",
+        "A column read touches one integer of every row, so it touches all the lines in turn.",
+        "The cache holds only half of those lines.",
         "By the time a column comes back to a line, that line has been evicted."
       ],
       "sourceIds": [
@@ -12531,41 +12516,47 @@
         "csapp",
         "ostep"
       ],
-      "onCorrect": "A column cycles through more lines than the cache holds, so each line is evicted before its next use and every read misses.",
+      "onCorrect": "A column cycles through more lines than the cache holds, so each line is evicted before its next use and every read misses, where row order misses only once per line.",
       "skill": "choose-loop-order",
       "calculator": "off",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 128,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "8 × 16 = 128 reads, and each one misses."
+        "kind": "text",
+        "acceptedIdeas": [
+          "Far more, because each line is evicted before it is used again"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Far more, because each line is evicted before it is used again"
       },
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              8
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That would be the count for row order, one miss for each line. In column order the lines are evicted before they are reused."
+          "feedback": "The number of reads is the same, but the cost is counted in lines loaded. Row order loads each line once, and column order keeps coming back to lines that have already gone."
         },
         {
           "match": {
-            "numeric": [
-              32
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That counts only the lines the cache can hold. Every read here is a miss."
+          "feedback": "A column visits all eight lines in turn and the cache holds four, so the line needed next is always the oldest one, and it is the one evicted."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "The same number, because both loops read the same integers"
         },
         {
-          "match": {
-            "numeric": [
-              16
-            ]
-          },
-          "feedback": "That is the number of columns. Each column causes a miss for every row."
+          "id": "b",
+          "label": "A few more, because a few lines are evicted before they are used again"
+        },
+        {
+          "id": "c",
+          "label": "Far more, because each line is evicted before it is used again"
         }
       ]
     },
@@ -12576,7 +12567,7 @@
         "sysp-locality",
         "row-major"
       ],
-      "prompt": "Take the 16 by 16 matrix of the figure, read column by column, but with a cache that holds 16 lines. How many misses occur?",
+      "prompt": "A 16 by 16 matrix of four-byte integers is stored row by row, so each row is one 64-byte line. It is read column by column, with a cache that holds 16 lines and drops the least recently used line when it is full. How many misses occur?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -13062,13 +13053,12 @@
         "raw-pointer",
         "ffi"
       ],
-      "prompt": "With unsafe extern \"C\" { fn abs(x: i32) -> i32; }, what does unsafe { abs(-3) } evaluate to?",
-      "responseType": "numeric",
+      "prompt": "A Rust program declares C's abs as fn abs(x: i32) -> i32; inside an unsafe extern \"C\" block and then calls abs(-3) inside an unsafe block. What happens?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
         "abs is C's absolute value function.",
-        "The absolute value of a number is its distance from zero.",
-        "Remove the sign."
+        "The declaration tells Rust the name and the type, and the linker finds the function in the C library."
       ],
       "sourceIds": [
         "rust-book",
@@ -13080,37 +13070,43 @@
       "skill": "declare-extern-function",
       "calculator": "off",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 3,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "The absolute value of -3 is 3."
+        "kind": "text",
+        "acceptedIdeas": [
+          "It calls the C library's abs and evaluates to 3"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "It calls the C library's abs and evaluates to 3"
       },
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              -3
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "abs returns the absolute value, so the result is not negative."
+          "feedback": "The declaration is all the compiler needs. The linker connects the name to the C library, and the unsafe block is where the programmer accepts that the function cannot be checked."
         },
         {
           "match": {
-            "numeric": [
-              0
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "abs of a nonzero number is not zero."
+          "feedback": "The C function runs exactly as it would in a C program, so it returns the absolute value of its argument and not the argument itself."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "It is rejected, because the compiler cannot see the C source of abs"
         },
         {
-          "match": {
-            "numeric": [
-              1
-            ]
-          },
-          "feedback": "That is the sign's size, not the absolute value."
+          "id": "b",
+          "label": "It calls the C library's abs and evaluates to 3"
+        },
+        {
+          "id": "c",
+          "label": "It compiles, but the call returns -3, because values cross into C unchanged"
         }
       ]
     },
@@ -13156,7 +13152,7 @@
         "raw-pointer",
         "ffi"
       ],
-      "prompt": "With strlen declared as unsafe extern \"C\", what does the program print?",
+      "prompt": "With strlen declared as unsafe extern \"C\", what does unsafe { strlen(b\"systems\\0\".as_ptr() as *const c_char) } return?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
