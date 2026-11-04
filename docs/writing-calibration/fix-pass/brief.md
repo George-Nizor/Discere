@@ -43,6 +43,8 @@ why it matters through what it lets you do, in two connected paragraphs. Rewrite
 - ends on a moral or announcement instead of the subject;
 - gives away the answer to the lesson's first question;
 - reads as short separate statements rather than connected sentences;
+- has a thin or vague second paragraph that never says what the learner will be able to answer or
+  do ("by following the lists in an order chosen to suit the question");
 - starts on an abstract description ("A square corner, a straight edge and the point where several
   lines meet look like different things, but…") instead of a concrete thing the learner can
   picture or work out ("Stand facing a wall and turn until it is directly on your right…").
