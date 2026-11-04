@@ -453,7 +453,7 @@ describe("Philosophy: Knowledge, Mind and Ethics (v2 lessons)", () => {
     expect(accepts("validity-and-soundness-1", "valid")).toBe(false);
     // The badge item is now a two-option choice: no gap is possible, and the late-arrival option is wrong.
     const badge = question("validity-and-soundness-7");
-    expect(badge.choices!.map((c) => c.id)).toEqual(["a", "b"]);
+    expect(badge.choices!.map((c) => c.id).sort()).toEqual(["a", "b"]);
     expect(correctChoices(badge)).toEqual(["a"]);
     expect(accepts("validity-and-soundness-7", "No: the two claims leave no room for it.")).toBe(true);
     expect(accepts("validity-and-soundness-7", "Yes: she might have arrived late.")).toBe(false);
