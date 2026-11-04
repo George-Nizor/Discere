@@ -121,7 +121,10 @@ function referenceIssues(
       ref(`${at}.steps.${step.id}.workedSteps.${index}.blank`, line.blank?.questionId);
       ref(`${at}.steps.${step.id}.workedSteps.${index}.selfExplain`, line.selfExplain?.questionId);
     });
-    if (step.blocks.length === 0 && !step.lead && !step.headline) {
+    // A screen that asks a question can stand on the question alone: requiring a lead as well made
+    // writers retell the question above it.
+    const asks = Boolean(step.checkQuestionId) || Boolean(step.workedSteps?.length);
+    if (step.blocks.length === 0 && !step.lead?.length && !step.headline && !asks) {
       issues.push({
         path: `${at}.steps.${step.id}`,
         code: "STEP_WITHOUT_TEXT",

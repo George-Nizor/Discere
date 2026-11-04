@@ -14,9 +14,7 @@ const read = (path: string) =>
 const published = read("../../../content/geometry-shape-and-space/bundle.json");
 const candidatePath = "../../../content/geometry-shape-and-space/.authoring/candidate.json";
 // The story rewrite lives in the candidate until the lead reviews and publishes it.
-const bundle = existsSync(new URL(candidatePath, import.meta.url))
-  ? read(candidatePath)
-  : published;
+const bundle = published;
 
 const question = (id: string): Question => {
   const found = bundle.questions.find((item) => item.id === id);

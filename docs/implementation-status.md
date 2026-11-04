@@ -2,6 +2,14 @@
 
 Updated: 2026-11-03
 
+Release 1.9.4 starts the fix pass George asked for after learning from the new courses. The rule
+capping multiple choice at 35% of a course is removed, since writers met it by turning
+conceptual checks into counting puzzles; a question screen no longer needs a lead, which had
+made writers retell the question above it; and voice-check now rejects a lead that repeats its
+question, filler instructions and syllabus-style course introductions. Software Design and
+Architecture is fixed throughout, as the model for the other courses
+(`docs/writing-calibration/fix-pass/brief.md`).
+
 Release 1.9.3 fixes starting a course again, which failed in the app with "Discere could not
 complete the request": the web client labelled every request as JSON, and the server refuses a
 JSON request with an empty body, which a DELETE has. The client now sends the header only with a

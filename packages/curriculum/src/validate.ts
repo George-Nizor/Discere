@@ -255,36 +255,6 @@ function codeQuestionIssues(question: CourseBundle["questions"][number]): Conten
   return issues;
 }
 
-/** Spec v0.2 section 18.4: at most 35% of a course's questions may be multiple choice. */
-/**
- * A course that is mostly multiple choice is testing recognition rather than understanding.
- *
- * The share is only enforced once there are enough questions for it to mean anything: over two
- * or three questions a proportion is an artefact of the count, and a course being written one
- * lesson at a time would be blocked by its own first import. Below the threshold the imbalance
- * is still reported, as a warning.
- */
-const MULTIPLE_CHOICE_LIMIT = 0.35;
-const SHARE_MEANINGFUL_FROM = 8;
-
-function multipleChoiceShareIssues(bundle: CourseBundle): ContentIssue[] {
-  if (bundle.questions.length === 0) return [];
-  const selected = bundle.questions.filter(
-    (question) => (question.choices?.length ?? 0) > 0,
-  ).length;
-  const share = selected / bundle.questions.length;
-  if (share <= MULTIPLE_CHOICE_LIMIT) return [];
-  const settled = bundle.questions.length >= SHARE_MEANINGFUL_FROM;
-  return [
-    {
-      path: "questions",
-      code: "MULTIPLE_CHOICE_SHARE",
-      severity: settled ? "error" : "warning",
-      message: `${selected} of ${bundle.questions.length} questions are multiple choice (${Math.round(share * 100)}%). The limit is ${Math.round(MULTIPLE_CHOICE_LIMIT * 100)}%.${settled ? "" : " Reported as a warning while the course is small."}`,
-    },
-  ];
-}
-
 /**
  * A worded review card that asks for an explanation ("What must be true…", "Why…") cannot be
  * marked fairly by keyword: "both sides are equivalent" is right and contains no "equal". Such
@@ -918,9 +888,11 @@ export function validateCourseBundle(input: unknown): ContentValidation {
       issues.push({
         path: `questions.${question.id}.hints`,
         code: "HINT_LADDER_TOO_SHORT",
-        severity: "error",
+        // Advice only: a ladder of three is useful for a multi-step calculation, but requiring it
+        // everywhere made writers pad hints for one-step questions.
+        severity: "warning",
         message:
-          "A calculated question needs a three-step hint ladder before its answer may be revealed.",
+          "A calculated question with several steps usually deserves a hint for each step.",
       });
     }
     issues.push(...choiceIssues(question));
@@ -928,7 +900,6 @@ export function validateCourseBundle(input: unknown): ContentValidation {
     issues.push(...codeQuestionIssues(question));
   }
 
-  issues.push(...multipleChoiceShareIssues(bundle));
   issues.push(...selfRatedCardIssues(bundle));
 
   for (const card of bundle.flashcards) {

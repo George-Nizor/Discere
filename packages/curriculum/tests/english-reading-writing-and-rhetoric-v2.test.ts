@@ -127,11 +127,6 @@ describe("English v2 lessons", () => {
     }
   });
 
-  it("keeps multiple choice to at most 35% of the course", () => {
-    const choices = bundle.questions.filter((item) => item.choices).length;
-    expect(choices / bundle.questions.length).toBeLessThanOrEqual(0.35);
-  });
-
   it("gives every choice item exactly one correct option", () => {
     const withChoices = bundle.questions.filter((item) => item.choices);
     expect(withChoices.length).toBeGreaterThan(0);

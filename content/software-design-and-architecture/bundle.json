@@ -32,9 +32,8 @@
     "status": "available",
     "introduction": {
       "paragraphs": [
-        "A program that works today can still be hard to change tomorrow, and most of the cost of software falls on that second part. Architecture is the set of decisions about structure that are costly to reverse, and this course is about making those decisions on purpose: which parts hide which choices, which way their dependencies point, and what each choice gives up.",
-        "You begin with measurements that need no vocabulary beyond arithmetic, such as the number of links between modules, the cost of reversing a decision, and the availability of a chain of services. Each idea is then tried on short Python, where a function, a class or a message can be traced by hand, and the figures show the same structures as boxes and arrows.",
-        "The middle lessons take the design principles and patterns that most teams use and say where each stops helping, then model a domain and arrange code in layers and ports so that it can be tested. The later lessons compare a modular monolith with microservices, treat messages and contracts as things that must be kept compatible, and end with drawing, recording and changing a system that is already running."
+        "A program that works today can still be hard to change tomorrow, and over the life of most software the cost of changing it is the larger cost. Some decisions are cheap to revisit, such as the name of a variable inside one function, while others become expensive the moment other code depends on them, such as the shape of the data a service sends out or the rule about which module may call which. Software architecture is the study of that second kind of decision, and of how to make such decisions deliberately, knowing what each one gives up.",
+        "The subject has a reputation for diagrams and vocabulary, yet most of its questions can be settled with arithmetic and a careful look at code. Counting the links between two modules tells you how far a change in one will spread, multiplying the availabilities of the services in a chain tells you how often the chain will fail, and asking how many programs read a field tells you what renaming it will cost. Every principle and pattern you meet here is judged in the same way, by what it costs and what it buys in a system you can see."
       ],
       "outcomes": [
         "You'll be able to name the decisions that are architectural and state a quality attribute as a testable scenario.",
@@ -673,16 +672,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-what-architecture-decides-rename-field",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A service returns a customer record as JSON, and one field in it is called cust. Twelve other programs read that field. A developer wants to rename it to customer_id and drop the old name."
-            },
-            {
-              "kind": "paragraph",
-              "text": "Work out how many programs have to change before you read on."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -702,7 +692,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The rename in the last question costs one edit when the field is private and thirteen when it is public, although the edit itself is identical. What separates the two cases is how many other things have come to depend on the decision, and that is the property which makes a decision **architectural**. Choosing the name of a local variable is a design decision, but it is a small one, because nothing outside the function knows the name. Choosing the shape of a public data format is architectural, because every client copies it into its own code."
+              "text": "Renaming tmp costs one edit, because only its own function uses the name, and renaming cust costs thirteen, because twelve other programs use it too, although the two edits are the same size. What separates the two cases is how many other things have come to depend on the decision, and that is the property which makes a decision **architectural**. Choosing the name of a local variable is a design decision, but it is a small one, because nothing outside the function knows the name. Choosing the shape of a public data format is architectural, because every client copies it into its own code."
             },
             {
               "kind": "paragraph",
@@ -744,12 +734,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-what-architecture-decides-hardest",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Apply the test from the last screen. Ask, for each change in the list, how many other things must move if it is undone."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -811,12 +796,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-what-architecture-decides-latency",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Look at the second view of the figure. The extra steps happen to each message, so they affect one quality in particular."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -879,12 +859,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-what-architecture-decides-parts-count",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The scenario has six labelled parts, and only one of them holds the number that a test checks."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -974,16 +949,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-what-architecture-decides-transfer-pick",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A team has three open decisions: the order of import statements in each file, whether two services will share one database, and the name of a private function. They have time to settle only one of them before coding starts."
-            },
-            {
-              "kind": "paragraph",
-              "text": "Decide which deserves the time, using what you have learned about reversal."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1011,11 +977,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A project can receive two renames on the same morning. In one, a variable called tmp inside a billing function becomes total; in the other, a field called cust in the data a service returns becomes customer_id. Both edits are a few characters long, and yet the first is reviewed in a minute while the second may need a plan, a version number and a message to every team that reads the field."
+              "text": "Here are two renames of the same size. Inside a billing function, a variable called tmp becomes total, and in the JSON that a customer service sends out, a field called cust becomes customer_id. Each is a change of a few characters in a single file."
             },
             {
               "kind": "paragraph",
-              "text": "The difference lies in who else had written the old name into their code. The figure shows the two cases side by side, and the gap between them is the point, because the decisions that cost the most to change are the ones that architecture is about."
+              "text": "The first is finished as soon as it is saved. The second can take weeks, with a new version of the service, a notice to other teams and a period in which both names have to be supported, although the edit itself is no larger. What makes one decision so much dearer to undo than another is the question **software architecture** is built on, and the answer lies in what else has been written on the assumption that the decision will not change."
             }
           ],
           "diagram": {
@@ -1089,12 +1055,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-coupling-and-cohesion-predict-five",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Suppose five modules in a program each need to know about every one of the others, so that each pair has its own link to keep correct."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1151,12 +1112,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-coupling-and-cohesion-try-eight",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Use the formula from the last screen on a different size."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1213,12 +1169,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-coupling-and-cohesion-try-flag",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The control flag on the ladder is the kind of link that appears in the next question. Read it before answering."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1354,12 +1305,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-coupling-and-cohesion-try-smell",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The first view of the figure shows one decision written in four places, and a change to it forces four edits."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1375,12 +1321,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-coupling-and-cohesion-transfer-envy",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A method on Report reads six fields of Customer to build a line of text and reads one of Report's own fields. Moving the method onto Customer would shorten every call it makes."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1408,11 +1349,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "Ten modules that all depend on one another have 45 links between them, and each link is a place where a change in one module can break another. The same ten modules arranged around a single hub have 9. Nothing about either program is wrong at first sight, and yet one of them will cost far more to change than the other, because the number of links, rather than the number of modules, sets how far a change can spread."
+              "text": "Ten modules in which each one depends on every other have 45 links between them, one for every pair, while the same ten modules arranged around a single hub have only 9. Each link is a place where a change in one module can break another, so the first arrangement gives a change five times as many routes to spread along, although it contains exactly the same modules."
             },
             {
               "kind": "paragraph",
-              "text": "The figure counts both. The choice of which links to allow is a design decision that gets expensive once code depends on it, so it is a good place to start measuring."
+              "text": "Counting links in this way lets you compare two designs by arithmetic, since all it needs is a list of which module uses which. A matching question can be asked inside a single module, whether its parts belong together, and the two answers between them show where a boundary has been drawn in the wrong place, so that one change has to be made in many places."
             }
           ],
           "diagram": {
@@ -1484,12 +1425,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-hiding-decisions-predict-modules",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A small program is built in four steps: read the input, shift each line, sort the lines, and print them. All four steps read the lines from one shared table, so each knows how the table is laid out. A fifth module is added that also reads the table."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1592,12 +1528,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-hiding-decisions-try-trace",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Follow the code in the figure through to its last line."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1672,12 +1603,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-hiding-decisions-try-leak",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Think about what the second caller in the figure promised the stack's author, and what the author promised it."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1730,7 +1656,7 @@
               "math": "discount(total) unchanged"
             },
             {
-              "text": "Count the modules whose source has to be edited.",
+              "text": "Decide which modules have to be edited.",
               "blank": {
                 "questionId": "sofda-hiding-decisions-faded-discount"
               }
@@ -1745,12 +1671,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-hiding-decisions-transfer-errors",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The stack's author decides that pop on an empty stack should return None instead of raising an error. Every method name stays the same, yet some callers break."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1778,11 +1699,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "In December 1972 David Parnas published a paper that took a small program and split it into modules twice. The first split followed the order in which the program works, with one module for each step. The second gave each module a decision that might change, such as how lines are stored, and then asked what happens to each split when that decision does change."
+              "text": "Every program contains decisions that might later change, such as how its data is stored, how a message is formatted or how a price is worked out, and the way the program is divided into modules settles how many of those modules a change to one decision will reach. In 1972 David Parnas took a small program and divided it in two ways, once by the steps of the processing and once by the decisions likely to change, and then asked what a change to the way lines are stored would cost in each."
             },
             {
               "kind": "paragraph",
-              "text": "The difference between the two shows a rule that is still used for drawing boundaries: a module should be chosen for what it hides, and a caller should know only what the module promises."
+              "text": "His comparison gave a rule for drawing boundaries that is still taught: a module should be chosen for the decision it hides, and a caller should be told only what the module promises. The rule lets you test a proposed division by listing the decisions that may change and checking that each one sits inside a single module."
             }
           ]
         },
@@ -1873,12 +1794,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-principles-as-heuristics-predict-square",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "In geometry, a square is a rectangle. A Square class therefore subclasses Rectangle, and, to keep itself square, each of its setters sets both sides. The function stretch takes any rectangle, sets its width to 5 and its height to 2, and returns its area."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -1953,12 +1869,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-principles-as-heuristics-try-srp",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Apply the first principle in the list to a class with several jobs."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2031,7 +1942,7 @@
               "math": "Pager implements Notifier"
             },
             {
-              "text": "Count the existing classes whose source has to change.",
+              "text": "Decide which existing classes have to be edited.",
               "blank": {
                 "questionId": "sofda-principles-as-heuristics-faded-add-channel"
               }
@@ -2087,12 +1998,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-principles-as-heuristics-try-three",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Use the rule of three on a repetition that has appeared twice."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2108,12 +2014,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-principles-as-heuristics-transfer-bird",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A base class Bird has the method fly. A new subclass Penguin overrides fly so that it raises an error, because penguins cannot fly. A function that loops over a list of Birds and calls fly on each one now crashes when the list contains a Penguin."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2145,7 +2046,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The function was correct, the subclass was defensible, and the program is still wrong. Cases like this are why design principles exist, and also why they are best read as rules of thumb that predict where trouble will arise, not as laws that settle every question."
+              "text": "Neither the function nor the subclass is faulty when read alone, and the failure comes from the way they are combined, which is the kind of fault the SOLID principles are meant to catch. They are short rules about where code should depend on what, and with them you can see in advance where a design is likely to break. They are also rules of thumb, which usually help and sometimes add more structure than they save, so each one has to be weighed against what following it costs."
             }
           ]
         },
@@ -2199,12 +2100,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-composition-over-inheritance-predict-sum",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Two classes each have a method called area. A list holds one object of each, and a loop calls area on every item and adds up the results."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2285,12 +2181,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-composition-over-inheritance-try-duck",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Follow the argument in the last paragraph on a class that shares no parent with the others."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2306,12 +2197,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-composition-over-inheritance-predict-nine",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A notifier has to send over three transports, email, SMS and push, and in three formats, plain text, JSON and XML. A developer writes one subclass of Sender for each combination, such as EmailJsonSender."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2374,12 +2260,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-composition-over-inheritance-try-six",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Count the classes in the composed design from the figure."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2441,12 +2322,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-composition-over-inheritance-transfer-duck",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A team tests its Sender by handing it a small fake object that has a send method and records what it is given. The fake does not inherit from the real transport class."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2478,7 +2354,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "Inheritance is the first thing many programmers reach for to arrange this, and it does work, but at a price that shows up once two things vary at the same time. That price can be counted and compared with the alternative, which is to build a behaviour out of smaller objects."
+              "text": "Many programmers reach first for inheritance to arrange this, by giving every shape a common parent, and it works until two things have to vary at once, when the number of subclasses begins to multiply. The alternative is to build a behaviour out of smaller objects that are held and chosen when they are needed, and the two designs can be compared by counting the classes each one requires."
             }
           ]
         },
@@ -2574,12 +2450,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-patterns-that-earn-their-place-predict-last",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A Subject keeps a list of functions, and notify(x) calls each one with x in the order in which they were attached. Two functions are attached, and then notify(5) is called."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2654,12 +2525,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-patterns-that-earn-their-place-try-observer",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Apply the problem that the observer names to a new case."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2716,12 +2582,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-patterns-that-earn-their-place-try-cents",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Take the adapter in the figure and apply its conversion to a particular payment."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2791,12 +2652,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-patterns-that-earn-their-place-transfer-yagni",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A team has one email notifier and one place that sends messages. A developer wants to add a Notifier interface, a factory and an observer list now, in case other channels are wanted later."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -2828,7 +2684,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "A name of this kind is the point of a design pattern. It records a solution that has worked on a recurring problem, along with the cost, so that a team can use one word where it would otherwise describe a page of structure. Four such patterns can be taken by the problems they solve."
+              "text": "A name of this kind is the point of a design pattern. It records a solution that has worked on a problem that keeps recurring, together with its cost, so that a team can say \"this is a strategy\" where it would otherwise describe a page of structure. The name is useful only while the problem is present, because a pattern applied where nothing varies gives every reader of the code one more layer to follow, so recognising the problem has to come before reaching for the pattern."
             }
           ]
         },
@@ -2929,12 +2785,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-domain-modelling-predict-money",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Money is a frozen dataclass, which compares its fields when two objects are tested for equality. It holds an amount and a currency."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3010,12 +2861,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-domain-modelling-try-orders",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Apply the test on the last screen to two orders with different ids."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3072,12 +2918,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-domain-modelling-try-drift",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The figure's second view bypasses the root. Work out how far apart the lines and the total end up."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3183,12 +3024,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-domain-modelling-try-context",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Take the three views of the figure, and name what each of them is."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3204,12 +3040,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-domain-modelling-transfer-frozen",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "In a frozen dataclass, assigning to a field after the object has been created is not allowed. A caller, believing it has a Money of 5 pounds, tries to turn it into 6 pounds by assigning to its amount."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3237,11 +3068,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "Three people in one company use the word customer. In sales it means a buyer with a credit limit, in shipping a name and a delivery address, and in billing a payer with a VAT number. The word is the same and the things are different, and a program that treats them as one object will carry the fields and rules of all three."
+              "text": "In one company the word customer has several meanings: in sales it is a buyer with a credit limit, in shipping a name and a delivery address, and in billing a payer with a VAT number. A program that treats all three as one Customer object has to carry the fields and rules of each, and a change made for one meaning risks breaking the other two."
             },
             {
               "kind": "paragraph",
-              "text": "Domain modelling begins from this observation: before choosing classes, find the words the business uses and what each of them means where it is used. Eric Evans gave the method its name in his 2003 book, Domain-Driven Design, and four of its ideas matter here."
+              "text": "Domain modelling, the practice that Eric Evans named in his 2003 book Domain-Driven Design, starts from this fact: before choosing classes, it asks which words the business uses and what each of them means where it is used. Each kind of thing is then given the structure its meaning calls for, an order being told apart by its id, for example, and an amount of money being defined by its data, and the result is a model that the people who run the business can read and correct."
             }
           ]
         },
@@ -3342,12 +3173,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-designing-for-testability-predict-saved",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A function register takes a name and a repository, and calls repo.save with a cleaned-up version of the name. In the test, the repository is replaced by a small class that keeps what it receives in a list."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3414,12 +3240,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-designing-for-testability-try-fake",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Look at the class in the program and at the three kinds in the figure."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3474,7 +3295,7 @@
               "math": "age > 18 fails on 18"
             },
             {
-              "text": "Count the cases needed at the boundary itself.",
+              "text": "Choose the pair of cases that sits on the boundary itself.",
               "blank": {
                 "questionId": "sofda-designing-for-testability-faded-boundary"
               }
@@ -3530,12 +3351,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-designing-for-testability-try-total",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Use the numbers in the figure to find how long the example suite takes to run in total."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3549,14 +3365,9 @@
           "kind": "transfer",
           "blocks": [],
           "visualStateId": "",
-          "checkQuestionId": "sofda-designing-for-testability-transfer-inject",
+          "checkQuestionId": "sofda-designing-for-testability-transfer-seam",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A function is_leap_day() returns True on 29 February, and it works out the date by reading the system clock inside its body. It can be tested only on the right day, which comes once every four years."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3584,11 +3395,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "Here is a function that reads the clock, saves a record to a database and sends an email. To test it, the test has to have a database, a mail server and the right date, and the function has been written so that none of them can be replaced. The usual response is to look for a better test tool, but the problem is in the design: the function chooses its own dependencies."
+              "text": "A function that calls date.today(), saves a record to a database and sends an email can be tested only with a real clock, a real database and a real mail server, because it chooses its own dependencies and so leaves a test no way to supply different ones. A better test framework does not help, since the obstacle is in how the function was written."
             },
             {
               "kind": "paragraph",
-              "text": "That function can be made testable by changing what it is given. The result is faster tests, and also a design that a reviewer can check cheaply, which matters more when some of the code was written by a tool."
+              "text": "If the function is given what it needs as arguments, a test can pass a fixed date, a list in place of the database and a recorder in place of the mailer, and the same code then runs quickly with nothing real touched. Its dependencies also appear in its signature, where a reviewer can see them at once, which matters more when some of the code was written by a tool."
             }
           ]
         },
@@ -3642,12 +3453,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-layers-and-ports-predict-strict",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A system is built as four layers: presentation, application, domain and data. The rule in this design is that each layer may use only the layer directly beneath it."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3703,12 +3509,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-layers-and-ports-try-relaxed",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Use the same count on a larger design, with every layer allowed to reach every layer below."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3771,12 +3572,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-layers-and-ports-try-port",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The domain defines an interface for storing orders, and the interface belongs to the domain."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3792,12 +3588,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-layers-and-ports-predict-total",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A function that works out a total with tax does not read the rate from a file or a database. It is given a function that returns the rate, which stands for the port, and it calls that function."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3873,12 +3664,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-layers-and-ports-try-adapter",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The domain's port for storing orders needs something to connect it to a real database."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3940,12 +3726,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-layers-and-ports-transfer-rule",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A domain module, the one that works out order totals, begins with the line import sqlalchemy, which is a database library. A reviewer asks for it to be removed."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -3973,11 +3754,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A function that works out a total with tax can take the tax rate from a file, from a database or from an argument. If it takes the rate from an argument, as total_with_tax(100, lambda: 0.2) does, it returns 120.0, and a test can pass lambda: 0.0 and expect 100.0 without any file or database being touched."
+              "text": "A layered design lets each layer depend only on the layers beneath it, with presentation at the top and the database at the bottom, so that the arrows run one way and are easy to count. They do not show everything, however, because a column called cust_nm in the database tends to be copied as order.cust_nm in the domain, then as dto.cust_nm in the application and then as a field in the JSON that clients read, and renaming the column then reaches every layer above it."
             },
             {
               "kind": "paragraph",
-              "text": "That small change is the idea behind ports and adapters: the code names what it needs, in its own words, and something outside provides it. The same idea works at the scale of a whole application, and the question is which way each import should point."
+              "text": "Ports and adapters repair this by reversing one arrow: the domain states in its own words what it needs, such as a way to store orders, and code on the outside supplies it. The domain's rules can then be tested without a database and driven equally by a web page, a command line or a schedule, and the test of the whole design becomes the direction in which each import points."
             }
           ]
         },
@@ -4033,12 +3814,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-monolith-modules-and-microservices-predict-five",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Five services handle one request in sequence, each passing its result to the next. Each is reliable, available 99.9% of the time, and failures are independent. The request succeeds only if all five are up."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4162,12 +3938,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-monolith-modules-and-microservices-try-ten",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Use the product rule from the figure on a longer chain."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4249,12 +4020,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-monolith-modules-and-microservices-try-conway",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The paper's author gave his name to the observation made in the last screen."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4308,12 +4074,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-monolith-modules-and-microservices-try-start",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Apply the advice to a small team with a new product and an uncertain design."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4329,12 +4090,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-monolith-modules-and-microservices-transfer-four",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A chain has four services, but these are each 99.5% available, less reliable than the 99.9% used so far. Failures are independent and the request needs all four."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4362,11 +4118,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "Five services that are each available 99.9% of the time sound dependable, and a request that has to pass through all five is available 99.5% of the time: about 3.6 hours of downtime in a month, against about 43 minutes for one service alone. The figure is multiplication, and it is only one of several costs that arrive when a program is divided into services that talk across a network."
+              "text": "A service that is available 99.9% of the time is unavailable for about 43 minutes in a 30-day month, which sounds dependable. A request that has to pass through several such services in turn succeeds only when every one of them is up at the same moment, so the chain is less available than any single service in it, and the more services it has, the further it falls."
             },
             {
               "kind": "paragraph",
-              "text": "Splitting a system also buys things, such as independent deployment and teams that do not wait for each other, and the choice between a monolith with strong modules and a set of services is a trade between them. The trade can be set out using the numbers where there are numbers and the teams where there are not."
+              "text": "That fall is one of the costs of dividing a program into services that talk across a network, and it has to be set against what the division buys, which is independent deployment and teams that do not wait for each other. Weighing the two lets you choose between one program with strong internal boundaries and a set of services on evidence, using the numbers where there are numbers and the shape of the teams where there are not."
             }
           ]
         },
@@ -4421,12 +4177,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-events-and-messages-predict-balance",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "An account is stored as a list of events, never as a balance. Its events, in order, are a deposit of 50, a withdrawal of 20 and a deposit of 5, and the balance is wanted from them."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4489,12 +4240,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-events-and-messages-try-tense",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Use the tense and the refusal test from the last screen on a message in an order system."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4555,14 +4301,9 @@
           "kind": "try",
           "blocks": [],
           "visualStateId": "",
-          "checkQuestionId": "sofda-events-and-messages-try-messages",
+          "checkQuestionId": "sofda-events-and-messages-try-coordinator",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Count the messages in the orchestration style for a flow with more services than the figure."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4635,12 +4376,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-events-and-messages-try-replay",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Replay a log of your own through the same steps as the figure."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4729,12 +4465,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-events-and-messages-try-cqrs",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Name the pattern shown in the second view of the figure, which separates the two models."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4750,12 +4481,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-events-and-messages-transfer-duplicate",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The same log is replayed, but a network retry stored the last deposit twice, so the log now holds four events and no event has an id."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4783,11 +4509,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "An account's history can be kept as three lines: deposit 50, withdraw 20, deposit 5. The balance is not stored; it is 35 because that is what the three lines add up to, and it could be rebuilt at any time by adding them again from the start. Banks have kept ledgers this way for centuries, and a good deal of software now does the same."
+              "text": "A bank account can be kept as a list of what has happened to it, a deposit here and a withdrawal there, with no balance stored at all, because the balance can be worked out whenever it is wanted by adding up the list from the start. Banks have kept ledgers this way for centuries, and a good deal of software now does the same, by keeping the events that occurred in place of the state that results from them."
             },
             {
               "kind": "paragraph",
-              "text": "The idea belongs with a distinction between messages that ask for something and messages that record that something happened, and the two shape how services are connected. The distinction is joined by two ways of coordinating a flow, and by the cost of replaying a log."
+              "text": "Software that keeps events rests on a distinction between two kinds of message: one that asks for something, such as ReserveStock, which the receiver may refuse, and one that records what has already happened, such as OrderPlaced, which cannot be refused. The distinction shapes how services are connected, and it explains both what a log of events lets you do, which is rebuild the state at any earlier point, and what it costs, since a replay applies every event it finds."
             }
           ]
         },
@@ -4842,12 +4568,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-contracts-and-evolution-predict-read",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A function reads a JSON message and works out a line total. It expects a price, and it treats a missing qty as 1. The message it receives has a price and also a field it was never written for."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4928,12 +4649,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-contracts-and-evolution-try-rename",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Use the figure's three clients on a different change, to a field that every client reads."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -4984,12 +4700,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-contracts-and-evolution-try-compat",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Sort the four changes from the lesson by their effect on a client that already works."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5027,12 +4738,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-contracts-and-evolution-try-reader",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Take the habit described on the last screen and give it its name."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5145,12 +4851,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-contracts-and-evolution-transfer-breaking",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A provider adds a field called currency to its request format and makes it required. Existing clients, which have never sent that field, carry on exactly as before."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5178,11 +4879,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A service returns a price and, now and then, a quantity. A client written against it treats a missing quantity as 1, multiplies it by the price and ignores any field it does not recognise, so the message {\"price\": 4, \"extra\": true} still gives 4. The client has made itself indifferent to the changes that a provider is most likely to make."
+              "text": "A provider that sends the message {\"price\": 4, \"qty\": 2} has promised more than two field names: that price is a number and is in pence, that qty is a whole number, and that a request with a bad value will be answered with a particular kind of error. Everything that a client may rely on in this way is the provider's contract with it, and a client written against the message depends on all of it, whether or not it has been written down."
             },
             {
               "kind": "paragraph",
-              "text": "The provider and the client are connected by a contract, and a change is safe or not according to what clients rely on. Changes can be classified by that test, and an unavoidable breaking change can be made in three steps that no client notices."
+              "text": "Seen like this, a change to the provider is safe or not according to what its clients rely on, however small the edit is. That test sorts changes into those that break a client and those that do not, and it shows how a rename that cannot be avoided can still be made in steps, so that no client is ever left without a name it can read."
             }
           ]
         },
@@ -5236,12 +4937,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-c4-views-predict-level",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A product owner asks for one picture that shows the shop and what it depends on. In the picture the shop is a single box, and around it stand the customers who use it and the payment provider it calls."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5309,12 +5005,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-c4-views-try-level",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Look at the second view of the figure, and at the question of which level opens the system once."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5330,12 +5021,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-c4-views-try-count",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Count the containers in a system that has several kinds of runnable part and a store."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5389,14 +5075,9 @@
           "kind": "try",
           "blocks": [],
           "visualStateId": "",
-          "checkQuestionId": "sofda-c4-views-try-text",
+          "checkQuestionId": "sofda-c4-views-try-element",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Apply the hygiene rule for elements to a diagram that has several of them."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5464,12 +5145,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-c4-views-transfer-audience",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A new developer is joining the team. On the first day she has to find out which services make up the system and how they talk to each other, before she opens any code."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5497,11 +5173,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A diagram of a shop might show the shop as a single box with its customers on one side and a payment provider on the other, or it might open the shop into a web app, an API and a database, or it might open the API into its controllers and repositories. All three are correct, and each is useful to a different reader."
+              "text": "A diagram of a shop might show the shop as a single box, with its customers on one side and a payment provider on the other, or it might open the shop into a web app, an API and a database, or it might open the API into its controllers and repositories. All three are correct, and each is useful to a different reader, so a diagram that mixes them serves none of its readers well."
             },
             {
               "kind": "paragraph",
-              "text": "A diagram that mixes the three is the usual failure, and the C4 model was designed to prevent it by naming the levels and what each one answers. Every box and arrow needs certain things so that a diagram can be read when its author is not in the room."
+              "text": "Simon Brown's C4 model prevents the mixing by naming four levels of zoom and saying what each one is for, and it adds a few rules that let a diagram be read when its author is not in the room, such as a name, a type and a description for every box and a label on every arrow. The levels let you choose, for any reader, the one picture that answers the question they have, and the rules make that picture readable without anyone to explain it."
             }
           ]
         },
@@ -5556,12 +5232,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-trade-offs-and-decision-records-predict-total",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Two options for storing orders are compared on performance, cost and simplicity. The team weights the criteria 0.5, 0.3 and 0.2, in that order, and scores option A at 8, 5 and 6 out of 10."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5618,12 +5289,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-trade-offs-and-decision-records-try-b",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Option B scores 6, 9 and 9 on the same criteria, and the weights are unchanged."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5751,12 +5417,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-trade-offs-and-decision-records-try-status",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The status field in the figure has four values, and the old record of a pair has one of them."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5792,14 +5453,9 @@
           "kind": "try",
           "blocks": [],
           "visualStateId": "",
-          "checkQuestionId": "sofda-trade-offs-and-decision-records-try-fitness",
+          "checkQuestionId": "sofda-trade-offs-and-decision-records-try-build",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Use the check just described on a codebase with many modules, and count the ones that pass."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5815,12 +5471,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-trade-offs-and-decision-records-transfer-cost",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "The team now cares most about simplicity and cost, and moves its weights to 0.2, 0.3 and 0.5 for performance, cost and simplicity."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5848,11 +5499,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "Two options for storing orders are scored out of 10 on performance, cost and simplicity. A scores 8, 5 and 6, and B scores 6, 9 and 9. With weights of 0.5, 0.3 and 0.2, B totals 7.5 and A totals 6.7; with weights of 0.7, 0.2 and 0.1, the totals reverse, to 7.2 for A and 6.9 for B."
+              "text": "In a weighted decision matrix each option is scored against each criterion, every score is multiplied by the weight of its criterion, and an option's total is the sum of those products, so that the total is a weighted average of the scores. The scores describe the options, whereas the weights describe how much the people choosing care about each criterion, and a ranking can reverse when the weights move even though no score has changed."
             },
             {
               "kind": "paragraph",
-              "text": "Neither answer is wrong, and the result depends on a choice that people made, which is why the weights deserve more scrutiny than the scores. The method is to set out the weights and scores, test the sensitivity of the result, and record the decision in a form that a reader a year later can use."
+              "text": "The weights are therefore the part of a trade-off analysis that deserves the most scrutiny, and the analysis is worth keeping in a form that a reader a year later can use: a short record of the context that forced the choice, the decision itself and what it makes harder, so that the assumptions can be checked when they stop being true."
             }
           ]
         },
@@ -5907,12 +5558,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-evolving-a-system-predict-fraction",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A module is used by three other modules, and it uses one module itself. Counting links in both directions gives four links in all."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -5979,12 +5625,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-evolving-a-system-try-i",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Apply the formula from the last screen to a module with one dependent and four dependencies."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -6046,12 +5687,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-evolving-a-system-try-breakeven",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A team takes a shortcut that saves time now and adds a small cost to every later change."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -6141,14 +5777,9 @@
           "kind": "try",
           "blocks": [],
           "visualStateId": "",
-          "checkQuestionId": "sofda-evolving-a-system-try-remain",
+          "checkQuestionId": "sofda-evolving-a-system-try-midway",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Use the stages in the figure on a larger system."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -6187,12 +5818,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-evolving-a-system-try-char",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "Take the safety net described on the last screen, which is written before the change."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -6228,12 +5854,7 @@
           "visualStateId": "",
           "checkQuestionId": "sofda-evolving-a-system-transfer-route",
           "activityId": "",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A router in front of an old system and a new one sends each slice to where it now lives. Checkout and orders have been moved to the new system. Reports have not."
-            }
-          ],
+          "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
@@ -6261,11 +5882,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A module that three others depend on, and which depends on one, has 4 links, and a quarter of them point outward. That fraction, 0.25, says something about the module's place in the system: it is relied upon, and it should change slowly and carefully. A module whose links all point outward, with nothing depending on it, has a value of 1, and it can change freely."
+              "text": "A shortcut that saves three hours now and adds ten minutes to every later change has cost those three hours back after eighteen changes, and every change after that is paid for at the shortcut's expense. Ward Cunningham compared this to debt in 1992, and the comparison is useful because a debt can be measured and priced: a shortcut can be weighed against the cost of repairing it, and the repair made when it pays for itself."
             },
             {
               "kind": "paragraph",
-              "text": "The last lesson takes the system as it is, with its shortcuts and its older parts, and asks how to change it without stopping it. It gives three tools: a measure of where change is dangerous, a way to price a shortcut, and a way to replace a part by routing to the new one slice by slice."
+              "text": "A system that is already running is changed in the same measured way. Counting which modules depend on which shows where a change is dangerous, and a router placed in front of the old system lets one part at a time be replaced while the rest keeps working."
             }
           ]
         },
@@ -6293,12 +5914,10 @@
         "quality-scenario",
         "reversibility"
       ],
-      "prompt": "A service returns a JSON field called cust, and 12 other programs read it. The field is renamed in the service and the old name is not kept. How many programs have to change in total, counting the service?",
+      "prompt": "A service returns a JSON field called cust, and twelve other programs read it. The field is renamed to customer_id and the old name is dropped. What has to change?",
       "difficulty": 1,
       "hints": [
-        "Count the program that owns the field as well as the programs that read it.",
-        "Each reader still asks for the old name.",
-        "Add the service to the number of readers."
+        "Each program that reads the field has the name cust written into its own code."
       ],
       "sourceIds": [
         "iso-25010",
@@ -6306,34 +5925,60 @@
         "fowler-articles",
         "arc42"
       ],
-      "onCorrect": "Thirteen programs change for one new name, because each reader names the field itself.",
+      "onCorrect": "Every reader has its own copy of the name, so the edit is made thirteen times in thirteen programs.",
       "skill": "classify-a-decision",
       "calculator": "off",
-      "responseType": "numeric",
+      "responseType": "short_text",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 13,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "The service changes, and so does each of the 12 programs that read the field: 1 + 12 = 13."
+        "kind": "text",
+        "acceptedIdeas": [
+          "The service and all twelve programs that read the field"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "The service and all twelve programs that read the field"
       },
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              12
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That counts the readers only. The service has to change as well."
+          "feedback": "The service is where the name is defined, but each of the twelve readers looks the field up by the old name and breaks when it disappears."
         },
         {
           "match": {
-            "numeric": [
-              1
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "That is the cost of a local rename. Here other programs read the field."
+          "feedback": "The readers must change, and so must the service, since it is the one that stops sending cust."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "Redeploying runs the same code again. The twelve readers still ask for cust until their code is edited."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "Only the service"
+        },
+        {
+          "id": "b",
+          "label": "The service and all twelve programs that read the field"
+        },
+        {
+          "id": "c",
+          "label": "Only the twelve programs that read the field"
+        },
+        {
+          "id": "d",
+          "label": "Nothing, as long as everything is redeployed on the same day"
         }
       ]
     },
@@ -6471,49 +6116,73 @@
         "quality-scenario",
         "reversibility"
       ],
-      "prompt": "How many parts does a quality attribute scenario have?",
+      "prompt": "In a quality attribute scenario, which part holds the number that a test compares with the result?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "List them from the source to the response measure.",
-        "Count the labelled boxes in the figure.",
-        "There are two rows of three boxes."
+        "Five of the parts describe the event and what the system does; one says how well it must do it."
       ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "The response measure"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "The response measure"
+      },
       "sourceIds": [
         "iso-25010",
         "azure-arch-guide",
         "fowler-articles",
         "arc42"
       ],
-      "onCorrect": "Six parts, and the last one carries the number, which is why a scenario can be tested.",
-      "skill": "write-a-scenario",
-      "calculator": "off",
-      "responseType": "numeric",
-      "answerAuthority": {
-        "kind": "numeric",
-        "value": 6,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "Source, stimulus, artefact, environment, response and response measure make six."
-      },
+      "choices": [
+        {
+          "id": "a",
+          "label": "The stimulus"
+        },
+        {
+          "id": "b",
+          "label": "The environment"
+        },
+        {
+          "id": "c",
+          "label": "The response measure"
+        },
+        {
+          "id": "d",
+          "label": "The response"
+        }
+      ],
+      "onCorrect": "The response says what the system does; the response measure says how well, as a number a test can check.",
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              5
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "Five leaves out one part. The last is the response measure, which holds the number."
+          "feedback": "The stimulus is the event that arrives, such as 1,000 orders. It sets up the test but is not what the test checks."
         },
         {
           "match": {
-            "numeric": [
-              4
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "Four stops before the response and its measure."
+          "feedback": "The environment names the conditions at the time, such as normal operation, and holds no target to check."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "The response is what the system does, accepting the orders. It says nothing about how fast or how often, which is where the number goes."
         }
-      ]
+      ],
+      "skill": "write-a-scenario",
+      "calculator": "off"
     },
     {
       "id": "sofda-what-architecture-decides-practice-parts",
@@ -6750,7 +6419,7 @@
         "quality-scenario",
         "reversibility"
       ],
-      "prompt": "Which of the three decisions should the team settle before coding starts?",
+      "prompt": "A team has three open decisions: the order of import statements in each file, whether two services will share one database, and the name of a private function. They have time to settle only one before coding starts. Which should it be?",
       "difficulty": 1,
       "hints": [
         "Ask which one other services would start to depend on.",
@@ -6981,11 +6650,11 @@
         "dependency-count",
         "change-smells"
       ],
-      "prompt": "A function takes an argument fast=True and, inside, chooses between two different algorithms depending on it. Which kind of coupling, from the ladder, does the flag create between caller and function?",
+      "prompt": "A function takes an argument fast=True and, inside, chooses between two different algorithms depending on its value. Which kind of coupling does that argument create between the caller and the function?",
       "difficulty": 1,
       "hints": [
-        "The caller is steering what the function does inside.",
-        "The ladder names it directly."
+        "Ask whether the value is information the function uses or a switch between its inner paths.",
+        "The caller can only choose the right value if it knows how the function is built inside."
       ],
       "sourceIds": [
         "fowler-articles",
@@ -6999,24 +6668,53 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "control coupling"
-        ],
-        "acceptedAlternatives": [
-          "control flag",
-          "control flags",
-          "control"
+          "A control flag"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "control coupling"
+        "exampleAnswer": "A control flag"
       },
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "data coupling"
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "Passing data is looser. Here the argument controls which code runs."
+          "feedback": "The caller reads nothing that belongs to the function, such as a private field. It only passes an argument."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Nothing global is shared here. The argument travels in the call itself, and neither side writes a variable the other reads."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "Passed data only has to be understood as a value, such as a number to add. Here the value selects which of two algorithms runs, so the caller must know that the function has two inner paths."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "Shared internals"
+        },
+        {
+          "id": "b",
+          "label": "Shared global data"
+        },
+        {
+          "id": "c",
+          "label": "A control flag"
+        },
+        {
+          "id": "d",
+          "label": "Passed data"
         }
       ]
     },
@@ -7354,12 +7052,11 @@
         "interface",
         "leaky-abstraction"
       ],
-      "prompt": "A program is split into five modules by processing step, and each of the five reads lines straight from one shared storage format. The format changes. How many modules have to change?",
+      "prompt": "A program is split into five modules by processing step, and each of the five reads lines straight from one shared storage format. The format changes. Which modules have to change?",
       "difficulty": 1,
       "hints": [
         "Ask which modules know the format.",
-        "In this split, every step reads the storage itself.",
-        "Count them."
+        "In this split every step reads the storage itself."
       ],
       "sourceIds": [
         "parnas-1972",
@@ -7369,31 +7066,57 @@
       "onCorrect": "All five change, because the format is known to every module and so belongs to none of them.",
       "skill": "spot-a-leak",
       "calculator": "off",
-      "responseType": "numeric",
+      "responseType": "short_text",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 5,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "Each of the five modules reads the format directly, so all five change."
+        "kind": "text",
+        "acceptedIdeas": [
+          "All five, because each one knows the format"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "All five, because each one knows the format"
       },
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              1
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That would be true if one module hid the format. In this split every step reads it."
+          "feedback": "Every step reads the stored lines itself, so each one contains code that depends on the layout, and not only the first."
         },
         {
           "match": {
-            "numeric": [
-              0
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "The change reaches every module that reads the format."
+          "feedback": "Printing is the final step, but the format is read at every step, so the change reaches the earlier modules as well."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "The steps stay the same, but each one reads the lines through the format, so each is edited when the format changes."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "All five, because each one knows the format"
+        },
+        {
+          "id": "b",
+          "label": "Only the first module, which stores the lines"
+        },
+        {
+          "id": "c",
+          "label": "Only the last module, which prints the lines"
+        },
+        {
+          "id": "d",
+          "label": "None of them, because the steps themselves are unchanged"
         }
       ]
     },
@@ -7404,7 +7127,7 @@
         "interface",
         "leaky-abstraction"
       ],
-      "prompt": "Run the Stack program in the figure. What does the last line print?",
+      "prompt": "A Stack's push adds an item and its pop removes and returns the item added most recently. Starting from an empty Stack s, a program runs s.push(1); s.push(2); s.push(3), then s.pop() with the result discarded, then print(s.pop()). What does it print?",
       "difficulty": 1,
       "hints": [
         "pop removes the item most recently pushed.",
@@ -7529,46 +7252,71 @@
         "interface",
         "leaky-abstraction"
       ],
-      "prompt": "Checkout, invoice and report all call pricing.discount(total). Its rule changes from a flat 10% to 10% only above 100. How many modules change, if pricing hides the rule?",
+      "prompt": "Checkout, invoice and report all call pricing.discount(total). The rule inside pricing changes from a flat 10% to 10% only above 100, and the signature discount(total) stays the same. Which modules have to be edited?",
       "difficulty": 1,
       "hints": [
-        "The three callers use discount(total) and know nothing of how it is worked out.",
-        "Which module contains the rule itself?",
-        "Count the modules that contain it."
+        "Ask which modules know how the discount is worked out.",
+        "The callers see only the signature, and the signature has not changed."
       ],
       "sourceIds": [
         "parnas-1972",
         "python-data-model",
         "fowler-articles"
       ],
-      "onCorrect": "One module changes, which is the benefit of giving the decision a module of its own.",
+      "onCorrect": "Only pricing changes, because it hides the rule and the callers see nothing but discount(total).",
       "skill": "spot-a-leak",
       "calculator": "off",
-      "responseType": "numeric",
+      "responseType": "short_text",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 1,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "Only the pricing module contains the rule, so one module changes."
+        "kind": "text",
+        "acceptedIdeas": [
+          "Only pricing"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Only pricing"
       },
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              3
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That would be the cost if each caller worked out the discount itself."
+          "feedback": "The callers use only the signature discount(total), which has not changed, so they cannot see the new rule."
         },
         {
           "match": {
-            "numeric": [
-              4
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "Callers know only the signature, so they are not among those edited."
+          "feedback": "The rule lives in pricing, so pricing is where it is rewritten. The callers just use the number it returns."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Someone has to write the new rule, and it lives in the pricing module, so that module is edited."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "Pricing and the three modules that call it"
+        },
+        {
+          "id": "b",
+          "label": "Only checkout, invoice and report"
+        },
+        {
+          "id": "c",
+          "label": "None, because the callers pick the new rule up by themselves"
+        },
+        {
+          "id": "d",
+          "label": "Only pricing"
         }
       ]
     },
@@ -7579,44 +7327,71 @@
         "interface",
         "leaky-abstraction"
       ],
-      "prompt": "A caller relies on Stack.pop raising an IndexError when the stack is empty. Besides operation names, which part of an interface does that promise belong to?",
+      "prompt": "The author of a Stack changes pop so that, on an empty stack, it returns None instead of raising an IndexError. Every method name stays the same, yet callers that relied on the error break. Which part of the interface has changed?",
       "difficulty": 1,
       "hints": [
-        "It is about what happens when something goes wrong.",
-        "Interfaces cover operations, ordering, failure cases and speed."
+        "The change affects only the empty stack, which is a failure case.",
+        "An interface covers names, ordering, errors and speed."
       ],
       "sourceIds": [
         "parnas-1972",
         "python-data-model",
         "fowler-articles"
       ],
-      "onCorrect": "If the stack began returning None instead of raising, the caller would break without any method name having changed.",
+      "onCorrect": "If the stack returns None instead of raising, a caller that expected the error breaks although no method name has changed.",
       "skill": "spot-a-leak",
       "calculator": "off",
       "responseType": "short_text",
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "errors"
-        ],
-        "acceptedAlternatives": [
-          "error behaviour",
-          "error behavior",
-          "error handling",
-          "exceptions",
-          "error"
+          "The errors it reports"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "errors"
+        "exampleAnswer": "The errors it reports"
       },
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "ordering"
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "Ordering is the order items come out. This promise is about the failure case."
+          "feedback": "The order is the same, newest first. What changed is what happens when the stack is empty."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Nothing about speed has changed. Only the empty-stack case behaves differently."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "The names are unchanged, which is why this change catches callers by surprise."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "The order in which items come out"
+        },
+        {
+          "id": "b",
+          "label": "How fast each operation runs"
+        },
+        {
+          "id": "c",
+          "label": "The errors it reports"
+        },
+        {
+          "id": "d",
+          "label": "The names of the operations"
         }
       ]
     },
@@ -7788,7 +7563,7 @@
         "dip",
         "yagni-dry"
       ],
-      "prompt": "Square subclasses Rectangle, as in the figure, and each setter on Square sets both sides. What does stretch(Square(1)) return?",
+      "prompt": "The function stretch(shape) first sets the shape's width to 5, then sets its height to 2, and returns its area. Square subclasses Rectangle, and each setter on Square sets both sides. What does stretch(Square(1)) return?",
       "difficulty": 1,
       "hints": [
         "Follow the two setter calls in order on a Square.",
@@ -7915,46 +7690,71 @@
         "dip",
         "yagni-dry"
       ],
-      "prompt": "A Pager notifier is added. Checkout, EmailNotifier and SmsNotifier all stay as they are. How many existing classes have to change?",
+      "prompt": "Checkout depends on a Notifier interface that EmailNotifier and SmsNotifier implement. A Pager class that also implements Notifier is written, and the program passes it to Checkout at start-up. Which existing classes have to be edited?",
       "difficulty": 1,
       "hints": [
-        "Checkout names only the Notifier interface.",
-        "A new class that implements the interface plugs in without touching the old ones.",
-        "Count the existing classes that must be edited."
+        "Ask which classes name Pager.",
+        "Checkout holds a Notifier and calls send on it."
       ],
       "sourceIds": [
         "python-data-model",
         "fowler-articles",
         "azure-arch-guide"
       ],
-      "onCorrect": "No existing class changes, because the new channel implements the interface and Checkout never names it.",
+      "onCorrect": "No existing class names Pager, so none is edited: the new channel is one more class that implements Notifier.",
       "skill": "apply-dip",
       "calculator": "off",
-      "responseType": "numeric",
+      "responseType": "short_text",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 0,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "Checkout calls notifier.send() on the interface and the two older notifiers are unchanged, so no existing class changes."
+        "kind": "text",
+        "acceptedIdeas": [
+          "None of them"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "None of them"
       },
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              1
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "Checkout names only Notifier, so it needs no edit for a new channel."
+          "feedback": "Checkout calls notifier.send() on whatever it holds and does not name the channels, so it has nothing to learn about Pager."
         },
         {
           "match": {
-            "numeric": [
-              3
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "None of the three existing classes mentions the Pager."
+          "feedback": "The existing notifiers know nothing of each other or of Pager. Each implements Notifier on its own."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "None of the three names Pager. Checkout depends only on the Notifier interface, which Pager implements."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "Checkout only, so that it learns about the new channel"
+        },
+        {
+          "id": "b",
+          "label": "None of them"
+        },
+        {
+          "id": "c",
+          "label": "EmailNotifier and SmsNotifier, to make room for Pager"
+        },
+        {
+          "id": "d",
+          "label": "Checkout, EmailNotifier and SmsNotifier"
         }
       ]
     },
@@ -7966,12 +7766,11 @@
         "dip",
         "yagni-dry"
       ],
-      "prompt": "Two places in the code format a date in nearly the same way. By the rule of three, how many more copies should appear before you write a shared abstraction?",
+      "prompt": "Two places in the code format a date in nearly the same way. What does the rule of three say to do?",
       "difficulty": 1,
       "hints": [
-        "The rule waits for a number of occurrences.",
-        "That number is in its name.",
-        "Subtract the copies you have from that number."
+        "The rule waits for a number of occurrences, and the number is in its name.",
+        "Two copies are allowed to stand."
       ],
       "sourceIds": [
         "python-data-model",
@@ -7981,31 +7780,57 @@
       "onCorrect": "Waiting for a third occurrence shows what the copies really share, which two cannot show.",
       "skill": "apply-dip",
       "calculator": "off",
-      "responseType": "numeric",
+      "responseType": "short_text",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 1,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "The rule of three waits for the third occurrence, so one more copy, 3 − 2 = 1."
+        "kind": "text",
+        "acceptedIdeas": [
+          "Leave both as they are, and write the abstraction when a third copy appears"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Leave both as they are, and write the abstraction when a third copy appears"
       },
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              3
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "Three is the total number of copies, and two already exist."
+          "feedback": "Two copies do not yet show what they really share. The rule waits for the third, when the common part can be seen."
         },
         {
           "match": {
-            "numeric": [
-              0
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "The rule waits for the third copy before abstracting."
+          "feedback": "The rule names three, not four. The third appearance is the point at which the abstraction is written."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Repetition is tolerated at the second copy and not for ever, because every copy of the same knowledge needs its own edit when it changes. The third copy is the signal to abstract."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "Write a shared abstraction now, before a third copy can appear"
+        },
+        {
+          "id": "b",
+          "label": "Write it only after a fourth copy appears"
+        },
+        {
+          "id": "c",
+          "label": "Never write one, since repeated code is harmless"
+        },
+        {
+          "id": "d",
+          "label": "Leave both as they are, and write the abstraction when a third copy appears"
         }
       ]
     },
@@ -8021,7 +7846,7 @@
       "difficulty": 1,
       "hints": [
         "The subclass cannot be used wherever its base type is.",
-        "The principle is named after the computer scientist who stated it."
+        "The principle concerns what a subtype must keep of its base type's promises."
       ],
       "sourceIds": [
         "python-data-model",
@@ -8035,25 +7860,53 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "liskov substitution"
-        ],
-        "acceptedAlternatives": [
-          "liskov",
-          "lsp",
-          "liskov substitution principle",
-          "the liskov substitution principle"
+          "Liskov substitution"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "liskov substitution"
+        "exampleAnswer": "Liskov substitution"
       },
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "single responsibility"
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That principle is about reasons to change. Here a subtype fails to behave like its base type."
+          "feedback": "That principle is about a class having several reasons to change. Bird is not doing two jobs here, and the fault lies in a subclass that refuses what its base class promised."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Open-closed is about adding behaviour without editing working code. The crash comes from a subtype that does not keep the promise of its base type."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "That principle is about which side owns an abstraction. The function already depends on Bird, and the trouble is that one subtype does not behave as a Bird does."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "Single responsibility"
+        },
+        {
+          "id": "b",
+          "label": "Open-closed"
+        },
+        {
+          "id": "c",
+          "label": "Dependency inversion"
+        },
+        {
+          "id": "d",
+          "label": "Liskov substitution"
         }
       ]
     },
@@ -8238,7 +8091,7 @@
         "composition",
         "combinatorial-explosion"
       ],
-      "prompt": "Run the program in the figure. What does it print?",
+      "prompt": "Rect(w, h).area() returns w × h, and Tri(b, h).area() returns half of b × h. What does print(sum(s.area() for s in [Rect(2, 3), Tri(4, 5)])) print?",
       "difficulty": 1,
       "hints": [
         "Work out each object's area with its own method.",
@@ -8413,7 +8266,7 @@
         "composition",
         "combinatorial-explosion"
       ],
-      "prompt": "Instead, each transport and each format is one class, and a Sender holds one of each. How many classes are needed for the 3 transports and 3 formats, not counting the Sender?",
+      "prompt": "A notifier sends over 3 transports and in 3 formats. In a composed design each transport and each format is one class, and a Sender holds one of each. How many classes are needed, not counting the Sender?",
       "difficulty": 1,
       "hints": [
         "Each transport is one class, and each format is one class.",
@@ -8710,7 +8563,7 @@
         "strategy-adapter",
         "pattern-misuse"
       ],
-      "prompt": "Run the program in the figure. What is the last item in the list that print(log) shows?",
+      "prompt": "A Subject keeps a list of functions, and notify(x) calls each one with x in the order in which they were attached. The functions lambda x: log.append(x * 2) and then lambda x: log.append(x + 1) are attached to an empty list log, and notify(5) is called. What is the last item in log?",
       "difficulty": 1,
       "hints": [
         "Subscribers are called in the order they were attached.",
@@ -8939,11 +8792,11 @@
         "strategy-adapter",
         "pattern-misuse"
       ],
-      "prompt": "A team writes an interface for the one email notifier it has, with one caller and no plan for another. Which acronym from the principles lesson names the mistake?",
+      "prompt": "A team writes an interface for the one email notifier it has, with one caller and no plan for another. Which principle from the principles lesson names the mistake?",
       "difficulty": 1,
       "hints": [
-        "The interface answers a need that does not exist yet.",
-        "It means you are not going to need it."
+        "Nothing varies yet, and no second implementation is planned.",
+        "One principle says not to build for a need you do not have yet."
       ],
       "sourceIds": [
         "fowler-articles",
@@ -8957,23 +8810,53 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "yagni"
-        ],
-        "acceptedAlternatives": [
-          "you aren't gonna need it",
-          "you ain't gonna need it"
+          "YAGNI"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "yagni"
+        "exampleAnswer": "YAGNI"
       },
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "dry"
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "DRY is about repeated knowledge. Here nothing is repeated."
+          "feedback": "DRY is about the same knowledge being written in more than one place. Here nothing is repeated."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Liskov concerns a subtype that cannot stand in for its base type. There is only one implementation, so nothing is substituted."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "Single responsibility is about a class with several reasons to change. The notifier has one job, and the interface is structure built for a need nobody has."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "DRY"
+        },
+        {
+          "id": "b",
+          "label": "Liskov substitution"
+        },
+        {
+          "id": "c",
+          "label": "YAGNI"
+        },
+        {
+          "id": "d",
+          "label": "Single responsibility"
         }
       ]
     },
@@ -9159,12 +9042,11 @@
         "aggregate",
         "bounded-context"
       ],
-      "prompt": "What does the program in the figure print?",
+      "prompt": "Money is a frozen dataclass with an amount and a currency, and a dataclass compares its fields when two objects are tested for equality. What does print(Money(5, 'GBP') == Money(5, 'USD')) show?",
       "difficulty": 1,
       "hints": [
         "A frozen dataclass compares its fields.",
-        "Compare 5 with 5 and 'GBP' with 'USD'.",
-        "Both fields must match for the objects to be equal."
+        "Compare 5 with 5 and 'GBP' with 'USD'. Both fields must match for the objects to be equal."
       ],
       "sourceIds": [
         "ddd-reference",
@@ -9178,22 +9060,53 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "False"
-        ],
-        "acceptedAlternatives": [
-          "false"
+          "False, because the currencies differ"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "False"
+        "exampleAnswer": "False, because the currencies differ"
       },
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "True"
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "The amounts match, but the currencies are different. Both fields count."
+          "feedback": "The amounts match, but the currencies are different, and both fields are compared."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Being the same class is not enough. Equality compares the fields one by one."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "That is how an ordinary class behaves, since it compares identity. A dataclass compares fields, so two separate objects with the same data would be equal."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "True, because both amounts are 5"
+        },
+        {
+          "id": "b",
+          "label": "True, because both objects are Money"
+        },
+        {
+          "id": "c",
+          "label": "False, because the currencies differ"
+        },
+        {
+          "id": "d",
+          "label": "False, because two separate objects are never equal"
         }
       ]
     },
@@ -9281,7 +9194,7 @@
         "aggregate",
         "bounded-context"
       ],
-      "prompt": "Run the program in the figure. What does it print?",
+      "prompt": "A new Order has no lines and a total of 0. Each add_line(price, qty) call appends a line and adds price × qty to the total. add_line(500, 2), add_line(300, 1) and add_line(250, 2) are called in turn. What is the total?",
       "difficulty": 1,
       "hints": [
         "Each add_line adds price times quantity to the total.",
@@ -9429,11 +9342,11 @@
         "aggregate",
         "bounded-context"
       ],
-      "prompt": "A frozen dataclass Money is created as m = Money(5, 'GBP'). A caller then runs m.amount = 6. What kind of error does Python raise?",
+      "prompt": "A frozen dataclass Money is created as m = Money(5, 'GBP'), and a caller then runs m.amount = 6. What happens?",
       "difficulty": 1,
       "hints": [
         "The dataclass was declared with frozen=True.",
-        "The error is named after the frozen instance."
+        "A value object cannot change: a different amount is a different Money."
       ],
       "sourceIds": [
         "ddd-reference",
@@ -9447,24 +9360,53 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "FrozenInstanceError"
-        ],
-        "acceptedAlternatives": [
-          "dataclasses.FrozenInstanceError",
-          "frozen instance error",
-          "AttributeError"
+          "Python raises FrozenInstanceError, and m still holds 5 pounds"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "FrozenInstanceError"
+        "exampleAnswer": "Python raises FrozenInstanceError, and m still holds 5 pounds"
       },
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "TypeError"
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "TypeError is for wrong argument types. This error is named after the frozen instance."
+          "feedback": "That is how an ordinary object behaves. A frozen dataclass refuses assignment to its fields."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Python does not ignore it. The assignment is refused with an error, so the failure is visible at once."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "Assigning to a field never builds a new object. A different amount is a different value, and the caller has to create it, as Money(6, 'GBP')."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "Python raises FrozenInstanceError, and m still holds 5 pounds"
+        },
+        {
+          "id": "b",
+          "label": "m now holds 6 pounds"
+        },
+        {
+          "id": "c",
+          "label": "Python ignores the assignment without a message"
+        },
+        {
+          "id": "d",
+          "label": "Python builds a new Money(6, 'GBP') and leaves m unchanged"
         }
       ]
     },
@@ -9649,7 +9591,7 @@
         "pure-function",
         "test-pyramid"
       ],
-      "prompt": "What string does the program in the figure leave in the fake's saved list?",
+      "prompt": "register(name, repo) calls repo.save(name.strip().title()), and FakeRepo.save appends whatever it is given to a list called saved. After r = FakeRepo() and register('  ada lovelace ', r), what string is in the list r.saved?",
       "difficulty": 1,
       "hints": [
         "register cleans the name before saving it.",
@@ -9696,11 +9638,11 @@
         "pure-function",
         "test-pyramid"
       ],
-      "prompt": "A double that has a simple, working implementation, such as FakeRepo, which stores things in a list, is called what?",
+      "prompt": "Which kind of test double has a simple but working implementation, such as a repository that keeps its records in a list?",
       "difficulty": 1,
       "hints": [
         "It works like the real thing in a small way.",
-        "The name is in the double's own name."
+        "A stub answers with canned values and a mock records calls, so this is the third kind."
       ],
       "sourceIds": [
         "python-data-model",
@@ -9714,23 +9656,53 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "fake"
-        ],
-        "acceptedAlternatives": [
-          "a fake",
-          "fake object"
+          "A fake"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "fake"
+        "exampleAnswer": "A fake"
       },
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "stub"
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "A stub only returns canned answers and has no working implementation behind them."
+          "feedback": "A stub only returns canned answers. It has no working implementation behind them."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "A mock records the calls it receives so that a test can check them afterwards. It does not behave like the real thing."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "A seam is the place where a dependency can be replaced, such as an argument. The replacement placed there is the double."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "A stub"
+        },
+        {
+          "id": "b",
+          "label": "A mock"
+        },
+        {
+          "id": "c",
+          "label": "A seam"
+        },
+        {
+          "id": "d",
+          "label": "A fake"
         }
       ]
     },
@@ -9742,12 +9714,11 @@
         "pure-function",
         "test-pyramid"
       ],
-      "prompt": "A rule allows entry when age >= 18. How many test cases does the rule need at the boundary itself, the value just below the limit and the value at the limit?",
+      "prompt": "A rule allows entry when age >= 18. Which pair of test cases pins the rule down at its boundary?",
       "difficulty": 1,
       "hints": [
         "The boundary is where the answer changes.",
-        "One case is on each side of the change.",
-        "Count the case just below and the case at the limit."
+        "One case is on each side of the change."
       ],
       "sourceIds": [
         "python-data-model",
@@ -9757,31 +9728,57 @@
       "onCorrect": "Two cases pin the boundary, and a rule written with > in place of >= would pass one and fail the other.",
       "skill": "pick-boundary-cases",
       "calculator": "off",
-      "responseType": "numeric",
+      "responseType": "short_text",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 2,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "The cases are 17, which is refused, and 18, which is accepted, so 2."
+        "kind": "text",
+        "acceptedIdeas": [
+          "17 and 18"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "17 and 18"
       },
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              1
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "One case cannot show where the answer changes. It needs a value on each side."
+          "feedback": "Both are far from the boundary. A rule written as age > 18 would pass both."
         },
         {
           "match": {
-            "numeric": [
-              3
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "The tests are 17 and 18. A third value would not sit on the boundary."
+          "feedback": "The rule refuses both, and so would age > 18, so the pair cannot show where the answer changes."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "The rule accepts both, and so would age >= 17, so the pair misses a limit set too low."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "0 and 100"
+        },
+        {
+          "id": "b",
+          "label": "16 and 17"
+        },
+        {
+          "id": "c",
+          "label": "18 and 19"
+        },
+        {
+          "id": "d",
+          "label": "17 and 18"
         }
       ]
     },
@@ -9837,18 +9834,18 @@
       ]
     },
     {
-      "id": "sofda-designing-for-testability-transfer-inject",
+      "id": "sofda-designing-for-testability-transfer-seam",
       "conceptIds": [
         "seam",
         "test-double",
         "pure-function",
         "test-pyramid"
       ],
-      "prompt": "A function is_leap_day() returns True when today's date is 29 February. It reads the clock inside, so it cannot be tested for that date. Rewriting it as is_leap_day(today) and passing the date in is an example of which technique?",
+      "prompt": "A function is_leap_day() returns True when today's date is 29 February. It reads the clock inside, so it can be tested only on that day. It is rewritten as is_leap_day(today), with the date passed in as an argument. What does the change give a test?",
       "difficulty": 1,
       "hints": [
-        "The clock is a dependency that the function should be given.",
-        "The technique is named for putting a dependency in from outside."
+        "The clock is a dependency that the function can be given.",
+        "Ask who decides the date, before and after the change."
       ],
       "sourceIds": [
         "python-data-model",
@@ -9862,25 +9859,53 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "dependency injection"
-        ],
-        "acceptedAlternatives": [
-          "injection",
-          "inject the date",
-          "pass the date in",
-          "passing the date in"
+          "A seam where the test can supply any date, such as 29 February"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "dependency injection"
+        "exampleAnswer": "A seam where the test can supply any date, such as 29 February"
       },
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "mocking"
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "Mocking replaces an object in a test. Here the function itself is changed to take the date."
+          "feedback": "The date is still looked up, but by whoever calls the function. What changes is who chooses it."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Nothing is recorded. The function is simply given the date, so the test chooses it."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "It still needs a date, but the dependency now comes in from outside, and a test can choose it."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "A seam where the test can supply any date, such as 29 February"
+        },
+        {
+          "id": "b",
+          "label": "A faster clock, because the date is no longer looked up"
+        },
+        {
+          "id": "c",
+          "label": "A record of how many times the clock was read"
+        },
+        {
+          "id": "d",
+          "label": "Nothing, because the function still depends on the date"
         }
       ]
     },
@@ -10209,7 +10234,7 @@
         "hexagonal",
         "dependency-rule"
       ],
-      "prompt": "Run the program in the figure. What does it print?",
+      "prompt": "The function total_with_tax(price, rate_port) returns price + price * rate_port(), where rate_port is a function that returns the tax rate. What does print(total_with_tax(100, lambda: 0.2)) show?",
       "difficulty": 1,
       "hints": [
         "The port returns the tax rate.",
@@ -10358,7 +10383,7 @@
       "difficulty": 1,
       "hints": [
         "Source-code dependencies must point in a certain direction.",
-        "The rule is named for what it governs."
+        "Ask whether the domain should need a database library in order to run."
       ],
       "sourceIds": [
         "hexagonal",
@@ -10372,23 +10397,53 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "dependency rule"
-        ],
-        "acceptedAlternatives": [
-          "the dependency rule",
-          "dependency-rule"
+          "The dependency rule"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "dependency rule"
+        "exampleAnswer": "The dependency rule"
       },
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "single responsibility"
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That principle concerns reasons to change. This line breaks a rule about the direction of imports."
+          "feedback": "The rule of three says when to remove repeated code. Nothing is repeated here, and the fault is the direction of an import."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "That principle concerns a subtype standing in for its base type. This line breaks a rule about which way imports point."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "YAGNI warns against building for needs that do not exist yet. This import is a real dependency, and it points outward from the domain."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "The rule of three"
+        },
+        {
+          "id": "b",
+          "label": "The dependency rule"
+        },
+        {
+          "id": "c",
+          "label": "The Liskov substitution principle"
+        },
+        {
+          "id": "d",
+          "label": "YAGNI"
         }
       ]
     },
@@ -10575,49 +10630,73 @@
         "conways-law",
         "distribution-cost"
       ],
-      "prompt": "A request passes through five services in sequence. Each is 99.9% available, and they fail independently. To one decimal place, what is the availability of the whole chain, in percent?",
+      "prompt": "A request passes through five services in sequence. Each is 99.9% available, and they fail independently. Roughly how available is the whole chain?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "The request needs every service to work.",
-        "Multiply the availabilities, not add them.",
-        "Raise 0.999 to the power 5."
+        "The request needs every one of the five to be up at the same moment."
       ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "A little less, about 99.5%"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "A little less, about 99.5%"
+      },
       "sourceIds": [
         "conway-1968",
         "fowler-articles",
         "azure-arch-guide",
         "twelve-factor"
       ],
-      "onCorrect": "The chain is 99.5% available, so it is noticeably less reliable than any one of its parts.",
-      "skill": "compute-chain-availability",
-      "calculator": "off",
-      "responseType": "numeric",
-      "answerAuthority": {
-        "kind": "numeric",
-        "value": 99.5,
-        "unit": "%",
-        "absoluteTolerance": 0.05,
-        "relativeTolerance": 0,
-        "workedAnswer": "The availability of the chain is 0.999 multiplied by itself five times, which is 0.995, or 99.5%."
-      },
+      "choices": [
+        {
+          "id": "a",
+          "label": "The same as one service, 99.9%"
+        },
+        {
+          "id": "b",
+          "label": "A little less, about 99.5%"
+        },
+        {
+          "id": "c",
+          "label": "Much less, about 95%"
+        },
+        {
+          "id": "d",
+          "label": "More than one service, because there are five"
+        }
+      ],
+      "onCorrect": "Each service adds a small chance of failure, and five of them multiply to about 0.995.",
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              99.9
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That is one service. All five must be up for the request to succeed."
+          "feedback": "Each service can be down at a different moment, and the request fails whenever any one of them is, so the chain cannot match a single service."
         },
         {
           "match": {
-            "numeric": [
-              99
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "That is the figure for ten services in the chain."
+          "feedback": "The fall is real but small: each service is down only a thousandth of the time, so five of them lose about five thousandths together."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "Five services in sequence are five places for the request to fail, and none of them can stand in for another."
         }
-      ]
+      ],
+      "skill": "compute-chain-availability",
+      "calculator": "off"
     },
     {
       "id": "sofda-monolith-modules-and-microservices-try-ten",
@@ -10627,7 +10706,7 @@
         "conways-law",
         "distribution-cost"
       ],
-      "prompt": "Now ten services are in the chain, each 99.9% available and independent. To one decimal place, what is the availability of the chain, in percent?",
+      "prompt": "A request passes through ten services in sequence, each 99.9% available, and they fail independently. To one decimal place, what is the availability of the chain, in percent?",
       "difficulty": 1,
       "hints": [
         "The chain needs every service in it to be up.",
@@ -11136,7 +11215,7 @@
         "event-sourcing",
         "cqrs"
       ],
-      "prompt": "ReserveStock names a message sent to the stock service, asking it to set goods aside, and the stock service may refuse. Is it a command or an event?",
+      "prompt": "ReserveStock is a message sent to the stock service, asking it to set goods aside, and the stock service may refuse. Is it a command or an event?",
       "difficulty": 1,
       "hints": [
         "Can the receiver refuse it?",
@@ -11154,73 +11233,117 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "command"
-        ],
-        "acceptedAlternatives": [
-          "a command"
+          "A command, because it asks for something and may be refused"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "command"
+        "exampleAnswer": "A command, because it asks for something and may be refused"
       },
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "event"
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "An event records something that has already happened and cannot be refused. ReserveStock asks for something."
+          "feedback": "An event is announced to whoever is listening and cannot be refused. A message addressed to one receiver that may refuse it is a command."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "What a message is about does not decide its kind. What decides it is whether the message asks for something or records that something has happened."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "An event, because it is sent to the stock service"
+        },
+        {
+          "id": "b",
+          "label": "An event, because it concerns the state of the stock"
+        },
+        {
+          "id": "c",
+          "label": "A command, because it asks for something and may be refused"
         }
       ]
     },
     {
-      "id": "sofda-events-and-messages-try-messages",
+      "id": "sofda-events-and-messages-try-coordinator",
       "conceptIds": [
         "command-event",
         "choreography-orchestration",
         "event-sourcing",
         "cqrs"
       ],
-      "prompt": "An orchestrator coordinates four services. It sends one command to each and receives one reply from each. How many messages are sent in all?",
+      "prompt": "An order flow has a few steps that are unlikely to change, and the team wants to read and debug the whole flow in one place. Which style suits it, and what does that style cost?",
       "difficulty": 1,
       "hints": [
-        "Count the messages going out and the messages coming back.",
-        "One command and one reply for each service.",
-        "Two messages per service."
+        "Ask which style keeps the steps in one place.",
+        "A single place that knows what happens next is also a single place that every flow needs."
       ],
       "sourceIds": [
         "fowler-articles",
         "azure-arch-guide",
         "ddd-reference"
       ],
-      "onCorrect": "Eight messages, all passing through the coordinator, which is how it knows the state of the flow.",
+      "onCorrect": "An orchestrator holds the steps in one place, so the flow is easy to follow and a failure can be handled there, but every flow depends on that central service.",
       "skill": "classify-a-message",
       "calculator": "off",
-      "responseType": "numeric",
+      "responseType": "short_text",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 8,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "4 commands and 4 replies make 8 messages."
+        "kind": "text",
+        "acceptedIdeas": [
+          "Orchestration, at the price of a central service that every flow depends on"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Orchestration, at the price of a central service that every flow depends on"
       },
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              4
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That counts only the commands. Each service also replies."
+          "feedback": "A central service that every flow depends on is the price of orchestration. In choreography there is none, but nobody holds the whole flow."
         },
         {
           "match": {
-            "numeric": [
-              16
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "Each service has one command and one reply, so two messages, not four."
+          "feedback": "Choreography couples services loosely, but the flow is visible only in the events as they pass, which makes it harder to follow and to debug."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "The coordinator is a service that every flow depends on, and that dependence is a cost."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "Orchestration, at the price of a central service that every flow depends on"
+        },
+        {
+          "id": "b",
+          "label": "Choreography, at the price of a central service that every flow depends on"
+        },
+        {
+          "id": "c",
+          "label": "Choreography, at no price, since each service only reacts to events"
+        },
+        {
+          "id": "d",
+          "label": "Orchestration, at no price, since the steps are written in one place"
         }
       ]
     },
@@ -11605,7 +11728,7 @@
         "sofda-tolerant-reader",
         "expand-contract"
       ],
-      "prompt": "Run the program in the figure. What does it print?",
+      "prompt": "The function read(msg) parses a JSON message into d and returns d.get('qty', 1) * d['price']. What does print(read('{\"price\": 4, \"extra\": true}')) show?",
       "difficulty": 1,
       "hints": [
         "get returns the default when the key is missing.",
@@ -11656,12 +11779,11 @@
         "sofda-tolerant-reader",
         "expand-contract"
       ],
-      "prompt": "The provider renames price to cost. Three clients read price, as in the figure's clients A, B and C. How many clients break?",
+      "prompt": "A provider renames the field price to cost and stops sending price. Three existing clients each read price. What happens to them?",
       "difficulty": 1,
       "hints": [
-        "Which clients read the field being renamed?",
-        "Check each client's list of fields.",
-        "Count the clients whose list includes price."
+        "Ask which clients read the field being renamed.",
+        "A client keeps working only while the name it looks up still exists."
       ],
       "sourceIds": [
         "azure-arch-guide",
@@ -11671,31 +11793,57 @@
       "onCorrect": "Every client breaks, because price is the one field they all read.",
       "skill": "classify-a-change",
       "calculator": "off",
-      "responseType": "numeric",
+      "responseType": "short_text",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 3,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "All three clients read price, so all 3 break."
+        "kind": "text",
+        "acceptedIdeas": [
+          "All three break, because each looks the field up by its old name"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "All three break, because each looks the field up by its old name"
       },
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              1
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That is the number of clients that read currency. All three read price."
+          "feedback": "A tolerant reader ignores extra fields and defaults missing ones, but price is a field these clients read, so without it they have nothing to work with."
         },
         {
           "match": {
-            "numeric": [
-              2
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That is the number that read qty. Every client reads price."
+          "feedback": "A client that supplies a default does not stop, but it now computes with the wrong value. Either way it has lost the field it reads."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "An announcement does not change the clients' code, which still asks for price. They fail on the day the name goes unless they are edited first."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "None of them break, because tolerant readers ignore fields they do not know"
+        },
+        {
+          "id": "b",
+          "label": "Only the clients that treat a missing field as an error"
+        },
+        {
+          "id": "c",
+          "label": "None of them break, as long as the provider announces the change first"
+        },
+        {
+          "id": "d",
+          "label": "All three break, because each looks the field up by its old name"
         }
       ]
     },
@@ -11881,11 +12029,11 @@
         "sofda-tolerant-reader",
         "expand-contract"
       ],
-      "prompt": "A provider makes currency a required field in requests. Clients that never sent it are now rejected. Is this a compatible change or a breaking change? Answer with one word.",
+      "prompt": "A provider makes currency a required field in requests, and clients that never sent it are now rejected. What kind of change is this?",
       "difficulty": 1,
       "hints": [
-        "A correct existing client fails after the change.",
-        "The two choices are named in the question."
+        "Ask whether a correct existing client still works after the change.",
+        "A new requirement can break a client even when no field is removed."
       ],
       "sourceIds": [
         "azure-arch-guide",
@@ -11899,23 +12047,41 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "breaking"
-        ],
-        "acceptedAlternatives": [
-          "breaking change",
-          "a breaking change"
+          "Breaking, because correct existing clients now fail"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "breaking"
+        "exampleAnswer": "Breaking, because correct existing clients now fail"
       },
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "compatible"
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "Clients that omit the field are now rejected, so they fail. A change that makes correct clients fail is not compatible."
+          "feedback": "Nothing was renamed or removed, but a requirement was added. Clients that never sent currency are rejected, so correct existing clients fail."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Clients would have to add it before the change, not after it. From the day it is required, every client that omits it is rejected."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "Breaking, because correct existing clients now fail"
+        },
+        {
+          "id": "b",
+          "label": "Compatible, because no field was renamed or removed"
+        },
+        {
+          "id": "c",
+          "label": "Compatible, because clients can add the field whenever they like"
         }
       ]
     },
@@ -12226,12 +12392,11 @@
         "sofda-container",
         "diagram-hygiene"
       ],
-      "prompt": "A level 2 diagram shows a web app, a mobile app, an API, a database and a message broker. How many containers does it show?",
+      "prompt": "A level 2 diagram is drawn for a system made of a web app, a mobile app, an API, a database and a message broker. Which of these does it show as containers?",
       "difficulty": 1,
       "hints": [
-        "A container is a runnable or storable unit, not a Docker container.",
-        "Each box that is runnable or holds data counts.",
-        "Count the five named parts."
+        "A C4 container is not a Docker container.",
+        "Each part that is runnable or holds data counts, including a database."
       ],
       "sourceIds": [
         "c4",
@@ -12241,31 +12406,57 @@
       "onCorrect": "A database is a container in C4, because it is something that has to be running for the system to work.",
       "skill": "critique-a-diagram",
       "calculator": "off",
-      "responseType": "numeric",
+      "responseType": "short_text",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 5,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "Each separately runnable unit is a container, and there are 5."
+        "kind": "text",
+        "acceptedIdeas": [
+          "All five, because each is a separately runnable unit"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "All five, because each is a separately runnable unit"
       },
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              4
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "The database and the message broker are containers too."
+          "feedback": "A C4 container is any separately runnable unit, and a database has to be running for the system to work, so it is a container too."
         },
         {
           "match": {
-            "numeric": [
-              3
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "The mobile app, the database and the broker are all containers as well."
+          "feedback": "A container here is not a Docker container. The same unit may or may not be run in one, and either way it is shown."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "The web app, the mobile app, the database and the broker are all parts of the system, and each is separately runnable, so each is a container."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "All five, because each is a separately runnable unit"
+        },
+        {
+          "id": "b",
+          "label": "Only the web app, the mobile app and the API, because a database is not a program"
+        },
+        {
+          "id": "c",
+          "label": "Only the parts that are run in Docker"
+        },
+        {
+          "id": "d",
+          "label": "Only the API, since the others are outside the system"
         }
       ]
     },
@@ -12566,52 +12757,77 @@
       ]
     },
     {
-      "id": "sofda-c4-views-try-text",
+      "id": "sofda-c4-views-try-element",
       "conceptIds": [
         "c4-levels",
         "sofda-container",
         "diagram-hygiene"
       ],
-      "prompt": "A container diagram shows 5 containers. Each needs a name, a type and a short description. How many pieces of text is that in all?",
+      "prompt": "A container diagram has a box for the part of the system that takes orders. Which label for the box follows the diagram hygiene rules?",
       "difficulty": 1,
       "hints": [
         "Each element needs three things.",
-        "Multiply by the number of elements.",
-        "Five containers, three pieces each."
+        "Check each label for a name, a type and a short description."
       ],
       "sourceIds": [
         "c4",
         "arc42",
         "azure-arch-guide"
       ],
-      "onCorrect": "Fifteen pieces of text, which is small beside the guesswork they save a reader.",
+      "onCorrect": "Only the first label has all three, and a few words of text spare the reader a good deal of guessing.",
       "skill": "critique-a-diagram",
       "calculator": "off",
-      "responseType": "numeric",
+      "responseType": "short_text",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 15,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "Each of the 5 containers has 3 pieces, so 5 × 3 = 15."
+        "kind": "text",
+        "acceptedIdeas": [
+          "Orders API, container: web API, takes orders and checks stock"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Orders API, container: web API, takes orders and checks stock"
       },
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              5
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That is the number of containers. Each needs three pieces of text."
+          "feedback": "A bare name does not say what kind of element the box is or what it does, so the reader has to guess."
         },
         {
           "match": {
-            "numeric": [
-              8
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "That adds the two numbers. Each container needs three pieces."
+          "feedback": "It has a name and a type but no short description, so the reader cannot tell what the box does."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "It has a name and a description but no type, so the reader cannot tell whether it is a program, a table or a team."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "Orders API, container: web API, takes orders and checks stock"
+        },
+        {
+          "id": "b",
+          "label": "Service"
+        },
+        {
+          "id": "c",
+          "label": "Orders API, container: web API"
+        },
+        {
+          "id": "d",
+          "label": "Orders API, takes orders and checks stock"
         }
       ]
     },
@@ -12673,7 +12889,7 @@
         "adr",
         "fitness-function"
       ],
-      "prompt": "Option B scores 6, 9 and 9 on the same criteria, with the same weights. What is B's weighted total?",
+      "prompt": "Weights are performance 0.5, cost 0.3 and simplicity 0.2. Option B scores 6, 9 and 9 on those three criteria. What is B's weighted total?",
       "difficulty": 1,
       "hints": [
         "Use the same weights as for A.",
@@ -12815,18 +13031,17 @@
       ]
     },
     {
-      "id": "sofda-trade-offs-and-decision-records-try-fitness",
+      "id": "sofda-trade-offs-and-decision-records-try-build",
       "conceptIds": [
         "trade-off-analysis",
         "adr",
         "fitness-function"
       ],
-      "prompt": "A fitness function scans 40 domain modules and fails the build for each one that imports the web framework. It finds 3. How many modules pass?",
+      "prompt": "A fitness function scans 40 domain modules and fails the build for each one that imports the web framework. It finds 3. What happens to the build?",
       "difficulty": 1,
       "hints": [
-        "The check fails only the modules that import the framework.",
-        "Subtract those from the total.",
-        "Count the modules left."
+        "A fitness function turns a decision into a test.",
+        "Ask what a test does when even one case breaks the rule."
       ],
       "sourceIds": [
         "nygard-adr",
@@ -12834,34 +13049,60 @@
         "arc42",
         "fowler-articles"
       ],
-      "onCorrect": "Thirty-seven modules pass, and the three that do not will keep failing the build until they are fixed.",
+      "onCorrect": "The decision is enforced by the build itself, so the breach is found when it is made and not a year later.",
       "skill": "write-an-adr-field",
       "calculator": "off",
-      "responseType": "numeric",
+      "responseType": "short_text",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 37,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "40 − 3 = 37 modules pass."
+        "kind": "text",
+        "acceptedIdeas": [
+          "It fails, and the three breaches are found when they are made"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "It fails, and the three breaches are found when they are made"
       },
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              3
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That is the number that fail. The question asks how many pass."
+          "feedback": "The check fails the build for each module that imports the framework, so a single breach is enough to stop it. The decision is enforced and not averaged."
         },
         {
           "match": {
-            "numeric": [
-              43
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "That adds the failures to the total. They are part of the 40."
+          "feedback": "A warning nobody has to act on is the situation the fitness function exists to avoid. It fails the build so that a breach is found when it is made."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "The check has no majority threshold. It fails the build for each module that breaks the decision."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "It passes, because 37 of the 40 modules follow the decision"
+        },
+        {
+          "id": "b",
+          "label": "It fails, and the three breaches are found when they are made"
+        },
+        {
+          "id": "c",
+          "label": "It passes with a warning that someone may read later"
+        },
+        {
+          "id": "d",
+          "label": "It fails only if more than half of the modules break the rule"
         }
       ]
     },
@@ -13294,53 +13535,78 @@
       ]
     },
     {
-      "id": "sofda-evolving-a-system-try-remain",
+      "id": "sofda-evolving-a-system-try-midway",
       "conceptIds": [
         "technical-debt",
         "strangler",
         "instability",
         "refactoring"
       ],
-      "prompt": "A system has 8 slices of functionality. With the strangler approach, 3 of them have been routed to the new system. How many are still in the old one?",
+      "prompt": "A system has 8 slices of functionality, and 3 of them have been routed to the new system by the strangler approach. What is true of the system at this point?",
       "difficulty": 1,
       "hints": [
-        "The slices are moved one at a time.",
-        "Subtract those already moved from the total.",
-        "Count what is left."
+        "The router sends each slice to the system where it now lives.",
+        "The pattern's strength is that the system works at every stage."
       ],
       "sourceIds": [
         "fowler-articles",
         "nygard-adr",
         "azure-arch-guide"
       ],
-      "onCorrect": "Five remain, and the old system can be retired when that number reaches zero.",
+      "onCorrect": "Each slice lives in exactly one system, so 5 are still in the old one and the whole keeps working while the rest move.",
       "skill": "plan-a-migration",
       "calculator": "off",
-      "responseType": "numeric",
+      "responseType": "short_text",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 5,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "8 − 3 = 5 slices remain in the old system."
+        "kind": "text",
+        "acceptedIdeas": [
+          "It works, with 3 slices in the new system and 5 in the old one"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "It works, with 3 slices in the new system and 5 in the old one"
       },
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              3
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That is the number already moved. The question asks how many remain."
+          "feedback": "The router sends each slice to wherever it now lives, so the 5 unmoved slices are still served by the old system and the whole keeps working."
         },
         {
           "match": {
-            "numeric": [
-              8
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "That is the total number of slices."
+          "feedback": "The old system is retired only when it has no work left, and 5 slices still depend on it."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "The router sends a request for a slice to one system, the one where that slice now lives."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "It works, with 3 slices in the new system and 5 in the old one"
+        },
+        {
+          "id": "b",
+          "label": "It is broken until the remaining 5 slices have moved"
+        },
+        {
+          "id": "c",
+          "label": "The old system can be retired, because the new one is running"
+        },
+        {
+          "id": "d",
+          "label": "Both systems answer every request, and the faster reply is used"
         }
       ]
     },
@@ -13400,42 +13666,71 @@
         "instability",
         "refactoring"
       ],
-      "prompt": "Checkout and orders have both been moved to the new system, and reports are still in the old one. A request for orders arrives at the router. Where does the router send it, to the old or the new system?",
+      "prompt": "Checkout and orders have both been moved to the new system, and reports are still in the old one. A request for orders arrives at the router. Where does the router send it?",
       "difficulty": 1,
       "hints": [
-        "The slice has already moved.",
-        "The router sends each slice where it now lives."
+        "The router sends each slice to the system where that slice now lives.",
+        "Ask where orders lives now."
       ],
       "sourceIds": [
         "fowler-articles",
         "nygard-adr",
         "azure-arch-guide"
       ],
-      "onCorrect": "The router is the only place that knows where each slice lives, so a slice can move without any client noticing.",
+      "onCorrect": "Orders now lives in the new system, so the router sends its requests there while reports still goes to the old one.",
       "skill": "plan-a-migration",
       "calculator": "off",
       "responseType": "short_text",
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "new"
-        ],
-        "acceptedAlternatives": [
-          "new system",
-          "the new system",
-          "new service"
+          "To the new system, because orders has been moved"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "new"
+        "exampleAnswer": "To the new system, because orders has been moved"
       },
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "old"
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "Orders have already moved. Only the slices not yet migrated still go to the old system."
+          "feedback": "The router decides by slice and not by order of arrival. Orders has moved, so the request goes to the new system."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Reports has no bearing on a request for orders. The router decides by the slice that is requested."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "A request goes to one system, the one where its slice now lives."
+        }
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "To the old system, because the router always tries the old system first"
+        },
+        {
+          "id": "b",
+          "label": "To the old system, because reports is still there"
+        },
+        {
+          "id": "c",
+          "label": "To both systems, and it uses the faster reply"
+        },
+        {
+          "id": "d",
+          "label": "To the new system, because orders has been moved"
         }
       ]
     },
