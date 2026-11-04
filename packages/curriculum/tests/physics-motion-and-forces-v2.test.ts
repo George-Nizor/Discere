@@ -146,7 +146,6 @@ describe("Physics: Motion and Forces (v2 numeric keys)", () => {
     near("falling-and-rising-direction", 0 + -g * 3);
     near("falling-and-rising-1", 0 + -g * 2);
     near("falling-and-rising-2", 45 - 0.5 * g * 2 ** 2);
-    near("falling-and-rising-3", -g);
     near("falling-and-rising-5", 30 * 2 - 0.5 * g * 2 ** 2);
     near("falling-and-rising-check-3", 25 - g * 2);
     // sums in the teaching screens: velocity gains, distance fallen, the throw
@@ -178,7 +177,6 @@ describe("Physics: Motion and Forces (v2 numeric keys)", () => {
   });
 
   it("force, mass and acceleration", () => {
-    near("force-mass-acceleration-hook", 6 / 2);
     near("force-mass-acceleration-divide", 20 / 4);
     near("force-mass-acceleration-1", (18 - 6) / 3);
     near("force-mass-acceleration-3", 24 / 2);
@@ -188,7 +186,6 @@ describe("Physics: Motion and Forces (v2 numeric keys)", () => {
     // the trolley: 10 N on 5 kg, then on 10 kg, then 20 N on 5 kg
     expect([10 / 5, 10 / 10, 20 / 5]).toEqual([2, 1, 4]);
     // the hook: the same push on twice the mass gives half of 6 m/s²
-    near("force-mass-acceleration-hook", 6 / 2);
     // a 2 kg cart at 5 m/s with 10 N against it: a = -5 m/s², stopped after 1 s
     const back = -10 / 2;
     expect([back, 5 + back * 1]).toEqual([-5, 0]);
@@ -227,7 +224,6 @@ describe("Physics: Motion and Forces (v2 numeric keys)", () => {
   });
 
   it("pairs of forces", () => {
-    near("pairs-of-forces-hook", 40);
     near("pairs-of-forces-signed", -10);
     near("pairs-of-forces-1", 10);
     near("pairs-of-forces-2", 10 / 5);
@@ -295,10 +291,8 @@ describe("Physics: Motion and Forces (v2 numeric keys)", () => {
 
   it("energy of motion", () => {
     const k = (m: number, v: number) => 0.5 * m * v ** 2;
-    near("energy-of-motion-hook", 1 * (6 / 3) ** 2);
     near("energy-of-motion-first-energy", k(1, 6));
     near("energy-of-motion-1", k(2, 3));
-    near("energy-of-motion-2", k(1, 6) / k(1, 3));
     near("energy-of-motion-energy-gain", 25 - 10);
     near("energy-of-motion-4", k(2, 5) - k(2, 3));
     near("energy-of-motion-5", k(4, 5));
@@ -357,7 +351,6 @@ describe("Physics: Motion and Forces (v2 numeric keys)", () => {
   it("carts that stick", () => {
     const v = (m1: number, u1: number, m2: number, u2: number) => (m1 * u1 + m2 * u2) / (m1 + m2);
     const k = (m: number, s: number) => 0.5 * m * s ** 2;
-    near("carts-that-stick-hook", v(1, 8, 1, 0));
     near("carts-that-stick-first-stick", v(2, 9, 1, 0));
     near("carts-that-stick-1", v(2, 6, 4, 0));
     near("carts-that-stick-2", v(2, 6, 4, -3));

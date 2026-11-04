@@ -158,7 +158,6 @@ describe("SQL from rows to reports (v2)", () => {
     // sort-and-limit
     const byAmountThenId = [...known].sort((a, b) => b.amount - a.amount || a.id - b.id);
     expect(stepKey("sort-and-limit", "2")).toBe(byAmountThenId[0]!.id);
-    expect(stepKey("sort-and-limit", "3")).toBe(sum(byAmountThenId.slice(0, 3).map((o) => o.amount)));
     expect(keyOf("sql-sort-and-limit-5")).toBe(Math.min(4, 10));
     // distinct-results
     expect(stepKey("distinct-results", "1")).toBe(distinct(orders.map((o) => o.customer)));

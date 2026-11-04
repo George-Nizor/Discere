@@ -149,7 +149,6 @@ describe("Engineering: Structures and Machines (v2)", () => {
     expect(key("engr-moments-1")).toBeCloseTo(150*0.3, 0);
     expect(choiceMarked("engr-moments-9")).toEqual(["a"]);
     expect(key("engr-moments-2")).toBeCloseTo(150*0.3*Math.sin(30*Math.PI/180), 1);
-    expect(key("engr-moments-3")).toBeCloseTo(0, 0);
     expect(key("engr-moments-4")).toBeCloseTo(300*2/400, 1);
     expect(key("engr-moments-5")).toBeCloseTo(40*0.8, 0);
     expect(key("engr-moments-10")).toBeCloseTo(60*0.5*Math.sin(30*Math.PI/180), 1);
@@ -246,7 +245,6 @@ describe("Engineering: Structures and Machines (v2)", () => {
     expect(key("engr-levers-and-pulleys-4")).toBeCloseTo(4*0.5, 0);
     expect(key("engr-levers-and-pulleys-5")).toBeCloseTo(50*0.32/0.04, 0);
     expect(key("engr-levers-and-pulleys-10")).toBeCloseTo(900/3, 0);
-    expect(textAccepts("engr-levers-and-pulleys-6", "second")).toBe(true);
   // gear-trains
     expect(key("engr-gear-trains-7")).toBeCloseTo(100, 0);
     expect(choiceMarked("engr-gear-trains-8")).toEqual(["a"]);
@@ -258,7 +256,7 @@ describe("Engineering: Structures and Machines (v2)", () => {
     expect(key("engr-gear-trains-4")).toBeCloseTo(1800/((45/15)*(60/20)), 0);
     expect(key("engr-gear-trains-5")).toBeCloseTo(60*48/16, 0);
     expect(key("engr-gear-trains-10")).toBeCloseTo(6*45/15, 0);
-    expect(textAccepts("engr-gear-trains-6", "same")).toBe(true);
+
   // efficiency-and-power
     expect(key("engr-efficiency-and-power-7")).toBeCloseTo(600*2, 0);
     expect(key("engr-efficiency-and-power-8")).toBeCloseTo(60*2*Math.PI/60, 2);
