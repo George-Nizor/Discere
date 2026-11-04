@@ -1,0 +1,8 @@
+const { load, save } = require("./lib.cjs");
+const b = load();
+b.course.introduction.paragraphs = [
+  "A request to a web service is a few lines of text. The first line names a method and an address, such as POST /orders, and the answer begins with a status code, such as 201 for an order that now exists, followed by header fields and a body. An API built on HTTP is a set of agreements about what those lines mean: which requests only read and which change something, which status code reports which outcome, and what shape the data in the body takes.",
+  "Other programs rely on those agreements and cannot ask what you meant by them. A client whose request times out can repeat it safely only if the method promised that a repeat changes nothing more, a cache can reuse a stored response only if the headers say how long it stays fresh, and renaming one field in a response breaks every program that reads it. Backend development is the work of keeping those promises with real callers, some of whom make mistakes and some of whom are hostile.",
+  "Most of the questions this raises can be settled by following what one particular request would do, and some can be settled by arithmetic: how long a cached copy stays fresh, how many pages a collection of 137 items takes at 25 to a page, how long a client waits before its fifth retry. With that habit you can read a raw request and say what it asks for, judge whether an API's methods and status codes mean what they say, and find the places where a caller could read another person's data or make the server do something it should not.",
+];
+save(b);
