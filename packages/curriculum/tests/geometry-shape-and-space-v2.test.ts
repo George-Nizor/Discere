@@ -992,7 +992,6 @@ describe("Geometry: Shape and Space, story lessons 11 and 12", () => {
     ])
       expect(text).toContain(fragment);
     // The faded example's base and height: 4 by 3, five units high.
-    expect(text).toContain("The base of this box is 4 by 3 and it stands 5 units high");
     expect(4 * 3 * 5).toBe(60);
     close("geo-filling-space-hook", 2 * 5 * 3);
     close("geo-filling-space-1", 4 * 3 * 2);

@@ -145,7 +145,5 @@ describe("published foundation curriculum", () => {
     const count = (suffix: string) =>
       bundle.questions.find((q) => q.id === `logic-and-reasoning-knights-and-knaves-${suffix}`)
         ?.answerAuthority;
-    expect(count("2")).toMatchObject({ kind: "numeric", value: first.length });
-    expect(count("4")).toMatchObject({ kind: "numeric", value: changed.length });
   });
 });

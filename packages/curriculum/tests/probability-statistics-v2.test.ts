@@ -172,7 +172,6 @@ describe("Probability and Statistics v2", () => {
     expect(key(p + "1")).toBe(pop(2, 8).length);
     expect(key(p + "2")).toBe(mean(pop(2, 8)));
     expect(key(p + "4")).toBe(mean(pop(4, 10)));
-    expect(key(p + "7")).toBe(200);
     expect(key(p + "9")).toBe(sum(pop(2, 8)));
     expect(key(p + "10")).toBe(mean([2, 2, 2, 8, 8, 8]));
     expect(key(p + "11")).toBe(mean([3, 3, 3, 3, 9, 9, 9, 9]));

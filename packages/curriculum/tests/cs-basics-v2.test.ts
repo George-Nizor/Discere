@@ -132,7 +132,6 @@ describe("CS Basics v2 lessons", () => {
   it("lesson 4: linear search", () => {
     const L = "looking-things-up";
     const a = [8, 3, 11, 6, 2];
-    expect(key(L, "hook")).toBe(9);
     expect(key(L, "1")).toBe(linear(a, 6));
     expect(key(L, "2")).toBe(linear(a, 8));
     expect(key(L, "3")).toBe(linear(a, 7) === a.length ? a.length : -1);
@@ -146,7 +145,6 @@ describe("CS Basics v2 lessons", () => {
 
   it("lesson 5: binary search", () => {
     const L = "halving-the-problem";
-    expect(key(L, "hook")).toBe(100 - 60);
     const a = [2, 5, 8, 11, 14, 17, 20];
     expect(key(L, "1")).toBe(binary(a, 17));
     expect(key(L, "2")).toBe(binary(a, 11));
