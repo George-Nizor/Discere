@@ -50,9 +50,10 @@ Keep from the stub: `id`, `courseId`, `conceptIds`, `title`, `sourceIds`, `taugh
 naming what the lesson is about) and `nextAction` (one line naming what the next lesson does; the
 last lesson names what the learner can now do).
 
-- **`intro`**: `hook.blocks` (the opener, one or two paragraphs, at most 360 words, from the
-  subject's own material; it ends on the subject or the question, never on a sentence about the
-  lesson such as "This lesson covers…", which `voice-check` rejects), an optional `hook.diagram`, `promise` ("By the end you'll …", at most
+- **`intro`**: `hook.blocks` (the opener, one or two connected paragraphs, at most 360 words,
+  modelled on the approved openers: it starts on the real thing, says what it is and why it
+  matters, and ends on the subject or the question. It never stages a scene, describes its own
+  figure, gives away the first question's answer, or says what the lesson covers), an optional `hook.diagram`, `promise` ("By the end you'll …", at most
   45 words), optional `whyItMatters` (at most 35 words) and `estimatedMinutes` (12 to 15).
 - **`steps`**: about 9 to 13 screens, using the v2 kinds `explain`, `predict`, `try`,
   `worked_example`, `faded_example`, `explore` and `transfer`. Teach an idea on an `explain` screen
@@ -62,7 +63,9 @@ last lesson names what the learner can now do).
   `blank` or a `selfExplain` question. A `predict` comes
   *before* the idea it tests, a `try` after it, and at least one `transfer` applies the idea to a
   changed case. Include at least one `worked_example` or `faded_example` wherever the lesson
-  teaches a procedure. A step's `lead` that comes before a question is at most 110 words.
+  teaches a procedure. On a screen with a question, the question carries the whole setup, so the
+  `lead` is empty or one sentence the question does not say; it never retells the question and
+  never instructs the learner how to answer (`voice-check` rejects both).
 - **`questionIds`**: exactly three questions, the skill check at the end. They are separate from
   the questions asked on the screens.
 - **`flashcardIds`**: two or three recall cards.
@@ -93,10 +96,9 @@ Every question is marked by the server without a person, so none asks for free-t
 - **Self-rated** (the curriculum's `self`): use a recall card with `recall: "self"` instead of a
   question.
 
-**Balance.** At most 35% of a course's questions may be choice questions, counted across the
-whole course, so plan the mix from the first lesson: numbers wherever the subject has quantities,
-single terms (with their accepted spellings) for names and vocabulary, choice for the rest. In a
-course with few quantities, single-term questions carry most of the load.
+**Type.** Choose the type that tests the idea: choice when the learner judges between options,
+number when the skill is the calculation, single term when it is recalling a name. Never turn a
+conceptual check into a counting puzzle; there is no cap on choice questions.
 
 Every question has `conceptIds`, `sourceIds`, `hints` (one or two, leading toward the method
 without giving the answer; a numeric question asked on a screen needs a ladder of three), `onCorrect` (at most 25 words, adds a fact, no praise), `skill` (one of
@@ -144,8 +146,9 @@ only what you can confirm, and leave out a detail you cannot.
 
 ## Finish the course
 
-1. Write `course.introduction.paragraphs` (two or three paragraphs in the course's voice, no
-   emphasis marks) and check `outcomes`, `prerequisites` and `length`. Set `course.subjects` to
+1. Write `course.introduction.paragraphs`: two or three paragraphs in the course's voice, no
+   emphasis marks, that introduce the subject itself as the approved openers do (what it is, and
+   what it lets you do), never a walk through the lessons (`voice-check` rejects a syllabus) and check `outcomes`, `prerequisites` and `length`. Set `course.subjects` to
    one to three broad library subjects, reusing existing ones where they fit ("Computer science",
    "Programming", "Data literacy", "Mathematics", "Science", "Physics", "Engineering",
    "Humanities", "Social science") and adding a specific one only where none fits.
