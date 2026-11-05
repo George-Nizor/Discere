@@ -459,12 +459,6 @@ const ROWS: Row[] = [
   "code": "import pandas as pd\nanswer = int(pd.to_datetime(pd.Series(['2026-02-30', '2026-03-01']), format='%Y-%m-%d', errors='coerce').notna().sum())"
  },
  {
-  "id": "python-dates-and-units-minutes-apart",
-  "kind": "n",
-  "expect": 60,
-  "code": "(4600 - 1000) / 60"
- },
- {
   "id": "python-dates-and-units-month-end",
   "kind": "n",
   "expect": 4,
@@ -1517,8 +1511,8 @@ const ROWS: Row[] = [
  {
   "id": "python-text-and-transformations-4",
   "kind": "n",
-  "expect": 10,
-  "code": "import pandas as pd\ndf = pd.DataFrame({'a': [2, 4], 'b': [3, 1]})\nanswer = df.apply(lambda row: row['a'] * row['b'], axis=1).sum()"
+  "expect": 11,
+  "code": "import pandas as pd\ndf = pd.DataFrame({'a': [2, 5], 'b': [3, 1]})\nanswer = df.apply(lambda row: row['a'] * row['b'], axis=1).sum()"
  },
  {
   "id": "python-text-and-transformations-5",

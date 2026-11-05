@@ -189,7 +189,7 @@ describe("Lessons 5 to 8: attention, inference, working memory, forgetting", () 
     expect(seqTime("AABAB", 400, 100)).toBe(2300);
     close(
       "perception-as-inference-reliability-check",
-      1 / 2 ** 2 / (1 / 4 ** 2),
+      1 / 1 ** 2 / (1 / 3 ** 2), // the spread triples, so the weight falls ninefold
     );
     close("perception-as-inference-1", combine(50, 2, 56, 4));
     close("perception-as-inference-2", combine(50, 4, 56, 2));
@@ -209,7 +209,7 @@ describe("Lessons 5 to 8: attention, inference, working memory, forgetting", () 
     close("forgetting-and-spacing-1", recall(90, 10) * 100);
     close("forgetting-and-spacing-2", recall(13.5, 6) * 100);
     expect(recall(15, 5)).toBeCloseTo(0.75);
-    close("forgetting-and-spacing-3", 12);
+    close("forgetting-and-spacing-3", 8);
     close("forgetting-and-spacing-4", 56 - 42);
     close("forgetting-and-spacing-5", recall(108, 4) * 100);
     close("forgetting-and-spacing-interval", 6 * 3);

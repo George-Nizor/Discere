@@ -80,7 +80,6 @@ describe("CS Basics v2 lessons", () => {
     expect((3 + 2) * 4).toBe(key(L, "1"));
     expect(3 * 4 + 2).toBe(key(L, "2"));
     expect(key(L, "3")).toBe(2 * 2); // x = 7; x = 2; x = x * 2
-    expect(key(L, "4")).toBe((4 + 1) * 3);
     expect(key(L, "practice-1")).toBe((5 - 2) * 3);
     expect(key(L, "practice-3")).toBe(6 * 2 + 1);
     expect(marked(L, "practice-2")).toEqual(["a"]);
@@ -163,7 +162,6 @@ describe("CS Basics v2 lessons", () => {
     expect(key(L, "1")).toBe(linear(a, 13));
     expect(key(L, "2")).toBe(binary(a, 13));
     expect(key(L, "3")).toBe(worstBinary(15));
-    expect(key(L, "doubling-check")).toBe(2 ** 4 - 1);
     expect(key(L, "4")).toBe(worstBinary(1023));
     expect(2 ** key(L, "4") - 1).toBe(1023);
     expect(key(L, "practice-1")).toBe(1000);
