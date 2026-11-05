@@ -5,7 +5,8 @@
  *   node scripts/giveaway-check.mjs --all          one line per course, with counts
  *
  * For every numeric question asked on a screen (or in a worked or faded example), it looks for the
- * answer in what the learner has just read: the opener, the two screens before, the screen's own
+ * answer in what the learner has just read: the course introduction (for lesson 1), the opener,
+ * the two screens before, the screen's own
  * lead and visible figure, and the earlier lines of the same example. Small whole numbers below 10
  * are skipped because they match by accident. A hit is a suspect, not a verdict: read the screen.
  * It also lists predict screens whose answer label (for a choice) appears in the screen before.
@@ -31,7 +32,8 @@ function suspects(courseId) {
   );
   const questions = new Map(bundle.questions.map((q) => [q.id, q]));
   const found = [];
-  for (const lesson of bundle.lessons) {
+  const introduction = textOf(bundle.course.introduction?.paragraphs);
+  for (const [lessonIndex, lesson] of bundle.lessons.entries()) {
     const steps = lesson.steps ?? [];
     steps.forEach((step, index) => {
       const asked = [
@@ -50,6 +52,7 @@ function suspects(courseId) {
         const visible =
           step.answerVisibility === "hidden-until-response" ? "" : textOf(step.diagram);
         const before = [
+          lessonIndex === 0 ? introduction : "",
           textOf(lesson.intro?.hook),
           ...steps.slice(Math.max(0, index - 2), index).map(textOf),
           textOf(step.lead),
