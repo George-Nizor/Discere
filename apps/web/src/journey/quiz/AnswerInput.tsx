@@ -80,6 +80,9 @@ export function AnswerInput({
   }
 
   if (surface === "choice" && draft.kind === "choice") {
+    // One face for the whole list: mono only when every option is notation, so a list never
+    // mixes "Exactly 0.05 A" in mono with "Nothing, because…" in the interface face.
+    const notation = (question.choices ?? []).every((choice) => looksLikeNotation(choice.label));
     return (
       <fieldset className="choice-list" onKeyDown={moveFocus}>
         <legend className="sr-only">{label ?? "Answer choices"}</legend>
@@ -105,7 +108,7 @@ export function AnswerInput({
             >
               <span className="choice-letter">{choiceLetter(index)}</span>
               <span
-                className={`choice-label${looksLikeNotation(choice.label) ? " choice-label--notation" : ""}`}
+                className={`choice-label${notation ? " choice-label--notation" : ""}`}
               >
                 <InlineRichText text={choice.label} />
               </span>
