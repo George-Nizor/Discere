@@ -101,7 +101,10 @@ async function main() {
       return;
     }
     const [courseId, lessonId] = args;
-    if (!courseId) throw new Error("Usage: learner-run.ts <course> [<lesson>] | answer <course> <question> <response>");
+    if (!courseId)
+      throw new Error(
+        "Usage: learner-run.ts <course> [<lesson>] | answer <course> <question> <response>",
+      );
     const bundle = JSON.parse(
       readFileSync(path.join(root, "content", courseId, "bundle.json"), "utf8"),
     );
@@ -109,7 +112,9 @@ async function main() {
       const intro = bundle.course.introduction;
       console.log(`# ${bundle.course.title}\n\n${(intro?.paragraphs ?? []).join("\n\n")}`);
       console.log(`\nAudience: ${bundle.course.audience}`);
-      console.log(`\nLessons:\n${bundle.lessons.map((l: { id: string; title: string }) => `- ${l.id}: ${l.title}`).join("\n")}`);
+      console.log(
+        `\nLessons:\n${bundle.lessons.map((l: { id: string; title: string }) => `- ${l.id}: ${l.title}`).join("\n")}`,
+      );
       return;
     }
     const result = await app.inject({
@@ -147,7 +152,9 @@ async function main() {
         if (step.question) console.log(question(step.question));
       }
       if (stage.type === "quiz" && stage.question)
-        console.log(`\n## ${stage.title} ${stage.questionIndex}/${stage.questionCount}\n${question(stage.question)}`);
+        console.log(
+          `\n## ${stage.title} ${stage.questionIndex}/${stage.questionCount}\n${question(stage.question)}`,
+        );
       if (stage.type === "recap")
         console.log(`\n## Recap\n${stage.keyIdea ?? ""}\n${text(stage.blocks)}`);
     }
