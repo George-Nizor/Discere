@@ -108,16 +108,13 @@ function findBackticks(value: unknown, where: string, key: string): void {
         message:
           "This text is read as plain text, so a backtick shows literally; write the code name plainly.",
       });
-    else if (
-      ticks % 2 === 1 ||
-      /``|`\s[^`]*`|`[^`]*\s`/u.test(value.replace(/`[^`\s](?:[^`]*[^`\s])?`/gu, ""))
-    )
+    else if (ticks % 2 === 1 || /``/u.test(value))
       errors.push({
         code: "BACKTICKS_UNPAIRED",
         path: where,
         severity: "error",
         message:
-          "A code span opens and closes with a backtick and starts and ends on a character, as in `len(xs)`.",
+          "A code span opens and closes with a backtick and holds at least one character, as in `len(xs)`.",
       });
   } else if (Array.isArray(value))
     value.forEach((item, i) => findBackticks(item, `${where}.${i}`, key));
