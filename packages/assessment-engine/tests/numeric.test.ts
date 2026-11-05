@@ -123,9 +123,34 @@ describe("the question's own unit", () => {
     expect(assessNumericAnswer(input, { value, unit })).toMatchObject({ correct: true });
   });
   it("still marks a wrong number wrong", () => {
-    expect(assessNumericAnswer("53 °", { value: 52, unit: "°" })).toMatchObject({ correct: false, error: "outside_tolerance" });
+    expect(assessNumericAnswer("53 °", { value: 52, unit: "°" })).toMatchObject({
+      correct: false,
+      error: "outside_tolerance",
+    });
   });
   it("does not mistake another unit for the declared one", () => {
     expect(assessNumericAnswer("£24", { value: 24, unit: "£m" }).correct).toBe(false);
+  });
+});
+
+describe("units typed on an ordinary keyboard", () => {
+  it.each(["238 W/m2", "238 W/m^2", "238 W/m²", "238"])("accepts %s for W/m²", (input) => {
+    expect(
+      assessNumericAnswer(input, { value: 238, unit: "W/m²", relativeTolerance: 0.01 }).correct,
+    ).toBe(true);
+  });
+  it.each(["36 GtCO2", "36 GtCO₂", "36 gtco2"])("accepts %s for GtCO₂", (input) => {
+    expect(
+      assessNumericAnswer(input, { value: 36, unit: "GtCO₂", relativeTolerance: 0 }).correct,
+    ).toBe(true);
+  });
+  it("accepts a typed power of ten", () => {
+    expect(
+      assessNumericAnswer("3 x10^8 m/s", { value: 3, unit: "×10⁸ m/s", relativeTolerance: 0 })
+        .correct,
+    ).toBe(true);
+  });
+  it("still rejects a different unit", () => {
+    expect(assessNumericAnswer("238 W/m3", { value: 238, unit: "W/m²" }).correct).toBe(false);
   });
 });
