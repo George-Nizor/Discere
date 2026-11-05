@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { assessTextAnswer } from "@discere/assessment-engine";
 import type { CourseBundle, Question } from "@discere/contracts";
 import { describe, expect, it } from "vitest";
@@ -11,9 +11,8 @@ import { describe, expect, it } from "vitest";
 const read = (path: string) =>
   JSON.parse(readFileSync(new URL(path, import.meta.url), "utf8")) as CourseBundle;
 const published = read("../../../content/economics-markets-and-strategy/bundle.json");
-// The candidate holds the lessons as last written; the published bundle is the fallback.
-const candidatePath = "../../../content/economics-markets-and-strategy/.authoring/candidate.json";
-const bundle = existsSync(new URL(candidatePath, import.meta.url)) ? read(candidatePath) : published;
+// The published bundle is the course; a local authoring draft is never read.
+const bundle = published;
 const storyLessons = new Set([
   "opportunity-cost-and-the-frontier",
   "comparative-advantage",
