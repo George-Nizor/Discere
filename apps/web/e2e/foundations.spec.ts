@@ -47,7 +47,7 @@ test("Maths lesson 1 opens, teaches before asking, follows the attempt policy an
   // A predictable slip gets specific feedback and the answer stays open (audit B3, M5).
   await page.getByLabel("Value", { exact: true }).fill("17");
   await check();
-  await expect(page.getByText("Not right, try again.")).toBeVisible();
+  await expect(page.getByText("Not quite", { exact: true })).toBeVisible();
   await expect(page.getByText(/That's 12 \+ 5/)).toBeVisible();
   await page.getByRole("button", { name: "Get a hint", exact: true }).click();
   await expect(page.getByText("What number, plus 5, makes 12?")).toBeVisible();
@@ -79,7 +79,7 @@ test("Maths lesson 1 opens, teaches before asking, follows the attempt policy an
   await page.getByLabel("Value", { exact: true }).fill("6");
   await check();
   // A prediction gets one try, then the outcome and the teaching.
-  await expect(page.getByText("Not right. Here is the answer.")).toBeVisible();
+  await expect(page.getByText("Not quite. Here is the answer")).toBeVisible();
   await expect(page.locator(".beat-explanation")).toContainText("18");
   await next();
   await page.getByRole("button", { name: /Inside one expression/ }).click();

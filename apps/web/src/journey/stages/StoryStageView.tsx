@@ -245,7 +245,13 @@ function StepScreen({
   return (
     <article className="step-screen" data-kind={step.kind}>
       {headline ? (
-        <h1 className="step-headline">
+        // A worked or faded example's headline is its problem, so it reads as the task in body
+        // text; a teaching screen's headline is a short title naming its topic.
+        <h1
+          className={
+            hasLines ? "step-headline step-task" : "step-headline step-title"
+          }
+        >
           <InlineRichText text={headline} />
         </h1>
       ) : null}
@@ -387,23 +393,28 @@ export function StoryStageView({
     window.requestAnimationFrame(scrollStageToTop);
   }
 
+  // Back sits at the left of the footer and the way forward at the right. They are separate
+  // slots, so a question's Check button, which takes the right-hand place while it is open, can
+  // never be drawn over Back.
   const continueButton =
     ready || position > 0 ? (
       <PlayerFooterSlot kind="actions">
-        <div className="button-row story-actions">
-          {position > 0 ? (
+        {position > 0 ? (
+          <div className="button-row footer-back">
             <button className="button button-quiet" onClick={goBack} type="button">
               <ArrowLeft aria-hidden="true" size={16} strokeWidth={1.8} />
               Back
             </button>
-          ) : null}
-          {ready ? (
+          </div>
+        ) : null}
+        {ready ? (
+          <div className="button-row footer-primary story-actions">
             <button className="button button-primary" onClick={advance} type="button">
               {onOpener && !stage.intro?.hook.question ? "Start" : isLast ? "Finish" : "Continue"}
               <ArrowRight aria-hidden="true" size={16} strokeWidth={1.8} />
             </button>
-          ) : null}
-        </div>
+          </div>
+        ) : null}
       </PlayerFooterSlot>
     ) : null;
 

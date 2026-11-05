@@ -18,6 +18,24 @@ describe("rich learning text", () => {
     ]);
   });
 
+  it("reads two prices in one sentence as prices, not as an equation", () => {
+    const text = "The agent costs $0.12 per request against $0.03, and $14.40 + $56.40 = $70.80.";
+    expect(splitMath(text)).toEqual([{ type: "text", value: text, start: 0 }]);
+  });
+
+  it("keeps an equation that sits next to a price", () => {
+    expect(splitMath("It costs $5, and $\\sin 30° = 0.5$ here.").map((s) => s.type)).toEqual([
+      "text",
+      "math",
+      "text",
+    ]);
+  });
+
+  it("never opens an equation inside a code span", () => {
+    const text = "Run `echo $HOME` and then `echo $PATH` to see both.";
+    expect(splitMath(text)).toEqual([{ type: "text", value: text, start: 0 }]);
+  });
+
   it("splits paragraphs on blank lines and drops empty ones", () => {
     expect(splitParagraphs("One.\n\n\nTwo.\n\n  ")).toEqual(["One.", "Two."]);
   });
@@ -58,6 +76,22 @@ describe("hover terms", () => {
     );
     const term = screen.getByText("substitute");
     expect(term).toHaveAccessibleDescription("Replace the letter with a number.");
-    expect(stripEmphasis("Now [[substitute|Replace it.]] and **solve**.")).toBe("Now substitute and solve.");
+    expect(stripEmphasis("Now [[substitute|Replace it.]] and **solve**.")).toBe(
+      "Now substitute and solve.",
+    );
+  });
+});
+
+describe("inline code", () => {
+  it("sets code in a code element and reads no emphasis inside it", async () => {
+    const { render, screen } = await import("@testing-library/react");
+    const { InlineRichText, stripEmphasis } = await import("./RichText.js");
+    render(
+      <p>
+        <InlineRichText text="Then `SELECT COUNT(*) FROM t HAVING COUNT(*) > 1` returns one row." />
+      </p>,
+    );
+    expect(screen.getByText("SELECT COUNT(*) FROM t HAVING COUNT(*) > 1").tagName).toBe("CODE");
+    expect(stripEmphasis("Call `len(xs)` once.")).toBe("Call len(xs) once.");
   });
 });

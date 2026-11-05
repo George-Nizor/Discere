@@ -122,7 +122,7 @@ describe("one attempt policy (audit B3, M5)", () => {
     const value = screen.getByLabelText("Value");
     await userEvent.type(value, "8");
     await userEvent.click(screen.getByRole("button", { name: "Check answer" }));
-    expect(await screen.findByText(/Not right, try again/)).toBeInTheDocument();
+    expect(await screen.findByText(/Not quite/)).toBeInTheDocument();
     expect(screen.getByText("Recheck the calculation.")).toBeInTheDocument();
     expect(value).not.toHaveAttribute("readonly");
     // No reveal yet: the first miss never fetches the worked answer.
@@ -135,7 +135,7 @@ describe("one attempt policy (audit B3, M5)", () => {
     await userEvent.clear(value);
     await userEvent.type(value, "9");
     await userEvent.click(screen.getByRole("button", { name: "Check again" }));
-    expect(await screen.findByText("Not right. Here is the answer.")).toBeInTheDocument();
+    expect(await screen.findByText("Not quite. Here is the answer")).toBeInTheDocument();
     expect(screen.getByText("2 + 5 = 7.")).toBeInTheDocument();
     expect(answers).toBe(2);
     expect(await screen.findByRole("button", { name: /Continue/ })).toBeInTheDocument();
@@ -152,7 +152,7 @@ describe("one attempt policy (audit B3, M5)", () => {
     await userEvent.type(screen.getByLabelText("Value"), "8");
     await userEvent.click(screen.getByRole("button", { name: "Check answer" }));
     await userEvent.click(await screen.findByRole("button", { name: "Show the answer" }));
-    expect(await screen.findByText("Not right. Here is the answer.")).toBeInTheDocument();
+    expect(await screen.findByText("Not quite. Here is the answer")).toBeInTheDocument();
   });
 
   it("gives a right answer the idea with the verdict, not behind a click", async () => {
@@ -172,7 +172,7 @@ describe("one attempt policy (audit B3, M5)", () => {
     render(legacy);
     await userEvent.type(screen.getByLabelText("Value"), "7");
     await userEvent.click(screen.getByRole("button", { name: "Check answer" }));
-    expect(await screen.findByText("Correct.")).toBeInTheDocument();
+    expect(await screen.findByText("Correct")).toBeInTheDocument();
     expect(
       await screen.findByText("A letter is a number you have not been told yet."),
     ).toBeInTheDocument();
@@ -187,7 +187,7 @@ describe("one attempt policy (audit B3, M5)", () => {
     render(legacy);
     await userEvent.type(screen.getByLabelText("Value"), "seven");
     await userEvent.click(screen.getByRole("button", { name: "Check answer" }));
-    expect(await screen.findByText("That answer could not be read.")).toBeInTheDocument();
+    expect(await screen.findByText("That answer could not be read")).toBeInTheDocument();
   });
 });
 

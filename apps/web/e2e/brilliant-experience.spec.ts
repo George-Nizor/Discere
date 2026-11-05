@@ -155,7 +155,7 @@ test("a mistake opens its correction, preserves the failed result and allows the
   // One attempt policy (audit B3): a plain verdict and a retry first; the answer on request.
   const reveal = page.getByRole("button", { name: "Show the answer", exact: true });
   if (await reveal.count()) {
-    await expect(page.getByText("Not right, try again.")).toBeVisible();
+    await expect(page.getByText("Not quite", { exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "Check again", exact: true })).toBeVisible();
     await reveal.click();
   }

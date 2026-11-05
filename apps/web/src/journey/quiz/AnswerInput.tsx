@@ -1,9 +1,9 @@
 import type { LearnerQuestion, RustTaskRun } from "@discere/contracts";
 import { Check, X } from "lucide-react";
 import type { KeyboardEvent } from "react";
-import { InlineRichText } from "../../ui/RichText.js";
 import { CodeAnswer } from "../../rust/CodeAnswer.js";
 import { Notice } from "../../ui/Feedback.js";
+import { InlineRichText } from "../../ui/RichText.js";
 import { type AnswerDraft, answerSurface, choiceLetter } from "./answer-draft.js";
 
 /** Moves between choice cards with the arrow keys, as a radio group would. */
@@ -22,13 +22,17 @@ function moveFocus(event: KeyboardEvent<HTMLFieldSetElement>): void {
 
 /**
  * Maths, code and bare numbers are set in the mono face so their symbols line up and read as
- * notation; ordinary words keep the interface face.
+ * notation; ordinary words keep the interface face. A label that is all code is notation, while
+ * a sentence with a code span in it stays in the interface face and lets the span set its code.
  */
 export function looksLikeNotation(label: string): boolean {
-  const text = label.trim();
+  const whole = label.trim();
+  if (/^`[^`]+`$/.test(whole)) return true;
+  const text = whole.replace(/`[^`]+`/g, "").trim();
+  if (!text) return false;
   if (/^[-−+]?\d[\d.,\s/%−-]*$/.test(text)) return true;
   if (/[=×÷√^≤≥≠<>]|\b\d+\s*[a-z]\b|\b[a-z]\s*[+\-−*/]\s*\d/i.test(text)) return true;
-  return /^(SELECT|INSERT|UPDATE|WITH)\b|[a-z_]+\(.*\)|`/i.test(text);
+  return /^(SELECT|INSERT|UPDATE|WITH)\b|[a-z_]+\(.*\)/i.test(text);
 }
 
 export function AnswerInput({
@@ -76,6 +80,9 @@ export function AnswerInput({
   }
 
   if (surface === "choice" && draft.kind === "choice") {
+    // One face for the whole list: mono only when every option is notation, so a list never
+    // mixes "Exactly 0.05 A" in mono with "Nothing, because…" in the interface face.
+    const notation = (question.choices ?? []).every((choice) => looksLikeNotation(choice.label));
     return (
       <fieldset className="choice-list" onKeyDown={moveFocus}>
         <legend className="sr-only">{label ?? "Answer choices"}</legend>
@@ -100,7 +107,9 @@ export function AnswerInput({
               type="button"
             >
               <span className="choice-letter">{choiceLetter(index)}</span>
-              <span className={`choice-label${looksLikeNotation(choice.label) ? " choice-label--notation" : ""}`}>
+              <span
+                className={`choice-label${notation ? " choice-label--notation" : ""}`}
+              >
                 <InlineRichText text={choice.label} />
               </span>
               {right ? (

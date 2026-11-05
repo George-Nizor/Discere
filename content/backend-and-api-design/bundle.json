@@ -522,11 +522,11 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "An HTTP message is a first line, header fields, a blank line and an optional body, all sent as text.",
+          "headline": "A message is lines of text",
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Read the request in the opening figure from the top. Its first line, POST /orders HTTP/1.1, is the **request line**, and it holds three things separated by single spaces: a *method*, which says what the client wants done, a *target*, which says what it wants it done to, and the version of the protocol being spoken."
+              "text": "Read the request in the opening figure from the top. Its first line, `POST /orders HTTP/1.1`, is the **request line**, and it holds three things separated by single spaces: a *method*, which says what the client wants done, a *target*, which says what it wants it done to, and the version of the protocol being spoken."
             },
             {
               "kind": "paragraph",
@@ -563,15 +563,15 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "The target carries the path and query, the Host header names the server, and the fragment is never sent.",
+          "headline": "Target and host",
           "lead": [
             {
               "kind": "paragraph",
-              "text": "An address has several parts, and a request line uses only some of them. The scheme, https, tells the browser how to connect, and the host, shop.example, tells it where; the browser then sends the **path**, /search, and the **query**, the text after the question mark, as the target. The query is a list of name=value pairs joined by ampersands, so q=rust and page=2 are two pairs."
+              "text": "An address has several parts, and a request line uses only some of them. The scheme, `https`, tells the browser how to connect, and the host, `shop.example`, tells it where; the browser then sends the **path**, `/search`, and the **query**, the text after the question mark, as the target. The query is a list of `name=value` pairs joined by ampersands, so `q=rust` and `page=2` are two pairs."
             },
             {
               "kind": "paragraph",
-              "text": "The host still has to reach the server, because one machine often serves many sites, and it travels in the Host header instead. The **fragment**, #reviews, is different again: it tells the browser which part of the page to scroll to, so it is *never sent*. Parsing a request line therefore means splitting it at the two spaces into method, target and version, and then splitting the target at the question mark into path and query."
+              "text": "The host still has to reach the server, because one machine often serves many sites, and it travels in the `Host` header instead. The **fragment**, `#reviews`, is different again: it tells the browser which part of the page to scroll to, so it is *never sent*. Parsing a request line therefore means splitting it at the two spaces into method, target and version, and then splitting the target at the question mark into path and query."
             }
           ],
           "introducesTerms": [
@@ -627,15 +627,15 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "Header fields describe the message: who it is for, what the body is, how large it is and what the client will accept.",
+          "headline": "Header fields",
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A handful of header fields appear in nearly every exchange. **Host** names the site being asked. **Content-Type** gives the **media type** of the body, a label such as application/json that tells the receiver how to read the bytes. **Content-Length** gives the size of the body in bytes, so that the receiver knows where the message ends. **Accept** is the client's list of media types it can use in the reply, and **Authorization** carries credentials, which a later lesson treats in full."
+              "text": "A handful of header fields appear in nearly every exchange. **Host** names the site being asked. **Content-Type** gives the **media type** of the body, a label such as `application/json` that tells the receiver how to read the bytes. **Content-Length** gives the size of the body in bytes, so that the receiver knows where the message ends. **Accept** is the client's list of media types it can use in the reply, and **Authorization** carries credentials, which a later lesson treats in full."
             },
             {
               "kind": "paragraph",
-              "text": "Header names are not case sensitive, so content-type and Content-Type are the same field, but the values often are. The split between the fields matters when you read a message: Content-Type and Content-Length describe the body that is *in* this message, while Accept describes the reply the sender hopes to *get*."
+              "text": "Header names are not case sensitive, so `content-type` and `Content-Type` are the same field, but the values often are. The split between the fields matters when you read a message: `Content-Type` and `Content-Length` describe the body that is *in* this message, while `Accept` describes the reply the sender hopes to *get*."
             }
           ],
           "introducesTerms": [
@@ -665,15 +665,15 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "Content-Length counts the bytes of the body, which equals the character count only when every character is one byte.",
+          "headline": "Content-Length counts bytes",
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The body {\"item\":\"pen\",\"qty\":3} has 22 characters, and each is plain ASCII, so it is also 22 bytes and the request carries Content-Length: 22. Text is sent as bytes, though, and JSON is normally encoded in UTF-8, which uses one byte for ASCII characters and more for others: the letter é takes two bytes, and ü does too."
+              "text": "The body `{\"item\":\"pen\",\"qty\":3}` has 22 characters, and each is plain ASCII, so it is also 22 bytes and the request carries `Content-Length: 22`. Text is sent as bytes, though, and JSON is normally encoded in UTF-8, which uses one byte for ASCII characters and more for others: the letter é takes two bytes, and ü does too."
             },
             {
               "kind": "paragraph",
-              "text": "The header counts the *bytes*, since that is what the receiver reads from the connection. A body with one accented letter therefore has a Content-Length one greater than its character count, and a receiver told 30 when 31 bytes follow will either cut the body short or wait for bytes that never arrive."
+              "text": "The header counts the *bytes*, since that is what the receiver reads from the connection. A body with one accented letter therefore has a `Content-Length` one greater than its character count, and a receiver told 30 when 31 bytes follow will either cut the body short or wait for bytes that never arrive."
             }
           ],
           "introducesTerms": [
@@ -744,7 +744,7 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "The client chooses the request and the server chooses the status, and the two messages travel over one connection.",
+          "headline": "Request and response",
           "lead": [
             {
               "kind": "paragraph",
@@ -752,7 +752,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The response has a status line with the version, a three-digit **status code** such as 201, and a short reason such as Created. After that come headers, a blank line and a body, in the same layout as the request. Responses use some of the same fields: Content-Type and Content-Length describe the body, and a field of their own, **Location**, gives the address of something the server has just made. Headers always describe, and the body always carries the data."
+              "text": "The response has a status line with the version, a three-digit **status code** such as 201, and a short reason such as Created. After that come headers, a blank line and a body, in the same layout as the request. Responses use some of the same fields: `Content-Type` and `Content-Length` describe the body, and a field of their own, **Location**, gives the address of something the server has just made. Headers always describe, and the body always carries the data."
             }
           ],
           "introducesTerms": [
@@ -843,7 +843,7 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A browser that asks a shop to create an order sends text that begins POST /orders HTTP/1.1, continues with lines such as Content-Type: application/json, and ends with the order itself, {\"item\":\"pen\",\"qty\":3}. The server replies with text of the same layout, starting HTTP/1.1 201 Created and ending with a body of its own, {\"id\":812,\"status\":\"new\"}. An **HTTP exchange** is that pair of messages, one request and the response to it."
+              "text": "A browser that asks a shop to create an order sends text that begins `POST /orders HTTP/1.1`, continues with lines such as `Content-Type: application/json`, and ends with the order itself, `{\"item\":\"pen\",\"qty\":3}`. The server replies with text of the same layout, starting `HTTP/1.1 201 Created` and ending with a body of its own, `{\"id\":812,\"status\":\"new\"}`. An **HTTP exchange** is that pair of messages, one request and the response to it."
             },
             {
               "kind": "paragraph",
@@ -917,7 +917,7 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "A missing reply does not say whether the server acted, so repeating a request is only safe if repeating it does no harm.",
+          "headline": "When no reply comes",
           "lead": [
             {
               "kind": "paragraph",
@@ -925,7 +925,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "A method is **safe** when its defined meaning is read-only, so a client may send it without asking anyone. A method is **idempotent** when sending the same request several times has the same intended effect on the server as sending it once. Every safe method is idempotent, but an idempotent method need not be safe: a PUT that sets a product's price to 40 changes the server, and yet sending it twice leaves the price at 40, exactly as once does."
+              "text": "A method is **safe** when its defined meaning is read-only, so a client may send it without asking anyone. A method is **idempotent** when sending the same request several times has the same intended effect on the server as sending it once. Every safe method is idempotent, but an idempotent method need not be safe: a `PUT` that sets a product's price to 40 changes the server, and yet sending it twice leaves the price at 40, exactly as once does."
             }
           ],
           "introducesTerms": [
@@ -985,15 +985,15 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "Idempotence is about the state the server ends in, which can stay the same while the response changes.",
+          "headline": "Idempotence",
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Take DELETE /orders/7. The first delivery removes the order and the server answers 204, which means it succeeded and has nothing to send back; the second finds no order 7 and answers 404, which means there is nothing at that address. The responses differ, and yet after one delivery and after two the shop holds exactly the same orders, so DELETE is idempotent. The numbers are the subject of the next lesson, and for now it is enough that a response may change."
+              "text": "Take `DELETE /orders/7`. The first delivery removes the order and the server answers 204, which means it succeeded and has nothing to send back; the second finds no order 7 and answers 404, which means there is nothing at that address. The responses differ, and yet after one delivery and after two the shop holds exactly the same orders, so `DELETE` is idempotent. The numbers are the subject of the next lesson, and for now it is enough that a response may change."
             },
             {
               "kind": "paragraph",
-              "text": "It follows that idempotence promises something about the *intended effect on the server*, and says nothing about what the client reads back. A client that treats a 404 on a retried DELETE as a failure has misread the promise, since the order it wanted removed is indeed gone."
+              "text": "It follows that idempotence promises something about the *intended effect on the server*, and says nothing about what the client reads back. A client that treats a 404 on a retried `DELETE` as a failure has misread the promise, since the order it wanted removed is indeed gone."
             }
           ],
           "introducesTerms": [
@@ -1023,11 +1023,11 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "Only safe and idempotent requests may be resent automatically, and a crawler may follow every GET link for the same reason.",
+          "headline": "What may be retried",
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Combining the two ideas gives the **retry rule**: a client library may resend a GET, a HEAD, a PUT or a DELETE after a failure without asking anyone, because the worst outcome is that the server does what it already did. A POST or a PATCH must not be resent on its own account, since the first copy may have been carried out. The figure follows a resent PUT and a resent POST through the same four steps, and only the POST finishes in a state that one request would not have produced. A later lesson shows how to make a POST safe to retry."
+              "text": "Combining the two ideas gives the **retry rule**: a client library may resend a `GET`, a `HEAD`, a `PUT` or a `DELETE` after a failure without asking anyone, because the worst outcome is that the server does what it already did. A `POST` or a `PATCH` must not be resent on its own account, since the first copy may have been carried out. The figure follows a resent `PUT` and a resent `POST` through the same four steps, and only the `POST` finishes in a state that one request would not have produced. A later lesson shows how to make a `POST` safe to retry."
             },
             {
               "kind": "paragraph",
@@ -1134,11 +1134,11 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "PUT replaces a resource at an address the client already knows, and POST covers everything else.",
+          "headline": "PUT and POST",
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A common belief holds that POST creates things and PUT updates them, and the two sentences above show why the rule is worth correcting. **PUT** carries a complete new version of the resource and sends it to the address where that resource lives, so using it to create something is quite normal when the client chooses the address, and using it again simply replaces what is there. **POST** hands the server a request to process in whatever way its design says, such as adding an order to a collection, and the server chooses the address."
+              "text": "A common belief holds that `POST` creates things and `PUT` updates them, and the two sentences above show why the rule is worth correcting. **PUT** carries a complete new version of the resource and sends it to the address where that resource lives, so using it to create something is quite normal when the client chooses the address, and using it again simply replaces what is there. **POST** hands the server a request to process in whatever way its design says, such as adding an order to a collection, and the server chooses the address."
             },
             {
               "kind": "paragraph",
@@ -1208,7 +1208,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The difference lies in what a second delivery would do. A method is **idempotent** when delivering the same request several times leaves the server as one delivery would, and GET and PUT have that property while POST does not. Sorting methods this way is what lets you say what a request does when it arrives twice, decide whether a failed request may be repeated, and see why a link that deletes something through GET is a mistake."
+              "text": "The difference lies in what a second delivery would do. A method is **idempotent** when delivering the same request several times leaves the server as one delivery would, and `GET` and `PUT` have that property while `POST` does not. Sorting methods this way is what lets you say what a request does when it arrives twice, decide whether a failed request may be repeated, and see why a link that deletes something through `GET` is a mistake."
             }
           ],
           "diagram": {
@@ -1278,7 +1278,7 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "The first digit of a status code names its class, which says who should change something.",
+          "headline": "Status code classes",
           "lead": [
             {
               "kind": "paragraph",
@@ -1286,7 +1286,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "Three success codes cover most of what an API returns. **200 OK** reports that the request worked and has a body describing the result. **201 Created** reports that a resource was made, and is sent with a Location header giving its address. **204 No Content** reports that the request worked and that there is no body, as after a PUT whose new version the client already holds."
+              "text": "Three success codes cover most of what an API returns. **200 OK** reports that the request worked and has a body describing the result. **201 Created** reports that a resource was made, and is sent with a `Location` header giving its address. **204 No Content** reports that the request worked and that there is no body, as after a `PUT` whose new version the client already holds."
             }
           ],
           "introducesTerms": [
@@ -1317,7 +1317,7 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "A 4xx code tells the client to change its request, and each code names what to change.",
+          "headline": "Client errors",
           "lead": [
             {
               "kind": "paragraph",
@@ -1357,7 +1357,7 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "A server walks a request through its checks in order, and the first check that fails decides the code.",
+          "headline": "Server errors and the order of checks",
           "lead": [
             {
               "kind": "paragraph",
@@ -1470,7 +1470,7 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "A 400 reports a request that cannot be read, a 409 reports a clash with state, and a 422 reports content that cannot be processed.",
+          "headline": "400, 409 and 422",
           "lead": [
             {
               "kind": "paragraph",
@@ -1557,7 +1557,7 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "Every HTTP response begins with a line such as HTTP/1.1 404 Not Found or HTTP/1.1 503 Service Unavailable, and the three-digit **status code** in it is written to be read by software. The first digit sorts the outcome: 2 says the request worked, 4 says the request was at fault, and 5 says the server was. A retry library or a monitoring dashboard can act on that digit without ever opening the body, which is why the code has to be chosen to match what happened."
+              "text": "Every HTTP response begins with a line such as `HTTP/1.1 404 Not Found` or `HTTP/1.1 503 Service Unavailable`, and the three-digit **status code** in it is written to be read by software. The first digit sorts the outcome: 2 says the request worked, 4 says the request was at fault, and 5 says the server was. A retry library or a monitoring dashboard can act on that digit without ever opening the body, which is why the code has to be chosen to match what happened."
             },
             {
               "kind": "paragraph",
@@ -1641,7 +1641,7 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "A stored response is fresh while its age is below its lifetime, and a fresh copy is reused without contacting the origin.",
+          "headline": "Freshness",
           "lead": [
             {
               "kind": "paragraph",
@@ -1682,15 +1682,15 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "A stale copy can be checked instead of replaced, and a 304 reply confirms the copy without resending the body.",
+          "headline": "Revalidation",
           "lead": [
             {
               "kind": "paragraph",
-              "text": "When the age reaches the lifetime the copy is **stale**, which means it has to be checked before it is used again, and it does not mean it is wrong or has been removed. The origin gave the response an **ETag**, a short string that identifies this version of the resource, such as \"v7\". The cache sends the request again with **If-None-Match: \"v7\"**, which says: send the body only if the version is no longer v7."
+              "text": "When the age reaches the lifetime the copy is **stale**, which means it has to be checked before it is used again, and it does not mean it is wrong or has been removed. The origin gave the response an **ETag**, a short string that identifies this version of the resource, such as `\"v7\"`. The cache sends the request again with **If-None-Match: \"v7\"**, which says: send the body only if the version is no longer `v7`."
             },
             {
               "kind": "paragraph",
-              "text": "If the version is still v7 the origin answers **304 Not Modified** with no body, and the cache keeps its copy and treats it as fresh again from that moment. If the resource has changed, the origin answers 200 with the new body and a new ETag. This is **revalidation**. A 304 is therefore a success: it costs a round trip, and it saves the whole body, which in the figure is 48,000 bytes. The older validator **Last-Modified**, a date, works the same way with If-Modified-Since."
+              "text": "If the version is still `v7` the origin answers **304 Not Modified** with no body, and the cache keeps its copy and treats it as fresh again from that moment. If the resource has changed, the origin answers 200 with the new body and a new `ETag`. This is **revalidation**. A 304 is therefore a success: it costs a round trip, and it saves the whole body, which in the figure is 48,000 bytes. The older validator **Last-Modified**, a date, works the same way with `If-Modified-Since`."
             }
           ],
           "introducesTerms": [
@@ -1741,7 +1741,7 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "no-cache stores and revalidates, no-store forbids keeping the response, and the right lifetime depends on how the data changes.",
+          "headline": "Cache directives",
           "lead": [
             {
               "kind": "paragraph",
@@ -1894,7 +1894,7 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A response can carry the header Cache-Control: max-age=300, which allows any program between the server and the reader to keep a copy and reuse it for the next 300 seconds without asking the server again. A **cache** is a program that does this, and the saving can be large: a product list of 48,000 bytes that a thousand people request in an hour would otherwise be built and sent a thousand times, which is 48,000,000 bytes of identical output, although the data may have changed only twice in that hour."
+              "text": "A response can carry the header `Cache-Control: max-age=300`, which allows any program between the server and the reader to keep a copy and reuse it for the next 300 seconds without asking the server again. A **cache** is a program that does this, and the saving can be large: a product list of 48,000 bytes that a thousand people request in an hour would otherwise be built and sent a thousand times, which is 48,000,000 bytes of identical output, although the data may have changed only twice in that hour."
             },
             {
               "kind": "paragraph",
@@ -1952,15 +1952,15 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "A URL names a resource in its path and narrows the answer with its query.",
+          "headline": "Path and query",
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A **resource** is a thing that an API exposes, such as an order or a customer, and a URL names it. Take https://api.shop.example/v1/customers/17/orders?status=open&limit=20#top. The scheme and host say where to connect, and the **path**, /v1/customers/17/orders, names the resource, which here is the orders of customer 17. The **query**, status=open&limit=20, does not name anything new: it narrows or shapes what comes back, and the fragment, #top, is never sent."
+              "text": "A **resource** is a thing that an API exposes, such as an order or a customer, and a URL names it. Take `https://api.shop.example/v1/customers/17/orders?status=open&limit=20#top`. The scheme and host say where to connect, and the **path**, `/v1/customers/17/orders`, names the resource, which here is the orders of customer 17. The **query**, `status=open&limit=20`, does not name anything new: it narrows or shapes what comes back, and the fragment, `#top`, is never sent."
             },
             {
               "kind": "paragraph",
-              "text": "The path is read in **segments**, the pieces between slashes. The first, v1, is a version, and the rest alternate between a collection, customers, and one member of it, 17, before moving on to a second collection, that customer's orders. Reading a path in this way gives you a sentence in nouns."
+              "text": "The path is read in **segments**, the pieces between slashes. The first, `v1`, is a version, and the rest alternate between a collection, `customers`, and one member of it, 17, before moving on to a second collection, that customer's orders. Reading a path in this way gives you a sentence in nouns."
             }
           ],
           "introducesTerms": [
@@ -2011,15 +2011,15 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "A collection and its items have separate URLs, and the method says what to do at each.",
+          "headline": "Collections and items",
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The paths /orders and /orders/42 name two different resources. The first is a **collection**, the set of all orders, and the second is one **item** in it. As the opening figure shows, GET /orders lists the collection and POST /orders adds a new item to it, with the server choosing the item's address. GET, PUT and DELETE on /orders/42 read, replace and remove that one order."
+              "text": "The paths `/orders` and `/orders/42` name two different resources. The first is a **collection**, the set of all orders, and the second is one **item** in it. As the opening figure shows, `GET /orders` lists the collection and `POST /orders` adds a new item to it, with the server choosing the item's address. `GET`, `PUT` and `DELETE` on `/orders/42` read, replace and remove that one order."
             },
             {
               "kind": "paragraph",
-              "text": "Because the method already carries the verb, the path should be a noun. A path such as /getOrder or /deleteOrder repeats what GET and DELETE say, and it forces every client to learn a vocabulary of verbs that HTTP already provides. A **collection** is usually a plural noun, and an item is the collection's path followed by its identifier."
+              "text": "Because the method already carries the verb, the path should be a noun. A path such as `/getOrder` or `/deleteOrder` repeats what `GET` and `DELETE` say, and it forces every client to learn a vocabulary of verbs that HTTP already provides. A **collection** is usually a plural noun, and an item is the collection's path followed by its identifier."
             }
           ],
           "introducesTerms": [
@@ -2066,7 +2066,7 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "Actions can be named as resources, and paths should be nested only as far as they need to be.",
+          "headline": "Actions and nesting",
           "lead": [
             {
               "kind": "paragraph",
@@ -2106,15 +2106,15 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "A path template describes a family of paths, and a router matches a path to a template by comparing segments.",
+          "headline": "Path templates",
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A server has to decide which code handles each request. It does so with **path templates** such as /orders/{id}, in which a segment in braces stands for any value, and a router tries a path against each template in turn. A path matches when it has the *same number of segments* as the template and every segment that is not in braces is equal. The segments in braces are captured: against /orders/42, the template /orders/{id} gives id = 42."
+              "text": "A server has to decide which code handles each request. It does so with **path templates** such as `/orders/{id}`, in which a segment in braces stands for any value, and a router tries a path against each template in turn. A path matches when it has the *same number of segments* as the template and every segment that is not in braces is equal. The segments in braces are captured: against `/orders/42`, the template `/orders/{id}` gives `id = 42`."
             },
             {
               "kind": "paragraph",
-              "text": "The figure shows both outcomes. /orders/{id}/items/{item} fits /orders/42/items/7 and captures two values, but /orders/{id} does not fit /orders/42/items, since the path has one segment more. A router that finds no fit returns nothing, which in Python is None, and moves on to the next template."
+              "text": "The figure shows both outcomes. `/orders/{id}/items/{item}` fits `/orders/42/items/7` and captures two values, but `/orders/{id}` does not fit `/orders/42/items`, since the path has one segment more. A router that finds no fit returns nothing, which in Python is `None`, and moves on to the next template."
             }
           ],
           "introducesTerms": [
@@ -2181,7 +2181,7 @@
           "headline": "Match /orders/42/items against the template /orders/{id}.",
           "workedSteps": [
             {
-              "text": "The template has two segments: orders and {id}.",
+              "text": "The template has two segments: `orders` and `{id}`.",
               "math": "2 segments"
             },
             {
@@ -2253,7 +2253,7 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "The address https://api.shop.example/v1/customers/17/orders?status=open&limit=20#top is built from parts that do different jobs. The path, /v1/customers/17/orders, names a thing, here the orders of customer 17. The query after the question mark only narrows what comes back, and the fragment at the end stays in the browser and is never sent. A **resource** is a thing of this kind that an API exposes, such as an order or a customer, and its URL is its name."
+              "text": "The address `https://api.shop.example/v1/customers/17/orders?status=open&limit=20#top` is built from parts that do different jobs. The path, `/v1/customers/17/orders`, names a thing, here the orders of customer 17. The query after the question mark only narrows what comes back, and the fragment at the end stays in the browser and is never sent. A **resource** is a thing of this kind that an API exposes, such as an order or a customer, and its URL is its name."
             },
             {
               "kind": "paragraph",
@@ -2327,7 +2327,7 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "A resource is a thing and a representation is one encoding of its state, chosen by the client and declared by the server.",
+          "headline": "Resources and representations",
           "lead": [
             {
               "kind": "paragraph",
@@ -2351,7 +2351,7 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "JSON has six kinds of value and a small set of strict rules, and it is stricter than JavaScript.",
+          "headline": "JSON syntax",
           "lead": [
             {
               "kind": "paragraph",
@@ -2414,7 +2414,7 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "A response body should keep its names and types stable, and should treat null, absent and empty as different states.",
+          "headline": "Names, types and null",
           "lead": [
             {
               "kind": "paragraph",
@@ -2422,7 +2422,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "Three states are easily confused. A field can be *absent*, *null* or the *empty string*, and they mean different things. In a PATCH that updates a profile, {\"nick\": null} clears the nickname, a body that leaves nick out leaves it as it was, and {\"nick\": \"\"} sets it to a string with no characters. A server that treats all three alike cannot support partial updates."
+              "text": "Three states are easily confused. A field can be *absent*, *null* or the *empty string*, and they mean different things. In a `PATCH` that updates a profile, `{\"nick\": null}` clears the nickname, a body that leaves `nick` out leaves it as it was, and `{\"nick\": \"\"}` sets it to a string with no characters. A server that treats all three alike cannot support partial updates."
             }
           ],
           "introducesTerms": [
@@ -2436,7 +2436,7 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "Money belongs in integers, because decimal fractions are not held exactly by binary floating point.",
+          "headline": "Money and floats",
           "lead": [
             {
               "kind": "paragraph",
@@ -2444,7 +2444,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The remedy is to hold money as an integer number of the smallest unit, such as cents: a price of 4.35 becomes 435, sums and products of whole numbers are exact, and the conversion to a display format happens once, at the edge. A field in a body would then be named something like price_cents, so that nobody has to guess the unit."
+              "text": "The remedy is to hold money as an integer number of the smallest unit, such as cents: a price of 4.35 becomes 435, sums and products of whole numbers are exact, and the conversion to a display format happens once, at the edge. A field in a body would then be named something like `price_cents`, so that nobody has to guess the unit."
             }
           ],
           "introducesTerms": [
@@ -2493,7 +2493,7 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "A double holds integers exactly only up to 2^53, so ids that may be larger should travel as strings.",
+          "headline": "Big integers",
           "lead": [
             {
               "kind": "paragraph",
@@ -2617,7 +2617,7 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "What a server sends when a client asks for order 42 is text such as {\"id\": \"42\", \"item\": \"pen\", \"qty\": 3}, because the order itself cannot travel over a network. That text is a **representation**, an encoding of the order's current state, and the encoding most APIs use is JSON, which a program reads by following a strict grammar and then either accepts the whole text or rejects it."
+              "text": "What a server sends when a client asks for order 42 is text such as `{\"id\": \"42\", \"item\": \"pen\", \"qty\": 3}`, because the order itself cannot travel over a network. That text is a **representation**, an encoding of the order's current state, and the encoding most APIs use is JSON, which a program reads by following a strict grammar and then either accepts the whole text or rejects it."
             },
             {
               "kind": "paragraph",
@@ -2675,7 +2675,7 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "An API description is a machine-readable contract that clients, servers, tests and documentation can all be checked against.",
+          "headline": "Why a contract",
           "lead": [
             {
               "kind": "paragraph",
@@ -2737,7 +2737,7 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "An OpenAPI document has a fixed skeleton, and each operation lists its name, its input and its responses.",
+          "headline": "The skeleton and an operation",
           "lead": [
             {
               "kind": "paragraph",
@@ -2745,7 +2745,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "Read the operation POST /orders line by line. Its **operationId**, createOrder, is a unique name that code generators turn into a function. Its **requestBody** points to the schema Order, and its **responses** list the status codes it can return, here 201 Created and 400 Invalid body. The responses matter as much as the body: documenting only the success case leaves the client to find the errors in production."
+              "text": "Read the operation `POST /orders` line by line. Its **operationId**, `createOrder`, is a unique name that code generators turn into a function. Its **requestBody** points to the schema `Order`, and its **responses** list the status codes it can return, here 201 Created and 400 Invalid body. The responses matter as much as the body: documenting only the success case leaves the client to find the errors in production."
             }
           ],
           "introducesTerms": [
@@ -2776,15 +2776,15 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "A schema states the allowed shape of a JSON value, including each property's type and which properties are required.",
+          "headline": "The schema",
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A **schema** describes the allowed shape of a JSON value. The Order schema says that the value is an object, that it has the properties item, a string, and qty, an integer, and that both are listed under **required**. A body is valid when each required property is present *and* every property that is present has its declared type. Properties that the schema does not list are allowed, unless it says otherwise."
+              "text": "A **schema** describes the allowed shape of a JSON value. The `Order` schema says that the value is an object, that it has the properties `item`, a string, and `qty`, an integer, and that both are listed under **required**. A body is valid when each required property is present *and* every property that is present has its declared type. Properties that the schema does not list are allowed, unless it says otherwise."
             },
             {
               "kind": "paragraph",
-              "text": "Two ideas are separate. **Required** concerns whether a property has to be present, and *nullable* concerns whether its value may be null, so a property can be required and still be allowed to hold null. A schema is also written once, under components, and reused with a **$ref** pointer wherever it is needed, which keeps each description in a single place."
+              "text": "Two ideas are separate. **Required** concerns whether a property has to be present, and *nullable* concerns whether its value may be `null`, so a property can be required and still be allowed to hold `null`. A schema is also written once, under `components`, and reused with a **$ref** pointer wherever it is needed, which keeps each description in a single place."
             }
           ],
           "introducesTerms": [
@@ -2846,11 +2846,11 @@
               "math": "POST /orders"
             },
             {
-              "text": "Its operationId is createOrder, so a generated client has a function with that name.",
+              "text": "Its `operationId` is `createOrder`, so a generated client has a function with that name.",
               "math": "createOrder"
             },
             {
-              "text": "Its requestBody refers to Order, which requires item and qty.",
+              "text": "Its `requestBody` refers to `Order`, which requires `item` and `qty`.",
               "math": "Order"
             },
             {
@@ -2896,7 +2896,7 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "A description should document its error responses, and it should state each shape once and reuse it.",
+          "headline": "Errors and reuse",
           "lead": [
             {
               "kind": "paragraph",
@@ -2904,7 +2904,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "Reuse works the same way. If the Order schema is also the body of a PUT and the content of a response, it is written once under components and referenced with $ref in each place, so a change to the shape is made once and every operation follows it."
+              "text": "Reuse works the same way. If the `Order` schema is also the body of a `PUT` and the content of a response, it is written once under `components` and referenced with `$ref` in each place, so a change to the shape is made once and every operation follows it."
             }
           ],
           "introducesTerms": [
@@ -2966,7 +2966,7 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A description of the operation POST /orders, written as data and not as prose, says that the operation is called createOrder, that its request body must match a schema named Order, which requires an item and a quantity, and that it answers either 201 or 400. A file of such descriptions is an **OpenAPI document**, and because a program can read it as easily as a person can, the same file can produce reference documentation, a client library in any language, a mock server and a set of tests."
+              "text": "A description of the operation `POST /orders`, written as data and not as prose, says that the operation is called `createOrder`, that its request body must match a schema named `Order`, which requires an item and a quantity, and that it answers either 201 or 400. A file of such descriptions is an **OpenAPI document**, and because a program can read it as easily as a person can, the same file can produce reference documentation, a client library in any language, a mock server and a set of tests."
             },
             {
               "kind": "paragraph",
@@ -2983,7 +2983,7 @@
         "blocks": [
           {
             "kind": "paragraph",
-            "text": "You read the skeleton of an OpenAPI document and followed one operation from its operationId to its documented responses. You then checked bodies against a schema, in which every required property must be present and every present property must have its type, and saw that error responses belong in the contract."
+            "text": "You read the skeleton of an OpenAPI document and followed one operation from its `operationId` to its documented responses. You then checked bodies against a schema, in which every required property must be present and every present property must have its type, and saw that error responses belong in the contract."
           }
         ],
         "nextHook": "The next lesson takes up a collection that is too large to return at once, and asks how to hand it out a page at a time."
@@ -3006,11 +3006,11 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "A list endpoint needs a limit, and an offset says how many items to skip, which gives the number of pages by rounding up.",
+          "headline": "Limit and offset",
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A collection grows, and a list endpoint that returns all of it will one day time out or run out of memory, so every list needs a limit on its size. The simplest scheme uses two query parameters: **limit**, the number of items to return, and **offset**, the number to skip first. In the figure, 137 orders at 25 to a page give ?limit=25&offset=0 for the first page and ?limit=25&offset=125 for the last, and that last page holds only 12 items."
+              "text": "A collection grows, and a list endpoint that returns all of it will one day time out or run out of memory, so every list needs a limit on its size. The simplest scheme uses two query parameters: **limit**, the number of items to return, and **offset**, the number to skip first. In the figure, 137 orders at 25 to a page give `?limit=25&offset=0` for the first page and `?limit=25&offset=125` for the last, and that last page holds only 12 items."
             },
             {
               "kind": "paragraph",
@@ -3079,7 +3079,7 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "Offset paging repeats rows when rows are added in front, and keyset paging avoids it by resuming after a key.",
+          "headline": "Drift and keyset paging",
           "lead": [
             {
               "kind": "paragraph",
@@ -3087,7 +3087,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "**Keyset paging** asks for the rows that come *after the last one the client saw*. The request ?limit=5&after=96 returns 95, 94, 93, 92 and 91, whatever has been added above. It also costs less, because the database can start at the key in an index and does not have to count and discard the skipped rows."
+              "text": "**Keyset paging** asks for the rows that come *after the last one the client saw*. The request `?limit=5&after=96` returns 95, 94, 93, 92 and 91, whatever has been added above. It also costs less, because the database can start at the key in an index and does not have to count and discard the skipped rows."
             }
           ],
           "introducesTerms": [
@@ -3135,11 +3135,11 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "A cursor is an opaque token for where to resume, so that clients never depend on how the server records a position.",
+          "headline": "Cursors",
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A keyset request needs the last key the client saw, and an API usually hides this in a **cursor**, a token that the client receives with each page and sends back for the next. The figure shows one: eyJhZnRlciI6IDk2fQ== is the base64 encoding of {\"after\": 96}, which a curious client can decode, and which it should not rely on."
+              "text": "A keyset request needs the last key the client saw, and an API usually hides this in a **cursor**, a token that the client receives with each page and sends back for the next. The figure shows one: `eyJhZnRlciI6IDk2fQ==` is the base64 encoding of `{\"after\": 96}`, which a curious client can decode, and which it should not rely on."
             },
             {
               "kind": "paragraph",
@@ -3190,7 +3190,7 @@
               "math": "start = 4 + 1"
             },
             {
-              "text": "Take limit = 5 rows from there.",
+              "text": "Take `limit = 5` rows from there.",
               "math": "positions 5 to 9"
             },
             {
@@ -3229,11 +3229,11 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "Filters and sorts travel as query parameters, and a sort needs a unique tiebreaker for paging to be exact.",
+          "headline": "Filtering and sorting",
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Narrowing and ordering a list are also done with the query: ?status=open&sort=-created&limit=20 asks for open orders, newest first. The path still names the collection, and the query shapes the view of it. A server should accept only the filters and sorts it documents, since a free-form query handed to the database is an invitation to injection, which a later lesson treats."
+              "text": "Narrowing and ordering a list are also done with the query: `?status=open&sort=-created&limit=20` asks for open orders, newest first. The path still names the collection, and the query shapes the view of it. A server should accept only the filters and sorts it documents, since a free-form query handed to the database is an invitation to injection, which a later lesson treats."
             },
             {
               "kind": "paragraph",
@@ -3355,7 +3355,7 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "A retried POST can repeat its effect, so the server has to recognise repeats, since the network cannot promise that a request arrives once.",
+          "headline": "Why retrying is hard",
           "lead": [
             {
               "kind": "paragraph",
@@ -3395,11 +3395,11 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "An idempotency key lets the server recognise a repeat and return the stored result, so the effect happens once.",
+          "headline": "The idempotency key",
           "lead": [
             {
               "kind": "paragraph",
-              "text": "With an **idempotency key**, the client generates a unique value for each logical operation, such as a random identifier, and sends it in a header, conventionally named Idempotency-Key. The first time the server sees the key it carries out the request and stores the result under that key. When the key arrives again, from a retry, it does not act: it returns the stored response, as in the second view of the figure on the previous screen."
+              "text": "With an **idempotency key**, the client generates a unique value for each logical operation, such as a random identifier, and sends it in a header, conventionally named `Idempotency-Key`. The first time the server sees the key it carries out the request and stores the result under that key. When the key arrives again, from a retry, it does not act: it returns the stored response, as in the second view of the figure on the previous screen."
             },
             {
               "kind": "paragraph",
@@ -3434,7 +3434,7 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "A key belongs to one operation of one client and is kept for a limited time, and the server decides which requests count as repeats.",
+          "headline": "The scope of a key",
           "lead": [
             {
               "kind": "paragraph",
@@ -3528,7 +3528,7 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "An error body should have a stable machine-readable type and a human-readable explanation, and should never expose the server's internals.",
+          "headline": "Problem details",
           "lead": [
             {
               "kind": "paragraph",
@@ -3633,7 +3633,7 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A header named Idempotency-Key, carrying a unique value that the client chooses for each operation, lets a server recognise that a POST it has received is a repeat of one it has already carried out, and answer with the stored result instead of acting a second time. Without an **idempotency key** a client that retries a charge after a timeout has no safe way to ask again, because nothing in a plain POST tells the server whether it has met this request before."
+              "text": "A header named `Idempotency-Key`, carrying a unique value that the client chooses for each operation, lets a server recognise that a `POST` it has received is a repeat of one it has already carried out, and answer with the stored result instead of acting a second time. Without an **idempotency key** a client that retries a charge after a timeout has no safe way to ask again, because nothing in a plain `POST` tells the server whether it has met this request before."
             },
             {
               "kind": "paragraph",
@@ -3689,11 +3689,11 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "A change is breaking when a client written against the old contract can fail, and clients that cannot be updated make that the test.",
+          "headline": "What makes a change breaking",
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The opening figure shows the problem. The server renamed name to full_name, and an installed app that reads name now finds nothing. The owners of an API usually cannot update its clients, since they are phones, other companies' servers and scripts that nobody remembers writing, so every change is judged against what a client built on the old contract does with it. A change is **breaking** if any such client can fail."
+              "text": "The opening figure shows the problem. The server renamed `name` to `full_name`, and an installed app that reads `name` now finds nothing. The owners of an API usually cannot update its clients, since they are phones, other companies' servers and scripts that nobody remembers writing, so every change is judged against what a client built on the old contract does with it. A change is **breaking** if any such client can fail."
             },
             {
               "kind": "paragraph",
@@ -3712,11 +3712,11 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "Some changes are plainly safe, some plainly breaking, and a few look harmless and are not.",
+          "headline": "Safe and breaking changes",
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The first two lists in the figure follow from the test. The third list holds the changes that deserve a second look. An **enum** is a field whose value comes from a fixed list, such as an order status of \"new\", \"paid\" or \"shipped\", and a client that handles each known value with a case of its own may fail on a new one, so adding a value is safe only if clients have been told to expect more. Tightening validation, for instance lowering the longest allowed name from 200 characters to 50, rejects requests that used to work. Changing the default sort order changes what a client that never asked for a sort receives."
+              "text": "The first two lists in the figure follow from the test. The third list holds the changes that deserve a second look. An **enum** is a field whose value comes from a fixed list, such as an order status of `\"new\"`, `\"paid\"` or `\"shipped\"`, and a client that handles each known value with a case of its own may fail on a new one, so adding a value is safe only if clients have been told to expect more. Tightening validation, for instance lowering the longest allowed name from 200 characters to 50, rejects requests that used to work. Changing the default sort order changes what a client that never asked for a sort receives."
             },
             {
               "kind": "paragraph",
@@ -3790,11 +3790,11 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "A breaking change is made by serving both versions for a time, announcing the date, watching the traffic and only then removing the old one.",
+          "headline": "Migrating clients",
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Renaming qty to quantity can be done without breaking anyone, if the old name is kept for a period. The server first returns **both** fields and announces that qty is **deprecated**, meaning that it will be removed, with a date. A response header named **Deprecation** says that the field or endpoint is deprecated, and a header named **Sunset** carries the date on which it will stop working, so that a client can find out from its own traffic."
+              "text": "Renaming `qty` to `quantity` can be done without breaking anyone, if the old name is kept for a period. The server first returns **both** fields and announces that `qty` is **deprecated**, meaning that it will be removed, with a date. A response header named **Deprecation** says that the field or endpoint is deprecated, and a header named **Sunset** carries the date on which it will stop working, so that a client can find out from its own traffic."
             },
             {
               "kind": "paragraph",
@@ -3946,7 +3946,7 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "Renaming the field name to full_name in a response such as {\"id\": 7, \"name\": \"Ana\"} takes a moment, and every program that was written to read name finds nothing there afterwards. The programs that read it may be apps on phones, scripts on other companies' servers and tools that nobody remembers writing, and the team that owns the API cannot update any of them on demand. A change is **breaking** when a client written against the old contract can fail because of it."
+              "text": "Renaming the field `name` to `full_name` in a response such as `{\"id\": 7, \"name\": \"Ana\"}` takes a moment, and every program that was written to read `name` finds nothing there afterwards. The programs that read it may be apps on phones, scripts on other companies' servers and tools that nobody remembers writing, and the team that owns the API cannot update any of them on demand. A change is **breaking** when a client written against the old contract can fail because of it."
             },
             {
               "kind": "paragraph",
@@ -4020,7 +4020,7 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "Authentication asks who is calling, authorisation asks whether they may, and each has its own status code.",
+          "headline": "Authentication and authorisation",
           "lead": [
             {
               "kind": "paragraph",
@@ -4043,7 +4043,7 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "A session keeps the state on the server and gives the client an id in a cookie, which the server looks up on each request.",
+          "headline": "Sessions",
           "lead": [
             {
               "kind": "paragraph",
@@ -4101,15 +4101,15 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "A signed token carries its own claims and a signature, so the server can verify it without a lookup, and anyone can still read it.",
+          "headline": "Signed tokens",
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A **signed token** puts the facts, such as user=7, in the token itself, and adds a signature that only the server can produce. The signature is an **HMAC**, a hash of the payload mixed with a secret key that only the server knows. To check a token the server recomputes the HMAC of the payload with its key and compares the result with the signature that arrived. Altering one character of the payload gives a completely different HMAC, and so the old signature no longer matches."
+              "text": "A **signed token** puts the facts, such as `user=7`, in the token itself, and adds a signature that only the server can produce. The signature is an **HMAC**, a hash of the payload mixed with a secret key that only the server knows. To check a token the server recomputes the HMAC of the payload with its key and compares the result with the signature that arrived. Altering one character of the payload gives a completely different HMAC, and so the old signature no longer matches."
             },
             {
               "kind": "paragraph",
-              "text": "Two warnings go with this. The payload is only *encoded*, usually with base64, and anyone who holds the token can decode it, so a secret must never be put in a token. And the comparison should be done in **constant time**, with a function such as hmac.compare_digest in Python, because the == operator stops at the first byte that differs, and an attacker can measure how long it took."
+              "text": "Two warnings go with this. The payload is only *encoded*, usually with base64, and anyone who holds the token can decode it, so a secret must never be put in a token. And the comparison should be done in **constant time**, with a function such as `hmac.compare_digest` in Python, because the `==` operator stops at the first byte that differs, and an attacker can measure how long it took."
             }
           ],
           "introducesTerms": [
@@ -4157,7 +4157,7 @@
               "math": "token = user=7 + signature"
             },
             {
-              "text": "If the payload is changed to user=8 and the signature is left alone, the server recomputes the HMAC of user=8, which begins b5972ed0.",
+              "text": "If the payload is changed to `user=8` and the signature is left alone, the server recomputes the HMAC of `user=8`, which begins `b5972ed0`.",
               "math": "b5972ed0... is not 056c0432..."
             },
             {
@@ -4177,7 +4177,7 @@
           "headline": "A request carries the payload user=8 with the signature that was made for user=7.",
           "workedSteps": [
             {
-              "text": "The server recomputes HMAC(k, user=8) and gets a value that begins b5972ed0.",
+              "text": "The server recomputes `HMAC(k, user=8)` and gets a value that begins `b5972ed0`.",
               "math": "b5972ed0..."
             },
             {
@@ -4200,7 +4200,7 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "Passwords are stored as slow, salted hashes, and guessing time is the number of possibilities divided by the guessing rate.",
+          "headline": "Storing passwords",
           "lead": [
             {
               "kind": "paragraph",
@@ -4304,7 +4304,7 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "HTTP carries no memory from one request to the next, so a GET /orders that arrives with a cookie holding a long random string says nothing by itself about who sent it. The server has to decide from that string whether the caller is user 7, an attacker, or nobody it knows, and the work of deciding is called **authentication**. It is a separate question from whether the caller may do what it asks, which is authorisation and is settled afterwards."
+              "text": "HTTP carries no memory from one request to the next, so a `GET /orders` that arrives with a cookie holding a long random string says nothing by itself about who sent it. The server has to decide from that string whether the caller is user 7, an attacker, or nobody it knows, and the work of deciding is called **authentication**. It is a separate question from whether the caller may do what it asks, which is authorisation and is settled afterwards."
             },
             {
               "kind": "paragraph",
@@ -4360,11 +4360,11 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "Being logged in only says who is asking, and every request for a specific object must also check that the caller may have that object.",
+          "headline": "Login is not enough",
           "lead": [
             {
               "kind": "paragraph",
-              "text": "In the opening figure user 9 is logged in and asks for GET /invoices/18, an invoice that belongs to user 4. A handler that loads the invoice by its id and returns it has authenticated the caller and checked nothing else, so changing the number in the address reads another person's data. This is **broken object-level authorisation**, and it is first in the OWASP API Security Top 10 of 2023, since nearly every API has endpoints that take an object's id."
+              "text": "In the opening figure user 9 is logged in and asks for `GET /invoices/18`, an invoice that belongs to user 4. A handler that loads the invoice by its id and returns it has authenticated the caller and checked nothing else, so changing the number in the address reads another person's data. This is **broken object-level authorisation**, and it is first in the OWASP API Security Top 10 of 2023, since nearly every API has endpoints that take an object's id."
             },
             {
               "kind": "paragraph",
@@ -4398,11 +4398,11 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "Joining input into a query lets the input change its structure, and a parameterised query keeps data and code apart.",
+          "headline": "Injection",
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The input x' OR '1'='1 contains a quotation mark. In a query built by joining strings it closes the string that was meant to hold a name, and what follows becomes part of the query: the condition now reads name = 'x' OR '1'='1', and since '1'='1' is true for every row, all rows match. This is **injection**, and it can read, change or delete data, depending on what the attacker writes."
+              "text": "The input `x' OR '1'='1` contains a quotation mark. In a query built by joining strings it closes the string that was meant to hold a name, and what follows becomes part of the query: the condition now reads `name = 'x' OR '1'='1'`, and since `'1'='1'` is true for every row, all rows match. This is **injection**, and it can read, change or delete data, depending on what the attacker writes."
             },
             {
               "kind": "paragraph",
@@ -4455,11 +4455,11 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "Copying every field of a request onto a stored object lets a caller set fields they should not, so accept only an allowlist.",
+          "headline": "Mass assignment",
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A handler for PATCH /users/9 receives {\"name\": \"Ana\", \"role\": \"admin\"}. If it copies every key onto the stored user, which a framework often does in one line, the caller has made themselves an administrator. This is **mass assignment**, and its fix is an **allowlist**: the handler names the fields a caller may set, here name and email, and ignores or rejects the rest."
+              "text": "A handler for `PATCH /users/9` receives `{\"name\": \"Ana\", \"role\": \"admin\"}`. If it copies every key onto the stored user, which a framework often does in one line, the caller has made themselves an administrator. This is **mass assignment**, and its fix is an **allowlist**: the handler names the fields a caller may set, here `name` and `email`, and ignores or rejects the rest."
             },
             {
               "kind": "paragraph",
@@ -4599,7 +4599,7 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A request for GET /invoices/18 with a valid token tells the server who is asking, and the server still has to decide whether that caller may have invoice 18. A handler that loads the invoice by its id and returns it has answered only the first question, so any logged-in caller can read every invoice by changing the number in the address. This fault is called **broken object-level authorisation**, and it heads the OWASP API Security Top 10 of 2023."
+              "text": "A request for `GET /invoices/18` with a valid token tells the server who is asking, and the server still has to decide whether that caller may have invoice 18. A handler that loads the invoice by its id and returns it has answered only the first question, so any logged-in caller can read every invoice by changing the number in the address. This fault is called **broken object-level authorisation**, and it heads the OWASP API Security Top 10 of 2023."
             },
             {
               "kind": "paragraph",
@@ -4673,7 +4673,7 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "A token bucket allows bursts up to its capacity and a steady rate set by its refill, because each request spends a token.",
+          "headline": "The token bucket",
           "lead": [
             {
               "kind": "paragraph",
@@ -4737,7 +4737,7 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "A server over its limit answers 429 with Retry-After, and a client should retry only what can succeed later.",
+          "headline": "429 and Retry-After",
           "lead": [
             {
               "kind": "paragraph",
@@ -4776,7 +4776,7 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "Exponential backoff doubles the wait after each failure, up to a cap, and jitter keeps many clients from retrying together.",
+          "headline": "Backoff and jitter",
           "lead": [
             {
               "kind": "paragraph",
@@ -4948,7 +4948,7 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "When a client sends requests faster than a service allows, the service answers HTTP/1.1 429 Too Many Requests, and it may add a Retry-After header giving the number of seconds to wait. That reply is the visible end of a **rate limit**, a rule that stops one client from using capacity that every client shares, and the rule is usually applied by giving each client something it can spend and refilling it at a fixed pace."
+              "text": "When a client sends requests faster than a service allows, the service answers `HTTP/1.1 429 Too Many Requests`, and it may add a `Retry-After` header giving the number of seconds to wait. That reply is the visible end of a **rate limit**, a rule that stops one client from using capacity that every client shares, and the rule is usually applied by giving each client something it can spend and refilling it at a fixed pace."
             },
             {
               "kind": "paragraph",
@@ -5004,7 +5004,7 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "A handler translates HTTP, a service applies rules, and a repository talks to storage, so each can change and be tested alone.",
+          "headline": "Handler, service and repository",
           "lead": [
             {
               "kind": "paragraph",
@@ -5062,7 +5062,7 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "A request that changes several rows should do so in one transaction, which the service opens and commits.",
+          "headline": "Transactions",
           "lead": [
             {
               "kind": "paragraph",
@@ -5101,7 +5101,7 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "Slow work belongs on a queue after the commit, and a queue that retries delivers some messages more than once.",
+          "headline": "Background work",
           "lead": [
             {
               "kind": "paragraph",
@@ -5216,11 +5216,11 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "A running service should tag its logs with a request id and offer a health check and a readiness check.",
+          "headline": "Logs and health checks",
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A service that works is not enough, since someone has to find out when it stops. Giving each request an id and writing it into every log line, including those of the workers it triggers, lets a person follow one request through the layers. A **health check**, such as GET /health, returns 200 whenever the process is up, and a **readiness check**, such as GET /ready, goes further: it returns 503 until the database connection works."
+              "text": "A service that works is not enough, since someone has to find out when it stops. Giving each request an id and writing it into every log line, including those of the workers it triggers, lets a person follow one request through the layers. A **health check**, such as `GET /health`, returns 200 whenever the process is up, and a **readiness check**, such as `GET /ready`, goes further: it returns 503 until the database connection works."
             },
             {
               "kind": "paragraph",
@@ -5334,7 +5334,7 @@
         "response",
         "header"
       ],
-      "prompt": "A browser opens https://shop.example/search?q=rust&page=2#reviews. Which request line does the server receive?",
+      "prompt": "A browser opens `https://shop.example/search?q=rust&page=2#reviews`. Which request line does the server receive?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -5344,7 +5344,7 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "GET /search?q=rust&page=2 HTTP/1.1"
+          "`GET /search?q=rust&page=2 HTTP/1.1`"
         ],
         "rejectedIdeas": [],
         "exampleAnswer": "GET /search?q=rust&page=2 HTTP/1.1"
@@ -5387,15 +5387,15 @@
       "choices": [
         {
           "id": "a",
-          "label": "GET https://shop.example/search?q=rust&page=2#reviews HTTP/1.1"
+          "label": "`GET https://shop.example/search?q=rust&page=2#reviews HTTP/1.1`"
         },
         {
           "id": "b",
-          "label": "GET /search?q=rust&page=2 HTTP/1.1"
+          "label": "`GET /search?q=rust&page=2 HTTP/1.1`"
         },
         {
           "id": "d",
-          "label": "GET shop.example/search?q=rust&page=2 HTTP/1.1"
+          "label": "`GET shop.example/search?q=rust&page=2 HTTP/1.1`"
         },
         {
           "id": "c",
@@ -5410,7 +5410,7 @@
         "response",
         "header"
       ],
-      "prompt": "How many name=value pairs does the query in GET /items?tag=red&tag=large&sort=price HTTP/1.1 contain?",
+      "prompt": "How many `name=value` pairs does the query in `GET /items?tag=red&tag=large&sort=price HTTP/1.1` contain?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -5424,7 +5424,7 @@
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "The query is tag=red&tag=large&sort=price. Three pairs are separated by two ampersands."
+        "workedAnswer": "The query is `tag=red&tag=large&sort=price`. Three pairs are separated by two ampersands."
       },
       "sourceIds": [
         "rfc9110",
@@ -5542,7 +5542,7 @@
         "response",
         "header"
       ],
-      "prompt": "Complete the count for the body {\"name\":\"Zoë\",\"qty\":2}. How many bytes is it, and so what Content-Length does it need?",
+      "prompt": "Complete the count for the body `{\"name\":\"Zoë\",\"qty\":2}`. How many bytes is it, and so what `Content-Length` does it need?",
       "responseType": "numeric",
       "difficulty": 1.2,
       "hints": [
@@ -5638,7 +5638,7 @@
         "response",
         "header"
       ],
-      "prompt": "What Content-Length, in bytes, should a request carry for the UTF-8 body {\"item\":\"café\",\"qty\":4}?",
+      "prompt": "What `Content-Length`, in bytes, should a request carry for the UTF-8 body `{\"item\":\"café\",\"qty\":4}`?",
       "responseType": "numeric",
       "difficulty": 1.3,
       "hints": [
@@ -5726,7 +5726,7 @@
         "response",
         "header"
       ],
-      "prompt": "A server reads the line POST /orders?express=1 HTTP/1.1. What do its parts give?",
+      "prompt": "A server reads the line `POST /orders?express=1 HTTP/1.1`. What do its parts give?",
       "responseType": "short_text",
       "difficulty": 1.2,
       "hints": [
@@ -5736,7 +5736,7 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "method POST, path /orders, query express=1"
+          "method `POST`, path `/orders`, query `express=1`"
         ],
         "rejectedIdeas": [],
         "exampleAnswer": "method POST, path /orders, query express=1"
@@ -5779,19 +5779,19 @@
       "choices": [
         {
           "id": "b",
-          "label": "method /orders, path POST, query express=1"
+          "label": "method `/orders`, path `POST`, query `express=1`"
         },
         {
           "id": "a",
-          "label": "method POST, path /orders, query express=1"
+          "label": "method `POST`, path `/orders`, query `express=1`"
         },
         {
           "id": "d",
-          "label": "method POST, path /orders, body express=1"
+          "label": "method `POST`, path `/orders`, body `express=1`"
         },
         {
           "id": "c",
-          "label": "method POST, path /orders?express=1, host express"
+          "label": "method `POST`, path `/orders?express=1`, host `express`"
         }
       ]
     },
@@ -5802,7 +5802,7 @@
         "idempotent-method",
         "retry-rule"
       ],
-      "prompt": "A counter holds 10. The request POST /counter/add with the body {\"n\": 5} is delivered twice. What does the counter hold afterwards?",
+      "prompt": "A counter holds 10. The request `POST /counter/add` with the body `{\"n\": 5}` is delivered twice. What does the counter hold afterwards?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -5843,7 +5843,7 @@
         "idempotent-method",
         "retry-rule"
       ],
-      "prompt": "The counter holds 10. The request PUT /counter with the body {\"value\": 15} is delivered twice. What does the counter hold afterwards?",
+      "prompt": "The counter holds 10. The request `PUT /counter` with the body `{\"value\": 15}` is delivered twice. What does the counter hold afterwards?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -6080,7 +6080,7 @@
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "Four distinct GET links remove four items, leaving 10 - 4 = 6."
+        "workedAnswer": "Four distinct `GET` links remove four items, leaving 10 - 4 = 6."
       },
       "sourceIds": [
         "rfc9110",
@@ -6115,7 +6115,7 @@
         "idempotent-method",
         "retry-rule"
       ],
-      "prompt": "A counter holds 10. The request POST /counter/add with the body {\"n\": 5} is delivered three times. What does the counter hold afterwards?",
+      "prompt": "A counter holds 10. The request `POST /counter/add` with the body `{\"n\": 5}` is delivered three times. What does the counter hold afterwards?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -6230,7 +6230,7 @@
         "idempotent-method",
         "retry-rule"
       ],
-      "prompt": "A counter holds 10. A client sends PUT /counter with {\"value\": 15} five times, and then POST /counter/add with {\"n\": 5} once. What does the counter hold afterwards?",
+      "prompt": "A counter holds 10. A client sends `PUT /counter` with `{\"value\": 15}` five times, and then `POST /counter/add` with `{\"n\": 5}` once. What does the counter hold afterwards?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -6584,7 +6584,7 @@
         "auth-codes",
         "conflict-codes"
       ],
-      "prompt": "An API answers every request with 200 OK and puts {\"error\": \"card declined\"} in the body. What goes wrong?",
+      "prompt": "An API answers every request with 200 OK and puts `{\"error\": \"card declined\"}` in the body. What goes wrong?",
       "responseType": "short_text",
       "difficulty": 1.2,
       "hints": [
@@ -6934,7 +6934,7 @@
         "validator",
         "revalidation"
       ],
-      "prompt": "A response with Cache-Control: max-age=120 was fetched at t = 0 seconds. A request arrives at t = 95 seconds. How many seconds of freshness remain?",
+      "prompt": "A response with `Cache-Control: max-age=120` was fetched at t = 0 seconds. A request arrives at t = 95 seconds. How many seconds of freshness remain?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -6984,7 +6984,7 @@
         "validator",
         "revalidation"
       ],
-      "prompt": "A copy was fetched at t = 0 with Cache-Control: max-age=150. A request arrives at t = 100 seconds. How many seconds of freshness remain?",
+      "prompt": "A copy was fetched at t = 0 with `Cache-Control: max-age=150`. A request arrives at t = 100 seconds. How many seconds of freshness remain?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -7171,7 +7171,7 @@
         "validator",
         "revalidation"
       ],
-      "prompt": "The resource never changes and is served with max-age=100. A client requests it at t = 0, 50, 120, 150 and 260 seconds, revalidating when the copy is stale. A 304 renews freshness from the moment it arrives. How many times is the origin contacted?",
+      "prompt": "The resource never changes and is served with `max-age=100`. A client requests it at t = 0, 50, 120, 150 and 260 seconds, revalidating when the copy is stale. A 304 renews freshness from the moment it arrives. How many times is the origin contacted?",
       "responseType": "numeric",
       "difficulty": 1.3,
       "hints": [
@@ -7271,7 +7271,7 @@
         "validator",
         "revalidation"
       ],
-      "prompt": "A response with Cache-Control: max-age=90 was fetched at t = 0 seconds. A request arrives at t = 25 seconds. How many seconds of freshness remain?",
+      "prompt": "A response with `Cache-Control: max-age=90` was fetched at t = 0 seconds. A request arrives at t = 25 seconds. How many seconds of freshness remain?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -7321,7 +7321,7 @@
         "validator",
         "revalidation"
       ],
-      "prompt": "A resource never changes and is served with max-age=200. A client requests it at t = 0, 90, 210, 300 and 450 seconds, revalidating when stale, and a 304 renews freshness from its arrival. How many times is the origin contacted?",
+      "prompt": "A resource never changes and is served with `max-age=200`. A client requests it at t = 0, 90, 210, 300 and 450 seconds, revalidating when stale, and a 304 renews freshness from its arrival. How many times is the origin contacted?",
       "responseType": "numeric",
       "difficulty": 1.3,
       "hints": [
@@ -7446,7 +7446,7 @@
         "bacad-url-parts",
         "bacad-template"
       ],
-      "prompt": "How many segments does the path of https://api.shop.example/v2/stores/5/products/88/reviews?sort=new&page=3#top have?",
+      "prompt": "How many segments does the path of `https://api.shop.example/v2/stores/5/products/88/reviews?sort=new&page=3#top` have?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -7603,7 +7603,7 @@
       "choices": [
         {
           "id": "c",
-          "label": "PATCH /orders/42 with {\"status\":\"cancelled\"}"
+          "label": "`PATCH /orders/42` with `{\"status\":\"cancelled\"}`"
         },
         {
           "id": "d",
@@ -7626,7 +7626,7 @@
         "bacad-url-parts",
         "bacad-template"
       ],
-      "prompt": "The path /orders/42/items/7 is matched against the template /orders/{id}/items/{item}. How many segments does the path have?",
+      "prompt": "The path `/orders/42/items/7` is matched against the template `/orders/{id}/items/{item}`. How many segments does the path have?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -7677,7 +7677,7 @@
         "bacad-url-parts",
         "bacad-template"
       ],
-      "prompt": "A router tries to match /orders/{id} against /orders/42/items. What does match return when the path does not fit?",
+      "prompt": "A router tries to match `/orders/{id}` against `/orders/42/items`. What does `match` return when the path does not fit?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -7724,7 +7724,7 @@
         "bacad-url-parts",
         "bacad-template"
       ],
-      "prompt": "A router uses the template /customers/{cid}/orders/{oid}/items/{iid} on the path /customers/17/orders/42/items/7. How many named parts does it extract?",
+      "prompt": "A router uses the template `/customers/{cid}/orders/{oid}/items/{iid}` on the path `/customers/17/orders/42/items/7`. How many named parts does it extract?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -7738,7 +7738,7 @@
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "The template has the braces {cid}, {oid} and {iid}, so 3 values are captured: 17, 42 and 7."
+        "workedAnswer": "The template has the braces `{cid}`, `{oid}` and `{iid}`, so 3 values are captured: 17, 42 and 7."
       },
       "sourceIds": [
         "rfc3986",
@@ -7746,7 +7746,7 @@
         "mdn-http",
         "fielding-2000"
       ],
-      "onCorrect": "Each {name} segment captures one value, and the fixed segments are only compared.",
+      "onCorrect": "Each `{name}` segment captures one value, and the fixed segments are only compared.",
       "misconceptions": [
         {
           "match": {
@@ -7822,7 +7822,7 @@
         "bacad-url-parts",
         "bacad-template"
       ],
-      "prompt": "A router has the template /customers/{cid}/orders/{oid}. How many named parts does it capture from the path /customers/9/orders/31?",
+      "prompt": "A router has the template `/customers/{cid}/orders/{oid}`. How many named parts does it capture from the path `/customers/9/orders/31`?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -7844,7 +7844,7 @@
         "mdn-http",
         "fielding-2000"
       ],
-      "onCorrect": "The values captured are cid = 9 and oid = 31.",
+      "onCorrect": "The values captured are `cid = 9` and `oid = 31`.",
       "misconceptions": [
         {
           "match": {
@@ -7883,7 +7883,7 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "/getOrders"
+          "`/getOrders`"
         ],
         "rejectedIdeas": [],
         "exampleAnswer": "/getOrders"
@@ -7894,7 +7894,7 @@
         "mdn-http",
         "fielding-2000"
       ],
-      "onCorrect": "A path names a resource, and the method gives the action, so GET /orders replaces /getOrders.",
+      "onCorrect": "A path names a resource, and the method gives the action, so `GET /orders` replaces `/getOrders`.",
       "misconceptions": [
         {
           "match": {
@@ -7930,7 +7930,7 @@
         },
         {
           "id": "d",
-          "label": "/getOrders"
+          "label": "`/getOrders`"
         },
         {
           "id": "a",
@@ -7949,7 +7949,7 @@
         "json-syntax",
         "number-care"
       ],
-      "prompt": "How many of these five texts are valid JSON? {\"a\":1}   {\"a\":1,}   {'a':1}   [1,2,]   {\"a\":null}",
+      "prompt": "How many of these five texts are valid JSON? `{\"a\":1}`   `{\"a\":1,}`   `{'a':1}`   `[1,2,]`   `{\"a\":null}`",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -7963,7 +7963,7 @@
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "{\"a\":1} and {\"a\":null} are valid, and the other three break a rule: 2."
+        "workedAnswer": "`{\"a\":1}` and `{\"a\":null}` are valid, and the other three break a rule: 2."
       },
       "sourceIds": [
         "rfc8259",
@@ -7971,7 +7971,7 @@
         "mdn-http",
         "py-stdlib"
       ],
-      "onCorrect": "Only {\"a\":1} and {\"a\":null} follow the syntax, since JSON forbids trailing commas and single quotes.",
+      "onCorrect": "Only `{\"a\":1}` and `{\"a\":null}` follow the syntax, since JSON forbids trailing commas and single quotes.",
       "misconceptions": [
         {
           "match": {
@@ -8156,7 +8156,7 @@
         "json-syntax",
         "number-care"
       ],
-      "prompt": "A profile holds nick \"ann\", bio \"hi\" and city \"Rome\". A PATCH sends {\"nick\": null, \"bio\": \"\"}. After it, how many of the three fields hold a value that is not null?",
+      "prompt": "A profile holds `nick` `\"ann\"`, `bio` `\"hi\"` and `city` `\"Rome\"`. A `PATCH` sends `{\"nick\": null, \"bio\": \"\"}`. After it, how many of the three fields hold a value that is not `null`?",
       "responseType": "numeric",
       "difficulty": 1.3,
       "hints": [
@@ -8268,7 +8268,7 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "{\"a\": null}"
+          "`{\"a\": null}`"
         ],
         "rejectedIdeas": [],
         "exampleAnswer": "{\"a\": null}"
@@ -8311,19 +8311,19 @@
       "choices": [
         {
           "id": "d",
-          "label": "{\"a\": 01}"
+          "label": "`{\"a\": 01}`"
         },
         {
           "id": "a",
-          "label": "{'a': 1}"
+          "label": "`{'a': 1}`"
         },
         {
           "id": "c",
-          "label": "{\"a\": null}"
+          "label": "`{\"a\": null}`"
         },
         {
           "id": "b",
-          "label": "{\"a\": 1,}"
+          "label": "`{\"a\": 1,}`"
         }
       ]
     },
@@ -8440,7 +8440,7 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "{\"item\":\"pen\",\"qty\":3}"
+          "`{\"item\":\"pen\",\"qty\":3}`"
         ],
         "rejectedIdeas": [],
         "exampleAnswer": "{\"item\":\"pen\",\"qty\":3}"
@@ -8482,19 +8482,19 @@
       "choices": [
         {
           "id": "d",
-          "label": "{\"qty\":3,\"note\":\"x\"}"
+          "label": "`{\"qty\":3,\"note\":\"x\"}`"
         },
         {
           "id": "c",
-          "label": "{\"item\":\"pen\",\"qty\":3}"
+          "label": "`{\"item\":\"pen\",\"qty\":3}`"
         },
         {
           "id": "b",
-          "label": "{\"item\":\"pen\",\"qty\":\"three\"}"
+          "label": "`{\"item\":\"pen\",\"qty\":\"three\"}`"
         },
         {
           "id": "a",
-          "label": "{\"item\":\"pen\"}"
+          "label": "`{\"item\":\"pen\"}`"
         }
       ]
     },
@@ -8509,7 +8509,7 @@
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "It sits inside the operation, next to requestBody and responses.",
+        "It sits inside the operation, next to `requestBody` and `responses`.",
         "Its name says what it identifies."
       ],
       "answerAuthority": {
@@ -8529,7 +8529,7 @@
         "rfc8259",
         "mdn-http"
       ],
-      "onCorrect": "operationId is unique across the document, so a generator can turn it into a function such as createOrder.",
+      "onCorrect": "`operationId` is unique across the document, so a generator can turn it into a function such as `createOrder`.",
       "misconceptions": [
         {
           "match": {
@@ -8558,7 +8558,7 @@
         "bacad-schema",
         "bacad-contract"
       ],
-      "prompt": "The Order schema requires item (string) and qty (integer), and note (string) is optional. How many of these bodies are valid? A {\"item\":\"pen\",\"qty\":3,\"note\":\"gift\"}   B {\"item\":\"pen\"}   C {\"item\":\"pen\",\"qty\":\"3\"}   D {\"qty\":3}   E {\"item\":\"ink\",\"qty\":2}",
+      "prompt": "The `Order` schema requires `item` (string) and `qty` (integer), and `note` (string) is optional. How many of these bodies are valid? A `{\"item\":\"pen\",\"qty\":3,\"note\":\"gift\"}`   B `{\"item\":\"pen\"}`   C `{\"item\":\"pen\",\"qty\":\"3\"}`   D `{\"qty\":3}`   E `{\"item\":\"ink\",\"qty\":2}`",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -8658,7 +8658,7 @@
         "bacad-schema",
         "bacad-contract"
       ],
-      "prompt": "Check the body {\"item\":\"pen\",\"qty\":\"3\"} against the Order schema. How many errors does a validator report?",
+      "prompt": "Check the body `{\"item\":\"pen\",\"qty\":\"3\"}` against the `Order` schema. How many errors does a validator report?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -8708,7 +8708,7 @@
         "bacad-schema",
         "bacad-contract"
       ],
-      "prompt": "Check the body {\"qty\":\"3\"} against the Order schema. How many errors does a validator report?",
+      "prompt": "Check the body `{\"qty\":\"3\"}` against the `Order` schema. How many errors does a validator report?",
       "responseType": "numeric",
       "difficulty": 1.3,
       "hints": [
@@ -8758,7 +8758,7 @@
         "bacad-schema",
         "bacad-contract"
       ],
-      "prompt": "The Order schema requires item (string) and qty (integer), and note (string) is optional. Properties not listed are allowed. How many of these bodies are valid? A {\"item\":\"cup\",\"qty\":0}   B {\"item\":\"cup\",\"qty\":2.5}   C {\"item\":7,\"qty\":1}   D {\"item\":\"cup\",\"qty\":1,\"colour\":\"red\"}   E {\"item\":\"\",\"qty\":3}",
+      "prompt": "The `Order` schema requires `item` (string) and `qty` (integer), and `note` (string) is optional. Properties not listed are allowed. How many of these bodies are valid? A `{\"item\":\"cup\",\"qty\":0}`   B `{\"item\":\"cup\",\"qty\":2.5}`   C `{\"item\":7,\"qty\":1}`   D `{\"item\":\"cup\",\"qty\":1,\"colour\":\"red\"}`   E `{\"item\":\"\",\"qty\":3}`",
       "responseType": "numeric",
       "difficulty": 1.3,
       "hints": [
@@ -8832,7 +8832,7 @@
         "rfc8259",
         "mdn-http"
       ],
-      "onCorrect": "operationId lets two tools refer to the same operation by one name.",
+      "onCorrect": "`operationId` lets two tools refer to the same operation by one name.",
       "misconceptions": [
         {
           "match": {
@@ -9028,7 +9028,7 @@
         "keyset-paging",
         "cursor"
       ],
-      "prompt": "Ids 80 down to 61 are listed newest first. A client asks for limit=4 after=70. What is the last id on the page?",
+      "prompt": "Ids 80 down to 61 are listed newest first. A client asks for `limit=4` `after=70`. What is the last id on the page?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -9078,7 +9078,7 @@
         "keyset-paging",
         "cursor"
       ],
-      "prompt": "Ids 100 down to 91 are listed newest first. A client asks for limit=3 after=93. How many ids are returned?",
+      "prompt": "Ids 100 down to 91 are listed newest first. A client asks for `limit=3` `after=93`. How many ids are returned?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -10034,7 +10034,7 @@
         "bacad-tolerant-reader",
         "deprecation"
       ],
-      "prompt": "Five changes are proposed. (a) add an optional response field nick. (b) remove the response field name. (c) change id from integer to string. (d) add the endpoint /orders/{id}/notes. (e) make the request field currency required, though it was optional. How many are breaking?",
+      "prompt": "Five changes are proposed. (a) add an optional response field `nick`. (b) remove the response field `name`. (c) change `id` from integer to string. (d) add the endpoint `/orders/{id}/notes`. (e) make the request field `currency` required, though it was optional. How many are breaking?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -10636,7 +10636,7 @@
         "signed-token",
         "bacad-password-hash"
       ],
-      "prompt": "A token carries the payload user=8 with the signature made for user=7. The server verifies it and finds the signatures differ. Which status code should it send?",
+      "prompt": "A token carries the payload `user=8` with the signature made for `user=7`. The server verifies it and finds the signatures differ. Which status code should it send?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -10789,7 +10789,7 @@
         "signed-token",
         "bacad-password-hash"
       ],
-      "prompt": "A token's payload is the base64 encoding of {\"user\": 7, \"role\": \"admin\"}, followed by an HMAC signature. Who can read the payload?",
+      "prompt": "A token's payload is the base64 encoding of `{\"user\": 7, \"role\": \"admin\"}`, followed by an HMAC signature. Who can read the payload?",
       "responseType": "short_text",
       "difficulty": 1.2,
       "hints": [
@@ -10941,7 +10941,7 @@
         "rfc9110",
         "py-stdlib"
       ],
-      "onCorrect": "A comparison with == stops at the first difference, and its timing can leak how many leading bytes matched.",
+      "onCorrect": "A comparison with `==` stops at the first difference, and its timing can leak how many leading bytes matched.",
       "misconceptions": [
         {
           "match": {
@@ -10949,7 +10949,7 @@
               "=="
             ]
           },
-          "feedback": "The == operator stops at the first difference, so its timing can leak how much of a signature was right."
+          "feedback": "The `==` operator stops at the first difference, so its timing can leak how much of a signature was right."
         }
       ],
       "skill": "sign-and-verify",
@@ -11038,12 +11038,12 @@
         "bacad-injection",
         "mass-assignment"
       ],
-      "prompt": "The users table has 3 rows. A handler builds SELECT * FROM users WHERE name = '<input>' by joining strings, and receives the input x' OR '1'='1. How many rows come back?",
+      "prompt": "The `users` table has 3 rows. A handler builds `SELECT * FROM users WHERE name = '<input>'` by joining strings, and receives the input `x' OR '1'='1`. How many rows come back?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
         "Write out the query that results from the join.",
-        "The condition '1'='1' is always true.",
+        "The condition `'1'='1'` is always true.",
         "An OR with a true condition matches every row."
       ],
       "answerAuthority": {
@@ -11088,7 +11088,7 @@
         "bacad-injection",
         "mass-assignment"
       ],
-      "prompt": "The users table has 3 rows. A handler runs SELECT * FROM users WHERE name = ? with the value x' OR '1'='1 as a parameter. How many rows come back?",
+      "prompt": "The `users` table has 3 rows. A handler runs `SELECT * FROM users WHERE name = ?` with the value `x' OR '1'='1` as a parameter. How many rows come back?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -11138,7 +11138,7 @@
         "bacad-injection",
         "mass-assignment"
       ],
-      "prompt": "GET /invoices/{id} returns an invoice whenever the caller is logged in. Which fix addresses the flaw?",
+      "prompt": "`GET /invoices/{id}` returns an invoice whenever the caller is logged in. Which fix addresses the flaw?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -11213,7 +11213,7 @@
         "bacad-injection",
         "mass-assignment"
       ],
-      "prompt": "A request body is {\"name\": \"Ana\", \"role\": \"admin\", \"email\": \"a@x\"} and the allowlist is name and email. How many fields are copied onto the stored user?",
+      "prompt": "A request body is `{\"name\": \"Ana\", \"role\": \"admin\", \"email\": \"a@x\"}` and the allowlist is `name` and `email`. How many fields are copied onto the stored user?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -11413,7 +11413,7 @@
         "bacad-injection",
         "mass-assignment"
       ],
-      "prompt": "The users table has 7 rows. A handler builds SELECT * FROM users WHERE name = '<input>' by joining strings, and receives the input x' OR '1'='1. How many rows come back?",
+      "prompt": "The `users` table has 7 rows. A handler builds `SELECT * FROM users WHERE name = '<input>'` by joining strings, and receives the input `x' OR '1'='1`. How many rows come back?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -11507,7 +11507,7 @@
               "d"
             ]
           },
-          "feedback": "A short input can still be harmful, such as x' OR '1'='1."
+          "feedback": "A short input can still be harmful, such as `x' OR '1'='1`."
         }
       ],
       "skill": "parameterise-queries",
@@ -12731,7 +12731,7 @@
         "response",
         "header"
       ],
-      "prompt": "The request line is GET /items?tag=red&tag=large&sort=price HTTP/1.1. Which list gives the name=value pairs in its query?",
+      "prompt": "The request line is `GET /items?tag=red&tag=large&sort=price HTTP/1.1`. Which list gives the `name=value` pairs in its query?",
       "difficulty": 1,
       "hints": [
         "The query is everything after the question mark, and an ampersand separates one pair from the next.",
@@ -12750,7 +12750,7 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "tag=red and tag=large and sort=price"
+          "`tag=red` and `tag=large` and `sort=price`"
         ],
         "rejectedIdeas": [],
         "exampleAnswer": "tag=red and tag=large and sort=price"
@@ -12778,25 +12778,25 @@
               "d"
             ]
           },
-          "feedback": "The second tag=large is a pair too. A repeated name does not cancel the first one, so the query holds three pairs."
+          "feedback": "The second `tag=large` is a pair too. A repeated name does not cancel the first one, so the query holds three pairs."
         }
       ],
       "choices": [
         {
           "id": "d",
-          "label": "tag=red and sort=price"
+          "label": "`tag=red` and `sort=price`"
         },
         {
           "id": "b",
-          "label": "/items?tag=red, tag=large and sort=price"
+          "label": "`/items?tag=red`, `tag=large` and `sort=price`"
         },
         {
           "id": "c",
-          "label": "tag=red and tag=large and sort=price"
+          "label": "`tag=red` and `tag=large` and `sort=price`"
         },
         {
           "id": "a",
-          "label": "tag=red,large and sort=price"
+          "label": "`tag=red,large` and `sort=price`"
         }
       ]
     },
@@ -12883,10 +12883,10 @@
         "validator",
         "revalidation"
       ],
-      "prompt": "A response with Cache-Control: max-age=120 was stored by a cache at t = 0 seconds. A request for the same resource arrives at t = 95 seconds. What does the cache do?",
+      "prompt": "A response with `Cache-Control: max-age=120` was stored by a cache at t = 0 seconds. A request for the same resource arrives at t = 95 seconds. What does the cache do?",
       "difficulty": 1,
       "hints": [
-        "max-age=120 allows the copy to be reused for 120 seconds after it was generated.",
+        "`max-age=120` allows the copy to be reused for 120 seconds after it was generated.",
         "Compare the 95 seconds that have passed with the 120 seconds allowed."
       ],
       "sourceIds": [
@@ -12946,7 +12946,7 @@
         "bacad-url-parts",
         "bacad-template"
       ],
-      "prompt": "A router matches the path /customers/17/orders/42/items/7 against the template /customers/{cid}/orders/{oid}/items/{iid}. Which values does it capture?",
+      "prompt": "A router matches the path `/customers/17/orders/42/items/7` against the template `/customers/{cid}/orders/{oid}/items/{iid}`. Which values does it capture?",
       "difficulty": 1.2,
       "hints": [
         "Only the segments in braces capture a value; the others must simply be equal.",
@@ -12958,14 +12958,14 @@
         "mdn-http",
         "fielding-2000"
       ],
-      "onCorrect": "Each braces segment captures the path segment in the same position, so the router returns cid = 17, oid = 42 and iid = 7 and hands them to the code for that template.",
+      "onCorrect": "Each braces segment captures the path segment in the same position, so the router returns `cid = 17`, `oid = 42` and `iid = 7` and hands them to the code for that template.",
       "skill": "match-templates",
       "calculator": "off",
       "responseType": "short_text",
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "cid = 17, oid = 42, iid = 7"
+          "`cid = 17`, `oid = 42`, `iid = 7`"
         ],
         "rejectedIdeas": [],
         "exampleAnswer": "cid = 17, oid = 42, iid = 7"
@@ -12985,7 +12985,7 @@
               "b"
             ]
           },
-          "feedback": "The template has a third segment in braces, {iid}, and it captures 7. A path fits only when every segment of the template is matched, so none is left over."
+          "feedback": "The template has a third segment in braces, `{iid}`, and it captures 7. A path fits only when every segment of the template is matched, so none is left over."
         },
         {
           "match": {
@@ -12999,19 +12999,19 @@
       "choices": [
         {
           "id": "a",
-          "label": "cid = customers, oid = orders, iid = items"
+          "label": "`cid = customers`, `oid = orders`, `iid = items`"
         },
         {
           "id": "c",
-          "label": "cid = 17, oid = 42, iid = 7"
+          "label": "`cid = 17`, `oid = 42`, `iid = 7`"
         },
         {
           "id": "b",
-          "label": "cid = 17 and oid = 42, with the last segment left unmatched"
+          "label": "`cid = 17` and `oid = 42`, with the last segment left unmatched"
         },
         {
           "id": "d",
-          "label": "cid = 7, oid = 42, iid = 17"
+          "label": "`cid = 7`, `oid = 42`, `iid = 17`"
         }
       ]
     },
@@ -13022,7 +13022,7 @@
         "json-syntax",
         "number-care"
       ],
-      "prompt": "A program passes the text {\"a\":1,} to a JSON parser. What does the parser do?",
+      "prompt": "A program passes the text `{\"a\":1,}` to a JSON parser. What does the parser do?",
       "difficulty": 1,
       "hints": [
         "Ask whether the grammar has any room for a comma that separates nothing from nothing.",
@@ -13075,7 +13075,7 @@
         },
         {
           "id": "c",
-          "label": "It reads a = 1 and discards the rest of the text"
+          "label": "It reads `a = 1` and discards the rest of the text"
         }
       ]
     },
@@ -13086,7 +13086,7 @@
         "json-syntax",
         "number-care"
       ],
-      "prompt": "A profile holds nick \"ann\", bio \"hi\" and city \"Rome\". A PATCH sends {\"nick\": null, \"bio\": \"\"}. What does the profile hold afterwards?",
+      "prompt": "A profile holds `nick` `\"ann\"`, `bio` `\"hi\"` and `city` `\"Rome\"`. A `PATCH` sends `{\"nick\": null, \"bio\": \"\"}`. What does the profile hold afterwards?",
       "difficulty": 1.3,
       "hints": [
         "Null, an empty string and a field left out are three different instructions.",
@@ -13117,7 +13117,7 @@
               "a"
             ]
           },
-          "feedback": "An empty string is not null. {\"bio\": \"\"} sets the bio to a string with no characters, which is a value, whereas null would clear it."
+          "feedback": "An empty string is not `null`. `{\"bio\": \"\"}` sets the bio to a string with no characters, which is a value, whereas `null` would clear it."
         },
         {
           "match": {
@@ -13180,7 +13180,7 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "{\"item\":\"ink\",\"qty\":\"two\"}"
+          "`{\"item\":\"ink\",\"qty\":\"two\"}`"
         ],
         "rejectedIdeas": [],
         "exampleAnswer": "{\"item\":\"ink\",\"qty\":\"two\"}"
@@ -13214,19 +13214,19 @@
       "choices": [
         {
           "id": "a",
-          "label": "{\"item\":\"pen\",\"qty\":3,\"colour\":\"red\"}"
+          "label": "`{\"item\":\"pen\",\"qty\":3,\"colour\":\"red\"}`"
         },
         {
           "id": "c",
-          "label": "{\"item\":\"pen\",\"qty\":3,\"note\":\"gift\"}"
+          "label": "`{\"item\":\"pen\",\"qty\":3,\"note\":\"gift\"}`"
         },
         {
           "id": "d",
-          "label": "{\"qty\":2,\"item\":\"ink\"}"
+          "label": "`{\"qty\":2,\"item\":\"ink\"}`"
         },
         {
           "id": "b",
-          "label": "{\"item\":\"ink\",\"qty\":\"two\"}"
+          "label": "`{\"item\":\"ink\",\"qty\":\"two\"}`"
         }
       ]
     },
@@ -13237,7 +13237,7 @@
         "bacad-schema",
         "bacad-contract"
       ],
-      "prompt": "The Order schema requires item (string) and qty (integer). A validator reports every fault it finds in the body {\"qty\":\"3\"}. What does it report?",
+      "prompt": "The `Order` schema requires `item` (string) and `qty` (integer). A validator reports every fault it finds in the body `{\"qty\":\"3\"}`. What does it report?",
       "difficulty": 1.3,
       "hints": [
         "Check each required property for presence first.",
@@ -13312,7 +13312,7 @@
         "keyset-paging",
         "cursor"
       ],
-      "prompt": "Ids 50 down to 41 are listed newest first. A client fetches page 1 with limit=4 and offset=0 and receives 50, 49, 48 and 47. Then ids 51, 52 and 53 are added at the top, and the client fetches page 2 with limit=4 and offset=4. What does page 2 contain?",
+      "prompt": "Ids 50 down to 41 are listed newest first. A client fetches page 1 with `limit=4` and `offset=0` and receives 50, 49, 48 and 47. Then ids 51, 52 and 53 are added at the top, and the client fetches page 2 with `limit=4` and `offset=4`. What does page 2 contain?",
       "difficulty": 1.3,
       "hints": [
         "Write the new list from 53 downwards, and count four places from the top to find where page 2 begins.",
@@ -13438,7 +13438,7 @@
         "bacad-tolerant-reader",
         "deprecation"
       ],
-      "prompt": "Five changes are proposed. (a) add an optional response field nick. (b) remove the response field name. (c) change id from integer to string. (d) add the endpoint /orders/{id}/notes. (e) make the request field currency required, though it was optional. Which of these lists contains every breaking change?",
+      "prompt": "Five changes are proposed. (a) add an optional response field `nick`. (b) remove the response field `name`. (c) change `id` from integer to string. (d) add the endpoint `/orders/{id}/notes`. (e) make the request field `currency` required, though it was optional. Which of these lists contains every breaking change?",
       "difficulty": 1,
       "hints": [
         "Ask for each change whether a client written against the old contract could fail.",
@@ -13663,7 +13663,7 @@
         "bacad-injection",
         "mass-assignment"
       ],
-      "prompt": "The users table has 3 rows. A handler builds SELECT * FROM users WHERE name = '<input>' by joining strings, and receives the input x' OR '1'='1. How many rows come back?",
+      "prompt": "The `users` table has 3 rows. A handler builds `SELECT * FROM users WHERE name = '<input>'` by joining strings, and receives the input `x' OR '1'='1`. How many rows come back?",
       "difficulty": 1.2,
       "hints": [
         "Write out the query after the input has been joined into it, and read the condition as the database will.",
@@ -13674,7 +13674,7 @@
         "owasp-cheats",
         "py-stdlib"
       ],
-      "onCorrect": "The joined query reads name = 'x' OR '1'='1', and the second condition is true for every row, so all three rows come back.",
+      "onCorrect": "The joined query reads `name = 'x' OR '1'='1'`, and the second condition is true for every row, so all three rows come back.",
       "skill": "parameterise-queries",
       "calculator": "off",
       "responseType": "short_text",
@@ -13693,7 +13693,7 @@
               "a"
             ]
           },
-          "feedback": "No rows would come back if the input were compared as a name, because nobody has that name. Joined into the query, though, it becomes part of the condition, and OR '1'='1' is true for every row."
+          "feedback": "No rows would come back if the input were compared as a name, because nobody has that name. Joined into the query, though, it becomes part of the condition, and `OR '1'='1'` is true for every row."
         },
         {
           "match": {
@@ -13726,7 +13726,7 @@
         "bacad-injection",
         "mass-assignment"
       ],
-      "prompt": "A handler runs SELECT * FROM users WHERE name = ? and sends the value x' OR '1'='1 separately as a parameter. What does the database do with that value?",
+      "prompt": "A handler runs `SELECT * FROM users WHERE name = ?` and sends the value `x' OR '1'='1` separately as a parameter. What does the database do with that value?",
       "difficulty": 1.2,
       "hints": [
         "Ask whether the database ever reads the value as part of the query.",
@@ -14156,7 +14156,7 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "{\"item\":\"\",\"qty\":0}"
+          "`{\"item\":\"\",\"qty\":0}`"
         ],
         "rejectedIdeas": [],
         "exampleAnswer": "{\"item\":\"\",\"qty\":0}"
@@ -14190,19 +14190,19 @@
       "choices": [
         {
           "id": "b",
-          "label": "{\"item\":7,\"qty\":1}"
+          "label": "`{\"item\":7,\"qty\":1}`"
         },
         {
           "id": "a",
-          "label": "{\"item\":\"cup\",\"qty\":2.5}"
+          "label": "`{\"item\":\"cup\",\"qty\":2.5}`"
         },
         {
           "id": "c",
-          "label": "{\"item\":\"\",\"qty\":0}"
+          "label": "`{\"item\":\"\",\"qty\":0}`"
         },
         {
           "id": "d",
-          "label": "{\"item\":\"cup\"}"
+          "label": "`{\"item\":\"cup\"}`"
         }
       ]
     },
@@ -14364,7 +14364,7 @@
         "response",
         "header"
       ],
-      "front": "Which request header names the server being asked, such as shop.example?",
+      "front": "Which request header names the server being asked, such as `shop.example`?",
       "back": "Host, because one machine can serve many sites and the request line holds only the path.",
       "sourceIds": [
         "rfc9110",
@@ -14457,7 +14457,7 @@
         "idempotent-method",
         "retry-rule"
       ],
-      "front": "The counter holds 10. PUT /counter {\"value\": 15} is delivered 4 times. What does it hold?",
+      "front": "The counter holds 10. `PUT /counter` `{\"value\": 15}` is delivered 4 times. What does it hold?",
       "back": "15, because each delivery sets the same value.",
       "sourceIds": [
         "rfc9110",
@@ -14556,7 +14556,7 @@
         "validator",
         "revalidation"
       ],
-      "front": "A copy has max-age=60 and was fetched 45 seconds ago. How many seconds of freshness remain?",
+      "front": "A copy has `max-age=60` and was fetched 45 seconds ago. How many seconds of freshness remain?",
       "back": "15 seconds: 60 minus 45.",
       "sourceIds": [
         "rfc9111",
@@ -14622,7 +14622,7 @@
         "bacad-url-parts",
         "bacad-template"
       ],
-      "front": "Which part of a URL narrows or shapes the result, such as ?status=open?",
+      "front": "Which part of a URL narrows or shapes the result, such as `?status=open`?",
       "back": "The query, which is sent in the request line after the path.",
       "sourceIds": [
         "rfc3986",
@@ -14763,7 +14763,7 @@
         "bacad-contract"
       ],
       "front": "Which OpenAPI field names an operation for code generators?",
-      "back": "operationId.",
+      "back": "`operationId`.",
       "sourceIds": [
         "openapi",
         "rfc8259",

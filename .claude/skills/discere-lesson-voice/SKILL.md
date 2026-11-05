@@ -91,7 +91,12 @@ and repetitive. Principles 8 and 9 are the correction.
   question a learner would ask. Say why the idea matters through what it lets you do, not by
   announcing that it is important. Do not give a list of what the lesson covers.
 - **Teaching screen.** The core of the lesson: flowing paragraphs that develop one idea, refer
-  precisely to the figure beside them, and name terms as they are earned.
+  precisely to the figure beside them, and name terms as they are earned. Its headline is a short
+  title naming the topic, two to five words in sentence case with no full stop ("Ohm's law",
+  "The base rate", "Fan-out on write"). The paragraphs make the point, so the title never
+  summarises it as a sentence, and the first paragraph never repeats the title.
+- **Worked or faded example.** Its headline is the problem itself, written as a full sentence,
+  and the app sets it as the task in bold body text.
 - **Worked example.** Full sentences that narrate the reasoning ("Multiplication comes before
   subtraction, so work out 3 × 5 first"), with each line of working given exactly.
 - **Reply to a wrong answer.** Work from the learner's actual answer to the correct fact and the
@@ -124,8 +129,16 @@ with three bold terms in ten screens.
 - **Hover terms.** Write `[[term|short note]]` on a term defined in an earlier lesson or screen
   that a learner might have forgotten. The note says what it means and, where it helps, where it
   was met ("A letter standing for a number. Met in 'What a letter stands for'."). Use one or two
-  per screen, only where they help. The player support is not built yet, so preview pages render
-  them now and the app will follow.
+  per screen, only where they help.
+- **Code** goes in backticks wherever it appears in prose, prompts, hints, feedback and cards:
+  names used in code (`total`, `reshape`, `String`), whole expressions and statements as one span
+  (`total = price * 4`, `df.head(2)`), commands with their arguments (`git commit -a`), paths, file
+  names and shell variables (`$HOME`). A concept named in English (a list, a commit, a join), a
+  product name (Git, Python) and a price ($0.12) stay plain. Never put a code span inside bold, a
+  hover term or `$…$` maths, where it would show its backticks.
+- **Maths** goes in `$…$`, with no space just inside either `$`. A price is written plainly as
+  $0.12: a closing `$` must touch the character before it and must not be followed by a digit, so
+  two prices in one sentence never pair up into an equation.
 - Never emphasise for decoration. If every sentence has something bold, nothing stands out.
 
 ## Facts are fixed

@@ -3,14 +3,15 @@ import { ArrowRight, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import { errorMessage } from "../api/client.js";
-import { createReviewSession, getReviewSession, getReviewHome } from "../api/endpoints.js";
+import { createReviewSession, getReviewHome, getReviewSession } from "../api/endpoints.js";
 import { queryKeys, useReviewHome } from "../api/queries.js";
+import { DueCourseChecks } from "../checks/CourseChecks.js";
 import { formatDueCell, formatReturn } from "../lib/format.js";
 import { paths } from "../lib/paths.js";
 import { ErrorScreen, LoadingScreen, Notice } from "../ui/Feedback.js";
+import { InlineRichText } from "../ui/RichText.js";
 import { Flashcard } from "./Flashcard.js";
 import { readReviewRun, recordRated, saveReviewRun } from "./review-run.js";
-import { DueCourseChecks } from "../checks/CourseChecks.js";
 
 export function ReviewScreen() {
   const review = useReviewHome();
@@ -234,7 +235,9 @@ export function ReviewSessionScreen() {
           <p>
             {run.position} / {run.total}
           </p>
-          <h1>{session.data.card.front}</h1>
+          <h1>
+            <InlineRichText text={session.data.card.front} />
+          </h1>
           <p>Your review is saved.</p>
         </section>
       ) : (

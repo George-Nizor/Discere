@@ -5,10 +5,10 @@ import { createBrowserRouter } from "react-router";
 import { RouterProvider } from "react-router/dom";
 import { shouldRetryQuery } from "./api/client.js";
 import { CapabilityProvider } from "./capabilities/capability-context.js";
-import { ExperienceProvider, applyCachedAppearance } from "./study/experience.js";
-import { WelcomeScreen } from "./shell/WelcomeScreen.js";
 import { routes } from "./routes.js";
 import { installNavigationMotion, withNavigationData } from "./shell/navigation.js";
+import { WelcomeScreen } from "./shell/WelcomeScreen.js";
+import { applyCachedAppearance, ExperienceProvider } from "./study/experience.js";
 // Bundled rather than fetched: the hub enforces script-src/style-src 'self', so a web font
 // must ship from our own origin. The variable file covers every weight the design uses.
 import "./styles/fonts/brand/fonts.css";
@@ -82,3 +82,4 @@ import "./styles/mascot.css";
 import "./styles/brand.css";
 import "./styles/theme-light.generated.css";
 import "./styles/theme.css";
+import "./styles/lesson-screen.css";

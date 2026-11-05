@@ -1,6 +1,16 @@
 # Implementation status
 
-Updated: 2026-11-05
+Updated: 2026-11-06
+
+Release 1.10.0 changes how a lesson screen reads. Every teaching screen in the 65 courses now has
+a short title naming its topic. The old heading was a sentence that summarised the screen, and the
+paragraph below often repeated it. Worked and faded examples keep their problem as the heading, set
+as the task in bold body text. In the 28 software courses, code in lesson text, prompts, choices,
+hints, feedback and cards is shown as inline code, and a prompt with code on lines of its own shows
+those lines as a code block. The release also fixes rendering faults. Two prices in one sentence
+were typeset as an equation, and a `*` inside code was read as italics. Hints, feedback, activity
+text and flashcards printed raw markup. Figures were scaled to 78%, which put their labels near
+11px. A choice list could mix the mono and interface faces, and runs of spaces in code collapsed.
 
 Release 1.9.9 fixes 71 screens in 38 courses that referred to "the figure" or "the diagram"
 without having one: each now points to where the figure is or says its content in words. The

@@ -1,17 +1,18 @@
 import type { ReviewRateResponse, ReviewRating, TutoringMode } from "@discere/contracts";
-import { celebrateAnswer } from "../fx/celebrate.js";
-import { centre, floatText } from "../fx/engine.js";
 import { useQueryClient } from "@tanstack/react-query";
 import { Check, Loader2, RotateCcw, Sparkles } from "lucide-react";
 import { useRef, useState } from "react";
 import { errorMessage } from "../api/client.js";
 import { rateReviewSession, revealReviewSession, submitReviewRecall } from "../api/endpoints.js";
 import { queryKeys } from "../api/queries.js";
+import { celebrateAnswer } from "../fx/celebrate.js";
+import { centre, floatText } from "../fx/engine.js";
 import { formatReturn } from "../lib/format.js";
 import { useExperience } from "../study/experience.js";
 import { Notice } from "../ui/Feedback.js";
 import { ReadAloudButton } from "../ui/ReadAloud.js";
 import "../styles/review.css";
+import { InlineRichText, stripEmphasis } from "../ui/RichText.js";
 
 const RATINGS: Array<{ id: ReviewRating; label: string; meaning: string }> = [
   { id: "again", label: "Again", meaning: "I could not recall it." },
@@ -168,12 +169,16 @@ export function Flashcard({
       <div
         className={`flashcard${back ? " is-revealed" : ""}${correct === true ? " is-correct" : correct === false ? " is-incorrect" : ""}`}
       >
-        {back ? <p className="flashcard-question-context">{front}</p> : null}
+        {back ? (
+          <p className="flashcard-question-context">
+            <InlineRichText text={front} />
+          </p>
+        ) : null}
         <p
           className={`flashcard-prompt${back ? " recall-reveal" : ""}`}
           key={back ? "back" : "front"}
         >
-          {back ?? front}
+          <InlineRichText text={back ?? front} />
         </p>
         {recall === "self" ? null : !back && response === null ? (
           <div className="flashcard-response">
@@ -199,13 +204,17 @@ export function Flashcard({
             className={`recall-feedback${correct === false ? " is-incorrect" : correct === true ? " is-correct" : ""}`}
           >
             {correct ? <Check aria-hidden="true" size={16} /> : null}
-            {correct === false && back ? "Not quite. Here’s the explanation." : feedback}
+            {correct === false && back ? (
+              "Not quite. Here’s the explanation."
+            ) : (
+              <InlineRichText text={feedback} />
+            )}
           </p>
         ) : null}
       </div>
 
       <p aria-live="polite" className="sr-only">
-        {back ? `Answer revealed: ${back}` : "The answer is hidden."}
+        {back ? `Answer revealed: ${stripEmphasis(back)}` : "The answer is hidden."}
       </p>
 
       {!back ? (
