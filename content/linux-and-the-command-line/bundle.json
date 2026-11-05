@@ -567,7 +567,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "Splitting happens at blanks, and a run of blanks counts as a single boundary. In echo one  two   three the gaps are one, two and three spaces wide, yet the program receives exactly three arguments, one, two and three. You can check it with set -- one  two   three; echo $#, which prints 3. The extra blanks were information for the shell only, and the figure shows what survives."
+              "text": "Splitting happens at blanks, and a run of blanks counts as a single boundary. In echo one  two   three the gaps are one, two and three spaces wide, yet the program receives exactly three arguments, one, two and three. You can check it with set -- one  two   three; echo $#, where set -- hands the words to the shell as its own arguments and $# is the number of them, and it prints 3. The extra blanks were information for the shell only, and the figure shows what survives."
             }
           ],
           "afterFigure": [
@@ -688,11 +688,11 @@
               "math": "ls"
             },
             {
-              "text": "Every remaining word is passed on. Write them down: -l, -a, /home and /tmp.",
-              "math": "-l  -a  /home  /tmp"
+              "text": "Every remaining word is passed on to ls, whether or not it begins with a dash.",
+              "math": "words after ls"
             },
             {
-              "text": "ls receives -l, -a, /home and /tmp. Work out how many arguments that is.",
+              "text": "Count the words that follow ls on the line. Work out how many arguments that is.",
               "blank": {
                 "questionId": "lincl-the-shell-and-a-command-count-with-options"
               }
@@ -996,14 +996,14 @@
           "id": "from-var-log-to-etc",
           "kind": "worked_example",
           "blocks": [],
-          "headline": "Trace cd ../../etc from /var/log, one name at a time.",
+          "headline": "Trace cd ../../tmp from /var/log, one name at a time.",
           "workedSteps": [
             {
               "text": "The working directory is /var/log, a path of two names below the root.",
               "math": "/var/log"
             },
             {
-              "text": "The first .. removes the last name. What the .. stands for is the parent directory.",
+              "text": "The first .. removes the last name, log. What does the name .. stand for?",
               "math": "/var",
               "selfExplain": {
                 "questionId": "lincl-files-and-the-filesystem-tree-what-dots-mean"
@@ -1014,12 +1014,12 @@
               "math": "/"
             },
             {
-              "text": "The last part, etc, is a name inside the root, so it is added.",
-              "math": "/etc"
+              "text": "The last part, tmp, is a name inside the root, so it is added.",
+              "math": "/tmp"
             },
             {
               "text": "pwd now prints the new working directory.",
-              "math": "/etc"
+              "math": "/tmp"
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -1126,7 +1126,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The same option shows . and .., the two entries that every directory holds. A directory containing only notes.txt and .hidden therefore prints a single name for ls, and four for ls -a: ., .., .hidden and notes.txt. Hidden is a convenient word, but all that has happened is that ls chose not to print some names."
+              "text": "The same option shows . and .., the two entries that every directory holds. A directory containing only plan.txt and .profile therefore prints a single name for ls, and four for ls -a: ., .., .profile and plan.txt. Hidden is a convenient word, but all that has happened is that ls chose not to print some names."
             }
           ],
           "introducesTerms": [
@@ -1398,6 +1398,28 @@
           }
         },
         {
+          "id": "reading-with-less",
+          "kind": "explain",
+          "blocks": [],
+          "headline": "less shows a file one screen at a time, which suits any file too long to read at once.",
+          "lead": [
+            {
+              "kind": "paragraph",
+              "text": "When a file is longer than the screen, cat floods the window and head or tail shows only one end of it. A **pager** is a program that displays a file one screen at a time, and the usual one is less. Run less on a file and it opens at the top: space moves down a screen, b moves back up, and a slash followed by a word searches forward for it, with n jumping to the next match."
+            },
+            {
+              "kind": "paragraph",
+              "text": "To leave, press q. less does not read the whole file before it displays it, so even a log with millions of lines opens at once. The name is a joke on an older pager called more, which could only move forward."
+            }
+          ],
+          "introducesTerms": [
+            "pager"
+          ],
+          "visualStateId": "",
+          "checkQuestionId": "",
+          "activityId": ""
+        },
+        {
           "id": "counting",
           "kind": "explain",
           "blocks": [],
@@ -1405,11 +1427,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The command wc, for word count, reports three numbers for a file: the lines, the words and the bytes. For notes.txt, wc notes.txt prints 5 5 31, and the options -l, -w and -c choose one of them. A **newline** is the invisible character that ends each line, and it is stored in the file like a letter, as one byte. The five words of notes.txt hold 26 letters, and the five newlines bring the byte count to 31."
+              "text": "The command wc, for word count, reports three numbers for a file: the lines, the words and the bytes. For a file nums.txt holding the three lines one, two and three, wc nums.txt prints 3 3 14 followed by the name, and the options -l, -w and -c choose one of them. A **newline** is the invisible character that ends each line, and it is stored in the file like a letter, as one byte. The three words of nums.txt hold 11 letters, and the three newlines bring the byte count to 14."
             },
             {
               "kind": "paragraph",
-              "text": "wc -l does not count the lines you see; it counts the newline characters. A file whose last line has no newline after it therefore reports one line less than a person would count, since that last line is never ended. Files made by most programs finish every line, so the difference is rare, but it does mean a count can be one off. The form wc -c < notes.txt, which feeds the file to wc without naming it, prints the number alone, where wc -c notes.txt would add the file name."
+              "text": "wc -l does not count the lines you see; it counts the newline characters. A file whose last line has no newline after it therefore reports one line less than a person would count, since that last line is never ended. Files made by most programs finish every line, so the difference is rare, but it does mean a count can be one off. The form wc -c < nums.txt, which feeds the file to wc without naming it, prints the number alone, where wc -c nums.txt would add the file name."
             }
           ],
           "introducesTerms": [
@@ -1472,28 +1494,6 @@
             }
           ],
           "answerVisibility": "hidden-until-response",
-          "visualStateId": "",
-          "checkQuestionId": "",
-          "activityId": ""
-        },
-        {
-          "id": "reading-with-less",
-          "kind": "explain",
-          "blocks": [],
-          "headline": "less shows a file one screen at a time, which suits any file too long to read at once.",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "When a file is longer than the screen, cat floods the window and head or tail shows only one end of it. A **pager** is a program that displays a file one screen at a time, and the usual one is less. Run less on a file and it opens at the top: space moves down a screen, b moves back up, and a slash followed by a word searches forward for it, with n jumping to the next match."
-            },
-            {
-              "kind": "paragraph",
-              "text": "To leave, press q. less does not read the whole file before it displays it, so even a log with millions of lines opens at once. The name is a joke on an older pager called more, which could only move forward."
-            }
-          ],
-          "introducesTerms": [
-            "pager"
-          ],
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": ""
@@ -1828,7 +1828,7 @@
           "workedSteps": [
             {
               "text": "Before ls starts, the pattern *.txt is replaced by the names that match it. Name the program that does this replacing.",
-              "math": "the shell",
+              "math": "*.txt → matching names",
               "selfExplain": {
                 "questionId": "lincl-changing-files-who-expands"
               }
@@ -1855,15 +1855,15 @@
           "id": "a-wider-star",
           "kind": "faded_example",
           "blocks": [],
-          "headline": "Work out how many names file*.txt matches, where file10.txt is also present.",
+          "headline": "Work out how many names file1*.txt matches, where file10.txt is also present.",
           "workedSteps": [
             {
               "text": "The directory holds file1.txt, file2.txt and file10.txt.",
               "math": "3 names"
             },
             {
-              "text": "The star in file*.txt matches any run of characters, with or without digits in it.",
-              "math": "file + 1, 2 or 10 + .txt"
+              "text": "The star in file1*.txt matches any run of characters after file1, including none.",
+              "math": "file1 + anything + .txt"
             },
             {
               "text": "Count the names that match, and write the number.",
@@ -1969,6 +1969,22 @@
       "title": "Links, inodes and mounts",
       "steps": [
         {
+          "id": "two-names",
+          "kind": "predict",
+          "blocks": [],
+          "lead": [],
+          "reveal": [
+            {
+              "kind": "paragraph",
+              "text": "The next two screens explain that a name points at a record on the disk, that ln makes a second name for it, and that the second field of ls -l counts the names."
+            }
+          ],
+          "answerVisibility": "hidden-until-response",
+          "visualStateId": "",
+          "checkQuestionId": "lincl-links-inodes-and-mounts-count-after-ln",
+          "activityId": ""
+        },
+        {
           "id": "a-name-is-not-the-file",
           "kind": "explain",
           "blocks": [],
@@ -2018,22 +2034,6 @@
             ],
             "initialCaseId": "n1"
           }
-        },
-        {
-          "id": "two-names",
-          "kind": "predict",
-          "blocks": [],
-          "lead": [],
-          "reveal": [
-            {
-              "kind": "paragraph",
-              "text": "The next screen explains that ln makes a second name and that the second field of ls -l counts the names."
-            }
-          ],
-          "answerVisibility": "hidden-until-response",
-          "visualStateId": "",
-          "checkQuestionId": "lincl-links-inodes-and-mounts-count-after-ln",
-          "activityId": ""
         },
         {
           "id": "hard-links",
@@ -2208,15 +2208,15 @@
           "id": "after-one-removal",
           "kind": "faded_example",
           "blocks": [],
-          "headline": "Find the link count of hb after echo hi > ha; ln ha hb; rm ha.",
+          "headline": "Find the link count of hb after echo hi > ha; ln ha hb; ln ha hc; rm ha.",
           "workedSteps": [
             {
               "text": "echo hi > ha makes the file ha, with one name.",
               "math": "count 1"
             },
             {
-              "text": "ln ha hb adds a name, so the count rises to 2.",
-              "math": "count 2"
+              "text": "ln ha hb and ln ha hc each add a name, so the count rises to 3.",
+              "math": "count 3"
             },
             {
               "text": "rm ha removes one name. Work out the count ls -l shows for hb.",
@@ -2378,6 +2378,22 @@
       "title": "Streams, redirection and pipes",
       "steps": [
         {
+          "id": "error-or-output",
+          "kind": "predict",
+          "blocks": [],
+          "lead": [],
+          "reveal": [
+            {
+              "kind": "paragraph",
+              "text": "The next screen shows that a program keeps its results and its complaints on separate streams, and the one after it says which stream each operator moves."
+            }
+          ],
+          "answerVisibility": "hidden-until-response",
+          "visualStateId": "",
+          "checkQuestionId": "lincl-streams-redirection-and-pipes-error-in-a-file",
+          "activityId": ""
+        },
+        {
           "id": "three-streams",
           "kind": "explain",
           "blocks": [],
@@ -2430,22 +2446,6 @@
             ],
             "initialCaseId": "a"
           }
-        },
-        {
-          "id": "error-or-output",
-          "kind": "predict",
-          "blocks": [],
-          "lead": [],
-          "reveal": [
-            {
-              "kind": "paragraph",
-              "text": "The next screen names the operators and says which stream each one redirects."
-            }
-          ],
-          "answerVisibility": "hidden-until-response",
-          "visualStateId": "",
-          "checkQuestionId": "lincl-streams-redirection-and-pipes-error-in-a-file",
-          "activityId": ""
         },
         {
           "id": "redirection",
@@ -2502,7 +2502,7 @@
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "Only standard output enters a pipe. Standard error is left attached to the terminal unless you redirect it, and the next screens look at exactly that."
+              "text": "A line may hold as many pipes as you like, and every program in it runs at the same time, each reading from the one before it and writing to the one after it."
             }
           ],
           "introducesTerms": [
@@ -2537,7 +2537,7 @@
         },
         {
           "id": "a-plain-pipe",
-          "kind": "predict",
+          "kind": "try",
           "blocks": [],
           "lead": [],
           "reveal": [
@@ -2604,26 +2604,26 @@
           "id": "all-three-lines",
           "kind": "worked_example",
           "blocks": [],
-          "headline": "Count the lines in G 2>&1 | wc -l, where G prints a, then b to standard error, then c.",
+          "headline": "Count the lines in E 2>&1 | wc -l, where E prints x to standard error, then y to standard output, then z and w to standard error.",
           "workedSteps": [
             {
-              "text": "G writes a to standard output, b to standard error and c to standard output.",
-              "math": "a  b  c"
+              "text": "E writes y to standard output, and x, z and w to standard error.",
+              "math": "x  y  z  w"
             },
             {
-              "text": "2>&1 points standard error at the place standard output goes, which is the pipe. How many of G's output streams flow into the pipe now?",
-              "math": "stream 1 and stream 2",
+              "text": "2>&1 points standard error at the place standard output goes, which is the pipe. How many of E's output streams flow into the pipe now?",
+              "math": "2>&1: stream 2 follows stream 1",
               "selfExplain": {
                 "questionId": "lincl-streams-redirection-and-pipes-streams-into-the-pipe"
               }
             },
             {
-              "text": "wc -l receives a, b and c, each ending in a newline.",
-              "math": "3 lines"
+              "text": "wc -l receives x, y, z and w, each ending in a newline.",
+              "math": "4 lines"
             },
             {
-              "text": "So the command prints 3, and nothing is left on the terminal.",
-              "math": "3"
+              "text": "So the command prints 4, and nothing is left on the terminal.",
+              "math": "4"
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -2635,7 +2635,7 @@
           "id": "order-of-redirections",
           "kind": "faded_example",
           "blocks": [],
-          "headline": "Count the lines in G 2>&1 >/dev/null | wc -l, with the same group G.",
+          "headline": "Count the lines in G 2>&1 >/dev/null | wc -l, where G prints a, then b to standard error, then c.",
           "workedSteps": [
             {
               "text": "2>&1 comes first, so standard error is pointed at the pipe, which is where standard output goes at that moment.",
@@ -2846,7 +2846,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Four options cover most uses. With -c grep prints only the number of lines that match, and not the lines themselves. With -v it prints the lines that do *not* match, so grep -v 200 access.log prints the two lines whose status is not 200. With -n it puts the line number and a colon in front of each match, as in 2:beta, and with -i it ignores the difference between capital and small letters. The option -r searches every file under a directory instead of one file."
+              "text": "Four options cover most uses. With -c grep prints only the number of lines that match, and not the lines themselves. With -v it prints the lines that do *not* match, so grep -v 404 access.log prints the five lines whose status is not 404. With -n it puts the line number and a colon in front of each match, as in 14:ERROR, and with -i it ignores the difference between capital and small letters. The option -r searches every file under a directory instead of one file."
             },
             {
               "kind": "paragraph",
@@ -2950,7 +2950,7 @@
           "workedSteps": [
             {
               "text": "The pipe hands the output of grep -v 200 to wc -l, which counts lines. First work out how many lines hold the text 200.",
-              "math": "4",
+              "math": "grep 200 access.log",
               "selfExplain": {
                 "questionId": "lincl-searching-with-grep-and-find-lines-with-200"
               }
@@ -2981,7 +2981,7 @@
             },
             {
               "text": "Only the names that end in .log pass the test.",
-              "math": "a/x.log and a/b/y.log"
+              "math": "names ending in .log"
             },
             {
               "text": "wc -l counts the lines find printed. Write the number.",
@@ -3347,30 +3347,30 @@
           "id": "small-letters-only",
           "kind": "worked_example",
           "blocks": [],
-          "headline": "Count the lines that grep -Ec '^[a-z]+$' selects from cat, Cat, cat5, an empty line and cats.",
+          "headline": "Count the lines that grep -Ec '^[a-z]+$' selects from ok, OK, o k, an empty line, okay and yes.",
           "workedSteps": [
             {
               "text": "The pattern describes the whole line: one or more small letters and nothing else. The plus requires how many letters at the very least?",
-              "math": "1",
+              "math": "^[a-z]+$",
               "selfExplain": {
                 "questionId": "lincl-regular-expressions-at-least-one"
               }
             },
             {
-              "text": "cat is three small letters, so it matches.",
+              "text": "ok is two small letters, so it matches.",
               "math": "match"
             },
             {
-              "text": "Cat starts with a capital, which [a-z] does not allow, and cat5 ends in a digit.",
+              "text": "OK is in capitals, which [a-z] does not allow, and o k has a space between its letters.",
               "math": "no match, no match"
             },
             {
-              "text": "The empty line has no letter at all, but the plus needs one. cats is four small letters.",
-              "math": "no match, match"
+              "text": "The empty line has no letter at all, but the plus needs one. okay and yes are made only of small letters.",
+              "math": "no match, match, match"
             },
             {
-              "text": "Two lines match, so grep -Ec prints 2.",
-              "math": "2"
+              "text": "Three lines match, so grep -Ec prints 3.",
+              "math": "3"
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -3750,7 +3750,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Sometimes the text itself has to change. The command sed edits a stream line by line, and its commonest command is a substitution, s/old/new/, which replaces the first match of old on each line with new. In echo aXbXc | sed 's/X/-/' the output is a-bXc, since only the first X on the line is replaced. With the flag g at the end, s/X/-/g, every match on the line is replaced and the output is a-b-c. The old text is a regular expression of the kind the last lesson covered."
+              "text": "Sometimes the text itself has to change. The command sed edits a stream line by line, and its commonest command is a substitution, s/old/new/, which replaces the first match of old on each line with new. In echo banana | sed 's/a/o/' the output is bonana, since only the first a on the line is replaced. With the flag g at the end, s/a/o/g, every match on the line is replaced and the output is bonono. The old text is a regular expression of the kind the last lesson covered."
             },
             {
               "kind": "paragraph",
@@ -3830,7 +3830,7 @@
             },
             {
               "text": "There is no g flag, so sed replaces only the first match on the line.",
-              "math": "a-bXc"
+              "math": "first X only"
             },
             {
               "text": "Count the dashes in the output and write the number.",
@@ -3993,13 +3993,13 @@
         },
         {
           "id": "write-it-as-a-number",
-          "kind": "predict",
+          "kind": "try",
           "blocks": [],
           "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "The next screen explains how each group of bits becomes one octal digit, so a mode is a three-digit number."
+              "text": "The next screen sets out the same conversion one group at a time, so a mode is always a three-digit number."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -4085,7 +4085,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The two forms suit different jobs. The octal form is exact and short when you know the whole mode you want. The symbolic form is the safer choice when you want to change one thing, since it cannot disturb the bits you did not name. A file with mode 644 becomes 744 after chmod u+x."
+              "text": "The two forms suit different jobs. The octal form is exact and short when you know the whole mode you want. The symbolic form is the safer choice when you want to change one thing, since it cannot disturb the bits you did not name. A file with mode 600 becomes 700 after chmod u+x."
             }
           ],
           "introducesTerms": [
@@ -4181,7 +4181,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "New files also need a mode. They start from 666 for files and 777 for directories, and the **umask** says which bits to remove. A umask of 027 clears the write bit for the group, from 6 to 4, and every bit for others, from 6 to 0, so a new file gets 640 and a new directory 750. The removal is bit by bit and not by subtracting whole numbers, although the two agree when the umask clears only bits that are set."
+              "text": "New files also need a mode. They start from 666 for files and 777 for directories, and the **umask** says which bits to remove. A umask of 007 leaves the owner and the group alone and clears every bit for others, from 6 to 0, so a new file gets 660 and a new directory 770. The removal is bit by bit and not by subtracting whole numbers, although the two agree when the umask clears only bits that are set."
             }
           ],
           "introducesTerms": [
@@ -4420,7 +4420,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The command wait makes the shell pause until its background jobs have finished. That is what fixes the order in sleep 1 & echo started; wait; echo done: the shell starts the sleep, prints started at once, waits a second, and prints done. Two keys are worth knowing. Ctrl-C interrupts the foreground program, and Ctrl-Z **suspends** it, which stops it without ending it, so that bg or fg can resume it. A background job is still attached to its terminal, and closing the terminal sends it the hangup signal."
+              "text": "The command wait makes the shell pause until its background jobs have finished. That is what fixes the order in sleep 1 & sleep 2 & echo begun; wait; echo finished: the shell starts both sleeps, prints begun at once, waits two seconds until the longer sleep has ended, and prints finished. Two keys are worth knowing. Ctrl-C interrupts the foreground program, and Ctrl-Z **suspends** it, which stops it without ending it, so that bg or fg can resume it. A background job is still attached to its terminal, and closing the terminal sends it the hangup signal."
             }
           ],
           "introducesTerms": [
@@ -4602,7 +4602,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "A process that is ended by a signal has no chance to choose a status, so bash reports 128 plus the signal number. A program ended by SIGTERM shows 143, and one ended by SIGKILL shows 137. The status therefore tells a script or a person not only that a job failed but, often, how it was ended."
+              "text": "A process that is ended by a signal has no chance to choose a status, so bash reports 128 plus the signal number. A program ended by SIGTERM shows 143, and one ended by Ctrl-C, which sends SIGINT, shows 130. The status therefore tells a script or a person not only that a job failed but, often, how it was ended."
             }
           ],
           "introducesTerms": [
@@ -4715,7 +4715,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "A variable that you set this way belongs to the shell that you set it in, and to nothing else. It is not part of the file system and it is not in the programs that the shell starts. That is a property worth testing before it is explained, since it decides which programs can see what you set."
+              "text": "A variable that you set this way is held by the shell that you set it in, and it is not stored in the file system, so it lasts only as long as that shell does. Whether the programs that the shell starts can see it as well is a separate question, and it is worth predicting before the next screen answers it."
             }
           ],
           "introducesTerms": [
@@ -5396,8 +5396,8 @@
               "math": "s = 0"
             },
             {
-              "text": "The rounds add 1, then 4, then 9.",
-              "math": "1, 5, 14"
+              "text": "The rounds add 1, then 4, then 9, and s keeps the total from round to round.",
+              "math": "+1, +4, +9"
             },
             {
               "text": "Write the number that echo $s prints at the end.",
@@ -5731,7 +5731,7 @@
             },
             {
               "text": "The line Active: shows a word. For a service that stopped by itself, which word does it show?",
-              "math": "Active: failed",
+              "math": "the Active: line",
               "selfExplain": {
                 "questionId": "lincl-packages-services-and-logs-state-word"
               }
@@ -5803,18 +5803,18 @@
           "id": "weekdays",
           "kind": "faded_example",
           "blocks": [],
-          "headline": "Read 0 6 * * 1-5 field by field, and count the days a week it runs.",
+          "headline": "Read 30 7 * * 2-4 field by field, and count the days a week it runs.",
           "workedSteps": [
             {
-              "text": "The minute is 0 and the hour is 6, so the job runs at 06:00.",
-              "math": "06:00"
+              "text": "The minute is 30 and the hour is 7, so the job runs at 07:30.",
+              "math": "07:30"
             },
             {
               "text": "The day of the month and the month are stars, so they do not limit it. Only the day of the week does.",
               "math": "* *"
             },
             {
-              "text": "The range 1-5 covers Monday to Friday. Write the number of days a week.",
+              "text": "The range 2-4 starts on Tuesday and includes both of its ends. Write the number of days a week.",
               "blank": {
                 "questionId": "lincl-packages-services-and-logs-weekday-runs"
               }
@@ -5964,7 +5964,7 @@
         "argument",
         "manual-page"
       ],
-      "prompt": "What is the name of the program that reads the line you type, splits it into words and starts the program named by the first word?",
+      "prompt": "In the line echo one  two   three , the extra spaces never reach echo. Which program throws them away when it splits the line into words?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -6121,7 +6121,7 @@
         "argument",
         "manual-page"
       ],
-      "prompt": "The file /etc/passwd lists the accounts on a machine. Which numbered manual section describes how that file is laid out?",
+      "prompt": "The file /etc/group lists the groups of users on a machine. Which numbered manual section describes how that file is laid out?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -6134,7 +6134,7 @@
         "bash-manual",
         "posix-shell"
       ],
-      "onCorrect": "man 1 passwd describes the command you run, and man 5 passwd describes the file, so the same word names two pages.",
+      "onCorrect": "Section 5 holds file formats, so man 5 group describes the file /etc/group, just as man 5 passwd describes /etc/passwd.",
       "misconceptions": [
         {
           "match": {
@@ -6142,7 +6142,7 @@
               1
             ]
           },
-          "feedback": "Section 1 holds commands such as passwd itself. The layout of a file is described in a different section."
+          "feedback": "Section 1 holds commands that any user runs. The layout of a file is described in a different section."
         },
         {
           "match": {
@@ -6161,7 +6161,7 @@
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "Section 5 covers file formats and conventions, so man 5 passwd describes /etc/passwd."
+        "workedAnswer": "Section 5 covers file formats and conventions, so man 5 group describes /etc/group."
       }
     },
     {
@@ -6171,7 +6171,7 @@
         "argument",
         "manual-page"
       ],
-      "prompt": "useradd is a command that only an administrator normally runs, to create an account. In which numbered section is its page?",
+      "prompt": "userdel is a command that only an administrator normally runs, to remove an account. In which numbered section is its page?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -6184,7 +6184,7 @@
         "bash-manual",
         "posix-shell"
       ],
-      "onCorrect": "Section 8 collects the commands an ordinary user rarely needs, which is why man 8 useradd and man 1 passwd sit on different shelves.",
+      "onCorrect": "Section 8 collects the commands an ordinary user rarely needs, which is why man 8 userdel and man 1 passwd sit on different shelves.",
       "misconceptions": [
         {
           "match": {
@@ -6203,7 +6203,7 @@
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "Administration and privileged commands are documented in section 8, so the page is useradd(8)."
+        "workedAnswer": "Administration and privileged commands are documented in section 8, so the page is userdel(8)."
       }
     },
     {
@@ -6427,11 +6427,11 @@
         "working-directory",
         "fhs"
       ],
-      "prompt": "You are in /home/ana/projects and run cd ../docs . What does pwd print?",
+      "prompt": "You are in /home/ana/projects and run cd ../music . What does pwd print?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Climb one level first, then go down into docs.",
+        "Climb one level first, then go down into music.",
         "The parent of projects is the directory that holds it."
       ],
       "sourceIds": [
@@ -6439,15 +6439,15 @@
         "man-pages",
         "coreutils-manual"
       ],
-      "onCorrect": "The .. leaves projects for its parent, /home/ana, and docs is then entered from there.",
+      "onCorrect": "The .. leaves projects for its parent, /home/ana, and music is then entered from there.",
       "misconceptions": [
         {
           "match": {
             "textIdeas": [
-              "/home/ana/projects/docs"
+              "/home/ana/projects/music"
             ]
           },
-          "feedback": "docs is not inside projects. The .. leaves projects first, so docs is entered from its parent."
+          "feedback": "music is not inside projects. The .. leaves projects first, so music is entered from its parent."
         }
       ],
       "skill": "resolve-a-relative-path",
@@ -6455,13 +6455,13 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "/home/ana/docs"
+          "/home/ana/music"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "/home/ana/docs",
+        "exampleAnswer": "/home/ana/music",
         "acceptedAlternatives": [
-          "home/ana/docs",
-          "/home/ana/docs/"
+          "home/ana/music",
+          "/home/ana/music/"
         ]
       }
     },
@@ -6563,7 +6563,7 @@
         "working-directory",
         "fhs"
       ],
-      "prompt": "The file passwd is a list of the accounts on a machine, and an administrator edits it to change them. In which top-level directory would you expect to find it?",
+      "prompt": "The file hostname holds the name of the machine, and an administrator edits it to change that name. In which top-level directory would you expect to find it?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -6575,7 +6575,7 @@
         "man-pages",
         "coreutils-manual"
       ],
-      "onCorrect": "Files that an administrator edits to configure the system live in /etc, and passwd is one of them.",
+      "onCorrect": "Files that an administrator edits to configure the system live in /etc, and hostname is one of them.",
       "misconceptions": [
         {
           "match": {
@@ -6583,7 +6583,7 @@
               "a"
             ]
           },
-          "feedback": "/home holds each person's own files. A list of accounts that applies to the whole machine is a setting, and settings are kept elsewhere."
+          "feedback": "/home holds each person's own files. The machine's name applies to the whole machine, so it is a setting, and settings are kept elsewhere."
         },
         {
           "match": {
@@ -6591,7 +6591,7 @@
               "c"
             ]
           },
-          "feedback": "/var holds data that changes while the system runs, such as logs. A list of accounts that an administrator edits is a setting, not a record of events."
+          "feedback": "/var holds data that changes while the system runs, such as logs. A name that an administrator sets is a setting, not a record of events."
         },
         {
           "match": {
@@ -6599,7 +6599,7 @@
               "d"
             ]
           },
-          "feedback": "/usr holds installed programs and their libraries. A list of accounts is data that configures the system, not a program."
+          "feedback": "/usr holds installed programs and their libraries. The machine's name is data that configures the system, not a program."
         }
       ],
       "skill": "choose-a-standard-location",
@@ -7168,7 +7168,7 @@
         "line-count",
         "pager"
       ],
-      "prompt": "In the listing -rw-r--r-- 1 ana staff 2048 Mar 3 10:12 report.txt, how many bytes is the file?",
+      "prompt": "In the listing -rw-r----- 1 bo dev 4096 Jan 9 08:30 data.csv, how many bytes is the file?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -7180,7 +7180,7 @@
         "coreutils-manual",
         "man-pages"
       ],
-      "onCorrect": "ls -l prints the size in bytes. The option -h would show it as 2.0K, but the size is the same.",
+      "onCorrect": "ls -l prints the size in bytes. The option -h would show it as 4.0K, but the size is the same.",
       "misconceptions": [
         {
           "match": {
@@ -7193,7 +7193,7 @@
         {
           "match": {
             "numeric": [
-              2
+              4
             ]
           },
           "feedback": "That is a size in kilobytes. ls -l shows plain bytes unless -h is given."
@@ -7203,11 +7203,11 @@
       "calculator": "off",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 2048,
+        "value": 4096,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "The size is the fifth field, and ls -l shows it in bytes unless -h is given, so the file is 2048 bytes."
+        "workedAnswer": "The size is the fifth field, and ls -l shows it in bytes unless -h is given, so the file is 4096 bytes."
       }
     },
     {
@@ -7217,13 +7217,13 @@
         "line-count",
         "pager"
       ],
-      "prompt": "notes.txt holds alpha, beta, gamma, delta and epsilon, one per line, each ending in a newline. What does wc -c < notes.txt print?",
+      "prompt": "pets.txt holds cat, dog and bird, one per line, each ending in a newline. What does wc -c < pets.txt print?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
         "Count the letters of each word.",
         "Each line has one more byte for its newline.",
-        "Add the letters and the five newlines."
+        "Add the letters and the three newlines."
       ],
       "sourceIds": [
         "coreutils-manual",
@@ -7234,15 +7234,15 @@
         {
           "match": {
             "numeric": [
-              26
+              10
             ]
           },
-          "feedback": "That counts only the letters. Each of the five lines also ends in a newline, which is a byte."
+          "feedback": "That counts only the letters. Each of the three lines also ends in a newline, which is a byte."
         },
         {
           "match": {
             "numeric": [
-              5
+              3
             ]
           },
           "feedback": "That is the line count, which is wc -l. The option -c counts bytes."
@@ -7252,11 +7252,11 @@
       "calculator": "off",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 31,
+        "value": 13,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "The words have 5, 4, 5, 5 and 7 letters, which is 26, and the five newlines add 5 more, making 31."
+        "workedAnswer": "The words have 3, 3 and 4 letters, which is 10, and the three newlines add 3 more, making 13."
       }
     },
     {
@@ -7381,19 +7381,19 @@
         "quoting",
         "destructive-command"
       ],
-      "prompt": "A directory holds file1.txt, file2.txt and file10.txt. Which names does file[1-2].txt match?",
+      "prompt": "A directory holds file1.txt, file2.txt and file10.txt. Which names does file[2-9].txt match?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
         "A bracket set stands for exactly one character, taken from the set.",
-        "[1-2] is the range from 1 to 2, and it must be followed straight away by .txt."
+        "[2-9] is the range from 2 to 9, and it must be followed straight away by .txt."
       ],
       "sourceIds": [
         "coreutils-manual",
         "bash-manual",
         "posix-shell"
       ],
-      "onCorrect": "The set matches a single 1 or 2 after file, so file1.txt and file2.txt fit and file10.txt, which has two characters there, does not.",
+      "onCorrect": "The set matches a single digit from 2 to 9 after file, so only file2.txt fits, and file10.txt, which has two characters there, does not.",
       "misconceptions": [
         {
           "match": {
@@ -7406,10 +7406,10 @@
         {
           "match": {
             "choiceIds": [
-              "c"
+              "b"
             ]
           },
-          "feedback": "[1-2] stands for the range from 1 to 2, so it covers both 1 and 2, and file1.txt fits as well."
+          "feedback": "[2-9] covers the digits 2 to 9, and 1 is not among them, so file1.txt does not fit."
         },
         {
           "match": {
@@ -7417,7 +7417,7 @@
               "d"
             ]
           },
-          "feedback": "[1-2] allows one character that is 1 or 2, and file10.txt has two characters in that place, so it cannot fit."
+          "feedback": "1 is outside the range 2 to 9, so neither file1.txt nor file10.txt fits."
         }
       ],
       "skill": "predict-a-glob",
@@ -7425,10 +7425,10 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "file1.txt and file2.txt"
+          "file2.txt only"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "file1.txt and file2.txt"
+        "exampleAnswer": "file2.txt only"
       },
       "choices": [
         {
@@ -7581,39 +7581,47 @@
         "quoting",
         "destructive-command"
       ],
-      "prompt": "The same directory holds file1.txt, file2.txt and file10.txt. How many names does file*.txt match?",
+      "prompt": "The same directory holds file1.txt, file2.txt and file10.txt. How many names does file1*.txt match?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
-        "The star matches any run of characters, including more than one.",
+        "The star matches any run of characters, including none.",
         "Check each of the three names against the pattern.",
-        "Which names begin with file and end with .txt?"
+        "Which names begin with file1 and end with .txt?"
       ],
       "sourceIds": [
         "coreutils-manual",
         "bash-manual",
         "posix-shell"
       ],
-      "onCorrect": "A star matches any run of characters, including a longer one such as 10, which is what ? and a bracket set cannot do.",
+      "onCorrect": "A star matches any run of characters, including none and including a longer one such as 0, which is what ? and a bracket set cannot do.",
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              2
+              1
             ]
           },
-          "feedback": "That is the count for ? or a bracket set, which match one character. The star matches a run of any length, so file10.txt also matches."
+          "feedback": "The star also matches an empty run, so file1.txt matches as well as file10.txt."
+        },
+        {
+          "match": {
+            "numeric": [
+              3
+            ]
+          },
+          "feedback": "file2.txt does not begin with file1, so it cannot match."
         }
       ],
       "skill": "predict-a-glob",
       "calculator": "off",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 3,
+        "value": 2,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "The star matches any run of characters, so file1.txt, file2.txt and file10.txt all match."
+        "workedAnswer": "The star matches any run of characters after file1, including none, so file1.txt and file10.txt match and file2.txt does not."
       }
     },
     {
@@ -7698,11 +7706,11 @@
         "quoting",
         "destructive-command"
       ],
-      "prompt": "A directory holds file1.txt, file2.txt and file10.txt. How many names does file?.txt match?",
+      "prompt": "A directory holds file1.txt, file2.txt and file10.txt. How many names does file??.txt match?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
-        "? stands for exactly one character.",
+        "Each ? stands for exactly one character.",
         "Check how many characters sit between file and .txt in each name.",
         "file10.txt has two."
       ],
@@ -7711,26 +7719,26 @@
         "bash-manual",
         "posix-shell"
       ],
-      "onCorrect": "? matches one character where * matches any run, which is why the two patterns give different counts.",
+      "onCorrect": "Two question marks match exactly two characters, so only file10.txt fits.",
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              3
+              2
             ]
           },
-          "feedback": "That is the count for file*.txt. The question mark matches only one character, so file10.txt is left out."
+          "feedback": "That is the count for file?.txt. Two question marks need exactly two characters, which only file10.txt has."
         }
       ],
       "skill": "predict-a-glob",
       "calculator": "off",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 2,
+        "value": 1,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "The question mark matches exactly one character, so file1.txt and file2.txt match and file10.txt does not."
+        "workedAnswer": "Two question marks match exactly two characters, so file10.txt matches and file1.txt and file2.txt do not."
       }
     },
     {
@@ -7740,13 +7748,13 @@
         "quoting",
         "destructive-command"
       ],
-      "prompt": "In an empty directory you run touch \"my file\" , with the quotes, and then ls . How many files does ls list?",
+      "prompt": "In an empty directory you run touch \"a b\" c , with the quotes as shown, and then ls . How many files does ls list?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
         "Count the arguments touch receives.",
         "Quotes keep the blank inside one word.",
-        "One argument creates one file."
+        "Each argument creates one file."
       ],
       "sourceIds": [
         "coreutils-manual",
@@ -7758,21 +7766,21 @@
         {
           "match": {
             "numeric": [
-              2
+              3
             ]
           },
-          "feedback": "That is the result without quotes. Quoting keeps the blank inside a single argument."
+          "feedback": "That splits a b as well. Quoting keeps its blank inside a single argument."
         }
       ],
       "skill": "quote-a-name",
       "calculator": "off",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 1,
+        "value": 2,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "The quotes keep my file together as one word, so touch creates a single file whose name contains a space."
+        "workedAnswer": "The quotes keep a b together as one word, and c is a second, so touch creates two files, one whose name contains a space."
       }
     },
     {
@@ -7941,7 +7949,7 @@
         "hard-link",
         "mount"
       ],
-      "prompt": "What is a symbolic link called when the file it names has been removed? Answer with one word.",
+      "prompt": "You run ln -s notes link and then rm notes . link is still listed. What one word describes link now?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -8040,7 +8048,7 @@
         "hard-link",
         "mount"
       ],
-      "prompt": "You run echo hi > ha , then ln ha hb , then rm ha . What link count does ls -l show for hb?",
+      "prompt": "You run echo hi > ha , then ln ha hb , then ln ha hc , then rm ha . What link count does ls -l show for hb?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -8053,20 +8061,20 @@
         "coreutils-manual",
         "fhs"
       ],
-      "onCorrect": "The count falls from 2 to 1, and the data stays because a name still points at the inode.",
+      "onCorrect": "The count falls from 3 to 2, and the count belongs to the inode, so hb and hc both show 2.",
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              0
+              1
             ]
           },
-          "feedback": "The data is not removed while any name points at it, and hb still does."
+          "feedback": "hc is still a name for the same inode, so two names are left, hb and hc."
         },
         {
           "match": {
             "numeric": [
-              2
+              3
             ]
           },
           "feedback": "That is the count before rm. The removal took one name away."
@@ -8076,11 +8084,11 @@
       "calculator": "off",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 1,
+        "value": 2,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "The link count was 2, rm ha removed one name, so one name is left and the count is 1."
+        "workedAnswer": "The link count was 3, rm ha removed one name, so two names are left and the count is 2."
       }
     },
     {
@@ -8090,7 +8098,7 @@
         "hard-link",
         "mount"
       ],
-      "prompt": "A USB stick is mounted at /mnt/usb and holds a file photo.jpg at its top level. What is the file's full path in the tree?",
+      "prompt": "A USB stick is mounted at /media/stick and holds a directory trips, with a file rome.jpg inside it. What is the file's full path in the tree?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -8101,15 +8109,15 @@
         "coreutils-manual",
         "fhs"
       ],
-      "onCorrect": "The mount point becomes the top of the stick's own tree, so photo.jpg is reached by writing the mount point before its name.",
+      "onCorrect": "The mount point becomes the top of the stick's own tree, so rome.jpg is reached by writing the mount point, then trips, then its name.",
       "misconceptions": [
         {
           "match": {
             "textIdeas": [
-              "/usb/photo.jpg"
+              "/trips/rome.jpg"
             ]
           },
-          "feedback": "The stick does not get a top-level directory of its own. It is attached below /mnt, so the path starts there."
+          "feedback": "The stick does not get a top-level directory of its own. It is attached at /media/stick, so the path starts there."
         }
       ],
       "skill": "count-links",
@@ -8117,12 +8125,12 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "/mnt/usb/photo.jpg"
+          "/media/stick/trips/rome.jpg"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "/mnt/usb/photo.jpg",
+        "exampleAnswer": "/media/stick/trips/rome.jpg",
         "acceptedAlternatives": [
-          "mnt/usb/photo.jpg"
+          "media/stick/trips/rome.jpg"
         ]
       }
     },
@@ -8357,7 +8365,7 @@
         "redirection",
         "pipe"
       ],
-      "prompt": "In an empty directory you run ls nosuchfile > out.txt , and ls complains because the file does not exist. What do you expect afterwards?",
+      "prompt": "In an empty directory you run ls nosuchfile > out.txt , where > out.txt tells the shell to send what ls writes to the file out.txt in place of the terminal. ls complains because the file does not exist. What do you expect afterwards?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -8558,7 +8566,7 @@
         "redirection",
         "pipe"
       ],
-      "prompt": "In G 2>&1 | wc -l , which of G's output streams flow into the pipe?",
+      "prompt": "In E 2>&1 | wc -l , which of E's output streams flow into the pipe?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -8670,28 +8678,36 @@
         "redirection",
         "pipe"
       ],
-      "prompt": "You run ls nosuchfile > out.txt 2>&1 and then wc -l < out.txt . What does it print?",
+      "prompt": "You run { echo ok; ls nosuchfile; } 2>&1 > out.txt , where ls complains because the file does not exist, and then wc -l < out.txt . What does it print?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
-        "Both streams now go to the file.",
-        "ls prints one error line about the missing file.",
-        "Count the lines in the file."
+        "Redirections are applied from left to right.",
+        "When the error stream is sent after standard output, standard output still goes to the terminal.",
+        "Count the lines that reach the file."
       ],
       "sourceIds": [
         "posix-shell",
         "bash-manual",
         "man-pages"
       ],
-      "onCorrect": "Written in this order the error line is in the file, whereas ls nosuchfile 2>&1 > out.txt would leave it on the terminal.",
+      "onCorrect": "Written in this order the error stays on the terminal and only ok reaches the file, whereas > out.txt 2>&1 would put both lines there.",
       "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              2
+            ]
+          },
+          "feedback": "The error stream is redirected first, while standard output still points at the terminal, so the error stays there and only ok reaches the file."
+        },
         {
           "match": {
             "numeric": [
               0
             ]
           },
-          "feedback": "The error stream now goes to the same file as the output, so the message is inside it."
+          "feedback": "echo ok writes to standard output, which > out.txt sends to the file, so the file holds that line."
         }
       ],
       "skill": "combine-streams",
@@ -8702,7 +8718,7 @@
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "> out.txt sends stream 1 to the file, and 2>&1 sends stream 2 to the same place, so the one error line is in the file."
+        "workedAnswer": "2>&1 copies stream 1's destination at that moment, the terminal, and then > out.txt moves stream 1 alone to the file, so the file holds the one line ok."
       }
     },
     {
@@ -9305,13 +9321,13 @@
         "find",
         "exit-status-of-search"
       ],
-      "prompt": "For the same log, where every address is 10.0.0.5, 10.0.0.7 or 10.0.0.9, what does grep -c 0 print?",
+      "prompt": "For the same log, where every address is 10.0.0.5, 10.0.0.7 or 10.0.0.9 and no other field holds a digit, what does grep -c 2 print?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
-        "Look for a 0 in each address.",
+        "No address contains a 2.",
         "The pattern is a piece of text, not a field.",
-        "Check whether any line lacks one."
+        "Check each status for a 2."
       ],
       "sourceIds": [
         "grep-manual",
@@ -9323,29 +9339,29 @@
         {
           "match": {
             "numeric": [
-              0
+              4
             ]
           },
-          "feedback": "The digit 0 is inside every address, 10.0.0.5 and the others, so grep does find it."
+          "feedback": "That counts only the statuses of 200. The status 302 also contains a 2, so its line matches too."
         },
         {
           "match": {
             "numeric": [
-              4
+              1
             ]
           },
-          "feedback": "That is the count for 200. The pattern here is 0, which appears in every address."
+          "feedback": "A pattern matches wherever its text appears, so each 200 contains a 2 as well as 302."
         }
       ],
       "skill": "count-matching-lines",
       "calculator": "off",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 6,
+        "value": 5,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "Every address contains a 0, so every one of the six lines matches the pattern."
+        "workedAnswer": "No address holds a 2, but the four statuses of 200 and the status 302 each do, so five lines match."
       }
     },
     {
@@ -9355,13 +9371,13 @@
         "find",
         "exit-status-of-search"
       ],
-      "prompt": "A tree holds a/x.log, a/b/y.log and z.txt. How many lines does find . -type d print?",
+      "prompt": "A tree holds a/x.log, a/b/y.log and c/z.txt. How many lines does find . -type d print?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
         "Which entries are directories?",
         "The starting point counts as one.",
-        "Count . , a and a/b."
+        "Count . , a, a/b and c."
       ],
       "sourceIds": [
         "grep-manual",
@@ -9373,7 +9389,7 @@
         {
           "match": {
             "numeric": [
-              2
+              3
             ]
           },
           "feedback": "That leaves out the starting directory. find tests the dot as well, and it is a directory."
@@ -9383,11 +9399,11 @@
       "calculator": "off",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 3,
+        "value": 4,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "The directories are the starting point . , a and a/b, so three lines are printed."
+        "workedAnswer": "The directories are the starting point . , a, a/b and c, so four lines are printed."
       }
     },
     {
@@ -9397,18 +9413,18 @@
         "anchor",
         "character-class"
       ],
-      "prompt": "Four strings are tested: abc, a.c, ac and axxc. Which of them does the pattern a\\.c match, with a backslash before the dot?",
+      "prompt": "Four strings are tested: 1.5, 1x5, 15 and 1..5. Which of them does the pattern 1\\.5 match, with a backslash before the dot?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
         "The backslash takes away the dot's special meaning.",
-        "Ask which of the four strings has an actual dot between the a and the c."
+        "Ask which strings have exactly one real dot between a 1 and a 5."
       ],
       "sourceIds": [
         "grep-manual",
         "posix-shell"
       ],
-      "onCorrect": "Escaped, the dot stands only for itself, so a.c is the one string with a real dot between the a and the c.",
+      "onCorrect": "Escaped, the dot stands only for itself, so 1.5 is the one string with a single real dot between the 1 and the 5.",
       "misconceptions": [
         {
           "match": {
@@ -9416,7 +9432,7 @@
               "b"
             ]
           },
-          "feedback": "The backslash turns the dot into a plain dot, so the pattern needs a real dot between a and c, and abc has a b there."
+          "feedback": "The backslash turns the dot into a plain dot, so the pattern needs a real dot between 1 and 5, and 1x5 has an x there."
         },
         {
           "match": {
@@ -9424,7 +9440,7 @@
               "c"
             ]
           },
-          "feedback": "\\. matches one real dot and nothing else, so a string with a letter in that position does not match."
+          "feedback": "\\. matches one real dot and nothing else, so 1x5 does not match, and 1..5 has two dots where the pattern allows one."
         }
       ],
       "skill": "match-a-pattern",
@@ -9432,23 +9448,23 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "a.c only"
+          "1.5 only"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "a.c only"
+        "exampleAnswer": "1.5 only"
       },
       "choices": [
         {
           "id": "a",
-          "label": "a.c only"
+          "label": "1.5 only"
         },
         {
           "id": "c",
-          "label": "abc, a.c and axxc"
+          "label": "1x5, 1.5 and 1..5"
         },
         {
           "id": "b",
-          "label": "abc and a.c"
+          "label": "1x5 and 1.5"
         }
       ]
     },
@@ -9886,7 +9902,7 @@
         "anchor",
         "character-class"
       ],
-      "prompt": "The pattern ab+c is tested against ac, abc and abbc. Which of the three strings match?",
+      "prompt": "The pattern ab+c is tested against ac, abc and abbbbc. Which of the three strings match?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -9897,7 +9913,7 @@
         "grep-manual",
         "posix-shell"
       ],
-      "onCorrect": "The plus accepts one b or two, and it rules out the string with no b at all.",
+      "onCorrect": "The plus accepts one b or four, and it rules out the string with no b at all.",
       "misconceptions": [
         {
           "match": {
@@ -9913,7 +9929,7 @@
               "b"
             ]
           },
-          "feedback": "The plus allows one b or more, so abbc, which has two, matches as well."
+          "feedback": "The plus allows one b or more, with no upper limit, so abbbbc, which has four, matches as well."
         }
       ],
       "skill": "match-a-pattern",
@@ -9921,15 +9937,15 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "abc and abbc"
+          "abc and abbbbc"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "abc and abbc"
+        "exampleAnswer": "abc and abbbbc"
       },
       "choices": [
         {
           "id": "c",
-          "label": "abc and abbc"
+          "label": "abc and abbbbc"
         },
         {
           "id": "b",
@@ -9948,39 +9964,39 @@
         "field",
         "count-pipeline"
       ],
-      "prompt": "In the log line 10.0.0.7 GET /about 404, the fields are separated by blanks. Which field number holds the status?",
+      "prompt": "In the line 2026-11-05 12:00:01 ERROR disk full, the fields are separated by blanks. Which field number holds the word ERROR?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
         "Count the blank-separated words from the left.",
-        "The address is field 1.",
-        "The status is the last of four words."
+        "The date is field 1.",
+        "The time comes before ERROR."
       ],
       "sourceIds": [
         "coreutils-manual",
         "posix-shell",
         "man-pages"
       ],
-      "onCorrect": "cut -d' ' -f4 and awk '{print $4}' both take that field.",
+      "onCorrect": "cut -d' ' -f3 and awk '{print $3}' both take that field.",
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              3
+              2
             ]
           },
-          "feedback": "That is the page. The status comes after it, as the last of the four words."
+          "feedback": "That is the time. ERROR comes after it, as the third word."
         }
       ],
       "skill": "count-values",
       "calculator": "off",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 4,
+        "value": 3,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "The fields are the address, the method, the page and the status, in that order, so the status is field 4."
+        "workedAnswer": "The fields are the date, the time and ERROR, in that order, so ERROR is field 3."
       }
     },
     {
@@ -10442,11 +10458,11 @@
         "directory-permission",
         "umask"
       ],
-      "prompt": "A mode can be written as three digits, one for the owner, one for the group and one for others. Within a digit, read counts 4, write counts 2 and execute counts 1, and the digit is the total of the bits that are on. Which number is the mode rwxr-xr-- ?",
+      "prompt": "A mode can be written as three digits, one for the owner, one for the group and one for others. Within a digit, read counts 4, write counts 2 and execute counts 1, and the digit is the total of the bits that are on. Which number is the mode rwxrw-r-- ?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Work out one group at a time: rwx, then r-x, then r--.",
+        "Work out one group at a time: rwx, then rw-, then r--.",
         "The digits are written side by side in the order owner, group, others."
       ],
       "sourceIds": [
@@ -10454,7 +10470,7 @@
         "coreutils-manual",
         "posix-shell"
       ],
-      "onCorrect": "rwx is 4 + 2 + 1, r-x is 4 + 1 and r-- is 4, and the three digits side by side make 754.",
+      "onCorrect": "rwx is 4 + 2 + 1, rw- is 4 + 2 and r-- is 4, and the three digits side by side make 764.",
       "misconceptions": [
         {
           "match": {
@@ -10470,7 +10486,7 @@
               "b"
             ]
           },
-          "feedback": "The digits run in the order owner, group, others. The group has r-x, which is 5, and others have r--, which is 4, so the 5 and the 4 are the wrong way round."
+          "feedback": "The digits run in the order owner, group, others. The group has rw-, which is 6, and others have r--, which is 4, so the 6 and the 4 are the wrong way round."
         },
         {
           "match": {
@@ -10478,7 +10494,7 @@
               "c"
             ]
           },
-          "feedback": "A digit is the total of the bits that are on in its group only. The group has no write bit and others have only read, so only the owner's digit is a 7."
+          "feedback": "A digit is the total of the bits that are on in its group only. The group has no execute bit and others have only read, so only the owner's digit is a 7."
         }
       ],
       "skill": "convert-mode",
@@ -10486,23 +10502,23 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "754"
+          "764"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "754"
+        "exampleAnswer": "764"
       },
       "choices": [
         {
           "id": "a",
-          "label": "16"
+          "label": "17"
         },
         {
           "id": "b",
-          "label": "745"
+          "label": "746"
         },
         {
           "id": "d",
-          "label": "754"
+          "label": "764"
         },
         {
           "id": "c",
@@ -10517,7 +10533,7 @@
         "directory-permission",
         "umask"
       ],
-      "prompt": "Write the nine-character permission string for mode 640.",
+      "prompt": "Write the nine-character permission string for mode 750.",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -10529,15 +10545,15 @@
         "coreutils-manual",
         "posix-shell"
       ],
-      "onCorrect": "The digit 6 is read plus write, 4 is read alone and 0 is nothing, so the string is rw- for the owner, r-- for the group and --- for others.",
+      "onCorrect": "The digit 7 is read, write and execute, 5 is read and execute and 0 is nothing, so the string is rwx for the owner, r-x for the group and --- for others.",
       "misconceptions": [
         {
           "match": {
             "textIdeas": [
-              "rw-rw-r--"
+              "rwxr-xr-x"
             ]
           },
-          "feedback": "That is mode 664. Write each digit of 640 as three bits."
+          "feedback": "That is mode 755. The last digit of 750 is 0, so others get no bits at all."
         }
       ],
       "skill": "convert-mode",
@@ -10545,10 +10561,10 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "rw-r-----"
+          "rwxr-x---"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "rw-r-----"
+        "exampleAnswer": "rwxr-x---"
       }
     },
     {
@@ -11010,7 +11026,7 @@
         "signal",
         "exit-status"
       ],
-      "prompt": "Ending a command with & starts it in the background, so the shell carries on without waiting for it to finish. You type sleep 5 & echo P . When does P appear?",
+      "prompt": "Ending a command with & starts it in the background. You type sleep 5 & echo P . When does P appear?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -11073,10 +11089,11 @@
         "signal",
         "exit-status"
       ],
-      "prompt": "Which key combination suspends the program running in the foreground without ending it? Write it as Ctrl- and a letter.",
+      "prompt": "A long copy is running in the foreground, and you want it to carry on in the background without starting it again. Which key combination do you press before typing bg? Write it as Ctrl- and a letter.",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
+        "bg resumes a job that has been suspended, so the copy has to be suspended first.",
         "It is not the combination that interrupts a program."
       ],
       "sourceIds": [
@@ -11120,10 +11137,11 @@
         "signal",
         "exit-status"
       ],
-      "prompt": "Which of these signals can a program neither catch nor ignore?",
+      "prompt": "A program saves its work whenever it receives a signal it is able to catch. Which of these commands ends the process with PID 4321 without giving it that chance?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
+        "Work out which signal each command sends.",
         "One signal is acted on by the kernel without asking the program."
       ],
       "sourceIds": [
@@ -11131,7 +11149,7 @@
         "bash-manual",
         "coreutils-manual"
       ],
-      "onCorrect": "Because SIGKILL cannot be caught, a program gets no chance to clean up, so SIGTERM is the one to send first.",
+      "onCorrect": "kill -9 sends SIGKILL, which cannot be caught, so the program gets no chance to save, and that is why SIGTERM is the one to send first.",
       "misconceptions": [
         {
           "match": {
@@ -11139,7 +11157,7 @@
               "a"
             ]
           },
-          "feedback": "A program can catch SIGTERM, which is why it is a polite request to finish."
+          "feedback": "kill with no option sends SIGTERM, which a program can catch, so it would save its work and exit."
         },
         {
           "match": {
@@ -11147,7 +11165,7 @@
               "b"
             ]
           },
-          "feedback": "A program can catch SIGINT, and many do, to clean up before they stop."
+          "feedback": "kill -2 sends SIGINT, the signal of Ctrl-C, which a program can catch to clean up before it stops."
         },
         {
           "match": {
@@ -11155,7 +11173,7 @@
               "d"
             ]
           },
-          "feedback": "A program can catch SIGHUP, and some use it to reread their configuration."
+          "feedback": "kill -1 sends SIGHUP, which a program can catch, and some use it to reread their configuration."
         }
       ],
       "skill": "pick-a-signal",
@@ -11163,27 +11181,27 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "SIGKILL"
+          "kill -9 4321"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "SIGKILL"
+        "exampleAnswer": "kill -9 4321"
       },
       "choices": [
         {
           "id": "b",
-          "label": "SIGINT"
+          "label": "kill -2 4321"
         },
         {
           "id": "d",
-          "label": "SIGHUP"
+          "label": "kill -1 4321"
         },
         {
           "id": "a",
-          "label": "SIGTERM"
+          "label": "kill 4321"
         },
         {
           "id": "c",
-          "label": "SIGKILL"
+          "label": "kill -9 4321"
         }
       ]
     },
@@ -11550,7 +11568,7 @@
         "environment",
         "path"
       ],
-      "prompt": "After x=5 and export x , what does bash -c 'echo [$x]' print?",
+      "prompt": "After y=8 and export y , what does bash -c 'echo [$y]' print?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -11577,12 +11595,12 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "[5]"
+          "[8]"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "[5]",
+        "exampleAnswer": "[8]",
         "acceptedAlternatives": [
-          "[ 5 ]"
+          "[ 8 ]"
         ]
       }
     },
@@ -11764,7 +11782,7 @@
         "environment",
         "path"
       ],
-      "prompt": "A script called tool sits in your current directory, which is not in PATH. Typing tool alone gives command not found. Why?",
+      "prompt": "A script called tool sits in your current directory, which is not in PATH. Typing ./tool runs it, but typing tool alone gives command not found. Why?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -11827,26 +11845,35 @@
         "environment",
         "path"
       ],
-      "prompt": "PATH is /usr/bin:/usr/local/bin, and both directories hold an executable called python. Which directory's copy runs when you type python?",
+      "prompt": "PATH is /home/ana/bin:/usr/bin:/bin. There is no python in /home/ana/bin, and both /usr/bin and /bin hold an executable called python. Which directory's copy runs when you type python?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "The shell tries the left-hand directory first."
+        "The shell tries the directories from left to right.",
+        "A directory without the name is passed over."
       ],
       "sourceIds": [
         "bash-manual",
         "posix-shell",
         "man-pages"
       ],
-      "onCorrect": "Reversing the list reverses which copy wins, which is how a person puts their own tools ahead of the system's.",
+      "onCorrect": "The search passes over a directory that lacks the name and stops at the first one that has it.",
       "misconceptions": [
         {
           "match": {
             "textIdeas": [
-              "/usr/local/bin"
+              "/home/ana/bin"
             ]
           },
-          "feedback": "That was the answer when it was listed first. The list is now the other way round."
+          "feedback": "That directory comes first, but it holds no python, so the search moves on."
+        },
+        {
+          "match": {
+            "textIdeas": [
+              "/bin"
+            ]
+          },
+          "feedback": "/bin also holds python, but the directory before it in PATH holds one too, and the search stops at the first match."
         }
       ],
       "skill": "resolve-a-command-name",
@@ -11870,7 +11897,7 @@
         "environment",
         "path"
       ],
-      "prompt": "x=5 is set in the shell without export. What does bash -c 'echo [$x]' print?",
+      "prompt": "z=2 is set in the shell without export. What does bash -c 'echo [$z]' print?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -11882,12 +11909,12 @@
         "posix-shell",
         "man-pages"
       ],
-      "onCorrect": "The child sees no x, so the dollar-x expands to nothing and only the brackets are printed.",
+      "onCorrect": "The child sees no z, so the dollar-z expands to nothing and only the brackets are printed.",
       "misconceptions": [
         {
           "match": {
             "textIdeas": [
-              "[5]"
+              "[2]"
             ]
           },
           "feedback": "The variable is not exported, so the child does not receive it."
@@ -11914,7 +11941,7 @@
         "environment",
         "path"
       ],
-      "prompt": "x=3 is set. What does echo '$x' \"$x\" print?",
+      "prompt": "y=7 is set. What does echo \"$y\" '$y' print?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -11926,23 +11953,23 @@
         "posix-shell",
         "man-pages"
       ],
-      "onCorrect": "The single quotes keep the text $x, and the double quotes let the shell replace it with the value.",
+      "onCorrect": "The double quotes let the shell replace $y with the value, and the single quotes keep the text $y.",
       "misconceptions": [
         {
           "match": {
             "textIdeas": [
-              "3 3"
+              "7 7"
             ]
           },
-          "feedback": "Single quotes stop the expansion, so the first word is not replaced."
+          "feedback": "Single quotes stop the expansion, so the second word is not replaced."
         },
         {
           "match": {
             "textIdeas": [
-              "$x $x"
+              "$y $y"
             ]
           },
-          "feedback": "Double quotes still expand the variable, so the second word becomes the value."
+          "feedback": "Double quotes still expand the variable, so the first word becomes the value."
         }
       ],
       "skill": "predict-inheritance",
@@ -11950,12 +11977,12 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "$x 3"
+          "7 $y"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "$x 3",
+        "exampleAnswer": "7 $y",
         "acceptedAlternatives": [
-          "$x  3"
+          "7  $y"
         ]
       }
     },
@@ -12041,13 +12068,13 @@
         "conditional-chain",
         "positional-parameter"
       ],
-      "prompt": "The test [ -f nope ] asks whether nope is an ordinary file, and no such file exists. After it runs, echo $? prints which number?",
+      "prompt": "No file called nope exists. The line [ -f nope ]; [ 10 -gt 9 ] runs two tests, one after the other. Afterwards, echo $? prints which number?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
-        "A test that is false leaves a nonzero status.",
-        "The file does not exist.",
-        "The number is the one a failing command usually leaves."
+        "Each test leaves its own status, and $? keeps only the status of the last command.",
+        "Is 10 greater than 9?",
+        "A test that succeeds leaves the status of a success."
       ],
       "sourceIds": [
         "bash-manual",
@@ -12059,21 +12086,21 @@
         {
           "match": {
             "numeric": [
-              0
+              1
             ]
           },
-          "feedback": "Zero means that the test succeeded. Here the file does not exist, so the test fails."
+          "feedback": "1 is the status of [ -f nope ], which fails. $? holds the status of the last command, and [ 10 -gt 9 ] succeeds."
         }
       ],
       "skill": "read-exit-status",
       "calculator": "off",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 1,
+        "value": 0,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "The test fails, so it leaves a nonzero status, and the status a failed test leaves is one."
+        "workedAnswer": "The first test fails, but $? keeps only the status of the last command, and [ 10 -gt 9 ] succeeds, so it prints 0."
       }
     },
     {
@@ -12294,12 +12321,12 @@
         "conditional-chain",
         "positional-parameter"
       ],
-      "prompt": "What does true || echo A && echo B print? Write the letters in order, separated by a space.",
+      "prompt": "What does true || echo A || echo B && echo C print? Write the letters in order, separated by a space.",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
         "|| skips its right-hand side after a success.",
-        "What status does the skipped part leave?",
+        "What status do the skipped parts leave?",
         "&& then looks at that status."
       ],
       "sourceIds": [
@@ -12307,23 +12334,23 @@
         "posix-shell",
         "man-pages"
       ],
-      "onCorrect": "The skipped command does not change the status, so && sees success and runs echo B.",
+      "onCorrect": "The skipped commands do not change the status, so it is still 0 from true when && sees it, and only echo C runs.",
       "misconceptions": [
         {
           "match": {
             "textIdeas": [
-              "A B"
+              "A B C"
             ]
           },
-          "feedback": "echo A is skipped, because true succeeded, and || runs its right-hand side only after a failure."
+          "feedback": "echo A and echo B are both skipped, because true succeeded and || runs its right-hand side only after a failure."
         },
         {
           "match": {
             "textIdeas": [
-              "A"
+              "B C"
             ]
           },
-          "feedback": "echo A is skipped. true succeeded, and || runs only after a failure."
+          "feedback": "The skipped echo A leaves the status at 0 from true, so the second || skips echo B as well."
         }
       ],
       "skill": "trace-a-chain",
@@ -12331,12 +12358,12 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "B"
+          "C"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "B",
+        "exampleAnswer": "C",
         "acceptedAlternatives": [
-          "b"
+          "c"
         ]
       }
     },
@@ -12347,12 +12374,12 @@
         "conditional-chain",
         "positional-parameter"
       ],
-      "prompt": "What does false || echo A && echo B print? Write the letters in order, separated by a space.",
+      "prompt": "What does false && echo A || echo B && echo C print? Write the letters in order, separated by a space.",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "false fails, so || runs the next command.",
-        "Then look at the status that echo A leaves, and at what && does with it."
+        "false fails, so && skips echo A, and the status stays 1.",
+        "Then look at what || does with that status, and at the status echo B leaves for &&."
       ],
       "sourceIds": [
         "bash-manual",
@@ -12364,18 +12391,18 @@
         {
           "match": {
             "textIdeas": [
-              "A"
+              "B"
             ]
           },
-          "feedback": "&& runs echo B after echo A succeeds, so the chain does not stop after the first letter."
+          "feedback": "echo B succeeds, so && runs echo C as well, and the chain does not stop after B."
         },
         {
           "match": {
             "textIdeas": [
-              "B"
+              "A B C"
             ]
           },
-          "feedback": "false fails, so || does run echo A, and nothing stops the chain after that."
+          "feedback": "false fails, so && skips echo A, and the status stays 1, which is why || then runs echo B."
         }
       ],
       "skill": "trace-a-chain",
@@ -12383,14 +12410,14 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "A B"
+          "B C"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "A B",
+        "exampleAnswer": "B C",
         "acceptedAlternatives": [
-          "a b",
-          "A, B",
-          "A and B"
+          "b c",
+          "B, C",
+          "B and C"
         ]
       }
     },
@@ -12401,7 +12428,7 @@
         "conditional-chain",
         "positional-parameter"
       ],
-      "prompt": "A script s.sh contains only the line echo $# , which prints how many arguments the script received. What does bash s.sh \"a b\" c print?",
+      "prompt": "A script s.sh contains only the line echo $# , which prints how many arguments the script received. What does bash s.sh \"a b c\" d \"e f\" print?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -12419,21 +12446,21 @@
         {
           "match": {
             "numeric": [
-              3
+              6
             ]
           },
-          "feedback": "That counts the words. The quotes make a b a single argument."
+          "feedback": "That counts the words. The quotes make a b c one argument and e f another."
         }
       ],
       "skill": "count-arguments",
       "calculator": "off",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 2,
+        "value": 3,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "The quotes keep a b together as one argument, so the script receives two arguments."
+        "workedAnswer": "The quotes keep a b c together as one argument and e f as another, and d is a third, so the script receives three arguments."
       }
     },
     {
@@ -12601,7 +12628,7 @@
         "lincl-service",
         "journal"
       ],
-      "prompt": "Which word follows systemctl to make a service start at every boot? Give the single word.",
+      "prompt": "You ran systemctl start nginx, and nginx is running. Which word follows systemctl to make it come back after the next reboot as well? Give the single word.",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -12645,7 +12672,7 @@
         "lincl-service",
         "journal"
       ],
-      "prompt": "Which journalctl option selects the messages of one service, as in journalctl followed by the option and nginx? Give the option.",
+      "prompt": "A machine runs both nginx and a database, and the journal holds the messages of both. Which journalctl option limits the output to nginx's messages, as in journalctl followed by the option and nginx? Give the option.",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -12732,25 +12759,25 @@
         "lincl-service",
         "journal"
       ],
-      "prompt": "A cron line is 0 6 * * 1-5 , with the range 1-5 in the day-of-week field. How many days a week does it run?",
+      "prompt": "A cron line is 30 7 * * 2-4 , with the range 2-4 in the day-of-week field. How many days a week does it run?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
         "A range covers every value from the first number to the last.",
         "Count the days from the first to the last.",
-        "Count from Monday to Friday."
+        "Count from Tuesday to Thursday."
       ],
       "sourceIds": [
         "systemd-docs",
         "debian-handbook",
         "man-pages"
       ],
-      "onCorrect": "A range is inclusive, so both ends count, and the line runs at 06:00 on each of the five days.",
+      "onCorrect": "A range is inclusive, so both ends count, and the line runs at 07:30 on each of the three days.",
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              4
+              2
             ]
           },
           "feedback": "That leaves out one end of the range. A range includes both numbers."
@@ -12768,11 +12795,11 @@
       "calculator": "off",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 5,
+        "value": 3,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "The range 1-5 covers Monday to Friday, which is five days, and the job runs once on each of them."
+        "workedAnswer": "The range 2-4 covers Tuesday, Wednesday and Thursday, which is three days, and the job runs once on each of them."
       }
     },
     {
@@ -12782,11 +12809,11 @@
         "lincl-service",
         "journal"
       ],
-      "prompt": "A cron line has */15 in its minute field and * in the others. At which minutes past the hour does it run?",
+      "prompt": "A cron line has */20 in its minute field and * in the others. At which minutes past the hour does it run?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "*/15 means every fifteenth value of the field.",
+        "*/20 means every twentieth value of the field.",
         "The minute field starts at 0."
       ],
       "sourceIds": [
@@ -12794,7 +12821,7 @@
         "debian-handbook",
         "man-pages"
       ],
-      "onCorrect": "The step runs through the minutes from 0 in jumps of fifteen, so the job runs four times an hour.",
+      "onCorrect": "The step runs through the minutes from 0 in jumps of twenty, so the job runs three times an hour.",
       "misconceptions": [
         {
           "match": {
@@ -12802,7 +12829,7 @@
               "a"
             ]
           },
-          "feedback": "A step repeats through the whole range of the field, so it gives every fifteenth value and not a single one."
+          "feedback": "A step repeats through the whole range of the field, so it gives every twentieth value and not a single one."
         },
         {
           "match": {
@@ -12818,23 +12845,23 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "At minutes 0, 15, 30 and 45"
+          "At minutes 0, 20 and 40"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "At minutes 0, 15, 30 and 45"
+        "exampleAnswer": "At minutes 0, 20 and 40"
       },
       "choices": [
         {
           "id": "a",
-          "label": "Only at minute 15"
+          "label": "Only at minute 20"
         },
         {
           "id": "c",
-          "label": "At minutes 0, 15, 30 and 45"
+          "label": "At minutes 0, 20 and 40"
         },
         {
           "id": "b",
-          "label": "At minutes 15, 30 and 45"
+          "label": "At minutes 20 and 40"
         }
       ]
     },
@@ -12964,19 +12991,19 @@
         "lincl-service",
         "journal"
       ],
-      "prompt": "What does the cron line 30 2 * * 1 mean?",
+      "prompt": "What does the cron line 15 3 * * 5 mean?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
         "Name the five fields from the left.",
-        "Which field holds the 1?"
+        "Which field holds the 5, and which day is 5 when 1 is Monday?"
       ],
       "sourceIds": [
         "systemd-docs",
         "debian-handbook",
         "man-pages"
       ],
-      "onCorrect": "The last field is the day of the week, where 1 is Monday, so the job runs once a week at 02:30.",
+      "onCorrect": "The last field is the day of the week, where 1 is Monday and so 5 is Friday, and the job runs once a week at 03:15.",
       "misconceptions": [
         {
           "match": {
@@ -12984,7 +13011,7 @@
               "a"
             ]
           },
-          "feedback": "The fields are minute, hour, day of month, month and day of week, so 30 is a minute and 2 is an hour."
+          "feedback": "The fields are minute, hour, day of month, month and day of week, so 15 is a minute and 3 is an hour."
         },
         {
           "match": {
@@ -12992,7 +13019,7 @@
               "c"
             ]
           },
-          "feedback": "The first day of the month would be in the third field. The last field is the day of the week."
+          "feedback": "The fifth day of the month would be in the third field. The last field is the day of the week."
         },
         {
           "match": {
@@ -13008,27 +13035,27 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "02:30 every Monday"
+          "03:15 every Friday"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "02:30 every Monday"
+        "exampleAnswer": "03:15 every Friday"
       },
       "choices": [
         {
           "id": "a",
-          "label": "Every 30 minutes on 2 days of the week"
+          "label": "Every 15 minutes on 3 days of the week"
         },
         {
           "id": "b",
-          "label": "02:30 every Monday"
+          "label": "03:15 every Friday"
         },
         {
           "id": "d",
-          "label": "30 seconds past 2 o'clock every day"
+          "label": "15 seconds past 3 o'clock every day"
         },
         {
           "id": "c",
-          "label": "02:30 on the first day of every month"
+          "label": "03:15 on the fifth day of every month"
         }
       ]
     }
