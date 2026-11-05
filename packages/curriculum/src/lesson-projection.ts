@@ -128,10 +128,13 @@ export function projectStep(step: LessonStep, question: Question | undefined): S
 
 /**
  * The choice a learner should see marked as right once the answer is revealed. Choices carry
- * no marking themselves; the text authority names the accepted label.
+ * no marking themselves; the text authority names the accepted label. Case and code backticks
+ * are ignored, so "raising the supply voltage" still names the label "Raising the supply
+ * voltage", and `MM a.txt` in backticks still names its plain accepted text.
  */
 export function correctChoiceId(question: Question): string | undefined {
   if (!question.choices?.length || question.answerAuthority.kind !== "text") return undefined;
-  const accepted = new Set(question.answerAuthority.acceptedIdeas.map((idea) => idea.trim()));
-  return question.choices.find((choice) => accepted.has(choice.label.trim()))?.id;
+  const plain = (text: string) => text.replaceAll("`", "").trim().toLowerCase();
+  const accepted = new Set(question.answerAuthority.acceptedIdeas.map(plain));
+  return question.choices.find((choice) => accepted.has(plain(choice.label)))?.id;
 }

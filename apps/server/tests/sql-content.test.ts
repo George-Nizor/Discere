@@ -1,13 +1,13 @@
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
+import { CourseBundleSchema } from "@discere/contracts";
 import Database from "better-sqlite3";
 import { describe, expect, it } from "vitest";
+import { combiningLessons } from "../../../content/sql-from-rows-to-reports/authoring/combining-lessons.js";
+import { tables } from "../../../content/sql-from-rows-to-reports/authoring/definition.js";
 import { readingLessons } from "../../../content/sql-from-rows-to-reports/authoring/reading-lessons.js";
 import { summaryLessons } from "../../../content/sql-from-rows-to-reports/authoring/summary-lessons.js";
-import { combiningLessons } from "../../../content/sql-from-rows-to-reports/authoring/combining-lessons.js";
 import { windowLessons } from "../../../content/sql-from-rows-to-reports/authoring/window-lessons.js";
-import { tables } from "../../../content/sql-from-rows-to-reports/authoring/definition.js";
-import { CourseBundleSchema } from "@discere/contracts";
 
 const root = path.resolve(import.meta.dirname, "../../../");
 const courseRoot = path.join(root, "content/sql-from-rows-to-reports");
@@ -177,7 +177,12 @@ describe("independent SQL curriculum review", () => {
       const shipped = bundle.questions.find(
         (question) => question.id === "sql-" + lesson.id + "-" + index,
       )!;
-      expect(shipped.answerAuthority).toEqual(authority);
+      // The shipped text sets code in backticks; the authoring source writes it plainly.
+      const marked = shipped.answerAuthority;
+      if (marked.kind !== "numeric") throw new Error("Expected numeric marking");
+      expect({ ...marked, workedAnswer: marked.workedAnswer.replaceAll("`", "") }).toEqual(
+        authority,
+      );
     }
   });
   it.each(definitions)("recomputes the standalone numeric card in $id", (lesson) => {
