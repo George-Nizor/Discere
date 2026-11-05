@@ -2,6 +2,11 @@
 
 Updated: 2026-11-05
 
+Release 1.9.7 marks units as a keyboard types them: 238 W/m2, 2 m/s^2 and 36 GtCO2 now count
+as W/m², m/s² and GtCO₂ (64 numeric questions across nine courses use such units). It also
+corrects two facts in Earth and Environmental Science. Both came from the first learner-agent
+run, which takes a course through the learner-safe API with scripts/learner-run.ts.
+
 Release 1.9.6 finishes the fix pass: every remaining course now has an introduction about its
 subject instead of a list of lessons, openers that start on something concrete and give nothing
 away, question screens without a lead that repeats the question, and choice questions where the
