@@ -19,7 +19,10 @@ bundle.lessons = bundle.lessons.filter((lesson: { steps: unknown[] }) => lesson.
 const errors = validateCourseBundle(bundle).issues.filter((issue) => issue.severity === "error");
 // The voice skill: an opener starts from the subject and never lists what the lesson will cover.
 const ANNOUNCES = /\b(?:this|the rest of this|the second half of this) lesson\b/iu;
-for (const lesson of bundle.lessons as Array<{ id: string; intro?: { hook: { blocks: Array<{ text?: string }> } } }>) {
+for (const lesson of bundle.lessons as Array<{
+  id: string;
+  intro?: { hook: { blocks: Array<{ text?: string }> } };
+}>) {
   for (const block of lesson.intro?.hook.blocks ?? [])
     for (const sentence of (block.text ?? "").match(/[^.?!]+[.?!]?/gu) ?? [])
       if (ANNOUNCES.test(sentence))
@@ -50,12 +53,17 @@ for (const lesson of bundle.lessons as Array<{
   for (const step of lesson.steps) {
     const lead = (step.lead ?? []).map((block) => block.text ?? "").join(" ");
     const at = `lessons.${lesson.id}.steps.${step.id}`;
-    if (/\b(before (you )?read(ing)? on|before you (go|move) on|before reading further)\b/iu.test(lead))
+    if (
+      /\b(before (you )?read(ing)? on|before you (go|move) on|before reading further)\b/iu.test(
+        lead,
+      )
+    )
       errors.push({
         code: "FILLER_INSTRUCTION",
         path: at,
         severity: "error",
-        message: "The lead tells the learner to answer before reading on; the question already asks.",
+        message:
+          "The lead tells the learner to answer before reading on; the question already asks.",
       });
     const question = step.checkQuestionId ? questions.get(step.checkQuestionId) : undefined;
     if (!question || !lead) continue;
@@ -84,21 +92,39 @@ for (const [index, paragraph] of (
       severity: "error",
       message: `The paragraph walks through the course ("${paragraph.match(SYLLABUS)?.[0]}…"). Introduce the subject instead: what it is, why it matters, what it lets you do.`,
     });
-// Lesson text has no inline-code formatting, so a backtick shows on screen as a backtick.
-const PROSE_KEYS = new Set(["text", "prompt", "headline", "front", "back", "feedback", "onCorrect", "keyIdea", "label"]);
+// A pair of backticks sets code in lesson text: `len(xs)`, `git status`, `SELECT`. A backtick
+// without its partner shows on screen as a backtick, and so does any backtick in alt text, which
+// is read as plain text.
+const PLAIN_KEYS = new Set(["alt", "ariaLabel", "title"]);
 function findBackticks(value: unknown, where: string, key: string): void {
   if (typeof value === "string") {
-    if (PROSE_KEYS.has(key) && /`[^`]+`/u.test(value))
+    const ticks = value.match(/`/gu)?.length ?? 0;
+    if (ticks === 0) return;
+    if (PLAIN_KEYS.has(key))
       errors.push({
-        code: "BACKTICKS_IN_PROSE",
+        code: "BACKTICKS_IN_PLAIN_TEXT",
         path: where,
         severity: "error",
-        message: "Backticks show literally in lesson text; write code names plainly.",
+        message:
+          "This text is read as plain text, so a backtick shows literally; write the code name plainly.",
       });
-  } else if (Array.isArray(value)) value.forEach((item, i) => findBackticks(item, `${where}.${i}`, key));
+    else if (
+      ticks % 2 === 1 ||
+      /``|`\s[^`]*`|`[^`]*\s`/u.test(value.replace(/`[^`\s](?:[^`]*[^`\s])?`/gu, ""))
+    )
+      errors.push({
+        code: "BACKTICKS_UNPAIRED",
+        path: where,
+        severity: "error",
+        message:
+          "A code span opens and closes with a backtick and starts and ends on a character, as in `len(xs)`.",
+      });
+  } else if (Array.isArray(value))
+    value.forEach((item, i) => findBackticks(item, `${where}.${i}`, key));
   else if (value && typeof value === "object")
     for (const [k, v] of Object.entries(value))
-      if (!["code", "svg", "diagnostics", "starter", "exampleAnswer"].includes(k)) findBackticks(v, `${where}.${k}`, k);
+      if (!["code", "svg", "diagnostics", "starter", "exampleAnswer"].includes(k))
+        findBackticks(v, `${where}.${k}`, k);
 }
 findBackticks(bundle.lessons, "lessons", "");
 findBackticks(bundle.questions, "questions", "");

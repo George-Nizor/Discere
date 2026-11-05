@@ -8,7 +8,14 @@ export interface TextSegment {
   start: number;
 }
 
-const MATH_PATTERN = /\$([^$\n]+)\$/g;
+/**
+ * An equation is `$…$` by Pandoc's rule: the opening `$` has a non-space on its right, the
+ * closing `$` has a non-space on its left and no digit after it. That is what keeps prices apart:
+ * in "costs $0.12 against $0.03" the second `$` has a space on its left, so nothing between the
+ * two is read as an equation. A code span is matched first and left as text, so the `$` in a
+ * shell variable such as `$HOME` never opens an equation.
+ */
+const MATH_PATTERN = /`[^`\n]+`|\$(?=[^\s$])([^$\n]*?[^\s$])\$(?!\d)/g;
 
 /**
  * Splits learner-facing prose into plain runs and inline equations delimited by `$…$`.

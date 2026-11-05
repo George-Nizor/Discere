@@ -1,6 +1,7 @@
 import type { AttemptResponse, HintResponse } from "@discere/contracts";
 import { Check, RotateCcw } from "lucide-react";
 import { Sparkles } from "../../brand/icon-set.js";
+import { InlineRichText } from "../../ui/RichText.js";
 
 /**
  * The hints the learner has spent, kept on screen. A ladder that disappeared as soon as the
@@ -13,7 +14,9 @@ export function HintLadder({ hints }: { hints: readonly HintResponse[] }) {
     <ol aria-label="Hints used" className="hint-ladder">
       {hints.map((hint) => (
         <li key={hint.level}>
-          <p>{hint.hint}</p>
+          <p>
+            <InlineRichText text={hint.hint} />
+          </p>
         </li>
       ))}
     </ol>
@@ -36,7 +39,9 @@ export function AttemptResult({ result }: { result: AttemptResponse | null }) {
         {result.correct ? <Check size={22} strokeWidth={2.5} /> : <RotateCcw size={20} />}
       </span>
       <div>
-        <p>{result.feedback}</p>
+        <p>
+          <InlineRichText text={result.feedback} />
+        </p>
         <p className="feedback-meta">
           {(result.xpGained ?? 0) > 0 ? (
             <span className="xp-gain">

@@ -1,8 +1,9 @@
 import type { LearnerActivity } from "@discere/contracts";
-import { useActivityAssessment } from "./use-activity-assessment.js";
 import { useState } from "react";
 import { Notice } from "../../ui/Feedback.js";
+import { InlineRichText } from "../../ui/RichText.js";
 import { CircuitVisual } from "./CircuitVisual.js";
+import { useActivityAssessment } from "./use-activity-assessment.js";
 
 /**
  * Point at the thing you mean. Answering by tapping a figure tests whether the learner can
@@ -32,7 +33,9 @@ export function DiagramChoice({
 
   return (
     <div className="diagram-choice">
-      <p className="diagram-choice-prompt">{activity.prompt}</p>
+      <p className="diagram-choice-prompt">
+        <InlineRichText text={activity.prompt} />
+      </p>
       <div className="diagram-choice-figure">
         {activity.circuit ? <CircuitVisual spec={activity.circuit} /> : null}
         {activity.imageFile ? (
@@ -72,7 +75,9 @@ export function DiagramChoice({
           tone={outcome.correct ? "correct" : "info"}
           title={outcome.correct ? "Correct" : "Not that one"}
         >
-          <p>{outcome.explanation}</p>
+          <p>
+            <InlineRichText text={outcome.explanation} />
+          </p>
         </Notice>
       ) : null}
     </div>

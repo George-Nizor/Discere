@@ -101,7 +101,9 @@ export function QuestionFeedback({
             phase === "closed" ||
             unreadable ||
             (phase === "revealed" && result.specific) ? (
-            <p className="feedback-line">{result.feedback}</p>
+            <p className="feedback-line">
+              <InlineRichText text={result.feedback} />
+            </p>
           ) : null}
           {phase === "closed" ? (
             <p className="feedback-line">Exam mode keeps the answer closed. Continue when ready.</p>
