@@ -1,6 +1,6 @@
 import type { LearnerQuestion, LessonFeedbackRequest } from "@discere/contracts";
 import { Loader2 } from "lucide-react";
-import { type ReactNode, useEffect, useRef } from "react";
+import { Fragment, type ReactNode, useEffect, useRef } from "react";
 import { Notice } from "../../ui/Feedback.js";
 import { InlineRichText } from "../../ui/RichText.js";
 import { PlayerFooterSlot } from "../player-footer.js";
@@ -12,12 +12,59 @@ import { type Attempt, type AttemptPolicy, useAttempt } from "../quiz-shared/use
  * Splits a prompt into its setup and the question itself, so the screen can set the question
  * apart: "A function takes … on its value. Which kind of coupling …?" becomes the setup and the
  * last sentence. A prompt that is one sentence, or whose last sentence holds a full stop (a
- * decimal, an abbreviation), comes back whole as the question.
+ * decimal, an abbreviation), comes back whole as the question. Code spans are masked first, so
+ * the `)` in `` `SUM(amount) >= 40` `` or the `.` in `` `df.head(2)` `` never decides the split.
  */
 export function splitPrompt(prompt: string): { setup: string; ask: string } {
-  const match = /^([\s\S]*[.!:)])\s+([^.!?\n]*\?)\s*$/.exec(prompt.trim());
-  if (!match?.[1] || !match[2]) return { setup: "", ask: prompt.trim() };
-  return { setup: match[1].trim(), ask: match[2].trim() };
+  const text = prompt.trim();
+  const masked = text.replace(/`[^`\n]+`/g, (span) => `\`${"x".repeat(span.length - 2)}\``);
+  const match = /^([\s\S]*[.!:)])\s+([^.!?\n]*\?)\s*$/.exec(masked);
+  if (!match?.[1] || !match[2]) return { setup: "", ask: text };
+  // The masked text has the same length as the original, so its offsets cut the original.
+  const end = match[1].length;
+  const askStart = end + (/^\s+/.exec(masked.slice(end))?.[0].length ?? 0);
+  return {
+    setup: text.slice(0, end).trim(),
+    ask: text.slice(askStart, askStart + match[2].length).trim(),
+  };
+}
+
+export type PromptPart =
+  | { kind: "text"; setup: string; ask: string }
+  | { kind: "code"; code: string };
+
+/**
+ * A prompt can hold lines of code, each written as one code span on a line of its own:
+ * "A file contains these lines. Where does tsc stop?\n\n`let n = 5;`\n`n = \"five\";`".
+ * Those lines become one code block, kept in place, and the prose around them is split as
+ * {@link splitPrompt} does, so the question still stands apart in bold.
+ */
+export function promptParts(prompt: string): PromptPart[] {
+  const isCodeLine = (line: string) => /^`[^`]+`$/.test(line);
+  const raw = prompt.trim().split("\n");
+  if (!raw.some((line) => isCodeLine(line.trim())))
+    return [{ kind: "text", ...splitPrompt(prompt) }];
+  const blocks: ({ kind: "text"; text: string } | { kind: "code"; lines: string[] })[] = [];
+  for (const rawLine of raw) {
+    const line = rawLine.trim();
+    if (!line) continue;
+    const last = blocks.at(-1);
+    if (isCodeLine(line)) {
+      // Indentation is written outside the backticks, and Python needs it kept.
+      const code = `${/^\s*/.exec(rawLine)?.[0] ?? ""}${line.slice(1, -1)}`;
+      if (last?.kind === "code") last.lines.push(code);
+      else blocks.push({ kind: "code", lines: [code] });
+    } else if (last?.kind === "text") last.text = `${last.text} ${line}`;
+    else blocks.push({ kind: "text", text: line });
+  }
+  const askAt = blocks.findLastIndex((block) => block.kind === "text" && block.text.includes("?"));
+  return blocks.map((block, index) =>
+    block.kind === "code"
+      ? { kind: "code", code: block.lines.join("\n") }
+      : index === askAt
+        ? { kind: "text", ...splitPrompt(block.text) }
+        : { kind: "text", setup: block.text, ask: "" },
+  );
 }
 
 /** Whether the last marked response is still the one on screen. */
@@ -80,7 +127,7 @@ export function QuestionBlock({
     if (started) onStarted?.();
   }, [started, onStarted]);
   const Heading = heading;
-  const prompt = splitPrompt(question.prompt);
+  const prompt = promptParts(question.prompt);
   const formId = `check-${question.id}`;
   const actions = !attempt.ready ? (
     <div className={"button-row check-actions" + (inline ? "" : " footer-primary")}>
@@ -110,14 +157,27 @@ export function QuestionBlock({
     >
       {hidePrompt ? null : (
         <Heading className={promptClassName}>
-          {prompt.setup ? (
-            <span className="prompt-setup">
-              <InlineRichText text={prompt.setup} />
-            </span>
-          ) : null}
-          <span className="prompt-ask">
-            <InlineRichText text={prompt.ask} />
-          </span>
+          {prompt.map((part, index) =>
+            part.kind === "code" ? (
+              // A heading holds phrasing content only, so the code block is a span set as a block.
+              <span className="prompt-code" key={`code-${index}`}>
+                <code>{part.code}</code>
+              </span>
+            ) : (
+              <Fragment key={`text-${index}`}>
+                {part.setup ? (
+                  <span className="prompt-setup">
+                    <InlineRichText text={part.setup} />
+                  </span>
+                ) : null}
+                {part.ask ? (
+                  <span className="prompt-ask">
+                    <InlineRichText text={part.ask} />
+                  </span>
+                ) : null}
+              </Fragment>
+            ),
+          )}
         </Heading>
       )}
       {figure ? figure(attempt) : null}
