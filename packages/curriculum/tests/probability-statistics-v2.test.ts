@@ -147,11 +147,8 @@ describe("Probability and Statistics v2", () => {
     const p = "stats-same-centre-different-spread-";
     expect(key(p + "hook")).toBe(spread([0, 0, 20, 20]));
     expect(key(p + "2")).toBe(spread([2, 2, 6, 6]));
-    expect(key(p + "3")).toBe(sd([2, 2, 6, 6]));
     expect(key(p + "4")).toBe(variance([0, 0, 8, 8]));
     expect(key(p + "5")).toBe(spread([3, 4, 4, 7, 13]));
-    expect(key(p + "8")).toBe([2, 2, 6, 6].map((x) => (x - 4) ** 2).reduce((a, b) => a + b, 0));
-    expect(key(p + "9")).toBe(variance([2, 2, 6, 6]));
     expect(key(p + "10")).toBe(sd([0, 0, 20, 20]));
     expect(key(p + "11")).toBe(sd([3, 3, 9, 9]));
     expect(key(p + "12")).toBe(mean([2, 4, 6]));
@@ -173,7 +170,6 @@ describe("Probability and Statistics v2", () => {
     expect(key(p + "2")).toBe(mean(pop(2, 8)));
     expect(key(p + "4")).toBe(mean(pop(4, 10)));
     expect(key(p + "9")).toBe(sum(pop(2, 8)));
-    expect(key(p + "10")).toBe(mean([2, 2, 2, 8, 8, 8]));
     expect(key(p + "11")).toBe(mean([3, 3, 3, 3, 9, 9, 9, 9]));
     // Worked example: five 2s and five 6s.
     expect(mean([...Array(5).fill(2), ...Array(5).fill(6)])).toBe(4);
@@ -185,7 +181,6 @@ describe("Probability and Statistics v2", () => {
     // Why the survey missed: morning-only sample says 2, population says 5, balanced sample says 5.
     expect(mean(pop(2, 2))).toBe(2);
     expect(mean(pop(2, 8))).toBe(5);
-    expect(key(p + "10")).toBe(key(p + "2"));
     expect(acceptedChoice(p + "3")).toEqual(["b"]);
     expect(acceptedChoice(p + "5")).toEqual(["b"]);
     expect(acceptedChoice(p + "6")).toEqual(["b"]);

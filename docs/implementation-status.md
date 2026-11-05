@@ -2,6 +2,15 @@
 
 Updated: 2026-11-05
 
+Release 1.9.8 is the giveaway pass. A learner agent taking Earth and Environmental Science found
+that many questions asked for a number the learner had just read, because a teaching screen or
+figure had worked the same case, and that some predict screens came after the screen that answered
+them. scripts/giveaway-check.mjs finds such questions; every course was then read and fixed, by
+changing the example on the teaching side or the numbers in the question, moving predicts before
+the idea, and turning worked-example lines that printed their own answer into blanks. Terms used
+before they were explained are now defined where they first appear, and a handful of facts were
+corrected along the way.
+
 Release 1.9.7 marks units as a keyboard types them: 238 W/m2, 2 m/s^2 and 36 GtCO2 now count
 as W/m², m/s² and GtCO₂ (64 numeric questions across nine courses use such units). It also
 corrects two facts in Earth and Environmental Science. Both came from the first learner-agent

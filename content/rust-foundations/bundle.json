@@ -1425,7 +1425,7 @@
           "headline": "Write grade, which turns a score into a letter: 90 or more is 'A', 80 or more is 'B', and anything else is 'C'.",
           "workedSteps": [
             {
-              "text": "The function takes a score and returns a letter, so its signature names a u32 parameter and a char result.",
+              "text": "The function takes a score and returns a letter, so its signature names a u32 parameter, a whole number that cannot be negative, and a char result, a single character written in single quotation marks such as 'A'.",
               "math": "fn grade(score: u32) -> char"
             },
             {
@@ -1817,7 +1817,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A range is more than two ends, because methods called on it change how it is visited. Writing (1..=3).rev() visits the same values backwards, 3, 2, 1, and (0..10).step_by(3) keeps every third value starting from the first, which are 0, 3, 6 and 9. The brackets round the range matter, since the method belongs to the whole range and not to its last number."
+              "text": "A range is more than two ends, because methods called on it, functions written after a dot as in .rev(), change how it is visited. Writing (1..=3).rev() visits the same values backwards, 3, 2, 1, and (0..10).step_by(3) keeps every third value starting from the first, which are 0, 3, 6 and 9. The brackets round the range matter, since the method belongs to the whole range and not to its last number."
             },
             {
               "kind": "paragraph",
@@ -2136,7 +2136,7 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "The answer is in rustc's message, which the next screens explain: the second line takes the String away from s1."
+              "text": "The answer is in rustc's message, **error[E0382]**, borrow of moved value, which the next screens explain: the second line takes the String away from s1."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -2563,7 +2563,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Passing a String to a function moves it, and the last lesson ended with the awkward fixes of returning the value or cloning it. A **reference** removes the need for either: writing **&name** makes a value that points at name without owning it, and handing that to a function **borrows** the String for the length of the call. The function declares what it expects as fn length(s: &String) -> usize, where &String means a reference to a String, and the caller writes length(&name)."
+              "text": "Passing a String to a function moves it, and the last lesson ended with the awkward fixes of returning the value or cloning it. A **reference** removes the need for either: writing **&name** makes a value that points at name without owning it, and handing that to a function **borrows** the String for the length of the call. The function declares what it expects as fn length(s: &String) -> usize, where &String means a reference to a String and usize is the unsigned integer type Rust uses for lengths and indexes, and the caller writes length(&name)."
             },
             {
               "kind": "paragraph",
@@ -3056,7 +3056,7 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "Indexing the slice at 1 reaches a[2], because the slice starts at a[1]. The positions are relative to the start of the slice."
+              "text": "Indexing the slice at 1 reaches a[3], because the slice starts at a[2]. The positions are relative to the start of the slice."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -3066,10 +3066,10 @@
           "diagram": {
             "type": "rust_program",
             "runtime": "Rust 1.93.1",
-            "code": "fn main() {\n    let a = [10, 20, 30, 40, 50];\n    let s = &a[1..4];\n    println!(\"{}\", s[1]);\n}",
+            "code": "fn main() {\n    let a = [3, 6, 9, 12, 15];\n    let s = &a[2..5];\n    println!(\"{}\", s[1]);\n}",
             "outcome": {
               "kind": "output",
-              "stdout": "30"
+              "stdout": "12"
             }
           }
         },
@@ -3219,7 +3219,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "Rust has you say which of the two you mean. s.chars() gives the characters one by one, so s.chars().nth(0) is the first character and s.chars().count() is how many there are, while s.bytes() gives the raw bytes. A range slice, such as &s[0..5], is allowed, because it names byte positions explicitly, and it stops with a panic at run time if the range cuts through the middle of a character."
+              "text": "Rust has you say which of the two you mean. s.chars() gives the characters one by one, so s.chars().nth(0) is the first character and s.chars().count() is how many there are, while s.bytes() gives the raw bytes. A range slice, such as &s[0..5], is allowed, because it names byte positions explicitly, and if the range cuts through the middle of a character the program stops at run time with a *panic*, an immediate halt with an error message."
             }
           ],
           "afterFigure": [],
@@ -3266,6 +3266,31 @@
           }
         },
         {
+          "id": "bytes-predict",
+          "kind": "predict",
+          "blocks": [],
+          "lead": [],
+          "reveal": [
+            {
+              "kind": "paragraph",
+              "text": "chars().count() would report 5 for the same text. The two methods answer different questions."
+            }
+          ],
+          "answerVisibility": "hidden-until-response",
+          "visualStateId": "",
+          "checkQuestionId": "rusf-slices-and-strings-bytes",
+          "activityId": "",
+          "diagram": {
+            "type": "rust_program",
+            "runtime": "Rust 1.93.1",
+            "code": "fn main() {\n    println!(\"{}\", \"héllo\".len());\n}",
+            "outcome": {
+              "kind": "output",
+              "stdout": "6"
+            }
+          }
+        },
+        {
           "id": "bytes-and-chars",
           "kind": "explain",
           "blocks": [],
@@ -3294,31 +3319,6 @@
             "outcome": {
               "kind": "output",
               "stdout": "6 bytes, 2 chars\n日"
-            }
-          }
-        },
-        {
-          "id": "bytes-predict",
-          "kind": "predict",
-          "blocks": [],
-          "lead": [],
-          "reveal": [
-            {
-              "kind": "paragraph",
-              "text": "chars().count() would report 5 for the same text. The two methods answer different questions."
-            }
-          ],
-          "answerVisibility": "hidden-until-response",
-          "visualStateId": "",
-          "checkQuestionId": "rusf-slices-and-strings-bytes",
-          "activityId": "",
-          "diagram": {
-            "type": "rust_program",
-            "runtime": "Rust 1.93.1",
-            "code": "fn main() {\n    println!(\"{}\", \"héllo\".len());\n}",
-            "outcome": {
-              "kind": "output",
-              "stdout": "6"
             }
           }
         },
@@ -4632,10 +4632,10 @@
           "headline": "Add two items of a Vec, replacing a missing item with 0.",
           "workedSteps": [
             {
-              "text": "The first line takes the item at index 1, which exists, so unwrap_or returns it and ignores the default."
+              "text": "The first line takes the item at index 2, the last of the three, which exists, so unwrap_or returns it and ignores the default."
             },
             {
-              "text": "The second line asks for index 5, which does not exist, so unwrap_or returns its default of 0."
+              "text": "The second line asks for index 3, one past the last index of a three-item Vec, so unwrap_or returns its default of 0."
             },
             {
               "text": "The program adds the two results. Work out the sum it prints.",
@@ -4651,10 +4651,10 @@
           "diagram": {
             "type": "rust_program",
             "runtime": "Rust 1.93.1",
-            "code": "fn main() {\n    let v = vec![10, 20, 30];\n    let a = v.get(1).copied().unwrap_or(0);\n    let b = v.get(5).copied().unwrap_or(0);\n    println!(\"{}\", a + b);\n}",
+            "code": "fn main() {\n    let v = vec![4, 9, 16];\n    let a = v.get(2).copied().unwrap_or(0);\n    let b = v.get(3).copied().unwrap_or(0);\n    println!(\"{}\", a + b);\n}",
             "outcome": {
               "kind": "output",
-              "stdout": "20"
+              "stdout": "16"
             }
           }
         },
@@ -5945,7 +5945,7 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "rustc ends its message with the suggestion fn show<T: std::fmt::Display>(x: T), which is the bound that the body needs."
+              "text": "rustc ends its message with the suggestion fn show<T: std::fmt::Display>(x: T), which is the bound that the body needs: Display is the trait of types that {} can print."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -6900,10 +6900,10 @@
           "diagram": {
             "type": "rust_program",
             "runtime": "Rust 1.93.1",
-            "code": "fn main() {\n    let total: i32 = (1..=5).filter(|n| n % 2 == 0).map(|n| n * 10).sum();\n    println!(\"{total}\");\n}",
+            "code": "fn main() {\n    let total: i32 = (1..=7).filter(|n| n % 2 == 0).map(|n| n * 10).sum();\n    println!(\"{total}\");\n}",
             "outcome": {
               "kind": "output",
-              "stdout": "60"
+              "stdout": "120"
             }
           }
         },
@@ -11055,17 +11055,17 @@
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
-        "First write out which items of a the slice 1..4 contains.",
+        "First write out which items of a the slice 2..5 contains.",
         "Indexes inside a slice start again at 0.",
         "s[1] is the second item of the slice."
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 30,
+        "value": 12,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "&a[1..4] holds 20, 30 and 40, and s[1] is the second of those, which is 30."
+        "workedAnswer": "&a[2..5] holds 9, 12 and 15, and s[1] is the second of those, which is 12."
       },
       "sourceIds": [
         "book-slices",
@@ -11073,23 +11073,23 @@
         "std-str",
         "error-index"
       ],
-      "onCorrect": "30. A slice numbers its own items from 0, so s[1] is a[2].",
+      "onCorrect": "12. A slice numbers its own items from 0, so s[1] is a[3].",
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              20
+              6
             ]
           },
-          "feedback": "20 is a[1], which is s[0]. The index 1 inside the slice means the second item of the slice."
+          "feedback": "6 is a[1], an index counted from the start of the array. The index 1 inside the slice means the second item of the slice, which starts at a[2]."
         },
         {
           "match": {
             "numeric": [
-              40
+              15
             ]
           },
-          "feedback": "40 is the last item of the slice, s[2]."
+          "feedback": "15 is the last item of the slice, s[2]."
         }
       ],
       "skill": "slice-array",
@@ -13008,11 +13008,11 @@
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 20,
+        "value": 16,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "get(1) is Some(20) and unwrap_or gives 20, get(5) is None and unwrap_or gives 0, so the sum is 20."
+        "workedAnswer": "get(2) is Some(16) and unwrap_or gives 16, get(3) is None and unwrap_or gives 0, so the sum is 16."
       },
       "sourceIds": [
         "book-option",
@@ -13021,7 +13021,7 @@
         "rbe-option",
         "error-index"
       ],
-      "onCorrect": "20. unwrap_or replaced the missing item with the default 0, so the addition always had two numbers.",
+      "onCorrect": "16. unwrap_or replaced the missing item with the default 0, so the addition always had two numbers.",
       "misconceptions": [
         {
           "match": {
@@ -13034,10 +13034,10 @@
         {
           "match": {
             "numeric": [
-              40
+              25
             ]
           },
-          "feedback": "Only one of the two calls finds an item. The other gives the default."
+          "feedback": "Indexes start at 0, so get(2) is the third item and get(3) is past the end of the Vec, which gives the default."
         }
       ],
       "skill": "use-unwrap-or",
@@ -15911,17 +15911,17 @@
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
-        "Keep only the even numbers of 1 to 5.",
+        "Keep only the even numbers of 1 to 7.",
         "Multiply each survivor by 10.",
-        "20 + 40."
+        "20 + 40 + 60."
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 60,
+        "value": 120,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "filter keeps 2 and 4, map turns them into 20 and 40, and sum adds them to 60."
+        "workedAnswer": "filter keeps 2, 4 and 6, map turns them into 20, 40 and 60, and sum adds them to 120."
       },
       "sourceIds": [
         "book-closures",
@@ -15930,23 +15930,23 @@
         "std-iterator",
         "error-index"
       ],
-      "onCorrect": "60. Each item goes through the whole chain in turn, and sum adds what comes out of the last stage.",
+      "onCorrect": "120. Each item goes through the whole chain in turn, and sum adds what comes out of the last stage.",
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              150
+              280
             ]
           },
-          "feedback": "150 is the sum of 10 * each number without the filter. Only the even numbers go on."
+          "feedback": "280 is the sum of 10 * each number without the filter. Only the even numbers go on."
         },
         {
           "match": {
             "numeric": [
-              6
+              12
             ]
           },
-          "feedback": "6 is the sum of the even numbers before the map multiplies them by 10."
+          "feedback": "12 is the sum of the even numbers before the map multiplies them by 10."
         }
       ],
       "skill": "chain-iterators",

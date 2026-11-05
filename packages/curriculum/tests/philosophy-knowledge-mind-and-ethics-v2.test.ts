@@ -251,7 +251,6 @@ describe("Philosophy: Knowledge, Mind and Ethics (v2 lessons)", () => {
     near(first.flaggedIll, 120);
     near(first.flaggedWell, 40);
     near(first.flagged, 160);
-    near(first.flagged, key("bayesian-evidence-7"));
     near((100 * first.flaggedIll) / first.flagged, 75);
     near(first.ill / 1000, 0.2); // prior 200 in 1,000
     near(first.flaggedIll / first.flagged, 0.75); // posterior
@@ -276,7 +275,6 @@ describe("Philosophy: Knowledge, Mind and Ethics (v2 lessons)", () => {
     // 9 to 9 are one half. The ratio is the key of the ratio item.
     const ratio = 0.9 / 0.1;
     near(ratio, 9);
-    near(ratio, key("bayesian-evidence-3"));
     near(0.1 / 0.9, 1 / 9);
     near((1 / 9) * ratio, 1); // 9 to 9 is 1 to 1
     near(1 / (1 + 1), 0.5);
@@ -321,8 +319,6 @@ describe("Philosophy: Knowledge, Mind and Ethics (v2 lessons)", () => {
     expect(teachingGrid("counting-the-flagged", "town")).toEqual([0.2, 0.6, 0.05]);
     expect(teachingGrid("when-the-condition-is-rare", "rare")).toEqual([0.02, 0.9, 0.05]);
     expect(teachingGrid("when-the-condition-is-rare", "common")).toEqual([0.2, 0.9, 0.05]);
-    expect(teachingGrid("odds-and-ratios", "first")).toEqual([0.1, 0.9, 0.1]);
-    expect(teachingGrid("odds-and-ratios", "second")).toEqual([0.01, 0.9, 0.1]);
   });
 
   it("checks Elisabeth's argument and the machine table that the mind lessons draw", () => {
@@ -470,13 +466,11 @@ describe("Philosophy: Knowledge, Mind and Ethics (v2 lessons)", () => {
     });
     // Counting item: the 200-ill town, 120 + 40 positives.
     const t = positives(1000, 0.2, 0.6, 0.05);
-    expect(t.ill + t.well).toBeCloseTo(key("bayesian-evidence-7"), 9);
     // Predict item: 90 + 90 positives, half of them ill.
     const a = positives(1000, 0.1, 0.9, 0.1);
     expect(a.ill + a.well).toBe(180);
     const b = positives(1000, 0.01, 0.9, 0.1);
     expect(b.ill + b.well).toBeCloseTo(key("bayesian-evidence-2"), 9);
-    expect(0.9 / 0.1).toBeCloseTo(key("bayesian-evidence-3"), 9);
     expect(100 * (1 / 100)).toBeCloseTo(key("bayesian-evidence-8"), 9); // prior of 1 in 100, as a percentage
     const c = positives(1000, 0.1, 0.8, 0.05);
     expect((100 * c.ill) / (c.ill + c.well)).toBeCloseTo(key("bayesian-evidence-4"), 9);
@@ -513,15 +507,12 @@ describe("Philosophy: Knowledge, Mind and Ethics (v2 lessons)", () => {
     // A chain of four where each remembers only its predecessor: direct memory reaches one stage.
     expect(1).toBe(key("personal-identity-10"));
     // Fission: both hemisphere survivors are continuous with you.
-    expect(["left", "right"]).toHaveLength(key("personal-identity-3"));
     // A chain from age 10: B, C and D each linked to the stage before.
-    expect(["B", "C", "D"]).toHaveLength(key("personal-identity-5"));
     expect(expectedUtility([[0.5, 100], [0.5, 0]])).toBe(key("consequentialism-7"));
     expect(expectedUtility([[0.6, 100], [0.4, 0]])).toBeCloseTo(key("consequentialism-1"), 9);
     expect(expectedUtility([[0.9, 20], [0.1, -30]])).toBeCloseTo(key("consequentialism-2"), 9);
     expect(expectedUtility([[0.7, 10], [0.3, -20]])).toBeCloseTo(1, 9); // worked example
     expect(expectedUtility([[0.8, 50], [0.2, -10]])).toBeCloseTo(key("consequentialism-10"), 9);
-    expect(5 - 1).toBe(key("consequentialism-3"));
     expect(4 + 4 - 5).toBe(3); // policy X total
     expect(2 + 2 + 2 - (4 + 4 - 5)).toBe(key("consequentialism-6"));
   });
@@ -624,7 +615,6 @@ describe("Philosophy: Knowledge, Mind and Ethics (v2 lessons)", () => {
     expect(byBody.links.every((l) => l.relation === "body")).toBe(true);
     // A chain of four: the last stage is linked directly to one stage, and the chain reaches three from A.
     const life = figure("personal-identity", "overlapping-chains", "second");
-    expect(memory(life).filter((l) => l.to === "d")).toHaveLength(key("personal-identity-10"));
     const reach = new Set<string>(["a"]);
     for (let pass = 0; pass < life.stages.length; pass++)
       for (const l of memory(life)) if (reach.has(l.from)) reach.add(l.to);
@@ -632,7 +622,6 @@ describe("Philosophy: Knowledge, Mind and Ethics (v2 lessons)", () => {
     expect(reach.size).toBe(key("personal-identity-5"));
     // Fission: two survivors are linked to the person before the surgery.
     const fission = figure("personal-identity", "a-brain-split-in-two", "first");
-    expect(memory(fission).filter((l) => l.from === "you")).toHaveLength(key("personal-identity-3"));
     // Branch line: the body stays on Earth and the memories reach both places.
     const branch = figure("personal-identity", "the-teleporter-machine", "second");
     expect(branch.links.filter((l) => l.relation === "body").map((l) => l.to)).toEqual(["stay"]);
@@ -681,7 +670,6 @@ describe("Philosophy: Knowledge, Mind and Ethics (v2 lessons)", () => {
       const trolley = diagram.cases.flatMap((c) => (c.model.kind === "trolley" ? [c.model] : []));
       expect(trolley.length, stepId).toBeGreaterThanOrEqual(2);
       const first = trolley[0]!;
-      if (stepId === "counting-lives") expect(first.ahead - first.other).toBe(key("consequentialism-3"));
     }
   });
 

@@ -795,7 +795,7 @@
               "math": "export const x = 1;"
             },
             {
-              "text": "The second is an interface. It describes a shape for the checker and has no value at run time, so the emitter writes nothing for it.",
+              "text": "The second is the interface A, and the emitter writes nothing at all for it.",
               "math": "interface A  →  (nothing)",
               "selfExplain": {
                 "questionId": "typn-what-types-are-for-why-nothing"
@@ -900,22 +900,6 @@
           }
         },
         {
-          "id": "name-the-option",
-          "kind": "try",
-          "blocks": [],
-          "lead": [],
-          "reveal": [
-            {
-              "kind": "paragraph",
-              "text": "In a tsconfig.json this would sit inside compilerOptions, set to true."
-            }
-          ],
-          "answerVisibility": "hidden-until-response",
-          "visualStateId": "",
-          "checkQuestionId": "typn-what-types-are-for-option-name",
-          "activityId": ""
-        },
-        {
           "id": "the-three-jobs",
           "kind": "explain",
           "blocks": [],
@@ -975,6 +959,22 @@
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
           "checkQuestionId": "typn-what-types-are-for-print-undefined",
+          "activityId": ""
+        },
+        {
+          "id": "name-the-option",
+          "kind": "try",
+          "blocks": [],
+          "lead": [],
+          "reveal": [
+            {
+              "kind": "paragraph",
+              "text": "In a tsconfig.json this would sit inside compilerOptions, set to true."
+            }
+          ],
+          "answerVisibility": "hidden-until-response",
+          "visualStateId": "",
+          "checkQuestionId": "typn-what-types-are-for-option-name",
           "activityId": ""
         }
       ],
@@ -1182,7 +1182,7 @@
               "math": "const d = { kind: \"circle\" };"
             },
             {
-              "text": "The const stops d from being reassigned, but it does not stop the properties inside it from changing, so kind is a mutable location and its literal type widens.",
+              "text": "Without as const, the compiler infers this type for d.",
               "math": "d: { kind: string }",
               "selfExplain": {
                 "questionId": "typn-inference-and-literal-types-why-widened"
@@ -1472,7 +1472,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "A property is **optional** when its name is followed by a question mark. Reading an optional property gives its type or undefined, so with strict checking on, person.nick.length is rejected with TS18048, 'person.nick' is possibly 'undefined', until the code has checked that nick is there. A property marked **readonly** can be set when the object is created and never assigned to afterwards, and the second error you meet below is the one that enforces it."
+              "text": "A property is **optional** when its name is followed by a question mark. Reading an optional property gives its type or undefined, so with the compiler's strict option on, which most projects set in tsconfig.json, person.nick.length is rejected with TS18048, 'person.nick' is possibly 'undefined', until the code has checked that nick is there. A property marked **readonly** can be set when the object is created and never assigned to afterwards, and the second error you meet below is the one that enforces it."
             }
           ],
           "introducesTerms": [
@@ -1629,7 +1629,7 @@
               "math": "const a: Named = { name: \"a\", age: 3 };   error TS2353"
             },
             {
-              "text": "The second route puts the same object in a variable first. The variable is not fresh, so only the shape is compared, and it has a name that is a string.",
+              "text": "The second route puts the same object in a variable first, and then assigns the variable.",
               "math": "const v = { name: \"a\", age: 3 };\nconst b: Named = v;   no error",
               "selfExplain": {
                 "questionId": "typn-shapes-and-structural-typing-why-variable-passes"
@@ -1694,7 +1694,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "For describing an object the two are nearly interchangeable. interface Child extends Base { name: string } adds a property to an existing shape, and an alias reaches the same result with an intersection, which later lessons cover. An interface has one extra ability, which is that two declarations of the same name are merged into one type, as the first view of the figure shows. An alias has the opposite rule, and a repeated name is an error."
+              "text": "For describing an object the two are nearly interchangeable. interface Child extends Base { name: string } adds a property to an existing shape, and an alias reaches the same result with an intersection, type Child = Base & { name: string }, which combines the two shapes. An interface has one extra ability, which is that two declarations of the same name are merged into one type, as the first view of the figure shows. An alias has the opposite rule, and a repeated name is an error."
             },
             {
               "kind": "paragraph",
@@ -1847,6 +1847,22 @@
       "title": "Unions and narrowing",
       "steps": [
         {
+          "id": "predict-the-union",
+          "kind": "predict",
+          "blocks": [],
+          "lead": [],
+          "reveal": [
+            {
+              "kind": "paragraph",
+              "text": "The rule is a safe one, and the next screen shows how code can unlock the other operations by finding out which type it holds."
+            }
+          ],
+          "answerVisibility": "hidden-until-response",
+          "visualStateId": "",
+          "checkQuestionId": "typn-unions-and-narrowing-count-allowed",
+          "activityId": ""
+        },
+        {
           "id": "what-a-union-allows",
           "kind": "explain",
           "blocks": [],
@@ -1866,22 +1882,6 @@
           ],
           "visualStateId": "",
           "checkQuestionId": "",
-          "activityId": ""
-        },
-        {
-          "id": "predict-the-union",
-          "kind": "predict",
-          "blocks": [],
-          "lead": [],
-          "reveal": [
-            {
-              "kind": "paragraph",
-              "text": "The rule is a safe one, and the next screen shows how code can unlock the other operations by finding out which type it holds."
-            }
-          ],
-          "answerVisibility": "hidden-until-response",
-          "visualStateId": "",
-          "checkQuestionId": "typn-unions-and-narrowing-count-allowed",
           "activityId": ""
         },
         {
@@ -2014,7 +2014,7 @@
               "math": "switch (s.kind) {"
             },
             {
-              "text": "The value is the rectangle member, with kind \"rect\", so the case for it runs and s is narrowed to that member.",
+              "text": "The value is the rectangle member, with kind \"rect\", so the case for it runs.",
               "math": "case \"rect\":",
               "selfExplain": {
                 "questionId": "typn-unions-and-narrowing-why-width"
@@ -2261,7 +2261,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Take a function that returns the first element of a list. Written for numbers it has the signature (xs: number[]) => number | undefined, and for strings it would have to be written again. Giving the parameter type any[] and the result type any avoids the repetition, but it throws away what the compiler knew: in the figure with any, the call a.toUpperCase() is accepted although a is a number, and the program crashes when it runs."
+              "text": "Take a function that returns the first element of a list. Written for strings it has the signature (xs: string[]) => string | undefined, and for numbers it would have to be written again. Giving the parameter type any[] and the result type any avoids the repetition, but it throws away what the compiler knew: in the figure with any, the call a.toFixed(1) is accepted although a is a string, and the program crashes when it runs."
             },
             {
               "kind": "paragraph",
@@ -2283,18 +2283,18 @@
           "activityId": "",
           "diagram": {
             "type": "svg_figure",
-            "alt": "Two versions of a function that returns the first element. With any, the result is any and a nonsense method call is accepted. With a type parameter, the result is number or undefined and the same call is rejected.",
+            "alt": "Two versions of a function that returns the first element. With any, the result is any and a nonsense method call is accepted. With a type parameter, the result is string or undefined and the same call is rejected.",
             "caption": "Both functions do the same thing at run time. Use the buttons to compare what the checker knows.",
             "cases": [
               {
                 "id": "any",
                 "label": "With any",
-                "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 640 280\"><rect class=\"f-sunken s-ink w2\" x=\"24\" y=\"30\" width=\"592\" height=\"126\" rx=\"8\"/><text class=\"t-small\" x=\"44\" y=\"66\" text-anchor=\"start\">function first(xs: any[]): any { return xs[0]; }</text><text class=\"t-small\" x=\"44\" y=\"100\" text-anchor=\"start\">const a = first([1, 2]);   // a is any</text><text class=\"t-small\" x=\"44\" y=\"134\" text-anchor=\"start\">a.toUpperCase();</text><rect class=\"f-green-soft s-green w3\" x=\"24\" y=\"180\" width=\"592\" height=\"78\" rx=\"8\"/><text class=\"t-small\" x=\"44\" y=\"211\" text-anchor=\"start\">No error, though a is a number and the call will crash.</text><text class=\"t-small t-muted\" x=\"44\" y=\"237\" text-anchor=\"start\">any has lost the link between the list and the result.</text></svg>"
+                "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 640 280\"><rect class=\"f-sunken s-ink w2\" x=\"24\" y=\"30\" width=\"592\" height=\"126\" rx=\"8\"/><text class=\"t-small\" x=\"44\" y=\"66\" text-anchor=\"start\">function first(xs: any[]): any { return xs[0]; }</text><text class=\"t-small\" x=\"44\" y=\"100\" text-anchor=\"start\">const a = first([\"x\", \"y\"]);   // a is any</text><text class=\"t-small\" x=\"44\" y=\"134\" text-anchor=\"start\">a.toFixed(1);</text><rect class=\"f-green-soft s-green w3\" x=\"24\" y=\"180\" width=\"592\" height=\"78\" rx=\"8\"/><text class=\"t-small\" x=\"44\" y=\"211\" text-anchor=\"start\">No error, though a is a string and the call will crash.</text><text class=\"t-small t-muted\" x=\"44\" y=\"237\" text-anchor=\"start\">any has lost the link between the list and the result.</text></svg>"
               },
               {
                 "id": "t",
                 "label": "With T",
-                "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 640 280\"><rect class=\"f-sunken s-ink w2\" x=\"24\" y=\"30\" width=\"592\" height=\"126\" rx=\"8\"/><text class=\"t-small\" x=\"44\" y=\"66\" text-anchor=\"start\">function first&lt;T&gt;(xs: T[]): T | undefined { return xs[0]; }</text><text class=\"t-small\" x=\"44\" y=\"100\" text-anchor=\"start\">const a = first([1, 2]);   // number | undefined</text><text class=\"t-small\" x=\"44\" y=\"134\" text-anchor=\"start\">a.toUpperCase();</text><rect class=\"f-warn-soft s-warn w3\" x=\"24\" y=\"180\" width=\"592\" height=\"78\" rx=\"8\"/><text class=\"t-small\" x=\"44\" y=\"211\" text-anchor=\"start\">Error: toUpperCase does not exist on type number | undefined.</text><text class=\"t-small t-muted\" x=\"44\" y=\"237\" text-anchor=\"start\">T carries the element type from the input to the output.</text></svg>"
+                "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 640 280\"><rect class=\"f-sunken s-ink w2\" x=\"24\" y=\"30\" width=\"592\" height=\"126\" rx=\"8\"/><text class=\"t-small\" x=\"44\" y=\"66\" text-anchor=\"start\">function first&lt;T&gt;(xs: T[]): T | undefined { return xs[0]; }</text><text class=\"t-small\" x=\"44\" y=\"100\" text-anchor=\"start\">const a = first([\"x\", \"y\"]);   // string | undefined</text><text class=\"t-small\" x=\"44\" y=\"134\" text-anchor=\"start\">a.toFixed(1);</text><rect class=\"f-warn-soft s-warn w3\" x=\"24\" y=\"180\" width=\"592\" height=\"78\" rx=\"8\"/><text class=\"t-small\" x=\"44\" y=\"211\" text-anchor=\"start\">Error: toFixed does not exist on type string | undefined.</text><text class=\"t-small t-muted\" x=\"44\" y=\"237\" text-anchor=\"start\">T carries the element type from the input to the output.</text></svg>"
               }
             ],
             "initialCaseId": "any"
@@ -2328,7 +2328,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "A function may have more than one type parameter. In function pair<A, B>(a: A, b: B): [A, B] the two are filled in independently, so pair(\"x\", 1) has the type [string, number], as the figure shows. When inference cannot decide, you can write the type argument yourself, as in wrap<string>(\"a\"), and the compiler then checks the argument against it."
+              "text": "A function may have more than one type parameter. In function pair<A, B>(a: A, b: B): [A, B] they are filled in independently, so pair(\"x\", 1) has the type [string, number], as the figure shows. When inference cannot decide, you can write the type argument yourself, as in wrap<string>(\"a\"), and the compiler then checks the argument against it."
             }
           ],
           "afterFigure": [
@@ -2351,7 +2351,7 @@
               {
                 "id": "sig",
                 "label": "The signature",
-                "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 640 246\"><rect class=\"f-sunken s-ink w2\" x=\"24\" y=\"30\" width=\"250\" height=\"48\" rx=\"8\"/><text class=\"t-small\" x=\"40\" y=\"60\" text-anchor=\"start\">pair&lt;A, B&gt;</text><rect class=\"f-accent-soft s-accent w2\" x=\"290\" y=\"30\" width=\"326\" height=\"48\" rx=\"8\"/><text class=\"t-small\" x=\"306\" y=\"60\" text-anchor=\"start\">two type parameters</text><rect class=\"f-sunken s-ink w2\" x=\"24\" y=\"92\" width=\"250\" height=\"48\" rx=\"8\"/><text class=\"t-small\" x=\"40\" y=\"122\" text-anchor=\"start\">(a: A, b: B)</text><rect class=\"f-accent-soft s-accent w2\" x=\"290\" y=\"92\" width=\"326\" height=\"48\" rx=\"8\"/><text class=\"t-small\" x=\"306\" y=\"122\" text-anchor=\"start\">two parameters</text><rect class=\"f-sunken s-ink w2\" x=\"24\" y=\"154\" width=\"250\" height=\"48\" rx=\"8\"/><text class=\"t-small\" x=\"40\" y=\"184\" text-anchor=\"start\">returns [A, B]</text><rect class=\"f-accent-soft s-accent w2\" x=\"290\" y=\"154\" width=\"326\" height=\"48\" rx=\"8\"/><text class=\"t-small\" x=\"306\" y=\"184\" text-anchor=\"start\">a tuple of the two</text></svg>"
+                "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 640 246\"><rect class=\"f-sunken s-ink w2\" x=\"24\" y=\"30\" width=\"250\" height=\"48\" rx=\"8\"/><text class=\"t-small\" x=\"40\" y=\"60\" text-anchor=\"start\">pair&lt;A, B&gt;</text><rect class=\"f-accent-soft s-accent w2\" x=\"290\" y=\"30\" width=\"326\" height=\"48\" rx=\"8\"/><text class=\"t-small\" x=\"306\" y=\"60\" text-anchor=\"start\">the type parameters</text><rect class=\"f-sunken s-ink w2\" x=\"24\" y=\"92\" width=\"250\" height=\"48\" rx=\"8\"/><text class=\"t-small\" x=\"40\" y=\"122\" text-anchor=\"start\">(a: A, b: B)</text><rect class=\"f-accent-soft s-accent w2\" x=\"290\" y=\"92\" width=\"326\" height=\"48\" rx=\"8\"/><text class=\"t-small\" x=\"306\" y=\"122\" text-anchor=\"start\">the value parameters</text><rect class=\"f-sunken s-ink w2\" x=\"24\" y=\"154\" width=\"250\" height=\"48\" rx=\"8\"/><text class=\"t-small\" x=\"40\" y=\"184\" text-anchor=\"start\">returns [A, B]</text><rect class=\"f-accent-soft s-accent w2\" x=\"290\" y=\"154\" width=\"326\" height=\"48\" rx=\"8\"/><text class=\"t-small\" x=\"306\" y=\"184\" text-anchor=\"start\">a tuple of the two</text></svg>"
               },
               {
                 "id": "calls",
@@ -2389,19 +2389,19 @@
               "math": "function pair<A, B>(a: A, b: B): [A, B]"
             },
             {
-              "text": "There are two type parameters, A and B, and each is used for one value parameter.",
+              "text": "Each type parameter is used for one value parameter.",
               "math": "A for a, B for b",
               "blank": {
                 "questionId": "typn-generics-param-count"
               }
             },
             {
-              "text": "For the call pair(\"x\", 1), the first argument is a string, so A is string, and the second is a number, so B is number.",
-              "math": "A = string, B = number"
+              "text": "For the call pair(1, \"x\"), the first argument is a number, so A is number, and the second is a string, so B is string.",
+              "math": "A = number, B = string"
             },
             {
               "text": "Substitute into the return type, which is a tuple of the two.",
-              "math": "[string, number]"
+              "math": "[number, string]"
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -2610,8 +2610,8 @@
             "cases": [
               {
                 "id": "nums",
-                "label": "first([1, 2])",
-                "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 640 270\"><defs><marker id=\"h1\" markerWidth=\"8\" markerHeight=\"8\" refX=\"6\" refY=\"4\" orient=\"auto\"><path class=\"f-ink\" d=\"M0 0 L8 4 L0 8 z\"/></marker></defs><rect class=\"f-sunken s-ink w2\" x=\"24\" y=\"60\" width=\"170\" height=\"64\" rx=\"8\"/><text class=\"t-small\" x=\"109.0\" y=\"98.0\" text-anchor=\"middle\">first([1, 2])</text><rect class=\"f-accent-soft s-accent w3\" x=\"226\" y=\"40\" width=\"140\" height=\"104\" rx=\"8\"/><text class=\"t\" x=\"296.0\" y=\"90.0\" text-anchor=\"middle\">first&lt;T&gt;</text><text class=\"t-small t-muted\" x=\"296.0\" y=\"110.0\" text-anchor=\"middle\">T = number</text><rect class=\"f-green-soft s-green w3\" x=\"398\" y=\"60\" width=\"218\" height=\"64\" rx=\"8\"/><text class=\"t-small\" x=\"507.0\" y=\"98.0\" text-anchor=\"middle\">number | undefined</text><line class=\"s-ink w2\" x1=\"196\" y1=\"92\" x2=\"224\" y2=\"92\" marker-end=\"url(#h1)\"/><line class=\"s-ink w2\" x1=\"368\" y1=\"92\" x2=\"396\" y2=\"92\" marker-end=\"url(#h1)\"/><text class=\"t-small\" x=\"24\" y=\"200\" text-anchor=\"start\">The elements are numbers, so T is number.</text><text class=\"t-small t-muted\" x=\"24\" y=\"228\" text-anchor=\"start\">The result may also be undefined for an empty list.</text></svg>"
+                "label": "first([true])",
+                "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 640 270\"><defs><marker id=\"h1\" markerWidth=\"8\" markerHeight=\"8\" refX=\"6\" refY=\"4\" orient=\"auto\"><path class=\"f-ink\" d=\"M0 0 L8 4 L0 8 z\"/></marker></defs><rect class=\"f-sunken s-ink w2\" x=\"24\" y=\"60\" width=\"170\" height=\"64\" rx=\"8\"/><text class=\"t-small\" x=\"109.0\" y=\"98.0\" text-anchor=\"middle\">first([true])</text><rect class=\"f-accent-soft s-accent w3\" x=\"226\" y=\"40\" width=\"140\" height=\"104\" rx=\"8\"/><text class=\"t\" x=\"296.0\" y=\"90.0\" text-anchor=\"middle\">first&lt;T&gt;</text><text class=\"t-small t-muted\" x=\"296.0\" y=\"110.0\" text-anchor=\"middle\">T = boolean</text><rect class=\"f-green-soft s-green w3\" x=\"398\" y=\"60\" width=\"218\" height=\"64\" rx=\"8\"/><text class=\"t-small\" x=\"507.0\" y=\"98.0\" text-anchor=\"middle\">boolean | undefined</text><line class=\"s-ink w2\" x1=\"196\" y1=\"92\" x2=\"224\" y2=\"92\" marker-end=\"url(#h1)\"/><line class=\"s-ink w2\" x1=\"368\" y1=\"92\" x2=\"396\" y2=\"92\" marker-end=\"url(#h1)\"/><text class=\"t-small\" x=\"24\" y=\"200\" text-anchor=\"start\">The elements are booleans, so T is boolean.</text><text class=\"t-small t-muted\" x=\"24\" y=\"228\" text-anchor=\"start\">The result may also be undefined for an empty list.</text></svg>"
               },
               {
                 "id": "strs",
@@ -2658,6 +2658,22 @@
       "title": "Transforming types",
       "steps": [
         {
+          "id": "predict-keyof",
+          "kind": "predict",
+          "blocks": [],
+          "lead": [],
+          "reveal": [
+            {
+              "kind": "paragraph",
+              "text": "The next screen puts a second operator beside keyof, square brackets, which read the type of one property instead of its name."
+            }
+          ],
+          "answerVisibility": "hidden-until-response",
+          "visualStateId": "",
+          "checkQuestionId": "typn-transforming-types-keyof-count",
+          "activityId": ""
+        },
+        {
           "id": "keyof-and-typeof",
           "kind": "explain",
           "blocks": [],
@@ -2697,22 +2713,6 @@
             ],
             "initialCaseId": "keyof"
           }
-        },
-        {
-          "id": "predict-keyof",
-          "kind": "predict",
-          "blocks": [],
-          "lead": [],
-          "reveal": [
-            {
-              "kind": "paragraph",
-              "text": "The next screen puts a second operator beside keyof, square brackets, which read the type of one property instead of its name."
-            }
-          ],
-          "answerVisibility": "hidden-until-response",
-          "visualStateId": "",
-          "checkQuestionId": "typn-transforming-types-keyof-count",
-          "activityId": ""
         },
         {
           "id": "check-the-keys",
@@ -2863,7 +2863,7 @@
               }
             },
             {
-              "text": "The last type has two properties left, name and the optional email. Enter how many properties Omit<User, \"id\"> has.",
+              "text": "Omit removes the property named id and keeps every other property of User. Enter how many properties Omit<User, \"id\"> has.",
               "math": "name, email",
               "blank": {
                 "questionId": "typn-transforming-types-omit-count"
@@ -2873,22 +2873,6 @@
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
           "checkQuestionId": "",
-          "activityId": ""
-        },
-        {
-          "id": "name-the-utility",
-          "kind": "try",
-          "blocks": [],
-          "lead": [],
-          "reveal": [
-            {
-              "kind": "paragraph",
-              "text": "Only the top-level properties change. A nested object's properties keep their original markers."
-            }
-          ],
-          "answerVisibility": "hidden-until-response",
-          "visualStateId": "",
-          "checkQuestionId": "typn-transforming-types-utility-name",
           "activityId": ""
         },
         {
@@ -2961,6 +2945,22 @@
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
           "checkQuestionId": "typn-transforming-types-count-values",
+          "activityId": ""
+        },
+        {
+          "id": "name-the-utility",
+          "kind": "try",
+          "blocks": [],
+          "lead": [],
+          "reveal": [
+            {
+              "kind": "paragraph",
+              "text": "Only the top-level properties change. A nested object's properties keep their original markers."
+            }
+          ],
+          "answerVisibility": "hidden-until-response",
+          "visualStateId": "",
+          "checkQuestionId": "typn-transforming-types-utility-name",
           "activityId": ""
         },
         {
@@ -3167,22 +3167,6 @@
           "activityId": ""
         },
         {
-          "id": "choose-the-type",
-          "kind": "try",
-          "blocks": [],
-          "lead": [],
-          "reveal": [
-            {
-              "kind": "paragraph",
-              "text": "Newer code can write JSON.parse(text) as unknown to start from the safe type."
-            }
-          ],
-          "answerVisibility": "hidden-until-response",
-          "visualStateId": "",
-          "checkQuestionId": "typn-types-at-the-edges-safe-type",
-          "activityId": ""
-        },
-        {
           "id": "assertions",
           "kind": "explain",
           "blocks": [],
@@ -3242,6 +3226,22 @@
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
           "checkQuestionId": "typn-types-at-the-edges-typeof-asserted",
+          "activityId": ""
+        },
+        {
+          "id": "choose-the-type",
+          "kind": "try",
+          "blocks": [],
+          "lead": [],
+          "reveal": [
+            {
+              "kind": "paragraph",
+              "text": "Newer code can write JSON.parse(text) as unknown to start from the safe type."
+            }
+          ],
+          "answerVisibility": "hidden-until-response",
+          "visualStateId": "",
+          "checkQuestionId": "typn-types-at-the-edges-safe-type",
           "activityId": ""
         },
         {
@@ -3373,14 +3373,14 @@
               "math": "function parse(input: unknown)"
             },
             {
-              "text": "The first test establishes that it is an object, and a second excludes null, since typeof null is also \"object\".",
+              "text": "The test begins by establishing that the value is an object that is not null, since typeof null is also \"object\".",
               "math": "typeof input === \"object\" && input !== null",
               "selfExplain": {
                 "questionId": "typn-types-at-the-edges-why-not-as"
               }
             },
             {
-              "text": "A third test asks whether the property is there, and a fourth that it is a number. Only then is the property usable as one.",
+              "text": "It goes on to ask whether the property is there and whether it is a number. Only then is the property usable as one.",
               "math": "\"port\" in input && typeof input.port === \"number\""
             },
             {
@@ -3517,7 +3517,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "Because the layers differ, so do the globals. In Node, typeof window and typeof document are both \"undefined\", and typeof process is \"object\". Some names, such as fetch and the timer functions, exist on both platforms, since both have chosen to provide them. Ryan Dahl presented Node in 2009 as a way to write network programs in JavaScript without blocking on every request, an idea the event loop lesson takes up."
+              "text": "Because the layers differ, so do the globals. In Node, typeof window is \"undefined\", and typeof process is \"object\". Some names, such as fetch and the timer functions, exist on both platforms, since both have chosen to provide them. Ryan Dahl presented Node in 2009 as a way to write network programs in JavaScript without blocking on every request, an idea the event loop lesson takes up."
             }
           ],
           "introducesTerms": [
@@ -3608,22 +3608,6 @@
           }
         },
         {
-          "id": "replace-dirname",
-          "kind": "try",
-          "blocks": [],
-          "lead": [],
-          "reveal": [
-            {
-              "kind": "paragraph",
-              "text": "import.meta.filename is the matching replacement for __filename."
-            }
-          ],
-          "answerVisibility": "hidden-until-response",
-          "visualStateId": "",
-          "checkQuestionId": "typn-what-node-is-dirname-name",
-          "activityId": ""
-        },
-        {
           "id": "node-prefix",
           "kind": "explain",
           "blocks": [],
@@ -3683,6 +3667,22 @@
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
           "checkQuestionId": "typn-what-node-is-count-builtins",
+          "activityId": ""
+        },
+        {
+          "id": "replace-dirname",
+          "kind": "try",
+          "blocks": [],
+          "lead": [],
+          "reveal": [
+            {
+              "kind": "paragraph",
+              "text": "import.meta.filename is the matching replacement for __filename."
+            }
+          ],
+          "answerVisibility": "hidden-until-response",
+          "visualStateId": "",
+          "checkQuestionId": "typn-what-node-is-dirname-name",
           "activityId": ""
         },
         {
@@ -3887,7 +3887,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "It is easy to take async to mean that several things run at once, and in Node that is not true of your code. All the JavaScript runs on a single thread, one callback at a time, and a callback runs to its end before the next begins. What goes on in parallel is the waiting: when you ask for a file, the work of reading it is done by libuv and the operating system, off the thread, and when the data is ready the callback joins a queue and waits its turn."
+              "text": "It is easy to take async to mean that several things run at once, and in Node that is not true of your code. All the JavaScript runs on a single thread, one callback at a time, and a callback runs to its end before the next begins. What goes on in parallel is the waiting: when you ask for a file, the work of reading it is done off the thread by libuv, the library inside Node that hands such work to the operating system, and when the data is ready the callback joins a queue and waits its turn."
             },
             {
               "kind": "paragraph",
@@ -4078,7 +4078,7 @@
               "math": "prints: sync"
             },
             {
-              "text": "The script has finished, so Node empties the nextTick queue before anything else.",
+              "text": "The script has finished, and the first callback to run is the one given to nextTick.",
               "math": "prints: tick",
               "selfExplain": {
                 "questionId": "typn-the-node-event-loop-why-tick-first"
@@ -4323,7 +4323,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "JavaScript strings count differently. The length property of a string counts UTF-16 code units, so 'héllo'.length is 5, and the emoji, which needs two code units, has a length of 2. The size in bytes comes from Buffer.byteLength, which for 'héllo' is 6. The two numbers agree only for plain ASCII text, and a program that uses length to size a buffer or to check a limit on bytes is wrong for any other."
+              "text": "JavaScript strings count differently. The length property of a string counts UTF-16 code units, the 16-bit pieces in which JavaScript stores text, so 'héllo'.length is 5, and the emoji, which needs two code units, has a length of 2. The size in bytes comes from Buffer.byteLength, which for 'héllo' is 6. The two numbers agree only for plain ASCII text, and a program that uses length to size a buffer or to check a limit on bytes is wrong for any other."
             }
           ],
           "afterFigure": [
@@ -4609,7 +4609,7 @@
               "math": "createWriteStream(\"out.txt\")"
             },
             {
-              "text": "pipeline joins them, pausing the source whenever the destination signals backpressure, and destroying every stream if one fails.",
+              "text": "pipeline joins them in the order they are given.",
               "math": "await pipeline(source, transform, destination)",
               "selfExplain": {
                 "questionId": "typn-files-streams-and-buffers-why-pipeline"
@@ -4874,7 +4874,7 @@
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "Choosing 400 or 404 is a matter of who made the mistake. Bad JSON in a request is the client's, and so is a request for an id that does not exist."
+              "text": "Choosing between the classes is a matter of who made the mistake: a 4xx code tells the client to change its request, and a 5xx code says that the request was fine and the server failed."
             }
           ],
           "introducesTerms": [
@@ -4937,8 +4937,8 @@
               "math": "404"
             },
             {
-              "text": "A DELETE for /users/42 reaches a path that exists, but the method is not one the service allows.",
-              "math": "405, with Allow: GET",
+              "text": "A DELETE for /users/42 reaches a path that exists.",
+              "math": "Allow: GET",
               "selfExplain": {
                 "questionId": "typn-serving-http-why-405"
               }
@@ -4967,7 +4967,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The third part is the one that is forgotten. A handler that calls res.writeHead(200, { \"Content-Type\": \"text/plain\" }) and res.write(\"ok\") and then returns has sent a status and some text, but the response is still open. Node does not end it, and no error is raised, so the client sits and waits. It receives the headers and the text, and then nothing, until it or a proxy in between gives up."
+              "text": "The third part is the one that is forgotten. A handler that sets res.statusCode = 404, calls res.write(\"no such user\") and then returns has sent a status and some text, but the response is still open. Node does not end it, and no error is raised, so the client sits and waits. It receives the headers and the text, and then nothing, until it or a proxy in between gives up."
             }
           ],
           "afterFigure": [
@@ -5373,18 +5373,18 @@
           "activityId": "",
           "diagram": {
             "type": "svg_figure",
-            "alt": "Two loops over 1, 2 and 3 that push each number to a list after an await, followed by a log of the list's length. With forEach the log shows 0, because forEach does not wait. With a for loop and await it shows 3.",
+            "alt": "Two loops over \"a\" and \"b\" that push each string to a list after an await, followed by a log of the list's length. With forEach the log shows 0, because forEach does not wait. With a for loop and await it shows 2.",
             "caption": "forEach ignores the promises its callback returns. Use the buttons to compare.",
             "cases": [
               {
                 "id": "foreach",
                 "label": "forEach",
-                "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 640 246\"><rect class=\"f-sunken s-ink w2\" x=\"24\" y=\"30\" width=\"592\" height=\"92\" rx=\"8\"/><text class=\"t-small\" x=\"44\" y=\"66\" text-anchor=\"start\">[1, 2, 3].forEach(async n =&gt; { await null; out.push(n); });</text><text class=\"t-small\" x=\"44\" y=\"100\" text-anchor=\"start\">console.log(out.length);</text><rect class=\"f-warn-soft s-warn w3\" x=\"24\" y=\"146\" width=\"592\" height=\"78\" rx=\"8\"/><text class=\"t-small\" x=\"44\" y=\"177\" text-anchor=\"start\">Prints 0: the log runs before any push.</text><text class=\"t-small t-muted\" x=\"44\" y=\"203\" text-anchor=\"start\">forEach never waits for the promises, so the code after it runs first.</text></svg>"
+                "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 640 246\"><rect class=\"f-sunken s-ink w2\" x=\"24\" y=\"30\" width=\"592\" height=\"92\" rx=\"8\"/><text class=\"t-small\" x=\"44\" y=\"66\" text-anchor=\"start\">[\"a\", \"b\"].forEach(async s =&gt; { await null; out.push(s); });</text><text class=\"t-small\" x=\"44\" y=\"100\" text-anchor=\"start\">console.log(out.length);</text><rect class=\"f-warn-soft s-warn w3\" x=\"24\" y=\"146\" width=\"592\" height=\"78\" rx=\"8\"/><text class=\"t-small\" x=\"44\" y=\"177\" text-anchor=\"start\">Prints 0: the log runs before any push.</text><text class=\"t-small t-muted\" x=\"44\" y=\"203\" text-anchor=\"start\">forEach never waits for the promises, so the code after it runs first.</text></svg>"
               },
               {
                 "id": "for",
                 "label": "for with await",
-                "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 640 246\"><rect class=\"f-sunken s-ink w2\" x=\"24\" y=\"30\" width=\"592\" height=\"92\" rx=\"8\"/><text class=\"t-small\" x=\"44\" y=\"66\" text-anchor=\"start\">for (const n of [1, 2, 3]) { await null; out.push(n); }</text><text class=\"t-small\" x=\"44\" y=\"100\" text-anchor=\"start\">console.log(out.length);</text><rect class=\"f-green-soft s-green w3\" x=\"24\" y=\"146\" width=\"592\" height=\"78\" rx=\"8\"/><text class=\"t-small\" x=\"44\" y=\"177\" text-anchor=\"start\">Prints 3: each await finished before the log.</text><text class=\"t-small t-muted\" x=\"44\" y=\"203\" text-anchor=\"start\">The loop pauses at each await, so the pushes are done.</text></svg>"
+                "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 640 246\"><rect class=\"f-sunken s-ink w2\" x=\"24\" y=\"30\" width=\"592\" height=\"92\" rx=\"8\"/><text class=\"t-small\" x=\"44\" y=\"66\" text-anchor=\"start\">for (const s of [\"a\", \"b\"]) { await null; out.push(s); }</text><text class=\"t-small\" x=\"44\" y=\"100\" text-anchor=\"start\">console.log(out.length);</text><rect class=\"f-green-soft s-green w3\" x=\"24\" y=\"146\" width=\"592\" height=\"78\" rx=\"8\"/><text class=\"t-small\" x=\"44\" y=\"177\" text-anchor=\"start\">Prints 2: each await finished before the log.</text><text class=\"t-small t-muted\" x=\"44\" y=\"203\" text-anchor=\"start\">The loop pauses at each await, so the pushes are done.</text></svg>"
               }
             ],
             "initialCaseId": "foreach"
@@ -5413,7 +5413,7 @@
           "headline": "Rewrite the forEach so that the list is full when the next line runs.",
           "workedSteps": [
             {
-              "text": "The problem is that forEach discards the promises, so nothing waits for the pushes.",
+              "text": "The code to fix is a forEach whose callback is async.",
               "math": "[1, 2, 3].forEach(async n => { ... })",
               "selfExplain": {
                 "questionId": "typn-errors-and-concurrency-why-ignored"
@@ -5791,22 +5791,22 @@
           "id": "check-a-zero-range",
           "kind": "worked_example",
           "blocks": [],
-          "headline": "Work out which versions the range ^0.2.3 accepts, one rule at a time.",
+          "headline": "Work out which versions the range ^0.4.1 accepts, one rule at a time.",
           "workedSteps": [
             {
-              "text": "Find the leftmost part that is not zero. The major part is 0, so the first non-zero part is the minor, 2.",
-              "math": "0.2.3  →  minor is 2"
+              "text": "Find the leftmost part that is not zero. The major part is 0, so the first non-zero part is the minor, 4.",
+              "math": "0.4.1  →  minor is 4"
             },
             {
               "text": "The caret keeps that part fixed. So the range starts at the stated version and stops before the next minor.",
-              "math": ">=0.2.3 <0.3.0",
+              "math": ">=0.4.1 <0.5.0",
               "selfExplain": {
                 "questionId": "typn-packages-versions-and-tests-why-minor-fixed"
               }
             },
             {
-              "text": "Check four candidates against it: 0.2.2 is below the lower end, 0.2.3 is the lower end, 0.2.9 is inside, and 0.3.0 is the upper end, which is excluded.",
-              "math": "0.2.2 no, 0.2.3 yes, 0.2.9 yes, 0.3.0 no"
+              "text": "Check four candidates against the two ends, 0.4.0, 0.4.1, 0.4.7 and 0.5.0, remembering that the lower end is included and the upper end is not.",
+              "math": "0.4.0, 0.4.1, 0.4.7, 0.5.0"
             },
             {
               "text": "Count how many of the four candidates the range accepts.",
@@ -5866,22 +5866,6 @@
             ],
             "initialCaseId": "install"
           }
-        },
-        {
-          "id": "name-the-command",
-          "kind": "try",
-          "blocks": [],
-          "lead": [],
-          "reveal": [
-            {
-              "kind": "paragraph",
-              "text": "Running npm install on the build server would let the versions drift between builds."
-            }
-          ],
-          "answerVisibility": "hidden-until-response",
-          "visualStateId": "",
-          "checkQuestionId": "typn-packages-versions-and-tests-ci-command",
-          "activityId": ""
         },
         {
           "id": "node-test",
@@ -5944,6 +5928,22 @@
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
           "checkQuestionId": "typn-packages-versions-and-tests-count-failures",
+          "activityId": ""
+        },
+        {
+          "id": "name-the-command",
+          "kind": "try",
+          "blocks": [],
+          "lead": [],
+          "reveal": [
+            {
+              "kind": "paragraph",
+              "text": "Running npm install on the build server would let the versions drift between builds."
+            }
+          ],
+          "answerVisibility": "hidden-until-response",
+          "visualStateId": "",
+          "checkQuestionId": "typn-packages-versions-and-tests-ci-command",
           "activityId": ""
         },
         {
@@ -6165,22 +6165,6 @@
           }
         },
         {
-          "id": "what-the-cast-checks",
-          "kind": "try",
-          "blocks": [],
-          "lead": [],
-          "reveal": [
-            {
-              "kind": "paragraph",
-              "text": "That is why a parser, and not a cast, is the only thing that makes the type true."
-            }
-          ],
-          "answerVisibility": "hidden-until-response",
-          "visualStateId": "",
-          "checkQuestionId": "typn-a-typed-service-cast-checks",
-          "activityId": ""
-        },
-        {
           "id": "result-type",
           "kind": "explain",
           "blocks": [],
@@ -6227,6 +6211,22 @@
           }
         },
         {
+          "id": "what-the-cast-checks",
+          "kind": "try",
+          "blocks": [],
+          "lead": [],
+          "reveal": [
+            {
+              "kind": "paragraph",
+              "text": "That is why a parser, and not a cast, is the only thing that makes the type true."
+            }
+          ],
+          "answerVisibility": "hidden-until-response",
+          "visualStateId": "",
+          "checkQuestionId": "typn-a-typed-service-cast-checks",
+          "activityId": ""
+        },
+        {
           "id": "count-the-valid",
           "kind": "try",
           "blocks": [],
@@ -6270,7 +6270,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "First the server stops accepting new connections, with server.close(), which lets the connections that are already open complete. Second the service waits until the requests in flight have finished, which close() reports through its callback. Third it closes the resources that those requests used, such as the database pool, which cannot be closed earlier without breaking them. Finally it exits with code 0, which tells the platform that the stop was clean. Each step depends on the one before it, and the figure moves through them."
+              "text": "First the server stops accepting new connections, with server.close(), which lets the connections that are already open complete. Second the service waits until the requests in flight have finished, which close() reports through its callback. Third it closes the resources that those requests used, such as the database pool, the set of open database connections that requests share. Finally it exits with code 0, which tells the platform that the stop was clean. Each step depends on the one before it, and the figure moves through them."
             }
           ],
           "afterFigure": [
@@ -7292,36 +7292,35 @@
         "as-const",
         "array-tuple"
       ],
-      "prompt": "let g = \"hi\";\nWhat type does TypeScript infer for g?",
+      "prompt": "let flag = true;\nWhat type does TypeScript infer for flag?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Can g be assigned again later?",
-        "Name the general type of which \"hi\" is one value."
+        "Can flag be assigned again later?",
+        "Name the general type of which true is one value."
       ],
       "sourceIds": [
         "ts-handbook"
       ],
-      "onCorrect": "Because g can be reassigned, its type widens from \"hi\" to string.",
+      "onCorrect": "Because flag can be reassigned, its type widens from true to boolean.",
       "skill": "infer-declaration-type",
       "calculator": "off",
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "string"
+          "boolean"
         ],
         "acceptedAlternatives": [
-          "a string"
+          "a boolean"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "string"
+        "exampleAnswer": "boolean"
       },
       "misconceptions": [
         {
           "match": {
             "textIdeas": [
-              "\"hi\"",
-              "hi",
+              "true",
               "literal"
             ]
           },
@@ -8220,7 +8219,7 @@
         "excess-check",
         "interface-vs-alias"
       ],
-      "prompt": "Two interfaces in one file share a name, and so do two type aliases. What does the compiler do?",
+      "prompt": "One file contains these four declarations.\ninterface Box { w: number }\ninterface Box { h: number }\ntype Pt = { x: number };\ntype Pt = { y: number };\nWhat does the compiler do with the two pairs?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -8879,42 +8878,39 @@
         "discriminated-union",
         "exhaustiveness"
       ],
-      "prompt": "const name = undefined;\nWhat does name?.toUpperCase() evaluate to?",
+      "prompt": "const name = \"ada\";\nWhat does name?.length evaluate to?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
         "The operator checks what is on its left first.",
-        "When that side has no value, nothing after it runs."
+        "When that side has a value, the rest runs as usual."
       ],
       "sourceIds": [
         "ts-handbook",
         "ts-tsconfig"
       ],
-      "onCorrect": "Optional chaining short-circuits to undefined, so the call is skipped and no error is thrown.",
+      "onCorrect": "Optional chaining stops only when its left side is undefined or null, so with a string there the length is read as usual.",
       "skill": "handle-undefined",
       "calculator": "off",
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "undefined"
+          "3"
         ],
         "acceptedAlternatives": [
-          "undefined."
+          "3."
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "undefined"
+        "exampleAnswer": "3"
       },
       "misconceptions": [
         {
           "match": {
             "textIdeas": [
-              "error",
-              "typeerror",
-              "type error",
-              "crash"
+              "undefined"
             ]
           },
-          "feedback": "The ?. operator stops before the call when its left side has no value, so there is no TypeError."
+          "feedback": "?. gives undefined only when its left side is undefined or null. Here it is a string, so the property is read."
         }
       ]
     },
@@ -9200,7 +9196,7 @@
         "typn-constraint",
         "generic-containers"
       ],
-      "prompt": "function first<T>(xs: T[]): T | undefined { return xs[0]; }\nconst c = first([\"a\", 1]);\nWhat is the type of c?",
+      "prompt": "function first<T>(xs: T[]): T | undefined { return xs[0]; }\nconst c = first([1, true]);\nWhat is the type of c?",
       "responseType": "short_text",
       "difficulty": 1.2,
       "hints": [
@@ -9210,16 +9206,16 @@
       "sourceIds": [
         "ts-handbook"
       ],
-      "onCorrect": "The elements are of two kinds, so T is string | number, and the result adds undefined to that union.",
+      "onCorrect": "The elements are of two kinds, so T is number | boolean, and the result adds undefined to that union.",
       "skill": "infer-type-argument",
       "calculator": "off",
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "string | number | undefined"
+          "number | boolean | undefined"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "string | number | undefined"
+        "exampleAnswer": "number | boolean | undefined"
       },
       "misconceptions": [
         {
@@ -9228,7 +9224,7 @@
               "a"
             ]
           },
-          "feedback": "The list has a number as well as a string, and T has to cover every element."
+          "feedback": "The list has a number as well as a boolean, and T has to cover every element."
         },
         {
           "match": {
@@ -9236,7 +9232,7 @@
               "b"
             ]
           },
-          "feedback": "The list has a string as well as a number, and T has to cover every element."
+          "feedback": "The list has a boolean as well as a number, and T has to cover every element."
         },
         {
           "match": {
@@ -9250,7 +9246,7 @@
       "choices": [
         {
           "id": "d",
-          "label": "string | number | undefined"
+          "label": "number | boolean | undefined"
         },
         {
           "id": "c",
@@ -9262,7 +9258,7 @@
         },
         {
           "id": "a",
-          "label": "string | undefined"
+          "label": "boolean | undefined"
         }
       ]
     },
@@ -9333,16 +9329,16 @@
       "sourceIds": [
         "ts-handbook"
       ],
-      "onCorrect": "A string and an array each have a length, but the two parameters share one T, which the compiler takes from the first argument and then rejects the second.",
+      "onCorrect": "An array and a string each have a length, but the two parameters share one T, and the compiler will not settle on a T that covers both an array and a string.",
       "skill": "apply-constraint",
       "calculator": "off",
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "longest(\"ab\", [1])"
+          "longest([1, 2], \"abc\")"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "longest(\"ab\", [1])"
+        "exampleAnswer": "longest([1, 2], \"abc\")"
       },
       "misconceptions": [
         {
@@ -9381,7 +9377,7 @@
         },
         {
           "id": "a",
-          "label": "longest(\"ab\", [1])"
+          "label": "longest([1, 2], \"abc\")"
         },
         {
           "id": "b",
@@ -9397,7 +9393,7 @@
         "typn-constraint",
         "generic-containers"
       ],
-      "prompt": "async function load(): Promise<number> { return 1; }\nasync function main() { const v = await load(); }\nWhat is the type of v?",
+      "prompt": "async function load(): Promise<string> { return \"a\"; }\nasync function main() { const v = await load(); }\nWhat is the type of v?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -9407,25 +9403,25 @@
       "sourceIds": [
         "ts-handbook"
       ],
-      "onCorrect": "await waits for the Promise and gives you the value inside it, so v is a number.",
+      "onCorrect": "await waits for the Promise and gives you the value inside it, so v is a string.",
       "skill": "read-promise-type",
       "calculator": "off",
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "number"
+          "string"
         ],
         "acceptedAlternatives": [
-          "a number"
+          "a string"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "number"
+        "exampleAnswer": "string"
       },
       "misconceptions": [
         {
           "match": {
             "textIdeas": [
-              "Promise<number>",
+              "Promise<string>",
               "promise"
             ]
           },
@@ -9813,40 +9809,56 @@
         "utility-types",
         "single-source"
       ],
-      "prompt": "type U = { id: number; name: string; email?: string };\ntype E = U[\"email\"];\nWhat is E? Write the union with a vertical bar.",
+      "prompt": "type U = { id: number; name: string; email?: string };\ntype E = U[\"id\" | \"email\"];\nWhat is E? Write the union with vertical bars.",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "The lookup gives the type of email as you would read it.",
+        "The key is a union, so look up each of its members.",
         "An optional property may be missing."
       ],
       "sourceIds": [
         "ts-handbook"
       ],
-      "onCorrect": "Reading an optional property can give undefined, so its type includes undefined.",
+      "onCorrect": "A union key gives the union of the property types, and reading the optional email can give undefined.",
       "skill": "read-derived-type",
       "calculator": "off",
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "string | undefined"
+          "number | string | undefined"
         ],
         "acceptedAlternatives": [
-          "undefined | string",
-          "string|undefined",
-          "undefined|string"
+          "number | undefined | string",
+          "string | number | undefined",
+          "string | undefined | number",
+          "undefined | number | string",
+          "undefined | string | number",
+          "number|string|undefined",
+          "number|undefined|string",
+          "string|number|undefined",
+          "string|undefined|number",
+          "undefined|number|string",
+          "undefined|string|number"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "string | undefined"
+        "exampleAnswer": "number | string | undefined"
       },
       "misconceptions": [
         {
           "match": {
             "textIdeas": [
-              "string"
+              "string | undefined"
             ]
           },
-          "feedback": "An optional property may be absent, and reading it then gives undefined, so the type includes it."
+          "feedback": "That is the type of email alone. The key also names id, so the result includes number."
+        },
+        {
+          "match": {
+            "textIdeas": [
+              "number | string"
+            ]
+          },
+          "feedback": "email is optional, and reading it may give undefined, so the union includes undefined as well."
         }
       ]
     },
@@ -10484,7 +10496,7 @@
         "unchecked-index",
         "validate-at-boundary"
       ],
-      "prompt": "const t = \"5\" as unknown as number;\nconsole.log(typeof t);\nWhat does the program print?",
+      "prompt": "const t = 42 as unknown as string;\nconsole.log(typeof t);\nWhat does the program print?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -10495,26 +10507,26 @@
         "ts-handbook",
         "ts-tsconfig"
       ],
-      "onCorrect": "The assertion is erased, so t is still the string \"5\" and typeof reports string.",
+      "onCorrect": "The assertion is erased, so t is still the number 42 and typeof reports number.",
       "skill": "choose-unknown",
       "calculator": "off",
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "string"
+          "number"
         ],
         "acceptedAlternatives": [
-          "a string",
-          "\"string\""
+          "a number",
+          "\"number\""
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "string"
+        "exampleAnswer": "number"
       },
       "misconceptions": [
         {
           "match": {
             "textIdeas": [
-              "number"
+              "string"
             ]
           },
           "feedback": "The assertion changes only what the checker believes. The value is still what it was before."
@@ -10529,7 +10541,7 @@
         "unchecked-index",
         "validate-at-boundary"
       ],
-      "prompt": "With strict and noUncheckedIndexedAccess on:\nconst xs: number[] = [];\nconst x0 = xs[0];\nWhat is the type of x0? Write the union with a vertical bar.",
+      "prompt": "With strict and noUncheckedIndexedAccess on:\nconst flags: boolean[] = [true];\nconst f0 = flags[0];\nWhat is the type of f0? Write the union with a vertical bar.",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -10546,24 +10558,24 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "number | undefined"
+          "boolean | undefined"
         ],
         "acceptedAlternatives": [
-          "undefined | number",
-          "number|undefined",
-          "undefined|number"
+          "undefined | boolean",
+          "boolean|undefined",
+          "undefined|boolean"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "number | undefined"
+        "exampleAnswer": "boolean | undefined"
       },
       "misconceptions": [
         {
           "match": {
             "textIdeas": [
-              "number"
+              "boolean"
             ]
           },
-          "feedback": "That is the type without the option. With it on, an index read may find nothing, and the type says so."
+          "feedback": "That is the type without the option. With it on, an index read may find nothing, and the type says so, even when this array has an element."
         }
       ]
     },
@@ -10575,37 +10587,37 @@
         "unchecked-index",
         "validate-at-boundary"
       ],
-      "prompt": "const cfg = { port: 3000, host: \"x\" } satisfies { port: number | string; host: string };\nWhat is the type of cfg.port?",
+      "prompt": "const cfg = { port: 3000, host: \"x\" } satisfies { port: number | string; host: string | null };\nWhat is the type of cfg.host?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
         "satisfies checks the object without changing its type.",
-        "What type does 3000 have in an object literal?"
+        "What type does \"x\" have in an object literal?"
       ],
       "sourceIds": [
         "ts-handbook",
         "ts-tsconfig"
       ],
-      "onCorrect": "satisfies leaves the inferred type in place, so port stays number.",
+      "onCorrect": "satisfies leaves the inferred type in place, so host stays string.",
       "skill": "read-satisfies",
       "calculator": "off",
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "number"
+          "string"
         ],
         "acceptedAlternatives": [
-          "a number"
+          "a string"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "number"
+        "exampleAnswer": "string"
       },
       "misconceptions": [
         {
           "match": {
             "textIdeas": [
-              "string | number",
-              "number | string"
+              "string | null",
+              "null | string"
             ]
           },
           "feedback": "That would be the type with an annotation. satisfies keeps the type the value already had."
@@ -11305,38 +11317,38 @@
         "node-prefix",
         "process-env"
       ],
-      "prompt": "// PORT is not set\nconsole.log(Number(process.env.PORT ?? 3000));\nWhat number is printed?",
+      "prompt": "// PORT is not set\nconsole.log(Number(process.env.PORT ?? \"4000\") + 1);\nWhat number is printed?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
         "Is the variable set?",
         "What does ?? do for undefined?",
-        "Convert the result with Number."
+        "Convert the result with Number, then add 1."
       ],
       "sourceIds": [
         "node-api",
         "node-modules",
         "ts-handbook"
       ],
-      "onCorrect": "?? replaces an undefined left side with the default, which Number then leaves as it is.",
+      "onCorrect": "?? replaces an undefined left side with the default, and Number turns that text into a number before the addition.",
       "skill": "parse-env",
       "calculator": "off",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 3000,
+        "value": 4001,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "PORT is undefined, so ?? supplies 3000, and Number(3000) is 3000."
+        "workedAnswer": "PORT is undefined, so ?? supplies the string \"4000\", Number turns it into 4000, and adding 1 gives 4001."
       },
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              0
+              40001
             ]
           },
-          "feedback": "Zero would be Number of an empty string. Here the variable is missing, not empty."
+          "feedback": "That is the text \"4000\" with 1 joined on. Number converts the default first, so + adds."
         },
         {
           "match": {
@@ -11344,7 +11356,7 @@
               1
             ]
           },
-          "feedback": "Nothing here counts anything. The default is supplied by the operator ??."
+          "feedback": "That would be the result for an empty PORT, which ?? keeps. Here the variable is missing, so the default is used."
         }
       ]
     },
@@ -11731,10 +11743,11 @@
         "timers-immediate",
         "offloading"
       ],
-      "prompt": "Inside an fs.readFile callback you call setTimeout(f, 0) and setImmediate(g). Which runs first?",
+      "prompt": "Inside an fs.readFile callback you call setTimeout(f, 0), setImmediate(g) and process.nextTick(h), in that order. Which callback runs last?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
+        "Which queue is emptied as soon as the current callback ends?",
         "Which phase comes after the poll phase?"
       ],
       "sourceIds": [
@@ -11742,17 +11755,17 @@
         "node-api",
         "mdn-promise"
       ],
-      "onCorrect": "The check phase follows the poll phase, so setImmediate runs before the next timers phase.",
+      "onCorrect": "h runs as soon as the readFile callback ends, g runs in the check phase that follows the poll phase, and f waits for the timers phase of the next turn.",
       "skill": "order-node-callbacks",
       "calculator": "off",
       "choices": [
         {
           "id": "d",
-          "label": "Neither runs"
+          "label": "h, the nextTick callback"
         },
         {
           "id": "c",
-          "label": "Either, it is random"
+          "label": "It is not fixed, and differs between runs"
         },
         {
           "id": "a",
@@ -11766,19 +11779,19 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "g, the setImmediate callback"
+          "f, the timer"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "g, the setImmediate callback"
+        "exampleAnswer": "f, the timer"
       },
       "misconceptions": [
         {
           "match": {
             "choiceIds": [
-              "a"
+              "b"
             ]
           },
-          "feedback": "The loop is in the poll phase, so the timers phase does not come again until after the check phase."
+          "feedback": "Inside an I/O callback the check phase, where g runs, comes before the timers phase, so f is still waiting after g."
         },
         {
           "match": {
@@ -11786,7 +11799,7 @@
               "c"
             ]
           },
-          "feedback": "That is the order from the main script. Inside an I/O callback the order is fixed."
+          "feedback": "That is so from the main script. Inside an I/O callback the order of the phases fixes it."
         },
         {
           "match": {
@@ -11794,7 +11807,7 @@
               "d"
             ]
           },
-          "feedback": "Both callbacks are queued, so both run."
+          "feedback": "The nextTick queue is emptied as soon as the readFile callback finishes, so h runs first, not last."
         }
       ]
     },
@@ -11932,7 +11945,7 @@
         "timers-immediate",
         "offloading"
       ],
-      "prompt": "A timer is set for 10 ms. Then a synchronous loop that runs for 1000 ms starts on the same thread.\nAt the earliest, after how many milliseconds can the timer callback run?",
+      "prompt": "A timer is set for 20 ms. Then a synchronous loop that runs for 1500 ms starts on the same thread.\nAt the earliest, after how many milliseconds can the timer callback run?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -11950,25 +11963,25 @@
       "calculator": "off",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 1000,
+        "value": 1500,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "The callback cannot start until the loop has finished and given the thread back, so it runs after 1000 ms at the earliest."
+        "workedAnswer": "The callback cannot start until the loop has finished and given the thread back, so it runs after 1500 ms at the earliest."
       },
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              10
+              20
             ]
           },
-          "feedback": "The timer is due at 10 ms, but a due callback still needs the thread, which the loop is using."
+          "feedback": "The timer is due at 20 ms, but a due callback still needs the thread, which the loop is using."
         },
         {
           "match": {
             "numeric": [
-              1010
+              1520
             ]
           },
           "feedback": "The loop and the timer count down together, so the callback does not wait for both of them in turn."
@@ -12185,12 +12198,12 @@
         "timers-immediate",
         "offloading"
       ],
-      "prompt": "A handler runs a synchronous loop that takes 200 ms for each request. Ten requests arrive at the same moment.\nAt the earliest, after how many milliseconds can the tenth response be sent?",
+      "prompt": "A handler runs a synchronous loop that takes 150 ms for each request. Eight requests arrive at the same moment.\nAt the earliest, after how many milliseconds can the eighth response be sent?",
       "responseType": "numeric",
       "difficulty": 1.2,
       "hints": [
         "One thread handles one request at a time.",
-        "Each takes 200 ms.",
+        "Each takes 150 ms.",
         "Multiply by the number of requests."
       ],
       "sourceIds": [
@@ -12198,33 +12211,33 @@
         "node-api",
         "mdn-promise"
       ],
-      "onCorrect": "With one thread and no waiting to overlap, the times add up, so the tenth response is sent at ten times 200 ms.",
+      "onCorrect": "With one thread and no waiting to overlap, the times add up, so the eighth response is sent at eight times 150 ms.",
       "skill": "spot-blocking",
       "calculator": "off",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 2000,
+        "value": 1200,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "The requests are handled one after another on one thread, so ten requests take 10 * 200 = 2000 ms."
+        "workedAnswer": "The requests are handled one after another on one thread, so eight requests take 8 * 150 = 1200 ms."
       },
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              200
+              150
             ]
           },
-          "feedback": "That is the time for a single request. The tenth waits for the nine before it."
+          "feedback": "That is the time for a single request. The eighth waits for the seven before it."
         },
         {
           "match": {
             "numeric": [
-              1800
+              1050
             ]
           },
-          "feedback": "The tenth request's own 200 ms must also be done before its response is sent."
+          "feedback": "The eighth request's own 150 ms must also be done before its response is sent."
         }
       ]
     },
@@ -12361,11 +12374,11 @@
         "typn-stream",
         "typn-backpressure"
       ],
-      "prompt": "console.log(Buffer.from(\"hi\").toString(\"base64\"));\nWhat is printed?",
+      "prompt": "console.log(Buffer.from(\"ok\").toString(\"base64\"));\nWhat is printed?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "The bytes of hi are 68 and 69.",
+        "The bytes of ok are 6f and 6b in hex.",
         "Base64 ends the text with = padding when the bytes are not a multiple of three."
       ],
       "sourceIds": [
@@ -12378,20 +12391,19 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "aGk="
+          "b2s="
         ],
         "acceptedAlternatives": [
-          "aGk",
-          "agk="
+          "b2s"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "aGk="
+        "exampleAnswer": "b2s="
       },
       "misconceptions": [
         {
           "match": {
             "textIdeas": [
-              "6869"
+              "6f6b"
             ]
           },
           "feedback": "That is the hex form of the same two bytes. The question asks for the other encoding."
@@ -12805,37 +12817,37 @@
         "typn-stream",
         "typn-backpressure"
       ],
-      "prompt": "console.log(Buffer.from(\"6869\", \"hex\").toString());\nWhat is printed?",
+      "prompt": "console.log(Buffer.from(\"6f6b\", \"hex\").toString());\nWhat is printed?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "6869 is the hex form of two bytes.",
-        "68 and 69 are the codes of two letters."
+        "6f6b is the hex form of two bytes.",
+        "6f and 6b are the codes of two letters."
       ],
       "sourceIds": [
         "node-stream",
         "node-api"
       ],
-      "onCorrect": "Decoding hex gives the bytes 68 and 69, which UTF-8 reads as the letters h and i.",
+      "onCorrect": "Decoding hex gives the bytes 6f and 6b, which UTF-8 reads as the letters o and k.",
       "skill": "convert-encodings",
       "calculator": "off",
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "hi"
+          "ok"
         ],
         "acceptedAlternatives": [
-          "\"hi\"",
-          "'hi'"
+          "\"ok\"",
+          "'ok'"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "hi"
+        "exampleAnswer": "ok"
       },
       "misconceptions": [
         {
           "match": {
             "textIdeas": [
-              "6869"
+              "6f6b"
             ]
           },
           "feedback": "That is the input. The hex is decoded to bytes, and the bytes are read back as text."
@@ -13000,7 +13012,7 @@
         "response-contract",
         "body-parsing"
       ],
-      "prompt": "const url = new URL(req.url, \"http://localhost\");\nconst parts = url.pathname.split(\"/\");\n// req.url is \"/users/42?x=1\"\nWhat number is parts[2]?",
+      "prompt": "const url = new URL(req.url, \"http://localhost\");\nconst parts = url.pathname.split(\"/\");\n// req.url is \"/books/314?sort=asc\"\nWhat number is parts[2]?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -13018,28 +13030,20 @@
       "calculator": "off",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 42,
+        "value": 314,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "The pathname is /users/42, without the query string, so splitting on slashes gives \"\", \"users\" and \"42\", and parts[2] is 42."
+        "workedAnswer": "The pathname is /books/314, without the query string, so splitting on slashes gives \"\", \"books\" and \"314\", and parts[2] is 314."
       },
       "misconceptions": [
-        {
-          "match": {
-            "numeric": [
-              1
-            ]
-          },
-          "feedback": "That is the value of the query parameter x. The id is in the path."
-        },
         {
           "match": {
             "numeric": [
               2
             ]
           },
-          "feedback": "The piece at index 2 is the id, which is the number after users."
+          "feedback": "The piece at index 2 is the id, which is the number after books."
         }
       ]
     },
@@ -13374,7 +13378,7 @@
         "response-contract",
         "body-parsing"
       ],
-      "prompt": "A handler finds no user for the id and calls res.end(\"not found\") without setting a status.\nWhat status code does the client receive?",
+      "prompt": "A handler catches an error from the database, logs it, and calls res.end(\"something went wrong\") without setting a status.\nWhat status code does the client receive?",
       "responseType": "numeric",
       "difficulty": 1.2,
       "hints": [
@@ -13402,18 +13406,18 @@
         {
           "match": {
             "numeric": [
-              404
+              500
             ]
           },
-          "feedback": "The handler never sets 404. Node's default is a success code."
+          "feedback": "Node does not choose 500 for a handler that finished normally, even after an error it caught. Only the handler can set it."
         },
         {
           "match": {
             "numeric": [
-              500
+              404
             ]
           },
-          "feedback": "Node does not choose 500 for a handler that finished normally."
+          "feedback": "The handler never sets a status, and Node does not pick one from the body."
         }
       ]
     },
@@ -13752,13 +13756,13 @@
         "unhandled-rejection",
         "abort"
       ],
-      "prompt": "Three independent tasks each take 50 ms. They are awaited one after another in a for loop.\nIgnoring overhead, how many milliseconds until all three have finished?",
+      "prompt": "Four independent tasks each take 40 ms. They are awaited one after another in a for loop.\nIgnoring overhead, how many milliseconds until all four have finished?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
         "Does the second task start before the first ends?",
         "In a loop, each await finishes before the next task begins.",
-        "Add the three durations."
+        "Add the four durations."
       ],
       "sourceIds": [
         "mdn-promise",
@@ -13769,17 +13773,17 @@
       "calculator": "off",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 150,
+        "value": 160,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "Each task starts when the one before it has finished, so the times add: 50 + 50 + 50 = 150 ms."
+        "workedAnswer": "Each task starts when the one before it has finished, so the times add: 40 + 40 + 40 + 40 = 160 ms."
       },
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              50
+              40
             ]
           },
           "feedback": "That is the time for one task. In a loop the next one starts only after the previous one."
@@ -13787,10 +13791,10 @@
         {
           "match": {
             "numeric": [
-              100
+              120
             ]
           },
-          "feedback": "All three tasks have to finish, so there are three delays to add."
+          "feedback": "All four tasks have to finish, so there are four delays to add."
         }
       ]
     },
@@ -14319,7 +14323,7 @@
         "lockfile",
         "node-test"
       ],
-      "prompt": "What is the next minor version after 1.4.2? Give it as MAJOR.MINOR.PATCH.",
+      "prompt": "What is the next minor version after 2.7.3? Give it as MAJOR.MINOR.PATCH.",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -14337,20 +14341,20 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "1.5.0"
+          "2.8.0"
         ],
         "acceptedAlternatives": [
-          "1.5",
-          "v1.5.0"
+          "2.8",
+          "v2.8.0"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "1.5.0"
+        "exampleAnswer": "2.8.0"
       },
       "misconceptions": [
         {
           "match": {
             "textIdeas": [
-              "1.4.3"
+              "2.7.4"
             ]
           },
           "feedback": "That is the next patch version. A minor bump raises the middle number."
@@ -14365,7 +14369,7 @@
         "lockfile",
         "node-test"
       ],
-      "prompt": "The range is ^1.2.3, and npm is offered 2.0.0, 1.2.3-beta.1, 1.2.2 and 1.2.9. Which of these can it install?",
+      "prompt": "The range is ^2.4.1, and npm is offered 3.0.0, 2.4.1-beta.1, 2.4.0 and 2.7.5. Which of these can it install?",
       "responseType": "short_text",
       "difficulty": 1.2,
       "hints": [
@@ -14377,16 +14381,16 @@
         "npm-docs",
         "node-test"
       ],
-      "onCorrect": "It is above the lower end, below 2.0.0 and not a prerelease, which makes it the one version that the range accepts.",
+      "onCorrect": "It is above the lower end, below 3.0.0 and not a prerelease, which makes it the one version that the range accepts.",
       "skill": "match-semver-range",
       "calculator": "off",
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "1.2.9"
+          "2.7.5"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "1.2.9"
+        "exampleAnswer": "2.7.5"
       },
       "misconceptions": [
         {
@@ -14395,7 +14399,7 @@
               "a"
             ]
           },
-          "feedback": "The caret stops before the next major version, so 2.0.0 is the first version it excludes."
+          "feedback": "The caret stops before the next major version, so 3.0.0 is the first version it excludes."
         },
         {
           "match": {
@@ -14411,25 +14415,25 @@
               "c"
             ]
           },
-          "feedback": "The range starts at 1.2.3, so a version below it is too old."
+          "feedback": "The range starts at 2.4.1, so a version below it is too old."
         }
       ],
       "choices": [
         {
           "id": "c",
-          "label": "1.2.2"
+          "label": "2.4.0"
         },
         {
           "id": "a",
-          "label": "2.0.0"
+          "label": "3.0.0"
         },
         {
           "id": "b",
-          "label": "1.2.3-beta.1"
+          "label": "2.4.1-beta.1"
         },
         {
           "id": "d",
-          "label": "1.2.9"
+          "label": "2.7.5"
         }
       ]
     },
@@ -14441,7 +14445,7 @@
         "lockfile",
         "node-test"
       ],
-      "prompt": "Why does the caret fix the minor part for ^0.2.3, when it fixed the major part for ^1.2.3?",
+      "prompt": "Why does the caret fix the minor part for ^0.4.1, when it fixed the major part for ^1.2.3?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -14516,11 +14520,11 @@
         "lockfile",
         "node-test"
       ],
-      "prompt": "How many of the four candidates, 0.2.2, 0.2.3, 0.2.9 and 0.3.0, does ^0.2.3 accept?",
+      "prompt": "How many of the four candidates, 0.4.0, 0.4.1, 0.4.7 and 0.5.0, does ^0.4.1 accept?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
-        "The range is at least 0.2.3 and below 0.3.0.",
+        "The range is at least 0.4.1 and below 0.5.0.",
         "Check each candidate against it.",
         "Count the ones that fit."
       ],
@@ -14538,7 +14542,7 @@
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "Only 0.2.3 and 0.2.9 lie between the lower end 0.2.3 and the upper end 0.3.0, which is excluded."
+        "workedAnswer": "Only 0.4.1 and 0.4.7 lie between the lower end 0.4.1 and the upper end 0.5.0, which is excluded."
       },
       "misconceptions": [
         {
@@ -14547,7 +14551,7 @@
               1
             ]
           },
-          "feedback": "The lower end 0.2.3 is accepted, and so is 0.2.9."
+          "feedback": "The lower end 0.4.1 is accepted, and so is 0.4.7."
         },
         {
           "match": {
@@ -14555,7 +14559,7 @@
               3
             ]
           },
-          "feedback": "The upper end is excluded, and 0.2.2 is below the lower end."
+          "feedback": "The upper end is excluded, and 0.4.0 is below the lower end."
         }
       ]
     },
@@ -14737,45 +14741,45 @@
         "lockfile",
         "node-test"
       ],
-      "prompt": "Which version does the range ^1.2.3 accept?",
+      "prompt": "Which version does the range ^3.1.0 accept?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "The range runs from 1.2.3 up to the next major version."
+        "The range runs from 3.1.0 up to the next major version."
       ],
       "sourceIds": [
         "semver-spec",
         "npm-docs",
         "node-test"
       ],
-      "onCorrect": "The caret allows any version from 1.2.3 up to, but not including, 2.0.0, so 1.9.0 is inside.",
+      "onCorrect": "The caret allows any version from 3.1.0 up to, but not including, 4.0.0, so 3.8.2 is inside.",
       "skill": "match-semver-range",
       "calculator": "off",
       "choices": [
         {
           "id": "c",
-          "label": "1.2.2"
+          "label": "3.0.9"
         },
         {
           "id": "a",
-          "label": "2.0.0"
+          "label": "4.0.0"
         },
         {
           "id": "b",
-          "label": "1.9.0"
+          "label": "3.8.2"
         },
         {
           "id": "d",
-          "label": "1.2.3-beta.1"
+          "label": "3.1.0-beta.1"
         }
       ],
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "1.9.0"
+          "3.8.2"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "1.9.0"
+        "exampleAnswer": "3.8.2"
       },
       "misconceptions": [
         {
@@ -14784,7 +14788,7 @@
               "a"
             ]
           },
-          "feedback": "2.0.0 is the next major version, which the caret excludes."
+          "feedback": "4.0.0 is the next major version, which the caret excludes."
         },
         {
           "match": {
@@ -14792,7 +14796,7 @@
               "c"
             ]
           },
-          "feedback": "1.2.2 is older than the lower end of the range."
+          "feedback": "3.0.9 is older than the lower end of the range."
         },
         {
           "match": {
@@ -14888,7 +14892,7 @@
         "lockfile",
         "node-test"
       ],
-      "prompt": "What is the next major version after 1.4.2? Give it as MAJOR.MINOR.PATCH.",
+      "prompt": "What is the next major version after 3.6.1? Give it as MAJOR.MINOR.PATCH.",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -14906,21 +14910,21 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "2.0.0"
+          "4.0.0"
         ],
         "acceptedAlternatives": [
-          "2.0",
-          "v2.0.0"
+          "4.0",
+          "v4.0.0"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "2.0.0"
+        "exampleAnswer": "4.0.0"
       },
       "misconceptions": [
         {
           "match": {
             "textIdeas": [
-              "1.5.0",
-              "1.4.3"
+              "3.7.0",
+              "3.6.2"
             ]
           },
           "feedback": "Those raise the minor or the patch part. A major bump raises the first number and resets the other two."

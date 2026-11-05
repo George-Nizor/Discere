@@ -51,7 +51,7 @@ const expected: Record<string, number> = {
   "rules-for-rates-2": 4 * 1,
   "rules-for-rates-4": -2 * 1,
   "rules-for-rates-5": 6 * 2 ** 2 - 5,
-  "rules-for-rates-7": 2 * 7,
+  "rules-for-rates-7": 3 * 5 ** 2, // the slope of x³ at x = 5
   "rules-for-rates-9": 6 / 2,
   "rules-for-rates-10": 5 * 2 ** 4,
   "rules-for-rates-11": 10 * 3,
@@ -222,7 +222,8 @@ describe("Story lessons 1 to 12", () => {
       expect(lesson.steps.length, id).toBeGreaterThanOrEqual(8);
       expect(lesson.steps.length, id).toBeLessThanOrEqual(14);
       expect(teaching.length / lesson.steps.length, id).toBeGreaterThanOrEqual(0.4);
-      expect(lesson.steps[0]!.kind, id).toBe("explain");
+      // A lesson opens with teaching, or with a predict asked before the idea.
+      expect(["explain", "predict"], id).toContain(lesson.steps[0]!.kind);
       // The last lesson has no next lesson to hand on to.
       if (id === lessons[lessons.length - 1]) expect(lesson.recap?.nextHook, id).toBeUndefined();
       else expect(lesson.recap?.nextHook, id).toBeTruthy();

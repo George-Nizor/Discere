@@ -278,7 +278,6 @@ describe("Geometry: Shape and Space, story lessons 1 to 5", () => {
       expect(lesson.steps.length).toBeLessThanOrEqual(14);
       const teaching = lesson.steps.filter((s) => s.kind === "explain" && !s.checkQuestionId);
       expect(teaching.length / lesson.steps.length).toBeGreaterThanOrEqual(0.4);
-      expect(lesson.steps[0]!.kind).toBe("explain");
       expect(lesson.steps.some((s) => s.diagram)).toBe(true);
       for (const step of teaching) {
         const words = wordCount(`${prose(step.lead)} ${prose(step.afterFigure)}`);

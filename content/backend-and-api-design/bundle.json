@@ -673,7 +673,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The header counts the *bytes*, since that is what the receiver reads from the connection. A body with one accented letter therefore has a Content-Length one greater than its character count, and a receiver told 22 when 23 bytes follow will either cut the body short or wait for bytes that never arrive."
+              "text": "The header counts the *bytes*, since that is what the receiver reads from the connection. A body with one accented letter therefore has a Content-Length one greater than its character count, and a receiver told 30 when 31 bytes follow will either cut the body short or wait for bytes that never arrive."
             }
           ],
           "introducesTerms": [
@@ -725,8 +725,8 @@
               "math": "22 characters"
             },
             {
-              "text": "Only ë needs two bytes, so one byte is added to the count.",
-              "math": "22 + 1"
+              "text": "Find the characters that are not ASCII. Only ë is.",
+              "math": "ë is not ASCII"
             },
             {
               "text": "State the Content-Length that results.",
@@ -925,7 +925,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "A method is **safe** when its defined meaning is read-only, so a client may send it without asking anyone. A method is **idempotent** when sending the same request several times has the same intended effect on the server as sending it once. Every safe method is idempotent, but an idempotent method need not be safe: a PUT that sets a counter to 15 changes the server, and yet sending it twice leaves 15, exactly as once does."
+              "text": "A method is **safe** when its defined meaning is read-only, so a client may send it without asking anyone. A method is **idempotent** when sending the same request several times has the same intended effect on the server as sending it once. Every safe method is idempotent, but an idempotent method need not be safe: a PUT that sets a product's price to 40 changes the server, and yet sending it twice leaves the price at 40, exactly as once does."
             }
           ],
           "introducesTerms": [
@@ -1039,18 +1039,18 @@
           ],
           "diagram": {
             "type": "svg_figure",
-            "alt": "Four steps for each of two requests that are sent twice because the response was lost. After PUT the counter is 15 either way. After POST it is 20, because the addition happened twice.",
+            "alt": "Four steps for each of two requests that are sent twice because the response was lost. After PUT the counter is 60 either way. After POST it is 28, because the addition happened twice.",
             "caption": "Resending a PUT leaves the counter where one request would. Resending a POST adds twice. Use the buttons to compare.",
             "cases": [
               {
                 "id": "put",
                 "label": "PUT, resent",
-                "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 640 350\"><defs><marker id=\"mput\" markerWidth=\"8\" markerHeight=\"8\" refX=\"6\" refY=\"4\" orient=\"auto\"><path class=\"f-ink\" d=\"M0 0 L8 4 L0 8 z\"/></marker></defs><rect class=\"f-sunken s-line w1\" x=\"24\" y=\"24\" width=\"592\" height=\"46\" rx=\"8\"/><text class=\"t-bold t-accent\" x=\"48\" y=\"54\" text-anchor=\"middle\">1</text><text class=\"t\" x=\"76\" y=\"54\" text-anchor=\"start\">Client sends PUT /counter {value: 15}. Counter was 10.</text><rect class=\"f-sunken s-line w1\" x=\"24\" y=\"82\" width=\"592\" height=\"46\" rx=\"8\"/><text class=\"t-bold t-accent\" x=\"48\" y=\"112\" text-anchor=\"middle\">2</text><text class=\"t\" x=\"76\" y=\"112\" text-anchor=\"start\">Server sets the counter to 15. The response is lost.</text><rect class=\"f-sunken s-line w1\" x=\"24\" y=\"140\" width=\"592\" height=\"46\" rx=\"8\"/><text class=\"t-bold t-accent\" x=\"48\" y=\"170\" text-anchor=\"middle\">3</text><text class=\"t\" x=\"76\" y=\"170\" text-anchor=\"start\">Client sends the same request again.</text><rect class=\"f-sunken s-line w1\" x=\"24\" y=\"198\" width=\"592\" height=\"46\" rx=\"8\"/><text class=\"t-bold t-accent\" x=\"48\" y=\"228\" text-anchor=\"middle\">4</text><text class=\"t\" x=\"76\" y=\"228\" text-anchor=\"start\">Server sets the counter to 15 again.</text><rect class=\"f-green-soft s-green w3\" x=\"24\" y=\"270\" width=\"592\" height=\"56\" rx=\"8\"/><text class=\"t-bold\" x=\"320\" y=\"305\" text-anchor=\"middle\">Counter: 15, the same as after one request</text></svg>"
+                "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 640 350\"><defs><marker id=\"mput\" markerWidth=\"8\" markerHeight=\"8\" refX=\"6\" refY=\"4\" orient=\"auto\"><path class=\"f-ink\" d=\"M0 0 L8 4 L0 8 z\"/></marker></defs><rect class=\"f-sunken s-line w1\" x=\"24\" y=\"24\" width=\"592\" height=\"46\" rx=\"8\"/><text class=\"t-bold t-accent\" x=\"48\" y=\"54\" text-anchor=\"middle\">1</text><text class=\"t\" x=\"76\" y=\"54\" text-anchor=\"start\">Client sends PUT /counter {value: 60}. Counter was 20.</text><rect class=\"f-sunken s-line w1\" x=\"24\" y=\"82\" width=\"592\" height=\"46\" rx=\"8\"/><text class=\"t-bold t-accent\" x=\"48\" y=\"112\" text-anchor=\"middle\">2</text><text class=\"t\" x=\"76\" y=\"112\" text-anchor=\"start\">Server sets the counter to 60. The response is lost.</text><rect class=\"f-sunken s-line w1\" x=\"24\" y=\"140\" width=\"592\" height=\"46\" rx=\"8\"/><text class=\"t-bold t-accent\" x=\"48\" y=\"170\" text-anchor=\"middle\">3</text><text class=\"t\" x=\"76\" y=\"170\" text-anchor=\"start\">Client sends the same request again.</text><rect class=\"f-sunken s-line w1\" x=\"24\" y=\"198\" width=\"592\" height=\"46\" rx=\"8\"/><text class=\"t-bold t-accent\" x=\"48\" y=\"228\" text-anchor=\"middle\">4</text><text class=\"t\" x=\"76\" y=\"228\" text-anchor=\"start\">Server sets the counter to 60 again.</text><rect class=\"f-green-soft s-green w3\" x=\"24\" y=\"270\" width=\"592\" height=\"56\" rx=\"8\"/><text class=\"t-bold\" x=\"320\" y=\"305\" text-anchor=\"middle\">Counter: 60, the same as after one request</text></svg>"
               },
               {
                 "id": "post",
                 "label": "POST, resent",
-                "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 640 350\"><defs><marker id=\"mpost\" markerWidth=\"8\" markerHeight=\"8\" refX=\"6\" refY=\"4\" orient=\"auto\"><path class=\"f-ink\" d=\"M0 0 L8 4 L0 8 z\"/></marker></defs><rect class=\"f-sunken s-line w1\" x=\"24\" y=\"24\" width=\"592\" height=\"46\" rx=\"8\"/><text class=\"t-bold t-accent\" x=\"48\" y=\"54\" text-anchor=\"middle\">1</text><text class=\"t\" x=\"76\" y=\"54\" text-anchor=\"start\">Client sends POST /counter/add {n: 5}. Counter was 10.</text><rect class=\"f-sunken s-line w1\" x=\"24\" y=\"82\" width=\"592\" height=\"46\" rx=\"8\"/><text class=\"t-bold t-accent\" x=\"48\" y=\"112\" text-anchor=\"middle\">2</text><text class=\"t\" x=\"76\" y=\"112\" text-anchor=\"start\">Server adds 5, giving 15. The response is lost.</text><rect class=\"f-sunken s-line w1\" x=\"24\" y=\"140\" width=\"592\" height=\"46\" rx=\"8\"/><text class=\"t-bold t-accent\" x=\"48\" y=\"170\" text-anchor=\"middle\">3</text><text class=\"t\" x=\"76\" y=\"170\" text-anchor=\"start\">Client sends the same request again.</text><rect class=\"f-sunken s-line w1\" x=\"24\" y=\"198\" width=\"592\" height=\"46\" rx=\"8\"/><text class=\"t-bold t-accent\" x=\"48\" y=\"228\" text-anchor=\"middle\">4</text><text class=\"t\" x=\"76\" y=\"228\" text-anchor=\"start\">Server adds 5 again, giving 20.</text><rect class=\"f-warn-soft s-warn w3\" x=\"24\" y=\"270\" width=\"592\" height=\"56\" rx=\"8\"/><text class=\"t-bold\" x=\"320\" y=\"305\" text-anchor=\"middle\">Counter: 20, which one request would not give</text></svg>"
+                "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 640 350\"><defs><marker id=\"mpost\" markerWidth=\"8\" markerHeight=\"8\" refX=\"6\" refY=\"4\" orient=\"auto\"><path class=\"f-ink\" d=\"M0 0 L8 4 L0 8 z\"/></marker></defs><rect class=\"f-sunken s-line w1\" x=\"24\" y=\"24\" width=\"592\" height=\"46\" rx=\"8\"/><text class=\"t-bold t-accent\" x=\"48\" y=\"54\" text-anchor=\"middle\">1</text><text class=\"t\" x=\"76\" y=\"54\" text-anchor=\"start\">Client sends POST /counter/add {n: 4}. Counter was 20.</text><rect class=\"f-sunken s-line w1\" x=\"24\" y=\"82\" width=\"592\" height=\"46\" rx=\"8\"/><text class=\"t-bold t-accent\" x=\"48\" y=\"112\" text-anchor=\"middle\">2</text><text class=\"t\" x=\"76\" y=\"112\" text-anchor=\"start\">Server adds 4, giving 24. The response is lost.</text><rect class=\"f-sunken s-line w1\" x=\"24\" y=\"140\" width=\"592\" height=\"46\" rx=\"8\"/><text class=\"t-bold t-accent\" x=\"48\" y=\"170\" text-anchor=\"middle\">3</text><text class=\"t\" x=\"76\" y=\"170\" text-anchor=\"start\">Client sends the same request again.</text><rect class=\"f-sunken s-line w1\" x=\"24\" y=\"198\" width=\"592\" height=\"46\" rx=\"8\"/><text class=\"t-bold t-accent\" x=\"48\" y=\"228\" text-anchor=\"middle\">4</text><text class=\"t\" x=\"76\" y=\"228\" text-anchor=\"start\">Server adds 4 again, giving 28.</text><rect class=\"f-warn-soft s-warn w3\" x=\"24\" y=\"270\" width=\"592\" height=\"56\" rx=\"8\"/><text class=\"t-bold\" x=\"320\" y=\"305\" text-anchor=\"middle\">Counter: 28, which one request would not give</text></svg>"
               }
             ],
             "initialCaseId": "put"
@@ -1093,14 +1093,14 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "Decide whether a client may resend POST /counter/add with {\"n\": 5} after a lost response.",
+          "headline": "Decide whether a client may resend POST /counter/add with {\"n\": 3} after a lost response.",
           "workedSteps": [
             {
-              "text": "Again there are two cases. If the first copy never arrived, the resend adds 5 once and the counter ends at 15.",
-              "math": "10 + 5 = 15"
+              "text": "Again there are two cases. If the first copy never arrived, the resend adds 3 once and the counter ends at 13.",
+              "math": "10 + 3 = 13"
             },
             {
-              "text": "If the first copy did arrive, the counter holds 15 and the resend adds 5 again. State the final value.",
+              "text": "If the first copy did arrive, the counter holds 13 and the resend adds 3 again. State the final value.",
               "blank": {
                 "questionId": "bacad-methods-and-safety-post-worst"
               }
@@ -1286,7 +1286,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "Three success codes cover most of what an API returns. **200 OK** reports that the request worked and has a body describing the result. **201 Created** reports that a resource was made, and is sent with a Location header giving its address. **204 No Content** reports that the request worked and that there is no body, as after a DELETE."
+              "text": "Three success codes cover most of what an API returns. **200 OK** reports that the request worked and has a body describing the result. **201 Created** reports that a resource was made, and is sent with a Location header giving its address. **204 No Content** reports that the request worked and that there is no body, as after a PUT whose new version the client already holds."
             }
           ],
           "introducesTerms": [
@@ -1325,7 +1325,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "Two more are about the data. **409 Conflict** says the request is well formed but clashes with the current state, as when an email address is already registered. **429 Too Many Requests** says the client is sending faster than allowed, and the later lesson on rate limits returns to it. RFC 6585, published in April 2012, added 429 to the standard list."
+              "text": "Two more are about the data. **409 Conflict** says the request is well formed but clashes with the current state, as when a seat that another customer holds is booked again. **429 Too Many Requests** says the client is sending faster than allowed, and the later lesson on rate limits returns to it. RFC 6585, published in April 2012, added 429 to the standard list."
             }
           ],
           "introducesTerms": [
@@ -1446,16 +1446,16 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "Follow POST /accounts with a valid body and token when the email address is already registered.",
+          "headline": "Follow POST /orders/42/cancellation from the order's owner, with a valid token, when order 42 has already shipped.",
           "workedSteps": [
             {
-              "text": "The body parses, so the first check passes."
+              "text": "The request parses, so the first check passes."
             },
             {
-              "text": "The caller is identified and allowed to register, so the next two checks pass as well."
+              "text": "The caller is identified and owns order 42, so the next two checks pass as well."
             },
             {
-              "text": "The state check finds that the address is taken. Say which code leaves at this check.",
+              "text": "Order 42 exists, so the fourth check passes, but it has already shipped. Say which code the request leaves with.",
               "blank": {
                 "questionId": "bacad-status-codes-state-conflict"
               }
@@ -1474,7 +1474,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Three codes are easily confused, and the question to ask of each is where the fault lies. A body that is not valid JSON never reaches the application, so it is a **400**. A body that is valid JSON and whose fields are well formed, but which asks for something that clashes with what the server already holds, such as a second account for one email address, is a **409**. A body that is understood and valid in form, but whose content cannot be processed, such as a date of birth in the future, is a **422 Unprocessable Content**."
+              "text": "Three codes are easily confused, and the question to ask of each is where the fault lies. A body that is not valid JSON never reaches the application, so it is a **400**. A body that is valid JSON and whose fields are well formed, but which asks for something that clashes with what the server already holds, such as cancelling an order that has already shipped, is a **409**. A body that is understood and valid in form, but whose content cannot be processed, such as a date of birth in the future, is a **422 Unprocessable Content**."
             },
             {
               "kind": "paragraph",
@@ -2679,7 +2679,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The document in the opening figure is an **OpenAPI document**: a description of an HTTP API that a tool can read. From the same file, tools can generate reference documentation, a client in any language, a mock server that answers with sample data, and tests that check a real server against what the file promises. The format began as Swagger, and its specification was later donated to the Linux Foundation and renamed the OpenAPI Specification."
+              "text": "The document in the figure is an **OpenAPI document**: a description of an HTTP API that a tool can read. From the same file, tools can generate reference documentation, a client in any language, a mock server that answers with sample data, and tests that check a real server against what the file promises. The format began as Swagger, and its specification was later donated to the Linux Foundation and renamed the OpenAPI Specification."
             },
             {
               "kind": "paragraph",
@@ -3510,11 +3510,10 @@
               "math": "charged: 25 + 5"
             },
             {
-              "text": "The second p is a repeat of a key already seen, so nothing is charged for it.",
-              "math": "charged: 0"
+              "text": "The next request carries p again, and the last one carries r. Decide which of these two the server charges."
             },
             {
-              "text": "The key r is new, so 10 is charged. State the total.",
+              "text": "State the total charged for the four requests.",
               "blank": {
                 "questionId": "bacad-errors-and-idempotency-blank-total"
               }
@@ -3717,7 +3716,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The first two lists in the figure follow from the test. The third list holds the changes that deserve a second look. A client that handles each known value of an **enum** with a case of its own may fail on a new value, so adding one is safe only if clients have been told to expect more. Tightening validation, for instance lowering the longest allowed name from 200 characters to 50, rejects requests that used to work. Changing the default sort order changes what a client that never asked for a sort receives."
+              "text": "The first two lists in the figure follow from the test. The third list holds the changes that deserve a second look. An **enum** is a field whose value comes from a fixed list, such as an order status of \"new\", \"paid\" or \"shipped\", and a client that handles each known value with a case of its own may fail on a new one, so adding a value is safe only if clients have been told to expect more. Tightening validation, for instance lowering the longest allowed name from 200 characters to 50, rejects requests that used to work. Changing the default sort order changes what a client that never asked for a sort receives."
             },
             {
               "kind": "paragraph",
@@ -4209,7 +4208,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The arithmetic is direct. A 6-digit PIN has 10^6 possible values, and at 1,000 guesses per second that takes 10^6 / 1,000 = 1,000 seconds. A hash that is 100 times slower brings the rate down to 10 a second and the time up to 100,000 seconds. Slowness multiplies the attacker's cost, and it costs the honest user a few milliseconds per login."
+              "text": "The arithmetic is direct. A 4-digit PIN has 10^4 possible values, and at 100 guesses per second that takes 10^4 / 100 = 100 seconds. A hash that is 50 times slower brings the rate down to 2 a second and the time up to 5,000 seconds. Slowness multiplies the attacker's cost, and it costs the honest user a few milliseconds per login."
             }
           ],
           "introducesTerms": [
@@ -4875,15 +4874,15 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "Add the waits for six retries from a base of 100 ms, with a cap of 2000 ms.",
+          "headline": "Add the waits for six retries from a base of 300 ms, with a cap of 4000 ms.",
           "workedSteps": [
             {
-              "text": "The first five waits are 100, 200, 400, 800 and 1600 ms, which add up to 3100 ms.",
-              "math": "3100"
+              "text": "The first four waits are 300, 600, 1200 and 2400 ms, which add up to 4500 ms.",
+              "math": "4500"
             },
             {
-              "text": "Doubling would give 3200 for the sixth, but the cap holds it at 2000 ms.",
-              "math": "2000"
+              "text": "Doubling would give 4800 for the fifth and 9600 for the sixth, but the cap holds each at 4000 ms.",
+              "math": "4000 and 4000"
             },
             {
               "text": "State the total waiting time in milliseconds.",
@@ -5067,7 +5066,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A transfer of 30 from account A, which holds 100, to account B, which holds 50, needs two statements: debit A, credit B. If the server crashes after the first and before the second, A holds 70 and B still holds 50, so 30 has disappeared. A **transaction** groups the two statements so that either both take effect or neither does, and the database undoes the first if the second never arrives."
+              "text": "A transfer of 50 from account A, which holds 200, to account B, which holds 80, needs two statements: debit A, credit B. If the server crashes after the first and before the second, A holds 150 and B still holds 80, so 50 has disappeared. A **transaction** groups the two statements so that either both take effect or neither does, and the database undoes the first if the second never arrives."
             },
             {
               "kind": "paragraph",
@@ -5975,35 +5974,35 @@
         "idempotent-method",
         "retry-rule"
       ],
-      "prompt": "The counter held 10 and a POST that adds 5 was sent. The response was lost, and the client resent it. If both requests arrived, what does the counter hold?",
+      "prompt": "The counter held 10 and a POST that adds 3 was sent. The response was lost, and the client resent it. If both requests arrived, what does the counter hold?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
-        "Each POST adds 5.",
-        "The first arrival takes the counter to 15.",
-        "The second arrival adds 5 to that."
+        "Each POST adds 3.",
+        "The first arrival takes the counter to 13.",
+        "The second arrival adds 3 to that."
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 20,
+        "value": 16,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "10 + 5 + 5 = 20."
+        "workedAnswer": "10 + 3 + 3 = 16."
       },
       "sourceIds": [
         "rfc9110",
         "mdn-http"
       ],
-      "onCorrect": "Both requests were processed, so the counter holds 20, where a single request gives 15.",
+      "onCorrect": "Both requests were processed, so the counter holds 16, where a single request gives 13.",
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              15
+              13
             ]
           },
-          "feedback": "That is the result if only one request arrived. Here both did, and each added 5."
+          "feedback": "That is the result if only one request arrived. Here both did, and each added 3."
         }
       ],
       "skill": "decide-retry",
@@ -6460,7 +6459,7 @@
         "auth-codes",
         "conflict-codes"
       ],
-      "prompt": "A request is valid and permitted, but the server's code throws an exception it did not expect. Which status code reports this?",
+      "prompt": "A valid, permitted request reaches a server that is not overloaded, but a bug in the handler reads a field that does not exist and crashes. Which status code should the response carry?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -6474,7 +6473,7 @@
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "An unexpected failure on the server is the general 5xx code, 500."
+        "workedAnswer": "A crash caused by a bug in the server's own code is an unexpected failure, which the general 5xx code, 500, reports."
       },
       "sourceIds": [
         "rfc9110",
@@ -6497,7 +6496,7 @@
               503
             ]
           },
-          "feedback": "503 means the server is temporarily unable to serve, such as when overloaded. An unexpected exception is reported with the general code."
+          "feedback": "503 means the server is temporarily unable to serve, such as when overloaded, and this one is not. A crash caused by a bug is reported with the general code."
         }
       ],
       "skill": "pick-status",
@@ -6660,7 +6659,7 @@
         "auth-codes",
         "conflict-codes"
       ],
-      "prompt": "The email is already registered. The request parsed, so check 1 passed, and the checks for the caller's identity and permission passed as well. The resource exists, but its current state blocks the request. Which code is on this exit?",
+      "prompt": "Order 42 has already shipped, and its owner sends POST /orders/42/cancellation with a valid token. The request parses, the caller is identified and allowed, and order 42 is found. Which code does the request leave with?",
       "responseType": "numeric",
       "difficulty": 1.2,
       "hints": [
@@ -6674,7 +6673,7 @@
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "The request fails the check of the current state, whose exit is 409 Conflict."
+        "workedAnswer": "The request fails the check of the current state, since a shipped order cannot be cancelled, and that exit is 409 Conflict."
       },
       "sourceIds": [
         "rfc9110",
@@ -6697,7 +6696,7 @@
               404
             ]
           },
-          "feedback": "404 is the exit of the fourth check, and the resource was found."
+          "feedback": "404 is the exit of the fourth check, and order 42 was found."
         }
       ],
       "skill": "pick-status",
@@ -7035,7 +7034,7 @@
         "validator",
         "revalidation"
       ],
-      "prompt": "The cache sends If-None-Match with the current ETag, and the resource has not changed. Which status code does the origin reply with?",
+      "prompt": "A cache holds a copy whose Last-Modified date is 3 November 2026, and it revalidates by sending If-Modified-Since with that date. The resource has not changed since. Which status code does the origin reply with?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -7049,7 +7048,7 @@
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "An unchanged resource gets 304 Not Modified, with no body."
+        "workedAnswer": "If-Modified-Since works the same way as If-None-Match, so an unchanged resource gets 304 Not Modified, with no body."
       },
       "sourceIds": [
         "rfc9111",
@@ -7447,7 +7446,7 @@
         "bacad-url-parts",
         "bacad-template"
       ],
-      "prompt": "How many segments does the path of https://api.shop.example/v1/customers/17/orders?status=open&limit=20#top have?",
+      "prompt": "How many segments does the path of https://api.shop.example/v2/stores/5/products/88/reviews?sort=new&page=3#top have?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -7457,11 +7456,11 @@
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 4,
+        "value": 6,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "The segments are v1, customers, 17 and orders: 4."
+        "workedAnswer": "The segments are v2, stores, 5, products, 88 and reviews: 6."
       },
       "sourceIds": [
         "rfc3986",
@@ -7469,12 +7468,12 @@
         "mdn-http",
         "fielding-2000"
       ],
-      "onCorrect": "The path /v1/customers/17/orders has four segments, and the query and fragment are not part of it.",
+      "onCorrect": "The path /v2/stores/5/products/88/reviews has six segments, and the query and fragment are not part of it.",
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              6
+              8
             ]
           },
           "feedback": "The query and the fragment are not part of the path, so their pieces are not segments."
@@ -7482,10 +7481,10 @@
         {
           "match": {
             "numeric": [
-              3
+              5
             ]
           },
-          "feedback": "The version segment v1 counts as well, so there are more than three."
+          "feedback": "The version segment v2 counts as well, so there are more than five."
         }
       ],
       "skill": "split-a-url",
@@ -9487,21 +9486,21 @@
         "bacad-idempotency-key",
         "exactly-once-effect"
       ],
-      "prompt": "A balance is 80. A client sends POST /charges for 20 with the same Idempotency-Key four times, because of retries, and the server stores the result under the key. What is the balance afterwards?",
+      "prompt": "A balance is 90. A client sends POST /charges for 25 with the same Idempotency-Key four times, because of retries, and the server stores the result under the key. What is the balance afterwards?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
         "Only the first delivery of a key acts.",
         "The later ones return the stored response.",
-        "One charge of 20 comes off the balance."
+        "One charge of 25 comes off the balance."
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 60,
+        "value": 65,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "The key is acted on once: 80 - 20 = 60."
+        "workedAnswer": "The key is acted on once: 90 - 25 = 65."
       },
       "sourceIds": [
         "rfc9457",
@@ -9513,18 +9512,18 @@
         {
           "match": {
             "numeric": [
-              0
+              -10
             ]
           },
-          "feedback": "Only the first delivery acts, so the balance is not emptied by the repeats."
+          "feedback": "That charges all four deliveries. Only the first acts, and the repeats return the stored response."
         },
         {
           "match": {
             "numeric": [
-              20
+              25
             ]
           },
-          "feedback": "That is the amount charged. The balance is what is left of 80."
+          "feedback": "That is the amount charged. The balance is what is left of 90."
         }
       ],
       "skill": "dedupe-with-a-key",
@@ -11760,21 +11759,21 @@
         "retry-after",
         "backoff"
       ],
-      "prompt": "A client waits 100 ms before the first retry, and doubles the wait each time, with no cap. How many milliseconds does it wait before the fifth retry?",
+      "prompt": "A client waits 150 ms before the first retry, and doubles the wait each time, with no cap. How many milliseconds does it wait before the fifth retry?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
-        "The waits are 100, then doubled each time.",
+        "The waits are 150, then doubled each time.",
         "The fifth wait has been doubled four times.",
-        "100 times 2 to the fourth."
+        "150 times 2 to the fourth."
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 1600,
+        "value": 2400,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "100, 200, 400, 800, 1600: the fifth wait is 1600 ms."
+        "workedAnswer": "150, 300, 600, 1200, 2400: the fifth wait is 2400 ms."
       },
       "sourceIds": [
         "rfc6585",
@@ -11786,7 +11785,7 @@
         {
           "match": {
             "numeric": [
-              800
+              1200
             ]
           },
           "feedback": "That is the fourth wait. The fifth is double it."
@@ -11794,10 +11793,10 @@
         {
           "match": {
             "numeric": [
-              3200
+              4800
             ]
           },
-          "feedback": "That is the sixth wait. Count five waits from 100."
+          "feedback": "That is the sixth wait. Count five waits from 150."
         }
       ],
       "skill": "compute-backoff",
@@ -11860,44 +11859,44 @@
         "retry-after",
         "backoff"
       ],
-      "prompt": "A client retries six times, with waits of 100, 200, 400, 800, 1600 and then 2000 ms, because the doubling is capped at 2000. What is the total waiting time in milliseconds?",
+      "prompt": "A client retries six times, with waits of 300, 600, 1200 and 2400 ms and then 4000 ms twice, because the doubling is capped at 4000. What is the total waiting time in milliseconds?",
       "responseType": "numeric",
       "difficulty": 1.3,
       "hints": [
         "Add the six waits.",
-        "The sixth is 2000, not 3200.",
-        "100 + 200 + 400 + 800 + 1600 is the first five."
+        "The fifth and sixth are 4000, not 4800 and 9600.",
+        "300 + 600 + 1200 + 2400 is the first four."
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 5100,
+        "value": 12500,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "3100 for the first five, plus 2000: 5100 ms."
+        "workedAnswer": "4500 for the first four, plus 4000 twice: 12500 ms."
       },
       "sourceIds": [
         "rfc6585",
         "rfc9110",
         "owasp-api"
       ],
-      "onCorrect": "The cap limits the sixth wait to 2000 ms, so the total is smaller than with doubling alone.",
+      "onCorrect": "The cap limits the fifth and sixth waits to 4000 ms, so the total is smaller than with doubling alone.",
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              6300
+              18900
             ]
           },
-          "feedback": "That uses 3200 for the sixth wait. The cap holds it at 2000."
+          "feedback": "That uses 4800 and 9600 for the last two waits. The cap holds each at 4000."
         },
         {
           "match": {
             "numeric": [
-              3100
+              8500
             ]
           },
-          "feedback": "That is the total of the first five waits. The sixth adds 2000."
+          "feedback": "That is the total of the first five waits. The sixth adds another 4000."
         }
       ],
       "skill": "compute-backoff",

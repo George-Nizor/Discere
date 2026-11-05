@@ -493,7 +493,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The difference therefore comes down to one question, **who decides the next step**. The number of model calls does not settle it, since a workflow may call a model ten times and an agent only once, and the presence of tools does not settle it either, since a workflow may call a tool at every step."
+              "text": "The difference therefore comes down to one question, **who decides the next step**. The number of model calls does not settle it, since a workflow may call a model ten times and an agent only once, and the presence of tools does not settle it either, since a workflow may call a tool at every step. Two more designs will come up beside these, the script, which is ordinary code in which no model chooses anything, and the copilot, in which the model proposes each step and a person approves it before it runs."
             }
           ],
           "introducesTerms": [
@@ -1408,12 +1408,12 @@
               "math": "still 1"
             },
             {
-              "text": "The third call carries b, a new key, so it makes a second refund and stores b.",
-              "math": "2 refunds"
+              "text": "The third call carries b, a key the server has not seen before.",
+              "math": "new key: b"
             },
             {
-              "text": "The fourth call repeats a and the fifth repeats b. Both keys are stored, so neither makes a refund.",
-              "math": "still 2"
+              "text": "The fourth call repeats a and the fifth repeats b, and the server checks each one against the keys it has stored.",
+              "math": "keys a, b"
             },
             {
               "text": "Count the refunds the server made over the five calls.",
@@ -1755,12 +1755,12 @@
           "headline": "Match the reply to the request, then read what it says.",
           "workedSteps": [
             {
-              "text": "The client sent a tools/call request with id 7 for the tool search_orders with the customer c-42.",
-              "math": "request: id 7"
+              "text": "The client sent a tools/call request with id 12 for the tool search_orders with the customer c-42.",
+              "math": "request: id 12"
             },
             {
-              "text": "A reply arrives. JSON-RPC pairs a reply with its request by the id alone, so the reply must carry the same id as the request it answers.",
-              "math": "same id as the request"
+              "text": "A reply arrives while the client still has other requests waiting, so it has to work out which request this reply answers.",
+              "math": "which request?"
             },
             {
               "text": "State the id that the reply must carry.",
@@ -2132,19 +2132,19 @@
           "id": "does-it-trigger",
           "kind": "worked_example",
           "blocks": [],
-          "headline": "Work out whether a 21,000-token tool result sets off compaction in the 100,000-token window.",
+          "headline": "Work out whether a 15,000-token tool result sets off compaction when 71,000 tokens of the 100,000-token window are in use.",
           "workedSteps": [
             {
               "text": "The agent compacts at 80% of the window, so the trigger is at 80% of 100,000 tokens.",
               "math": "0.8 × 100,000 = 80,000"
             },
             {
-              "text": "The history before the result is 62,000 tokens. Adding the result of 21,000 tokens gives the new total.",
-              "math": "62,000 + 21,000 = 83,000"
+              "text": "The history before the result is 71,000 tokens. Adding the result of 15,000 tokens gives the new total.",
+              "math": "71,000 + 15,000 = 86,000"
             },
             {
-              "text": "Compare the total with the trigger: 83,000 is above 80,000, so compaction runs.",
-              "math": "83,000 > 80,000"
+              "text": "Compare the total with the trigger: 86,000 is above 80,000, so compaction runs.",
+              "math": "86,000 > 80,000"
             },
             {
               "text": "Find how far over the trigger the total is, in tokens.",
@@ -2375,6 +2375,22 @@
           "activityId": ""
         },
         {
+          "id": "cost-of-each-pattern",
+          "kind": "predict",
+          "blocks": [],
+          "lead": [],
+          "reveal": [
+            {
+              "kind": "paragraph",
+              "text": "The plan-then-execute agent makes three calls against the loop's eight, so planning first is much cheaper here. Two things limit the saving: it holds only while the plan survives, and every replan is another model call."
+            }
+          ],
+          "answerVisibility": "hidden-until-response",
+          "visualStateId": "",
+          "checkQuestionId": "aia-planning-patterns-plan-calls",
+          "activityId": ""
+        },
+        {
           "id": "plan-then-execute",
           "kind": "explain",
           "blocks": [],
@@ -2429,22 +2445,6 @@
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
           "checkQuestionId": "aia-planning-patterns-actions-total",
-          "activityId": ""
-        },
-        {
-          "id": "cost-of-each-pattern",
-          "kind": "predict",
-          "blocks": [],
-          "lead": [],
-          "reveal": [
-            {
-              "kind": "paragraph",
-              "text": "The plan-then-execute agent makes three calls against the loop's eight, so planning first is much cheaper here. Two things limit the saving: it holds only while the plan survives, and every replan is another model call."
-            }
-          ],
-          "answerVisibility": "hidden-until-response",
-          "visualStateId": "",
-          "checkQuestionId": "aia-planning-patterns-plan-calls",
           "activityId": ""
         },
         {
@@ -2508,22 +2508,22 @@
           "id": "expense-claim",
           "kind": "worked_example",
           "blocks": [],
-          "headline": "Choose a pattern for filing the expense claim, using three questions about the task.",
+          "headline": "Choose a pattern for setting up a new employee's accounts, using three questions about the task.",
           "workedSteps": [
             {
-              "text": "Are the steps known before the first action? Open the form, enter the details, attach the receipt, submit: they are, and they do not depend on one another's results.",
+              "text": "Are the steps known before the first action? Create the account, add it to the right groups, enrol the employee in payroll and send the welcome email: they are, and none of them depends on what another returns.",
               "math": "steps known"
             },
             {
-              "text": "Might an observation change the task? Occasionally, as when the receipt is too large, but then only the tail of the plan changes.",
+              "text": "Might an observation change the task? Occasionally, as when the chosen user name is already taken, but then only the tail of the plan changes.",
               "math": "rare changes"
             },
             {
-              "text": "Is there a check that supplies a fact? Submission reports success or an error, so a failure is visible without the model's opinion.",
+              "text": "Is there a check that supplies a fact? Each system reports success or an error, so a failure is visible without the model's opinion.",
               "math": "signal exists"
             },
             {
-              "text": "Name the pattern that follows from these answers, writing the plan first and rewriting it on failure.",
+              "text": "Name the pattern that follows from these three answers.",
               "blank": {
                 "questionId": "aia-planning-patterns-claim-pattern"
               }
@@ -2538,10 +2538,10 @@
           "id": "nightly-job",
           "kind": "faded_example",
           "blocks": [],
-          "headline": "Choose a pattern for fixing a failing nightly job, using the same three questions.",
+          "headline": "Choose a pattern for finding out why a customer's card payments keep being declined, using the same three questions.",
           "workedSteps": [
             {
-              "text": "Are the steps known before the first action? No, because they depend on what the log says.",
+              "text": "Are the steps known before the first action? No, because what to check next depends on what the payment records show.",
               "math": "steps unknown"
             },
             {
@@ -2549,7 +2549,7 @@
               "math": "changes at every step"
             },
             {
-              "text": "The first two answers rule out a plan written in advance. Name the pattern that decides each step after the last result.",
+              "text": "The first two answers rule out a plan written in advance. Name the pattern that fits.",
               "blank": {
                 "questionId": "aia-planning-patterns-job-pattern"
               }
@@ -3162,6 +3162,22 @@
           "activityId": ""
         },
         {
+          "id": "summary-size",
+          "kind": "predict",
+          "blocks": [],
+          "lead": [],
+          "reveal": [
+            {
+              "kind": "paragraph",
+              "text": "The summary is thirty times smaller than the material behind it. That is what keeps the lead's context small, and it is also why the lead cannot answer a question about a detail that the summary left out."
+            }
+          ],
+          "answerVisibility": "hidden-until-response",
+          "visualStateId": "",
+          "checkQuestionId": "aia-multi-agent-systems-what-lead-sees",
+          "activityId": ""
+        },
+        {
           "id": "what-it-costs",
           "kind": "explain",
           "blocks": [],
@@ -3169,7 +3185,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The split also has a price, and the arithmetic shows the largest part of it. Suppose a single agent could do the same research serially in about 35 thousand tokens, an assumption we make for the comparison. The multi-agent run used 100 thousand, so it spent almost three times the tokens to save time and to keep each search's pages out of one shared context. Anthropic's account is consistent with this: it reports that agents typically use about four times the tokens of a chat interaction and that multi-agent systems use about fifteen times as many, and it concludes that such systems suit tasks whose value is high enough to pay for that."
+              "text": "The split also has a price, and the arithmetic shows the largest part of it. Suppose a single agent could do the same research serially in about 40 thousand tokens, an assumption we make for the comparison. The run in the figure used 100 thousand in all, so it spent two and a half times the tokens to save time and to keep each search's pages out of one shared context. Anthropic's account is consistent with this: it reports that agents typically use about four times the tokens of a chat interaction and that multi-agent systems use about fifteen times as many, and it concludes that such systems suit tasks whose value is high enough to pay for that."
             },
             {
               "kind": "paragraph",
@@ -3198,26 +3214,10 @@
           "activityId": ""
         },
         {
-          "id": "summary-size",
-          "kind": "predict",
-          "blocks": [],
-          "lead": [],
-          "reveal": [
-            {
-              "kind": "paragraph",
-              "text": "The summary is thirty times smaller than the material behind it. That is what keeps the lead's context small, and it is also why the lead cannot answer a question about a detail that the summary left out."
-            }
-          ],
-          "answerVisibility": "hidden-until-response",
-          "visualStateId": "",
-          "checkQuestionId": "aia-multi-agent-systems-what-lead-sees",
-          "activityId": ""
-        },
-        {
           "id": "isolation",
           "kind": "explain",
           "blocks": [],
-          "headline": "A subagent sees only what it is handed, and that isolation keeps its task focused and the lead's context small.",
+          "headline": "A subagent sees only what it is handed, so the lead's brief decides everything the worker can know.",
           "lead": [
             {
               "kind": "paragraph",
@@ -3225,7 +3225,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The isolation has two benefits. The worker's context stays focused on a single task, so its tokens go on the search and not on the rest of the project, and the lead's context stays small, because the pages the workers read never enter it. Isolation is also what separates a subagent from a **handoff**, in which one agent passes control of the whole conversation, with its context, to another that then carries on with the user. In a handoff the receiving agent takes over, whereas a subagent returns a result and the lead stays in charge."
+              "text": "Isolation also separates a subagent from a **handoff**, in which one agent passes control of the whole conversation, with its context, to another that then carries on with the user. In a handoff the receiving agent takes over, whereas a subagent returns a result and the lead stays in charge."
             }
           ],
           "introducesTerms": [
@@ -4018,18 +4018,18 @@
           "id": "audit-a-browser-agent",
           "kind": "worked_example",
           "blocks": [],
-          "headline": "Audit a browser agent that holds the user's logged-in session, for the three capabilities.",
+          "headline": "Audit a coding agent that works in the company's private repository, reads the issues anyone can file on its public tracker, and can fetch any web address.",
           "workedSteps": [
             {
-              "text": "Private data: the session is logged in to the user's accounts, so the agent can read pages and data that only the user can see.",
+              "text": "Private data: the repository is private to the company, so the agent can read code and settings that outsiders cannot.",
               "math": "private data: yes"
             },
             {
-              "text": "Untrusted content: it opens pages from across the web, and anyone could have written them.",
+              "text": "Untrusted content: anyone can file an issue, so an outsider can put text in front of the agent.",
               "math": "untrusted content: yes"
             },
             {
-              "text": "Outbound channel: it can follow links and submit forms, and each request can carry data to an address that an attacker chose.",
+              "text": "Outbound channel: it can fetch any web address, and each request can carry data to an address that an attacker chose.",
               "math": "outbound channel: yes"
             },
             {
@@ -4300,7 +4300,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The measure that shows the tail is a percentile. The **95th percentile**, written p95, is the latency that 95% of the runs stay below, so it describes how slow the slowest tenth or so of runs are. The simple way to find it is the nearest-rank method: sort the n latencies from smallest to largest, and take the value at position ⌈0.95 × n⌉, where ⌈ ⌉ means rounding up to a whole number. For twenty runs that position is ⌈19⌉, which is 19, so the p95 is the 19th smallest value. The median, or p50, is found in the same way with 0.5 in place of 0.95."
+              "text": "The measure that shows the tail is a percentile. The **95th percentile**, written p95, is the latency that 95% of the runs stay below, so it marks where the slowest 5% of runs, one in twenty, begin. The simple way to find it is the nearest-rank method: sort the n latencies from smallest to largest, and take the value at position ⌈0.95 × n⌉, where ⌈ ⌉ means rounding up to a whole number. For thirty runs that position is ⌈28.5⌉, which rounds up to 29, so the p95 is the 29th smallest value. The median, or p50, is found in the same way with 0.5 in place of 0.95."
             },
             {
               "kind": "paragraph",
@@ -5149,7 +5149,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "It is a mistake to think that oversight ends when the agent is released. The sampled review goes on, the alerts keep watching, and the error rate is tracked against the trigger in the record. Suppose the team reads a sample of 30 actions and finds that 2 were wrong. That is 2 ÷ 30, or about 6.7%, which is above the 3% limit in the record, so the trigger fires and the agent steps back from act to assist while the team looks at what changed."
+              "text": "It is a mistake to think that oversight ends when the agent is released. The sampled review goes on, the alerts keep watching, and the error rate is tracked against the trigger in the record. Suppose the team reads a sample of 40 actions and finds that 3 were wrong. That is 3 ÷ 40, or 7.5%, which is above the 3% limit in the record, so the trigger fires and the agent steps back from act to assist while the team looks at what changed."
             },
             {
               "kind": "paragraph",
@@ -5937,12 +5937,12 @@
         "step-budget",
         "compounding-error"
       ],
-      "prompt": "An agent's run takes three steps. At steps 1 and 2 the model calls a tool, and at step 3 it replies with a final answer and no tool call, which ends the run. How many times was the model called during the run?",
+      "prompt": "During a run the model calls a tool at each of steps 1 to 4, and at step 5 it replies with a final answer and no tool call, which ends the run. How many times was the model called during the run?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
         "Every pass of the loop begins with a call to the model.",
-        "The run had three steps, and the last one produced the answer.",
+        "The run had four steps that chose a tool and one that produced the answer.",
         "A tool call is carried out by code, not by the model."
       ],
       "sourceIds": [
@@ -5954,28 +5954,28 @@
       "calculator": "off",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 3,
+        "value": 5,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "Each step is one model call: step 1 chose lookup_order, step 2 chose check_policy and step 3 wrote the answer, which makes 3."
+        "workedAnswer": "Each step is one model call: steps 1 to 4 each chose a tool and step 5 wrote the answer, which makes 5."
       },
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              2
+              4
             ]
           },
-          "feedback": "Two is the number of tool calls. The final answer came from a third model call."
+          "feedback": "Four is the number of tool calls. The final answer came from a fifth model call."
         },
         {
           "match": {
             "numeric": [
-              6
+              9
             ]
           },
-          "feedback": "The context holds six items, but the model was called once per step, not once per item."
+          "feedback": "That counts the tool calls as model calls too. Code carries out each tool call, so only the five passes of the loop call the model."
         }
       ]
     },
@@ -6374,28 +6374,28 @@
         "step-budget",
         "compounding-error"
       ],
-      "prompt": "Each step of a run succeeds with probability 0.95, independently, and the run needs all 10 steps to succeed. What is the chance that it does, to two decimal places?",
+      "prompt": "Each step of a run succeeds with probability 0.95, independently, and the run needs all 12 steps to succeed. What is the chance that it does, to two decimal places?",
       "responseType": "numeric",
       "difficulty": 1.3,
       "hints": [
         "The run succeeds only if every step succeeds.",
-        "Raise 0.95 to the power 10 on a calculator.",
+        "Raise 0.95 to the power 12 on a calculator.",
         "Round to two decimal places."
       ],
       "sourceIds": [
         "anthropic-agents",
         "react-paper"
       ],
-      "onCorrect": "Ten steps that are each 95% reliable finish only about 60% of the time, because the chances multiply.",
+      "onCorrect": "Twelve steps that are each 95% reliable finish only about 54% of the time, because the chances multiply.",
       "skill": "compute-reliability",
       "calculator": "available",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 0.6,
+        "value": 0.54,
         "unit": "",
         "absoluteTolerance": 0.005,
         "relativeTolerance": 0,
-        "workedAnswer": "0.95 multiplied by itself 10 times is about 0.5987, which is 0.60 to two places."
+        "workedAnswer": "0.95 multiplied by itself 12 times is about 0.5404, which is 0.54 to two places."
       },
       "misconceptions": [
         {
@@ -6404,7 +6404,7 @@
               0.95
             ]
           },
-          "feedback": "That is the chance for a single step. All ten must succeed."
+          "feedback": "That is the chance for a single step. All twelve must succeed."
         },
         {
           "match": {
@@ -6417,10 +6417,18 @@
         {
           "match": {
             "numeric": [
-              0.4
+              0.46
             ]
           },
           "feedback": "That is the chance that the run fails. The question asks for the chance that it succeeds."
+        },
+        {
+          "match": {
+            "numeric": [
+              0.6
+            ]
+          },
+          "feedback": "That is the chance for ten steps. This run has twelve, and each extra step lowers it further."
         }
       ]
     },
@@ -7233,13 +7241,21 @@
       "calculator": "off",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 7,
+        "value": 12,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "The reply answers the request by carrying the request's id, and the request's id is 7."
+        "workedAnswer": "The reply answers the request by carrying the request's id, and the request's id is 12."
       },
       "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              7
+            ]
+          },
+          "feedback": "That is the id in the figure's request. A reply carries the id of the request it answers, so read the id in this request."
+        },
         {
           "match": {
             "numeric": [
@@ -7709,7 +7725,7 @@
         "compaction",
         "external-memory"
       ],
-      "prompt": "What is the process of replacing old turns with a model-written summary, to free room in the context, called?",
+      "prompt": "An agent's context reaches its trigger, so the code has the model rewrite the oldest forty turns as a short summary and keeps the last few turns word for word. What is this step called?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -7837,29 +7853,29 @@
       "difficulty": 1,
       "hints": [
         "Subtract the trigger from the new total.",
-        "The total is 83,000 and the trigger is 80,000.",
-        "83,000 − 80,000."
+        "The total is 86,000 and the trigger is 80,000.",
+        "86,000 − 80,000."
       ],
       "sourceIds": [
         "anthropic-agents",
         "anthropic-multi"
       ],
-      "onCorrect": "The total passes the trigger by 3,000 tokens, so compaction runs at this step, even though the window itself still has 17,000 tokens free.",
+      "onCorrect": "The total passes the trigger by 6,000 tokens, so compaction runs at this step, even though the window itself still has 14,000 tokens free.",
       "skill": "budget-context",
       "calculator": "off",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 3000,
+        "value": 6000,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "83,000 − 80,000 = 3,000."
+        "workedAnswer": "86,000 − 80,000 = 6,000."
       },
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              17000
+              14000
             ]
           },
           "feedback": "That is the room left in the whole window. The question compares the total with the trigger."
@@ -7867,10 +7883,18 @@
         {
           "match": {
             "numeric": [
-              21000
+              15000
             ]
           },
           "feedback": "That is the size of the tool result, not how far past the trigger the total goes."
+        },
+        {
+          "match": {
+            "numeric": [
+              3000
+            ]
+          },
+          "feedback": "That is the figure's case, 83,000 against 80,000. Here the total is 86,000."
         }
       ]
     },
@@ -8506,7 +8530,7 @@
         "plan-execute",
         "reflection"
       ],
-      "prompt": "Which pattern writes the plan first and rewrites it when a step fails?",
+      "prompt": "Which pattern fits setting up the new employee's accounts?",
       "responseType": "short_text",
       "difficulty": 1.2,
       "hints": [
@@ -8546,7 +8570,7 @@
               "reason and act"
             ]
           },
-          "feedback": "A reason-act loop decides each step after the last result, whereas the claim's steps are known in advance."
+          "feedback": "A reason-act loop decides each step after the last result, whereas the onboarding steps are known in advance."
         },
         {
           "match": {
@@ -8565,7 +8589,7 @@
         "plan-execute",
         "reflection"
       ],
-      "prompt": "Which pattern decides each step after the last result?",
+      "prompt": "Which pattern fits finding out why the payments are declined?",
       "responseType": "short_text",
       "difficulty": 1.2,
       "hints": [
@@ -8605,7 +8629,7 @@
               "plan-then-execute"
             ]
           },
-          "feedback": "A plan written first would be out of date as soon as the first log line is read."
+          "feedback": "A plan written first would be out of date as soon as the first payment record is read."
         },
         {
           "match": {
@@ -8904,7 +8928,7 @@
         "parallelisation",
         "evaluator-optimiser"
       ],
-      "prompt": "Which pattern runs a fixed sequence of model calls, each using the previous call's output?",
+      "prompt": "One model call extracts the key facts from a contract, a second turns those facts into a plain-language summary, and a third checks the summary against a list of required points, always in that order. Which pattern is this?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -9163,7 +9187,7 @@
         "parallelisation",
         "evaluator-optimiser"
       ],
-      "prompt": "A subtask list that cannot be known until the input is read is best served by",
+      "prompt": "A user asks for a market report on a product they name, and which sources to search and how many comparisons to make can only be decided once the request has been read. Which pattern serves this best?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -9405,33 +9429,33 @@
         "parallelisation",
         "evaluator-optimiser"
       ],
-      "prompt": "Three independent voters are each right 80% of the time, and the majority wins. What is the chance that the majority is right?",
+      "prompt": "Three independent voters are each right 90% of the time, and the majority wins. What is the chance that the majority is right?",
       "responseType": "numeric",
       "difficulty": 1.5,
       "hints": [
         "The majority is right if exactly two voters are right or all three are.",
-        "Exactly two: 3 × 0.8² × 0.2. All three: 0.8³.",
+        "Exactly two: 3 × 0.9² × 0.1. All three: 0.9³.",
         "Add the two probabilities."
       ],
       "sourceIds": [
         "anthropic-agents"
       ],
-      "onCorrect": "Voting lifts three 80% voters to about 90%, provided the voters make independent mistakes.",
+      "onCorrect": "Voting lifts three 90% voters to about 97%, provided the voters make independent mistakes.",
       "skill": "compute-parallel",
       "calculator": "available",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 0.896,
+        "value": 0.972,
         "unit": "",
         "absoluteTolerance": 0.0005,
         "relativeTolerance": 0,
-        "workedAnswer": "The majority is right with probability 3 × 0.8² × 0.2 + 0.8³ = 0.384 + 0.512 = 0.896."
+        "workedAnswer": "The majority is right with probability 3 × 0.9² × 0.1 + 0.9³ = 0.243 + 0.729 = 0.972."
       },
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              0.8
+              0.9
             ]
           },
           "feedback": "That is one voter's chance. The question asks for the majority of three."
@@ -9439,10 +9463,18 @@
         {
           "match": {
             "numeric": [
-              0.512
+              0.729
             ]
           },
           "feedback": "That is the chance that all three are right. Add the chance that exactly two are."
+        },
+        {
+          "match": {
+            "numeric": [
+              0.896
+            ]
+          },
+          "feedback": "That is the result for 80% voters on the voting screen. Here each voter is right 90% of the time."
         }
       ]
     },
@@ -9508,12 +9540,12 @@
         "context-isolation",
         "aia-contract"
       ],
-      "prompt": "A lead agent spends 10 thousand tokens on its plan, each of its four workers spends 20 thousand, and the lead spends 10 thousand on the synthesis. What is the total number of tokens used, in thousands?",
+      "prompt": "A lead agent spends 12 thousand tokens on its plan, each of its three workers spends 25 thousand, and the lead spends 8 thousand on the synthesis. What is the total number of tokens used, in thousands?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
         "Count the lead's two stages and the workers separately.",
-        "The workers use 4 × 20 thousand tokens.",
+        "The workers use 3 × 25 thousand tokens.",
         "Add the plan, the workers and the synthesis."
       ],
       "sourceIds": [
@@ -9526,17 +9558,17 @@
       "calculator": "off",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 100,
+        "value": 95,
         "unit": "thousand tokens",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "The plan is 10, the four workers use 4 × 20 = 80, and the synthesis is 10, so 10 + 80 + 10 = 100 thousand."
+        "workedAnswer": "The plan is 12, the three workers use 3 × 25 = 75, and the synthesis is 8, so 12 + 75 + 8 = 95 thousand."
       },
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              80
+              75
             ]
           },
           "feedback": "That counts only the workers. The lead's plan and synthesis cost 20 thousand more."
@@ -9544,18 +9576,26 @@
         {
           "match": {
             "numeric": [
-              40
+              45
             ]
           },
-          "feedback": "That counts the lead's stages and two workers only. There are four workers."
+          "feedback": "That counts the lead's stages and one worker only. There are three workers."
         },
         {
           "match": {
             "numeric": [
-              60
+              70
             ]
           },
-          "feedback": "That leaves out two workers. All four are paid for."
+          "feedback": "That leaves out one worker. All three are paid for."
+        },
+        {
+          "match": {
+            "numeric": [
+              100
+            ]
+          },
+          "feedback": "That is the run in the figure. Add the plan, workers and synthesis given in this question."
         }
       ]
     },
@@ -9784,7 +9824,7 @@
               "b"
             ]
           },
-          "feedback": "No protocol requires it. It is a design choice with the benefits above."
+          "feedback": "No protocol requires it. It is a design choice, made for what it does to each agent's context."
         },
         {
           "match": {
@@ -10741,7 +10781,7 @@
         "untrusted-content",
         "privilege-separation"
       ],
-      "prompt": "What do we call text an agent reads that an attacker could have written, such as a web page?",
+      "prompt": "A shop's agent reads the product reviews on the shop's own website, which any visitor can post. What do we call text of this kind?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -10779,7 +10819,7 @@
               "configuration"
             ]
           },
-          "feedback": "Trusted text is what the team wrote. A page that anyone could edit is the opposite."
+          "feedback": "Trusted text is what the team wrote. A review that any visitor can post is the opposite."
         },
         {
           "match": {
@@ -10799,12 +10839,12 @@
         "untrusted-content",
         "privilege-separation"
       ],
-      "prompt": "An agent reads the user's inbox and has one other tool, a search over the company's own approved knowledge base. It has no web access and no tool that sends anything outside. How many of the three capabilities, private data, untrusted content and external communication, does it have?",
+      "prompt": "An agent reads public web pages and can post to the company's public social media account. It has no access to customer records or to any company data that is not already public. How many of the three capabilities, private data, untrusted content and external communication, does it have?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
         "Take the capabilities one at a time.",
-        "Private data: yes. Untrusted content: yes, strangers write emails. Outbound channel: no.",
+        "Private data: no. Untrusted content: yes, anyone can write a web page. Outbound channel: yes, its posts leave the company.",
         "Count the yes answers."
       ],
       "sourceIds": [
@@ -10812,7 +10852,7 @@
         "greshake",
         "owasp-llm"
       ],
-      "onCorrect": "The agent has two capabilities, and the missing third is what stops private data from leaving.",
+      "onCorrect": "The agent has two capabilities, and since it can reach nothing private, an injected instruction has nothing to send out.",
       "skill": "count-legs",
       "calculator": "off",
       "answerAuthority": {
@@ -10821,7 +10861,7 @@
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "The inbox is private data and accepts text from outsiders, which makes it untrusted content too, and the agent has no outbound channel, so it has 2 of the 3."
+        "workedAnswer": "The web pages are untrusted content and the public posts are an outbound channel, but the agent holds no private data, so it has 2 of the 3."
       },
       "misconceptions": [
         {
@@ -10830,7 +10870,7 @@
               3
             ]
           },
-          "feedback": "There is no tool that sends anything outside, so the third capability is absent."
+          "feedback": "Nothing the agent can reach is private, so the first capability is absent."
         },
         {
           "match": {
@@ -10838,7 +10878,7 @@
               1
             ]
           },
-          "feedback": "The inbox gives two: it is private, and outsiders can write into it."
+          "feedback": "The web pages are untrusted content and the public posts are a way out, which makes two."
         }
       ]
     },
@@ -10986,11 +11026,11 @@
         "untrusted-content",
         "privilege-separation"
       ],
-      "prompt": "How many of the three capabilities does the browser agent have?",
+      "prompt": "How many of the three capabilities does the coding agent have?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
-        "The session gives one capability, the pages another, and the links and forms a third.",
+        "The repository gives one capability, the issues another, and the fetch tool a third.",
         "All three answers in the lines above were yes.",
         "Count the yes answers."
       ],
@@ -11008,7 +11048,7 @@
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "The session gives private data, the pages give untrusted content, and links and forms give an outbound channel, so all 3."
+        "workedAnswer": "The repository gives private data, the public issues give untrusted content, and the fetch tool gives an outbound channel, so all 3."
       },
       "misconceptions": [
         {
@@ -11017,7 +11057,7 @@
               2
             ]
           },
-          "feedback": "Following links and submitting forms are outbound requests, so the third capability is present."
+          "feedback": "Fetching any web address is an outbound request, so the third capability is present."
         },
         {
           "match": {
@@ -11025,7 +11065,7 @@
               1
             ]
           },
-          "feedback": "The session, the pages and the outbound requests are all present."
+          "feedback": "The repository, the public issues and the fetch tool are all present."
         }
       ]
     },
@@ -11374,13 +11414,13 @@
         "p95",
         "cost-per-success"
       ],
-      "prompt": "The spans take 1.2 s, 0.8 s, 1.6 s and 1.9 s, one after another. How many seconds did the whole run take?",
+      "prompt": "Another run's spans take 0.9 s, 1.4 s, 2.3 s and 1.7 s, one after another. How many seconds did the whole run take?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
         "The four spans run one after another.",
         "The run lasts as long as the four spans put together.",
-        "Add 1.2, 0.8, 1.6 and 1.9."
+        "Add 0.9, 1.4, 2.3 and 1.7."
       ],
       "sourceIds": [
         "otel-genai",
@@ -11392,17 +11432,17 @@
       "calculator": "off",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 5.5,
+        "value": 6.3,
         "unit": "seconds",
         "absoluteTolerance": 0.05,
         "relativeTolerance": 0,
-        "workedAnswer": "The spans do not overlap, so the run lasts 1.2 + 0.8 + 1.6 + 1.9 = 5.5 seconds."
+        "workedAnswer": "The spans do not overlap, so the run lasts 0.9 + 1.4 + 2.3 + 1.7 = 6.3 seconds."
       },
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              1.9
+              2.3
             ]
           },
           "feedback": "That is the longest span only. The four spans run one after another, so their times add."
@@ -11414,6 +11454,14 @@
             ]
           },
           "feedback": "That leaves out one of the four spans."
+        },
+        {
+          "match": {
+            "numeric": [
+              5.5
+            ]
+          },
+          "feedback": "That is the run in the figure. Add the four spans given here."
         }
       ]
     },
@@ -11925,7 +11973,7 @@
         "pass-at-k",
         "pass-hat-k"
       ],
-      "prompt": "An agent processes a refund correctly and its final answer is right, but in the same run it deleted the record of another customer's order, which the task rules forbid. How is the run graded?",
+      "prompt": "An agent books the flight a customer asked for and its confirmation is right, but in the same run it cancelled the customer's existing hotel booking, which the task rules forbid. How is the run graded?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -11989,7 +12037,7 @@
               "d"
             ]
           },
-          "feedback": "The trace records the deletion, so the run can be graded against the rule."
+          "feedback": "The trace records the cancellation, so the run can be graded against the rule."
         }
       ]
     },
@@ -12829,7 +12877,7 @@
         "staged-rollout",
         "autonomy-record"
       ],
-      "prompt": "Which stage runs the agent without executing its actions?",
+      "prompt": "A team wants to measure how often a new agent's choices match its staff's decisions on real cases, without any case being affected by what the agent chooses. Which stage should the agent run in?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -12954,7 +13002,7 @@
         "staged-rollout",
         "autonomy-record"
       ],
-      "prompt": "Which NIST AI RMF function covers policies, roles and accountability?",
+      "prompt": "A company writes a policy saying which teams may deploy an agent, names the person accountable for each one, and sets who signs off on a change in its autonomy. Which NIST AI RMF function does this work belong to?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [

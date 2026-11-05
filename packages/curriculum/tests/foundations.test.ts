@@ -42,7 +42,7 @@ describe("published foundation curriculum", () => {
         "left-side": 2 * 4 + 1,
         try: 5 * 3 - 2,
         taxi: 3 + 2 * 7,
-        "check-1": 3 * 4 + 2,
+        "check-1": 3 * 5 + 2,
         // Moved to lesson 3 in 1.2.0 with their ids kept.
         "4": solve(3, -4, 14),
         "practice-1": solve(0.5, 1, 4),

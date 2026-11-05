@@ -611,11 +611,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The way of assigning the signed readings in the figure is called **two's complement**, and its rule is short. If the top bit of a pattern is 0, the number is the unsigned value, exactly as before. If the top bit is 1, the number is the unsigned value *minus* 2^n, where n is the width. The pattern 11111111 is 255 as a u8, so as an i8 it is 255 − 256 = -1, and the pattern 11111011 is 251 as a u8 and 251 − 256 = -5 as an i8."
+              "text": "The way of assigning the signed readings in the figure is called **two's complement**, and its rule is short. If the top bit of a pattern is 0, the number is the unsigned value, exactly as before. If the top bit is 1, the number is the unsigned value *minus* 2^n, where n is the width. The pattern 11111111 is 255 as a u8, so as an i8 it is 255 − 256 = -1, and the pattern 11111010 is 250 as a u8 and 250 − 256 = -6 as an i8."
             },
             {
               "kind": "paragraph",
-              "text": "The scheme was adopted because addition needs no special case for negative numbers. Adding the patterns for 5 and -5 as ordinary unsigned numbers gives 00000101 + 11111011 = 100000000, a nine-bit result whose top bit does not fit in a byte, and the eight bits that remain are 00000000, which is zero. To write -5 yourself, invert every bit of 5 and add one: 00000101 inverts to 11111010, and adding one gives 11111011."
+              "text": "The scheme was adopted because addition needs no special case for negative numbers. Adding the patterns for 6 and -6 as ordinary unsigned numbers gives 00000110 + 11111010 = 100000000, a nine-bit result whose top bit does not fit in a byte, and the eight bits that remain are 00000000, which is zero. To write -6 yourself, invert every bit of 6 and add one: 00000110 inverts to 11111001, and adding one gives 11111010."
             }
           ],
           "afterFigure": [],
@@ -1092,18 +1092,18 @@
           "id": "walk-abc-wide",
           "kind": "faded_example",
           "blocks": [],
-          "headline": "Lay out #[repr(C)] struct T { a: u8, b: u64, c: u16 } and find where c starts.",
+          "headline": "Lay out #[repr(C)] struct U { a: u8, b: u16, c: u64 } and find where c starts.",
           "workedSteps": [
             {
               "text": "The field a starts at offset 0 and ends at 1.",
               "math": "a: 0 to 1"
             },
             {
-              "text": "The field b is a u64, so it starts at round_up(1, 8) = 8 and ends at 16.",
-              "math": "b: 8 to 16"
+              "text": "The field b is a u16, so it starts at round_up(1, 2) = 2 and ends at 4.",
+              "math": "b: 2 to 4"
             },
             {
-              "text": "The field c is a u16. Work out its byte offset.",
+              "text": "The field c is a u64. Work out its byte offset.",
               "blank": {
                 "questionId": "sysp-layout-size-and-alignment-offset-of-c"
               }
@@ -1416,13 +1416,13 @@
             },
             {
               "kind": "paragraph",
-              "text": "A String is built in the same way, with its text as bytes in the buffer, and a Box<i32> is simpler still, a single pointer to one i32 on the heap, so it is 8 bytes. A &str is a pointer and a length, 16 bytes, because it only *borrows* text that somebody else owns and has no capacity to record."
+              "text": "A String is built in the same way, with its text as bytes in the buffer, and a Box<i32> is simpler still, a single pointer to one i32 on the heap, so it is 8 bytes. A &str is only a pointer and a length, because it *borrows* text that somebody else owns and has no capacity to record."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "Rust can report these sizes for you. size_of::<Vec<i32>>() and size_of::<String>() are both 24, size_of::<&str>() is 16 and size_of::<Box<i32>>() is 8. **The handle is the same size whether the Vec holds three elements or three million**, because the elements are not in it."
+              "text": "Rust can report these sizes for you with std::mem::size_of, so size_of::<Box<i32>>() gives 8, and for a Vec or a String it gives the size of the three-word handle. **The handle is the same size whether the Vec holds three elements or three million**, because the elements are not in it."
             }
           ],
           "introducesTerms": [
@@ -1441,12 +1441,12 @@
               {
                 "id": "vec",
                 "label": "A Vec of i32",
-                "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 640 320\"><defs><marker id=\"hwvec\" markerWidth=\"8\" markerHeight=\"8\" refX=\"6\" refY=\"4\" orient=\"auto\"><path class=\"f-ink\" d=\"M0 0 L8 4 L0 8 z\"/></marker></defs><text class=\"t-big\" x=\"130\" y=\"36\" text-anchor=\"middle\">stack</text><text class=\"t-big\" x=\"450\" y=\"36\" text-anchor=\"middle\">heap</text><rect class=\"f-accent-soft s-accent w2\" x=\"40\" y=\"64\" width=\"180\" height=\"46\" rx=\"4\"/><text class=\"t\" x=\"56\" y=\"94\" text-anchor=\"start\">pointer</text><text class=\"t-bold\" x=\"200\" y=\"94\" text-anchor=\"end\"></text><rect class=\"f-sunken s-ink w2\" x=\"40\" y=\"110\" width=\"180\" height=\"46\" rx=\"4\"/><text class=\"t\" x=\"56\" y=\"140\" text-anchor=\"start\">capacity</text><text class=\"t-bold\" x=\"200\" y=\"140\" text-anchor=\"end\">4</text><rect class=\"f-sunken s-ink w2\" x=\"40\" y=\"156\" width=\"180\" height=\"46\" rx=\"4\"/><text class=\"t\" x=\"56\" y=\"186\" text-anchor=\"start\">length</text><text class=\"t-bold\" x=\"200\" y=\"186\" text-anchor=\"end\">3</text><rect class=\"f-green-soft s-green w2\" x=\"300\" y=\"90\" width=\"40\" height=\"40\" rx=\"2\"/><text class=\"t-bold\" x=\"320.0\" y=\"116\" text-anchor=\"middle\">10</text><rect class=\"f-green-soft s-green w2\" x=\"340\" y=\"90\" width=\"40\" height=\"40\" rx=\"2\"/><text class=\"t-bold\" x=\"360.0\" y=\"116\" text-anchor=\"middle\">20</text><rect class=\"f-green-soft s-green w2\" x=\"380\" y=\"90\" width=\"40\" height=\"40\" rx=\"2\"/><text class=\"t-bold\" x=\"400.0\" y=\"116\" text-anchor=\"middle\">30</text><rect class=\"f-sunken s-line w1\" x=\"420\" y=\"90\" width=\"40\" height=\"40\" rx=\"2\"/><polyline class=\"f-none s-accent w2\" points=\"220,87 260,87 260,110 296,110\" marker-end=\"url(#hwvec)\"/><text class=\"t t-accent\" x=\"320\" y=\"285\" text-anchor=\"middle\">24 bytes on the stack, 16 on the heap</text></svg>"
+                "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 640 320\"><defs><marker id=\"hwvec\" markerWidth=\"8\" markerHeight=\"8\" refX=\"6\" refY=\"4\" orient=\"auto\"><path class=\"f-ink\" d=\"M0 0 L8 4 L0 8 z\"/></marker></defs><text class=\"t-big\" x=\"130\" y=\"36\" text-anchor=\"middle\">stack</text><text class=\"t-big\" x=\"450\" y=\"36\" text-anchor=\"middle\">heap</text><rect class=\"f-accent-soft s-accent w2\" x=\"40\" y=\"64\" width=\"180\" height=\"46\" rx=\"4\"/><text class=\"t\" x=\"56\" y=\"94\" text-anchor=\"start\">pointer</text><text class=\"t-bold\" x=\"200\" y=\"94\" text-anchor=\"end\"></text><rect class=\"f-sunken s-ink w2\" x=\"40\" y=\"110\" width=\"180\" height=\"46\" rx=\"4\"/><text class=\"t\" x=\"56\" y=\"140\" text-anchor=\"start\">capacity</text><text class=\"t-bold\" x=\"200\" y=\"140\" text-anchor=\"end\">4</text><rect class=\"f-sunken s-ink w2\" x=\"40\" y=\"156\" width=\"180\" height=\"46\" rx=\"4\"/><text class=\"t\" x=\"56\" y=\"186\" text-anchor=\"start\">length</text><text class=\"t-bold\" x=\"200\" y=\"186\" text-anchor=\"end\">3</text><rect class=\"f-green-soft s-green w2\" x=\"300\" y=\"90\" width=\"40\" height=\"40\" rx=\"2\"/><text class=\"t-bold\" x=\"320.0\" y=\"116\" text-anchor=\"middle\">10</text><rect class=\"f-green-soft s-green w2\" x=\"340\" y=\"90\" width=\"40\" height=\"40\" rx=\"2\"/><text class=\"t-bold\" x=\"360.0\" y=\"116\" text-anchor=\"middle\">20</text><rect class=\"f-green-soft s-green w2\" x=\"380\" y=\"90\" width=\"40\" height=\"40\" rx=\"2\"/><text class=\"t-bold\" x=\"400.0\" y=\"116\" text-anchor=\"middle\">30</text><rect class=\"f-sunken s-line w1\" x=\"420\" y=\"90\" width=\"40\" height=\"40\" rx=\"2\"/><polyline class=\"f-none s-accent w2\" points=\"220,87 260,87 260,110 296,110\" marker-end=\"url(#hwvec)\"/><text class=\"t t-accent\" x=\"320\" y=\"285\" text-anchor=\"middle\">3 words on stack, 16 bytes on heap</text></svg>"
               },
               {
                 "id": "string",
                 "label": "A String",
-                "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 640 320\"><defs><marker id=\"hwstring\" markerWidth=\"8\" markerHeight=\"8\" refX=\"6\" refY=\"4\" orient=\"auto\"><path class=\"f-ink\" d=\"M0 0 L8 4 L0 8 z\"/></marker></defs><text class=\"t-big\" x=\"130\" y=\"36\" text-anchor=\"middle\">stack</text><text class=\"t-big\" x=\"450\" y=\"36\" text-anchor=\"middle\">heap</text><rect class=\"f-accent-soft s-accent w2\" x=\"40\" y=\"64\" width=\"180\" height=\"46\" rx=\"4\"/><text class=\"t\" x=\"56\" y=\"94\" text-anchor=\"start\">pointer</text><text class=\"t-bold\" x=\"200\" y=\"94\" text-anchor=\"end\"></text><rect class=\"f-sunken s-ink w2\" x=\"40\" y=\"110\" width=\"180\" height=\"46\" rx=\"4\"/><text class=\"t\" x=\"56\" y=\"140\" text-anchor=\"start\">capacity</text><text class=\"t-bold\" x=\"200\" y=\"140\" text-anchor=\"end\">5</text><rect class=\"f-sunken s-ink w2\" x=\"40\" y=\"156\" width=\"180\" height=\"46\" rx=\"4\"/><text class=\"t\" x=\"56\" y=\"186\" text-anchor=\"start\">length</text><text class=\"t-bold\" x=\"200\" y=\"186\" text-anchor=\"end\">5</text><rect class=\"f-green-soft s-green w2\" x=\"300\" y=\"90\" width=\"40\" height=\"40\" rx=\"2\"/><text class=\"t-bold\" x=\"320.0\" y=\"116\" text-anchor=\"middle\">h</text><rect class=\"f-green-soft s-green w2\" x=\"340\" y=\"90\" width=\"40\" height=\"40\" rx=\"2\"/><text class=\"t-bold\" x=\"360.0\" y=\"116\" text-anchor=\"middle\">e</text><rect class=\"f-green-soft s-green w2\" x=\"380\" y=\"90\" width=\"40\" height=\"40\" rx=\"2\"/><text class=\"t-bold\" x=\"400.0\" y=\"116\" text-anchor=\"middle\">l</text><rect class=\"f-green-soft s-green w2\" x=\"420\" y=\"90\" width=\"40\" height=\"40\" rx=\"2\"/><text class=\"t-bold\" x=\"440.0\" y=\"116\" text-anchor=\"middle\">l</text><rect class=\"f-green-soft s-green w2\" x=\"460\" y=\"90\" width=\"40\" height=\"40\" rx=\"2\"/><text class=\"t-bold\" x=\"480.0\" y=\"116\" text-anchor=\"middle\">o</text><polyline class=\"f-none s-accent w2\" points=\"220,87 260,87 260,110 296,110\" marker-end=\"url(#hwstring)\"/><text class=\"t t-accent\" x=\"320\" y=\"285\" text-anchor=\"middle\">24 bytes on the stack, 5 on the heap</text></svg>"
+                "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 640 320\"><defs><marker id=\"hwstring\" markerWidth=\"8\" markerHeight=\"8\" refX=\"6\" refY=\"4\" orient=\"auto\"><path class=\"f-ink\" d=\"M0 0 L8 4 L0 8 z\"/></marker></defs><text class=\"t-big\" x=\"130\" y=\"36\" text-anchor=\"middle\">stack</text><text class=\"t-big\" x=\"450\" y=\"36\" text-anchor=\"middle\">heap</text><rect class=\"f-accent-soft s-accent w2\" x=\"40\" y=\"64\" width=\"180\" height=\"46\" rx=\"4\"/><text class=\"t\" x=\"56\" y=\"94\" text-anchor=\"start\">pointer</text><text class=\"t-bold\" x=\"200\" y=\"94\" text-anchor=\"end\"></text><rect class=\"f-sunken s-ink w2\" x=\"40\" y=\"110\" width=\"180\" height=\"46\" rx=\"4\"/><text class=\"t\" x=\"56\" y=\"140\" text-anchor=\"start\">capacity</text><text class=\"t-bold\" x=\"200\" y=\"140\" text-anchor=\"end\">5</text><rect class=\"f-sunken s-ink w2\" x=\"40\" y=\"156\" width=\"180\" height=\"46\" rx=\"4\"/><text class=\"t\" x=\"56\" y=\"186\" text-anchor=\"start\">length</text><text class=\"t-bold\" x=\"200\" y=\"186\" text-anchor=\"end\">5</text><rect class=\"f-green-soft s-green w2\" x=\"300\" y=\"90\" width=\"40\" height=\"40\" rx=\"2\"/><text class=\"t-bold\" x=\"320.0\" y=\"116\" text-anchor=\"middle\">h</text><rect class=\"f-green-soft s-green w2\" x=\"340\" y=\"90\" width=\"40\" height=\"40\" rx=\"2\"/><text class=\"t-bold\" x=\"360.0\" y=\"116\" text-anchor=\"middle\">e</text><rect class=\"f-green-soft s-green w2\" x=\"380\" y=\"90\" width=\"40\" height=\"40\" rx=\"2\"/><text class=\"t-bold\" x=\"400.0\" y=\"116\" text-anchor=\"middle\">l</text><rect class=\"f-green-soft s-green w2\" x=\"420\" y=\"90\" width=\"40\" height=\"40\" rx=\"2\"/><text class=\"t-bold\" x=\"440.0\" y=\"116\" text-anchor=\"middle\">l</text><rect class=\"f-green-soft s-green w2\" x=\"460\" y=\"90\" width=\"40\" height=\"40\" rx=\"2\"/><text class=\"t-bold\" x=\"480.0\" y=\"116\" text-anchor=\"middle\">o</text><polyline class=\"f-none s-accent w2\" points=\"220,87 260,87 260,110 296,110\" marker-end=\"url(#hwstring)\"/><text class=\"t t-accent\" x=\"320\" y=\"285\" text-anchor=\"middle\">3 words on stack, 5 bytes on heap</text></svg>"
               }
             ],
             "initialCaseId": "vec"
@@ -1489,7 +1489,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The standard library currently doubles the capacity each time, so a Vec started empty reports capacity 4, then 8, then 16 as it grows, which means most pushes cost nothing extra and the copying happens now and then. The exact growth rule is not promised by the documentation, only that pushing is cheap on average."
+              "text": "The standard library currently doubles the capacity each time, so a Vec started empty reports capacity 4 and then 8 as it grows, which means most pushes cost nothing extra and the copying happens now and then. The exact growth rule is not promised by the documentation, only that pushing is cheap on average."
             }
           ],
           "afterFigure": [
@@ -1529,22 +1529,6 @@
           }
         },
         {
-          "id": "what-push-does",
-          "kind": "try",
-          "blocks": [],
-          "lead": [],
-          "reveal": [
-            {
-              "kind": "paragraph",
-              "text": "The old buffer is freed after the copy, so the Vec never holds two buffers for long."
-            }
-          ],
-          "answerVisibility": "hidden-until-response",
-          "visualStateId": "",
-          "checkQuestionId": "sysp-stack-and-heap-push-when-full",
-          "activityId": ""
-        },
-        {
           "id": "string-in-memory",
           "kind": "worked_example",
           "blocks": [],
@@ -1568,6 +1552,22 @@
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
           "checkQuestionId": "",
+          "activityId": ""
+        },
+        {
+          "id": "what-push-does",
+          "kind": "try",
+          "blocks": [],
+          "lead": [],
+          "reveal": [
+            {
+              "kind": "paragraph",
+              "text": "The old buffer is freed after the copy, so the Vec never holds two buffers for long."
+            }
+          ],
+          "answerVisibility": "hidden-until-response",
+          "visualStateId": "",
+          "checkQuestionId": "sysp-stack-and-heap-push-when-full",
           "activityId": ""
         },
         {
@@ -1778,7 +1778,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The assignment let b = a copies the 24-byte handle from a to b, so b now holds the pointer, the capacity and the length. The buffer on the heap is not touched. To keep a single owner, Rust then treats a as empty: the value has **moved** to b, and the name a may not be used again unless it is given a new value."
+              "text": "The assignment let b = a copies the handle from a to b, so b now holds the pointer, the capacity and the length. The buffer on the heap is not touched. To keep a single owner, Rust then treats a as empty: the value has **moved** to b, and the name a may not be used again unless it is given a new value."
             },
             {
               "kind": "paragraph",
@@ -1870,22 +1870,6 @@
           }
         },
         {
-          "id": "error-code",
-          "kind": "try",
-          "blocks": [],
-          "lead": [],
-          "reveal": [
-            {
-              "kind": "paragraph",
-              "text": "Searching the compiler error index for this code gives a short explanation and examples, and rustc --explain with the code prints the same text."
-            }
-          ],
-          "answerVisibility": "hidden-until-response",
-          "visualStateId": "",
-          "checkQuestionId": "sysp-ownership-moves-and-drop-error-code",
-          "activityId": ""
-        },
-        {
           "id": "drop-order",
           "kind": "predict",
           "blocks": [],
@@ -1944,6 +1928,22 @@
               "stdout": "in consume\ndrop a\nend\ndrop b"
             }
           }
+        },
+        {
+          "id": "error-code",
+          "kind": "try",
+          "blocks": [],
+          "lead": [],
+          "reveal": [
+            {
+              "kind": "paragraph",
+              "text": "Searching the compiler error index for this code gives a short explanation and examples, and rustc --explain with the code prints the same text."
+            }
+          ],
+          "answerVisibility": "hidden-until-response",
+          "visualStateId": "",
+          "checkQuestionId": "sysp-ownership-moves-and-drop-error-code",
+          "activityId": ""
         },
         {
           "id": "clone-or-copy",
@@ -2145,6 +2145,31 @@
           }
         },
         {
+          "id": "which-error",
+          "kind": "predict",
+          "blocks": [],
+          "lead": [],
+          "reveal": [
+            {
+              "kind": "paragraph",
+              "text": "The push needs mutable access while f, a shared borrow, is going to be used on the next line, so the compiler reports E0502 and marks the three lines involved."
+            }
+          ],
+          "answerVisibility": "hidden-until-response",
+          "visualStateId": "",
+          "checkQuestionId": "sysp-borrowing-and-lifetimes-which-rule",
+          "activityId": "",
+          "diagram": {
+            "type": "rust_program",
+            "runtime": "Rust 1.93.1",
+            "code": "fn main() {\n    let mut v = vec![1];\n    let f = &v[0];\n    v.push(2);\n    println!(\"{}\", f);\n}",
+            "outcome": {
+              "kind": "compile_error",
+              "diagnostics": "error[E0502]: cannot borrow `v` as mutable because it is also borrowed as immutable\n --> main.rs:4:5\n  |\n3 |     let f = &v[0];\n  |              - immutable borrow occurs here\n4 |     v.push(2);\n  |     ^^^^^^^^^ mutable borrow occurs here\n5 |     println!(\"{}\", f);\n  |                    - immutable borrow later used here\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0502`."
+            }
+          }
+        },
+        {
           "id": "aliasing-rule",
           "kind": "explain",
           "blocks": [],
@@ -2189,31 +2214,6 @@
               }
             ],
             "initialCaseId": "before"
-          }
-        },
-        {
-          "id": "which-error",
-          "kind": "predict",
-          "blocks": [],
-          "lead": [],
-          "reveal": [
-            {
-              "kind": "paragraph",
-              "text": "The push needs mutable access while f, a shared borrow, is going to be used on the next line, so the compiler reports E0502 and marks the three lines involved."
-            }
-          ],
-          "answerVisibility": "hidden-until-response",
-          "visualStateId": "",
-          "checkQuestionId": "sysp-borrowing-and-lifetimes-which-rule",
-          "activityId": "",
-          "diagram": {
-            "type": "rust_program",
-            "runtime": "Rust 1.93.1",
-            "code": "fn main() {\n    let mut v = vec![1];\n    let f = &v[0];\n    v.push(2);\n    println!(\"{}\", f);\n}",
-            "outcome": {
-              "kind": "compile_error",
-              "diagnostics": "error[E0502]: cannot borrow `v` as mutable because it is also borrowed as immutable\n --> main.rs:4:5\n  |\n3 |     let f = &v[0];\n  |              - immutable borrow occurs here\n4 |     v.push(2);\n  |     ^^^^^^^^^ mutable borrow occurs here\n5 |     println!(\"{}\", f);\n  |                    - immutable borrow later used here\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0502`."
-            }
           }
         },
         {
@@ -2340,22 +2340,6 @@
           }
         },
         {
-          "id": "what-a-does",
-          "kind": "try",
-          "blocks": [],
-          "lead": [],
-          "reveal": [
-            {
-              "kind": "paragraph",
-              "text": "The compiler uses the annotation to check callers, which is why it can be wrong only by being too strict, never by letting a dangling reference through."
-            }
-          ],
-          "answerVisibility": "hidden-until-response",
-          "visualStateId": "",
-          "checkQuestionId": "sysp-borrowing-and-lifetimes-what-annotation-does",
-          "activityId": ""
-        },
-        {
           "id": "borrow-ends",
           "kind": "predict",
           "blocks": [],
@@ -2425,6 +2409,22 @@
           }
         },
         {
+          "id": "what-a-does",
+          "kind": "try",
+          "blocks": [],
+          "lead": [],
+          "reveal": [
+            {
+              "kind": "paragraph",
+              "text": "The compiler uses the annotation to check callers, which is why it can be wrong only by being too strict, never by letting a dangling reference through."
+            }
+          ],
+          "answerVisibility": "hidden-until-response",
+          "visualStateId": "",
+          "checkQuestionId": "sysp-borrowing-and-lifetimes-what-annotation-does",
+          "activityId": ""
+        },
+        {
           "id": "reorder-fix",
           "kind": "worked_example",
           "blocks": [],
@@ -2439,7 +2439,7 @@
               "math": "push inside the borrow"
             },
             {
-              "text": "Swap lines 3 and 4 so the print comes first. The borrow now ends where f is last used. Work out that line number.",
+              "text": "Swap lines 3 and 4 so the print comes first. The borrow now ends where f is last used. Count the lines it covers, from the line that creates f to that last use.",
               "blank": {
                 "questionId": "sysp-borrowing-and-lifetimes-last-use-line"
               }
@@ -2505,11 +2505,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "In C, a program can take the address of the first element of an array stored in a malloc'd buffer, then call realloc to make the buffer bigger. If the allocator moves the data to a new block, the old block is freed and the saved address points at memory that belongs to nobody. Nothing in the language stops the program from reading it, and it often appears to work until the day the freed block is reused."
+              "text": "In C, a program can take the address of the first element of an array stored in a buffer from malloc, the C function that hands out heap memory, and then call realloc, which resizes such a buffer, to make it bigger. If the allocator moves the data to a new block, the old block is freed and the saved address points at memory that belongs to nobody. Nothing in the language stops the program from reading it, and it often appears to work until the day the freed block is reused."
             },
             {
               "kind": "paragraph",
-              "text": "Rust prevents the same situation when the program is compiled. A Vec can grow while a reference into it is held, just as the malloc'd buffer can, so the compiler restricts how references to one value may overlap. Those restrictions are what its error messages report, and a reader who knows them can say which one a program breaks and repair it, often by moving a single line."
+              "text": "Rust prevents the same situation when the program is compiled. A Vec can grow while a reference into it is held, just as the buffer from malloc can, so the compiler restricts how references to one value may overlap. Those restrictions are what its error messages report, and a reader who knows them can say which one a program breaks and repair it, often by moving a single line."
             }
           ]
         },
@@ -2815,18 +2815,18 @@
           "id": "walk-the-array",
           "kind": "worked_example",
           "blocks": [],
-          "headline": "Work out the byte distance between q and q + 2 for int p[3] = {10, 20, 30}; int *q = p; on a target where an int is 4 bytes.",
+          "headline": "Work out the byte distance between q and q + 5 for int p[6] = {10, 20, 30, 40, 50, 60}; int *q = p; on a target where an int is 4 bytes.",
           "workedSteps": [
             {
               "text": "The array starts at address 0x1000, and q holds that address.",
               "math": "q = 0x1000"
             },
             {
-              "text": "Adding 2 to q moves it by two elements, each the size of an int.",
-              "math": "q + 2 = 0x1000 + 2 × 4"
+              "text": "Adding 5 to q moves it by five elements, each the size of an int.",
+              "math": "q + 5 = 0x1000 + 5 × 4"
             },
             {
-              "text": "Work out the number of bytes between q and q + 2.",
+              "text": "Work out the number of bytes between q and q + 5.",
               "blank": {
                 "questionId": "sysp-c-pointers-and-manual-memory-byte-distance"
               }
@@ -3018,22 +3018,6 @@
           }
         },
         {
-          "id": "which-switches",
-          "kind": "try",
-          "blocks": [],
-          "lead": [],
-          "reveal": [
-            {
-              "kind": "paragraph",
-              "text": "That is also why a program that makes no system calls can do nothing that anyone outside it can see."
-            }
-          ],
-          "answerVisibility": "hidden-until-response",
-          "visualStateId": "",
-          "checkQuestionId": "sysp-processes-and-system-calls-which-crosses",
-          "activityId": ""
-        },
-        {
           "id": "fork-basics",
           "kind": "explain",
           "blocks": [],
@@ -3082,19 +3066,19 @@
           }
         },
         {
-          "id": "return-in-child",
+          "id": "which-switches",
           "kind": "try",
           "blocks": [],
           "lead": [],
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "A negative result, minus one, would mean that fork failed and no child exists, and a careful program checks for that case too."
+              "text": "That is also why a program that makes no system calls can do nothing that anyone outside it can see."
             }
           ],
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
-          "checkQuestionId": "sysp-processes-and-system-calls-child-return",
+          "checkQuestionId": "sysp-processes-and-system-calls-which-crosses",
           "activityId": ""
         },
         {
@@ -3194,6 +3178,22 @@
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
           "checkQuestionId": "sysp-processes-and-system-calls-three-forks",
+          "activityId": ""
+        },
+        {
+          "id": "return-in-child",
+          "kind": "try",
+          "blocks": [],
+          "lead": [],
+          "reveal": [
+            {
+              "kind": "paragraph",
+              "text": "A negative result, minus one, would mean that fork failed and no child exists, and a careful program checks for that case too."
+            }
+          ],
+          "answerVisibility": "hidden-until-response",
+          "visualStateId": "",
+          "checkQuestionId": "sysp-processes-and-system-calls-child-return",
           "activityId": ""
         },
         {
@@ -3437,22 +3437,6 @@
           "activityId": ""
         },
         {
-          "id": "standard-error",
-          "kind": "try",
-          "blocks": [],
-          "lead": [],
-          "reveal": [
-            {
-              "kind": "paragraph",
-              "text": "Keeping error text on its own descriptor lets a user send normal output to a file and still see the errors on the screen."
-            }
-          ],
-          "answerVisibility": "hidden-until-response",
-          "visualStateId": "",
-          "checkQuestionId": "sysp-file-descriptors-and-buffering-stderr-number",
-          "activityId": ""
-        },
-        {
           "id": "lowest-free",
           "kind": "explain",
           "blocks": [],
@@ -3470,7 +3454,7 @@
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "The rule has no exceptions for the standard descriptors. If descriptor 0 has been closed, the next open returns 0, and the program's standard input is then that file. The next screen shows how a shell uses this."
+              "text": "The rule has no exceptions for the standard descriptors. If descriptor 1 has been closed, the next open returns 1, and the program's standard output then goes to that file. The next screen shows how a shell uses this."
             }
           ],
           "introducesTerms": [
@@ -3522,6 +3506,22 @@
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
           "checkQuestionId": "sysp-file-descriptors-and-buffering-open-open-close-open",
+          "activityId": ""
+        },
+        {
+          "id": "standard-error",
+          "kind": "try",
+          "blocks": [],
+          "lead": [],
+          "reveal": [
+            {
+              "kind": "paragraph",
+              "text": "Keeping error text on its own descriptor lets a user send normal output to a file and still see the errors on the screen."
+            }
+          ],
+          "answerVisibility": "hidden-until-response",
+          "visualStateId": "",
+          "checkQuestionId": "sysp-file-descriptors-and-buffering-stderr-number",
           "activityId": ""
         },
         {
@@ -3987,22 +3987,6 @@
           }
         },
         {
-          "id": "name-the-code",
-          "kind": "try",
-          "blocks": [],
-          "lead": [],
-          "reveal": [
-            {
-              "kind": "paragraph",
-              "text": "Each error code has a page in the compiler error index at doc.rust-lang.org/error_codes with a longer explanation and an example."
-            }
-          ],
-          "answerVisibility": "hidden-until-response",
-          "visualStateId": "",
-          "checkQuestionId": "sysp-threads-and-shared-state-closure-borrow-code",
-          "activityId": ""
-        },
-        {
           "id": "arc-and-mutex",
           "kind": "explain",
           "blocks": [],
@@ -4054,6 +4038,22 @@
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
           "checkQuestionId": "sysp-threads-and-shared-state-three-by-five-hundred",
+          "activityId": ""
+        },
+        {
+          "id": "name-the-code",
+          "kind": "try",
+          "blocks": [],
+          "lead": [],
+          "reveal": [
+            {
+              "kind": "paragraph",
+              "text": "Each error code has a page in the compiler error index at doc.rust-lang.org/error_codes with a longer explanation and an example."
+            }
+          ],
+          "answerVisibility": "hidden-until-response",
+          "visualStateId": "",
+          "checkQuestionId": "sysp-threads-and-shared-state-closure-borrow-code",
           "activityId": ""
         },
         {
@@ -4276,6 +4276,22 @@
           "activityId": ""
         },
         {
+          "id": "shortest-first",
+          "kind": "predict",
+          "blocks": [],
+          "lead": [],
+          "reveal": [
+            {
+              "kind": "paragraph",
+              "text": "The short jobs finish early and only the longest job finishes late. The next screen explains why this order is the best one when all the jobs arrive together."
+            }
+          ],
+          "answerVisibility": "hidden-until-response",
+          "visualStateId": "",
+          "checkQuestionId": "sysp-scheduling-and-deadlock-best-order",
+          "activityId": ""
+        },
+        {
           "id": "first-come-first-served",
           "kind": "explain",
           "blocks": [],
@@ -4338,22 +4354,6 @@
           "activityId": ""
         },
         {
-          "id": "shortest-first",
-          "kind": "predict",
-          "blocks": [],
-          "lead": [],
-          "reveal": [
-            {
-              "kind": "paragraph",
-              "text": "The short jobs finish early and only the longest job finishes late. The next screen explains why this order is the best one when all the jobs arrive together."
-            }
-          ],
-          "answerVisibility": "hidden-until-response",
-          "visualStateId": "",
-          "checkQuestionId": "sysp-scheduling-and-deadlock-best-order",
-          "activityId": ""
-        },
-        {
           "id": "shortest-job-first",
           "kind": "explain",
           "blocks": [],
@@ -4407,7 +4407,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "Every job starts running within a few slices of arriving, which is why interactive systems use it, and the policy needs no knowledge of burst lengths. The price is paid in turnaround. The completion times 14, 10 and 6 have a mean of 10, against 7.33 for shortest job first, so round robin is not the faster policy. Each switch between jobs also costs a *context switch*, which a very short quantum makes expensive."
+              "text": "Every job starts running within a few slices of arriving, which is why interactive systems use it, and the policy needs no knowledge of burst lengths. The price is paid in turnaround. The completion times 14, 10 and 6 have a mean of 10, against 7.33 for shortest job first, so round robin is not the faster policy. Each switch between jobs also costs a *context switch*, in which the kernel saves the state of one job and loads that of the next, and a very short quantum makes these switches frequent enough to be expensive."
             }
           ],
           "afterFigure": [],
@@ -4486,7 +4486,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "Four conditions together make a deadlock possible. Locks are exclusive (**mutual exclusion**). A thread holds one while waiting for another (**hold and wait**). A lock cannot be taken from a thread by force (**no preemption**). And the waiting forms a ring (**circular wait**). Removing any one of them prevents deadlock, and the practical choice is the last, by agreeing on one global order in which every thread takes its locks."
+              "text": "Four conditions together make a deadlock possible. Locks are exclusive (**mutual exclusion**). A thread holds one while waiting for another (**hold and wait**). A lock cannot be taken from a thread by force (**no preemption**). And the waiting forms a ring (**circular wait**). Removing any one of them prevents deadlock, and the usual remedy is to agree on one global order in which every thread takes its locks."
             }
           ],
           "afterFigure": [
@@ -4725,18 +4725,18 @@
           "id": "split-12345",
           "kind": "worked_example",
           "blocks": [],
-          "headline": "Split the address 0x12345 into a page number and an offset, for pages of 4 KiB.",
+          "headline": "Split the address 0x2B7C4 into a page number and an offset, for pages of 4 KiB.",
           "workedSteps": [
             {
               "text": "The offset is the low 12 bits, which are the last three hex digits.",
-              "math": "offset = 0x345"
+              "math": "offset = 0x7C4"
             },
             {
               "text": "The page number is what remains once the offset is removed.",
-              "math": "page number = 0x12"
+              "math": "page number = 0x2B"
             },
             {
-              "text": "Write the page number 0x12 in decimal.",
+              "text": "Write the page number 0x2B in decimal.",
               "blank": {
                 "questionId": "sysp-virtual-memory-and-paging-page-number-decimal"
               }
@@ -5454,7 +5454,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The five are to dereference a raw pointer, to call an unsafe function, to access or modify a mutable static variable, to implement an unsafe trait, and to access a field of a union. Each is an operation whose safety depends on a fact that the compiler cannot see. By writing unsafe, you state that you have checked that fact yourself."
+              "text": "The five are to dereference a raw pointer, to call an unsafe function, to access or modify a mutable static variable (a global that every thread can reach), to implement an unsafe trait (one whose implementer promises something the compiler cannot check), and to access a field of a union (a type whose fields share the same bytes). Each is an operation whose safety depends on a fact that the compiler cannot see. By writing unsafe, you state that you have checked that fact yourself."
             }
           ],
           "afterFigure": [
@@ -5524,22 +5524,6 @@
           }
         },
         {
-          "id": "name-e0133",
-          "kind": "try",
-          "blocks": [],
-          "lead": [],
-          "reveal": [
-            {
-              "kind": "paragraph",
-              "text": "Calling an unsafe function, or touching a mutable static, outside an unsafe block gives the same code, with a different sentence after it."
-            }
-          ],
-          "answerVisibility": "hidden-until-response",
-          "visualStateId": "",
-          "checkQuestionId": "sysp-unsafe-rust-and-the-c-boundary-e0133",
-          "activityId": ""
-        },
-        {
           "id": "still-checked",
           "kind": "explain",
           "blocks": [],
@@ -5575,6 +5559,22 @@
           }
         },
         {
+          "id": "name-e0133",
+          "kind": "try",
+          "blocks": [],
+          "lead": [],
+          "reveal": [
+            {
+              "kind": "paragraph",
+              "text": "Calling an unsafe function, or touching a mutable static, outside an unsafe block gives the same code, with a different sentence after it."
+            }
+          ],
+          "answerVisibility": "hidden-until-response",
+          "visualStateId": "",
+          "checkQuestionId": "sysp-unsafe-rust-and-the-c-boundary-e0133",
+          "activityId": ""
+        },
+        {
           "id": "call-abs",
           "kind": "predict",
           "blocks": [],
@@ -5607,7 +5607,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "To call a function written in C, Rust needs to be told its name and its type. A block written unsafe extern \"C\" does this: inside it, a line such as fn abs(x: i32) -> i32; declares a function that is provided elsewhere, and the linker connects it to the C library. The types must match what C uses: a C int is an i32, a size_t is a usize, and a const char * is a *const c_char, where c_char is a type in std::ffi for a C character."
+              "text": "To call a function written in C, Rust needs to be told its name and its type. A block written unsafe extern \"C\" does this: inside it, a line such as fn abs(x: i32) -> i32; declares a function that is provided elsewhere, and the linker, the tool that joins compiled code into one program, connects it to the C library. The types must match what C uses: a C int is an i32, a size_t is a usize, and a const char * is a *const c_char, where c_char is a type in std::ffi for a C character."
             },
             {
               "kind": "paragraph",
@@ -6661,13 +6661,13 @@
         "padding",
         "repr-c"
       ],
-      "prompt": "In #[repr(C)] struct T { a: u8, b: u64, c: u16 }, what is the byte offset of c?",
+      "prompt": "In #[repr(C)] struct U { a: u8, b: u16, c: u64 }, what is the byte offset of c?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
-        "Find where b ends first: b starts at the first multiple of 8 after a.",
-        "b occupies offsets 8 to 15.",
-        "c is a u16, so it needs a multiple of 2 at or after the end of b."
+        "Find where b ends first: b starts at the first multiple of 2 after a.",
+        "b occupies offsets 2 and 3, so it ends at 4.",
+        "c is a u64, so it needs an offset that is a multiple of its alignment, at or after the end of b."
       ],
       "sourceIds": [
         "rust-ref",
@@ -6675,33 +6675,33 @@
         "csapp",
         "c-ref"
       ],
-      "onCorrect": "b occupies bytes 8 to 15, and 16 is a multiple of 2, so c starts at 16 with no padding before it.",
+      "onCorrect": "b ends at 4, and the next multiple of 8 is 8, so bytes 4 to 7 are padding and c starts at 8.",
       "skill": "compute-offsets",
       "calculator": "off",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 16,
+        "value": 8,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "b starts at round_up(1, 8) = 8 and ends at 16, so c starts at round_up(16, 2) = 16."
+        "workedAnswer": "b starts at round_up(1, 2) = 2 and ends at 4, so c starts at round_up(4, 8) = 8."
       },
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              10
+              4
             ]
           },
-          "feedback": "That places c right after a. Fields are laid out in declaration order, so c follows b."
+          "feedback": "That places c directly after b. A u64 cannot start at 4, because 4 is not a multiple of its alignment."
         },
         {
           "match": {
             "numeric": [
-              8
+              3
             ]
           },
-          "feedback": "That is the offset of b."
+          "feedback": "That adds the sizes of a and b and leaves out the padding byte before b, and c also has to start at a multiple of its alignment."
         },
         {
           "match": {
@@ -6709,7 +6709,7 @@
               2
             ]
           },
-          "feedback": "c cannot start before b ends; fields are laid out in declaration order."
+          "feedback": "That is the offset of b."
         }
       ]
     },
@@ -7353,7 +7353,7 @@
         "heap",
         "fat-value"
       ],
-      "prompt": "What is size_of::<Vec<i32>>() in bytes on a 64-bit target?",
+      "prompt": "What is size_of::<String>(), the size of the handle that stands for s, in bytes on a 64-bit target?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -7367,7 +7367,7 @@
         "ostep",
         "csapp"
       ],
-      "onCorrect": "The handle is three 8-byte words, a pointer, a capacity and a length, and it does not depend on how many elements the Vec holds.",
+      "onCorrect": "The handle is three 8-byte words, a pointer, a capacity and a length, and it does not depend on how long the text is.",
       "skill": "size-a-handle",
       "calculator": "off",
       "answerAuthority": {
@@ -7382,18 +7382,18 @@
         {
           "match": {
             "numeric": [
-              12
+              5
             ]
           },
-          "feedback": "That is the size of three i32 values. The handle holds a pointer and two counts, each 8 bytes on a 64-bit target."
+          "feedback": "That is the length of the text hello, which is in the heap buffer and not in the handle."
         },
         {
           "match": {
             "numeric": [
-              4
+              8
             ]
           },
-          "feedback": "That is the size of one i32. A Vec holds a handle, not the elements themselves."
+          "feedback": "That is the pointer alone. The handle also holds a capacity and a length."
         },
         {
           "match": {
@@ -7401,7 +7401,7 @@
               16
             ]
           },
-          "feedback": "That is the handle without its capacity. A Vec also records how much room it has."
+          "feedback": "That is the handle without its capacity. A String also records how much room it has."
         }
       ]
     },
@@ -8624,46 +8624,46 @@
         "aliasing-rule",
         "lifetime"
       ],
-      "prompt": "After moving the print to line 3 and the push to line 4, on which line is the last use of f?",
+      "prompt": "After moving the print to line 3 and the push to line 4, how many lines does the borrow f cover, counting the line that creates it and the line of its last use?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
-        "A borrow lasts until the last line that uses the reference.",
-        "Find the line that mentions f after its declaration.",
-        "The print is the only line that uses f."
+        "A borrow lasts until the last line that uses the reference, not to the end of the block.",
+        "f is created by the line let f = &v[0];.",
+        "The print, now on line 3, is the only line that uses f."
       ],
       "sourceIds": [
         "rust-book",
         "rust-errors",
         "rustonomicon"
       ],
-      "onCorrect": "The borrow ends on the print line, line 3, so the push on line 4 comes after the borrow has ended.",
+      "onCorrect": "The borrow runs from line 2 to line 3, so the push on line 4 comes after it has ended.",
       "skill": "classify-borrow-errors",
       "calculator": "off",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 3,
+        "value": 2,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "f is used only by the print, which is now line 3."
+        "workedAnswer": "f is created on line 2 and last used by the print on line 3, so the borrow covers 2 lines."
       },
       "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              3
+            ]
+          },
+          "feedback": "That counts the lines up to the push, as if the borrow lasted to the end of the block. It ends at its last use, the print on line 3."
+        },
         {
           "match": {
             "numeric": [
               4
             ]
           },
-          "feedback": "The push mentions v, not f. The reference f is used only by the print."
-        },
-        {
-          "match": {
-            "numeric": [
-              2
-            ]
-          },
-          "feedback": "Line 2 creates the reference. Its last use is on a later line."
+          "feedback": "That counts every line of the program. The borrow starts only where f is created, after the Vec."
         },
         {
           "match": {
@@ -8671,7 +8671,7 @@
               1
             ]
           },
-          "feedback": "Line 1 creates the Vec, before f exists."
+          "feedback": "That counts only the line that creates f. The borrow lasts until the print uses f on line 3."
         }
       ]
     },
@@ -8988,12 +8988,12 @@
         "array-decay",
         "undefined-behaviour"
       ],
-      "prompt": "int p[3] = {10, 20, 30}; int *q = p;   What is *(q + 2)?",
+      "prompt": "int p[4] = {4, 9, 16, 25}; int *q = p;   What is *(q + 3)?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
-        "q + 2 points two ints past the start of p.",
-        "That is the same element as p[2].",
+        "q + 3 points three ints past the start of p.",
+        "That is the same element as p[3].",
         "Counting from p[0], the elements are in the order written."
       ],
       "sourceIds": [
@@ -9002,30 +9002,30 @@
         "asan",
         "man-pages"
       ],
-      "onCorrect": "q + 2 is the address of the third int, and * reads the value stored there.",
+      "onCorrect": "q + 3 is the address of the fourth int, and * reads the value stored there.",
       "skill": "do-pointer-arithmetic",
       "calculator": "off",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 30,
+        "value": 25,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "*(q + 2) is p[2], which is 30."
+        "workedAnswer": "*(q + 3) is p[3], which is 25."
       },
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              20
+              16
             ]
           },
-          "feedback": "That is p[1], which is *(q + 1). Adding 2 moves two elements."
+          "feedback": "That is p[2], which is *(q + 2). Adding 3 moves three elements."
         },
         {
           "match": {
             "numeric": [
-              12
+              7
             ]
           },
           "feedback": "Adding to a pointer moves it; it does not add to the value that it points at."
@@ -9033,7 +9033,7 @@
         {
           "match": {
             "numeric": [
-              10
+              4
             ]
           },
           "feedback": "That is *q, with no offset."
@@ -9124,13 +9124,13 @@
         "array-decay",
         "undefined-behaviour"
       ],
-      "prompt": "int arr[10]; Where it is declared, what is sizeof(arr), on a target where an int is 4 bytes?",
+      "prompt": "int arr[16]; Where it is declared, what is sizeof(arr), on a target where an int is 4 bytes?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
         "In its own scope arr is still an array.",
         "sizeof of an array is its element count times the size of an element.",
-        "Multiply 10 by 4."
+        "Multiply 16 by 4."
       ],
       "sourceIds": [
         "c-ref",
@@ -9143,11 +9143,11 @@
       "calculator": "off",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 40,
+        "value": 64,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "10 elements of 4 bytes is 40 bytes."
+        "workedAnswer": "16 elements of 4 bytes is 64 bytes."
       },
       "misconceptions": [
         {
@@ -9161,7 +9161,7 @@
         {
           "match": {
             "numeric": [
-              10
+              16
             ]
           },
           "feedback": "That is the element count, not the number of bytes."
@@ -9183,13 +9183,13 @@
         "array-decay",
         "undefined-behaviour"
       ],
-      "prompt": "int p[3] = {10, 20, 30}; int *q = p;   How many bytes are there from q to q + 2, on a target where an int is 4 bytes?",
+      "prompt": "int p[6] = {10, 20, 30, 40, 50, 60}; int *q = p;   How many bytes are there from q to q + 5, on a target where an int is 4 bytes?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
-        "Adding 2 to a pointer moves it by two elements.",
+        "Adding 5 to a pointer moves it by five elements.",
         "Each element is an int.",
-        "Multiply 2 by the size of an int."
+        "Multiply 5 by the size of an int."
       ],
       "sourceIds": [
         "c-ref",
@@ -9197,22 +9197,22 @@
         "asan",
         "man-pages"
       ],
-      "onCorrect": "Pointer arithmetic is scaled by the element size, so q + 2 is two ints, or eight bytes, beyond q.",
+      "onCorrect": "Pointer arithmetic is scaled by the element size, so q + 5 is five ints, or 20 bytes, beyond q.",
       "skill": "do-pointer-arithmetic",
       "calculator": "off",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 8,
+        "value": 20,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "two elements of 4 bytes is 8 bytes."
+        "workedAnswer": "five elements of 4 bytes is 20 bytes."
       },
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              2
+              5
             ]
           },
           "feedback": "That is the number of elements. Pointer arithmetic is scaled, so the byte distance is larger."
@@ -9223,15 +9223,15 @@
               4
             ]
           },
-          "feedback": "That is the distance to q + 1. The question asks for q + 2."
+          "feedback": "That is the distance to q + 1. The question asks for q + 5."
         },
         {
           "match": {
             "numeric": [
-              16
+              60
             ]
           },
-          "feedback": "That multiplies the offset by the size twice."
+          "feedback": "That is the value stored at q + 5. The question asks for the distance in bytes."
         }
       ]
     },
@@ -9721,12 +9721,12 @@
         "system-call",
         "fork-exec"
       ],
-      "prompt": "A C program calls fork() three times in a row, with no conditions. How many processes exist afterwards, counting the original?",
+      "prompt": "A C program calls fork() four times in a row, with no conditions. How many processes exist afterwards, counting the original?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
         "Each fork is executed by every process alive at that point.",
-        "After one fork there are two processes, and after two there are four.",
+        "After one fork there are two processes, after two there are four, and after three there are eight.",
         "Double once more."
       ],
       "sourceIds": [
@@ -9734,22 +9734,22 @@
         "man-pages",
         "posix"
       ],
-      "onCorrect": "Every fork doubles the count, so n forks in a row give 2^n processes, and three give 8.",
+      "onCorrect": "Every fork doubles the count, so n forks in a row give 2^n processes, and four give 16.",
       "skill": "count-forked-processes",
       "calculator": "off",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 8,
+        "value": 16,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "2^3 = 8 processes."
+        "workedAnswer": "2^4 = 16 processes."
       },
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              3
+              4
             ]
           },
           "feedback": "That counts the forks. Each fork is run by every existing process, so the count doubles each time."
@@ -9757,18 +9757,18 @@
         {
           "match": {
             "numeric": [
-              4
+              8
             ]
           },
-          "feedback": "That is the count after two forks. The third doubles it again."
+          "feedback": "That is the count after three forks. The fourth doubles it again."
         },
         {
           "match": {
             "numeric": [
-              6
+              5
             ]
           },
-          "feedback": "A fork in a row doubles the count rather than adding to it."
+          "feedback": "A fork in a row doubles the count rather than adding one to it."
         }
       ]
     },
@@ -10834,7 +10834,7 @@
         "data-race",
         "arc-mutex"
       ],
-      "prompt": "Which type is needed together with Mutex so that several threads can each own a handle to the same counter?",
+      "prompt": "Several threads must each insert entries into the same HashMap, which is wrapped in a Mutex. Which type is needed around the Mutex so that each thread can own a handle to it?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -10846,7 +10846,7 @@
         "rust-errors",
         "rust-std"
       ],
-      "onCorrect": "Arc is reference counted, so cloning it gives each thread an owner of the same Mutex, and the value is freed with the last owner.",
+      "onCorrect": "Arc is reference counted, so cloning it gives each thread an owner of the same Mutex, and the map is freed with the last owner.",
       "skill": "share-with-arc-mutex",
       "calculator": "off",
       "answerAuthority": {
@@ -10898,7 +10898,7 @@
               "d"
             ]
           },
-          "feedback": "A Vec holds many values and has one owner. It does not give several threads one shared counter."
+          "feedback": "A Vec holds many values and has one owner. It does not give several threads a handle to one map."
         }
       ]
     },
@@ -11787,54 +11787,54 @@
         "page-table",
         "tlb"
       ],
-      "prompt": "With 4 KiB pages, how many bits of a virtual address are the offset?",
+      "prompt": "Some processors use pages of 16 KiB. With 16 KiB pages, how many bits of a virtual address are the offset?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
-        "A page of 4 KiB holds 4096 bytes, and the offset names one byte within it.",
-        "4096 is a power of two.",
-        "Find the exponent in 4096 = 2 to the power n."
+        "A page of 16 KiB holds 16,384 bytes, and the offset names one byte within it.",
+        "16,384 is a power of two.",
+        "Find the exponent in 16,384 = 2 to the power n."
       ],
       "sourceIds": [
         "ostep",
         "csapp",
         "drepper-memory"
       ],
-      "onCorrect": "The offset has to name any of the 4096 bytes in a page, which takes 12 bits, since 2^12 is 4096.",
+      "onCorrect": "The offset has to name any of the 16,384 bytes in a page, which takes 14 bits, since 2^14 is 16,384.",
       "skill": "split-address",
       "calculator": "off",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 12,
+        "value": 14,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "4 KiB = 4096 = 2^12 bytes, so 12 bits."
+        "workedAnswer": "16 KiB = 16,384 = 2^14 bytes, so 14 bits."
       },
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              4
+              12
             ]
           },
-          "feedback": "That is the number of hex digits of an offset that wide, not the number of bits, which is four times as many."
+          "feedback": "That is the offset for 4 KiB pages. A 16 KiB page holds four times as many bytes, which takes two more bits."
         },
         {
           "match": {
             "numeric": [
-              20
+              16
             ]
           },
-          "feedback": "That is the length of the page number in a 32-bit address. The offset is the remaining part."
+          "feedback": "That is the page size in KiB, not a number of bits."
         },
         {
           "match": {
             "numeric": [
-              32
+              18
             ]
           },
-          "feedback": "That is the whole address width, which includes the page number."
+          "feedback": "That is the length of the page number in a 32-bit address with 16 KiB pages. The offset is the remaining part."
         }
       ]
     },
@@ -11845,51 +11845,51 @@
         "page-table",
         "tlb"
       ],
-      "prompt": "The address 0x12345 is split with 4 KiB pages. What is its page number, written in decimal?",
+      "prompt": "The address 0x2B7C4 is split with 4 KiB pages. What is its page number, written in decimal?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
         "The last three hex digits are the offset, so the page number is the digits before them.",
-        "The page number is 0x12.",
-        "Convert 0x12 to decimal: 1 times 16 plus 2."
+        "The page number is 0x2B.",
+        "Convert 0x2B to decimal: 2 times 16 plus 11, since B is eleven."
       ],
       "sourceIds": [
         "ostep",
         "csapp",
         "drepper-memory"
       ],
-      "onCorrect": "The page number is the hex number formed by the remaining digits, 0x12, which is 1 × 16 + 2 = 18.",
+      "onCorrect": "The page number is the hex number formed by the remaining digits, 0x2B, which is 2 × 16 + 11 = 43.",
       "skill": "split-address",
       "calculator": "off",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 18,
+        "value": 43,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "0x12 = 1 × 16 + 2 = 18."
+        "workedAnswer": "0x2B = 2 × 16 + 11 = 43."
       },
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              12
+              31
             ]
           },
-          "feedback": "That reads the hex digits 12 as a decimal number. In hex the digits are worth 16 and 1."
+          "feedback": "That gives the first digit a place value of 10. In hex the digits are worth 16 and 1."
         },
         {
           "match": {
             "numeric": [
-              837
+              1988
             ]
           },
-          "feedback": "That is the offset, 0x345, in decimal."
+          "feedback": "That is the offset, 0x7C4, in decimal."
         },
         {
           "match": {
             "numeric": [
-              74565
+              178116
             ]
           },
           "feedback": "That is the whole address in decimal. The page number is only its upper digits."
@@ -11976,7 +11976,7 @@
         "page-table",
         "tlb"
       ],
-      "prompt": "A flat page table for a 32-bit address space with 4 KiB pages has one 4-byte entry per page. How large is it in MiB?",
+      "prompt": "A flat page table for a 32-bit address space with 4 KiB pages has one 8-byte entry per page. How large is it in MiB?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -11989,18 +11989,26 @@
         "csapp",
         "drepper-memory"
       ],
-      "onCorrect": "There are 2^20 entries of 4 bytes, which is 4 MiB for every process that has such a table.",
+      "onCorrect": "There are 2^20 entries of 8 bytes, which is 8 MiB for every process that has such a table.",
       "skill": "split-address",
       "calculator": "off",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 4,
+        "value": 8,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "2^20 × 4 bytes = 4 MiB."
+        "workedAnswer": "2^20 × 8 bytes = 8 MiB."
       },
       "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              4
+            ]
+          },
+          "feedback": "That is the size with 4-byte entries, and the entries here are twice that size."
+        },
         {
           "match": {
             "numeric": [
@@ -12016,14 +12024,6 @@
             ]
           },
           "feedback": "That is the number of bits in the page number, not a size."
-        },
-        {
-          "match": {
-            "numeric": [
-              4096
-            ]
-          },
-          "feedback": "That is the size of one page in bytes."
         }
       ]
     },
@@ -12567,7 +12567,7 @@
         "sysp-locality",
         "row-major"
       ],
-      "prompt": "A 16 by 16 matrix of four-byte integers is stored row by row, so each row is one 64-byte line. It is read column by column, with a cache that holds 16 lines and drops the least recently used line when it is full. How many misses occur?",
+      "prompt": "A 32 by 16 matrix of four-byte integers is stored row by row, so each of its 32 rows is one 64-byte line. It is read column by column, with a cache that holds 32 lines and drops the least recently used line when it is full. How many misses occur?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -12580,33 +12580,33 @@
         "csapp",
         "ostep"
       ],
-      "onCorrect": "Once all the cache can hold every line, each line is loaded once and then hit, so even column order costs one miss per line.",
+      "onCorrect": "When the cache can hold every line, each line is loaded once and then hit, so even column order costs one miss per line.",
       "skill": "choose-loop-order",
       "calculator": "off",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 16,
+        "value": 32,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "There are 16 lines, each loaded once."
+        "workedAnswer": "There are 32 lines, each loaded once."
       },
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              256
+              512
             ]
           },
-          "feedback": "That is the count for a cache that holds only 8 lines. A cache that holds every line does not evict them."
+          "feedback": "That is one miss per read, which happens only when the cache is too small to keep a line from every row. This cache has room for all of them."
         },
         {
           "match": {
             "numeric": [
-              8
+              16
             ]
           },
-          "feedback": "There are as many lines as rows, and the matrix has more than eight of them."
+          "feedback": "That is the number of integers in a row. Each row is its own line, and each line is loaded once."
         },
         {
           "match": {
@@ -12944,7 +12944,7 @@
         "raw-pointer",
         "ffi"
       ],
-      "prompt": "Which of these needs an unsafe block?",
+      "prompt": "Here x is an i32, v is a Vec<i32>, and p has the type *const i32, a raw pointer to an i32. Which of these lines needs an unsafe block?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -12956,33 +12956,33 @@
         "rust-ref",
         "man-pages"
       ],
-      "onCorrect": "Creating a raw pointer cannot cause harm by itself, whereas reading or writing through one can, so only the dereference needs unsafe.",
+      "onCorrect": "*p reads memory through a raw pointer that nobody has checked, so it needs unsafe, whereas creating a raw pointer cannot cause harm by itself.",
       "skill": "list-unsafe-operations",
       "calculator": "off",
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "Dereferencing a raw pointer"
+          "let y = *p;"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "Dereferencing a raw pointer"
+        "exampleAnswer": "let y = *p;"
       },
       "choices": [
         {
           "id": "b",
-          "label": "Borrowing a value mutably"
+          "label": "let r = &mut v;"
         },
         {
           "id": "c",
-          "label": "Calling a method on a Vec"
+          "label": "v.push(1);"
         },
         {
           "id": "d",
-          "label": "Dereferencing a raw pointer"
+          "label": "let y = *p;"
         },
         {
           "id": "a",
-          "label": "Creating a raw pointer from a reference"
+          "label": "let q = &x as *const i32;"
         }
       ],
       "misconceptions": [
@@ -12992,7 +12992,7 @@
               "a"
             ]
           },
-          "feedback": "Creating a raw pointer is safe. Nothing can go wrong until the pointer is used."
+          "feedback": "That line only creates a raw pointer, which is safe. Nothing can go wrong until the pointer is used."
         },
         {
           "match": {
@@ -13008,7 +13008,7 @@
               "c"
             ]
           },
-          "feedback": "Vec methods are written in safe terms. The unsafe code is inside the library, behind a safe interface."
+          "feedback": "push is a safe Vec method. The unsafe code is inside the library, behind a safe interface."
         }
       ]
     },

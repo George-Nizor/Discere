@@ -1135,7 +1135,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Suppose one sales line has revenue 200 and cost 150, a margin of 25%, and another has revenue 800 and cost 400, a margin of 50%. Averaging the two percentages gives 37.5%, which treats a line of 200 as equal in weight to a line of 800. The margin of the two lines together is the total profit over the total revenue, (1,000 − 550) / 1,000, which is 45%."
+              "text": "Suppose one sales line has revenue 100 and cost 80, a margin of 20%, and another has revenue 400 and cost 200, a margin of 50%. Averaging the two percentages gives 35%, which treats a line of 100 as equal in weight to a line of 400. The margin of the two lines together is the total profit over the total revenue, (500 − 280) / 500, which is 44%."
             },
             {
               "kind": "paragraph",
@@ -1760,26 +1760,26 @@
           "id": "worked-asof",
           "kind": "worked_example",
           "blocks": [],
-          "headline": "Work out the totals by region for R1 and R2 with an as-of join, using the sales and rows above.",
+          "headline": "Work out the totals by region with an as-of join for R5, who moves from West to East on 2026-07-01, and R6, who is always in West.",
           "workedSteps": [
             {
-              "text": "Match the sale of 40 on 2026-01-10. It is before 2026-03-01, so it falls in R1's North row.",
-              "math": "40 -> North"
+              "text": "Match R5's sale of 15 on 2026-05-20. It is before 2026-07-01, so it falls in R5's West row.",
+              "math": "15 -> West"
             },
             {
-              "text": "The sale of 60 on 2026-02-14 is also before the change date. The sale of 25 on 2026-04-05 is after it.",
-              "math": "60 -> North, 25 -> South",
+              "text": "The sale of 45 on 2026-06-30 is also before the change date. The sale of 50 on 2026-07-10 is after it.",
+              "math": "45 -> West, 50 -> East",
               "selfExplain": {
                 "questionId": "anaeg-history-in-dimensions-why-south"
               }
             },
             {
-              "text": "R2 never moved, and its one row, valid from 2025-01-01, holds the sale of 30 on 2026-04-06.",
-              "math": "30 -> North"
+              "text": "R6 never moved, and its one row, valid from 2025-01-01, holds the sale of 20 on 2026-07-12.",
+              "math": "20 -> West"
             },
             {
               "text": "Add up each region.",
-              "math": "North 40 + 60 + 30 = 130, South 25"
+              "math": "West 15 + 45 + 20 = 80, East 50"
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -2201,14 +2201,14 @@
           "id": "worked-fix",
           "kind": "worked_example",
           "blocks": [],
-          "headline": "Sum the totals of invoices 1, 2 and 3 (90, 150 and 40) by aggregating the lines to one row per invoice before the join.",
+          "headline": "Sum the totals of invoices 1, 2 and 3 (70, 110 and 60, with 2, 3 and 1 lines) by aggregating the lines to one row per invoice before the join.",
           "workedSteps": [
             {
               "text": "Group the lines by invoice, so that the many side has one row for each invoice.",
               "math": "3 rows: invoice 1, invoice 2, invoice 3"
             },
             {
-              "text": "Join the invoices to that result on the invoice id. Each invoice now matches exactly one row.",
+              "text": "Join the invoices to that result on the invoice id.",
               "math": "3 joined rows",
               "selfExplain": {
                 "questionId": "anaeg-choosing-a-model-shape-why-agg"
@@ -2216,7 +2216,7 @@
             },
             {
               "text": "Sum the invoice total over the three joined rows.",
-              "math": "90 + 150 + 40 = 280"
+              "math": "70 + 110 + 60 = 240"
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -3224,14 +3224,14 @@
           "id": "worked-lookback",
           "kind": "worked_example",
           "blocks": [],
-          "headline": "Run the model with a lookback of 2 days against the six source rows, merging by id.",
+          "headline": "Run the model with a lookback of 3 days on a new set of rows, merging by id.",
           "workedSteps": [
             {
-              "text": "The target's latest updated_at is 2026-06-10, so the cut-off is two days earlier.",
-              "math": "2026-06-10 − 2 days = 2026-06-08"
+              "text": "The target holds ids 1 to 4, with a latest updated_at of 2026-09-20. The source has id 1 at 09-15, id 2 changed at 09-21, id 3 at 09-18, id 4 at 09-20, a late id 5 at 09-18 and id 6 at 09-22. The cut-off is three days before the target's latest timestamp.",
+              "math": "2026-09-20 − 3 days = 2026-09-17"
             },
             {
-              "text": "Read the rows later than the cut-off: every source row except id 1, which is stamped exactly 06-08.",
+              "text": "Read the rows later than the cut-off: every source row except id 1, which is stamped 09-15.",
               "math": "ids 2, 3, 4, 5, 6"
             },
             {
@@ -3242,7 +3242,7 @@
               }
             },
             {
-              "text": "Id 2 is updated, ids 4, 5 and 6 are added, and id 1 is untouched, so the target now matches the source.",
+              "text": "Id 2 is updated, ids 5 and 6 are added, id 4 replaces itself as id 3 did, and id 1 is untouched, so the target now matches the source.",
               "math": "6 rows: ids 1 to 6"
             }
           ],
@@ -3255,18 +3255,18 @@
           "id": "faded-lookback",
           "kind": "faded_example",
           "blocks": [],
-          "headline": "Repeat the run with a lookback of only 1 day, and see whether id 4 is read.",
+          "headline": "Repeat the run on the same rows with a lookback of only 2 days, and see whether id 5 is read.",
           "workedSteps": [
             {
-              "text": "The cut-off is one day before the latest timestamp.",
-              "math": "2026-06-10 − 1 day = 2026-06-09"
+              "text": "The cut-off is two days before the latest timestamp.",
+              "math": "2026-09-20 − 2 days = 2026-09-18"
             },
             {
-              "text": "Id 4 is stamped exactly 2026-06-09, which is not later than the cut-off, so it is left out again.",
-              "math": "06-09 > 06-09 is false"
+              "text": "Id 5 is stamped exactly 2026-09-18, which is not later than the cut-off, so it is left out, just as the plain filter left it out.",
+              "math": "09-18 > 09-18 is false"
             },
             {
-              "text": "Count the source rows read: ids 2, 3, 5 and 6 are later than 06-09. How many is that?",
+              "text": "Count the source rows stamped later than 09-18.",
               "blank": {
                 "questionId": "anaeg-incremental-builds-lookback-one"
               }
@@ -3866,26 +3866,26 @@
           "id": "worked-rel",
           "kind": "worked_example",
           "blocks": [],
-          "headline": "Write the relationships test for employees.dept_id against departments.id, and find the failing rows.",
+          "headline": "Write the relationships test for payments.invoice_id against invoices.id, where invoices holds ids 1 to 40 and payment 8 has invoice_id 52.",
           "workedSteps": [
             {
-              "text": "Start from the child rows that carry a value, since a missing dept_id points at nothing and breaks no reference.",
-              "math": "FROM employees e WHERE e.dept_id IS NOT NULL",
+              "text": "Start from the child rows that carry a value.",
+              "math": "FROM payments p WHERE p.invoice_id IS NOT NULL",
               "selfExplain": {
                 "questionId": "anaeg-testing-data-why-skip-null"
               }
             },
             {
-              "text": "Look for the parent of each, by joining departments on the key with a LEFT JOIN, which keeps the employee even when no department matches.",
-              "math": "LEFT JOIN departments d ON d.id = e.dept_id"
+              "text": "Look for the parent of each, by joining invoices on the key with a LEFT JOIN, which keeps the payment even when no invoice matches.",
+              "math": "LEFT JOIN invoices i ON i.id = p.invoice_id"
             },
             {
-              "text": "Keep the rows where no parent was found, since a missing d.id means there was nothing to join to.",
-              "math": "WHERE d.id IS NULL"
+              "text": "Keep the rows where no parent was found, since a missing i.id means there was nothing to join to.",
+              "math": "WHERE i.id IS NULL"
             },
             {
-              "text": "Run it. Employee 6 has dept_id 99, which matches no department, so one row is returned and the test fails.",
-              "math": "id 6, dept_id 99"
+              "text": "Run it. Payment 8 has invoice_id 52, which matches no invoice, so one row is returned and the test fails.",
+              "math": "id 8, invoice_id 52"
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -3897,14 +3897,14 @@
           "id": "faded-values",
           "kind": "faded_example",
           "blocks": [],
-          "headline": "Write the accepted_values test for the order statuses paid, paid, shipped, refunded, paid, void and paid, with only paid and shipped allowed.",
+          "headline": "Write the accepted_values test for the order statuses paid, refunded, shipped, void, paid, refunded and paid, with only paid and shipped allowed.",
           "workedSteps": [
             {
               "text": "Select the rows whose status is not in the list of allowed values.",
               "math": "WHERE status NOT IN ('paid', 'shipped')"
             },
             {
-              "text": "Neither refunded nor void is on the list, so each such row is returned as a failure.",
+              "text": "Neither refunded nor void is on the list, so every row with either status is returned as a failure.",
               "math": "refunded, void"
             },
             {
@@ -4271,23 +4271,23 @@
           "id": "worked-ratio",
           "kind": "worked_example",
           "blocks": [],
-          "headline": "Find the overall average order value for East (revenue 300, 5 orders) and West (revenue 900, 45 orders).",
+          "headline": "Find the overall average order value for East (revenue 240, 4 orders) and West (revenue 360, 36 orders).",
           "workedSteps": [
             {
               "text": "Add the revenue of the two regions, which is an additive measure.",
-              "math": "300 + 900 = 1,200"
+              "math": "240 + 360 = 600"
             },
             {
               "text": "Add their orders, which is also additive.",
-              "math": "5 + 45 = 50"
+              "math": "4 + 36 = 40"
             },
             {
               "text": "Divide the totals, only now.",
-              "math": "1,200 / 50 = 24"
+              "math": "600 / 40 = 15"
             },
             {
               "text": "Compare with the average of the two regional values.",
-              "math": "(60 + 20) / 2 = 40",
+              "math": "(60 + 10) / 2 = 35",
               "selfExplain": {
                 "questionId": "anaeg-semantic-layers-and-metrics-why-not-avg"
               }
@@ -4659,18 +4659,18 @@
           "id": "faded-downstream",
           "kind": "faded_example",
           "blocks": [],
-          "headline": "List everything downstream of stg_ads, working forward one step at a time.",
+          "headline": "List everything downstream of stg_shop, working forward one step at a time.",
           "workedSteps": [
             {
-              "text": "stg_ads is read by one model, mart_marketing.",
-              "math": "mart_marketing"
+              "text": "stg_shop is read by one model, int_customer_orders.",
+              "math": "int_customer_orders"
             },
             {
-              "text": "mart_marketing is read by dash_exec, and nothing reads dash_exec.",
-              "math": "dash_exec"
+              "text": "int_customer_orders is read by both marts, mart_revenue and mart_marketing.",
+              "math": "mart_revenue, mart_marketing"
             },
             {
-              "text": "Count the nodes downstream of stg_ads.",
+              "text": "Keep walking forward from the marts until nothing reads the node you reach, then count every node found.",
               "blank": {
                 "questionId": "anaeg-lineage-count-ads-down"
               }
@@ -5688,7 +5688,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Protection starts with knowing what you hold. **Classification** gives each dataset or column a label for its sensitivity, commonly public, internal, confidential or restricted, and the label drives who may see it and how it is stored. In the figure product names are public, order totals internal, and an email, a postcode and a date of birth are confidential, while free-text health notes are restricted, since GDPR treats health data as special category data."
+              "text": "Protection starts with knowing what you hold. **Classification** gives each dataset or column a label for its sensitivity, commonly public, internal, confidential or restricted, and the label drives who may see it and how it is stored. In the figure product names are public, order totals internal, and an email, a postcode and a date of birth are confidential, while free-text health notes are restricted, since GDPR, the European Union's data protection regulation, treats health data as special category data."
             },
             {
               "kind": "paragraph",
@@ -6259,7 +6259,7 @@
           "headline": "Plan one erasure: DELETE on day 1, 7 days of retention, and a day-0 backup kept for 30 days.",
           "workedSteps": [
             {
-              "text": "The DELETE writes a new version on day 1. The table stops returning the rows, but the files remain.",
+              "text": "The DELETE is committed on day 1, and from then on the table stops returning the rows.",
               "math": "day 1: current table clear",
               "selfExplain": {
                 "questionId": "anaeg-privacy-law-in-practice-why-survives"
@@ -6579,7 +6579,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The same ladder applies to the other policies in this course. A rule that salary is visible only to HR becomes a masking rule on the classified column, enforced by the platform for every other role. The principle is that each rung is something a machine does or records, and the person who wrote the policy can rely on it without checking by hand. A policy with nothing beneath it is a hope."
+              "text": "The same ladder applies to the other policies in this course. A rule that customers' phone numbers are visible only to the support team becomes a masking rule on the classified column, enforced by the platform for every other role. The principle is that each rung is something a machine does or records, and the person who wrote the policy can rely on it without checking by hand. A policy with nothing beneath it is a hope."
             }
           ],
           "introducesTerms": [
@@ -6911,16 +6911,16 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "Shipping fee for the whole order"
+          "Number of lines on the order"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "Shipping fee for the whole order"
+        "exampleAnswer": "Number of lines on the order"
       },
       "sourceIds": [
         "kimball-techniques",
         "kimball-book"
       ],
-      "onCorrect": "The fee describes the order, so it belongs in a table with order grain.",
+      "onCorrect": "The number of lines describes the order as a whole, so it repeats on every line and belongs in a table with order grain.",
       "misconceptions": [
         {
           "match": {
@@ -6964,7 +6964,7 @@
         },
         {
           "id": "c",
-          "label": "Shipping fee for the whole order"
+          "label": "Number of lines on the order"
         }
       ]
     },
@@ -7100,7 +7100,7 @@
         "four-steps",
         "star-schema"
       ],
-      "prompt": "The retail sales fact table has four dimensions: date, store, product and customer. How is each fact row connected to its context?",
+      "prompt": "An inventory fact table has three dimensions: date, warehouse and product. How is each fact row connected to its context?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -7110,16 +7110,16 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "It holds one foreign key for each dimension, four in all"
+          "It holds one foreign key for each dimension, three in all"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "It holds one foreign key for each dimension, four in all"
+        "exampleAnswer": "It holds one foreign key for each dimension, three in all"
       },
       "sourceIds": [
         "kimball-techniques",
         "kimball-book"
       ],
-      "onCorrect": "Each fact row points at exactly one row in each dimension, so it holds four foreign keys, which is what gives the diagram its star shape.",
+      "onCorrect": "Each fact row points at exactly one row in each dimension, so it holds three foreign keys, which is what gives the diagram its star shape.",
       "misconceptions": [
         {
           "match": {
@@ -7127,7 +7127,7 @@
               "a"
             ]
           },
-          "feedback": "In a star the dimensions are not linked to each other. Each fact row points directly at one row in every dimension, so it needs a key for each of the four."
+          "feedback": "In a star the dimensions are not linked to each other. Each fact row points directly at one row in every dimension, so it needs a key for each of the three."
         },
         {
           "match": {
@@ -7155,7 +7155,7 @@
         },
         {
           "id": "c",
-          "label": "It holds copies of every column from the four dimensions"
+          "label": "It holds copies of every column from the three dimensions"
         },
         {
           "id": "d",
@@ -7163,7 +7163,7 @@
         },
         {
           "id": "b",
-          "label": "It holds one foreign key for each dimension, four in all"
+          "label": "It holds one foreign key for each dimension, three in all"
         }
       ]
     },
@@ -7458,12 +7458,12 @@
         "surrogate-key",
         "degenerate-dimension"
       ],
-      "prompt": "Margin percentage is not additive across rows. Which name does this kind of measure carry? Answer with the one word or hyphenated name.",
+      "prompt": "A daily conversion rate, orders divided by site visits, is stored on each row of a fact table. Which kind of measure is it? Answer with the one word or hyphenated name.",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
         "Additive measures sum across every dimension, and semi-additive ones across all but time.",
-        "A percentage does not add up across any dimension."
+        "A rate, like a percentage, does not add up across any dimension."
       ],
       "answerAuthority": {
         "kind": "text",
@@ -7482,7 +7482,7 @@
         "kimball-techniques",
         "kimball-book"
       ],
-      "onCorrect": "A percentage of this kind is a ratio, so it has to be rebuilt from additive parts such as revenue and cost.",
+      "onCorrect": "A rate of this kind is a ratio, so it has to be rebuilt from additive parts, here orders and visits.",
       "misconceptions": [
         {
           "match": {
@@ -7490,7 +7490,7 @@
               "semi-additive"
             ]
           },
-          "feedback": "Semi-additive measures, like balances, still add across some dimensions. A percentage adds across none."
+          "feedback": "Semi-additive measures, like balances, still add across some dimensions. A rate adds across none."
         },
         {
           "match": {
@@ -7498,7 +7498,7 @@
               "additive"
             ]
           },
-          "feedback": "Adding two margin percentages gives a number that is not any margin."
+          "feedback": "Adding two days' conversion rates gives a number that is not the conversion rate of either day or of both."
         }
       ],
       "skill": "classify-measure",
@@ -7636,11 +7636,11 @@
         "surrogate-key",
         "degenerate-dimension"
       ],
-      "prompt": "A table holds one row per product per day, giving the stock level at close, including days when nothing was sold. Which type of fact table is it?",
+      "prompt": "A table holds one row per bank account at the end of each month, giving the balance, including months with no transactions. Which type of fact table is it?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "The row exists for every day, whether or not anything happened.",
+        "The row exists for every month, whether or not anything happened.",
         "Look at the state, not the event."
       ],
       "answerAuthority": {
@@ -7668,7 +7668,7 @@
               "transaction"
             ]
           },
-          "feedback": "A transaction fact records events. A day with no sales would have no row, so stock could not be read from it."
+          "feedback": "A transaction fact records events. A month with no transactions would have no row, so the balance could not be read from it."
         }
       ],
       "skill": "pick-fact-type",
@@ -7682,27 +7682,27 @@
         "surrogate-key",
         "degenerate-dimension"
       ],
-      "prompt": "The shop system has customers 17 and 18, and the web system has customers 17 and 40. Each system numbers its own customers, so all four are different people. How many rows does dim_customer hold?",
+      "prompt": "The shop system has customers 3, 4 and 8, and the web system has customers 3 and 8. Each system numbers its own customers, so no customer appears in both. How many rows does dim_customer hold?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
         "Count people, not ids.",
         "Each system numbers its own customers.",
-        "Four customers means four rows."
+        "Three shop customers and two web customers are all different people."
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 4,
+        "value": 5,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "Four different people give four rows, each with its own surrogate key."
+        "workedAnswer": "Five different people give five rows, each with its own surrogate key."
       },
       "sourceIds": [
         "kimball-techniques",
         "kimball-book"
       ],
-      "onCorrect": "A surrogate key lets the two 17s coexist, since the warehouse numbers rows itself.",
+      "onCorrect": "A surrogate key lets the two 3s and the two 8s coexist, since the warehouse numbers rows itself.",
       "misconceptions": [
         {
           "match": {
@@ -7710,7 +7710,7 @@
               3
             ]
           },
-          "feedback": "That counts the distinct source ids, 17, 18 and 40, but the two 17s are different people."
+          "feedback": "That counts the distinct source ids, 3, 4 and 8, but a shared id belongs to two different people."
         },
         {
           "match": {
@@ -7718,7 +7718,7 @@
               2
             ]
           },
-          "feedback": "That counts one system only. Both systems feed the dimension."
+          "feedback": "That counts the web system only. Both systems feed the dimension."
         }
       ],
       "skill": "classify-measure",
@@ -8023,21 +8023,21 @@
         "as-of-join",
         "conformed"
       ],
-      "prompt": "Under a Type 2 design, how many rows does dim_rep hold for R1 once R1 has moved from North to South?",
+      "prompt": "Under a Type 2 design, customer C5 is loaded with the city Leeds, moves to York and later moves again to Hull. How many rows does dim_customer hold for C5?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
         "A design that keeps every version holds one row per version.",
-        "Count the versions of R1.",
-        "North is one version and South is another."
+        "Count the versions of C5.",
+        "Each city C5 has lived in is a version."
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 2,
+        "value": 3,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "One row for the North version and one for the South version: 2 rows."
+        "workedAnswer": "One row for each city, Leeds, York and Hull: 3 rows."
       },
       "sourceIds": [
         "kimball-techniques",
@@ -8057,10 +8057,10 @@
         {
           "match": {
             "numeric": [
-              3
+              2
             ]
           },
-          "feedback": "Only two versions exist, North and South."
+          "feedback": "That counts the two moves, but the first version, Leeds, is a row as well."
         }
       ],
       "skill": "choose-scd-type",
@@ -8074,7 +8074,7 @@
         "as-of-join",
         "conformed"
       ],
-      "prompt": "A sale is made on exactly 2026-03-01. The North row runs from 2025-01-01 to 2026-03-01 and the South row from 2026-03-01 to 9999-12-31. With valid_from included and valid_to excluded, which rows does the sale match?",
+      "prompt": "Representative R5 moves from West to East. R5's West row runs from 2025-04-01 to 2026-07-01 and the East row from 2026-07-01 to 9999-12-31. A sale is made on exactly 2026-07-01. With valid_from included and valid_to excluded, which rows does the sale match?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -8084,10 +8084,10 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "Only the South row"
+          "Only the East row"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "Only the South row"
+        "exampleAnswer": "Only the East row"
       },
       "sourceIds": [
         "kimball-techniques",
@@ -8102,7 +8102,7 @@
               "a"
             ]
           },
-          "feedback": "The North row's valid_to is 2026-03-01, and the end date is excluded, so the North row stops just before the sale's date."
+          "feedback": "The West row's valid_to is 2026-07-01, and the end date is excluded, so the West row stops just before the sale's date."
         },
         {
           "match": {
@@ -8110,7 +8110,7 @@
               "c"
             ]
           },
-          "feedback": "That happens only when the end date is included. With valid_to excluded, the North row stops just before 1 March, so the sale cannot match it."
+          "feedback": "That happens only when the end date is included. With valid_to excluded, the West row stops just before 1 July, so the sale cannot match it."
         },
         {
           "match": {
@@ -8118,7 +8118,7 @@
               "d"
             ]
           },
-          "feedback": "The South row's valid_from is 2026-03-01, and the start date is included, so the South row covers the sale."
+          "feedback": "The East row's valid_from is 2026-07-01, and the start date is included, so the East row covers the sale."
         }
       ],
       "skill": "read-validity-range",
@@ -8126,11 +8126,11 @@
       "choices": [
         {
           "id": "a",
-          "label": "Only the North row"
+          "label": "Only the West row"
         },
         {
           "id": "b",
-          "label": "Only the South row"
+          "label": "Only the East row"
         },
         {
           "id": "d",
@@ -8150,7 +8150,7 @@
         "as-of-join",
         "conformed"
       ],
-      "prompt": "Why does the April sale of 25 go to the South row?",
+      "prompt": "Why does R5's July sale of 50 go to the East row?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -8159,10 +8159,10 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "5 April lies in the half-open range that starts on 1 March"
+          "10 July lies in the half-open range that starts on 1 July"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "5 April lies in the half-open range that starts on 1 March"
+        "exampleAnswer": "10 July lies in the half-open range that starts on 1 July"
       },
       "sourceIds": [
         "kimball-techniques",
@@ -8185,7 +8185,7 @@
               "c"
             ]
           },
-          "feedback": "That is true of the present, but the join uses the date of the sale, so an April sale and a later-moved rep would differ."
+          "feedback": "East is R5's region today, but the join uses the date of each sale, which is why the June sale of 45 still finds the West row."
         },
         {
           "match": {
@@ -8193,7 +8193,7 @@
               "d"
             ]
           },
-          "feedback": "The join does not pick the newest row; a February sale would find the North row."
+          "feedback": "The join does not pick the newest row, since the June sale of 45 finds the West row."
         }
       ],
       "skill": "as-of-sum",
@@ -8201,19 +8201,19 @@
       "choices": [
         {
           "id": "c",
-          "label": "South is the current region of R1"
+          "label": "East is the current region of R5"
         },
         {
           "id": "b",
-          "label": "The South row has the highest key"
+          "label": "The East row has the highest key"
         },
         {
           "id": "d",
-          "label": "April sales always go to the newest row"
+          "label": "July sales always go to the newest row"
         },
         {
           "id": "a",
-          "label": "5 April lies in the half-open range that starts on 1 March"
+          "label": "10 July lies in the half-open range that starts on 1 July"
         }
       ]
     },
@@ -8625,21 +8625,21 @@
         "data-vault",
         "fan-out"
       ],
-      "prompt": "The three invoices have 3, 2 and 1 lines. How many rows does the join of invoices to invoice lines return?",
+      "prompt": "Four invoices have 2, 4, 1 and 3 lines. How many rows does the join of invoices to invoice lines return?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
         "A join on a one-to-many key gives one row per child.",
         "Add the line counts.",
-        "Compare the result with the 3 invoices."
+        "Compare the result with the 4 invoices."
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 6,
+        "value": 10,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "The join returns one row per line, so 3 + 2 + 1 = 6 rows, while invoices has 3."
+        "workedAnswer": "The join returns one row per line, so 2 + 4 + 1 + 3 = 10 rows, while invoices has 4."
       },
       "sourceIds": [
         "kimball-techniques",
@@ -8650,7 +8650,7 @@
         {
           "match": {
             "numeric": [
-              3
+              4
             ]
           },
           "feedback": "That is the number of invoices. The join returns one row for each matching line."
@@ -8658,7 +8658,7 @@
         {
           "match": {
             "numeric": [
-              18
+              24
             ]
           },
           "feedback": "That multiplies the counts. A join of this kind returns one row per child row."
@@ -8799,7 +8799,7 @@
         "data-vault",
         "fan-out"
       ],
-      "prompt": "A data scientist wants one flat table, with every order, customer and product column on one row, to feed a single modelling tool. Which shape is that? Answer with its usual name.",
+      "prompt": "A marketing team's email tool reads a single table with one row per customer, and each row already carries the customer's region, last order date and total spend, so the tool never joins anything. Which shape is that? Answer with its usual name.",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -8897,7 +8897,7 @@
         "data-vault",
         "fan-out"
       ],
-      "prompt": "A data vault has a hub for customers and a hub for products. Each order line records that a customer bought a product. Which kind of table holds that relationship?",
+      "prompt": "A data vault has a hub for students and a hub for courses. Each enrolment records that a student took a course. Which kind of table holds that relationship?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -8915,7 +8915,7 @@
         "kimball-techniques",
         "kimball-book"
       ],
-      "onCorrect": "A link records a relationship between hubs, and satellites on the link can then hold the line's own attributes, such as quantity.",
+      "onCorrect": "A link records a relationship between hubs, and satellites on the link can then hold the enrolment's own attributes, such as its grade.",
       "misconceptions": [
         {
           "match": {
@@ -8931,7 +8931,7 @@
               "c"
             ]
           },
-          "feedback": "A hub holds only the business keys of one kind of thing. A relationship between a customer and a product is held in a link that points at both hubs."
+          "feedback": "A hub holds only the business keys of one kind of thing. A relationship between a student and a course is held in a link that points at both hubs."
         },
         {
           "match": {
@@ -8947,15 +8947,15 @@
       "choices": [
         {
           "id": "c",
-          "label": "A third hub for order lines"
+          "label": "A third hub for enrolments"
         },
         {
           "id": "d",
-          "label": "A wide table of customers and products"
+          "label": "A wide table of students and courses"
         },
         {
           "id": "a",
-          "label": "A satellite on the customer hub"
+          "label": "A satellite on the student hub"
         },
         {
           "id": "b",
@@ -9258,7 +9258,7 @@
         "materialisation",
         "model-dag"
       ],
-      "prompt": "A model joins stg_orders to stg_customers to give one row per order with the customer's name. Which layer is it in? Answer with the layer name.",
+      "prompt": "A model joins stg_shipments to stg_orders to give one row per shipment with its order date. Which layer is it in? Answer with the layer name.",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -9861,7 +9861,7 @@
         "full-refresh",
         "snapshot-model"
       ],
-      "prompt": "The target holds ids 1, 2 and 3, and its latest updated_at is 2026-06-10. The source also has id 2 changed on 06-11, id 4 stamped 06-09 but added after the target was loaded, and ids 5 and 6 stamped 06-11 and 06-12. Each run reads only rows later than the target's latest timestamp. Which row is never loaded?",
+      "prompt": "The target holds ids 1 to 4, and its latest updated_at is 2026-07-20. The source also has id 3 changed on 07-21, id 5 stamped 07-18 but added after the target was loaded, and id 6 stamped 07-22. Each run reads only rows later than the target's latest timestamp. Which row is never loaded?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -9870,16 +9870,16 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "Id 4"
+          "Id 5"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "Id 4"
+        "exampleAnswer": "Id 5"
       },
       "sourceIds": [
         "dbt-incremental",
         "dbt-snapshots"
       ],
-      "onCorrect": "Id 4 carries a date older than the target's latest, and the latest can only grow, so no later run will read it either.",
+      "onCorrect": "Id 5 carries a date older than the target's latest, and the latest can only grow, so no later run will read it either.",
       "misconceptions": [
         {
           "match": {
@@ -9887,7 +9887,7 @@
               "a"
             ]
           },
-          "feedback": "Id 2 is stamped 06-11, after the cut-off, so the run reads it and the merge replaces the old version in the target."
+          "feedback": "Id 3 is stamped 07-21, after the cut-off, so the run reads it and the merge replaces the old version in the target."
         },
         {
           "match": {
@@ -9895,7 +9895,7 @@
               "b"
             ]
           },
-          "feedback": "Id 6 is stamped 06-12, after the cut-off, so the run reads it and adds it to the target."
+          "feedback": "Id 6 is stamped 07-22, after the cut-off, so the run reads it and adds it to the target."
         }
       ],
       "skill": "find-missed-row",
@@ -9907,11 +9907,11 @@
         },
         {
           "id": "c",
-          "label": "Id 4"
+          "label": "Id 5"
         },
         {
           "id": "a",
-          "label": "Id 2"
+          "label": "Id 3"
         }
       ]
     },
@@ -9997,27 +9997,27 @@
         "full-refresh",
         "snapshot-model"
       ],
-      "prompt": "With a lookback of 1 day the filter reads rows with updated_at later than 2026-06-09. How many of the six source rows does it read?",
+      "prompt": "The source rows are id 1 at 09-15, id 2 at 09-21, id 3 at 09-18, id 4 at 09-20, id 5 at 09-18 and id 6 at 09-22. With a lookback of 2 days the filter reads rows with updated_at later than 2026-09-18. How many of the six rows does it read?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
-        "Compare each date with 2026-06-09.",
-        "Strictly later excludes 06-09.",
-        "Count ids 2, 3, 5 and 6."
+        "Compare each date with 2026-09-18.",
+        "Strictly later excludes 09-18.",
+        "Two rows are stamped exactly 09-18."
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 4,
+        "value": 3,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "Ids 2, 3, 5 and 6 are later than 06-09. Id 4 is stamped 06-09 exactly and is left out: 4 rows."
+        "workedAnswer": "Ids 2, 4 and 6 are later than 09-18. Ids 3 and 5 are stamped 09-18 exactly and are left out: 3 rows."
       },
       "sourceIds": [
         "dbt-incremental",
         "dbt-snapshots"
       ],
-      "onCorrect": "A lookback of 1 day still misses the late row, because its timestamp falls on the cut-off, and the window must be longer than the lateness.",
+      "onCorrect": "A lookback of 2 days still misses the late row, because its timestamp falls on the cut-off, and the window must be longer than the lateness.",
       "misconceptions": [
         {
           "match": {
@@ -10025,15 +10025,15 @@
               5
             ]
           },
-          "feedback": "That counts the late row, but its date is not later than the cut-off."
+          "feedback": "That counts both rows stamped 09-18, but neither is later than the cut-off."
         },
         {
           "match": {
             "numeric": [
-              3
+              4
             ]
           },
-          "feedback": "Id 3, stamped 06-10, is later than 06-09 and is read."
+          "feedback": "That counts one of the two rows stamped 09-18, but neither is later than the cut-off."
         }
       ],
       "skill": "find-missed-row",
@@ -10047,7 +10047,7 @@
         "full-refresh",
         "snapshot-model"
       ],
-      "prompt": "A model definition is changed so that amounts are stored in cents. The target has 6 rows, and the next incremental run reads and rewrites 3 of them. What does the target hold afterwards?",
+      "prompt": "A model definition is changed so that country is stored as a two-letter code instead of the full name. The target has 8 rows, and the next incremental run reads and rewrites 3 of them. What does the target hold afterwards?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -10056,10 +10056,10 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "Three rows in cents and three in the old unit"
+          "Three rows with codes and five with full names"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "Three rows in cents and three in the old unit"
+        "exampleAnswer": "Three rows with codes and five with full names"
       },
       "sourceIds": [
         "dbt-incremental",
@@ -10073,7 +10073,7 @@
               "a"
             ]
           },
-          "feedback": "An incremental run applies the new logic only to the rows it reads. The other three are left as they were, in the old unit."
+          "feedback": "An incremental run applies the new logic only to the rows it reads. The other five are left as they were, with full names."
         },
         {
           "match": {
@@ -10081,7 +10081,7 @@
               "c"
             ]
           },
-          "feedback": "An incremental run keeps the rows it does not read, so all six remain, three of them still in the old unit."
+          "feedback": "An incremental run keeps the rows it does not read, so all eight remain, five of them still with full names."
         }
       ],
       "skill": "choose-repair",
@@ -10093,11 +10093,11 @@
         },
         {
           "id": "b",
-          "label": "Three rows in cents and three in the old unit"
+          "label": "Three rows with codes and five with full names"
         },
         {
           "id": "a",
-          "label": "All six rows in cents"
+          "label": "All eight rows with codes"
         }
       ]
     },
@@ -10380,7 +10380,7 @@
         "where-to-test",
         "unit-vs-data"
       ],
-      "prompt": "Seven employees have the emails ana, bo, missing, bo, eli, fay and missing. How many rows does a not_null test on email return?",
+      "prompt": "Eight suppliers have the contact emails kim, missing, lee, missing, max, missing, ola and lee. How many rows does a not_null test on email return?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -10390,17 +10390,17 @@
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 2,
+        "value": 3,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "The test returns the rows whose email is missing: employees 3 and 7, so 2 rows."
+        "workedAnswer": "The test returns the rows whose email is missing, the second, fourth and sixth suppliers, so 3 rows."
       },
       "sourceIds": [
         "dbt-tests",
         "great-expectations"
       ],
-      "onCorrect": "A not_null test returns the offending rows themselves, so you can see which employees lack an email.",
+      "onCorrect": "A not_null test returns the offending rows themselves, so you can see which suppliers lack an email.",
       "misconceptions": [
         {
           "match": {
@@ -10413,7 +10413,7 @@
         {
           "match": {
             "numeric": [
-              3
+              4
             ]
           },
           "feedback": "That adds the repeated email. The test returns only the rows with a missing email."
@@ -10430,7 +10430,7 @@
         "where-to-test",
         "unit-vs-data"
       ],
-      "prompt": "The departments table holds ids 10, 20 and 30. Employee 6 has dept_id 99 and employee 5 has a missing dept_id. How many rows does a relationships test on dept_id return?",
+      "prompt": "The departments table holds ids 10, 20 and 30. Seven employees have the dept_ids 10, 40, missing, 30, 50, missing and 20. How many rows does a relationships test on dept_id return?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -10440,11 +10440,11 @@
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 1,
+        "value": 2,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "Employee 6 points at a department that does not exist. Employee 5 has no dept_id, so it is not a broken reference: 1 row."
+        "workedAnswer": "Dept_ids 40 and 50 point at departments that do not exist. The two missing dept_ids are not broken references: 2 rows."
       },
       "sourceIds": [
         "dbt-tests",
@@ -10455,10 +10455,10 @@
         {
           "match": {
             "numeric": [
-              2
+              4
             ]
           },
-          "feedback": "That counts the missing dept_id as a broken reference. A missing value points at nothing, so a not_null test is the one to catch it."
+          "feedback": "That counts the missing dept_ids as broken references. A missing value points at nothing, so a not_null test is the one to catch it."
         },
         {
           "match": {
@@ -10466,7 +10466,7 @@
               0
             ]
           },
-          "feedback": "Employee 6 has dept_id 99, which is not in departments."
+          "feedback": "Dept_ids 40 and 50 are not in departments."
         }
       ],
       "skill": "count-failures",
@@ -10480,7 +10480,7 @@
         "where-to-test",
         "unit-vs-data"
       ],
-      "prompt": "Why does the relationships test leave out rows whose dept_id is missing?",
+      "prompt": "Why does the relationships test leave out rows whose invoice_id is missing?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -10542,7 +10542,7 @@
         },
         {
           "id": "b",
-          "label": "NULL equals every department"
+          "label": "NULL equals every invoice"
         }
       ]
     },
@@ -10554,7 +10554,7 @@
         "where-to-test",
         "unit-vs-data"
       ],
-      "prompt": "Orders have the statuses paid, paid, shipped, refunded, paid, void and paid. An accepted_values test allows paid and shipped only. How many rows does it return?",
+      "prompt": "Orders have the statuses paid, refunded, shipped, void, paid, refunded and paid. An accepted_values test allows paid and shipped only. How many rows does it return?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -10564,11 +10564,11 @@
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 2,
+        "value": 3,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "Refunded and void are not on the list, so the test returns those 2 rows."
+        "workedAnswer": "Two rows are refunded and one is void, none of them on the list, so the test returns 3 rows."
       },
       "sourceIds": [
         "dbt-tests",
@@ -10579,18 +10579,18 @@
         {
           "match": {
             "numeric": [
-              1
+              2
             ]
           },
-          "feedback": "That finds only one of them. Neither refunded nor void is allowed."
+          "feedback": "That counts each status that is not allowed once, but the test returns every row that has one, and two rows are refunded."
         },
         {
           "match": {
             "numeric": [
-              5
+              4
             ]
           },
-          "feedback": "That counts the paid rows, which are allowed."
+          "feedback": "That counts the paid and shipped rows, which are allowed."
         }
       ],
       "skill": "count-failures",
@@ -11430,21 +11430,21 @@
         "impact-analysis",
         "lineage-events"
       ],
-      "prompt": "In the lineage graph in the figure, how many nodes are upstream of dash_exec?",
+      "prompt": "In the lineage graph in the figure, how many nodes are upstream of mart_marketing?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
-        "Follow the arrows backward from dash_exec.",
+        "Follow the arrows backward from mart_marketing.",
         "It has two parents, and each has parents of its own.",
         "Count every node on any path back to a source."
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 9,
+        "value": 7,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "dash_exec reads mart_revenue and mart_marketing, which lead back through int_customer_orders, stg_crm, stg_shop and stg_ads to crm, shop and ads: 9 nodes."
+        "workedAnswer": "mart_marketing reads int_customer_orders and stg_ads, which lead back through stg_crm and stg_shop to crm, shop and ads: 7 nodes."
       },
       "sourceIds": [
         "openlineage",
@@ -11463,10 +11463,10 @@
         {
           "match": {
             "numeric": [
-              8
+              6
             ]
           },
-          "feedback": "That misses one of the sources or staging models. Dash_exec depends on all three sources."
+          "feedback": "That misses one of the sources or staging models. mart_marketing depends on all three sources."
         }
       ],
       "skill": "list-upstream",
@@ -11604,7 +11604,7 @@
         "impact-analysis",
         "lineage-events"
       ],
-      "prompt": "Walk downstream from stg_ads. Its only consumer is mart_marketing, which feeds dash_exec. How many nodes are downstream of stg_ads?",
+      "prompt": "Walk downstream from stg_shop. Its only consumer is int_customer_orders, which feeds both marts. How many nodes are downstream of stg_shop?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -11614,11 +11614,11 @@
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 2,
+        "value": 5,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "mart_marketing is one hop down and dash_exec is two: 2 nodes."
+        "workedAnswer": "int_customer_orders, then mart_revenue and mart_marketing, then dash_sales and dash_exec: 5 nodes."
       },
       "sourceIds": [
         "openlineage",
@@ -11640,7 +11640,7 @@
               3
             ]
           },
-          "feedback": "That includes stg_ads itself."
+          "feedback": "That stops at the marts. The dashboards that read them are downstream too."
         }
       ],
       "skill": "list-downstream",
@@ -11654,24 +11654,24 @@
         "impact-analysis",
         "lineage-events"
       ],
-      "prompt": "In an OpenLineage run event, which field lists the datasets that a job reads? Answer with the field name.",
+      "prompt": "A job reads mart_revenue and mart_marketing and writes dash_exec. In the OpenLineage run event it emits, which field lists dash_exec? Answer with the field name.",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "The event also has a field for the datasets the job writes.",
-        "The name is the plain word for what goes into a job."
+        "The event has one field for the datasets a job reads and one for those it writes.",
+        "dash_exec is what the job produces."
       ],
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "inputs"
+          "outputs"
         ],
         "acceptedAlternatives": [
-          "input",
-          "inputs field"
+          "output",
+          "outputs field"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "inputs"
+        "exampleAnswer": "outputs"
       },
       "sourceIds": [
         "openlineage",
@@ -11682,10 +11682,10 @@
         {
           "match": {
             "textIdeas": [
-              "outputs"
+              "inputs"
             ]
           },
-          "feedback": "Outputs are the datasets a job writes. The ones it reads are listed in a different field."
+          "feedback": "Inputs are the datasets a job reads, here the two marts. The dataset it writes, dash_exec, is listed in a different field."
         }
       ],
       "skill": "list-upstream",
@@ -11749,7 +11749,7 @@
         "impact-analysis",
         "lineage-events"
       ],
-      "prompt": "The column amt in the shop source is about to be renamed. Table-level lineage flags all five columns of mart_revenue. What does column-level lineage add?",
+      "prompt": "The column region_code in the crm source is about to change its codes. Table-level lineage flags every column of every dataset downstream of crm. What does column-level lineage add?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -11758,16 +11758,16 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "It narrows the warning to the columns computed from amt"
+          "It narrows the warning to the columns derived from region_code"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "It narrows the warning to the columns computed from amt"
+        "exampleAnswer": "It narrows the warning to the columns derived from region_code"
       },
       "sourceIds": [
         "openlineage",
         "dbt-contracts"
       ],
-      "onCorrect": "Only revenue and tax are computed from shop.amt, so the review shrinks from five columns to two for the same change.",
+      "onCorrect": "Only the columns derived from crm's region_code need review, so the list shrinks for the same change.",
       "misconceptions": [
         {
           "match": {
@@ -11803,7 +11803,7 @@
         },
         {
           "id": "d",
-          "label": "It narrows the warning to the columns computed from amt"
+          "label": "It narrows the warning to the columns derived from region_code"
         },
         {
           "id": "a",
@@ -12036,12 +12036,12 @@
         "anomaly-z",
         "freshness-sla"
       ],
-      "prompt": "A table of people has a birth date in the year 2090. Which quality dimension does this break? Answer in one word.",
+      "prompt": "A product table records one item's weight as −3 kg. Which quality dimension does this break? Answer in one word.",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "The value is present, and it is the only one for that person.",
-        "It breaks a rule about what dates are allowed."
+        "The value is present, and it is the only one for that item.",
+        "It breaks a rule about what weights are allowed."
       ],
       "answerAuthority": {
         "kind": "text",
@@ -12068,7 +12068,7 @@
               "accuracy"
             ]
           },
-          "feedback": "Accuracy needs an outside reference, such as a record of when the person was really born. A future date breaks a rule that can be checked without one."
+          "feedback": "Accuracy needs an outside reference, such as the item weighed on a scale. A negative weight breaks a rule that can be checked without one."
         },
         {
           "match": {
@@ -12090,21 +12090,21 @@
         "anomaly-z",
         "freshness-sla"
       ],
-      "prompt": "A table has 500 rows and 450 distinct order ids. What is the uniqueness of order_id, as a percentage?",
+      "prompt": "A table has 800 rows and 760 distinct order ids. What is the uniqueness of order_id, as a percentage?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
         "Uniqueness is distinct values over all rows.",
-        "Divide 450 by 500.",
+        "Divide 760 by 800.",
         "Multiply by 100."
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 90,
+        "value": 95,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "450 / 500 = 0.90, which is 90%."
+        "workedAnswer": "760 / 800 = 0.95, which is 95%."
       },
       "sourceIds": [
         "great-expectations",
@@ -12116,7 +12116,7 @@
         {
           "match": {
             "numeric": [
-              10
+              5
             ]
           },
           "feedback": "That is the share of rows that repeat an id, not the share that is distinct."
@@ -12124,7 +12124,7 @@
         {
           "match": {
             "numeric": [
-              450
+              760
             ]
           },
           "feedback": "That is the count of distinct ids. The question asks for a percentage."
@@ -12141,33 +12141,33 @@
         "anomaly-z",
         "freshness-sla"
       ],
-      "prompt": "Daily row counts, in thousands, were 200, 220, 200 and 220, so the mean is 210 and the population standard deviation is 10. What is the z-score of today's count of 175?",
+      "prompt": "Daily row counts, in thousands, were 400, 440, 400 and 440, so the mean is 420 and the population standard deviation is 20. What is the z-score of today's count of 370?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
         "Subtract the mean from today's count.",
-        "Divide the difference by 10.",
+        "Divide the difference by 20.",
         "The count is below the mean, so the sign is negative."
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": -3.5,
+        "value": -2.5,
         "unit": "",
         "absoluteTolerance": 0.001,
         "relativeTolerance": 0,
-        "workedAnswer": "(175 − 210) / 10 = −3.5."
+        "workedAnswer": "(370 − 420) / 20 = −2.5."
       },
       "sourceIds": [
         "great-expectations",
         "dbt-tests",
         "dama-dmbok"
       ],
-      "onCorrect": "A z-score of −3.5 puts today's count more than three standard deviations below its recent mean, which is rare enough to investigate.",
+      "onCorrect": "A z-score of −2.5 puts today's count 2.5 standard deviations below its recent mean, which is unusual but inside the common alert line at 3.",
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              3.5
+              2.5
             ]
           },
           "feedback": "The count is below the mean, so the z-score is negative."
@@ -12175,7 +12175,7 @@
         {
           "match": {
             "numeric": [
-              -35
+              -50
             ]
           },
           "feedback": "That is the distance from the mean. Divide it by the standard deviation."
@@ -12696,10 +12696,10 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "Changing a price from tax included to tax excluded"
+          "Changing a weight column from kilograms to pounds"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "Changing a price from tax included to tax excluded"
+        "exampleAnswer": "Changing a weight column from kilograms to pounds"
       },
       "sourceIds": [
         "odcs",
@@ -12746,7 +12746,7 @@
         },
         {
           "id": "c",
-          "label": "Changing a price from tax included to tax excluded"
+          "label": "Changing a weight column from kilograms to pounds"
         },
         {
           "id": "a",
@@ -12762,33 +12762,33 @@
         "anaeg-slo",
         "anaeg-error-budget"
       ],
-      "prompt": "A freshness objective is 99.9% of the time over a 30-day month, which is 720 hours. How many minutes of breach does the error budget allow?",
+      "prompt": "A freshness objective is 99.95% of the time over a 30-day month, which is 720 hours. How many minutes of breach does the error budget allow?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
         "The allowed failure is 100% minus the objective.",
-        "0.1% of 720 hours.",
+        "0.05% of 720 hours.",
         "Convert hours to minutes."
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 43.2,
+        "value": 21.6,
         "unit": "minutes",
         "absoluteTolerance": 0.01,
         "relativeTolerance": 0,
-        "workedAnswer": "The allowed failure is 0.1% of 720 hours, which is 0.72 hours, or 0.72 × 60 = 43.2 minutes."
+        "workedAnswer": "The allowed failure is 0.05% of 720 hours, which is 0.36 hours, or 0.36 × 60 = 21.6 minutes."
       },
       "sourceIds": [
         "odcs",
         "dbt-contracts",
         "great-expectations"
       ],
-      "onCorrect": "The budget shrinks fast as the objective tightens: each extra 9 divides it by ten.",
+      "onCorrect": "The budget shrinks fast as the objective tightens: halving the allowed failure from 0.1% to 0.05% halves the 43.2 minutes to 21.6.",
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              0.72
+              0.36
             ]
           },
           "feedback": "That is the budget in hours. The question asks for minutes."
@@ -12796,10 +12796,10 @@
         {
           "match": {
             "numeric": [
-              7.2
+              43.2
             ]
           },
-          "feedback": "That is 1% of 720 hours. The failure allowed is 0.1%."
+          "feedback": "That is the budget for 99.9%. The failure allowed here is 0.05%, half as much."
         }
       ],
       "skill": "compute-error-budget",
@@ -12939,7 +12939,7 @@
         "anaeg-slo",
         "anaeg-error-budget"
       ],
-      "prompt": "The sales team owns the meaning of order_total, and the platform team runs the scheduler. The meaning of order_total changes from gross to net. Who is accountable for telling consumers?",
+      "prompt": "Orders are created in the sales team's order system, where order_total is calculated, and the platform team runs the scheduler that copies them to the warehouse. The meaning of order_total changes from gross to net. Who is accountable for telling consumers?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -13014,21 +13014,21 @@
         "anaeg-slo",
         "anaeg-error-budget"
       ],
-      "prompt": "The objective is data ready by 07:00 on 90% of days over a 30-day month. Two days have already failed. How many more failed days can the month absorb before the objective is missed?",
+      "prompt": "The objective is data ready by 07:00 on 80% of days over a 30-day month. Four days have already failed. How many more failed days can the month absorb before the objective is missed?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
-        "The allowed failure is 10% of 30 days.",
-        "The budget is 3 days.",
+        "The allowed failure is 20% of 30 days.",
+        "The budget is 6 days.",
         "Subtract the days already failed."
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 1,
+        "value": 2,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "The budget is 10% of 30 days, which is 3 days. Two are spent, so 1 more can fail."
+        "workedAnswer": "The budget is 20% of 30 days, which is 6 days. Four are spent, so 2 more can fail."
       },
       "sourceIds": [
         "odcs",
@@ -13040,15 +13040,15 @@
         {
           "match": {
             "numeric": [
-              3
+              6
             ]
           },
-          "feedback": "That is the whole budget. Two days are already spent."
+          "feedback": "That is the whole budget. Four days are already spent."
         },
         {
           "match": {
             "numeric": [
-              2
+              4
             ]
           },
           "feedback": "That is the number of days already failed."
@@ -13223,7 +13223,7 @@
         "pseudonymisation",
         "k-anonymity"
       ],
-      "prompt": "An email column is replaced by an unsalted hash of each email. Someone holds a list of 50,000 candidate emails and wants to find out which one belongs to a given hash. How hard is that?",
+      "prompt": "An email column is replaced by an unsalted hash of each email, a code computed from the email by a one-way function with no random value added. Someone holds a list of 50,000 candidate emails and wants to find out which one belongs to a given hash. How hard is that?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -13287,11 +13287,11 @@
         "pseudonymisation",
         "k-anonymity"
       ],
-      "prompt": "A customer table has a column health_note holding free-text health information. Which sensitivity label fits it best?",
+      "prompt": "A pharmacy's customer table has a column recording the medicine each customer was prescribed. Which sensitivity label fits it best?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Ask how GDPR treats health data."
+        "Ask what a prescription reveals about a person, and how GDPR treats that kind of data."
       ],
       "answerAuthority": {
         "kind": "text",
@@ -13307,7 +13307,7 @@
         "gdpr",
         "ico-guidance"
       ],
-      "onCorrect": "GDPR treats health data as special category data, which earns the strictest label.",
+      "onCorrect": "A prescription reveals a person's health, and GDPR treats health data as special category data, which earns the strictest label.",
       "misconceptions": [
         {
           "match": {
@@ -13315,7 +13315,7 @@
               "a"
             ]
           },
-          "feedback": "Public data can be shown to anyone, and health information about a named customer is among the most sensitive data a business holds."
+          "feedback": "Public data can be shown to anyone, and a named customer's prescriptions are among the most sensitive data a business holds."
         },
         {
           "match": {
@@ -13415,21 +13415,21 @@
         "pseudonymisation",
         "k-anonymity"
       ],
-      "prompt": "In the nine-row table the groups have 4, 3, 1 and 1 rows. How many rows lie in groups smaller than 3?",
+      "prompt": "A twelve-row table has groups of 5, 2, 3, 1 and 1 rows on its quasi-identifiers. How many rows lie in groups smaller than 3?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
         "Find the groups with fewer than three rows.",
-        "Two groups have a single row.",
+        "There are three such groups.",
         "Add their rows."
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 2,
+        "value": 4,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "The two groups of one row hold 1 + 1 = 2 rows."
+        "workedAnswer": "The groups of 2, 1 and 1 rows are smaller than 3, and hold 2 + 1 + 1 = 4 rows."
       },
       "sourceIds": [
         "nist-deid",
@@ -13437,12 +13437,12 @@
         "gdpr",
         "ico-guidance"
       ],
-      "onCorrect": "Those rows are unique on the quasi-identifiers, so anyone who knows a person's age band, postcode and sex finds them.",
+      "onCorrect": "Those rows sit in groups too small for k = 3, so they are the ones to generalise or suppress.",
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              9
+              12
             ]
           },
           "feedback": "That is every row."
@@ -13450,10 +13450,10 @@
         {
           "match": {
             "numeric": [
-              1
+              2
             ]
           },
-          "feedback": "There are two single-row groups."
+          "feedback": "That counts only the single-row groups. The group of 2 is also smaller than 3."
         }
       ],
       "skill": "compute-k",
@@ -13868,7 +13868,7 @@
         "rights",
         "erasure-in-lake"
       ],
-      "prompt": "Which principle says personal data must be kept no longer than needed for its purpose? Answer with its two-word name.",
+      "prompt": "A shop deletes each customer's browsing history 90 days after it was recorded, since it has no use for older history. Which principle does that deletion put into practice? Answer with its two-word name.",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -13913,7 +13913,7 @@
         "rights",
         "erasure-in-lake"
       ],
-      "prompt": "A company keeps invoices for seven years because tax law requires it. Which lawful basis fits? Answer with its name.",
+      "prompt": "A bank checks each new customer's identity documents because anti-money-laundering law requires it. Which lawful basis fits? Answer with its name.",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -13958,7 +13958,7 @@
         "rights",
         "erasure-in-lake"
       ],
-      "prompt": "A customer wants all of their order history in a file that they can load into another shop's system. Which right lets a person receive their data in a common, machine-readable format to take elsewhere? Answer with its name.",
+      "prompt": "A customer wants all of their order history in a file that they can load into another shop's system. Which right are they using? Answer with its name.",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -14436,7 +14436,7 @@
         "policy-to-control",
         "certified-data"
       ],
-      "prompt": "In a team, one analyst writes and maintains the definition of 'headcount' and watches its day-to-day quality, while the HR director is accountable for the dataset. What is the analyst's role called?",
+      "prompt": "In a finance team, one analyst decides whether refunds count towards 'net revenue', keeps that definition in the glossary and investigates when the figure looks wrong, while the finance director is accountable for the dataset. What is the analyst's role called?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -14490,7 +14490,7 @@
         "policy-to-control",
         "certified-data"
       ],
-      "prompt": "A catalogue entry holds a description of what a dataset means and who is accountable for it, written by a person. Which kind of metadata is that?",
+      "prompt": "A catalogue entry records that a dataset is classified as confidential and links it to the glossary term 'active customer'. Which kind of metadata is that?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
