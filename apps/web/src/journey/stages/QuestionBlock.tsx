@@ -157,14 +157,14 @@ export function QuestionBlock({
     >
       {hidePrompt ? null : (
         <Heading className={promptClassName}>
-          {prompt.map((part, index) =>
+          {prompt.map((part) =>
             part.kind === "code" ? (
               // A heading holds phrasing content only, so the code block is a span set as a block.
-              <span className="prompt-code" key={`code-${index}`}>
+              <span className="prompt-code" key={`code:${part.code}`}>
                 <code>{part.code}</code>
               </span>
             ) : (
-              <Fragment key={`text-${index}`}>
+              <Fragment key={`text:${part.setup}|${part.ask}`}>
                 {part.setup ? (
                   <span className="prompt-setup">
                     <InlineRichText text={part.setup} />
