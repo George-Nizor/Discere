@@ -802,7 +802,7 @@
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "ELT does not mean that the data is never transformed, which is a common misreading of the name. The cleaning still happens, and what changes is where the code runs and what is kept. Keeping the raw rows means that a mistake in the cleaning logic can be repaired by running it again over the original data, which is why many pipelines on a lakehouse land raw files first and clean them afterwards. ETL remains a sensible choice when the destination must never hold sensitive raw fields."
+              "text": "ELT does not mean that the data is never transformed, which is a common misreading of the name. The cleaning still happens, and what changes is where the code runs and what is kept. Keeping the raw rows means that a mistake in the cleaning logic can be repaired by running it again over the original data, which is why many pipelines on a **lakehouse**, a store of open data files that can be queried like a warehouse, land raw files first and clean them afterwards. ETL remains a sensible choice when the destination must never hold sensitive raw fields."
             }
           ],
           "introducesTerms": [
@@ -3848,7 +3848,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "Other operations need rows with the same key to meet in one place. A group by a key must bring every row for that key to the same task, so every output partition reads from every input partition. This is a **wide transformation**, and the movement of data that it causes is a **shuffle**: each task writes its output split into one block for every reducing partition, and the reducers then fetch their blocks across the network. If 20 tasks write to 30 reducing partitions, they produce 20 × 30 = 600 blocks."
+              "text": "Other operations need rows with the same key to meet in one place. A group by a key must bring every row for that key to the same task, so every output partition reads from every input partition. This is a **wide transformation**, and the movement of data that it causes is a **shuffle**: each task on the writing side, a **map task**, splits its output into one block for every reducing partition, and the tasks on the reading side, the **reducers**, then fetch their blocks across the network. If 20 tasks write to 30 reducing partitions, they produce 20 × 30 = 600 blocks."
             }
           ],
           "afterFigure": [
@@ -3961,7 +3961,7 @@
           "id": "estimate-a-skewed-stage",
           "kind": "faded_example",
           "blocks": [],
-          "headline": "Estimate the time of a stage that shuffles 1,000 million rows to 10 reducers at 1 million rows per second each, when one key holds 40% of the rows.",
+          "headline": "Estimate the time of a stage that shuffles 1,000 million rows to 10 reducers at 2 million rows per second each, when one key holds 40% of the rows.",
           "workedSteps": [
             {
               "text": "The hot key's task receives 40% of the 1,000 million rows.",
@@ -3972,8 +3972,8 @@
               "math": "600 million ÷ 9 ≈ 67 million rows"
             },
             {
-              "text": "The stage lasts as long as the hot task, which processes 1 million rows per second. Work out the seconds.",
-              "math": "400 million ÷ 1 million = ? s",
+              "text": "The stage lasts as long as the hot task, which processes 2 million rows per second. Work out the seconds.",
+              "math": "400 million ÷ 2 million = ? s",
               "blank": {
                 "questionId": "date-distributed-processing-skew-seconds"
               }
@@ -4032,7 +4032,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A join of two large tables is a wide operation, because rows with matching keys must meet, so both sides are shuffled. When one side is small, the engine can avoid the shuffle by sending a full copy of the small table to every executor, which is called a **broadcast join**. Each task then joins its own partition of the large table locally, and the large table does not move at all."
+              "text": "A join of two large tables is a wide operation, because rows with matching keys must meet, so both sides are shuffled. When one side is small, the engine can avoid the shuffle with a **broadcast join**, which sends a full copy of the small table to every **executor**, the process on each machine that runs the tasks. Each task then joins its own partition of the large table locally, and the large table does not move at all."
             },
             {
               "kind": "paragraph",
@@ -4507,7 +4507,7 @@
         },
         {
           "id": "sum-before-dedupe",
-          "kind": "predict",
+          "kind": "try",
           "blocks": [],
           "lead": [],
           "reveal": [
@@ -5676,7 +5676,7 @@
           "id": "check-freshness-overnight",
           "kind": "worked_example",
           "blocks": [],
-          "headline": "A table was last loaded at 23:20 and is checked at 05:45 the next morning. Its target is 6 hours. Find out whether it is late, and by how much.",
+          "headline": "A table was last loaded at 23:20 and is checked at 05:45 the next morning. Its target is 5 hours 20 minutes. Find out whether it is late, and by how much.",
           "workedSteps": [
             {
               "text": "Find the age of the table. From 23:20 to midnight is 40 minutes, and from midnight to 05:45 is 5 hours 45 minutes.",
@@ -5684,11 +5684,11 @@
             },
             {
               "text": "Convert the age and the target to minutes.",
-              "math": "age 385 min, target 360 min"
+              "math": "age 385 min, target 320 min"
             },
             {
               "text": "Subtract the target from the age. Work out how many minutes late the table is.",
-              "math": "385 − 360 = ? min",
+              "math": "385 − 320 = ? min",
               "blank": {
                 "questionId": "date-monitoring-and-tuning-overnight-late"
               }
@@ -5800,7 +5800,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The code of the pipeline is the same in all three. What differs is a set of **parameters**, such as the connection to the source and the location of the destination, which each environment supplies for itself. With three environments and four parameters each, there are 3 × 4 = 12 values to keep, and none of them is written into the pipeline's code. The figure shows the path and a table of parameters."
+              "text": "The code of the pipeline is the same in all three. What differs is a set of **parameters**, such as the connection to the source and the location of the destination, which each environment supplies for itself. With three environments and the two parameters in the figure, a source and a destination, there are 3 × 2 = 6 values to keep, and none of them is written into the pipeline's code. The figure shows the path and a table of parameters."
             }
           ],
           "afterFigure": [
@@ -6126,7 +6126,7 @@
         "etl-elt",
         "idempotence"
       ],
-      "prompt": "The join reads 1,180 cleaned orders and a 40-row product list, and every order matches exactly one product. How many rows does the join write?",
+      "prompt": "The join reads 2,350 cleaned orders and a 60-row product list, and every order matches exactly one product. How many rows does the join write?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -6144,7 +6144,7 @@
         {
           "match": {
             "numeric": [
-              1220
+              2410
             ]
           },
           "feedback": "That adds the two tables together, as stacking them would. A join pairs each order with its product instead."
@@ -6152,7 +6152,7 @@
         {
           "match": {
             "numeric": [
-              40
+              60
             ]
           },
           "feedback": "That counts the products. The output has one row for each order."
@@ -6162,11 +6162,11 @@
       "calculator": "off",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 1180,
+        "value": 2350,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "A join attaches the product's columns to each order that matches it, so each of the 1,180 orders produces one row: 1,180 rows."
+        "workedAnswer": "A join attaches the product's columns to each order that matches it, so each of the 2,350 orders produces one row: 2,350 rows."
       }
     },
     {
@@ -6241,7 +6241,7 @@
         "etl-elt",
         "idempotence"
       ],
-      "prompt": "A pipeline following ELT lands 1,000 raw rows, and cleaning finds 40 unusable rows. How many rows does the raw table hold once cleaning has run?",
+      "prompt": "A pipeline following ELT lands 2,500 raw rows, and cleaning finds 75 unusable rows. How many rows does the raw table hold once cleaning has run?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -6259,7 +6259,7 @@
         {
           "match": {
             "numeric": [
-              960
+              2425
             ]
           },
           "feedback": "That is the cleaned table. In ELT the raw table is loaded first and left as it is."
@@ -6267,7 +6267,7 @@
         {
           "match": {
             "numeric": [
-              40
+              75
             ]
           },
           "feedback": "That is the number of unusable rows. The raw table keeps every row it was loaded with."
@@ -6277,11 +6277,11 @@
       "calculator": "off",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 1000,
+        "value": 2500,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "ELT loads the raw rows first and cleans them into a separate table, so the raw table still holds all 1,000 rows."
+        "workedAnswer": "ELT loads the raw rows first and cleans them into a separate table, so the raw table still holds all 2,500 rows."
       }
     },
     {
@@ -6292,7 +6292,7 @@
         "etl-elt",
         "idempotence"
       ],
-      "prompt": "A job inserts three order rows into an empty table, which has no key declared, using plain INSERT statements. The orchestrator reports a timeout and runs the job again, although the first run had in fact finished. What does the table hold afterwards?",
+      "prompt": "A job inserts three order rows into an empty table, which has no key declared, using plain INSERT statements. The orchestrator, the tool that schedules and retries the steps, reports a timeout and runs the job again, although the first run had in fact finished. What does the table hold afterwards?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -6706,7 +6706,7 @@
         "encoding-compression",
         "schema-in-file"
       ],
-      "prompt": "A file stores the order_id column in four row groups, and its footer records their ranges as 1 to 250, 251 to 500, 501 to 750 and 751 to 1000. A query asks for the row with order_id = 600. How much of the file does the reader have to open?",
+      "prompt": "A file stores the order_id column in four row groups, blocks of consecutive rows, and its footer, a summary at the end of the file, records their ranges as 1 to 250, 251 to 500, 501 to 750 and 751 to 1000. A query asks for the row with order_id = 600. How much of the file does the reader have to open?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -6869,7 +6869,7 @@
         "encoding-compression",
         "schema-in-file"
       ],
-      "prompt": "A service must fetch one complete order by its key, thousands of times a second. Which file layout suits it?",
+      "prompt": "An account page loads one customer's whole profile, all 40 columns of it, by customer id each time someone signs in, thousands of times a second. Which file layout suits it?",
       "responseType": "short_text",
       "difficulty": 1.2,
       "hints": [
@@ -6982,7 +6982,7 @@
         "encoding-compression",
         "schema-in-file"
       ],
-      "prompt": "A row-oriented file of 100,000,000 rows and 20 eight-byte columns must be read in full, although the query needs only 2 columns. How many gigabytes (10^9 bytes) are read?",
+      "prompt": "A row-oriented file of 40,000,000 rows and 25 eight-byte columns must be read in full, although the query needs only 2 columns. How many gigabytes (10^9 bytes) are read?",
       "responseType": "numeric",
       "difficulty": 1.2,
       "hints": [
@@ -6994,26 +6994,26 @@
         "parquet-format",
         "fabric-docs"
       ],
-      "onCorrect": "A row layout reads every column, so the 2 needed columns save nothing and the whole 16 GB is fetched.",
+      "onCorrect": "A row layout reads every column, so the 2 needed columns save nothing and the whole 8 GB is fetched.",
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              1.6
+              0.64
             ]
           },
-          "feedback": "That is what a columnar file would read for 2 columns. A row layout reads all 20."
+          "feedback": "That is what a columnar file would read for 2 columns. A row layout reads all 25."
         }
       ],
       "skill": "compute-scan-bytes",
       "calculator": "off",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 16,
+        "value": 8,
         "unit": "",
         "absoluteTolerance": 0.001,
         "relativeTolerance": 0,
-        "workedAnswer": "All 20 columns are read: 100,000,000 × 20 × 8 = 16,000,000,000 bytes, or 16 GB."
+        "workedAnswer": "All 25 columns are read: 40,000,000 × 25 × 8 = 8,000,000,000 bytes, or 8 GB."
       }
     },
     {
@@ -8879,7 +8879,7 @@
         "lakehouse",
         "medallion"
       ],
-      "prompt": "A compliance team needs an exact copy of every file as it arrived, kept unchanged. Which medallion layer holds it?",
+      "prompt": "A bug in last month's cleaning has been fixed, and the team must rebuild the cleaned tables from the events exactly as they arrived. Which medallion layer do they read from?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -9238,13 +9238,13 @@
         "time-travel",
         "maintenance"
       ],
-      "prompt": "The latest checkpoint is at version 20 and the latest commit is version 27. How many commit files must a reader apply after loading the checkpoint?",
+      "prompt": "The latest checkpoint is at version 30 and the latest commit is version 41. How many commit files must a reader apply after loading the checkpoint?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
         "Does the checkpoint include version 20 itself?",
-        "Count the versions after 20 up to 27.",
-        "27 minus 20."
+        "Count the versions after 30 up to 41.",
+        "41 minus 30."
       ],
       "sourceIds": [
         "delta-protocol",
@@ -9257,29 +9257,29 @@
         {
           "match": {
             "numeric": [
-              8
+              12
             ]
           },
-          "feedback": "That counts version 20 as well, but the checkpoint already includes it."
+          "feedback": "That counts version 30 as well, but the checkpoint already includes it."
         },
         {
           "match": {
             "numeric": [
-              27
+              41
             ]
           },
-          "feedback": "That would replay the whole log. The checkpoint replaces versions 0 to 20."
+          "feedback": "That would replay the whole log. The checkpoint replaces versions 0 to 30."
         }
       ],
       "skill": "reconstruct-version",
       "calculator": "off",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 7,
+        "value": 11,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "The checkpoint already includes version 20, so the reader applies versions 21 to 27, which is 7 commit files."
+        "workedAnswer": "The checkpoint already includes version 30, so the reader applies versions 31 to 41, which is 11 commit files."
       }
     },
     {
@@ -10164,7 +10164,7 @@
         "small-files",
         "data-skipping"
       ],
-      "prompt": "A 730 GB table has 365 equal daily partitions. A query filters 7 days. How many gigabytes does it read?",
+      "prompt": "A 900 GB table has 360 equal daily partitions. A query filters 12 days. How many gigabytes does it read?",
       "responseType": "numeric",
       "difficulty": 1.1,
       "hints": [
@@ -10179,34 +10179,34 @@
         "parquet-format",
         "fabric-docs"
       ],
-      "onCorrect": "A week of a year is under 2% of the partitions, so pruning reads under 2% of the table.",
+      "onCorrect": "Twelve days of 360 is a thirtieth of the partitions, so pruning reads a thirtieth of the table.",
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              730
+              900
             ]
           },
-          "feedback": "That is the whole table. The filter opens only 7 partitions."
+          "feedback": "That is the whole table. The filter opens only 12 partitions."
         },
         {
           "match": {
             "numeric": [
-              2
+              2.5
             ]
           },
-          "feedback": "That is one partition. The query opens 7."
+          "feedback": "That is one partition. The query opens 12."
         }
       ],
       "skill": "estimate-bytes-read",
       "calculator": "off",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 14,
+        "value": 30,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "Each partition holds 730 ÷ 365 = 2 GB, and 7 days read 7 × 2 = 14 GB, which is about 1.92% of the table."
+        "workedAnswer": "Each partition holds 900 ÷ 360 = 2.5 GB, and 12 days read 12 × 2.5 = 30 GB, which is a thirtieth of the table."
       }
     },
     {
@@ -10544,13 +10544,13 @@
         "lazy",
         "skew"
       ],
-      "prompt": "How many seconds does the hot key's task need to process 400 million rows at 1 million rows per second?",
+      "prompt": "How many seconds does the hot key's task need to process 400 million rows at 2 million rows per second?",
       "responseType": "numeric",
       "difficulty": 1.3,
       "hints": [
         "Divide the rows by the rate.",
         "Rows divided by rows per second gives seconds.",
-        "400 million divided by 1 million."
+        "400 million divided by 2 million."
       ],
       "sourceIds": [
         "spark-sql-tuning",
@@ -10558,12 +10558,12 @@
         "fabric-docs",
         "dp700-guide"
       ],
-      "onCorrect": "The stage takes four times as long as the even split, because one task carries 40% of the rows and an even task would carry 10%.",
+      "onCorrect": "The stage takes four times as long as the even split of 50 seconds, because one task carries 40% of the rows and an even task would carry 10%.",
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              100
+              50
             ]
           },
           "feedback": "That is the time for an even split of 100 million rows each. The hot task holds 400 million."
@@ -10571,21 +10571,29 @@
         {
           "match": {
             "numeric": [
-              1000
+              500
             ]
           },
           "feedback": "That would be all the rows on one task. The hot key holds 40%."
+        },
+        {
+          "match": {
+            "numeric": [
+              400
+            ]
+          },
+          "feedback": "That is the hot task's rows in millions. At 2 million rows per second it needs half as many seconds."
         }
       ],
       "skill": "estimate-skewed-stage",
       "calculator": "off",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 400,
+        "value": 200,
         "unit": "seconds",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "400 million ÷ 1 million per second = 400 seconds, which is also the length of the stage, against 100 seconds for an even split."
+        "workedAnswer": "400 million ÷ 2 million per second = 200 seconds, which is also the length of the stage, against 50 seconds for an even split."
       }
     },
     {
@@ -11795,12 +11803,12 @@
         "watermark-stream",
         "delivery"
       ],
-      "prompt": "A purchase happened at 10:04 and arrived at 10:11. With 5-minute tumbling windows from 10:00, at what time does the window begin that holds it if windows follow arrival time? Give hh:mm.",
+      "prompt": "A purchase happened at 13:22 and arrived at 13:36. With 5-minute tumbling windows from 13:00, at what time does the window begin that holds it if windows follow arrival time? Give hh:mm.",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
         "Arrival time is what decides the window here.",
-        "Which 5-minute window includes 10:11?"
+        "Which 5-minute window includes 13:36?"
       ],
       "sourceIds": [
         "spark-streaming",
@@ -11809,15 +11817,15 @@
         "fabric-docs",
         "dp700-guide"
       ],
-      "onCorrect": "Windows by arrival put the purchase at 10:10, a different window from the one it belongs to by event time.",
+      "onCorrect": "Windows by arrival put the purchase at 13:35, a different window from the one it belongs to by event time.",
       "misconceptions": [
         {
           "match": {
             "textIdeas": [
-              "10:00"
+              "13:20"
             ]
           },
-          "feedback": "That is the window by event time. With arrival time the purchase counts at 10:11."
+          "feedback": "That is the window by event time. With arrival time the purchase counts at 13:36."
         }
       ],
       "skill": "assign-windows",
@@ -11825,14 +11833,14 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "10:10"
+          "13:35"
         ],
         "acceptedAlternatives": [
-          "10.10",
-          "10:10:00"
+          "13.35",
+          "13:35:00"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "10:10"
+        "exampleAnswer": "13:35"
       }
     },
     {
@@ -12162,7 +12170,7 @@
         "quarantine",
         "fail-fast"
       ],
-      "prompt": "A source widens a column from a 32-bit integer to a 64-bit integer, so every old value still fits. Is the change safe or breaking?",
+      "prompt": "A source widens a text column from VARCHAR(100) to VARCHAR(200), so every old value still fits. Is the change safe or breaking?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -12189,7 +12197,7 @@
               "a"
             ]
           },
-          "feedback": "A change of type breaks a reader only when an old value no longer fits or an old query changes its answer. Every 32-bit value is also a 64-bit value, so neither happens."
+          "feedback": "A change of type breaks a reader only when an old value no longer fits or an old query changes its answer. Every text of up to 100 characters also fits in 200, so neither happens."
         },
         {
           "match": {
@@ -12568,7 +12576,7 @@
         "run-signals",
         "tuning-causes"
       ],
-      "prompt": "A table was last loaded at 03:40 and it is now 12:15. Its freshness target is 8 hours. How many minutes late is it?",
+      "prompt": "A table was last loaded at 04:25 and it is now 13:10. Its freshness target is 8 hours. How many minutes late is it?",
       "responseType": "numeric",
       "difficulty": 1.2,
       "hints": [
@@ -12586,7 +12594,7 @@
         {
           "match": {
             "numeric": [
-              515
+              525
             ]
           },
           "feedback": "That is the age in minutes. Subtract the 480-minute target to find how late it is."
@@ -12604,11 +12612,11 @@
       "calculator": "off",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 35,
+        "value": 45,
         "unit": "minutes",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "The age is 12:15 − 03:40 = 8 h 35 min, which is 515 minutes. The target is 480 minutes, so it is 35 minutes late."
+        "workedAnswer": "The age is 13:10 − 04:25 = 8 h 45 min, which is 525 minutes. The target is 480 minutes, so it is 45 minutes late."
       }
     },
     {
@@ -12619,12 +12627,12 @@
         "run-signals",
         "tuning-causes"
       ],
-      "prompt": "A job moves 240 million rows in 20 minutes. What is its throughput in rows per second?",
+      "prompt": "A job moves 252 million rows in 35 minutes. What is its throughput in rows per second?",
       "responseType": "numeric",
       "difficulty": 1.2,
       "hints": [
-        "Convert the 20 minutes to seconds.",
-        "20 × 60 gives the seconds.",
+        "Convert the 35 minutes to seconds.",
+        "35 × 60 gives the seconds.",
         "Divide the rows by the seconds."
       ],
       "sourceIds": [
@@ -12637,7 +12645,7 @@
         {
           "match": {
             "numeric": [
-              12000000
+              7200000
             ]
           },
           "feedback": "That is rows per minute. The question asks for rows per second."
@@ -12645,21 +12653,21 @@
         {
           "match": {
             "numeric": [
-              240000
+              252000
             ]
           },
-          "feedback": "That divides by 1,000 seconds. 20 minutes is 1,200 seconds."
+          "feedback": "That divides by 1,000 seconds. 35 minutes is 2,100 seconds."
         }
       ],
       "skill": "compute-throughput",
       "calculator": "off",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 200000,
+        "value": 120000,
         "unit": "rows per second",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "20 minutes is 1,200 seconds, and 240,000,000 ÷ 1,200 = 200,000 rows per second."
+        "workedAnswer": "35 minutes is 2,100 seconds, and 252,000,000 ÷ 2,100 = 120,000 rows per second."
       }
     },
     {
@@ -12910,20 +12918,20 @@
         "run-signals",
         "tuning-causes"
       ],
-      "prompt": "How many minutes late is the table, with an age of 385 minutes and a target of 360 minutes?",
+      "prompt": "How many minutes late is the table, with an age of 385 minutes and a target of 320 minutes?",
       "responseType": "numeric",
       "difficulty": 1.1,
       "hints": [
         "Subtract the target from the age.",
         "Both are already in minutes.",
-        "385 minus 360."
+        "385 minus 320."
       ],
       "sourceIds": [
         "fabric-docs",
         "spark-sql-tuning",
         "dp700-guide"
       ],
-      "onCorrect": "The table's age passes the target by 25 minutes, so the freshness alert should fire.",
+      "onCorrect": "The table's age passes the target by 65 minutes, so the freshness alert should fire.",
       "misconceptions": [
         {
           "match": {
@@ -12936,7 +12944,7 @@
         {
           "match": {
             "numeric": [
-              360
+              320
             ]
           },
           "feedback": "That is the target. The lateness is the age minus the target."
@@ -12946,11 +12954,11 @@
       "calculator": "off",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 25,
+        "value": 65,
         "unit": "minutes",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "385 − 360 = 25, so the table is 25 minutes late."
+        "workedAnswer": "385 − 320 = 65, so the table is 65 minutes late."
       }
     },
     {
@@ -13351,7 +13359,7 @@
         "date-access-control",
         "secrets"
       ],
-      "prompt": "Analysts may see every order but must not see customers' email addresses. Which control fits?",
+      "prompt": "Support staff may see every customer record but must not see the phone number column. Which control fits?",
       "responseType": "short_text",
       "difficulty": 1.1,
       "hints": [
@@ -13369,7 +13377,7 @@
         "fabric-docs",
         "dp700-guide"
       ],
-      "onCorrect": "Every row stays visible and only the email column is hidden or masked, which is what column-level security does.",
+      "onCorrect": "Every row stays visible and only the phone number column is hidden or masked, which is what column-level security does.",
       "misconceptions": [
         {
           "match": {
@@ -13377,7 +13385,7 @@
               "a"
             ]
           },
-          "feedback": "Row-level security decides which rows a person sees. Here the analysts may see every row, and the restriction is on one column."
+          "feedback": "Row-level security decides which rows a person sees. Here the support staff may see every row, and the restriction is on one column."
         },
         {
           "match": {
@@ -13385,7 +13393,7 @@
               "c"
             ]
           },
-          "feedback": "Read-only access stops a reader from changing the table, but they could still read every email address."
+          "feedback": "Read-only access stops a reader from changing the table, but they could still read every phone number."
         }
       ],
       "skill": "choose-access-control",
