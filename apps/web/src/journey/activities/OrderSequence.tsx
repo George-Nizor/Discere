@@ -1,9 +1,10 @@
-import type { LearnerActivity } from "@discere/contracts";
 import { moveInOrder } from "@discere/activity-engine";
+import type { LearnerActivity } from "@discere/contracts";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
-import { useActivityAssessment } from "./use-activity-assessment.js";
 import { Notice } from "../../ui/Feedback.js";
+import { InlineRichText } from "../../ui/RichText.js";
+import { useActivityAssessment } from "./use-activity-assessment.js";
 
 /**
  * Rotates the public item list without consulting the private answer. Deterministic, because a
@@ -43,7 +44,9 @@ export function OrderSequence({
 
   return (
     <div className="order-sequence">
-      <p className="order-sequence-prompt">{activity.prompt}</p>
+      <p className="order-sequence-prompt">
+        <InlineRichText text={activity.prompt} />
+      </p>
       <ol className="order-list">
         {order.map((itemId, index) => {
           const item = activity.items.find((entry) => entry.id === itemId);
@@ -110,7 +113,9 @@ export function OrderSequence({
           tone={outcome.correct ? "correct" : "info"}
           title={outcome.correct ? "That is the order" : "Not yet"}
         >
-          <p>{outcome.explanation}</p>
+          <p>
+            <InlineRichText text={outcome.explanation} />
+          </p>
         </Notice>
       ) : null}
     </div>

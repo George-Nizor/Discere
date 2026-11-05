@@ -1,8 +1,9 @@
 import { act, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { renderWithProviders } from "../../test/harness.js";
-import { useAttempt } from "./use-attempt.js";
 import { ModeProvider } from "../mode-context.js";
+import { useAttempt } from "./use-attempt.js";
+
 afterEach(() => vi.unstubAllGlobals());
 
 function Answer() {
@@ -58,9 +59,7 @@ describe("rapid answer submission", () => {
     expect(fetch).toHaveBeenCalledOnce();
     expect(screen.getByRole("status")).toHaveTextContent("Checking");
     await act(async () => reject(new Error("Offline")));
-    expect(screen.getByRole("status")).toHaveTextContent(
-      "Discere’s engine isn’t responding.",
-    );
+    expect(screen.getByRole("status")).toHaveTextContent("Discere’s engine isn’t responding.");
     await user.click(screen.getByRole("button", { name: "Check" }));
     expect(fetch).toHaveBeenCalledTimes(2);
     await act(async () => reject(new Error("Offline")));

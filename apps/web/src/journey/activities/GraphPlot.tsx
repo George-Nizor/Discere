@@ -1,8 +1,9 @@
-import type { LearnerActivity } from "@discere/contracts";
 import { type GraphPoint, pointFromFraction } from "@discere/activity-engine";
+import type { LearnerActivity } from "@discere/contracts";
 import { useRef, useState } from "react";
-import { useActivityAssessment } from "./use-activity-assessment.js";
 import { Notice } from "../../ui/Feedback.js";
+import { InlineRichText } from "../../ui/RichText.js";
+import { useActivityAssessment } from "./use-activity-assessment.js";
 
 const WIDTH = 420;
 const HEIGHT = 300;
@@ -70,7 +71,9 @@ export function GraphPlot({
 
   return (
     <div className="graph-plot">
-      <p className="graph-plot-prompt">{activity.prompt}</p>
+      <p className="graph-plot-prompt">
+        <InlineRichText text={activity.prompt} />
+      </p>
       <svg
         className="graph-plot-canvas"
         role="img"
@@ -237,7 +240,9 @@ export function GraphPlot({
           tone={outcome.correct ? "correct" : "info"}
           title={outcome.correct ? "Correct" : "Not there"}
         >
-          <p>{outcome.explanation}</p>
+          <p>
+            <InlineRichText text={outcome.explanation} />
+          </p>
         </Notice>
       ) : null}
     </div>

@@ -81,7 +81,7 @@ function assessAgainstAuthority(question: Question, response: string): Assessmen
       };
     return {
       correct: false,
-      feedback: "Recheck the calculation, signs, and decimal place before trying again.",
+      feedback: "That number is not right. Check your working, or take a hint.",
     };
   }
   const result = assessTextAnswer(response, authority);
@@ -98,7 +98,6 @@ function assessAgainstAuthority(question: Question, response: string): Assessmen
     };
   return {
     correct: false,
-    feedback:
-      "The response needs a clearer statement of the main relationship the question asks about.",
+    feedback: "That is not the answer. Try again, or take a hint.",
   };
 }

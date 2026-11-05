@@ -2,18 +2,19 @@ import type { InteractiveVisualStage } from "@discere/contracts";
 import { ArrowRight, Maximize2, Minimize2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Notice } from "../../ui/Feedback.js";
+import { InlineRichText } from "../../ui/RichText.js";
+import { CircuitVisual } from "../activities/CircuitVisual.js";
 import { ExplorerControls } from "../activities/ExplorerControls.js";
 import {
+  asExplorerActivity,
+  type ExplorerActivity,
   type ExplorerReading,
   type ExplorerState,
   evaluatePrediction,
   initialExplorerState,
-  asExplorerActivity,
-  type ExplorerActivity,
   predictionChoices,
   readExplorer,
 } from "../activities/explorer-state.js";
-import { CircuitVisual } from "../activities/CircuitVisual.js";
 import { TimelineTrack } from "../activities/TimelineTrack.js";
 
 function UnsupportedActivity({ type, prompt }: { type: string; prompt: string }) {
@@ -119,7 +120,9 @@ export function InteractiveVisualStageView({
       <ExplorerControls activity={activity} onChange={changeState} state={state} />
 
       <fieldset className="prediction">
-        <legend className="prediction-prompt">{stage.prompt}</legend>
+        <legend className="prediction-prompt">
+          <InlineRichText text={stage.prompt} />
+        </legend>
         <div className="prediction-choices">
           {choices.map((choice) => (
             <button
@@ -163,7 +166,9 @@ export function InteractiveVisualStageView({
             tone={outcome.correct ? "correct" : "info"}
             title={outcome.correct ? "Matched" : "Compare"}
           >
-            <p>{outcome.explanation}</p>
+            <p>
+              <InlineRichText text={outcome.explanation} />
+            </p>
           </Notice>
         ) : null}
       </fieldset>
