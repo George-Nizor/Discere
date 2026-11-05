@@ -101,8 +101,30 @@ const UNIT_ALIASES: Record<string, { canonical: string; factor: number }> = {
   kω: { canonical: "Ω", factor: 1000 },
 };
 
+const SUPERSCRIPTS = "⁰¹²³⁴⁵⁶⁷⁸⁹";
+const SUBSCRIPTS = "₀₁₂₃₄₅₆₇₈₉";
+
+/**
+ * A unit as a keyboard types it: lower case, no spaces, and superscript or subscript digits as
+ * plain ones, so "W/m2" and "W/m^2" match "W/m²", "GtCO2" matches "GtCO₂" and "x10^8" matches "×10⁸".
+ */
+export function plainUnit(text: string): string {
+  return text
+    .toLocaleLowerCase()
+    .replace(/\s+/g, "")
+    .replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹]/g, (digit) => String(SUPERSCRIPTS.indexOf(digit)))
+    .replace(/[₀₁₂₃₄₅₆₇₈₉]/g, (digit) => String(SUBSCRIPTS.indexOf(digit)))
+    .replaceAll("⁻", "-")
+    .replaceAll("^", "")
+    .replaceAll("×", "x");
+}
+
 function normaliseUnit(raw: string): { canonical: string; factor: number } | null {
-  return UNIT_ALIASES[raw.toLocaleLowerCase().replaceAll(" ", "")] ?? null;
+  return (
+    UNIT_ALIASES[raw.toLocaleLowerCase().replaceAll(" ", "")] ??
+    UNIT_ALIASES[plainUnit(raw)] ??
+    null
+  );
 }
 
 export function parseNumericAnswer(input: string): ParsedNumericAnswer | null {
@@ -125,7 +147,7 @@ export function parseNumericAnswer(input: string): ParsedNumericAnswer | null {
   return { value: value * unit.factor, unit: unit.canonical };
 }
 
-const squash = (text: string) => text.toLocaleLowerCase().replace(/\s+/g, "");
+const squash = plainUnit;
 
 /**
  * The unit a question itself declares is always readable, even when it is not in the alias
@@ -164,7 +186,7 @@ export function assessNumericAnswer(input: string, authority: NumericAuthority):
       : quantity;
   if (authority.unit) {
     const authorityUnit = normaliseUnit(authority.unit) ?? { canonical: authority.unit, factor: 1 };
-    if (parsed.unit && parsed.unit !== authorityUnit.canonical)
+    if (parsed.unit && plainUnit(parsed.unit) !== plainUnit(authorityUnit.canonical))
       return { correct: false, parsed, error: "unit_mismatch" };
   } else if (authority.unit === "" && parsed.unit) {
     return { correct: false, parsed, error: "unit_mismatch" };
