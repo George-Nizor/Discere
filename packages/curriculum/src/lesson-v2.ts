@@ -28,7 +28,8 @@ export const LEAD_WORD_LIMIT = 110;
  * about a minute. The limits count the prose before and after its figure.
  */
 export const EXPLAIN_BODY_WORD_LIMIT = 420;
-export const EXPLAIN_BODY_WORD_FLOOR = 80;
+// An easy idea said once can take a few sentences; the floor only catches a screen with nothing in it.
+export const EXPLAIN_BODY_WORD_FLOOR = 30;
 export const OPENER_WORD_LIMIT = 360;
 /** Longest run of teaching-only screens before the learner is asked to do something. */
 export const EXPLAIN_RUN_LIMIT = 3;
@@ -237,7 +238,7 @@ function v2LessonIssues(
         push(
           sat,
           "EXPLAIN_TOO_THIN",
-          `The screen's prose is ${body} words. A teaching screen should tell the idea properly, in at least ${EXPLAIN_BODY_WORD_FLOOR}: say where we are, what is new and why it matters.`,
+          `The screen's prose is ${body} words. A teaching screen needs at least ${EXPLAIN_BODY_WORD_FLOOR} to say what is new and why it matters.`,
           "warning",
         );
     } else if (step.lead && blockWords(step.lead) > LEAD_WORD_LIMIT)
