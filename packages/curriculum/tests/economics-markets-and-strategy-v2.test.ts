@@ -368,7 +368,7 @@ describe("Lesson 7: consumer and producer surplus", () => {
 describe("Lesson 8: taxes and deadweight loss", () => {
   const I = "econ-taxes-and-deadweight-loss-";
   it("recomputes the keys", () => {
-    near(I + "hook", 10 - (14 - 6));
+    near(I + "hook", 5 - (17 - 15)); // a £5 tax, and the fare rises from £15 to £17
     near(I + "1", equilibrium(100, 2, -20, 4, 6).price);
     near(I + "2", 6 * equilibrium(100, 2, -20, 4, 6).quantity);
     near(I + "3", tri(equilibrium(100, 2, -20, 4).quantity - equilibrium(100, 2, -20, 4, 6).quantity, 6));
