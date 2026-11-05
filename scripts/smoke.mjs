@@ -481,8 +481,8 @@ try {
   const guidedTutorEnvelope = {
     ...directTutorEnvelope,
     payload: {
-      // The current lesson's first skill check is 3a + 2 at a = 4, so stating 14 leaks it.
-      answer: "The answer is 14.",
+      // The current lesson's first skill check is 3a + 2 at a = 5, so stating 17 leaks it.
+      answer: "The answer is 17.",
       followUpQuestion: "Can you substitute the values yourself?",
       sourceIds: [],
       uncertainty: [],

@@ -2,6 +2,10 @@
 
 Updated: 2026-11-05
 
+Release 1.9.9 fixes 71 screens in 38 courses that referred to "the figure" or "the diagram"
+without having one: each now points to where the figure is or says its content in words. The
+smoke test's leaked-answer check follows the maths skill check that changed in 1.9.8.
+
 Release 1.9.8 is the giveaway pass. A learner agent taking Earth and Environmental Science found
 that many questions asked for a number the learner had just read, because a teaching screen or
 figure had worked the same case, and that some predict screens came after the screen that answered
