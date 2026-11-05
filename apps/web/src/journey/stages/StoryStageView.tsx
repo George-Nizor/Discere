@@ -245,7 +245,13 @@ function StepScreen({
   return (
     <article className="step-screen" data-kind={step.kind}>
       {headline ? (
-        <h1 className="step-headline step-title">
+        // A worked or faded example's headline is its problem, so it reads as the task in body
+        // text; a teaching screen's headline is a short title naming its topic.
+        <h1
+          className={
+            hasLines ? "step-headline step-task" : "step-headline step-title"
+          }
+        >
           <InlineRichText text={headline} />
         </h1>
       ) : null}
