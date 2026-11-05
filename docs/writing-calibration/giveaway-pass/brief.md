@@ -51,7 +51,8 @@ Prefer the smallest change that makes the learner do the step:
    same skill.
 3. **Worked examples.** A worked example shows the method, and its blank is the one step the
    learner does. The lines before the blank must not contain the result, and the teaching screen
-   before it must not have worked the same numbers. A faded example after it uses different
+   before it must not have worked the same numbers. A self-explanation whose line prints the
+   number it asks about can become a blank (move the number out of the line). A faded example after it uses different
    numbers from the worked one.
 4. **Predict screens.** A predict comes before the idea it tests. If the screen before already
    teaches the answer, move the predict to before that screen (reorder `steps`), and read the
