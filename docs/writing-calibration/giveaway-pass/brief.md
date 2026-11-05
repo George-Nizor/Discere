@@ -61,7 +61,8 @@ Prefer the smallest change that makes the learner do the step:
    `kind: "try"`.
 
 Do not delete questions or screens, do not change a question's type, and do not reorder choice
-options. Keep figures consistent with the text: every number you change in prose is changed in the
+options. Do not change course-check items (`bundle.courseChecks`): they carry an independent review.
+Keep every teaching screen at 80 words or more (the review records refuse a thinner one). Keep figures consistent with the text: every number you change in prose is changed in the
 figure's SVG text, alt text and caption too. Keep a changed label the same length or shorter so
 nothing overflows, and move a bar or point in a chart when its value changes.
 
