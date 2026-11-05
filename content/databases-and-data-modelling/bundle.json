@@ -901,17 +901,17 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Each order belongs to one customer, so the order row can hold that customer as a single value: the customer's id. A column that holds the id of a row in another table is called a **foreign key**, and the figure shows what it does. Order 103 has the number 2 in its customer_id column, and the customer with id 2 is Ben, so the number is all the database needs to find him. The customers table keeps one row per customer, and the orders table refers to it, never the other way round."
+              "text": "Each order belongs to one customer, so the order row can hold that customer as a single value: the customer's id. A column that holds the id of a row in another table is called a **foreign key**, and the figure shows what it does. Order 103 has the number 2 in its `customer_id` column, and the customer with id 2 is Ben, so the number is all the database needs to find him. The `customers` table keeps one row per customer, and the `orders` table refers to it, never the other way round."
             },
             {
               "kind": "paragraph",
-              "text": "The rule that follows is that the foreign key goes on the **many side** of a one-to-many relationship. Many orders can point at the same customer, because several rows may store the same number, while a customer row could not point at several orders with a single value. In SQL the column is declared with the table it refers to: customer_id INTEGER NOT NULL REFERENCES customers(id)."
+              "text": "The rule that follows is that the foreign key goes on the **many side** of a one-to-many relationship. Many orders can point at the same customer, because several rows may store the same number, while a customer row could not point at several orders with a single value. In SQL the column is declared with the table it refers to: `customer_id INTEGER NOT NULL REFERENCES customers(id)`."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "The REFERENCES clause makes the database check the link as well as store it. An insert of an order with customer_id 9 is refused if no customer has the id 9, so an order cannot point at a customer that does not exist. PostgreSQL and SQLite both support this, although SQLite checks foreign keys only after you switch them on with PRAGMA foreign_keys = ON."
+              "text": "The `REFERENCES` clause makes the database check the link as well as store it. An insert of an order with `customer_id` 9 is refused if no customer has the id 9, so an order cannot point at a customer that does not exist. PostgreSQL and SQLite both support this, although SQLite checks foreign keys only after you switch them on with `PRAGMA foreign_keys = ON`."
             }
           ],
           "introducesTerms": [
@@ -979,7 +979,7 @@
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "Look at the two views for course 11. In the list view the answer has to be found by reading inside text, while in the junction table it is the two rows whose course_id is 11."
+              "text": "Look at the two views for course 11. In the list view the answer has to be found by reading inside text, while in the junction table it is the two rows whose `course_id` is 11."
             }
           ],
           "introducesTerms": [
@@ -1031,11 +1031,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A junction table needs a rule that stops the same pair being stored twice. If (1,10) could appear two times, Ana would seem to be enrolled twice on Databases, and counting rows would give wrong answers. The rule is that the combination of the two foreign keys is the **key of the junction table**: the pair (student_id, course_id) must be different in every row, and the database refuses a duplicate. In SQL this is written PRIMARY KEY (student_id, course_id)."
+              "text": "A junction table needs a rule that stops the same pair being stored twice. If (1,10) could appear two times, Ana would seem to be enrolled twice on Databases, and counting rows would give wrong answers. The rule is that the combination of the two foreign keys is the **key of the junction table**: the pair `(student_id, course_id)` must be different in every row, and the database refuses a duplicate. In SQL this is written `PRIMARY KEY (student_id, course_id)`."
             },
             {
               "kind": "paragraph",
-              "text": "The junction table also gives a home to a fact about the pair. Ana's grade in Databases describes neither Ana, who has a grade in every course she takes, nor Databases, which has a grade for every student, so it describes the combination. A fact of this kind is an [[attribute|One fact about one entity, stored as a column. Met in 'From a story to entities'.]] of the relationship, and it becomes a column of the junction table: enrollments(student_id, course_id, grade)."
+              "text": "The junction table also gives a home to a fact about the pair. Ana's grade in Databases describes neither Ana, who has a grade in every course she takes, nor Databases, which has a grade for every student, so it describes the combination. A fact of this kind is an [[attribute|One fact about one entity, stored as a column. Met in 'From a story to entities'.]] of the relationship, and it becomes a column of the junction table: `enrollments(student_id, course_id, grade)`."
             }
           ],
           "afterFigure": [],
@@ -1070,7 +1070,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "To list who takes what, a query follows the relationships in reverse. It starts at students, joins enrollments on student_id, and then joins courses on course_id, so the junction table is a stepping stone between the two entities. Without any filter the result has one row for every row of enrollments, which here is seven. Add the condition WHERE c.title = 'Databases' and only the pairs that mention that course remain, so the three students on it appear."
+              "text": "To list who takes what, a query follows the relationships in reverse. It starts at `students`, joins `enrollments` on `student_id`, and then joins `courses` on `course_id`, so the junction table is a stepping stone between the two entities. Without any filter the result has one row for every row of `enrollments`, which here is seven. Add the condition `WHERE c.title = 'Databases'` and only the pairs that mention that course remain, so the three students on it appear."
             },
             {
               "kind": "paragraph",
@@ -1288,7 +1288,7 @@
               "math": "7 rows"
             },
             {
-              "text": "Keep only the pairs whose title is Databases or Algorithms, using WHERE c.title IN ('Databases', 'Algorithms').",
+              "text": "Keep only the pairs whose title is Databases or Algorithms, using `WHERE c.title IN ('Databases', 'Algorithms')`.",
               "math": "? rows",
               "blank": {
                 "questionId": "datdm-one-to-many-and-many-to-many-after-where"
@@ -1299,7 +1299,7 @@
               "math": "Ana 2, Ben 1, Chloe 2"
             },
             {
-              "text": "A student on both courses has exactly two distinct titles, so HAVING COUNT(DISTINCT c.title) = 2 keeps the groups for Ana and Chloe.",
+              "text": "A student on both courses has exactly two distinct titles, so `HAVING COUNT(DISTINCT c.title) = 2` keeps the groups for Ana and Chloe.",
               "math": "Ana, Chloe"
             }
           ],
@@ -1321,7 +1321,7 @@
               "text": "Group those pairs by student and count the distinct titles each student has: Ana is student 1, Ben 2, Chloe 3 and Dev 4."
             },
             {
-              "text": "HAVING COUNT(DISTINCT c.title) = 2 keeps only the groups with two titles. Count the students that remain.",
+              "text": "`HAVING COUNT(DISTINCT c.title) = 2` keeps only the groups with two titles. Count the students that remain.",
               "blank": {
                 "questionId": "datdm-one-to-many-and-many-to-many-databases-and-compilers"
               }
@@ -1340,7 +1340,7 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "The junction table is recipe_ingredients(recipe_id, ingredient_id, amount), with the two ids together as its key, exactly as enrollments holds the grade."
+              "text": "The junction table is `recipe_ingredients(recipe_id, ingredient_id, amount)`, with the two ids together as its key, exactly as `enrollments` holds the grade."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -1465,7 +1465,7 @@
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "PostgreSQL and SQLite both enforce the first two properties for you: PRIMARY KEY refuses a duplicate and refuses NULL. Stability is the one property that the database cannot check, and so it is the one the designer has to choose."
+              "text": "PostgreSQL and SQLite both enforce the first two properties for you: `PRIMARY KEY` refuses a duplicate and refuses `NULL`. Stability is the one property that the database cannot check, and so it is the one the designer has to choose."
             }
           ],
           "introducesTerms": [
@@ -1518,7 +1518,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A key taken from the data itself, such as an ISBN or a product code, is called a **natural key**. Its attraction is that it already means something, and its risk is the one just seen: anything meaningful can be renumbered, corrected or reused. A **surrogate key** is a number that the database generates and that means nothing outside it, so there is no reason for it ever to change. In PostgreSQL it is written id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY, and in SQLite id INTEGER PRIMARY KEY fills it in."
+              "text": "A key taken from the data itself, such as an ISBN or a product code, is called a **natural key**. Its attraction is that it already means something, and its risk is the one just seen: anything meaningful can be renumbered, corrected or reused. A **surrogate key** is a number that the database generates and that means nothing outside it, so there is no reason for it ever to change. In PostgreSQL it is written `id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY`, and in SQLite `id INTEGER PRIMARY KEY` fills it in."
             },
             {
               "kind": "paragraph",
@@ -1558,11 +1558,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A rule kept only in an application is a rule kept only for that application, since a script, a second program or a bug can all write to the table without going through it. A **constraint** is a rule declared on the table, and the database checks it for every writer. NOT NULL refuses an empty value. UNIQUE refuses a value that another row already has. CHECK refuses a row for which a condition is false, such as price >= 0. In the figure the three statements meet these rules in turn, and the one that breaks none is accepted."
+              "text": "A rule kept only in an application is a rule kept only for that application, since a script, a second program or a bug can all write to the table without going through it. A **constraint** is a rule declared on the table, and the database checks it for every writer. `NOT NULL` refuses an empty value. `UNIQUE` refuses a value that another row already has. `CHECK` refuses a row for which a condition is false, such as `price >= 0`. In the figure the three statements meet these rules in turn, and the one that breaks none is accepted."
             },
             {
               "kind": "paragraph",
-              "text": "UNIQUE and PRIMARY KEY are related and not the same. A table has *one* primary key, which is unique and never null, but it can have many UNIQUE columns, and a UNIQUE column that allows NULL may hold several of them, because NULL means \"unknown\" and two unknowns are not known to be equal. The statement that is refused leaves the table as it was, so the rows already there are untouched."
+              "text": "`UNIQUE` and `PRIMARY KEY` are related and not the same. A table has *one* primary key, which is unique and never null, but it can have many `UNIQUE` columns, and a `UNIQUE` column that allows `NULL` may hold several of them, because `NULL` means \"unknown\" and two unknowns are not known to be equal. The statement that is refused leaves the table as it was, so the rows already there are untouched."
             }
           ],
           "afterFigure": [],
@@ -1623,11 +1623,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A foreign key is a constraint as well. An insert of an enrollment for student 9 is refused if no student has the id 9, so no row can refer to something that does not exist. The same rule applies when a parent row is removed while children still point to it, and there the designer chooses the outcome. NO ACTION, which is the default, and RESTRICT refuse the delete. ON DELETE CASCADE deletes the children too. ON DELETE SET NULL keeps them and clears the reference, which needs a column that allows NULL."
+              "text": "A foreign key is a constraint as well. An insert of an enrollment for student 9 is refused if no student has the id 9, so no row can refer to something that does not exist. The same rule applies when a parent row is removed while children still point to it, and there the designer chooses the outcome. `NO ACTION`, which is the default, and `RESTRICT` refuse the delete. `ON DELETE CASCADE` deletes the children too. `ON DELETE SET NULL` keeps them and clears the reference, which needs a column that allows `NULL`."
             },
             {
               "kind": "paragraph",
-              "text": "The figure deletes Ana, who has two of the three orders. Under no action nothing changes, under cascade her two orders go with her and one remains, and under set null all three orders stay and two lose their customer. Which one is right depends on whether an order means anything without its customer. SQLite checks foreign keys only after PRAGMA foreign_keys = ON."
+              "text": "The figure deletes Ana, who has two of the three orders. Under no action nothing changes, under cascade her two orders go with her and one remains, and under set null all three orders stay and two lose their customer. Which one is right depends on whether an order means anything without its customer. SQLite checks foreign keys only after `PRAGMA foreign_keys = ON`."
             }
           ],
           "afterFigure": [],
@@ -1715,7 +1715,7 @@
               "text": "Statement 1 has a new id, a new code and a valid price, so it passes every rule and is stored."
             },
             {
-              "text": "Statement 2 repeats id 2, statement 3 repeats the code P-100, statement 4 has a price of -1 and statement 5 has a NULL code. Check each against the rules in turn."
+              "text": "Statement 2 repeats id 2, statement 3 repeats the code P-100, statement 4 has a price of -1 and statement 5 has a `NULL` code. Check each against the rules in turn."
             },
             {
               "text": "A refused statement leaves nothing behind. Count the rows the table holds at the end.",
@@ -1737,7 +1737,7 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "If phone had to be present for every member it would also be declared NOT NULL, and then no two members could leave it empty."
+              "text": "If `phone` had to be present for every member it would also be declared `NOT NULL`, and then no two members could leave it empty."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -1819,7 +1819,7 @@
         "blocks": [
           {
             "kind": "paragraph",
-            "text": "A surrogate key is the usual choice because it carries no meaning that can change, while the natural value stays in the table as a UNIQUE column. NOT NULL, UNIQUE, CHECK and foreign keys then refuse bad rows whichever program sends them, and a delete action decides what happens to child rows."
+            "text": "A surrogate key is the usual choice because it carries no meaning that can change, while the natural value stays in the table as a `UNIQUE` column. `NOT NULL`, `UNIQUE`, `CHECK` and foreign keys then refuse bad rows whichever program sends them, and a delete action decides what happens to child rows."
           },
           {
             "kind": "paragraph",
@@ -1863,7 +1863,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The table orders_flat holds customers, products and orders in one place, and so it repeats facts. Ana's email is stored on each of her three rows, and the price of a Pen on each row that mentions a Pen. Storing the same fact more than once is called **redundancy**. People often take its cost to be disk space, which for four rows is nothing, but the real cost is that the copies can *disagree*."
+              "text": "The table `orders_flat` holds customers, products and orders in one place, and so it repeats facts. Ana's email is stored on each of her three rows, and the price of a Pen on each row that mentions a Pen. Storing the same fact more than once is called **redundancy**. People often take its cost to be disk space, which for four rows is nothing, but the real cost is that the copies can *disagree*."
             },
             {
               "kind": "paragraph",
@@ -2064,7 +2064,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The opposite problem is an **insert anomaly**. The shop begins to stock a Cap at price 3, and no one has ordered one. The price is a fact about the product, but a row of this table is an order line, which needs an order_id and a qty, and the table has no row that could hold a Cap alone without inventing them. Both problems come from the same cause, since one table stores facts about three different kinds of thing."
+              "text": "The opposite problem is an **insert anomaly**. The shop begins to stock a Cap at price 3, and no one has ordered one. The price is a fact about the product, but a row of this table is an order line, which needs an `order_id` and a `qty`, and the table has no row that could hold a Cap alone without inventing them. Both problems come from the same cause, since one table stores facts about three different kinds of thing."
             }
           ],
           "afterFigure": [],
@@ -2118,11 +2118,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The vocabulary for what went wrong is a **functional dependency**. We write X → Y, and say that X *determines* Y, when any two rows with the same value of X always have the same value of Y. Each order has one customer, so order_id → customer_email: the two rows of order 1 both say ana@x.io. Each email belongs to one customer, so customer_email → customer_name, and each product has one price, so product → product_price. Quantity is different, because it needs two columns: order 1 bought 10 Pens and 2 Inks, so neither order_id nor product alone fixes it, but the pair (order_id, product) → qty."
+              "text": "The vocabulary for what went wrong is a **functional dependency**. We write X → Y, and say that X *determines* Y, when any two rows with the same value of X always have the same value of Y. Each order has one customer, so `order_id` → `customer_email`: the two rows of order 1 both say ana@x.io. Each email belongs to one customer, so `customer_email` → `customer_name`, and each product has one price, so `product` → `product_price`. Quantity is different, because it needs two columns: order 1 bought 10 Pens and 2 Inks, so neither `order_id` nor `product` alone fixes it, but the pair `(order_id, product)` → `qty`."
             },
             {
               "kind": "paragraph",
-              "text": "A dependency comes from the *meaning* of the business and is not something read off the sample. In these four rows product_price → product also holds, because the prices 2, 5 and 4 happen to be different, but the shop may price two products the same, and then it would fail. The rows can show that a dependency is false, since a counterexample refutes it, and they can never prove one true."
+              "text": "A dependency comes from the *meaning* of the business and is not something read off the sample. In these four rows `product_price` → `product` also holds, because the prices 2, 5 and 4 happen to be different, but the shop may price two products the same, and then it would fail. The rows can show that a dependency is false, since a counterexample refutes it, and they can never prove one true."
             }
           ],
           "afterFigure": [],
@@ -2186,7 +2186,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A dependency answers the question of what identifies a row. A **candidate key** is a set of columns that determines every column of the table and that has no unnecessary members: remove any column and it stops determining everything. Take a school timetable(room, period, teacher, subject). Room alone does not fix the teacher, since a room is used in every period, and period alone does not either, since many rooms are in use at once. The pair (room, period) fixes both the teacher and the subject, and dropping either column loses that, so the pair is a candidate key."
+              "text": "A dependency answers the question of what identifies a row. A **candidate key** is a set of columns that determines every column of the table and that has no unnecessary members: remove any column and it stops determining everything. Take a school `timetable(room, period, teacher, subject)`. Room alone does not fix the teacher, since a room is used in every period, and period alone does not either, since many rooms are in use at once. The pair `(room, period)` fixes both the teacher and the subject, and dropping either column loses that, so the pair is a candidate key."
             },
             {
               "kind": "paragraph",
@@ -2208,22 +2208,22 @@
           "headline": "Find a candidate key of orders_flat from its dependencies.",
           "workedSteps": [
             {
-              "text": "Start with order_id. It determines customer_email, and customer_email determines customer_name, so it reaches three columns.",
+              "text": "Start with `order_id`. It determines `customer_email`, and `customer_email` determines `customer_name`, so it reaches three columns.",
               "math": "order_id → customer_email → customer_name"
             },
             {
-              "text": "It is a key only if no order_id appears on more than one row, because rows sharing an order_id could differ in product, price and quantity. Count the rows of order 1.",
+              "text": "It is a key only if no `order_id` appears on more than one row, because rows sharing an `order_id` could differ in product, price and quantity. Count the rows of order 1.",
               "math": "rows with order_id 1: ?",
               "selfExplain": {
                 "questionId": "datdm-anomalies-and-dependencies-order-one-rows"
               }
             },
             {
-              "text": "Add product. It determines product_price, and the pair determines qty, so all six columns are now reached.",
+              "text": "Add `product`. It determines `product_price`, and the pair determines `qty`, so all six columns are now reached.",
               "math": "(order_id, product) → all six"
             },
             {
-              "text": "Drop either column and some column is lost, since order_id without product loses the price and product without order_id loses the customer, so the pair is minimal.",
+              "text": "Drop either column and some column is lost, since `order_id` without `product` loses the price and `product` without `order_id` loses the customer, so the pair is minimal.",
               "math": "candidate key: (order_id, product)"
             }
           ],
@@ -2240,7 +2240,7 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "The shape is the same as orders_flat: two columns that each fix some facts, and a pair that fixes the fact about both."
+              "text": "The shape is the same as `orders_flat`: two columns that each fix some facts, and a pair that fixes the fact about both."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -2287,7 +2287,7 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "The table orders_flat keeps everything about a shop's sales in one place. For each product on each order it records the customer's name and email, the product with its price, and the quantity, so a single row answers the question of who bought what. The convenience has a price, because a customer's email is written again for every line she has ordered, and a product's price is written again for every order that includes it."
+              "text": "The table `orders_flat` keeps everything about a shop's sales in one place. For each product on each order it records the customer's name and email, the product with its price, and the quantity, so a single row answers the question of who bought what. The convenience has a price, because a customer's email is written again for every line she has ordered, and a product's price is written again for every order that includes it."
             },
             {
               "kind": "paragraph",
@@ -2327,11 +2327,11 @@
         "blocks": [
           {
             "kind": "paragraph",
-            "text": "The four rows of orders_flat showed all three anomalies: Ana's email had to change in three places, deleting order 2 erased Ben, and a new product had no row to live in. Each problem traces to a dependency such as order_id → customer_email that the table does not respect."
+            "text": "The four rows of `orders_flat` showed all three anomalies: Ana's email had to change in three places, deleting order 2 erased Ben, and a new product had no row to live in. Each problem traces to a dependency such as `order_id` → `customer_email` that the table does not respect."
           },
           {
             "kind": "paragraph",
-            "text": "A candidate key is the smallest set of columns that determines everything, here (order_id, product), and the dependencies that start from only part of it are the ones to remove."
+            "text": "A candidate key is the smallest set of columns that determines everything, here `(order_id, product)`, and the dependencies that start from only part of it are the ones to remove."
           }
         ],
         "nextHook": "The next lesson uses these dependencies to decompose the table into normal forms."
@@ -2371,7 +2371,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Joining ep and ps on project gives four rows: the two original ones, (Ana, P1, SQL) and (Ben, P1, Rust), and two that were never in the table, (Ana, P1, Rust) and (Ben, P1, SQL). The extra rows are **spurious rows**. They appear because project is not a key of either piece, since P1 occurs twice in both, so each side matches *several* rows on the other. The split has thrown information away, namely which employee used which skill, and no join can recover it."
+              "text": "Joining `ep` and `ps` on `project` gives four rows: the two original ones, (Ana, P1, SQL) and (Ben, P1, Rust), and two that were never in the table, (Ana, P1, Rust) and (Ben, P1, SQL). The extra rows are **spurious rows**. They appear because `project` is not a key of either piece, since P1 occurs twice in both, so each side matches *several* rows on the other. The split has thrown information away, namely which employee used which skill, and no join can recover it."
             },
             {
               "kind": "paragraph",
@@ -2531,7 +2531,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The first of the normal forms is the simplest to state. A table is in **first normal form** when every cell holds a single value. A column called phone1, phone2, a list such as \"555-0101, 555-0188\" in one cell, or a nested row all break it, for the reason met in the last lesson: the database cannot check, index or join on a value that is really several. The remedy is the one used for a many-to-many relationship, which is a row for each value, normally in a table of its own."
+              "text": "The first of the normal forms is the simplest to state. A table is in **first normal form** when every cell holds a single value. A column called `phone1`, `phone2`, a list such as \"555-0101, 555-0188\" in one cell, or a nested row all break it, for the reason met in the last lesson: the database cannot check, index or join on a value that is really several. The remedy is the one used for a many-to-many relationship, which is a row for each value, normally in a table of its own."
             },
             {
               "kind": "paragraph",
@@ -2554,11 +2554,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A table is in **second normal form** when it is in first and no non-key column depends on *part* of a candidate key. The check starts from the key found in the last lesson. In orders_flat the key is (order_id, product), but the customer columns depend on order_id alone and product_price depends on product alone, so both are partial dependencies. Only qty needs the whole pair."
+              "text": "A table is in **second normal form** when it is in first and no non-key column depends on *part* of a candidate key. The check starts from the key found in the last lesson. In `orders_flat` the key is `(order_id, product)`, but the customer columns depend on `order_id` alone and `product_price` depends on `product` alone, so both are partial dependencies. Only `qty` needs the whole pair."
             },
             {
               "kind": "paragraph",
-              "text": "The remedy is to move each partly dependent group out to a table whose key is the part it depends on. The figure shows the result: orders(order_id, customer_email, customer_name), products(product, product_price) and order_items(order_id, product, qty). Every non-key column now depends on the whole key of its own table."
+              "text": "The remedy is to move each partly dependent group out to a table whose key is the part it depends on. The figure shows the result: `orders(order_id, customer_email, customer_name)`, `products(product, product_price)` and `order_items(order_id, product, qty)`. Every non-key column now depends on the whole key of its own table."
             }
           ],
           "afterFigure": [
@@ -2617,11 +2617,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Look at orders(order_id, customer_email, customer_name) after the second step. Its key is order_id, and customer_email depends on it, which is fine, but customer_name depends on customer_email and only reaches the key through it. A non-key column that depends on another non-key column is a **transitive dependency**, and a table with none, in addition to being in second normal form, is in **third normal form**. The remedy is the same as before: the dependent column goes to a table keyed by what it depends on."
+              "text": "Look at `orders(order_id, customer_email, customer_name)` after the second step. Its key is `order_id`, and `customer_email` depends on it, which is fine, but `customer_name` depends on `customer_email` and only reaches the key through it. A non-key column that depends on another non-key column is a **transitive dependency**, and a table with none, in addition to being in second normal form, is in **third normal form**. The remedy is the same as before: the dependent column goes to a table keyed by what it depends on."
             },
             {
               "kind": "paragraph",
-              "text": "That gives customers its own table, and with generated ids the schema in the figure has four tables. customers has 2 rows, products 3, orders 3 and order_items 4. Ana's name is now stored in 1 cell instead of 3, so an address change touches one row, deleting an order cannot delete a customer, and a new product can be inserted before anyone orders it."
+              "text": "That gives `customers` its own table, and with generated ids the schema in the figure has four tables. `customers` has 2 rows, `products` 3, `orders` 3 and `order_items` 4. Ana's name is now stored in 1 cell instead of 3, so an address change touches one row, deleting an order cannot delete a customer, and a new product can be inserted before anyone orders it."
             }
           ],
           "afterFigure": [
@@ -2683,18 +2683,18 @@
           "headline": "Check that the four tables give back the four rows of orders_flat.",
           "workedSteps": [
             {
-              "text": "Start from order_items, which has 4 rows, and join orders on order_id. The shared column is the key of orders.",
+              "text": "Start from `order_items`, which has 4 rows, and join `orders` on `order_id`. The shared column is the key of `orders`.",
               "math": "? rows",
               "blank": {
                 "questionId": "datdm-normal-forms-and-decomposition-join-orders"
               }
             },
             {
-              "text": "Join customers on customer_id. It is the key of customers, so again each row finds exactly one match.",
+              "text": "Join `customers` on `customer_id`. It is the key of `customers`, so again each row finds exactly one match.",
               "math": "4 rows, now with a name"
             },
             {
-              "text": "Join products on product_id in the same way, which adds the product name and price.",
+              "text": "Join `products` on `product_id` in the same way, which adds the product name and price.",
               "math": "4 rows, with name, product and price"
             },
             {
@@ -2739,7 +2739,7 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "Moving student_name to a students table keyed by student_id fixes it, and the remaining table is (student_id, course_id, grade)."
+              "text": "Moving `student_name` to a `students` table keyed by `student_id` fixes it, and the remaining table is `(student_id, course_id, grade)`."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -2821,7 +2821,7 @@
         "blocks": [
           {
             "kind": "paragraph",
-            "text": "The flat orders table became customers, orders, products and order_items by removing partial dependencies for second normal form and then the dependency of customer_name on customer_email for third. Joining the four tables returned the same four rows, with Ana's revenue still 34 and Ben's 8, while the badly cut table returned four rows from two."
+            "text": "The flat orders table became `customers`, `orders`, `products` and `order_items` by removing partial dependencies for second normal form and then the dependency of `customer_name` on `customer_email` for third. Joining the four tables returned the same four rows, with Ana's revenue still 34 and Ben's 8, while the badly cut table returned four rows from two."
           },
           {
             "kind": "paragraph",
@@ -2889,7 +2889,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The tables that describe the facts are called **dimensions**. Here dim_product holds a name and a category for each product, and dim_date holds the day and month for each date. A dimension is small next to the fact table, because a shop has few products and a year has 365 days, and it is wide, with many descriptive columns, because those are the things a report groups by. Drawn with the fact table in the middle and one line to each dimension, the layout looks like a star, and so it is called a **star schema**."
+              "text": "The tables that describe the facts are called **dimensions**. Here `dim_product` holds a name and a category for each product, and `dim_date` holds the day and month for each date. A dimension is small next to the fact table, because a shop has few products and a year has 365 days, and it is wide, with many descriptive columns, because those are the things a report groups by. Drawn with the fact table in the middle and one line to each dimension, the layout looks like a star, and so it is called a **star schema**."
             },
             {
               "kind": "paragraph",
@@ -2931,11 +2931,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Revenue by month and category takes three tables. The query joins fact_sales to dim_date on date_id and to dim_product on product_id, groups the rows by month and category, and adds up amount in each group: SELECT d.month, p.category, SUM(f.amount) FROM fact_sales f JOIN dim_date d ON d.date_id = f.date_id JOIN dim_product p ON p.product_id = f.product_id GROUP BY d.month, p.category. This is the join and GROUP BY of *SQL: From Rows to Reports*, and the star layout means every report needs the same shape of query, with a different choice of dimension columns."
+              "text": "Revenue by month and category takes three tables. The query joins `fact_sales` to `dim_date` on `date_id` and to `dim_product` on `product_id`, groups the rows by month and category, and adds up `amount` in each group: `SELECT d.month, p.category, SUM(f.amount) FROM fact_sales f JOIN dim_date d ON d.date_id = f.date_id JOIN dim_product p ON p.product_id = f.product_id GROUP BY d.month, p.category`. This is the join and `GROUP BY` of *SQL: From Rows to Reports*, and the star layout means every report needs the same shape of query, with a different choice of dimension columns."
             },
             {
               "kind": "paragraph",
-              "text": "The figure here joins one dimension at a time. Grouped by category the 84 of revenue splits into 24 for Kitchen and 60 for Stationery, and grouped by product name it splits into 8, 60 and 16. Nothing in the fact table changed between the two reports, and only the dimension column in GROUP BY changed."
+              "text": "The figure here joins one dimension at a time. Grouped by category the 84 of revenue splits into 24 for Kitchen and 60 for Stationery, and grouped by product name it splits into 8, 60 and 16. Nothing in the fact table changed between the two reports, and only the dimension column in `GROUP BY` changed."
             }
           ],
           "afterFigure": [],
@@ -3145,7 +3145,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Reporting schemas break the rule of the previous lessons on purpose, since the category is repeated for every product and a month for every day. Denormalisation can also be used inside an ordinary database. An orders table might store a column total, a copy of the sum of its items' prices, so that showing an order's total no longer means reading and adding every item. The price is that the copy must be updated whenever an item is added, changed or removed, through a **trigger**, which is code the database runs by itself whenever a row of the table changes, or through application code, and a missed update is the update anomaly again."
+              "text": "Reporting schemas break the rule of the previous lessons on purpose, since the category is repeated for every product and a month for every day. Denormalisation can also be used inside an ordinary database. An `orders` table might store a column `total`, a copy of the sum of its items' prices, so that showing an order's total no longer means reading and adding every item. The price is that the copy must be updated whenever an item is added, changed or removed, through a **trigger**, which is code the database runs by itself whenever a row of the table changes, or through application code, and a missed update is the update anomaly again."
             },
             {
               "kind": "paragraph",
@@ -3778,11 +3778,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "An index on (last_name, first_name) is a [[B-tree|A sorted tree of pages that leads to a row in a few reads. Met in 'How an index finds rows'.]] whose keys are the pair, sorted by last_name and then, among equal last names, by first_name. That is the order of a phone book. All the Smiths are next to each other, so the search can go down the tree straight to the first one, a step called a **seek**, and read along until the name changes. The Anas are not next to each other, because first names are in order only *within* a last name."
+              "text": "An index on `(last_name, first_name)` is a [[B-tree|A sorted tree of pages that leads to a row in a few reads. Met in 'How an index finds rows'.]] whose keys are the pair, sorted by `last_name` and then, among equal last names, by `first_name`. That is the order of a phone book. All the Smiths are next to each other, so the search can go down the tree straight to the first one, a step called a **seek**, and read along until the name changes. The Anas are not next to each other, because first names are in order only *within* a last name."
             },
             {
               "kind": "paragraph",
-              "text": "The consequence is the **leftmost-prefix rule**. The index can seek on the first column, on the first two together, and on a range of the first column, since a range of last names is a contiguous run. It cannot seek on first_name alone, because no single place in the index holds all the Anas. The figure sorts the filters into those that seek and those that do not, and the order of the columns in the index is therefore a design decision, and not a detail."
+              "text": "The consequence is the **leftmost-prefix rule**. The index can seek on the first column, on the first two together, and on a range of the first column, since a range of last names is a contiguous run. It cannot seek on `first_name` alone, because no single place in the index holds all the Anas. The figure sorts the filters into those that seek and those that do not, and the order of the columns in the index is therefore a design decision, and not a detail."
             }
           ],
           "afterFigure": [
@@ -3840,11 +3840,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Whether an index is worth having depends on how many rows each value leads to. A country column with 250 values spread evenly over 1,000,000 rows keeps about 1,000,000 ÷ 250 = 4,000 rows for each value, which is 0.4 percent of the table, below the break-even of the last lesson, so an index on it helps. The share of rows a condition keeps is its **selectivity**, and a small share is called *high* selectivity."
+              "text": "Whether an index is worth having depends on how many rows each value leads to. A `country` column with 250 values spread evenly over 1,000,000 rows keeps about 1,000,000 ÷ 250 = 4,000 rows for each value, which is 0.4 percent of the table, below the break-even of the last lesson, so an index on it helps. The share of rows a condition keeps is its **selectivity**, and a small share is called *high* selectivity."
             },
             {
               "kind": "paragraph",
-              "text": "A status column with three values behaves differently. If 90 percent of the rows are 'done', the condition status = 'done' keeps 9 rows in 10, and an index on it saves almost nothing, since a scan would be cheaper. The same index can still be useful for the rare value: if 'failed' covers 1 percent of rows, status = 'failed' keeps 10,000 of them. Selectivity depends on the value asked for, as well as on the column."
+              "text": "A `status` column with three values behaves differently. If 90 percent of the rows are `'done'`, the condition `status = 'done'` keeps 9 rows in 10, and an index on it saves almost nothing, since a scan would be cheaper. The same index can still be useful for the rare value: if `'failed'` covers 1 percent of rows, `status = 'failed'` keeps 10,000 of them. Selectivity depends on the value asked for, as well as on the column."
             }
           ],
           "afterFigure": [],
@@ -3879,11 +3879,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "SQLite's EXPLAIN QUERY PLAN prints one line for each table in a query, saying how it will be read. SCAN means every row, as when first_name alone is the filter. SEARCH ... USING INDEX means a seek in the index, and the part in brackets, such as (last_name=?), names the columns the seek used. SEARCH ... USING INTEGER PRIMARY KEY (rowid=?) is the same for a lookup by id."
+              "text": "SQLite's `EXPLAIN QUERY PLAN` prints one line for each table in a query, saying how it will be read. `SCAN` means every row, as when `first_name` alone is the filter. `SEARCH ... USING INDEX` means a seek in the index, and the part in brackets, such as `(last_name=?)`, names the columns the seek used. `SEARCH ... USING INTEGER PRIMARY KEY (rowid=?)` is the same for a lookup by id."
             },
             {
               "kind": "paragraph",
-              "text": "When an index holds *every* column a query reads, the table need not be visited at all. The query SELECT first_name FROM emp WHERE last_name = 'L3' needs only last_name and first_name, both in idx_name, so the plan says USING COVERING INDEX, and the lookup costs the tree height without the extra table page. An index like this is a **covering index** for that query. The figure shows the three lines with the query for each."
+              "text": "When an index holds *every* column a query reads, the table need not be visited at all. The query `SELECT first_name FROM emp WHERE last_name = 'L3'` needs only `last_name` and `first_name`, both in `idx_name`, so the plan says `USING COVERING INDEX`, and the lookup costs the tree height without the extra table page. An index like this is a **covering index** for that query. The figure shows the three lines with the query for each."
             }
           ],
           "afterFigure": [
@@ -3946,11 +3946,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Take the query WHERE dept = 'D2' AND salary >= 50000. An index on (dept, salary) seeks to the start of the D2 block, and within that block the salaries are in order, so it seeks again to 50000 and reads to the end of the block. An index on (salary, dept) would have to read every salary from 50000 up across all departments, and discard the rows from other departments. The rule of thumb is that columns tested for *equality* come first and the column tested by a *range* comes last."
+              "text": "Take the query `WHERE dept = 'D2' AND salary >= 50000`. An index on `(dept, salary)` seeks to the start of the D2 block, and within that block the salaries are in order, so it seeks again to 50000 and reads to the end of the block. An index on `(salary, dept)` would have to read every salary from 50000 up across all departments, and discard the rows from other departments. The rule of thumb is that columns tested for *equality* come first and the column tested by a *range* comes last."
             },
             {
               "kind": "paragraph",
-              "text": "The same index serves an ORDER BY. Within one department the salaries are already sorted, so WHERE dept = 'D2' ORDER BY salary reads the rows in the order requested and needs no separate sort step. SQLite shows a sort as a plan line, USE TEMP B-TREE FOR ORDER BY, and with this index that line is absent."
+              "text": "The same index serves an `ORDER BY`. Within one department the salaries are already sorted, so `WHERE dept = 'D2' ORDER BY salary` reads the rows in the order requested and needs no separate sort step. SQLite shows a sort as a plan line, `USE TEMP B-TREE FOR ORDER BY`, and with this index that line is absent."
             }
           ],
           "afterFigure": [],
@@ -4217,7 +4217,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "EXPLAIN shows the plan that PostgreSQL has chosen for a query without running it: a tree in which each node is one step, such as a scan, a join or a sort, with the planner's estimate of the rows it will produce. The tree is read from the *bottom*, since the scans at the leaves run first, their rows flow up into the join, and the join's rows flow up into the sort. EXPLAIN ANALYZE goes further, and actually *executes* the query, so it can add the real row count and time beside each estimate, but for that reason it must be used with care on a statement that changes data."
+              "text": "`EXPLAIN` shows the plan that PostgreSQL has chosen for a query without running it: a tree in which each node is one step, such as a scan, a join or a sort, with the planner's estimate of the rows it will produce. The tree is read from the *bottom*, since the scans at the leaves run first, their rows flow up into the join, and the join's rows flow up into the sort. `EXPLAIN ANALYZE` goes further, and actually *executes* the query, so it can add the real row count and time beside each estimate, but for that reason it must be used with care on a statement that changes data."
             },
             {
               "kind": "paragraph",
@@ -4275,7 +4275,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The planner cannot count the rows a filter will keep without running it, so it estimates from **statistics** that the database keeps about each column: the number of rows, the most common values and how the rest are spread. When a table has changed a great deal since the statistics were gathered, or never had them gathered, the estimates drift, and the planner may choose a plan that would have suited the old data. The command ANALYZE refreshes them, and PostgreSQL's autovacuum normally runs it in the background."
+              "text": "The planner cannot count the rows a filter will keep without running it, so it estimates from **statistics** that the database keeps about each column: the number of rows, the most common values and how the rest are spread. When a table has changed a great deal since the statistics were gathered, or never had them gathered, the estimates drift, and the planner may choose a plan that would have suited the old data. The command `ANALYZE` refreshes them, and PostgreSQL's autovacuum normally runs it in the background."
             },
             {
               "kind": "paragraph",
@@ -4497,11 +4497,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The figure puts a crash at three points of the same transfer, which moves 100 from A to B and so must keep the total of 700. Without BEGIN, each statement is its own transaction, and commits as soon as it finishes. This is called *autocommit*. A crash after the debit leaves A at 400 and B at 200, a total of 600, and the missing 100 cannot be recovered from the database."
+              "text": "The figure puts a crash at three points of the same transfer, which moves 100 from A to B and so must keep the total of 700. Without `BEGIN`, each statement is its own transaction, and commits as soon as it finishes. This is called *autocommit*. A crash after the debit leaves A at 400 and B at 200, a total of 600, and the missing 100 cannot be recovered from the database."
             },
             {
               "kind": "paragraph",
-              "text": "A **transaction** wraps the statements between BEGIN and COMMIT. The changes take effect when COMMIT succeeds, and not before. If the server crashes before the commit, recovery undoes the half-finished work, and A returns to 500 and B to 200. This property is **atomicity**: either every change of a transaction is visible afterwards, or none is. If the crash comes after the commit, the committed transfer is kept, and the balances are 400 and 300."
+              "text": "A **transaction** wraps the statements between `BEGIN` and `COMMIT`. The changes take effect when `COMMIT` succeeds, and not before. If the server crashes before the commit, recovery undoes the half-finished work, and A returns to 500 and B to 200. This property is **atomicity**: either every change of a transaction is visible afterwards, or none is. If the crash comes after the commit, the committed transfer is kept, and the balances are 400 and 300."
             }
           ],
           "afterFigure": [],
@@ -4561,7 +4561,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The four letters stand for four separate properties. **Atomicity** was the previous screen: all or nothing. **Consistency** means that the data satisfies its declared rules, the constraints of the earlier lessons, both before and after a transaction, so a transaction that would break a CHECK or a foreign key is refused. **Isolation** says that concurrent transactions do not interfere with each other, in a degree that depends on the isolation level chosen, a topic for the next lesson. **Durability** says that once COMMIT has returned, a later crash will not lose the change."
+              "text": "The four letters stand for four separate properties. **Atomicity** was the previous screen: all or nothing. **Consistency** means that the data satisfies its declared rules, the constraints of the earlier lessons, both before and after a transaction, so a transaction that would break a `CHECK` or a foreign key is refused. **Isolation** says that concurrent transactions do not interfere with each other, in a degree that depends on the isolation level chosen, a topic for the next lesson. **Durability** says that once `COMMIT` has returned, a later crash will not lose the change."
             },
             {
               "kind": "paragraph",
@@ -4602,7 +4602,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Writing every changed table page to disk at each commit would be slow, since the pages are scattered over the files. PostgreSQL uses **write-ahead logging** instead: each change is first described in a record in a log, which is written sequentially, and the transaction's commit is a final record in the same log. COMMIT returns to the client only when that commit record has reached stable storage. The table pages themselves are written *later*, whenever convenient."
+              "text": "Writing every changed table page to disk at each commit would be slow, since the pages are scattered over the files. PostgreSQL uses **write-ahead logging** instead: each change is first described in a record in a log, which is written sequentially, and the transaction's commit is a final record in the same log. `COMMIT` returns to the client only when that commit record has reached stable storage. The table pages themselves are written *later*, whenever convenient."
             },
             {
               "kind": "paragraph",
@@ -4918,7 +4918,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "A **phantom read** is the same thing for a set of rows. T1 counts the rows with dept = 'A' and gets 3, T2 commits a new row in that department, and T1's second count is 4. The row did not exist at the first query and appeared before the second. Each of these gives a result that no serial order would give, since in a serial order T1 would see T2's work either wholly or not at all."
+              "text": "A **phantom read** is the same thing for a set of rows. T1 counts the rows with `dept = 'A'` and gets 3, T2 commits a new row in that department, and T1's second count is 4. The row did not exist at the first query and appeared before the second. Each of these gives a result that no serial order would give, since in a serial order T1 would see T2's work either wholly or not at all."
             }
           ],
           "afterFigure": [],
@@ -5286,11 +5286,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "If every reader had to wait for every writer, a long report would stop all payments for as long as it ran. PostgreSQL avoids this with **multiversion concurrency control**, usually shortened to **MVCC**. An UPDATE does not overwrite a row. It creates a *new version* and marks the old one as ended by the updating transaction, so the row has a chain of versions, each recording the transaction that created it and the one that ended it."
+              "text": "If every reader had to wait for every writer, a long report would stop all payments for as long as it ran. PostgreSQL avoids this with **multiversion concurrency control**, usually shortened to **MVCC**. An `UPDATE` does not overwrite a row. It creates a *new version* and marks the old one as ended by the updating transaction, so the row has a chain of versions, each recording the transaction that created it and the one that ended it."
             },
             {
               "kind": "paragraph",
-              "text": "A transaction reads through a **snapshot**, which records which transactions had committed when it started. It sees the latest version created by a committed transaction and not yet ended by one. In the figure, tx 10 created version 1 and tx 20 created version 2. A snapshot taken while tx 20 was still running sees version 1, and one taken after tx 20 committed sees version 2. A plain SELECT takes no row locks, and the rule that follows is that readers do not block writers and writers do not block readers."
+              "text": "A transaction reads through a **snapshot**, which records which transactions had committed when it started. It sees the latest version created by a committed transaction and not yet ended by one. In the figure, tx 10 created version 1 and tx 20 created version 2. A snapshot taken while tx 20 was still running sees version 1, and one taken after tx 20 committed sees version 2. A plain `SELECT` takes no row locks, and the rule that follows is that readers do not block writers and writers do not block readers."
             }
           ],
           "afterFigure": [],
@@ -5344,7 +5344,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "MVCC lets readers and writers coexist, but two writers cannot change the same row at once. An UPDATE takes a **row lock** on the rows it changes and holds it until the transaction ends, so a second writer to the same row waits until the first commits or rolls back. Under Repeatable Read the second writer is aborted instead, as the previous lesson said."
+              "text": "MVCC lets readers and writers coexist, but two writers cannot change the same row at once. An `UPDATE` takes a **row lock** on the rows it changes and holds it until the transaction ends, so a second writer to the same row waits until the first commits or rolls back. Under Repeatable Read the second writer is aborted instead, as the previous lesson said."
             },
             {
               "kind": "paragraph",
@@ -5402,7 +5402,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The lost update of the last lesson came from a gap: the application read a value with one statement, computed a new one, and wrote it with another, and any other transaction could change the row between them. Under MVCC the SELECT holds no lock and shows only its snapshot, so nothing stops it. There are three ways to close the gap. SELECT ... FOR UPDATE locks the rows as it reads them, so a competing writer waits. A higher isolation level aborts the second writer. And the simplest is to do the arithmetic in the database, as in UPDATE accounts SET balance = balance + 10 WHERE id = 7."
+              "text": "The lost update of the last lesson came from a gap: the application read a value with one statement, computed a new one, and wrote it with another, and any other transaction could change the row between them. Under MVCC the `SELECT` holds no lock and shows only its snapshot, so nothing stops it. There are three ways to close the gap. `SELECT ... FOR UPDATE` locks the rows as it reads them, so a competing writer waits. A higher isolation level aborts the second writer. And the simplest is to do the arithmetic in the database, as in `UPDATE accounts SET balance = balance + 10 WHERE id = 7`."
             },
             {
               "kind": "paragraph",
@@ -5442,11 +5442,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Sometimes holding a lock is not possible, for instance when a person opens a form, edits it for ten minutes and then saves, because no database lock should be held across that time. The **optimistic** approach hopes there is no conflict, and checks at the end. The row carries a **version column**, which the application reads along with the data and sends back in the update: UPDATE accounts SET balance = 150, version = 4 WHERE id = 7 AND version = 3."
+              "text": "Sometimes holding a lock is not possible, for instance when a person opens a form, edits it for ten minutes and then saves, because no database lock should be held across that time. The **optimistic** approach hopes there is no conflict, and checks at the end. The row carries a **version column**, which the application reads along with the data and sends back in the update: `UPDATE accounts SET balance = 150, version = 4 WHERE id = 7 AND version = 3`."
             },
             {
               "kind": "paragraph",
-              "text": "If nobody has changed the row, its version is still 3, the statement updates 1 row and the version becomes 4. If someone else has already moved the version to 4, the WHERE clause matches nothing, and the statement reports **0 rows** updated. That count is the signal of a conflict: the application re-reads the row, applies its change to the new data, and tries again with the new version."
+              "text": "If nobody has changed the row, its version is still 3, the statement updates 1 row and the version becomes 4. If someone else has already moved the version to 4, the `WHERE` clause matches nothing, and the statement reports **0 rows** updated. That count is the signal of a conflict: the application re-reads the row, applies its change to the new data, and tries again with the new version."
             }
           ],
           "afterFigure": [],
@@ -5485,18 +5485,18 @@
               "math": "100, version 3"
             },
             {
-              "text": "User 1 saves 150 with SET version = version + 1 WHERE id = 7 AND version = 3. The version matches, so 1 row is updated.",
+              "text": "User 1 saves 150 with `SET version = version + 1 WHERE id = 7 AND version = 3`. The version matches, so 1 row is updated.",
               "math": "balance 150, version ?",
               "blank": {
                 "questionId": "datdm-locks-versions-and-conflicts-version-after"
               }
             },
             {
-              "text": "User 2 saves 130 with the same WHERE version = 3. The row is now at version 4, so 0 rows are updated.",
+              "text": "User 2 saves 130 with the same `WHERE version = 3`. The row is now at version 4, so 0 rows are updated.",
               "math": "0 rows: conflict"
             },
             {
-              "text": "User 2 re-reads the row, which is now at balance 150 and version 4, applies the change again and retries with version = 4.",
+              "text": "User 2 re-reads the row, which is now at balance 150 and version 4, applies the change again and retries with `version = 4`.",
               "math": "retry with version 4"
             }
           ],
@@ -5515,7 +5515,7 @@
               "text": "The first attempt matched 0 rows, so user 2 re-reads the row and gets balance 150 and version 4."
             },
             {
-              "text": "User 2 adds 30 to the re-read balance and saves with version = 4, which matches."
+              "text": "User 2 adds 30 to the re-read balance and saves with `version = 4`, which matches."
             },
             {
               "text": "Work out the balance the update stores.",
@@ -5623,7 +5623,7 @@
           },
           {
             "kind": "paragraph",
-            "text": "Doing the arithmetic in an atomic UPDATE, locking with FOR UPDATE, or checking a version column in the WHERE clause closes the gap between a read and a write."
+            "text": "Doing the arithmetic in an atomic `UPDATE`, locking with `FOR UPDATE`, or checking a version column in the `WHERE` clause closes the gap between a read and a write."
           }
         ],
         "nextHook": "The last module leaves the relational model and asks what key-value and document stores give up and gain."
@@ -5647,7 +5647,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Many workloads ask the same narrow question over and over: given this id, return this thing, and quickly. A session for a logged-in user, a page-view counter and a cached page are all of this kind. A **key-value store** serves it directly. It maps a **key**, a string such as session:41, to a **value**, and offers a few operations on a key: set it, get it, delete it, and some arithmetic on it. Redis is the best known, and it keeps its data in memory, which is why it is fast."
+              "text": "Many workloads ask the same narrow question over and over: given this id, return this thing, and quickly. A session for a logged-in user, a page-view counter and a cached page are all of this kind. A **key-value store** serves it directly. It maps a **key**, a string such as `session:41`, to a **value**, and offers a few operations on a key: set it, get it, delete it, and some arithmetic on it. Redis is the best known, and it keeps its data in memory, which is why it is fast."
             },
             {
               "kind": "paragraph",
@@ -5705,7 +5705,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The commands are few. SET key value stores the text and replies OK. GET key replies with the value as a string, or nil when the key does not exist. DEL key removes the key and replies with the number of keys that it removed, 1 or 0. INCR key adds 1 to the number stored under the key and replies with the new value as an *integer*, and if the key is missing it starts from 0, so the first INCR replies 1."
+              "text": "The commands are few. `SET key value` stores the text and replies `OK`. `GET key` replies with the value as a string, or `nil` when the key does not exist. `DEL key` removes the key and replies with the number of keys that it removed, 1 or 0. `INCR key` adds 1 to the number stored under the key and replies with the new value as an *integer*, and if the key is missing it starts from 0, so the first `INCR` replies 1."
             },
             {
               "kind": "paragraph",
@@ -5803,7 +5803,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A **document store**, such as MongoDB, keeps a nested record, usually JSON, under a key, and can query the fields inside it. Take an order with three line items. In tables it is a row of orders and three rows of order_items, and rendering the order page without a join means a read of the order, a read of its items and a read of the customer, which is 3. As one document with the items **embedded**, the same page is a single read."
+              "text": "A **document store**, such as MongoDB, keeps a nested record, usually JSON, under a key, and can query the fields inside it. Take an order with three line items. In tables it is a row of `orders` and three rows of `order_items`, and rendering the order page without a join means a read of the order, a read of its items and a read of the customer, which is 3. As one document with the items **embedded**, the same page is a single read."
             },
             {
               "kind": "paragraph",
@@ -6054,7 +6054,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The copies are usually updated *asynchronously*, so a replica may be behind. In the figure the write x = 7 has reached the primary and replica 1, and replica 2 still holds 6, so a read there returns an old value. This **replication lag** gives the read-your-writes problem: a user saves a change, reads it back from a lagging replica, and sees the old data. A replica is also not a backup, since it receives every change, including a mistaken DELETE, as faithfully as the good ones."
+              "text": "The copies are usually updated *asynchronously*, so a replica may be behind. In the figure the write x = 7 has reached the primary and replica 1, and replica 2 still holds 6, so a read there returns an old value. This **replication lag** gives the read-your-writes problem: a user saves a change, reads it back from a lagging replica, and sees the old data. A replica is also not a backup, since it receives every change, including a mistaken `DELETE`, as faithfully as the good ones."
             }
           ],
           "afterFigure": [],
@@ -7052,7 +7052,7 @@
         "junction-table",
         "relationship-attributes"
       ],
-      "prompt": "Customer Ana has placed orders 101 and 102, and the customers table is given a single column order_id to record her orders. What happens when both orders are stored?",
+      "prompt": "Customer Ana has placed orders 101 and 102, and the `customers` table is given a single column `order_id` to record her orders. What happens when both orders are stored?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -7115,7 +7115,7 @@
         "junction-table",
         "relationship-attributes"
       ],
-      "prompt": "The table orders(id, customer_id, total) records which customer placed each order, using the id column of customers. Which column of orders is the foreign key?",
+      "prompt": "The table `orders(id, customer_id, total)` records which customer placed each order, using the `id` column of `customers`. Which column of `orders` is the foreign key?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -7135,7 +7135,7 @@
         "sqlite-docs",
         "ddia"
       ],
-      "onCorrect": "The customer_id column holds the id of a row in customers, so it is the foreign key.",
+      "onCorrect": "The `customer_id` column holds the id of a row in `customers`, so it is the foreign key.",
       "misconceptions": [
         {
           "match": {
@@ -7163,7 +7163,7 @@
         },
         {
           "id": "a",
-          "label": "customer_id, because it holds the id of a row in customers"
+          "label": "`customer_id`, because it holds the id of a row in `customers`"
         },
         {
           "id": "b",
@@ -7178,7 +7178,7 @@
         "junction-table",
         "relationship-attributes"
       ],
-      "prompt": "The enrollments rows are (1,10), (1,11), (2,10), (3,11), (3,10), (3,12) and (4,12), each written as (student_id, course_id). How many students take course 10?",
+      "prompt": "The `enrollments` rows are (1,10), (1,11), (2,10), (3,11), (3,10), (3,12) and (4,12), each written as `(student_id, course_id)`. How many students take course 10?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -7362,7 +7362,7 @@
         "sqlite-docs",
         "ddia"
       ],
-      "onCorrect": "Chloe is the only student with both a Databases row and a Compilers row, so the HAVING condition keeps one group.",
+      "onCorrect": "Chloe is the only student with both a Databases row and a Compilers row, so the `HAVING` condition keeps one group.",
       "misconceptions": [
         {
           "match": {
@@ -7419,7 +7419,7 @@
         },
         {
           "id": "c",
-          "label": "recipe_ingredients, the table with one row for each recipe-ingredient pair"
+          "label": "`recipe_ingredients`, the table with one row for each recipe-ingredient pair"
         },
         {
           "id": "a",
@@ -7494,11 +7494,11 @@
         },
         {
           "id": "b",
-          "label": "customers.order_id"
+          "label": "`customers.order_id`"
         },
         {
           "id": "a",
-          "label": "orders.customer_id"
+          "label": "`orders.customer_id`"
         },
         {
           "id": "d",
@@ -7512,7 +7512,7 @@
               "b"
             ]
           },
-          "feedback": "A customer has many orders, so a single customers.order_id could hold only one of them."
+          "feedback": "A customer has many orders, so a single `customers.order_id` could hold only one of them."
         },
         {
           "match": {
@@ -7541,7 +7541,7 @@
         "junction-table",
         "relationship-attributes"
       ],
-      "prompt": "The enrollments table holds (1,10), (1,11), (2,10), (3,11), (3,10), (3,12) and (4,12), each as (student_id, course_id). How many rows mention student 3?",
+      "prompt": "The `enrollments` table holds (1,10), (1,11), (2,10), (3,11), (3,10), (3,12) and (4,12), each as `(student_id, course_id)`. How many rows mention student 3?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -7570,7 +7570,7 @@
               7
             ]
           },
-          "feedback": "That is every row in the table. Only the rows with student_id 3 count."
+          "feedback": "That is every row in the table. Only the rows with `student_id` 3 count."
         },
         {
           "match": {
@@ -7591,7 +7591,7 @@
         "junction-table",
         "relationship-attributes"
       ],
-      "prompt": "Two rows are added to enrollments, (2,11) and (4,10), so it now holds nine rows. The query lists students with both 'Databases' (course 10) and 'Algorithms' (course 11), grouping by student and keeping groups with COUNT(DISTINCT title) = 2. How many names does it return?",
+      "prompt": "Two rows are added to `enrollments`, (2,11) and (4,10), so it now holds nine rows. The query lists students with both `'Databases'` (course 10) and `'Algorithms'` (course 11), grouping by student and keeping groups with `COUNT(DISTINCT title) = 2`. How many names does it return?",
       "responseType": "numeric",
       "difficulty": 1.3,
       "hints": [
@@ -7750,7 +7750,7 @@
         "natural-surrogate",
         "datdm-constraint"
       ],
-      "prompt": "A products table has id INTEGER PRIMARY KEY, code TEXT NOT NULL UNIQUE, name TEXT NOT NULL and price NUMERIC CHECK (price >= 0). Which constraint refuses INSERT INTO products VALUES (6, NULL, 'Glue', 2.00)?",
+      "prompt": "A `products` table has `id INTEGER PRIMARY KEY`, `code TEXT NOT NULL UNIQUE`, `name TEXT NOT NULL` and `price NUMERIC CHECK (price >= 0)`. Which constraint refuses `INSERT INTO products VALUES (6, NULL, 'Glue', 2.00)`?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -7770,7 +7770,7 @@
         "sqlite-docs",
         "ddia"
       ],
-      "onCorrect": "The code column is declared NOT NULL, and the statement gives it NULL, so the whole row is refused.",
+      "onCorrect": "The `code` column is declared `NOT NULL`, and the statement gives it `NULL`, so the whole row is refused.",
       "misconceptions": [
         {
           "match": {
@@ -7786,7 +7786,7 @@
               "b"
             ]
           },
-          "feedback": "UNIQUE refuses a value that another row already has, and a NULL is not a value that equals any other, so the empty code cannot fail this rule."
+          "feedback": "`UNIQUE` refuses a value that another row already has, and a `NULL` is not a value that equals any other, so the empty code cannot fail this rule."
         },
         {
           "match": {
@@ -7794,7 +7794,7 @@
               "c"
             ]
           },
-          "feedback": "The price 2.00 is not negative, so the condition price >= 0 is true for this row."
+          "feedback": "The price 2.00 is not negative, so the condition `price >= 0` is true for this row."
         }
       ],
       "skill": "predict-constraint-outcome",
@@ -7810,7 +7810,7 @@
         },
         {
           "id": "d",
-          "label": "NOT NULL on code"
+          "label": "`NOT NULL` on `code`"
         },
         {
           "id": "c",
@@ -7869,7 +7869,7 @@
               "d"
             ]
           },
-          "feedback": "Clearing the reference to NULL is the SET NULL action. CASCADE removes the order instead of keeping it."
+          "feedback": "Clearing the reference to `NULL` is the `SET NULL` action. `CASCADE` removes the order instead of keeping it."
         }
       ],
       "skill": "choose-delete-action",
@@ -7881,7 +7881,7 @@
         },
         {
           "id": "d",
-          "label": "It stays, and its customer_id is set to NULL"
+          "label": "It stays, and its `customer_id` is set to `NULL`"
         },
         {
           "id": "a",
@@ -7900,7 +7900,7 @@
         "natural-surrogate",
         "datdm-constraint"
       ],
-      "prompt": "enrollments(student_id, course_id, grade) has a key on (student_id, course_id) and a foreign key from student_id to students. INSERT INTO enrollments VALUES (9, 10, 80) runs when no student 9 exists. Which constraint refuses it?",
+      "prompt": "`enrollments(student_id, course_id, grade)` has a key on `(student_id, course_id)` and a foreign key from `student_id` to `students`. `INSERT INTO enrollments VALUES (9, 10, 80)` runs when no student 9 exists. Which constraint refuses it?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -7920,7 +7920,7 @@
         "sqlite-docs",
         "ddia"
       ],
-      "onCorrect": "The foreign key requires every student_id to match a row of students, and there is no student 9.",
+      "onCorrect": "The foreign key requires every `student_id` to match a row of `students`, and there is no student 9.",
       "misconceptions": [
         {
           "match": {
@@ -7944,7 +7944,7 @@
       "choices": [
         {
           "id": "c",
-          "label": "The key on (student_id, course_id)"
+          "label": "The key on `(student_id, course_id)`"
         },
         {
           "id": "a",
@@ -7952,7 +7952,7 @@
         },
         {
           "id": "b",
-          "label": "The foreign key from student_id to students"
+          "label": "The foreign key from `student_id` to `students`"
         }
       ]
     },
@@ -7963,7 +7963,7 @@
         "natural-surrogate",
         "datdm-constraint"
       ],
-      "prompt": "Five statements run one after another against products, which starts with two rows (P-100 and P-200). Each is accepted or refused on its own. They are: (1) a new row with a fresh id and code, (2) a repeat of id 2, (3) a repeat of code P-100, (4) a price of -1, and (5) a NULL code. How many rows does products hold at the end?",
+      "prompt": "Five statements run one after another against `products`, which starts with two rows (P-100 and P-200). Each is accepted or refused on its own. They are: (1) a new row with a fresh id and code, (2) a repeat of id 2, (3) a repeat of code P-100, (4) a price of -1, and (5) a `NULL` code. How many rows does `products` hold at the end?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -7977,7 +7977,7 @@
         "unit": "rows",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "Only statement 1 is accepted: the others break the key, UNIQUE, CHECK and NOT NULL rules. 2 + 1 = 3."
+        "workedAnswer": "Only statement 1 is accepted: the others break the key, `UNIQUE`, `CHECK` and `NOT NULL` rules. 2 + 1 = 3."
       },
       "sourceIds": [
         "pg-docs",
@@ -8013,12 +8013,12 @@
         "natural-surrogate",
         "datdm-constraint"
       ],
-      "prompt": "A members table has a UNIQUE column phone. Two members have no phone number, and both are inserted with NULL. In PostgreSQL, what happens to the second insert?",
+      "prompt": "A `members` table has a `UNIQUE` column `phone`. Two members have no phone number, and both are inserted with `NULL`. In PostgreSQL, what happens to the second insert?",
       "responseType": "short_text",
       "difficulty": 1.3,
       "hints": [
-        "UNIQUE refuses a value that another row already has. Ask whether one NULL equals another.",
-        "NULL means unknown."
+        "`UNIQUE` refuses a value that another row already has. Ask whether one `NULL` equals another.",
+        "`NULL` means unknown."
       ],
       "answerAuthority": {
         "kind": "text",
@@ -8033,7 +8033,7 @@
         "sqlite-docs",
         "ddia"
       ],
-      "onCorrect": "Two unknown values are not known to be equal, so any number of rows can hold NULL in a UNIQUE column.",
+      "onCorrect": "Two unknown values are not known to be equal, so any number of rows can hold `NULL` in a `UNIQUE` column.",
       "misconceptions": [
         {
           "match": {
@@ -8041,7 +8041,7 @@
               "b"
             ]
           },
-          "feedback": "UNIQUE refuses a value that another row already has, and NULL is not a value that equals another NULL. Two unknown values are not known to be the same."
+          "feedback": "`UNIQUE` refuses a value that another row already has, and `NULL` is not a value that equals another `NULL`. Two unknown values are not known to be the same."
         },
         {
           "match": {
@@ -8049,7 +8049,7 @@
               "c"
             ]
           },
-          "feedback": "Nothing requires a UNIQUE column to be NOT NULL. A column that allows NULL may hold several of them, which is one of the differences between UNIQUE and PRIMARY KEY."
+          "feedback": "Nothing requires a `UNIQUE` column to be `NOT NULL`. A column that allows `NULL` may hold several of them, which is one of the differences between `UNIQUE` and `PRIMARY KEY`."
         }
       ],
       "skill": "predict-constraint-outcome",
@@ -8057,11 +8057,11 @@
       "choices": [
         {
           "id": "c",
-          "label": "It is refused, because a UNIQUE column must also be declared NOT NULL"
+          "label": "It is refused, because a `UNIQUE` column must also be declared `NOT NULL`"
         },
         {
           "id": "a",
-          "label": "It is accepted, because NULL means unknown and two unknowns are not known to be equal"
+          "label": "It is accepted, because `NULL` means unknown and two unknowns are not known to be equal"
         },
         {
           "id": "b",
@@ -8076,7 +8076,7 @@
         "natural-surrogate",
         "datdm-constraint"
       ],
-      "prompt": "enrollments has primary key (student_id, course_id), and row (1,10) exists. What happens to INSERT INTO enrollments VALUES (1,10,90)?",
+      "prompt": "`enrollments` has primary key `(student_id, course_id)`, and row (1,10) exists. What happens to `INSERT INTO enrollments VALUES (1,10,90)`?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -8199,7 +8199,7 @@
         },
         {
           "id": "b",
-          "label": "They stay, still holding student_id 3"
+          "label": "They stay, still holding `student_id` 3"
         },
         {
           "id": "a",
@@ -8289,7 +8289,7 @@
         "functional-dependency",
         "candidate-key"
       ],
-      "prompt": "orders_flat has one row for each product on each order, and every row repeats the name and email of the customer who placed the order. Ana has several order lines and changes her email address. What does keeping the table consistent require?",
+      "prompt": "`orders_flat` has one row for each product on each order, and every row repeats the name and email of the customer who placed the order. Ana has several order lines and changes her email address. What does keeping the table consistent require?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -8352,7 +8352,7 @@
         "functional-dependency",
         "candidate-key"
       ],
-      "prompt": "Ana corrects her email, and Ben corrects his as well. How many rows of orders_flat must be changed to keep every email consistent?",
+      "prompt": "Ana corrects her email, and Ben corrects his as well. How many rows of `orders_flat` must be changed to keep every email consistent?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -8402,7 +8402,7 @@
         "functional-dependency",
         "candidate-key"
       ],
-      "prompt": "A table enrol_flat has one row for each student on each course, and every row repeats the course title. Chloe is the only student on Compilers, and when she drops it her row is deleted. The title Compilers vanishes from the table with it. What kind of anomaly is this?",
+      "prompt": "A table `enrol_flat` has one row for each student on each course, and every row repeats the course title. Chloe is the only student on Compilers, and when she drops it her row is deleted. The title Compilers vanishes from the table with it. What kind of anomaly is this?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -8465,7 +8465,7 @@
         "functional-dependency",
         "candidate-key"
       ],
-      "prompt": "A table loans_flat(loan_id, member_email, book_isbn, book_title, due_date) has one row for each loan. Each book has exactly one title, and the same book is lent to many members with different due dates. Which column does book_isbn determine?",
+      "prompt": "A table `loans_flat(loan_id, member_email, book_isbn, book_title, due_date)` has one row for each loan. Each book has exactly one title, and the same book is lent to many members with different due dates. Which column does `book_isbn` determine?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -8517,19 +8517,19 @@
       "choices": [
         {
           "id": "b",
-          "label": "member_email"
+          "label": "`member_email`"
         },
         {
           "id": "a",
-          "label": "loan_id"
+          "label": "`loan_id`"
         },
         {
           "id": "c",
-          "label": "due_date"
+          "label": "`due_date`"
         },
         {
           "id": "d",
-          "label": "book_title"
+          "label": "`book_title`"
         }
       ]
     },
@@ -8540,12 +8540,12 @@
         "functional-dependency",
         "candidate-key"
       ],
-      "prompt": "How many rows of orders_flat belong to order 1?",
+      "prompt": "How many rows of `orders_flat` belong to order 1?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
-        "Look down the order_id column.",
-        "Mark the rows whose order_id is 1.",
+        "Look down the `order_id` column.",
+        "Mark the rows whose `order_id` is 1.",
         "Count the marked rows."
       ],
       "answerAuthority": {
@@ -8554,14 +8554,14 @@
         "unit": "rows",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "Order 1 has a row for the Pen and a row for the Ink, so 2 rows share order_id 1."
+        "workedAnswer": "Order 1 has a row for the Pen and a row for the Ink, so 2 rows share `order_id` 1."
       },
       "sourceIds": [
         "ddia",
         "pg-docs",
         "codd-1970"
       ],
-      "onCorrect": "Two rows share one order_id, so order_id cannot identify a row on its own.",
+      "onCorrect": "Two rows share one `order_id`, so `order_id` cannot identify a row on its own.",
       "misconceptions": [
         {
           "match": {
@@ -8590,7 +8590,7 @@
         "functional-dependency",
         "candidate-key"
       ],
-      "prompt": "A table enrol_flat(student_id, student_name, course_id, course_title, grade) has these dependencies: student_id → student_name, course_id → course_title, and (student_id, course_id) → grade. Which columns form its candidate key?",
+      "prompt": "A table `enrol_flat(student_id, student_name, course_id, course_title, grade)` has these dependencies: `student_id` → `student_name`, `course_id` → `course_title`, and `(student_id, course_id)` → `grade`. Which columns form its candidate key?",
       "responseType": "short_text",
       "difficulty": 1.3,
       "hints": [
@@ -8610,7 +8610,7 @@
         "pg-docs",
         "codd-1970"
       ],
-      "onCorrect": "The pair determines the student's name through student_id, the course title through course_id and the grade directly, and neither column alone reaches all five.",
+      "onCorrect": "The pair determines the student's name through `student_id`, the course title through `course_id` and the grade directly, and neither column alone reaches all five.",
       "misconceptions": [
         {
           "match": {
@@ -8618,7 +8618,7 @@
               "a"
             ]
           },
-          "feedback": "student_id determines only student_name, so the course title and the grade are still not fixed."
+          "feedback": "`student_id` determines only `student_name`, so the course title and the grade are still not fixed."
         },
         {
           "match": {
@@ -8626,7 +8626,7 @@
               "b"
             ]
           },
-          "feedback": "course_id determines only course_title, so the student's name and the grade are still not fixed."
+          "feedback": "`course_id` determines only `course_title`, so the student's name and the grade are still not fixed."
         },
         {
           "match": {
@@ -8642,19 +8642,19 @@
       "choices": [
         {
           "id": "c",
-          "label": "student_id and course_id together"
+          "label": "`student_id` and `course_id` together"
         },
         {
           "id": "d",
-          "label": "student_id, course_id and grade together"
+          "label": "`student_id`, `course_id` and `grade` together"
         },
         {
           "id": "a",
-          "label": "student_id alone"
+          "label": "`student_id` alone"
         },
         {
           "id": "b",
-          "label": "course_id alone"
+          "label": "`course_id` alone"
         }
       ]
     },
@@ -8665,12 +8665,12 @@
         "functional-dependency",
         "candidate-key"
       ],
-      "prompt": "Using orders_flat, what is Ana's total spend, adding quantity times price over all her rows?",
+      "prompt": "Using `orders_flat`, what is Ana's total spend, adding quantity times price over all her rows?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
         "Find Ana's three rows.",
-        "Multiply product_price by qty for each.",
+        "Multiply `product_price` by `qty` for each.",
         "Add the three amounts."
       ],
       "answerAuthority": {
@@ -8715,7 +8715,7 @@
         "functional-dependency",
         "candidate-key"
       ],
-      "prompt": "The price of a Pen changes from 2 to 3. In how many rows of orders_flat must product_price be changed?",
+      "prompt": "The price of a Pen changes from 2 to 3. In how many rows of `orders_flat` must `product_price` be changed?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -8765,7 +8765,7 @@
         "functional-dependency",
         "candidate-key"
       ],
-      "prompt": "Which columns form the candidate key of orders_flat?",
+      "prompt": "Which columns form the candidate key of `orders_flat`?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -8789,11 +8789,11 @@
       "choices": [
         {
           "id": "d",
-          "label": "(order_id, product)"
+          "label": "`(order_id, product)`"
         },
         {
           "id": "a",
-          "label": "order_id"
+          "label": "`order_id`"
         },
         {
           "id": "b",
@@ -8801,7 +8801,7 @@
         },
         {
           "id": "c",
-          "label": "customer_email"
+          "label": "`customer_email`"
         }
       ],
       "misconceptions": [
@@ -8811,7 +8811,7 @@
               "a"
             ]
           },
-          "feedback": "order_id fixes the customer but not the product or quantity, since order 1 has two rows."
+          "feedback": "`order_id` fixes the customer but not the product or quantity, since order 1 has two rows."
         },
         {
           "match": {
@@ -8827,7 +8827,7 @@
               "c"
             ]
           },
-          "feedback": "customer_email repeats for every order and every product Ana buys, so it does not identify a row."
+          "feedback": "`customer_email` repeats for every order and every product Ana buys, so it does not identify a row."
         }
       ],
       "skill": "find-candidate-key",
@@ -8840,7 +8840,7 @@
         "decomposition",
         "lossless-join"
       ],
-      "prompt": "The table (Ana, P1, SQL), (Ben, P1, Rust) is cut into ep(employee, project) and ps(project, skill), and the two pieces are joined on project. How does the result compare with the original table?",
+      "prompt": "The table (Ana, P1, SQL), (Ben, P1, Rust) is cut into `ep(employee, project)` and `ps(project, skill)`, and the two pieces are joined on `project`. How does the result compare with the original table?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -8953,7 +8953,7 @@
         "decomposition",
         "lossless-join"
       ],
-      "prompt": "A different table, (Ana, P1, SQL), (Ben, P2, Rust) and (Cy, P3, SQL), is cut into ep(employee, project) and ps(project, skill) in the same way, and joining the pieces on project returns exactly the three original rows. Why does this split invent nothing?",
+      "prompt": "A different table, (Ana, P1, SQL), (Ben, P2, Rust) and (Cy, P3, SQL), is cut into `ep(employee, project)` and `ps(project, skill)` in the same way, and joining the pieces on `project` returns exactly the three original rows. Why does this split invent nothing?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -8989,7 +8989,7 @@
               "c"
             ]
           },
-          "feedback": "The pieces of the first table shared project too, and their join invented two rows. Sharing a column is not enough; it has to be a key of one piece."
+          "feedback": "The pieces of the first table shared `project` too, and their join invented two rows. Sharing a column is not enough; it has to be a key of one piece."
         }
       ],
       "skill": "detect-spurious-rows",
@@ -9016,11 +9016,11 @@
         "decomposition",
         "lossless-join"
       ],
-      "prompt": "A table bookings(flight_no, seat, passenger, departure_time) has key (flight_no, seat), and departure_time depends on flight_no alone. Which normal form does the table fail? Answer with its short name, such as 1NF.",
+      "prompt": "A table `bookings(flight_no, seat, passenger, departure_time)` has key `(flight_no, seat)`, and `departure_time` depends on `flight_no` alone. Which normal form does the table fail? Answer with its short name, such as 1NF.",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Ask whether departure_time depends on the whole key or on part of it.",
+        "Ask whether `departure_time` depends on the whole key or on part of it.",
         "A dependency on part of a composite key is the one the second form removes."
       ],
       "answerAuthority": {
@@ -9042,7 +9042,7 @@
         "codd-1970",
         "pg-docs"
       ],
-      "onCorrect": "departure_time depends on flight_no, which is only part of the key, so it belongs in a flights table keyed by flight_no.",
+      "onCorrect": "`departure_time` depends on `flight_no`, which is only part of the key, so it belongs in a `flights` table keyed by `flight_no`.",
       "misconceptions": [
         {
           "match": {
@@ -9050,7 +9050,7 @@
               "3NF"
             ]
           },
-          "feedback": "Third normal form concerns a non-key column that depends on another non-key column. flight_no is part of the key, so this is a dependency on part of a key."
+          "feedback": "Third normal form concerns a non-key column that depends on another non-key column. `flight_no` is part of the key, so this is a dependency on part of a key."
         },
         {
           "match": {
@@ -9058,7 +9058,7 @@
               "1NF"
             ]
           },
-          "feedback": "Every cell here holds a single value, so the table is in first normal form. The fault is that departure_time depends on only part of the key."
+          "feedback": "Every cell here holds a single value, so the table is in first normal form. The fault is that `departure_time` depends on only part of the key."
         }
       ],
       "skill": "decompose-to-3nf",
@@ -9099,7 +9099,7 @@
               "b"
             ]
           },
-          "feedback": "The order lines refer to the Pen by its product id, and the price is looked up through it. A copy of the price in order_items would bring back the partial dependency that the second step removed."
+          "feedback": "The order lines refer to the Pen by its product id, and the price is looked up through it. A copy of the price in `order_items` would bring back the partial dependency that the second step removed."
         },
         {
           "match": {
@@ -9119,7 +9119,7 @@
         },
         {
           "id": "a",
-          "label": "Once, in the Pen's row of products, with order_items holding only its product id"
+          "label": "Once, in the Pen's row of `products`, with `order_items` holding only its product id"
         },
         {
           "id": "b",
@@ -9134,13 +9134,13 @@
         "decomposition",
         "lossless-join"
       ],
-      "prompt": "Join order_items to orders on order_id. How many rows does the result have, given order_items has 4 rows and each order_id appears in exactly one orders row?",
+      "prompt": "Join `order_items` to `orders` on `order_id`. How many rows does the result have, given `order_items` has 4 rows and each `order_id` appears in exactly one `orders` row?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
         "Each order line has exactly one matching order.",
         "A one-to-one match keeps the row count the same.",
-        "Count the rows in order_items."
+        "Count the rows in `order_items`."
       ],
       "answerAuthority": {
         "kind": "numeric",
@@ -9148,14 +9148,14 @@
         "unit": "rows",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "Each order_items row matches exactly one orders row, so no row is lost or multiplied and the result has 4 rows."
+        "workedAnswer": "Each `order_items` row matches exactly one `orders` row, so no row is lost or multiplied and the result has 4 rows."
       },
       "sourceIds": [
         "ddia",
         "codd-1970",
         "pg-docs"
       ],
-      "onCorrect": "order_id is the key of orders, so each item finds one order and the row count is unchanged.",
+      "onCorrect": "`order_id` is the key of `orders`, so each item finds one order and the row count is unchanged.",
       "misconceptions": [
         {
           "match": {
@@ -9171,7 +9171,7 @@
               12
             ]
           },
-          "feedback": "That would pair every line with every order. The join matches on order_id only."
+          "feedback": "That would pair every line with every order. The join matches on `order_id` only."
         }
       ],
       "skill": "verify-lossless",
@@ -9234,11 +9234,11 @@
         "decomposition",
         "lossless-join"
       ],
-      "prompt": "A table courses_flat(student_id, course_id, student_name, grade) has key (student_id, course_id) and the dependency student_id → student_name. Which normal form does it violate?",
+      "prompt": "A table `courses_flat(student_id, course_id, student_name, grade)` has key `(student_id, course_id)` and the dependency `student_id` → `student_name`. Which normal form does it violate?",
       "responseType": "short_text",
       "difficulty": 1.3,
       "hints": [
-        "Which part of the key does student_name depend on?",
+        "Which part of the key does `student_name` depend on?",
         "Is that the whole key or only part of it?"
       ],
       "answerAuthority": {
@@ -9254,7 +9254,7 @@
         "codd-1970",
         "pg-docs"
       ],
-      "onCorrect": "student_name depends on only part of the key, student_id, which is a partial dependency and breaks second normal form.",
+      "onCorrect": "`student_name` depends on only part of the key, `student_id`, which is a partial dependency and breaks second normal form.",
       "choices": [
         {
           "id": "a",
@@ -9288,7 +9288,7 @@
               "c"
             ]
           },
-          "feedback": "Third normal form concerns two non-key columns. student_id is part of the key, not a non-key column."
+          "feedback": "Third normal form concerns two non-key columns. `student_id` is part of the key, not a non-key column."
         },
         {
           "match": {
@@ -9309,7 +9309,7 @@
         "decomposition",
         "lossless-join"
       ],
-      "prompt": "Original table: (Ana, P1, SQL), (Ben, P1, Rust) and (Cy, P2, SQL). It is cut into ep(employee, project) and ps(project, skill), and the pieces are joined on project. How many rows does the join return?",
+      "prompt": "Original table: (Ana, P1, SQL), (Ben, P1, Rust) and (Cy, P2, SQL). It is cut into `ep(employee, project)` and `ps(project, skill)`, and the pieces are joined on `project`. How many rows does the join return?",
       "responseType": "numeric",
       "difficulty": 1.3,
       "hints": [
@@ -9359,7 +9359,7 @@
         "decomposition",
         "lossless-join"
       ],
-      "prompt": "After removing partial dependencies, orders(order_id, customer_email, customer_name) has key order_id and the rule customer_email → customer_name. Which normal form does it violate?",
+      "prompt": "After removing partial dependencies, `orders(order_id, customer_email, customer_name)` has key `order_id` and the rule `customer_email` → `customer_name`. Which normal form does it violate?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -9379,7 +9379,7 @@
         "codd-1970",
         "pg-docs"
       ],
-      "onCorrect": "customer_name depends on customer_email, which is not a key, and that is a transitive dependency.",
+      "onCorrect": "`customer_name` depends on `customer_email`, which is not a key, and that is a transitive dependency.",
       "choices": [
         {
           "id": "d",
@@ -9413,7 +9413,7 @@
               "b"
             ]
           },
-          "feedback": "The key is the single column order_id, so no dependency on part of a key is possible."
+          "feedback": "The key is the single column `order_id`, so no dependency on part of a key is possible."
         },
         {
           "match": {
@@ -9421,7 +9421,7 @@
               "d"
             ]
           },
-          "feedback": "customer_email determines customer_name but is not a key, which BCNF forbids."
+          "feedback": "`customer_email` determines `customer_name` but is not a key, which BCNF forbids."
         }
       ],
       "skill": "decompose-to-3nf",
@@ -9434,11 +9434,11 @@
         "decomposition",
         "lossless-join"
       ],
-      "prompt": "A new product, Cap, is inserted into products only, and no order line mentions it. The four-table rebuild joins order_items to orders, customers and products. What happens to the Cap?",
+      "prompt": "A new product, Cap, is inserted into `products` only, and no order line mentions it. The four-table rebuild joins `order_items` to `orders`, `customers` and `products`. What happens to the Cap?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "The join starts from order_items. Does any row of order_items mention the Cap?",
+        "The join starts from `order_items`. Does any row of `order_items` mention the Cap?",
         "Products now has its own table, so a product no longer needs an order to exist."
       ],
       "answerAuthority": {
@@ -9462,7 +9462,7 @@
               "a"
             ]
           },
-          "feedback": "The join starts from order_items, and the Cap has no order line, so no row of the result is built from it."
+          "feedback": "The join starts from `order_items`, and the Cap has no order line, so no row of the result is built from it."
         },
         {
           "match": {
@@ -9497,7 +9497,7 @@
         "dimension",
         "denormalise"
       ],
-      "prompt": "Suppose the category were copied into every fact_sales row. The Notebook is the only product in the category Stationery and appears in sales 3, 4 and 6. The category is renamed. What would the rename have to change?",
+      "prompt": "Suppose the category were copied into every `fact_sales` row. The Notebook is the only product in the category Stationery and appears in sales 3, 4 and 6. The category is renamed. What would the rename have to change?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -9563,7 +9563,7 @@
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
-        "Find the Kitchen products in dim_product.",
+        "Find the Kitchen products in `dim_product`.",
         "Keep only their sales on dates in 2026-11.",
         "Add the units, not the amounts."
       ],
@@ -9579,7 +9579,7 @@
         "ddia",
         "pg-docs"
       ],
-      "onCorrect": "This is the revenue report with SUM(f.units) in place of SUM(f.amount): the same joins and the same groups, with a different measure added up.",
+      "onCorrect": "This is the revenue report with `SUM(f.units)` in place of `SUM(f.amount)`: the same joins and the same groups, with a different measure added up.",
       "misconceptions": [
         {
           "match": {
@@ -9782,7 +9782,7 @@
               "b"
             ]
           },
-          "feedback": "The fact rows hold only the Whisk's product key, which has not changed. The category is stored once, in dim_product, and the fact rows reach it through the key."
+          "feedback": "The fact rows hold only the Whisk's product key, which has not changed. The category is stored once, in `dim_product`, and the fact rows reach it through the key."
         },
         {
           "match": {
@@ -9790,7 +9790,7 @@
               "c"
             ]
           },
-          "feedback": "Reports group by category, but the category is not stored in fact_sales, so no fact row needs to change."
+          "feedback": "Reports group by category, but the category is not stored in `fact_sales`, so no fact row needs to change."
         }
       ],
       "skill": "read-a-star-schema",
@@ -9798,15 +9798,15 @@
       "choices": [
         {
           "id": "a",
-          "label": "The Whisk's row in dim_product, and nothing else"
+          "label": "The Whisk's row in `dim_product`, and nothing else"
         },
         {
           "id": "b",
-          "label": "The Whisk's row in dim_product and each of its fact_sales rows"
+          "label": "The Whisk's row in `dim_product` and each of its `fact_sales` rows"
         },
         {
           "id": "c",
-          "label": "Every row of fact_sales, because reports group by category"
+          "label": "Every row of `fact_sales`, because reports group by category"
         }
       ]
     },
@@ -9817,7 +9817,7 @@
         "dimension",
         "denormalise"
       ],
-      "prompt": "In the six fact_sales rows, sales 4 and 5 are on date 3 and sale 6 is on date 4, and dates 3 and 4 are both in 2026-12. Their amounts are 18, 8 and 12. What is the total revenue for 2026-12?",
+      "prompt": "In the six `fact_sales` rows, sales 4 and 5 are on date 3 and sale 6 is on date 4, and dates 3 and 4 are both in 2026-12. Their amounts are 18, 8 and 12. What is the total revenue for 2026-12?",
       "responseType": "numeric",
       "difficulty": 1.2,
       "hints": [
@@ -9866,7 +9866,7 @@
         "dimension",
         "denormalise"
       ],
-      "prompt": "Which is the best reason to store orders.total as a copy of the sum of its items?",
+      "prompt": "Which is the best reason to store `orders.total` as a copy of the sum of its items?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -9940,7 +9940,7 @@
         "dimension",
         "denormalise"
       ],
-      "prompt": "In fact_sales, the Whisk, product 3, appears in sales 2 and 5. If category were copied into every fact row, how many fact rows would change when the Whisk's category is renamed?",
+      "prompt": "In `fact_sales`, the Whisk, product 3, appears in sales 2 and 5. If category were copied into every fact row, how many fact rows would change when the Whisk's category is renamed?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -9968,7 +9968,7 @@
               1
             ]
           },
-          "feedback": "That is the number of rows in dim_product that describe the Whisk. A copy in the fact table is repeated for each sale."
+          "feedback": "That is the number of rows in `dim_product` that describe the Whisk. A copy in the fact table is repeated for each sale."
         },
         {
           "match": {
@@ -10525,7 +10525,7 @@
         "selectivity",
         "covering-index"
       ],
-      "prompt": "An index on (last_name, first_name) lists six entries in order: Shaw Ana, Shaw Ben, Shaw Cy, Smith Ana, Smith Dee, Young Ana. How do the entries with first name Ana sit in the list?",
+      "prompt": "An index on `(last_name, first_name)` lists six entries in order: Shaw Ana, Shaw Ben, Shaw Cy, Smith Ana, Smith Dee, Young Ana. How do the entries with first name Ana sit in the list?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -10588,7 +10588,7 @@
         "selectivity",
         "covering-index"
       ],
-      "prompt": "An index is declared on orders(customer_id, order_date). Which column must a query filter on for the index to be useful?",
+      "prompt": "An index is declared on `orders(customer_id, order_date)`. Which column must a query filter on for the index to be useful?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -10608,7 +10608,7 @@
         "pg-docs",
         "use-the-index"
       ],
-      "onCorrect": "The entries are ordered by customer_id first, so the index can seek on customer_id, or on both columns, but not on order_date alone.",
+      "onCorrect": "The entries are ordered by `customer_id` first, so the index can seek on `customer_id`, or on both columns, but not on `order_date` alone.",
       "misconceptions": [
         {
           "match": {
@@ -10616,7 +10616,7 @@
               "a"
             ]
           },
-          "feedback": "The index is sorted by customer_id first, and dates are in order only within one customer, so a filter on order_date alone has no single place to seek to."
+          "feedback": "The index is sorted by `customer_id` first, and dates are in order only within one customer, so a filter on `order_date` alone has no single place to seek to."
         },
         {
           "match": {
@@ -10624,7 +10624,7 @@
               "c"
             ]
           },
-          "feedback": "Both columns are stored in the index, but the order of the entries follows customer_id first. A filter can seek only on a leading part of that order."
+          "feedback": "Both columns are stored in the index, but the order of the entries follows `customer_id` first. A filter can seek only on a leading part of that order."
         }
       ],
       "skill": "pick-usable-index",
@@ -10632,7 +10632,7 @@
       "choices": [
         {
           "id": "a",
-          "label": "order_date, because it is the more specific of the two"
+          "label": "`order_date`, because it is the more specific of the two"
         },
         {
           "id": "c",
@@ -10640,7 +10640,7 @@
         },
         {
           "id": "b",
-          "label": "customer_id, because it is the column the index is sorted by first"
+          "label": "`customer_id`, because it is the column the index is sorted by first"
         }
       ]
     },
@@ -10701,7 +10701,7 @@
         "selectivity",
         "covering-index"
       ],
-      "prompt": "An index idx_name is declared on emp(last_name, first_name). What does the SQLite plan say for SELECT * FROM emp WHERE last_name = 'L3' AND first_name = 'F3'?",
+      "prompt": "An index `idx_name` is declared on `emp(last_name, first_name)`. What does the SQLite plan say for `SELECT * FROM emp WHERE last_name = 'L3' AND first_name = 'F3'`?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -10721,7 +10721,7 @@
         "pg-docs",
         "use-the-index"
       ],
-      "onCorrect": "Both columns are a leading part of the index, so the seek uses both and the brackets name both. SELECT * still needs the other columns, so the line says INDEX and not COVERING INDEX.",
+      "onCorrect": "Both columns are a leading part of the index, so the seek uses both and the brackets name both. `SELECT *` still needs the other columns, so the line says `INDEX` and not `COVERING INDEX`.",
       "misconceptions": [
         {
           "match": {
@@ -10729,7 +10729,7 @@
               "b"
             ]
           },
-          "feedback": "SCAN is the plan for a filter the index cannot seek on, such as first_name alone. Here last_name leads, so the index can seek."
+          "feedback": "`SCAN` is the plan for a filter the index cannot seek on, such as `first_name` alone. Here `last_name` leads, so the index can seek."
         },
         {
           "match": {
@@ -10737,7 +10737,7 @@
               "c"
             ]
           },
-          "feedback": "Once the seek has reached last_name 'L3', the first names inside that block are in order too, so the seek uses both columns and the brackets name both."
+          "feedback": "Once the seek has reached `last_name` `'L3'`, the first names inside that block are in order too, so the seek uses both columns and the brackets name both."
         }
       ],
       "skill": "read-a-plan-line",
@@ -10749,11 +10749,11 @@
         },
         {
           "id": "a",
-          "label": "SEARCH emp USING INDEX idx_name (last_name=? AND first_name=?)"
+          "label": "`SEARCH emp USING INDEX idx_name (last_name=? AND first_name=?)`"
         },
         {
           "id": "c",
-          "label": "SEARCH emp USING INDEX idx_name (last_name=?)"
+          "label": "`SEARCH emp USING INDEX idx_name (last_name=?)`"
         }
       ]
     },
@@ -10864,7 +10864,7 @@
         "selectivity",
         "covering-index"
       ],
-      "prompt": "A table has 1,000,000 orders. A status column holds 'done' for 90 percent, 'pending' for 6 percent and 'failed' for 4 percent. How many rows match status = 'pending'?",
+      "prompt": "A table has 1,000,000 orders. A `status` column holds `'done'` for 90 percent, `'pending'` for 6 percent and `'failed'` for 4 percent. How many rows match `status = 'pending'`?",
       "responseType": "numeric",
       "difficulty": 1.2,
       "hints": [
@@ -10914,12 +10914,12 @@
         "selectivity",
         "covering-index"
       ],
-      "prompt": "With an index on (last_name, first_name), which query cannot seek on the index?",
+      "prompt": "With an index on `(last_name, first_name)`, which query cannot seek on the index?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
         "Which query leaves out the leftmost column?",
-        "The index is sorted by last_name first."
+        "The index is sorted by `last_name` first."
       ],
       "answerAuthority": {
         "kind": "text",
@@ -10934,23 +10934,23 @@
         "pg-docs",
         "use-the-index"
       ],
-      "onCorrect": "Without last_name there is no starting point in the index, since the Anas are spread across it.",
+      "onCorrect": "Without `last_name` there is no starting point in the index, since the Anas are spread across it.",
       "choices": [
         {
           "id": "a",
-          "label": "WHERE last_name = 'Shaw'"
+          "label": "`WHERE last_name = 'Shaw'`"
         },
         {
           "id": "d",
-          "label": "WHERE first_name = 'Ana'"
+          "label": "`WHERE first_name = 'Ana'`"
         },
         {
           "id": "c",
-          "label": "WHERE last_name >= 'Sh' AND last_name < 'Si'"
+          "label": "`WHERE last_name >= 'Sh' AND last_name < 'Si'`"
         },
         {
           "id": "b",
-          "label": "WHERE last_name = 'Shaw' AND first_name = 'Ana'"
+          "label": "`WHERE last_name = 'Shaw' AND first_name = 'Ana'`"
         }
       ],
       "misconceptions": [
@@ -10960,7 +10960,7 @@
               "a"
             ]
           },
-          "feedback": "last_name is the leftmost column, so an equality on it is a seek."
+          "feedback": "`last_name` is the leftmost column, so an equality on it is a seek."
         },
         {
           "match": {
@@ -11039,7 +11039,7 @@
         "selectivity",
         "covering-index"
       ],
-      "prompt": "A plan line reads SEARCH emp USING COVERING INDEX idx_name (last_name=?). What does COVERING tell you?",
+      "prompt": "A plan line reads `SEARCH emp USING COVERING INDEX idx_name (last_name=?)`. What does `COVERING` tell you?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -11258,7 +11258,7 @@
               "a"
             ]
           },
-          "feedback": "The estimate for customers was within a few percent of what the scan returned, so nothing went wrong there. The size of an estimate does not matter; the gap between estimate and actual count does."
+          "feedback": "The estimate for `customers` was within a few percent of what the scan returned, so nothing went wrong there. The size of an estimate does not matter; the gap between estimate and actual count does."
         },
         {
           "match": {
@@ -12011,7 +12011,7 @@
         "atomicity",
         "datdm-durability"
       ],
-      "prompt": "The accounts table has CHECK (balance >= 0). A is 50, and a transaction debits A by 100 and credits B by 100. The debit breaks the CHECK, so the statement fails and the transaction is rolled back. What is the state afterwards?",
+      "prompt": "The `accounts` table has `CHECK (balance >= 0)`. A is 50, and a transaction debits A by 100 and credits B by 100. The debit breaks the `CHECK`, so the statement fails and the transaction is rolled back. What is the state afterwards?",
       "responseType": "short_text",
       "difficulty": 1.2,
       "hints": [
@@ -12075,7 +12075,7 @@
         "atomicity",
         "datdm-durability"
       ],
-      "prompt": "A = 500 and B = 200. A transaction debits A by 100 and credits B by 100. The server crashes after the debit but before COMMIT. What is A after recovery?",
+      "prompt": "A = 500 and B = 200. A transaction debits A by 100 and credits B by 100. The server crashes after the debit but before `COMMIT`. What is A after recovery?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -12780,7 +12780,7 @@
         "isolation-level",
         "write-skew"
       ],
-      "prompt": "T1 runs SELECT COUNT(*) WHERE dept = 'A' and gets 3. T2 inserts a dept A row and commits. T1 runs the same query and gets 4. Which anomaly is this?",
+      "prompt": "T1 runs `SELECT COUNT(*) WHERE dept = 'A'` and gets 3. T2 inserts a dept A row and commits. T1 runs the same query and gets 4. Which anomaly is this?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -12966,7 +12966,7 @@
               "c"
             ]
           },
-          "feedback": "A plain SELECT takes no row lock, so it never waits for a writer. It reads the version that was visible to its snapshot."
+          "feedback": "A plain `SELECT` takes no row lock, so it never waits for a writer. It reads the version that was visible to its snapshot."
         }
       ],
       "skill": "apply-snapshot-visibility",
@@ -13029,7 +13029,7 @@
               "b"
             ]
           },
-          "feedback": "Tx 8 has already committed, so there is nothing to wait for. Even while a writer is running, a plain SELECT never waits."
+          "feedback": "Tx 8 has already committed, so there is nothing to wait for. Even while a writer is running, a plain `SELECT` never waits."
         }
       ],
       "skill": "apply-snapshot-visibility",
@@ -13119,7 +13119,7 @@
         "row-lock",
         "optimistic-check"
       ],
-      "prompt": "x = 200. Two transactions run at the same time at Read Committed: UPDATE t SET x = x + 15 and UPDATE t SET x = x + 40. The second waits for the row lock, then re-evaluates. What is x finally?",
+      "prompt": "x = 200. Two transactions run at the same time at Read Committed: `UPDATE t SET x = x + 15` and `UPDATE t SET x = x + 40`. The second waits for the row lock, then re-evaluates. What is x finally?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -13169,11 +13169,11 @@
         "row-lock",
         "optimistic-check"
       ],
-      "prompt": "The row with id 12 now has version 9. You run UPDATE accounts SET balance = 90, version = 9 WHERE id = 12 AND version = 8. What does the database report?",
+      "prompt": "The row with id 12 now has version 9. You run `UPDATE accounts SET balance = 90, version = 9 WHERE id = 12 AND version = 8`. What does the database report?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "The WHERE clause has two conditions, one on the id and one on the version.",
+        "The `WHERE` clause has two conditions, one on the id and one on the version.",
         "Ask which rows match both conditions."
       ],
       "answerAuthority": {
@@ -13197,7 +13197,7 @@
               "a"
             ]
           },
-          "feedback": "The WHERE clause needs both conditions to be true, and the version of the row is 9. The row exists, but it does not match."
+          "feedback": "The `WHERE` clause needs both conditions to be true, and the version of the row is 9. The row exists, but it does not match."
         },
         {
           "match": {
@@ -13205,7 +13205,7 @@
               "b"
             ]
           },
-          "feedback": "The statement is valid and raises no error. A WHERE clause that matches nothing updates nothing, and the count of rows is how the application finds out."
+          "feedback": "The statement is valid and raises no error. A `WHERE` clause that matches nothing updates nothing, and the count of rows is how the application finds out."
         }
       ],
       "skill": "detect-conflict",
@@ -13232,7 +13232,7 @@
         "row-lock",
         "optimistic-check"
       ],
-      "prompt": "Two users read account 7 at balance 100 and version 3. User 1 runs UPDATE accounts SET balance = 150, version = version + 1 WHERE id = 7 AND version = 3, and it updates 1 row. What version does the row have afterwards?",
+      "prompt": "Two users read account 7 at balance 100 and version 3. User 1 runs `UPDATE accounts SET balance = 150, version = version + 1 WHERE id = 7 AND version = 3`, and it updates 1 row. What version does the row have afterwards?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -13246,7 +13246,7 @@
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "User 1's update set version = version + 1 on a row at version 3, so the row now has version 4."
+        "workedAnswer": "User 1's update set `version = version + 1` on a row at version 3, so the row now has version 4."
       },
       "sourceIds": [
         "pg-mvcc",
@@ -13282,7 +13282,7 @@
         "row-lock",
         "optimistic-check"
       ],
-      "prompt": "User 2 wanted to add 30 to the balance. After user 1's save, the row is at balance 150 and version 4. User 2 re-reads, adds 30 and saves with WHERE version = 4. What is the balance afterwards?",
+      "prompt": "User 2 wanted to add 30 to the balance. After user 1's save, the row is at balance 150 and version 4. User 2 re-reads, adds 30 and saves with `WHERE version = 4`. What is the balance afterwards?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -13332,12 +13332,12 @@
         "row-lock",
         "optimistic-check"
       ],
-      "prompt": "Two transactions each select the last free seat and then update it, and both succeed at Read Committed. Which clause added to the SELECT makes the second one wait for the first? Give the two-word clause.",
+      "prompt": "Two transactions each select the last free seat and then update it, and both succeed at Read Committed. Which clause added to the `SELECT` makes the second one wait for the first? Give the two-word clause.",
       "responseType": "short_text",
       "difficulty": 1.2,
       "hints": [
         "The clause locks the rows as they are read.",
-        "It is written after the WHERE clause of the SELECT."
+        "It is written after the `WHERE` clause of the `SELECT`."
       ],
       "answerAuthority": {
         "kind": "text",
@@ -13491,11 +13491,11 @@
         "row-lock",
         "optimistic-check"
       ],
-      "prompt": "UPDATE accounts SET balance = 150, version = 4 WHERE id = 7 AND version = 3 reports 0 rows updated. What does this mean?",
+      "prompt": "`UPDATE accounts SET balance = 150, version = 4 WHERE id = 7 AND version = 3` reports 0 rows updated. What does this mean?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "The WHERE clause matched nothing.",
+        "The `WHERE` clause matched nothing.",
         "Which part of it could have stopped matching?"
       ],
       "answerAuthority": {
@@ -13537,7 +13537,7 @@
               "a"
             ]
           },
-          "feedback": "The WHERE clause tests the version, not the balance."
+          "feedback": "The `WHERE` clause tests the version, not the balance."
         },
         {
           "match": {
@@ -14954,7 +14954,7 @@
         "natural-surrogate",
         "datdm-constraint"
       ],
-      "front": "Which constraint refuses a row whose price is -1 when the rule is price >= 0?",
+      "front": "Which constraint refuses a row whose price is -1 when the rule is `price >= 0`?",
       "back": "CHECK refuses any row for which its condition is false.",
       "sourceIds": [
         "pg-docs",
@@ -15331,8 +15331,8 @@
         "selectivity",
         "covering-index"
       ],
-      "front": "Why can an index on (last_name, first_name) not seek on first_name alone?",
-      "back": "The entries are sorted by last_name first, so the entries for one first name are scattered and there is no single place to start.",
+      "front": "Why can an index on `(last_name, first_name)` not seek on `first_name` alone?",
+      "back": "The entries are sorted by `last_name` first, so the entries for one first name are scattered and there is no single place to start.",
       "sourceIds": [
         "sqlite-docs",
         "pg-docs",
@@ -15575,7 +15575,7 @@
         "row-lock",
         "optimistic-check"
       ],
-      "front": "Which clause added to a SELECT locks the rows it reads for a coming update?",
+      "front": "Which clause added to a `SELECT` locks the rows it reads for a coming update?",
       "back": "The row lock is taken at the read, so a competing transaction waits.",
       "sourceIds": [
         "pg-mvcc",

@@ -855,7 +855,7 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "A plain INSERT has no memory of earlier runs, so the table holds six rows, three of them copies. The next screen gives the missing property a name."
+              "text": "A plain `INSERT` has no memory of earlier runs, so the table holds six rows, three of them copies. The next screen gives the missing property a name."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -1122,7 +1122,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "A reader opens a Parquet file at its end, reads the footer, and only then decides which chunks to fetch. The statistics are what let it skip work: a row group whose order_id range is 1 to 200 cannot contain order_id 450, so a filter on 450 does not need to read it at all. The figure shows the layout and then two filters over five row groups."
+              "text": "A reader opens a Parquet file at its end, reads the footer, and only then decides which chunks to fetch. The statistics are what let it skip work: a row group whose `order_id` range is 1 to 200 cannot contain `order_id` 450, so a filter on 450 does not need to read it at all. The figure shows the layout and then two filters over five row groups."
             }
           ],
           "afterFigure": [
@@ -1455,17 +1455,17 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The 7 rows on the previous screen came from a plain INSERT, which adds a row whether or not one with the same identity is already there. To make a replay harmless the table needs a **key**, a column such as id whose values identify a row, and the write has to say what to do when the key is already present. An **upsert** does exactly that: when no row has the key it inserts one, and when a row has the key it updates that row. In SQLite and PostgreSQL the statement is written INSERT ... ON CONFLICT (id) DO UPDATE SET ..."
+              "text": "The 7 rows on the previous screen came from a plain `INSERT`, which adds a row whether or not one with the same identity is already there. To make a replay harmless the table needs a **key**, a column such as `id` whose values identify a row, and the write has to say what to do when the key is already present. An **upsert** does exactly that: when no row has the key it inserts one, and when a row has the key it updates that row. In SQLite and PostgreSQL the statement is written `INSERT ... ON CONFLICT (id) DO UPDATE SET ...`"
             },
             {
               "kind": "paragraph",
-              "text": "The figure applies both writes to a products table. The incoming batch carries a new price for pad, product 3, and a new product, tape, product 5. Run twice with a plain INSERT, the table grows from 4 rows to 8, with pad appearing three times at two different prices. Run twice as an upsert, the table has 5 rows after the first run and still 5 after the second, because the second run finds both keys present and sets the same values again."
+              "text": "The figure applies both writes to a products table. The incoming batch carries a new price for pad, product 3, and a new product, tape, product 5. Run twice with a plain `INSERT`, the table grows from 4 rows to 8, with pad appearing three times at two different prices. Run twice as an upsert, the table has 5 rows after the first run and still 5 after the second, because the second run finds both keys present and sets the same values again."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "If a key is declared on the table, a plain INSERT of a row that is already present fails on the second run instead of duplicating it. That prevents the doubled data but stops the pipeline at the point where the retry was meant to rescue it, so the upsert remains the better way to write. Overwriting a slice of the table, from the first lesson, is the other idempotent pattern."
+              "text": "If a key is declared on the table, a plain `INSERT` of a row that is already present fails on the second run instead of duplicating it. That prevents the doubled data but stops the pipeline at the point where the retry was meant to rescue it, so the upsert remains the better way to write. Overwriting a slice of the table, from the first lesson, is the other idempotent pattern."
             }
           ],
           "introducesTerms": [
@@ -1785,7 +1785,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Most source tables carry an updated_at column that is set whenever a row is written, and an incremental job uses it to find what changed. The job stores the largest updated_at it has loaded, a stored mark called the **watermark**. The next run asks for rows beyond the watermark, loads them, and moves the watermark up to the largest updated_at among the rows it has just read. The watermark is a value taken from the data, and it is not the clock time at which the job ran, because the source's clock and the job's clock differ and a row can commit after the time it is stamped with."
+              "text": "Most source tables carry an `updated_at` column that is set whenever a row is written, and an incremental job uses it to find what changed. The job stores the largest `updated_at` it has loaded, a stored mark called the **watermark**. The next run asks for rows beyond the watermark, loads them, and moves the watermark up to the largest `updated_at` among the rows it has just read. The watermark is a value taken from the data, and it is not the clock time at which the job ran, because the source's clock and the job's clock differ and a row can commit after the time it is stamped with."
             },
             {
               "kind": "paragraph",
@@ -1850,7 +1850,7 @@
               "math": "watermark = 10:05"
             },
             {
-              "text": "It asks for rows with updated_at greater than 10:05. The rows at 10:03 and 10:05 are not later, so the rows at 10:06 and 10:09 are selected.",
+              "text": "It asks for rows with `updated_at` greater than 10:05. The rows at 10:03 and 10:05 are not later, so the rows at 10:06 and 10:09 are selected.",
               "math": "updated_at > 10:05 selects 2 rows"
             },
             {
@@ -1858,7 +1858,7 @@
               "math": "2 rows upserted"
             },
             {
-              "text": "It then stores the largest updated_at among the rows it loaded as the new watermark. Say what the watermark becomes.",
+              "text": "It then stores the largest `updated_at` among the rows it loaded as the new watermark. Say what the watermark becomes.",
               "blank": {
                 "questionId": "date-loading-without-duplicates-new-watermark"
               }
@@ -1877,7 +1877,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A watermark carries an assumption, that rows reach the source in the order of their timestamps, and the assumption can fail. A transaction that began a little before a run may commit a little after it, so that its row is stamped below a watermark that has already moved on. In the figure a row stamped 05-02 commits after a run that took the watermark to 05-03, and the filter updated_at > 05-03 never selects it. The row is lost without an error, and nothing in the destination shows that it is missing. This is the **late row** problem."
+              "text": "A watermark carries an assumption, that rows reach the source in the order of their timestamps, and the assumption can fail. A transaction that began a little before a run may commit a little after it, so that its row is stamped below a watermark that has already moved on. In the figure a row stamped 05-02 commits after a run that took the watermark to 05-03, and the filter `updated_at > 05-03` never selects it. The row is lost without an error, and nothing in the destination shows that it is missing. This is the **late row** problem."
             },
             {
               "kind": "paragraph",
@@ -1982,7 +1982,7 @@
         "blocks": [
           {
             "kind": "paragraph",
-            "text": "You compared a full load, which moves every row and is safe to repeat, with an incremental load that moves only the changed rows. A plain INSERT turned 3 rows into 7 when the job was retried, whereas an upsert on a key left 4. The watermark, taken from the largest updated_at loaded, tells the next run where to begin, and a short overlap with an upsert recovers rows that commit late."
+            "text": "You compared a full load, which moves every row and is safe to repeat, with an incremental load that moves only the changed rows. A plain `INSERT` turned 3 rows into 7 when the job was retried, whereas an upsert on a key left 4. The watermark, taken from the largest `updated_at` loaded, tells the next run where to begin, and a short overlap with an upsert recovers rows that commit late."
           }
         ],
         "nextHook": "The next lesson asks what a timestamp query can never see, a row that has been deleted, and reads the source's own log of changes instead."
@@ -2007,7 +2007,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The previous lesson found changed rows with a filter on updated_at. The filter works because a changed row carries a new timestamp, and it fails for a row that has been removed, because the row is gone and so is its timestamp. In the figure id 2 is hard-deleted at the source. The nightly query returns the rows that still exist, id 2 is not among them, and the warehouse goes on holding a row that no longer exists anywhere else."
+              "text": "The previous lesson found changed rows with a filter on `updated_at`. The filter works because a changed row carries a new timestamp, and it fails for a row that has been removed, because the row is gone and so is its timestamp. In the figure id 2 is hard-deleted at the source. The nightly query returns the rows that still exist, id 2 is not among them, and the warehouse goes on holding a row that no longer exists anywhere else."
             },
             {
               "kind": "paragraph",
@@ -2219,7 +2219,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The log is the most complete record, but it is not always available, and two other ways of finding deletes are common. A **soft delete** does not remove the row. It sets a flag such as is_deleted and updates updated_at, so a timestamp query sees the change like any other, and the warehouse can drop or hide the row on its side. A **key comparison** reads the full list of keys from the source and from the warehouse, and every key that is in the warehouse and not in the source has been deleted. The comparison reads the whole key column, which is cheaper than reading the whole table but still more than the log asks for."
+              "text": "The log is the most complete record, but it is not always available, and two other ways of finding deletes are common. A **soft delete** does not remove the row. It sets a flag such as `is_deleted` and updates `updated_at`, so a timestamp query sees the change like any other, and the warehouse can drop or hide the row on its side. A **key comparison** reads the full list of keys from the source and from the warehouse, and every key that is in the warehouse and not in the source has been deleted. The comparison reads the whole key column, which is cheaper than reading the whole table but still more than the log asks for."
             },
             {
               "kind": "paragraph",
@@ -2306,7 +2306,7 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A timestamp filter finds a changed row because the change leaves the row behind with a newer timestamp. A row that is deleted leaves nothing behind, so a nightly query on updated_at returns the same rows as before and the warehouse goes on holding a customer who left the source weeks ago. Totals built on that copy are wrong in a way that no check of the load would reveal, since every load succeeded."
+              "text": "A timestamp filter finds a changed row because the change leaves the row behind with a newer timestamp. A row that is deleted leaves nothing behind, so a nightly query on `updated_at` returns the same rows as before and the warehouse goes on holding a customer who left the source weeks ago. Totals built on that copy are wrong in a way that no check of the load would reveal, since every load succeeded."
             },
             {
               "kind": "paragraph",
@@ -2323,7 +2323,7 @@
         "blocks": [
           {
             "kind": "paragraph",
-            "text": "You saw a hard delete slip past a query on updated_at, and then replayed logs against empty tables, tracking each key to its last entry. Applied by position the entries reproduce the source, and applied by arrival time they can delete a row that should exist. Soft-delete flags and key comparisons are lighter ways to see deletes, and managed mirroring packages the log reader for you."
+            "text": "You saw a hard delete slip past a query on `updated_at`, and then replayed logs against empty tables, tracking each key to its last entry. Applied by position the entries reproduce the source, and applied by arrival time they can delete a row that should exist. Soft-delete flags and key comparisons are lighter ways to see deletes, and managed mirroring packages the log reader for you."
           }
         ],
         "nextHook": "The next lesson turns to the order in which pipeline steps run, drawing them as a graph and finding which chain of steps sets the total run time."
@@ -3025,7 +3025,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Object storage can write whole files but cannot change them afterwards, so a table of Parquet files cannot be updated by editing a file. A **table format** gets round this by treating the data files as immutable and keeping a separate record of which files make up the table. In Delta Lake the record is a folder called _delta_log beside the data. Each change to the table is a **commit**, a small JSON file named for its version number, padded to 20 digits, such as 00000000000000000012.json, and it lists the data files that the commit adds and those it removes."
+              "text": "Object storage can write whole files but cannot change them afterwards, so a table of Parquet files cannot be updated by editing a file. A **table format** gets round this by treating the data files as immutable and keeping a separate record of which files make up the table. In Delta Lake the record is a folder called `_delta_log` beside the data. Each change to the table is a **commit**, a small JSON file named for its version number, padded to 20 digits, such as `00000000000000000012.json`, and it lists the data files that the commit adds and those it removes."
             },
             {
               "kind": "paragraph",
@@ -3523,7 +3523,7 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "order_date is used in the filters and has a moderate number of values, so each partition stays large."
+              "text": "`order_date` is used in the filters and has a moderate number of values, so each partition stays large."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -3583,7 +3583,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The figure shows four files whose order_id ranges are 1 to 200, 150 to 420, 400 to 650 and 700 to 900. A filter on 410 falls inside both the second and the third range, since they overlap, so two files are read. A filter on 800 falls inside only the fourth, so one file is read. In the third view the same rows have been sorted by order_id before they were written, which gives four separate ranges, and the filter on 410 reads a single file."
+              "text": "The figure shows four files whose `order_id` ranges are 1 to 200, 150 to 420, 400 to 650 and 700 to 900. A filter on 410 falls inside both the second and the third range, since they overlap, so two files are read. A filter on 800 falls inside only the fourth, so one file is read. In the third view the same rows have been sorted by `order_id` before they were written, which gives four separate ranges, and the filter on 410 reads a single file."
             }
           ],
           "afterFigure": [
@@ -4145,11 +4145,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "In a bronze table every load is kept, so an event that the source sends again appears again, with a later loaded_at. An event is identified by a key such as event_id, and the rows that share a key are duplicates of one event, although they need not be identical: the second copy may carry a corrected value, or padding in its amount, and it always has a new loaded_at."
+              "text": "In a bronze table every load is kept, so an event that the source sends again appears again, with a later `loaded_at`. An event is identified by a key such as `event_id`, and the rows that share a key are duplicates of one event, although they need not be identical: the second copy may carry a corrected value, or padding in its amount, and it always has a new `loaded_at`."
             },
             {
               "kind": "paragraph",
-              "text": "The obvious tool, SELECT DISTINCT, removes only rows that are identical in every column. Two rows for event o17 that differ in loaded_at are different rows to DISTINCT, so both of them survive. What is needed is a rule that compares only the key and then chooses which row of the group to keep, which for re-sent data is usually the one loaded last, because it holds the source's latest word."
+              "text": "The obvious tool, `SELECT DISTINCT`, removes only rows that are identical in every column. Two rows for event o17 that differ in `loaded_at` are different rows to `DISTINCT`, so both of them survive. What is needed is a rule that compares only the key and then chooses which row of the group to keep, which for re-sent data is usually the one loaded last, because it holds the source's latest word."
             }
           ],
           "afterFigure": [],
@@ -4187,7 +4187,7 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "Every re-sent row differs from its original in loaded_at, so DISTINCT treats all 500 rows as different and returns them all."
+              "text": "Every re-sent row differs from its original in `loaded_at`, so `DISTINCT` treats all 500 rows as different and returns them all."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -4203,11 +4203,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "To keep the latest row for each key, number the rows of each key from newest to oldest and keep number 1. A **window function** does the numbering without collapsing the rows: ROW_NUMBER() OVER (PARTITION BY reading_id ORDER BY loaded_at DESC) works on each group of rows that share a reading_id separately, orders each group by loaded_at with the newest first, and gives every row its place in that order, which the query calls rn."
+              "text": "To keep the latest row for each key, number the rows of each key from newest to oldest and keep number 1. A **window function** does the numbering without collapsing the rows: `ROW_NUMBER() OVER (PARTITION BY reading_id ORDER BY loaded_at DESC)` works on each group of rows that share a `reading_id` separately, orders each group by `loaded_at` with the newest first, and gives every row its place in that order, which the query calls `rn`."
             },
             {
               "kind": "paragraph",
-              "text": "The figure runs it on six readings. Reading r1 was loaded twice, so its two rows get rn 1 and rn 2, and the row loaded on 06-02 is the one with rn = 1. Wrapping the numbering in a subquery and keeping WHERE rn = 1 leaves exactly one row per reading, four in all, because a window function cannot be filtered in the same query level that creates it. The pattern of partitioning by the key, ordering by the load time and keeping rn = 1 is the standard way to deduplicate in SQL."
+              "text": "The figure runs it on six readings. Reading r1 was loaded twice, so its two rows get `rn` 1 and `rn` 2, and the row loaded on 06-02 is the one with `rn = 1`. Wrapping the numbering in a subquery and keeping `WHERE rn = 1` leaves exactly one row per reading, four in all, because a window function cannot be filtered in the same query level that creates it. The pattern of partitioning by the key, ordering by the load time and keeping `rn = 1` is the standard way to deduplicate in SQL."
             }
           ],
           "afterFigure": [
@@ -4584,7 +4584,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Values arrive as text, with padding, mixed formats and the occasional word where a number belongs. Cleaning removes the padding with TRIM and converts the text with CAST(... AS REAL), so that a value such as ' 10.50' becomes 10.5. What a cast does with text that is not a number depends on the engine: SQLite gives 0 without any error, while other engines raise an error or return NULL. A quiet 0 is dangerous, because the row then adds zero to a sum and nobody is told."
+              "text": "Values arrive as text, with padding, mixed formats and the occasional word where a number belongs. Cleaning removes the padding with `TRIM` and converts the text with `CAST(... AS REAL)`, so that a value such as `' 10.50'` becomes 10.5. What a cast does with text that is not a number depends on the engine: SQLite gives 0 without any error, while other engines raise an error or return `NULL`. A quiet 0 is dangerous, because the row then adds zero to a sum and nobody is told."
             },
             {
               "kind": "paragraph",
@@ -4622,7 +4622,7 @@
           "headline": "Find the total of the latest amount per key in these rows: k1 5 (loaded 03-01), k1 6 (03-02), k2 4 (03-01), k2 4 (03-03), k3 9 (03-01).",
           "workedSteps": [
             {
-              "text": "Group the rows by key and order each group newest first. Keep rn = 1 in each group.",
+              "text": "Group the rows by key and order each group newest first. Keep `rn = 1` in each group.",
               "math": "k1: 6   k2: 4 (03-03)   k3: 9"
             },
             {
@@ -4709,11 +4709,11 @@
         "whyItMatters": "A total built on uncleaned rows is wrong at the moment it is computed, and no later step can correct it."
       },
       "recap": {
-        "keyIdea": "Duplicates are rows that share a key, ROW_NUMBER with rn = 1 keeps the latest of each, and deduplication must precede aggregation so that no total counts a repeat.",
+        "keyIdea": "Duplicates are rows that share a key, `ROW_NUMBER` with `rn = 1` keeps the latest of each, and deduplication must precede aggregation so that no total counts a repeat.",
         "blocks": [
           {
             "kind": "paragraph",
-            "text": "You saw that DISTINCT keeps a re-sent record whose load time differs, and that numbering each key's rows newest first and keeping rn = 1 leaves one row per key. A sum taken before that step counted 450 rows for 400 events and overstated revenue by 12.5%. Text is trimmed and cast before use, and rows that fail go to a reject table with their reasons, so that nothing is dropped without a count."
+            "text": "You saw that `DISTINCT` keeps a re-sent record whose load time differs, and that numbering each key's rows newest first and keeping `rn = 1` leaves one row per key. A sum taken before that step counted 450 rows for 400 events and overstated revenue by 12.5%. Text is trimmed and cast before use, and rows that fail go to a reject table with their reasons, so that nothing is dropped without a count."
           }
         ],
         "nextHook": "The next lesson moves from stored data to data in motion, and assigns events to time windows when they arrive late and out of order."
@@ -6292,11 +6292,11 @@
         "etl-elt",
         "idempotence"
       ],
-      "prompt": "A job inserts three order rows into an empty table, which has no key declared, using plain INSERT statements. The orchestrator, the tool that schedules and retries the steps, reports a timeout and runs the job again, although the first run had in fact finished. What does the table hold afterwards?",
+      "prompt": "A job inserts three order rows into an empty table, which has no key declared, using plain `INSERT` statements. The orchestrator, the tool that schedules and retries the steps, reports a timeout and runs the job again, although the first run had in fact finished. What does the table hold afterwards?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "What does a plain INSERT do when an identical row is already in the table?",
+        "What does a plain `INSERT` do when an identical row is already in the table?",
         "Think about what each run adds."
       ],
       "answerAuthority": {
@@ -6312,7 +6312,7 @@
         "airflow-dags",
         "dp700-guide"
       ],
-      "onCorrect": "A plain INSERT adds rows whether or not they are already there, so a retry doubles the data.",
+      "onCorrect": "A plain `INSERT` adds rows whether or not they are already there, so a retry doubles the data.",
       "misconceptions": [
         {
           "match": {
@@ -6320,7 +6320,7 @@
               "a"
             ]
           },
-          "feedback": "Writing the same rows again only replaces them if something matches each new row to an old one. A plain INSERT does no matching, so each run adds its rows to whatever is already there."
+          "feedback": "Writing the same rows again only replaces them if something matches each new row to an old one. A plain `INSERT` does no matching, so each run adds its rows to whatever is already there."
         },
         {
           "match": {
@@ -6328,7 +6328,7 @@
               "b"
             ]
           },
-          "feedback": "An INSERT can fail on a repeated row only when the table declares a key for it to clash with. This table has none, so the second run succeeds and adds three more rows."
+          "feedback": "An `INSERT` can fail on a repeated row only when the table declares a key for it to clash with. This table has none, so the second run succeeds and adds three more rows."
         }
       ],
       "skill": "spot-non-idempotent-step",
@@ -6706,11 +6706,11 @@
         "encoding-compression",
         "schema-in-file"
       ],
-      "prompt": "A file stores the order_id column in four row groups, blocks of consecutive rows, and its footer, a summary at the end of the file, records their ranges as 1 to 250, 251 to 500, 501 to 750 and 751 to 1000. A query asks for the row with order_id = 600. How much of the file does the reader have to open?",
+      "prompt": "A file stores the `order_id` column in four row groups, blocks of consecutive rows, and its footer, a summary at the end of the file, records their ranges as 1 to 250, 251 to 500, 501 to 750 and 751 to 1000. A query asks for the row with `order_id = 600`. How much of the file does the reader have to open?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "The footer gives each group's smallest and largest order_id.",
+        "The footer gives each group's smallest and largest `order_id`.",
         "Which ranges could contain 600?"
       ],
       "answerAuthority": {
@@ -6769,7 +6769,7 @@
         "encoding-compression",
         "schema-in-file"
       ],
-      "prompt": "Row groups have order_id ranges 1 to 120, 100 to 260, 240 to 400 and 390 to 520. A query filters order_id = 250. How many row groups must be read?",
+      "prompt": "Row groups have `order_id` ranges 1 to 120, 100 to 260, 240 to 400 and 390 to 520. A query filters `order_id = 250`. How many row groups must be read?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -7024,7 +7024,7 @@
         "encoding-compression",
         "schema-in-file"
       ],
-      "prompt": "A Parquet row group's order_id column has a minimum of 1 and a maximum of 300 in the file's footer. A query filters order_id = 500. What does the reader do with that row group?",
+      "prompt": "A Parquet row group's `order_id` column has a minimum of 1 and a maximum of 300 in the file's footer. A query filters `order_id = 500`. What does the reader do with that row group?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -7070,7 +7070,7 @@
         },
         {
           "id": "b",
-          "label": "Reads only its order_id chunk, to check for 500"
+          "label": "Reads only its `order_id` chunk, to check for 500"
         },
         {
           "id": "a",
@@ -7212,7 +7212,7 @@
         "upsert",
         "late-rows"
       ],
-      "prompt": "A customers table has 3 rows, with ids 1, 2 and 3, and no key declared. A batch of 2 rows, with ids 2 and 4, is added with a plain INSERT, and the scheduler runs the job twice because the first run seemed to time out. What does the table hold afterwards?",
+      "prompt": "A customers table has 3 rows, with ids 1, 2 and 3, and no key declared. A batch of 2 rows, with ids 2 and 4, is added with a plain `INSERT`, and the scheduler runs the job twice because the first run seemed to time out. What does the table hold afterwards?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -7240,7 +7240,7 @@
               "a"
             ]
           },
-          "feedback": "Nothing merges rows by id unless the table declares id as a key and the write says what to do on a clash. A plain INSERT adds every row it is given."
+          "feedback": "Nothing merges rows by `id` unless the table declares `id` as a key and the write says what to do on a clash. A plain `INSERT` adds every row it is given."
         },
         {
           "match": {
@@ -7248,7 +7248,7 @@
               "b"
             ]
           },
-          "feedback": "The second run adds the same 2 rows again, since a plain INSERT does not look at what the table already holds."
+          "feedback": "The second run adds the same 2 rows again, since a plain `INSERT` does not look at what the table already holds."
         }
       ],
       "skill": "count-rows-after-replay",
@@ -7297,7 +7297,7 @@
               7
             ]
           },
-          "feedback": "That is the plain INSERT answer. An upsert updates a row whose key already exists."
+          "feedback": "That is the plain `INSERT` answer. An upsert updates a row whose key already exists."
         },
         {
           "match": {
@@ -7327,7 +7327,7 @@
         "upsert",
         "late-rows"
       ],
-      "prompt": "The watermark is 11:30 and the source rows have updated_at 11:20, 11:30, 11:45 and 12:05. How many rows does WHERE updated_at > '11:30' select?",
+      "prompt": "The watermark is 11:30 and the source rows have `updated_at` 11:20, 11:30, 11:45 and 12:05. How many rows does `WHERE updated_at > '11:30'` select?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -7382,7 +7382,7 @@
       "responseType": "short_text",
       "difficulty": 1.2,
       "hints": [
-        "The watermark is the largest updated_at among the rows just loaded.",
+        "The watermark is the largest `updated_at` among the rows just loaded.",
         "Which of the two loaded rows is later?"
       ],
       "sourceIds": [
@@ -7398,7 +7398,7 @@
               "10:06"
             ]
           },
-          "feedback": "That is the first loaded row. The watermark moves to the largest updated_at loaded."
+          "feedback": "That is the first loaded row. The watermark moves to the largest `updated_at` loaded."
         }
       ],
       "skill": "apply-watermark",
@@ -7424,7 +7424,7 @@
         "upsert",
         "late-rows"
       ],
-      "prompt": "Source rows are stamped 05-01 (1 row), 05-02 (2 rows), 05-03 (3 rows) and 05-04 (1 row), and updated_at is a date. A run reads everything from 05-01 onwards, inclusive. How many rows does it read?",
+      "prompt": "Source rows are stamped 05-01 (1 row), 05-02 (2 rows), 05-03 (3 rows) and 05-04 (1 row), and `updated_at` is a date. A run reads everything from 05-01 onwards, inclusive. How many rows does it read?",
       "responseType": "numeric",
       "difficulty": 1.3,
       "hints": [
@@ -7526,7 +7526,7 @@
         "upsert",
         "late-rows"
       ],
-      "prompt": "The stored watermark is 09:30. The source has rows updated at 09:15, 09:30, 09:30, 09:45 and 10:00. How many rows does WHERE updated_at >= '09:30' select?",
+      "prompt": "The stored watermark is 09:30. The source has rows updated at 09:15, 09:30, 09:30, 09:45 and 10:00. How many rows does `WHERE updated_at >= '09:30'` select?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -7589,7 +7589,7 @@
         "fabric-docs",
         "dp700-guide"
       ],
-      "onCorrect": "The ON CONFLICT clause turns a repeated insert into an update with identical values, so a second run changes nothing.",
+      "onCorrect": "The `ON CONFLICT` clause turns a repeated insert into an update with identical values, so a second run changes nothing.",
       "misconceptions": [
         {
           "match": {
@@ -7597,7 +7597,7 @@
               "a"
             ]
           },
-          "feedback": "A plain INSERT adds the row again on every run, or fails once a key exists."
+          "feedback": "A plain `INSERT` adds the row again on every run, or fails once a key exists."
         },
         {
           "match": {
@@ -7621,19 +7621,19 @@
       "choices": [
         {
           "id": "c",
-          "label": "INSERT INTO products VALUES (5, 'tape', 2.20) ON CONFLICT(id) DO UPDATE SET price = excluded.price;"
+          "label": "`INSERT INTO products VALUES (5, 'tape', 2.20) ON CONFLICT(id) DO UPDATE SET price = excluded.price;`"
         },
         {
           "id": "a",
-          "label": "INSERT INTO products VALUES (5, 'tape', 2.20);"
+          "label": "`INSERT INTO products VALUES (5, 'tape', 2.20);`"
         },
         {
           "id": "d",
-          "label": "INSERT INTO products VALUES (NULL, 'tape', 2.20);"
+          "label": "`INSERT INTO products VALUES (NULL, 'tape', 2.20);`"
         },
         {
           "id": "b",
-          "label": "UPDATE products SET price = price * 1.1;"
+          "label": "`UPDATE products SET price = price * 1.1;`"
         }
       ],
       "answerAuthority": {
@@ -7653,7 +7653,7 @@
         "soft-delete",
         "mirroring"
       ],
-      "prompt": "A source and its warehouse copy each hold 5 rows. One source row is hard-deleted, and a nightly job upserts the rows with updated_at beyond its watermark into the copy. How many rows does the copy hold afterwards?",
+      "prompt": "A source and its warehouse copy each hold 5 rows. One source row is hard-deleted, and a nightly job upserts the rows with `updated_at` beyond its watermark into the copy. How many rows does the copy hold afterwards?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -7696,7 +7696,7 @@
         "soft-delete",
         "mirroring"
       ],
-      "prompt": "Apply to an empty table: 1 insert id 1 'x'; 2 insert id 2 'y'; 3 update id 1 'x2'; 4 delete id 2; 5 insert id 3 'z'. How many rows does the table hold at the end?",
+      "prompt": "Apply to an empty table: `1 insert id 1 'x'; 2 insert id 2 'y'; 3 update id 1 'x2'; 4 delete id 2; 5 insert id 3 'z'`. How many rows does the table hold at the end?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -7959,7 +7959,7 @@
         "soft-delete",
         "mirroring"
       ],
-      "prompt": "Apply this log in position order to an empty table: 1 I id1 'a'; 2 I id2 'b'; 3 U id1 'a2'; 4 D id2; 5 I id3 'c'; 6 U id3 'c2'; 7 U id1 'a3'; 8 I id2 'b-new'. What value does id1 hold at the end? Give the value only.",
+      "prompt": "Apply this log in position order to an empty table: `1 I id1 'a'; 2 I id2 'b'; 3 U id1 'a2'; 4 D id2; 5 I id3 'c'; 6 U id3 'c2'; 7 U id1 'a3'; 8 I id2 'b-new'`. What value does `id1` hold at the end? Give the value only.",
       "responseType": "short_text",
       "difficulty": 1.3,
       "hints": [
@@ -8013,7 +8013,7 @@
         "soft-delete",
         "mirroring"
       ],
-      "prompt": "The same log applied in position order: 1 I id1 'a'; 2 I id2 'b'; 3 U id1 'a2'; 4 D id2; 5 I id3 'c'; 6 U id3 'c2'; 7 U id1 'a3'; 8 I id2 'b-new'. How many rows does the table hold at the end?",
+      "prompt": "The same log applied in position order: `1 I id1 'a'; 2 I id2 'b'; 3 U id1 'a2'; 4 D id2; 5 I id3 'c'; 6 U id3 'c2'; 7 U id1 'a3'; 8 I id2 'b-new'`. How many rows does the table hold at the end?",
       "responseType": "numeric",
       "difficulty": 1.4,
       "hints": [
@@ -8064,7 +8064,7 @@
         "soft-delete",
         "mirroring"
       ],
-      "prompt": "Why does a nightly WHERE updated_at > watermark query not reflect rows hard-deleted at the source?",
+      "prompt": "Why does a nightly `WHERE updated_at > watermark` query not reflect rows hard-deleted at the source?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -9886,7 +9886,7 @@
         "small-files",
         "data-skipping"
       ],
-      "prompt": "A sales table of billions of rows is queried mostly for a range of days or weeks. It has an order_date column with about 1,095 distinct dates over three years and a customer_id column with about 3,000,000 values. Which is the better partition column?",
+      "prompt": "A sales table of billions of rows is queried mostly for a range of days or weeks. It has an `order_date` column with about 1,095 distinct dates over three years and a `customer_id` column with about 3,000,000 values. Which is the better partition column?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -9908,7 +9908,7 @@
         "parquet-format",
         "fabric-docs"
       ],
-      "onCorrect": "order_date is both filtered on and of moderate cardinality, so each partition stays large and pruning works.",
+      "onCorrect": "`order_date` is both filtered on and of moderate cardinality, so each partition stays large and pruning works.",
       "misconceptions": [
         {
           "match": {
@@ -9932,7 +9932,7 @@
       "choices": [
         {
           "id": "b",
-          "label": "order_date, because queries filter on it and it has few enough values"
+          "label": "`order_date`, because queries filter on it and it has few enough values"
         },
         {
           "id": "c",
@@ -9940,7 +9940,7 @@
         },
         {
           "id": "a",
-          "label": "customer_id, because it picks out rows most precisely"
+          "label": "`customer_id`, because it picks out rows most precisely"
         }
       ]
     },
@@ -10005,7 +10005,7 @@
         "small-files",
         "data-skipping"
       ],
-      "prompt": "Four files have order_id ranges 1 to 100, 50 to 150, 100 to 200 and 300 to 400. A query filters order_id = 100. How many files must be read?",
+      "prompt": "Four files have `order_id` ranges 1 to 100, 50 to 150, 100 to 200 and 300 to 400. A query filters `order_id = 100`. How many files must be read?",
       "responseType": "numeric",
       "difficulty": 1.2,
       "hints": [
@@ -10270,7 +10270,7 @@
         "small-files",
         "data-skipping"
       ],
-      "prompt": "Files cover order_id ranges F1 1 to 300, F2 250 to 600, F3 601 to 900 and F4 400 to 700. A filter order_id = 500 can skip how many of the four files?",
+      "prompt": "Files cover `order_id` ranges F1 1 to 300, F2 250 to 600, F3 601 to 900 and F4 400 to 700. A filter `order_id = 500` can skip how many of the four files?",
       "responseType": "numeric",
       "difficulty": 1.3,
       "hints": [
@@ -10604,7 +10604,7 @@
         "lazy",
         "skew"
       ],
-      "prompt": "A program reads a table and then calls df.filter(...).select(...).count(). Which call makes the engine start the work?",
+      "prompt": "A program reads a table and then calls `df.filter(...).select(...).count()`. Which call makes the engine start the work?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -10888,19 +10888,19 @@
         "order-of-steps",
         "quarantine-bad"
       ],
-      "prompt": "A table has 500 rows, and 80 of them re-send an earlier event with the same values but a new loaded_at. How many rows does SELECT DISTINCT * return?",
+      "prompt": "A table has 500 rows, and 80 of them re-send an earlier event with the same values but a new `loaded_at`. How many rows does `SELECT DISTINCT *` return?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
-        "DISTINCT compares every column of a row.",
-        "Do the re-sent rows match their originals in loaded_at?",
+        "`DISTINCT` compares every column of a row.",
+        "Do the re-sent rows match their originals in `loaded_at`?",
         "Rows that differ in any column are all kept."
       ],
       "sourceIds": [
         "spark-sql-tuning",
         "fabric-docs"
       ],
-      "onCorrect": "DISTINCT removes only rows identical in every column, so a re-sent record with a new load time survives it.",
+      "onCorrect": "`DISTINCT` removes only rows identical in every column, so a re-sent record with a new load time survives it.",
       "misconceptions": [
         {
           "match": {
@@ -10908,7 +10908,7 @@
               420
             ]
           },
-          "feedback": "That assumes DISTINCT ignores loaded_at. It compares every column, and the re-sent rows differ in that one."
+          "feedback": "That assumes `DISTINCT` ignores `loaded_at`. It compares every column, and the re-sent rows differ in that one."
         }
       ],
       "skill": "dedupe-with-window",
@@ -10919,7 +10919,7 @@
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "DISTINCT compares every column, and each re-sent row differs from its original in loaded_at, so none is removed and all 500 rows are returned."
+        "workedAnswer": "`DISTINCT` compares every column, and each re-sent row differs from its original in `loaded_at`, so none is removed and all 500 rows are returned."
       }
     },
     {
@@ -10930,19 +10930,19 @@
         "order-of-steps",
         "quarantine-bad"
       ],
-      "prompt": "Rows for one key were loaded on 03-01, 03-02 and 03-05. With ROW_NUMBER() OVER (PARTITION BY id ORDER BY loaded_at DESC), what rn does the row loaded on 03-02 get?",
+      "prompt": "Rows for one key were loaded on 03-01, 03-02 and 03-05. With `ROW_NUMBER() OVER (PARTITION BY id ORDER BY loaded_at DESC)`, what `rn` does the row loaded on 03-02 get?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
         "Which load is newest, and so first in the order?",
-        "DESC puts the newest row first.",
+        "`DESC` puts the newest row first.",
         "Count along: newest, then the one before it."
       ],
       "sourceIds": [
         "spark-sql-tuning",
         "fabric-docs"
       ],
-      "onCorrect": "DESC gives the newest row the first number, so rn = 1 selects the latest load for each key.",
+      "onCorrect": "`DESC` gives the newest row the first number, so `rn = 1` selects the latest load for each key.",
       "misconceptions": [
         {
           "match": {
@@ -10969,7 +10969,7 @@
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "Newest first the order is 03-05, 03-02, 03-01, so the row loaded on 03-02 is the second and gets rn = 2."
+        "workedAnswer": "Newest first the order is 03-05, 03-02, 03-01, so the row loaded on 03-02 is the second and gets `rn = 2`."
       }
     },
     {
@@ -10980,7 +10980,7 @@
         "order-of-steps",
         "quarantine-bad"
       ],
-      "prompt": "A day's bronze table has 450 rows for 400 distinct events, because 50 events were sent twice. Every event is worth 10, so the true revenue is 4,000. What does SUM(amount) over the table as it stands return?",
+      "prompt": "A day's bronze table has 450 rows for 400 distinct events, because 50 events were sent twice. Every event is worth 10, so the true revenue is 4,000. What does `SUM(amount)` over the table as it stands return?",
       "responseType": "short_text",
       "difficulty": 1.1,
       "hints": [
@@ -11185,12 +11185,12 @@
         "order-of-steps",
         "quarantine-bad"
       ],
-      "prompt": "A query numbers event e1's rows with ROW_NUMBER() OVER (PARTITION BY event_id ORDER BY loaded_at ASC), by mistake, and keeps rn = 1. The event was loaded on 2026-03-01 and again on 2026-03-02. Which row does it keep?",
+      "prompt": "A query numbers event e1's rows with `ROW_NUMBER() OVER (PARTITION BY event_id ORDER BY loaded_at ASC)`, by mistake, and keeps `rn = 1`. The event was loaded on 2026-03-01 and again on 2026-03-02. Which row does it keep?",
       "responseType": "short_text",
       "difficulty": 1.2,
       "hints": [
         "Ascending order puts the smallest value first.",
-        "Which row gets rn = 1?"
+        "Which row gets `rn = 1`?"
       ],
       "answerAuthority": {
         "kind": "text",
@@ -11212,7 +11212,7 @@
               "a"
             ]
           },
-          "feedback": "The latest row comes first only with ORDER BY loaded_at DESC. In ascending order the oldest row comes first and receives rn = 1."
+          "feedback": "The latest row comes first only with `ORDER BY loaded_at DESC`. In ascending order the oldest row comes first and receives `rn = 1`."
         },
         {
           "match": {
@@ -11220,7 +11220,7 @@
               "c"
             ]
           },
-          "feedback": "Each row does get its own number, but the filter keeps only rn = 1, which is one row per event."
+          "feedback": "Each row does get its own number, but the filter keeps only `rn = 1`, which is one row per event."
         }
       ],
       "skill": "dedupe-with-window",
@@ -11248,11 +11248,11 @@
         "order-of-steps",
         "quarantine-bad"
       ],
-      "prompt": "Table bronze(event_id, user_id, amount, loaded_at) holds: ('e1',1,' 10.50','2026-03-01'), ('e1',1,'10.50','2026-03-02'), ('e2',2,'7','2026-03-01'), ('e3',3,'x','2026-03-01'), ('e3',3,'4','2026-03-02'), ('e4',4,'5','2026-03-01'). Keep the latest row per event_id and add up CAST(TRIM(amount) AS REAL). What is the total?",
+      "prompt": "Table `bronze(event_id, user_id, amount, loaded_at)` holds: `('e1',1,' 10.50','2026-03-01'), ('e1',1,'10.50','2026-03-02'), ('e2',2,'7','2026-03-01'), ('e3',3,'x','2026-03-01'), ('e3',3,'4','2026-03-02'), ('e4',4,'5','2026-03-01')`. Keep the latest row per `event_id` and add up `CAST(TRIM(amount) AS REAL)`. What is the total?",
       "responseType": "numeric",
       "difficulty": 1.4,
       "hints": [
-        "Keep one row per event_id: the one with the latest loaded_at.",
+        "Keep one row per `event_id`: the one with the latest `loaded_at`.",
         "e3's latest row is the one loaded on 2026-03-02.",
         "Add 10.5, 7, 4 and 5."
       ],
@@ -11290,7 +11290,7 @@
         "order-of-steps",
         "quarantine-bad"
       ],
-      "prompt": "With the same six rows, what is SUM(CAST(TRIM(amount) AS REAL)) over all six rows, without deduplicating? In SQLite a cast of x gives 0.",
+      "prompt": "With the same six rows, what is `SUM(CAST(TRIM(amount) AS REAL))` over all six rows, without deduplicating? In SQLite a cast of `x` gives 0.",
       "responseType": "numeric",
       "difficulty": 1.3,
       "hints": [
@@ -12107,7 +12107,7 @@
         "quarantine",
         "fail-fast"
       ],
-      "prompt": "A source renames the column cust to customer_id, and nothing else changes. What happens to an existing downstream query that selects the column cust?",
+      "prompt": "A source renames the column `cust` to `customer_id`, and nothing else changes. What happens to an existing downstream query that selects the column `cust`?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -12134,7 +12134,7 @@
               "a"
             ]
           },
-          "feedback": "The query names cust, and nothing tells the database that customer_id is the same column under a new name, so it cannot find what the query asks for."
+          "feedback": "The query names `cust`, and nothing tells the database that `customer_id` is the same column under a new name, so it cannot find what the query asks for."
         },
         {
           "match": {
@@ -12170,7 +12170,7 @@
         "quarantine",
         "fail-fast"
       ],
-      "prompt": "A source widens a text column from VARCHAR(100) to VARCHAR(200), so every old value still fits. Is the change safe or breaking?",
+      "prompt": "A source widens a text column from `VARCHAR(100)` to `VARCHAR(200)`, so every old value still fits. Is the change safe or breaking?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -14428,8 +14428,8 @@
         "order-of-steps",
         "quarantine-bad"
       ],
-      "front": "Why does SELECT DISTINCT not remove a re-sent record that has a new load time? Answer in a sentence.",
-      "back": "DISTINCT compares every column, so a row that differs only in loaded_at counts as a different row and survives.",
+      "front": "Why does `SELECT DISTINCT` not remove a re-sent record that has a new load time? Answer in a sentence.",
+      "back": "`DISTINCT` compares every column, so a row that differs only in `loaded_at` counts as a different row and survives.",
       "sourceIds": [
         "spark-sql-tuning",
         "fabric-docs"
@@ -14444,7 +14444,7 @@
         "order-of-steps",
         "quarantine-bad"
       ],
-      "front": "In SQLite, what does CAST('x' AS REAL) return? Give the number.",
+      "front": "In SQLite, what does `CAST('x' AS REAL)` return? Give the number.",
       "back": "SQLite returns 0 without an error, so a bad value quietly counts as zero in a sum unless it is tested first.",
       "sourceIds": [
         "spark-sql-tuning",

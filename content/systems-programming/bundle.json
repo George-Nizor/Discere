@@ -488,7 +488,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "Writing a byte as eight binary digits is exact but tiring to read, so programmers group the bits in fours. Four bits can be set in sixteen patterns, and **hexadecimal**, or base 16, gives each pattern one digit: the digits 0 to 9, followed by A to F for ten to fifteen. A byte is therefore always exactly two hex digits, and the prefix 0x marks a number as hex. The figure shows the byte 10110111 in both forms."
+              "text": "Writing a byte as eight binary digits is exact but tiring to read, so programmers group the bits in fours. Four bits can be set in sixteen patterns, and **hexadecimal**, or base 16, gives each pattern one digit: the digits 0 to 9, followed by A to F for ten to fifteen. A byte is therefore always exactly two hex digits, and the prefix `0x` marks a number as hex. The figure shows the byte 10110111 in both forms."
             }
           ],
           "afterFigure": [
@@ -532,7 +532,7 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "The opening example, 258, is 0x102 by the same method, because 1 × 256 + 0 × 16 + 2 = 258. Padded to the four bytes of a u32, it is 0x00000102."
+              "text": "The opening example, 258, is 0x102 by the same method, because 1 × 256 + 0 × 16 + 2 = 258. Padded to the four bytes of a `u32`, it is 0x00000102."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -548,7 +548,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Rust names the width of every integer type: u8 and i8 use one byte, u16 and i16 two, u32 and i32 four, and u64 and i64 eight. A width of n bits has 2^n patterns, so an **unsigned** type, written with a u, reads them as the numbers 0 up to 2^n − 1, and a u8 therefore runs from 0 to 255. A **signed** type, written with an i, has to give some of its patterns to negative numbers, and the split is even: it runs from -2^(n-1) up to 2^(n-1) − 1, which for an i8 is -128 to 127."
+              "text": "Rust names the width of every integer type: `u8` and `i8` use one byte, `u16` and `i16` two, `u32` and `i32` four, and `u64` and `i64` eight. A width of n bits has 2^n patterns, so an **unsigned** type, written with a u, reads them as the numbers 0 up to 2^n − 1, and a `u8` therefore runs from 0 to 255. A **signed** type, written with an i, has to give some of its patterns to negative numbers, and the split is even: it runs from -2^(n-1) up to 2^(n-1) − 1, which for an `i8` is -128 to 127."
             },
             {
               "kind": "paragraph",
@@ -558,7 +558,7 @@
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "Read as unsigned, the patterns count from 0 up to 7. Read as signed, the first four keep their values 0 to 3 and the last four become -4 to -1. **The patterns do not change; only the numbers assigned to them do.** The machine stores nothing but the pattern, and the type, u8 or i8, tells the compiler which reading to apply."
+              "text": "Read as unsigned, the patterns count from 0 up to 7. Read as signed, the first four keep their values 0 to 3 and the last four become -4 to -1. **The patterns do not change; only the numbers assigned to them do.** The machine stores nothing but the pattern, and the type, `u8` or `i8`, tells the compiler which reading to apply."
             }
           ],
           "introducesTerms": [
@@ -611,7 +611,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The way of assigning the signed readings in the figure on the screen before last is called **two's complement**, and its rule is short. If the top bit of a pattern is 0, the number is the unsigned value, exactly as before. If the top bit is 1, the number is the unsigned value *minus* 2^n, where n is the width. The pattern 11111111 is 255 as a u8, so as an i8 it is 255 − 256 = -1, and the pattern 11111010 is 250 as a u8 and 250 − 256 = -6 as an i8."
+              "text": "The way of assigning the signed readings in the figure on the screen before last is called **two's complement**, and its rule is short. If the top bit of a pattern is 0, the number is the unsigned value, exactly as before. If the top bit is 1, the number is the unsigned value *minus* 2^n, where n is the width. The pattern 11111111 is 255 as a `u8`, so as an `i8` it is 255 − 256 = -1, and the pattern 11111010 is 250 as a `u8` and 250 − 256 = -6 as an `i8`."
             },
             {
               "kind": "paragraph",
@@ -686,13 +686,13 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A u32 needs four bytes, and there are two sensible orders in which to put them. The number 258 is 0x00000102, whose *most* significant byte, the one worth the most, is 00, and whose *least* significant byte is 02. A **little-endian** machine stores the least significant byte at the lowest address, so 258 appears in memory as 02 01 00 00, whereas a **big-endian** machine stores the most significant byte first, as 00 00 01 02. Network protocols have traditionally used big-endian order, and the processors in most laptops, phones and servers, x86 and the usual ARM configuration, are little-endian."
+              "text": "A `u32` needs four bytes, and there are two sensible orders in which to put them. The number 258 is 0x00000102, whose *most* significant byte, the one worth the most, is 00, and whose *least* significant byte is 02. A **little-endian** machine stores the least significant byte at the lowest address, so 258 appears in memory as 02 01 00 00, whereas a **big-endian** machine stores the most significant byte first, as 00 00 01 02. Network protocols have traditionally used big-endian order, and the processors in most laptops, phones and servers, x86 and the usual ARM configuration, are little-endian."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "In Rust, 258u32.to_le_bytes() returns [2, 1, 0, 0] and 258u32.to_be_bytes() returns [0, 0, 1, 2], while to_ne_bytes gives whichever order the machine itself uses. The common mistake is to read the little-endian bytes from left to right as though they were the number: the bytes 02 01 00 00 are not 0x02010000. Read from the highest address down to the lowest they give 00 00 01 02, and that is the number."
+              "text": "In Rust, `258u32.to_le_bytes()` returns `[2, 1, 0, 0]` and `258u32.to_be_bytes()` returns `[0, 0, 1, 2]`, while `to_ne_bytes` gives whichever order the machine itself uses. The common mistake is to read the little-endian bytes from left to right as though they were the number: the bytes 02 01 00 00 are not 0x02010000. Read from the highest address down to the lowest they give 00 00 01 02, and that is the number."
             }
           ],
           "introducesTerms": [
@@ -770,17 +770,17 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "When the true result of an arithmetic operation does not fit in the type, the operation **overflows**. A plain a + b in Rust makes a choice that you did not write: a debug build panics, which stops the program with an error message, while a release build wraps around unless overflow checks have been switched on. The same source therefore behaves differently depending on how it was built, and the standard library offers four methods whose meaning is the same in every build."
+              "text": "When the true result of an arithmetic operation does not fit in the type, the operation **overflows**. A plain `a + b` in Rust makes a choice that you did not write: a debug build panics, which stops the program with an error message, while a release build wraps around unless overflow checks have been switched on. The same source therefore behaves differently depending on how it was built, and the standard library offers four methods whose meaning is the same in every build."
             },
             {
               "kind": "paragraph",
-              "text": "**wrapping_add** keeps only the low bits, which is the result modulo 256 for a u8. **saturating_add** stops at the largest value the type can hold. **checked_add** returns None when the result does not fit and Some(result) when it does. **overflowing_add** returns the wrapped result together with a flag that says whether wrapping happened."
+              "text": "**wrapping_add** keeps only the low bits, which is the result modulo 256 for a `u8`. **saturating_add** stops at the largest value the type can hold. **checked_add** returns `None` when the result does not fit and `Some(result)` when it does. **overflowing_add** returns the wrapped result together with a flag that says whether wrapping happened."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "The figure adds 100 to a u8 holding 200. The true result, 300, does not fit, so wrapping_add returns 300 − 256 = 44, saturating_add returns 255, checked_add returns None, and overflowing_add returns (44, true). C treats the same mistake very differently: overflow of a *signed* integer is undefined behaviour, which means the language places no requirement at all on what the program then does, and a later lesson returns to that."
+              "text": "The figure adds 100 to a `u8` holding 200. The true result, 300, does not fit, so `wrapping_add` returns 300 − 256 = 44, `saturating_add` returns 255, `checked_add` returns `None`, and `overflowing_add` returns `(44, true)`. C treats the same mistake very differently: overflow of a *signed* integer is undefined behaviour, which means the language places no requirement at all on what the program then does, and a later lesson returns to that."
             }
           ],
           "introducesTerms": [
@@ -871,7 +871,7 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "The Rust statement let x: u32 = 258; puts a number in memory, which is a long row of numbered boxes that can each hold a single value from 0 to 255. Because 258 is too large for one box, a u32 takes four consecutive boxes, and they contain 2, 1, 0 and 0, with the 2 first. The number exists in memory only as those four small values, and what it means depends on their order and on the type used to read them."
+              "text": "The Rust statement `let x: u32 = 258;` puts a number in memory, which is a long row of numbered boxes that can each hold a single value from 0 to 255. Because 258 is too large for one box, a `u32` takes four consecutive boxes, and they contain 2, 1, 0 and 0, with the 2 first. The number exists in memory only as those four small values, and what it means depends on their order and on the type used to read them."
             },
             {
               "kind": "paragraph",
@@ -910,7 +910,7 @@
           },
           {
             "kind": "paragraph",
-            "text": "When arithmetic produces a result that does not fit, the four methods wrapping_add, saturating_add, checked_add and overflowing_add make the outcome explicit, whereas the plain operator panics in a debug build and wraps in a release build."
+            "text": "When arithmetic produces a result that does not fit, the four methods `wrapping_add`, `saturating_add`, `checked_add` and `overflowing_add` make the outcome explicit, whereas the plain operator panics in a debug build and wraps in a release build."
           }
         ],
         "nextHook": "The next lesson places several values side by side in one struct and asks why the compiler leaves gaps between them."
@@ -996,7 +996,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Consider a [[struct|A group of named fields stored together. Met in Rust Foundations.]] with a u8 field a followed by a u32 field b. The field a takes byte 0. The next free byte is 1, but b has alignment 4, so it cannot start there, and the compiler skips to offset 4. The skipped bytes 1, 2 and 3 are **padding**: they belong to the struct and hold nothing. The field b then fills bytes 4 to 7, and the struct is 8 bytes long although its fields hold only 5."
+              "text": "Consider a [[struct|A group of named fields stored together. Met in Rust Foundations.]] with a `u8` field `a` followed by a `u32` field `b`. The field `a` takes byte 0. The next free byte is 1, but `b` has alignment 4, so it cannot start there, and the compiler skips to offset 4. The skipped bytes 1, 2 and 3 are **padding**: they belong to the struct and hold nothing. The field `b` then fills bytes 4 to 7, and the struct is 8 bytes long although its fields hold only 5."
             },
             {
               "kind": "paragraph",
@@ -1043,7 +1043,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Every layout in this lesson follows from one operation, rounding up to a multiple. Written as round_up(x, a), it gives the smallest multiple of a that is at least x, so round_up(5, 4) is 8, round_up(8, 8) is 8, because 8 is already a multiple, and round_up(13, 8) is 16."
+              "text": "Every layout in this lesson follows from one operation, rounding up to a multiple. Written as `round_up(x, a)`, it gives the smallest multiple of a that is at least x, so `round_up(5, 4)` is 8, `round_up(8, 8)` is 8, because 8 is already a multiple, and `round_up(13, 8)` is 16."
             },
             {
               "kind": "paragraph",
@@ -1069,7 +1069,7 @@
               "math": "a: 0 to 1"
             },
             {
-              "text": "The field b is a u32, so it starts at round_up(1, 4) = 4 and ends at 8.",
+              "text": "The field `b` is a `u32`, so it starts at `round_up(1, 4)` = 4 and ends at 8.",
               "math": "b: 4 to 8"
             },
             {
@@ -1077,7 +1077,7 @@
               "math": "c: 8 to 9"
             },
             {
-              "text": "The struct's alignment is 4, the largest among its fields. Work out the size, which is round_up(9, 4).",
+              "text": "The struct's alignment is 4, the largest among its fields. Work out the size, which is `round_up(9, 4)`.",
               "blank": {
                 "questionId": "sysp-layout-size-and-alignment-size-abc"
               }
@@ -1099,7 +1099,7 @@
               "math": "a: 0 to 1"
             },
             {
-              "text": "The field b is a u16, so it starts at round_up(1, 2) = 2 and ends at 4.",
+              "text": "The field `b` is a `u16`, so it starts at `round_up(1, 2)` = 2 and ends at 4.",
               "math": "b: 2 to 4"
             },
             {
@@ -1151,13 +1151,13 @@
             },
             {
               "kind": "paragraph",
-              "text": "You do not have to compute these sizes by hand. std::mem::size_of and std::mem::align_of report them, and the macro offset_of! reports where a field starts. The figure prints the sizes of three structs built from the same three fields."
+              "text": "You do not have to compute these sizes by hand. `std::mem::size_of` and `std::mem::align_of` report them, and the macro `offset_of!` reports where a field starts. The figure prints the sizes of three structs built from the same three fields."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "The first two lines agree with the hand calculations: 12 for the order a, b, c and 8 for a, c, b. The third struct has no repr(C), so Rust may choose the order, and the compiler used here chose one that gives 8. The language does not promise that order, which is exactly why repr(C) exists for code that must match another language's layout."
+              "text": "The first two lines agree with the hand calculations: 12 for the order `a`, `b`, `c` and 8 for `a`, `c`, `b`. The third struct has no `repr(C)`, so Rust may choose the order, and the compiler used here chose one that gives 8. The language does not promise that order, which is exactly why `repr(C)` exists for code that must match another language's layout."
             }
           ],
           "introducesTerms": [],
@@ -1246,7 +1246,7 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "The struct { a: u8, b: u32 } has a one-byte field and a four-byte field, so its data adds up to five bytes, yet Rust reports its size as eight. The three extra bytes are inserted by the compiler after a, so that b starts at an address divisible by four, which is where a processor can load a four-byte value in a single step."
+              "text": "The `struct { a: u8, b: u32 }` has a one-byte field and a four-byte field, so its data adds up to five bytes, yet Rust reports its size as eight. The three extra bytes are inserted by the compiler after `a`, so that `b` starts at an address divisible by four, which is where a processor can load a four-byte value in a single step."
             },
             {
               "kind": "paragraph",
@@ -1276,7 +1276,7 @@
           },
           {
             "kind": "paragraph",
-            "text": "Padding is the price of loads that stay fast and legal, and declaring the largest fields first usually keeps it small. With repr(C) the order is the one written, and without it Rust may choose another."
+            "text": "Padding is the price of loads that stay fast and legal, and declaring the largest fields first usually keeps it small. With `repr(C)` the order is the one written, and without it Rust may choose another."
           }
         ],
         "nextHook": "The next lesson asks where a value lives once it is laid out, and why a value of unknown size cannot live in the place that fixed-size values do."
@@ -1310,7 +1310,7 @@
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "Each frame holds only the names of its own function, so two calls of the same function get separate frames with separate variables. When g returns, its frame disappears and f's frame is on top again, with the value g produced ready to use. **Setting aside and releasing a frame is nothing more than moving one pointer**, which is why the stack is quick."
+              "text": "Each frame holds only the names of its own function, so two calls of the same function get separate frames with separate variables. When `g` returns, its frame disappears and `f`'s frame is on top again, with the value `g` produced ready to use. **Setting aside and releasing a frame is nothing more than moving one pointer**, which is why the stack is quick."
             }
           ],
           "introducesTerms": [
@@ -1412,17 +1412,17 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A Vec<i32> has to hold any number of elements, so what it keeps on the stack is only a **handle** made of three 8-byte words on a 64-bit machine: a pointer to the buffer on the heap, the buffer's **capacity**, which is how many elements it has room for, and the **length**, which is how many it holds at present. The elements themselves, the numbers 10, 20 and 30 in the figure, sit in the heap buffer, next to each other."
+              "text": "A `Vec<i32>` has to hold any number of elements, so what it keeps on the stack is only a **handle** made of three 8-byte words on a 64-bit machine: a pointer to the buffer on the heap, the buffer's **capacity**, which is how many elements it has room for, and the **length**, which is how many it holds at present. The elements themselves, the numbers 10, 20 and 30 in the figure, sit in the heap buffer, next to each other."
             },
             {
               "kind": "paragraph",
-              "text": "A String is built in the same way, with its text as bytes in the buffer, and a Box<i32> is simpler still, a single pointer to one i32 on the heap, so it is 8 bytes. A &str is only a pointer and a length, because it *borrows* text that somebody else owns and has no capacity to record."
+              "text": "A `String` is built in the same way, with its text as bytes in the buffer, and a `Box<i32>` is simpler still, a single pointer to one `i32` on the heap, so it is 8 bytes. A `&str` is only a pointer and a length, because it *borrows* text that somebody else owns and has no capacity to record."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "Rust can report these sizes for you with std::mem::size_of, so size_of::<Box<i32>>() gives 8, and for a Vec or a String it gives the size of the three-word handle. **The handle is the same size whether the Vec holds three elements or three million**, because the elements are not in it."
+              "text": "Rust can report these sizes for you with `std::mem::size_of`, so `size_of::<Box<i32>>()` gives 8, and for a `Vec` or a `String` it gives the size of the three-word handle. **The handle is the same size whether the Vec holds three elements or three million**, because the elements are not in it."
             }
           ],
           "introducesTerms": [
@@ -1706,7 +1706,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The previous lesson ended with a Vec or a String as a handle on the stack pointing to a buffer on the heap, which raises the question of who gives the buffer back. If copying the handle produced a second handle with an equal right to free the buffer, the buffer would be freed twice, and freeing the same block twice corrupts the allocator's records. Rust avoids this with a rule: each value has exactly one **owner**, which is the variable that holds it."
+              "text": "The previous lesson ended with a `Vec` or a `String` as a handle on the stack pointing to a buffer on the heap, which raises the question of who gives the buffer back. If copying the handle produced a second handle with an equal right to free the buffer, the buffer would be freed twice, and freeing the same block twice corrupts the allocator's records. Rust avoids this with a rule: each value has exactly one **owner**, which is the variable that holds it."
             },
             {
               "kind": "paragraph",
@@ -1778,7 +1778,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The assignment let b = a copies the handle from a to b, so b now holds the pointer, the capacity and the length. The buffer on the heap is not touched. To keep a single owner, Rust then treats a as empty: the value has **moved** to b, and the name a may not be used again unless it is given a new value."
+              "text": "The assignment `let b = a` copies the handle from `a` to `b`, so `b` now holds the pointer, the capacity and the length. The buffer on the heap is not touched. To keep a single owner, Rust then treats `a` as empty: the value has **moved** to `b`, and the name `a` may not be used again unless it is given a new value."
             },
             {
               "kind": "paragraph",
@@ -1840,7 +1840,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "When a program uses a moved value, rustc reports error E0382 and marks three places. The first is the declaration, with a note that the value has a type, here String, that does not implement the **Copy** trait, which explains why assigning it moves it instead of copying it. The second is the line where the value moved, and the third is the later line that tried to use it."
+              "text": "When a program uses a moved value, rustc reports error E0382 and marks three places. The first is the declaration, with a note that the value has a type, here `String`, that does not implement the **Copy** trait, which explains why assigning it moves it instead of copying it. The second is the line where the value moved, and the third is the later line that tried to use it."
             },
             {
               "kind": "paragraph",
@@ -1912,7 +1912,7 @@
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "The caller cannot drop a a second time, since it no longer owns it, and that is the single-owner rule at work again. **Whoever owns a value when its scope ends is the one that drops it.**"
+              "text": "The caller cannot drop `a` a second time, since it no longer owns it, and that is the single-owner rule at work again. **Whoever owns a value when its scope ends is the one that drops it.**"
             }
           ],
           "introducesTerms": [],
@@ -1937,7 +1937,7 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "Searching the compiler error index for this code gives a short explanation and examples, and rustc --explain with the code prints the same text."
+              "text": "Searching the compiler error index for this code gives a short explanation and examples, and `rustc --explain` with the code prints the same text."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -1957,7 +1957,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "Types whose whole value is small and lives on the stack are different. An i32 has no buffer to free, so a copy of it is as good as the original, and such types are marked **Copy**: assigning one copies it, and the original stays usable. The figure shows a clone of a String and a copy of an i32."
+              "text": "Types whose whole value is small and lives on the stack are different. An `i32` has no buffer to free, so a copy of it is as good as the original, and such types are marked **Copy**: assigning one copies it, and the original stays usable. The figure shows a clone of a `String` and a copy of an `i32`."
             }
           ],
           "afterFigure": [],
@@ -2113,11 +2113,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The previous lesson showed that handing a String to a function moves it, which is awkward when the function only needs to look at the text. The alternative is to *borrow* the value. Writing &a creates a **reference** to a, an address that the function can read through, and the function's parameter has the type &String instead of String. The owner stays the owner: the reference neither frees the buffer nor prevents the caller from using a again afterwards."
+              "text": "The previous lesson showed that handing a String to a function moves it, which is awkward when the function only needs to look at the text. The alternative is to *borrow* the value. Writing `&a` creates a **reference** to `a`, an address that the function can read through, and the function's parameter has the type `&String` instead of `String`. The owner stays the owner: the reference neither frees the buffer nor prevents the caller from using `a` again afterwards."
             },
             {
               "kind": "paragraph",
-              "text": "A reference of this kind is a **shared borrow**, and any number of them may exist at once, because reading does not interfere with reading. A **mutable borrow**, written &mut a, allows the holder to change the value. The figure passes &a to a function and then prints a, which a move would have forbidden."
+              "text": "A reference of this kind is a **shared borrow**, and any number of them may exist at once, because reading does not interfere with reading. A **mutable borrow**, written `&mut a`, allows the holder to change the value. The figure passes `&a` to a function and then prints `a`, which a move would have forbidden."
             }
           ],
           "afterFigure": [
@@ -2177,11 +2177,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "In C a program can hold a pointer to the first element of an array and then call a function that grows the array. If the array has to move to a larger block, the old block is freed, and the pointer is left pointing at memory that no longer belongs to the array. A pointer of this kind is **dangling**, and using it is a fault the C compiler does not detect. The figure shows the same thing with a Rust Vec, where f stands for a reference into the buffer and a push makes the buffer move."
+              "text": "In C a program can hold a pointer to the first element of an array and then call a function that grows the array. If the array has to move to a larger block, the old block is freed, and the pointer is left pointing at memory that no longer belongs to the array. A pointer of this kind is **dangling**, and using it is a fault the C compiler does not detect. The figure shows the same thing with a Rust `Vec`, where `f` stands for a reference into the buffer and a push makes the buffer move."
             },
             {
               "kind": "paragraph",
-              "text": "Rust's rule closes this gap. At any moment a value may have **many shared borrows, or exactly one mutable borrow, but never both**. A push needs mutable access to the Vec, so it cannot happen while a shared reference into the Vec is still going to be used, and the reference can never be found pointing at a freed buffer."
+              "text": "Rust's rule closes this gap. At any moment a value may have **many shared borrows, or exactly one mutable borrow, but never both**. A push needs mutable access to the `Vec`, so it cannot happen while a shared reference into the `Vec` is still going to be used, and the reference can never be found pointing at a freed buffer."
             }
           ],
           "afterFigure": [
@@ -2228,7 +2228,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The figure shows E0597. The variable x is declared in an inner block and is dropped at the closing brace, but r, declared outside the block, still refers to it, and the later println! would read the freed value. The message marks four places: where x is declared, where the borrow is taken, where x is dropped while still borrowed, and where the borrow is used afterwards."
+              "text": "The figure shows E0597. The variable `x` is declared in an inner block and is dropped at the closing brace, but `r`, declared outside the block, still refers to it, and the later `println!` would read the freed value. The message marks four places: where `x` is declared, where the borrow is taken, where `x` is dropped while still borrowed, and where the borrow is used afterwards."
             }
           ],
           "afterFigure": [
@@ -2312,7 +2312,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The repaired signature is fn longest<'a>(a: &'a str, b: &'a str) -> &'a str. It declares a lifetime named 'a and gives it to both inputs and to the result, which says that the result cannot outlive either input. This changes nothing about how long any value lives, since values are still dropped when their owners' scopes end. It records a relationship, and the compiler checks that every caller respects it."
+              "text": "The repaired signature is `fn longest<'a>(a: &'a str, b: &'a str) -> &'a str`. It declares a lifetime named `'a` and gives it to both inputs and to the result, which says that the result cannot outlive either input. This changes nothing about how long any value lives, since values are still dropped when their owners' scopes end. It records a relationship, and the compiler checks that every caller respects it."
             },
             {
               "kind": "paragraph",
@@ -2550,11 +2550,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Memory is a row of numbered bytes, as the first lesson described, and a C variable lives at one of the addresses. The expression &x gives the address of x, and a variable that can hold such an address is a **pointer**. In int x = 7; int *p = &x; the second line declares p as a pointer to an int and stores the address of x in it. The star in front of p in an expression, written *p, is the reverse operation: it means the object at the address p holds."
+              "text": "Memory is a row of numbered bytes, as the first lesson described, and a C variable lives at one of the addresses. The expression `&x` gives the address of `x`, and a variable that can hold such an address is a **pointer**. In `int x = 7; int *p = &x;` the second line declares `p` as a pointer to an `int` and stores the address of `x` in it. The star in front of `p` in an expression, written `*p`, is the reverse operation: it means the object at the address `p` holds."
             },
             {
               "kind": "paragraph",
-              "text": "Because *p is that object itself and not a copy of its value, it can stand on the left of an assignment. After *p = 8 the variable x holds 8, though x was never named, and a function that receives a pointer can change its caller's variable in this way. A pointer is itself a value of fixed size, 8 bytes on a typical 64-bit target, whatever it points at."
+              "text": "Because `*p` is that object itself and not a copy of its value, it can stand on the left of an assignment. After `*p = 8` the variable `x` holds 8, though `x` was never named, and a function that receives a pointer can change its caller's variable in this way. A pointer is itself a value of fixed size, 8 bytes on a typical 64-bit target, whatever it points at."
             }
           ],
           "afterFigure": [
@@ -2578,7 +2578,7 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "The assignment changed x without naming it, because *p and x are the same object. A pointer to a pointer works in the same way, one level removed."
+              "text": "The assignment changed `x` without naming it, because `*p` and `x` are the same object. A pointer to a pointer works in the same way, one level removed."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -2594,17 +2594,17 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "An array in C is a run of elements side by side, and a pointer to its first element can reach the rest by arithmetic. The expression q + 1 is the address of the *next element*, so for an int pointer, where each int occupies four bytes, it is four bytes beyond q, and q + 2 is eight bytes beyond. The compiler scales the offset by the size of the element type so that you never write the byte count yourself."
+              "text": "An array in C is a run of elements side by side, and a pointer to its first element can reach the rest by arithmetic. The expression `q + 1` is the address of the *next element*, so for an `int` pointer, where each `int` occupies four bytes, it is four bytes beyond `q`, and `q + 2` is eight bytes beyond. The compiler scales the offset by the size of the element type so that you never write the byte count yourself."
             },
             {
               "kind": "paragraph",
-              "text": "The subscript is defined in terms of this: p[i] is *(p + i), and for an int array p the element p[2] is the int at the address eight bytes after p. The figure draws three ints in twelve bytes, with the pointer q at each of three positions."
+              "text": "The subscript is defined in terms of this: `p[i]` is `*(p + i)`, and for an `int` array `p` the element `p[2]` is the `int` at the address eight bytes after `p`. The figure draws three ints in twelve bytes, with the pointer `q` at each of three positions."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "A common slip is to read q + 2 as adding two bytes. It adds two elements, and what that is in bytes depends on the type: **the same expression moves an int pointer by eight bytes and a char pointer by two**."
+              "text": "A common slip is to read `q + 2` as adding two bytes. It adds two elements, and what that is in bytes depends on the type: **the same expression moves an int pointer by eight bytes and a char pointer by two**."
             }
           ],
           "introducesTerms": [
@@ -2645,7 +2645,7 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "The result is the same element that p[2] names, which is why a subscript and a pointer addition are interchangeable in C."
+              "text": "The result is the same element that `p[2]` names, which is why a subscript and a pointer addition are interchangeable in C."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -2661,11 +2661,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Memory on the stack disappears with its frame, so a value that must outlive the function, or whose size is known only while the program runs, needs a block from the heap. In C the request is made by calling malloc with a number of bytes, and the result is a pointer to the block. The usual way of stating the size is sizeof, which gives a size in bytes: malloc(sizeof *p) asks for room for whatever p points at, and malloc(10 * sizeof(int)) asks for ten ints."
+              "text": "Memory on the stack disappears with its frame, so a value that must outlive the function, or whose size is known only while the program runs, needs a block from the heap. In C the request is made by calling `malloc` with a number of bytes, and the result is a pointer to the block. The usual way of stating the size is `sizeof`, which gives a size in bytes: `malloc(sizeof *p)` asks for room for whatever `p` points at, and `malloc(10 * sizeof(int))` asks for ten ints."
             },
             {
               "kind": "paragraph",
-              "text": "Nothing returns the block automatically. When the program has finished with it, it calls free with the same pointer, and the block goes back to the allocator. The programmer has to match the calls: a block that is never freed is a *leak*, a block freed twice damages the allocator, and a block used after free is no longer the program's. Nothing in the language records which pointers have been freed, so the pointer p still holds its old address after free(p)."
+              "text": "Nothing returns the block automatically. When the program has finished with it, it calls `free` with the same pointer, and the block goes back to the allocator. The programmer has to match the calls: a block that is never freed is a *leak*, a block freed twice damages the allocator, and a block used after free is no longer the program's. Nothing in the language records which pointers have been freed, so the pointer `p` still holds its old address after `free(p)`."
             }
           ],
           "afterFigure": [
@@ -2706,11 +2706,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Where an array is declared, it is an array: sizeof(arr) for int arr[10] is 40, the full ten elements of four bytes each. In nearly every other use, however, the name of an array is converted to a pointer to its first element, a conversion called **array decay**. Passing the array to a function is such a use, and what the function receives is only the pointer."
+              "text": "Where an array is declared, it is an array: `sizeof(arr)` for `int arr[10]` is 40, the full ten elements of four bytes each. In nearly every other use, however, the name of an array is converted to a pointer to its first element, a conversion called **array decay**. Passing the array to a function is such a use, and what the function receives is only the pointer."
             },
             {
               "kind": "paragraph",
-              "text": "A parameter written int a[] is therefore not an array at all: the compiler treats it as int *a, so inside the function sizeof(a) is the size of a pointer, 8 bytes on a typical 64-bit target, and the length of the original array is lost. This is why C functions that take arrays take the length as a separate argument."
+              "text": "A parameter written `int a[]` is therefore not an array at all: the compiler treats it as `int *a`, so inside the function `sizeof(a)` is the size of a pointer, 8 bytes on a typical 64-bit target, and the length of the original array is lost. This is why C functions that take arrays take the length as a separate argument."
             }
           ],
           "afterFigure": [
@@ -2734,7 +2734,7 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "In the scope that declares it, an array knows its size, so dividing sizeof(arr) by sizeof(arr[0]) gives the element count there and only there."
+              "text": "In the scope that declares it, an array knows its size, so dividing `sizeof(arr)` by `sizeof(arr[0])` gives the element count there and only there."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -2750,7 +2750,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A **use after free** reads or writes through a pointer whose block has been freed. A **double free** passes the same block to free twice. A **buffer overflow** writes beyond the end of a block, as p[2] does to a block with room for two ints. The figure shows each in a few lines of C, with the heap drawn beside it."
+              "text": "A **use after free** reads or writes through a pointer whose block has been freed. A **double free** passes the same block to `free` twice. A **buffer overflow** writes beyond the end of a block, as `p[2]` does to a block with room for two ints. The figure shows each in a few lines of C, with the heap drawn beside it."
             },
             {
               "kind": "paragraph",
@@ -2760,7 +2760,7 @@
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "Tools can find these faults while the program runs. Compiling with gcc or clang and the option -fsanitize=address adds AddressSanitizer, which checks every access against a record of the live blocks and stops with a report on the first fault. Rust prevents each of the three: a use after free is E0382 or E0597, a double free cannot be written, and an out-of-range index panics with a message instead of corrupting memory."
+              "text": "Tools can find these faults while the program runs. Compiling with gcc or clang and the option `-fsanitize=address` adds AddressSanitizer, which checks every access against a record of the live blocks and stops with a report on the first fault. Rust prevents each of the three: a use after free is E0382 or E0597, a double free cannot be written, and an out-of-range index panics with a message instead of corrupting memory."
             }
           ],
           "introducesTerms": [
@@ -2893,7 +2893,7 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "In C, the expression p[2] is defined to mean *(p + 2), and nothing in the language checks that the array behind p has a third element. The same program that reads its own data correctly with p[1] reads whatever happens to lie next in memory with p[5], and the compiler produces code for both without comment."
+              "text": "In C, the expression `p[2]` is defined to mean `*(p + 2)`, and nothing in the language checks that the array behind `p` has a third element. The same program that reads its own data correctly with `p[1]` reads whatever happens to lie next in memory with `p[5]`, and the compiler produces code for both without comment."
             },
             {
               "kind": "paragraph",
@@ -2910,7 +2910,7 @@
         "blocks": [
           {
             "kind": "paragraph",
-            "text": "Adding n to a pointer moves it n elements, so p[i] is *(p + i), and an array passed to a function becomes a pointer whose sizeof is that of an address. The programmer matches malloc with free, and a mistake gives a use after free, a double free or a buffer overflow."
+            "text": "Adding n to a pointer moves it n elements, so `p[i]` is `*(p + i)`, and an array passed to a function becomes a pointer whose `sizeof` is that of an address. The programmer matches `malloc` with `free`, and a mistake gives a use after free, a double free or a buffer overflow."
           },
           {
             "kind": "paragraph",
@@ -2969,7 +2969,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "When a program wants something that only the kernel can do, such as writing text to a terminal, it makes a **system call**. The call write(1, buf, 5) asks the kernel to write five bytes, taken from the memory at buf, to the file with the number 1, which is the terminal's output. The processor switches to kernel mode, the kernel checks the request and copies the bytes, and it returns the number of bytes written, 5, after which the program carries on in user mode."
+              "text": "When a program wants something that only the kernel can do, such as writing text to a terminal, it makes a **system call**. The call `write(1, buf, 5)` asks the kernel to write five bytes, taken from the memory at `buf`, to the file with the number 1, which is the terminal's output. The processor switches to kernel mode, the kernel checks the request and copies the bytes, and it returns the number of bytes written, 5, after which the program carries on in user mode."
             },
             {
               "kind": "paragraph",
@@ -3025,7 +3025,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The way to start a new process on Unix is the system call fork. It duplicates the process that calls it: the new process, called the **child**, starts as a copy of the original, called the **parent**, with the same code, the same variables and the same place in the program, so both continue from the line after the call. Because the two are identical, they need a way to tell themselves apart, and fork supplies it by returning a different value in each: the parent receives the child's pid, and the child receives 0."
+              "text": "The way to start a new process on Unix is the system call `fork`. It duplicates the process that calls it: the new process, called the **child**, starts as a copy of the original, called the **parent**, with the same code, the same variables and the same place in the program, so both continue from the line after the call. Because the two are identical, they need a way to tell themselves apart, and `fork` supplies it by returning a different value in each: the parent receives the child's pid, and the child receives 0."
             },
             {
               "kind": "paragraph",
@@ -3204,7 +3204,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The **exec** family of system calls replaces the program a process is running. The process keeps its pid and its open files, but its code and data are thrown away and replaced by those of a new program, which starts from the beginning. A call to exec does not return when it succeeds, since the code that called it no longer exists. Neither fork nor exec alone starts a new program in a new process, and Unix combines them. A shell forks, the child calls exec to become ls, and the shell continues as the parent."
+              "text": "The **exec** family of system calls replaces the program a process is running. The process keeps its pid and its open files, but its code and data are thrown away and replaced by those of a new program, which starts from the beginning. A call to `exec` does not return when it succeeds, since the code that called it no longer exists. Neither `fork` nor `exec` alone starts a new program in a new process, and Unix combines them. A shell forks, the child calls `exec` to become `ls`, and the shell continues as the parent."
             },
             {
               "kind": "paragraph",
@@ -3342,7 +3342,7 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "In the C line fork(); fork(); printf(\"x\\n\"); there is a single printf, yet the program prints more than one line. Each call to fork makes a copy of the process that calls it, and the copy carries on from the same place, so the printf is run by every process that exists when it is reached."
+              "text": "In the C line `fork(); fork(); printf(\"x\\n\");` there is a single `printf`, yet the program prints more than one line. Each call to `fork` makes a copy of the process that calls it, and the copy carries on from the same place, so the `printf` is run by every process that exists when it is reached."
             },
             {
               "kind": "paragraph",
@@ -3532,7 +3532,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A shell runs the command ls > out.txt with the tools already met. It forks, and in the child it opens out.txt and arranges for descriptor 1 to refer to that file, either by closing 1 and opening the file so that the open returns 1, or by calling dup2, which makes one descriptor refer to the same object as another. It then calls exec, which keeps the descriptor table, and ls starts running."
+              "text": "A shell runs the command `ls > out.txt` with the tools already met. It forks, and in the child it opens `out.txt` and arranges for descriptor 1 to refer to that file, either by closing 1 and opening the file so that the open returns 1, or by calling `dup2`, which makes one descriptor refer to the same object as another. It then calls `exec`, which keeps the descriptor table, and `ls` starts running."
             },
             {
               "kind": "paragraph",
@@ -3594,7 +3594,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "printf does not write immediately. The C library keeps a **buffer** in the process's own memory, adds text to it, and calls the system call write once it holds a lot of text, because one large write is cheaper than many small ones. When the output is a terminal, the library flushes the buffer at every newline so that a person sees lines as they appear. When the output is a file or a pipe, it flushes only when the buffer fills or the program exits."
+              "text": "`printf` does not `write` immediately. The C library keeps a **buffer** in the process's own memory, adds text to it, and calls the system call write once it holds a lot of text, because one large write is cheaper than many small ones. When the output is a terminal, the library flushes the buffer at every newline so that a person sees lines as they appear. When the output is a file or a pipe, it flushes only when the buffer fills or the program exits."
             },
             {
               "kind": "paragraph",
@@ -3604,7 +3604,7 @@
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "Standard error is the exception: it is unbuffered, so error text is written at once. That is why an error message can appear on the screen before output that was printed earlier, because the earlier output was still waiting in the buffer. Calling fflush(stdout) before the fork empties the buffer and removes the repetition."
+              "text": "Standard error is the exception: it is unbuffered, so error text is written at once. That is why an error message can appear on the screen before output that was printed earlier, because the earlier output was still waiting in the buffer. Calling `fflush(stdout)` before the fork empties the buffer and removes the repetition."
             }
           ],
           "introducesTerms": [
@@ -3646,7 +3646,7 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "od -c, a tool that prints each byte of its input, would show the six characters h i ! h i !."
+              "text": "`od -c`, a tool that prints each byte of its input, would show the six characters `h i ! h i !`."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -3662,11 +3662,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Rust's standard output keeps a buffer that is flushed at each newline, so print! with no newline may wait while println! does not. A BufWriter wraps any writer in a larger buffer of your own, which gathers many small writes into few, and it must be flushed, either by calling flush or by dropping the BufWriter. The program in the figure writes two lines through a BufWriter and flushes it."
+              "text": "Rust's standard output keeps a buffer that is flushed at each newline, so `print!` with no newline may wait while `println!` does not. A `BufWriter` wraps any writer in a larger buffer of your own, which gathers many small writes into few, and it must be flushed, either by calling `flush` or by dropping the `BufWriter`. The program in the figure writes two lines through a `BufWriter` and flushes it."
             },
             {
               "kind": "paragraph",
-              "text": "At the bottom of every one of these layers is the system call write(fd, buf, n), which has no buffer in the process at all: the bytes go to the kernel immediately. printf, println! and BufWriter are all ways of making fewer calls to it."
+              "text": "At the bottom of every one of these layers is the system call `write(fd, buf, n)`, which has no buffer in the process at all: the bytes go to the kernel immediately. `printf`, `println!` and `BufWriter` are all ways of making fewer calls to it."
             }
           ],
           "afterFigure": [
@@ -3771,7 +3771,7 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "The two lines printf(\"hi\\n\"); fork(); print hi once when the program runs at a terminal, yet with its output sent to a file the same program prints it a different number of times, although the source has not changed. The difference lies in where the text waits before it leaves the process, and in what the process uses to refer to its output at all."
+              "text": "The two lines `printf(\"hi\\n\"); fork();` print `hi` once when the program runs at a terminal, yet with its output sent to a file the same program prints it a different number of times, although the source has not changed. The difference lies in where the text waits before it leaves the process, and in what the process uses to refer to its output at all."
             },
             {
               "kind": "paragraph",
@@ -3896,7 +3896,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The line counter += 1 looks like one indivisible step, but a processor performs it in three: it **loads** the counter from memory into a register, **adds** one in the register, and **stores** the register back. If two threads run these steps one after the other, the counter ends at 2. If they overlap, both can load 0 before either has stored, both then compute 1, and both store 1, so the second store overwrites the first and an increment is lost."
+              "text": "The line `counter += 1` looks like one indivisible step, but a processor performs it in three: it **loads** the counter from memory into a register, **adds** one in the register, and **stores** the register back. If two threads run these steps one after the other, the counter ends at 2. If they overlap, both can load 0 before either has stored, both then compute 1, and both store 1, so the second store overwrites the first and an increment is lost."
             },
             {
               "kind": "paragraph",
@@ -3959,7 +3959,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Rust does not wait for the program to run before dealing with such sharing. A closure passed to thread::spawn may keep running after the function that started it has returned, so it cannot be allowed to borrow that function's local variables, which would be gone by then. When it tries, rustc reports **E0373**, closure may outlive the current function, and suggests the move keyword, which gives the closure ownership of the variable."
+              "text": "Rust does not wait for the program to run before dealing with such sharing. A closure passed to `thread::spawn` may keep running after the function that started it has returned, so it cannot be allowed to borrow that function's local variables, which would be gone by then. When it tries, rustc reports **E0373**, closure may outlive the current function, and suggests the `move` keyword, which gives the closure ownership of the variable."
             },
             {
               "kind": "paragraph",
@@ -3994,17 +3994,17 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A **Mutex**, short for mutual exclusion, wraps a value and allows only one thread at a time to use it. A thread calls lock, which waits until the value is free and returns a *guard* that gives access to it, and the lock is released when the guard is dropped, which for a statement such as *counter.lock().unwrap() += 1; is at the semicolon."
+              "text": "A **Mutex**, short for mutual exclusion, wraps a value and allows only one thread at a time to use it. A thread calls `lock`, which waits until the value is free and returns a *guard* that gives access to it, and the lock is released when the guard is dropped, which for a statement such as `*counter.lock().unwrap() += 1;` is at the semicolon."
             },
             {
               "kind": "paragraph",
-              "text": "A Mutex still needs an owner in every thread, and a value can have only one. **Arc**, an atomically reference-counted pointer, solves this: cloning an Arc does not copy the value but makes another owner of it and adds one to a count, and the value is freed when the last owner is dropped. The pattern is Arc<Mutex<T>>, with one clone of the Arc moved into each thread, as in the figure, where three threads each add one a thousand times."
+              "text": "A `Mutex` still needs an owner in every thread, and a value can have only one. **Arc**, an atomically reference-counted pointer, solves this: cloning an `Arc` does not copy the value but makes another owner of it and adds one to a count, and the value is freed when the last owner is dropped. The pattern is `Arc<Mutex<T>>`, with one clone of the `Arc` moved into each thread, as in the figure, where three threads each add one a thousand times."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "The result is 3000 on every run, since the lock forces each increment to finish before the next begins. The price is that threads wait for each other, so locks are best held briefly. For a single integer, the atomic types such as AtomicUsize, whose fetch_add is one indivisible step, avoid the lock altogether."
+              "text": "The result is 3000 on every run, since the lock forces each increment to finish before the next begins. The price is that threads wait for each other, so locks are best held briefly. For a single integer, the atomic types such as `AtomicUsize`, whose `fetch_add` is one indivisible step, avoid the lock altogether."
             }
           ],
           "introducesTerms": [
@@ -4064,11 +4064,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "It is tempting to put the counter in a Mutex and to move it into each thread. The first closure that is created takes the Mutex by value, and the loop then reaches the second thread with nothing left to give it, so rustc reports the use of a moved value, **E0382**, exactly as for any other move. The figure shows this program."
+              "text": "It is tempting to put the counter in a `Mutex` and to move it into each thread. The first closure that is created takes the `Mutex` by value, and the loop then reaches the second thread with nothing left to give it, so rustc reports the use of a moved value, **E0382**, exactly as for any other move. The figure shows this program."
             },
             {
               "kind": "paragraph",
-              "text": "The error says what is missing: more than one owner. Arc supplies the owners, and Mutex supplies the exclusion, and neither does the other's job. A Vec that several threads add to, or any value shared in the same way, takes the same Arc<Mutex<T>> treatment."
+              "text": "The error says what is missing: more than one owner. `Arc` supplies the owners, and `Mutex` supplies the exclusion, and neither does the other's job. A `Vec` that several threads add to, or any value shared in the same way, takes the same `Arc<Mutex<T>>` treatment."
             }
           ],
           "afterFigure": [
@@ -4207,7 +4207,7 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "Run the statement counter += 1 a million times in each of two threads, and you might expect to find two million in the counter. A C program that does this typically ends well below that figure, and a different one each time it runs, with no warning from the language, the compiler or the machine."
+              "text": "Run the statement `counter += 1` a million times in each of two threads, and you might expect to find two million in the counter. A C program that does this typically ends well below that figure, and a different one each time it runs, with no warning from the language, the compiler or the machine."
             },
             {
               "kind": "paragraph",
@@ -4220,7 +4220,7 @@
         "whyItMatters": "Sharing memory between threads is where most concurrency bugs begin."
       },
       "recap": {
-        "keyIdea": "Threads share memory, an unsynchronised counter loses updates because += is three steps, and Rust requires Arc<Mutex<T>> for data that several threads change.",
+        "keyIdea": "Threads share memory, an unsynchronised counter loses updates because `+=` is three steps, and Rust requires `Arc<Mutex<T>>` for data that several threads change.",
         "blocks": [
           {
             "kind": "paragraph",
@@ -5450,7 +5450,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The rules of the last lessons let the compiler prove that a program has no use after free and no data race. Some necessary work cannot be proved that way: reaching hardware at a fixed address, calling the operating system, using a library written in C, or writing a Vec, whose buffer is managed with pointers. For these Rust has an escape hatch, the **unsafe block**, in which five operations are allowed that safe code cannot do."
+              "text": "The rules of the last lessons let the compiler prove that a program has no use after free and no data race. Some necessary work cannot be proved that way: reaching hardware at a fixed address, calling the operating system, using a library written in C, or writing a `Vec`, whose buffer is managed with pointers. For these Rust has an escape hatch, the **unsafe block**, in which five operations are allowed that safe code cannot do."
             },
             {
               "kind": "paragraph",
@@ -5494,11 +5494,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A reference, as the lesson on borrowing showed, is checked: it is never dangling and it obeys the aliasing rule. Rust also has **raw pointers**, written *const T and *mut T, which carry none of those promises. A raw pointer may be null, may point at freed memory, and may alias another pointer, much like a pointer in C. The expression &x as *const i32 makes one from a reference, and is allowed anywhere, since a pointer that is never used does no harm."
+              "text": "A reference, as the lesson on borrowing showed, is checked: it is never dangling and it obeys the aliasing rule. Rust also has **raw pointers**, written `*const T` and `*mut T`, which carry none of those promises. A raw pointer may be null, may point at freed memory, and may alias another pointer, much like a pointer in C. The expression `&x as *const i32` makes one from a reference, and is allowed anywhere, since a pointer that is never used does no harm."
             },
             {
               "kind": "paragraph",
-              "text": "Using the pointer is another matter. Dereferencing it with * reads memory through an address that nobody has checked, so Rust requires an unsafe block, and the figure shows the error, E0133, when it is missing. The compiler's note names the three ways a raw pointer can go wrong: it may be null, dangling or unaligned."
+              "text": "Using the pointer is another matter. Dereferencing it with `*` reads memory through an address that nobody has checked, so Rust requires an `unsafe` block, and the figure shows the error, E0133, when it is missing. The compiler's note names the three ways a raw pointer can go wrong: it may be null, dangling or unaligned."
             }
           ],
           "afterFigure": [
@@ -5607,7 +5607,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "To call a function written in C, Rust needs to be told its name and its type. A block written unsafe extern \"C\" does this: inside it, a line such as fn abs(x: i32) -> i32; declares a function that is provided elsewhere, and the linker, the tool that joins compiled code into one program, connects it to the C library. The types must match what C uses: a C int is an i32, a size_t is a usize, and a const char * is a *const c_char, where c_char is a type in std::ffi for a C character."
+              "text": "To call a function written in C, Rust needs to be told its name and its type. A block written `unsafe extern \"C\"` does this: inside it, a line such as `fn abs(x: i32) -> i32;` declares a function that is provided elsewhere, and the linker, the tool that joins compiled code into one program, connects it to the C library. The types must match what C uses: a C `int` is an `i32`, a `size_t` is a `usize`, and a `const char *` is a `*const c_char`, where `c_char` is a type in `std::ffi` for a C character."
             },
             {
               "kind": "paragraph",
@@ -5645,7 +5645,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The documentation of a C function states what it requires. The manual page for strlen says that its argument must point to a string that ends with a zero byte, the NUL, and strlen reads bytes until it finds one. If the pointer is null, if it points to freed memory, or if the bytes have no terminator, strlen reads on past the data, which is undefined behaviour. This requirement is the function's **contract**."
+              "text": "The documentation of a C function states what it requires. The manual page for `strlen` says that its argument must point to a string that ends with a zero byte, the NUL, and `strlen` reads bytes until it finds one. If the pointer is null, if it points to freed memory, or if the bytes have no terminator, `strlen` reads on past the data, which is undefined behaviour. This requirement is the function's **contract**."
             },
             {
               "kind": "paragraph",
@@ -5655,7 +5655,7 @@
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "Structures that cross the boundary need the same care. A struct that C reads must have C's layout, which is the reason for the repr(C) attribute of the lesson on layout: without it, Rust is free to reorder the fields, and C would read them in the wrong places."
+              "text": "Structures that cross the boundary need the same care. A struct that C reads must have C's layout, which is the reason for the `repr(C)` attribute of the lesson on layout: without it, Rust is free to reorder the fields, and C would read them in the wrong places."
             }
           ],
           "introducesTerms": [
@@ -5690,11 +5690,11 @@
           "headline": "Write the Rust declaration for C's size_t strlen(const char *s).",
           "workedSteps": [
             {
-              "text": "The function takes a const char *, which is a pointer to C characters, and Rust's name for that is *const c_char.",
+              "text": "The function takes a `const char *`, which is a pointer to C characters, and Rust's name for that is `*const c_char`.",
               "math": "s: *const c_char"
             },
             {
-              "text": "The function returns a size_t. Name the Rust type of the same width.",
+              "text": "The function returns a `size_t`. Name the Rust type of the same width.",
               "blank": {
                 "questionId": "sysp-unsafe-rust-and-the-c-boundary-c-size-t"
               }
@@ -5717,11 +5717,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A program that calls strlen from many places would carry the contract with it everywhere. It is better to write one safe function that makes the contract true by construction, and have the rest of the program call that. Here c_length takes a &str, copies it into a CString, a type that guarantees a terminating NUL and refuses a string with a NUL inside it, and passes the pointer on."
+              "text": "A program that calls `strlen` from many places would carry the contract with it everywhere. It is better to write one safe function that makes the contract true by construction, and have the rest of the program call that. Here `c_length` takes a `&str`, copies it into a `CString`, a type that guarantees a terminating NUL and refuses a string with a NUL inside it, and passes the pointer on."
             },
             {
               "kind": "paragraph",
-              "text": "In the figure, c_length(\"hello\") returns Some(5). The string \"a\\0b\" contains a NUL, so CString::new fails and the function returns None instead of calling C with a string that strlen would cut short. The unsafe block is a single line, and the reasons it is sound are all within sight of it."
+              "text": "In the figure, `c_length(\"hello\")` returns `Some(5)`. The string `\"a\\0b\"` contains a NUL, so `CString::new` fails and the function returns `None` instead of calling C with a string that `strlen` would cut short. The unsafe block is a single line, and the reasons it is sound are all within sight of it."
             }
           ],
           "afterFigure": [
@@ -5811,7 +5811,7 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "Every Rust program already depends on code that is not Rust. When println! prints a line, the standard library eventually calls the operating system's write, and on Linux it does so through the C library, which is a layer that Rust's own rules do not cover."
+              "text": "Every Rust program already depends on code that is not Rust. When `println!` prints a line, the standard library eventually calls the operating system's `write`, and on Linux it does so through the C library, which is a layer that Rust's own rules do not cover."
             },
             {
               "kind": "paragraph",
@@ -6083,7 +6083,7 @@
         "twos-complement",
         "endianness"
       ],
-      "prompt": "In the program shown, a u8 holds 250, and the first println! prints a.wrapping_add(10), which keeps only the bits that fit in a u8. What does it print?",
+      "prompt": "In the program shown, a `u8` holds 250, and the first `println!` prints `a.wrapping_add(10)`, which keeps only the bits that fit in a `u8`. What does it print?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -6096,7 +6096,7 @@
         "rust-ref",
         "csapp"
       ],
-      "onCorrect": "wrapping_add keeps the result modulo 256, so 250 + 10 = 260 becomes 260 − 256 = 4.",
+      "onCorrect": "`wrapping_add` keeps the result modulo 256, so 250 + 10 = 260 becomes 260 − 256 = 4.",
       "skill": "predict-overflow-behaviour",
       "calculator": "off",
       "answerAuthority": {
@@ -6122,7 +6122,7 @@
               "b"
             ]
           },
-          "feedback": "Stopping at the largest value is what saturating_add does, on the second line. wrapping_add keeps the bits that fit."
+          "feedback": "Stopping at the largest value is what `saturating_add` does, on the second line. `wrapping_add` keeps the bits that fit."
         },
         {
           "match": {
@@ -6130,7 +6130,7 @@
               "d"
             ]
           },
-          "feedback": "wrapping_add never reports a problem, and a plain + would be the one to panic in a debug build. This method simply drops the bit that does not fit."
+          "feedback": "`wrapping_add` never reports a problem, and a plain `+` would be the one to panic in a debug build. This method simply drops the bit that does not fit."
         }
       ],
       "choices": [
@@ -6171,7 +6171,7 @@
         "rust-ref",
         "csapp"
       ],
-      "onCorrect": "checked_add returns Some(result) when the sum fits and None when it does not.",
+      "onCorrect": "`checked_add` returns `Some(result)` when the sum fits and `None` when it does not.",
       "skill": "predict-overflow-behaviour",
       "calculator": "off",
       "answerAuthority": {
@@ -6185,19 +6185,19 @@
       "choices": [
         {
           "id": "c",
-          "label": "checked_add"
+          "label": "`checked_add`"
         },
         {
           "id": "a",
-          "label": "wrapping_add"
+          "label": "`wrapping_add`"
         },
         {
           "id": "b",
-          "label": "saturating_add"
+          "label": "`saturating_add`"
         },
         {
           "id": "d",
-          "label": "overflowing_add"
+          "label": "`overflowing_add`"
         }
       ],
       "misconceptions": [
@@ -6207,7 +6207,7 @@
               "a"
             ]
           },
-          "feedback": "wrapping_add always returns a number: the result modulo 256, which is 0 here."
+          "feedback": "`wrapping_add` always returns a number: the result modulo 256, which is 0 here."
         },
         {
           "match": {
@@ -6215,7 +6215,7 @@
               "b"
             ]
           },
-          "feedback": "saturating_add returns the largest value, 255 here, not None."
+          "feedback": "`saturating_add` returns the largest value, 255 here, not `None`."
         },
         {
           "match": {
@@ -6223,7 +6223,7 @@
               "d"
             ]
           },
-          "feedback": "overflowing_add returns a pair of the wrapped value and a flag, here (0, true)."
+          "feedback": "`overflowing_add` returns a pair of the wrapped value and a flag, here `(0, true)`."
         }
       ]
     },
@@ -6234,7 +6234,7 @@
         "twos-complement",
         "endianness"
       ],
-      "prompt": "What does 127i8.wrapping_add(1) return?",
+      "prompt": "What does `127i8.wrapping_add(1)` return?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -6248,7 +6248,7 @@
         "rust-ref",
         "csapp"
       ],
-      "onCorrect": "01111111 plus one is 10000000, which an i8 reads as 128 − 256 = -128.",
+      "onCorrect": "01111111 plus one is 10000000, which an `i8` reads as 128 − 256 = -128.",
       "skill": "predict-overflow-behaviour",
       "calculator": "off",
       "answerAuthority": {
@@ -6282,7 +6282,7 @@
               127
             ]
           },
-          "feedback": "That is what saturating_add would give. wrapping_add lets the pattern roll over."
+          "feedback": "That is what `saturating_add` would give. `wrapping_add` lets the pattern roll over."
         }
       ]
     },
@@ -6352,12 +6352,12 @@
         "twos-complement",
         "endianness"
       ],
-      "prompt": "A u8 holds 250. What does 250u8.wrapping_add(250) return?",
+      "prompt": "A `u8` holds 250. What does `250u8.wrapping_add(250)` return?",
       "responseType": "numeric",
       "difficulty": 1.2,
       "hints": [
         "The true sum is 500, which does not fit in a u8.",
-        "wrapping_add keeps the sum modulo 256.",
+        "`wrapping_add` keeps the sum modulo 256.",
         "Subtract 256 once from the true sum."
       ],
       "sourceIds": [
@@ -6366,7 +6366,7 @@
         "rust-ref",
         "csapp"
       ],
-      "onCorrect": "wrapping_add keeps the sum modulo 256, and 500 − 256 = 244.",
+      "onCorrect": "`wrapping_add` keeps the sum modulo 256, and 500 − 256 = 244.",
       "skill": "predict-overflow-behaviour",
       "calculator": "off",
       "answerAuthority": {
@@ -6384,7 +6384,7 @@
               500
             ]
           },
-          "feedback": "A u8 cannot hold 500. wrapping_add drops what carries out of the top bit."
+          "feedback": "A `u8` cannot hold 500. `wrapping_add` drops what carries out of the top bit."
         },
         {
           "match": {
@@ -6392,7 +6392,7 @@
               255
             ]
           },
-          "feedback": "That is saturating_add, which stops at the largest value."
+          "feedback": "That is `saturating_add`, which stops at the largest value."
         },
         {
           "match": {
@@ -6411,11 +6411,11 @@
         "twos-complement",
         "endianness"
       ],
-      "prompt": "Write fn byte_at(value: u32, index: usize) -> u8 that returns the byte stored at offset index when value is laid out little-endian. byte_at(0x01020304, 0) is 4 and byte_at(0x01020304, 3) is 1.",
+      "prompt": "Write `fn byte_at(value: u32, index: usize) -> u8` that returns the byte stored at offset `index` when `value` is laid out little-endian. `byte_at(0x01020304, 0)` is 4 and `byte_at(0x01020304, 3)` is 1.",
       "responseType": "code",
       "difficulty": 1.5,
       "hints": [
-        "to_le_bytes returns an array of four bytes in little-endian order.",
+        "`to_le_bytes` returns an array of four bytes in little-endian order.",
         "Index that array with index."
       ],
       "sourceIds": [
@@ -6424,7 +6424,7 @@
         "rust-ref",
         "csapp"
       ],
-      "onCorrect": "to_le_bytes gives the bytes in memory order, so the array index is the byte's offset.",
+      "onCorrect": "`to_le_bytes` gives the bytes in memory order, so the array index is the byte's offset.",
       "skill": "convert-hex-and-binary",
       "calculator": "off",
       "answerAuthority": {
@@ -6602,7 +6602,7 @@
         "padding",
         "repr-c"
       ],
-      "prompt": "What is size_of::<S>() for #[repr(C)] struct S { a: u8, b: u32, c: u8 }?",
+      "prompt": "What is `size_of::<S>()` for `#[repr(C)] struct S { a: u8, b: u32, c: u8 }`?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -6625,7 +6625,7 @@
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "a occupies byte 0, b bytes 4 to 7, c byte 8, so the data ends at 9, and round_up(9, 4) = 12."
+        "workedAnswer": "`a` occupies byte 0, `b` bytes 4 to 7, `c` byte 8, so the data ends at 9, and `round_up(9, 4)` = 12."
       },
       "misconceptions": [
         {
@@ -6661,7 +6661,7 @@
         "padding",
         "repr-c"
       ],
-      "prompt": "In #[repr(C)] struct U { a: u8, b: u16, c: u64 }, what is the byte offset of c?",
+      "prompt": "In `#[repr(C)] struct U { a: u8, b: u16, c: u64 }`, what is the byte offset of `c`?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -6684,7 +6684,7 @@
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "b starts at round_up(1, 2) = 2 and ends at 4, so c starts at round_up(4, 8) = 8."
+        "workedAnswer": "`b` starts at `round_up(1, 2)` = 2 and ends at 4, so `c` starts at `round_up(4, 8)` = 8."
       },
       "misconceptions": [
         {
@@ -6720,7 +6720,7 @@
         "padding",
         "repr-c"
       ],
-      "prompt": "The struct S { a: u8, b: u32, c: u8 } in the worked example is 12 bytes with #[repr(C)]. The program declares the same three fields in the order a, c, b. How does its size compare with 12?",
+      "prompt": "The `struct S { a: u8, b: u32, c: u8 }` in the worked example is 12 bytes with `#[repr(C)]`. The program declares the same three fields in the order `a`, `c`, `b`. How does its size compare with 12?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -6796,7 +6796,7 @@
         "padding",
         "repr-c"
       ],
-      "prompt": "The fields of #[repr(C)] struct T { a: u8, b: u64, c: u16 } are reordered as #[repr(C)] struct T2 { b: u64, c: u16, a: u8 }. What is the size of T2?",
+      "prompt": "The fields of `#[repr(C)] struct T { a: u8, b: u64, c: u16 }` are reordered as `#[repr(C)] struct T2 { b: u64, c: u16, a: u8 }`. What is the size of `T2`?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -6819,7 +6819,7 @@
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "b at 0, c at 8, a at 10, end at 11, and round_up(11, 8) = 16."
+        "workedAnswer": "`b` at 0, `c` at 8, `a` at 10, end at 11, and `round_up(11, 8)` = 16."
       },
       "misconceptions": [
         {
@@ -6855,7 +6855,7 @@
         "padding",
         "repr-c"
       ],
-      "prompt": "In #[repr(C)] struct R { a: u32, b: u8, c: u16 }, what is the byte offset of c?",
+      "prompt": "In `#[repr(C)] struct R { a: u32, b: u8, c: u16 }`, what is the byte offset of `c`?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -6878,7 +6878,7 @@
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "a at 0 to 3, b at 4, c at round_up(5, 2) = 6."
+        "workedAnswer": "`a` at 0 to 3, `b` at 4, `c` at `round_up(5, 2)` = 6."
       },
       "misconceptions": [
         {
@@ -6914,7 +6914,7 @@
         "padding",
         "repr-c"
       ],
-      "prompt": "What is size_of::<A>() for #[repr(C)] struct A { a: u16, b: u64, c: u8 }?",
+      "prompt": "What is `size_of::<A>()` for `#[repr(C)] struct A { a: u16, b: u64, c: u8 }`?",
       "responseType": "numeric",
       "difficulty": 1.3,
       "hints": [
@@ -6928,7 +6928,7 @@
         "csapp",
         "c-ref"
       ],
-      "onCorrect": "The data ends at 17 and round_up(17, 8) = 24.",
+      "onCorrect": "The data ends at 17 and `round_up(17, 8)` = 24.",
       "skill": "compute-offsets",
       "calculator": "off",
       "answerAuthority": {
@@ -6973,12 +6973,12 @@
         "padding",
         "repr-c"
       ],
-      "prompt": "Reorder A to put b first, then a, then c. What is the size of #[repr(C)] struct { b: u64, a: u16, c: u8 }?",
+      "prompt": "Reorder `A` to put `b` first, then `a`, then `c`. What is the size of `#[repr(C)] struct { b: u64, a: u16, c: u8 }`?",
       "responseType": "numeric",
       "difficulty": 1.3,
       "hints": [
         "b occupies bytes 0 to 7.",
-        "a is a u16 and follows b at offset 8; c follows a.",
+        "`a` is a `u16` and follows `b` at offset 8; `c` follows `a`.",
         "The data ends at offset 11, and the alignment is 8."
       ],
       "sourceIds": [
@@ -6996,7 +6996,7 @@
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "b at 0, a at 8, c at 10, end at 11, round_up(11, 8) = 16."
+        "workedAnswer": "`b` at 0, `a` at 8, `c` at 10, end at 11, `round_up(11, 8)` = 16."
       },
       "misconceptions": [
         {
@@ -7032,7 +7032,7 @@
         "padding",
         "repr-c"
       ],
-      "prompt": "Write fn round_up(offset: usize, align: usize) -> usize that returns the smallest multiple of align that is at least offset. round_up(5, 4) is 8 and round_up(13, 8) is 16.",
+      "prompt": "Write `fn round_up(offset: usize, align: usize) -> usize` that returns the smallest multiple of `align` that is at least `offset`. `round_up(5, 4)` is 8 and `round_up(13, 8)` is 16.",
       "responseType": "code",
       "difficulty": 1.5,
       "hints": [
@@ -7214,7 +7214,7 @@
         "heap",
         "fat-value"
       ],
-      "prompt": "A Vec<i32> is created with room for 4 elements, and five values are pushed one after another. After the fifth push, how does its capacity compare with the five elements it now holds?",
+      "prompt": "A `Vec<i32>` is created with room for 4 elements, and five values are pushed one after another. After the fifth push, how does its capacity compare with the five elements it now holds?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -7278,7 +7278,7 @@
         "heap",
         "fat-value"
       ],
-      "prompt": "A Vec<i32> has length 4 and capacity 4. What does the next push do?",
+      "prompt": "A `Vec<i32>` has length 4 and capacity 4. What does the next push do?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -7353,7 +7353,7 @@
         "heap",
         "fat-value"
       ],
-      "prompt": "What is size_of::<String>(), the size of the handle that stands for s, in bytes on a 64-bit target?",
+      "prompt": "What is `size_of::<String>()`, the size of the handle that stands for `s`, in bytes on a 64-bit target?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -7412,7 +7412,7 @@
         "heap",
         "fat-value"
       ],
-      "prompt": "Start with Vec::new() for i32 and push nine values. The capacity is 4 after the first push, 8 after the fifth. What is it after the ninth?",
+      "prompt": "Start with `Vec::new()` for `i32` and push nine values. The capacity is 4 after the first push, 8 after the fifth. What is it after the ninth?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -7471,11 +7471,11 @@
         "heap",
         "fat-value"
       ],
-      "prompt": "A &str is a pointer to text together with the text's length. What is size_of::<&str>() in bytes on a 64-bit target?",
+      "prompt": "A `&str` is a pointer to text together with the text's length. What is `size_of::<&str>()` in bytes on a 64-bit target?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
-        "A String has a pointer, a capacity and a length. A &str has no capacity.",
+        "A `String` has a pointer, a capacity and a length. A `&str` has no capacity.",
         "Each part is 8 bytes on a 64-bit target.",
         "Count two parts."
       ],
@@ -7485,7 +7485,7 @@
         "ostep",
         "csapp"
       ],
-      "onCorrect": "A &str borrows text and does not own the buffer, so it needs only a pointer and a length, which is two 8-byte words.",
+      "onCorrect": "A `&str` borrows text and does not own the buffer, so it needs only a pointer and a length, which is two 8-byte words.",
       "skill": "size-a-handle",
       "calculator": "off",
       "answerAuthority": {
@@ -7503,7 +7503,7 @@
               24
             ]
           },
-          "feedback": "That is the size of a String. A &str borrows its text and records no capacity."
+          "feedback": "That is the size of a `String`. A `&str` borrows its text and records no capacity."
         },
         {
           "match": {
@@ -7530,7 +7530,7 @@
         "heap",
         "fat-value"
       ],
-      "prompt": "A Vec<i32> has capacity 8. How many bytes does its heap buffer occupy?",
+      "prompt": "A `Vec<i32>` has capacity 8. How many bytes does its heap buffer occupy?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -7589,7 +7589,7 @@
         "heap",
         "fat-value"
       ],
-      "prompt": "A Vec<u8> is created with capacity 10 and eleven values are pushed. The library doubles a full buffer. What is the capacity afterwards?",
+      "prompt": "A `Vec<u8>` is created with capacity 10 and eleven values are pushed. The library doubles a full buffer. What is the capacity afterwards?",
       "responseType": "numeric",
       "difficulty": 1.2,
       "hints": [
@@ -7682,18 +7682,18 @@
         "move",
         "drop"
       ],
-      "prompt": "A program creates a String a holding the text x, assigns it to b with let b = a;, and then prints both a and b. What happens when it is compiled?",
+      "prompt": "A program creates a `String` `a` holding the text x, assigns it to `b` with `let b = a;`, and then prints both `a` and `b`. What happens when it is compiled?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Think about what let b = a does to a."
+        "Think about what `let b = a` does to `a`."
       ],
       "sourceIds": [
         "rust-book",
         "rust-errors",
         "rust-ref"
       ],
-      "onCorrect": "After let b = a the name a no longer owns anything, so the compiler rejects the later use of it.",
+      "onCorrect": "After `let b = a` the name `a` no longer owns anything, so the compiler rejects the later use of it.",
       "skill": "spot-use-after-move",
       "calculator": "off",
       "answerAuthority": {
@@ -7756,7 +7756,7 @@
         "move",
         "drop"
       ],
-      "prompt": "In let b = a; where a is a String, how many bytes are copied from a to b? Count only the bytes of the String's handle on a 64-bit target.",
+      "prompt": "In `let b = a;` where `a` is a `String`, how many bytes are copied from `a` to `b`? Count only the bytes of the `String`'s handle on a 64-bit target.",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -7923,7 +7923,7 @@
         "move",
         "drop"
       ],
-      "prompt": "After let c = b.clone(); how many heap buffers hold the text x?",
+      "prompt": "After `let c = b.clone();` how many heap buffers hold the text x?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -7981,7 +7981,7 @@
         "move",
         "drop"
       ],
-      "prompt": "A program declares let x: i32 = 7; and let y = x;, and then prints x + y. What happens?",
+      "prompt": "A program declares `let x: i32 = 7;` and `let y = x;`, and then prints `x + y`. What happens?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -7993,7 +7993,7 @@
         "rust-errors",
         "rust-ref"
       ],
-      "onCorrect": "An i32 is Copy, so let y = x duplicates the value and leaves x valid, and the two variables hold 7 each.",
+      "onCorrect": "An `i32` is `Copy`, so `let y = x` duplicates the value and leaves `x` valid, and the two variables hold 7 each.",
       "skill": "choose-clone-or-move",
       "calculator": "off",
       "answerAuthority": {
@@ -8025,7 +8025,7 @@
       "choices": [
         {
           "id": "c",
-          "label": "It is rejected unless the assignment is written let y = x.clone();"
+          "label": "It is rejected unless the assignment is written `let y = x.clone();`"
         },
         {
           "id": "b",
@@ -8119,7 +8119,7 @@
         "move",
         "drop"
       ],
-      "prompt": "A program has five lines. 1: let a = String::from(\"x\");  2: let b = a;  3: let c = b.len();  4: println!(\"{}\", a);  5: println!(\"{}\", b);  Which is the first line that the compiler rejects?",
+      "prompt": "A program has five lines. 1: `let a = String::from(\"x\");`  2: `let b = a;`  3: `let c = b.len();`  4: `println!(\"{}\", a);`  5: `println!(\"{}\", b);`  Which is the first line that the compiler rejects?",
       "responseType": "short_text",
       "difficulty": 1.3,
       "hints": [
@@ -8175,7 +8175,7 @@
         },
         {
           "id": "b",
-          "label": "Line 3, where b.len() is called"
+          "label": "Line 3, where `b.len()` is called"
         },
         {
           "id": "a",
@@ -8194,12 +8194,12 @@
         "move",
         "drop"
       ],
-      "prompt": "Write fn append_all(mut base: String, parts: Vec<String>) -> String that appends a comma and then each part to base, and returns base. append_all(\"a\".to_string(), vec![\"b\".to_string(), \"c\".to_string()]) is \"a,b,c\".",
+      "prompt": "Write `fn append_all(mut base: String, parts: Vec<String>) -> String` that appends a comma and then each part to `base`, and returns `base`. `append_all(\"a\".to_string(), vec![\"b\".to_string(), \"c\".to_string()])` is `\"a,b,c\"`.",
       "responseType": "code",
       "difficulty": 1.5,
       "hints": [
         "The function owns base and parts, so it can change one and consume the other.",
-        "Loop over parts, push a comma, then push_str the part."
+        "Loop over `parts`, `push` a comma, then `push_str` the part."
       ],
       "sourceIds": [
         "rust-book",
@@ -8487,7 +8487,7 @@
         "aliasing-rule",
         "lifetime"
       ],
-      "prompt": "What does the lifetime annotation 'a in longest<'a> do?",
+      "prompt": "What does the lifetime annotation `'a` in `longest<'a>` do?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -8561,7 +8561,7 @@
         "aliasing-rule",
         "lifetime"
       ],
-      "prompt": "A program creates a Vec v holding the number 1, takes a shared reference f to its first element, and prints f. It then pushes 2 onto v and prints v.len(). What happens?",
+      "prompt": "A program creates a `Vec` `v` holding the number 1, takes a shared reference `f` to its first element, and prints `f`. It then pushes 2 onto `v` and prints `v.len()`. What happens?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -8629,7 +8629,7 @@
       "difficulty": 1,
       "hints": [
         "A borrow lasts until the last line that uses the reference, not to the end of the block.",
-        "f is created by the line let f = &v[0];.",
+        "`f` is created by the line `let f = &v[0];`.",
         "The print, now on line 3, is the only line that uses f."
       ],
       "sourceIds": [
@@ -8682,7 +8682,7 @@
         "aliasing-rule",
         "lifetime"
       ],
-      "prompt": "In fn pick<'a>(x: &'a str, y: &'a str, z: &str) -> &'a str, which parameters is the returned reference tied to?",
+      "prompt": "In `fn pick<'a>(x: &'a str, y: &'a str, z: &str) -> &'a str`, which parameters is the returned reference tied to?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -8849,12 +8849,12 @@
         "aliasing-rule",
         "lifetime"
       ],
-      "prompt": "Write fn longest<'a>(a: &'a str, b: &'a str) -> &'a str that returns the longer string, or a if they have equal length. longest(\"pear\", \"fig\") is \"pear\".",
+      "prompt": "Write `fn longest<'a>(a: &'a str, b: &'a str) -> &'a str` that returns the longer string, or `a` if they have equal length. `longest(\"pear\", \"fig\")` is `\"pear\"`.",
       "responseType": "code",
       "difficulty": 1.5,
       "hints": [
-        "Compare the lengths with len().",
-        "Use >= so that equal lengths return a."
+        "Compare the lengths with `len()`.",
+        "Use `>=` so that equal lengths return `a`."
       ],
       "sourceIds": [
         "rust-book",
@@ -8929,11 +8929,11 @@
         "array-decay",
         "undefined-behaviour"
       ],
-      "prompt": "int x = 7; int *p = &x; *p = *p + 5;   What is x afterwards?",
+      "prompt": "`int x = 7; int *p = &x; *p = *p + 5;`   What is `x` afterwards?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
-        "p holds the address of x, so *p is x itself.",
+        "`p` holds the address of `x`, so `*p` is `x` itself.",
         "The assignment writes the new value through p into x.",
         "The right-hand side reads 7 through p and adds 5."
       ],
@@ -8943,7 +8943,7 @@
         "asan",
         "man-pages"
       ],
-      "onCorrect": "Writing through *p changes the object p points at, so x itself becomes 12.",
+      "onCorrect": "Writing through `*p` changes the object `p` points at, so `x` itself becomes 12.",
       "skill": "do-pointer-arithmetic",
       "calculator": "off",
       "answerAuthority": {
@@ -8952,7 +8952,7 @@
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "*p is x, so x = x + 5 = 12."
+        "workedAnswer": "`*p` is `x`, so `x = x + 5` = 12."
       },
       "misconceptions": [
         {
@@ -8977,7 +8977,7 @@
               0
             ]
           },
-          "feedback": "x keeps a value; it becomes the old value plus 5."
+          "feedback": "`x` keeps a value; it becomes the old value plus 5."
         }
       ]
     },
@@ -8988,13 +8988,13 @@
         "array-decay",
         "undefined-behaviour"
       ],
-      "prompt": "int p[4] = {4, 9, 16, 25}; int *q = p;   What is *(q + 3)?",
+      "prompt": "`int p[4] = {4, 9, 16, 25}; int *q = p;`   What is `*(q + 3)`?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
         "q + 3 points three ints past the start of p.",
-        "That is the same element as p[3].",
-        "Counting from p[0], the elements are in the order written."
+        "That is the same element as `p[3]`.",
+        "Counting from `p[0]`, the elements are in the order written."
       ],
       "sourceIds": [
         "c-ref",
@@ -9002,7 +9002,7 @@
         "asan",
         "man-pages"
       ],
-      "onCorrect": "q + 3 is the address of the fourth int, and * reads the value stored there.",
+      "onCorrect": "`q + 3` is the address of the fourth `int`, and `*` reads the value stored there.",
       "skill": "do-pointer-arithmetic",
       "calculator": "off",
       "answerAuthority": {
@@ -9011,7 +9011,7 @@
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "*(q + 3) is p[3], which is 25."
+        "workedAnswer": "`*(q + 3)` is `p[3]`, which is 25."
       },
       "misconceptions": [
         {
@@ -9020,7 +9020,7 @@
               16
             ]
           },
-          "feedback": "That is p[2], which is *(q + 2). Adding 3 moves three elements."
+          "feedback": "That is `p[2]`, which is `*(q + 2)`. Adding 3 moves three elements."
         },
         {
           "match": {
@@ -9036,7 +9036,7 @@
               4
             ]
           },
-          "feedback": "That is *q, with no offset."
+          "feedback": "That is `*q`, with no offset."
         }
       ]
     },
@@ -9047,12 +9047,12 @@
         "array-decay",
         "undefined-behaviour"
       ],
-      "prompt": "void f(int a[]) { printf(\"%zu\", sizeof(a)); } is called with an int array of 10 elements, on a 64-bit Linux target where an int is 4 bytes. What does it print?",
+      "prompt": "`void f(int a[]) { printf(\"%zu\", sizeof(a)); }` is called with an `int` array of 10 elements, on a 64-bit Linux target where an `int` is 4 bytes. What does it print?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
         "Think about what the compiler really receives when an array is passed to a function.",
-        "A function parameter written int a[] is adjusted to another type.",
+        "A function parameter written `int a[]` is adjusted to another type.",
         "The type is a pointer, and every pointer has the same fixed size on a given target."
       ],
       "sourceIds": [
@@ -9061,7 +9061,7 @@
         "asan",
         "man-pages"
       ],
-      "onCorrect": "The parameter a is really an int *, so sizeof(a) is the size of a pointer, 8 bytes here, whatever the array's length.",
+      "onCorrect": "The parameter `a` is really an `int *`, so `sizeof(a)` is the size of a pointer, 8 bytes here, whatever the array's length.",
       "skill": "explain-array-decay",
       "calculator": "off",
       "answerAuthority": {
@@ -9079,7 +9079,7 @@
               "a"
             ]
           },
-          "feedback": "That is sizeof of the array where it is declared. In a parameter, int a[] is adjusted to int *a, so sizeof reports the pointer."
+          "feedback": "That is `sizeof` of the array where it is declared. In a parameter, `int a[]` is adjusted to `int *a`, so `sizeof` reports the pointer."
         },
         {
           "match": {
@@ -9124,7 +9124,7 @@
         "array-decay",
         "undefined-behaviour"
       ],
-      "prompt": "int arr[16]; Where it is declared, what is sizeof(arr), on a target where an int is 4 bytes?",
+      "prompt": "`int arr[16];` Where it is declared, what is `sizeof(arr)`, on a target where an `int` is 4 bytes?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -9183,7 +9183,7 @@
         "array-decay",
         "undefined-behaviour"
       ],
-      "prompt": "int p[6] = {10, 20, 30, 40, 50, 60}; int *q = p;   How many bytes are there from q to q + 5, on a target where an int is 4 bytes?",
+      "prompt": "`int p[6] = {10, 20, 30, 40, 50, 60}; int *q = p;`   How many bytes are there from `q` to `q + 5`, on a target where an `int` is 4 bytes?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -9242,7 +9242,7 @@
         "array-decay",
         "undefined-behaviour"
       ],
-      "prompt": "int *p = malloc(sizeof *p); *p = 7; free(p); printf(\"%d\", *p);   What is wrong with this fragment?",
+      "prompt": "`int *p = malloc(sizeof *p); *p = 7; free(p); printf(\"%d\", *p);`   What is wrong with this fragment?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -9317,7 +9317,7 @@
         "array-decay",
         "undefined-behaviour"
       ],
-      "prompt": "int *p = malloc(sizeof *p); free(p); free(p);   What is the name of this fault?",
+      "prompt": "`int *p = malloc(sizeof *p); free(p); free(p);`   What is the name of this fault?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -9353,7 +9353,7 @@
         "array-decay",
         "undefined-behaviour"
       ],
-      "prompt": "double d[5]; double *r = d;   How many bytes are there from r to r + 3, on a target where a double is 8 bytes?",
+      "prompt": "`double d[5]; double *r = d;`   How many bytes are there from `r` to `r + 3`, on a target where a `double` is 8 bytes?",
       "responseType": "numeric",
       "difficulty": 1.2,
       "hints": [
@@ -9412,7 +9412,7 @@
         "array-decay",
         "undefined-behaviour"
       ],
-      "prompt": "short s[7]; Where it is declared, what is sizeof(s), on a target where a short is 2 bytes?",
+      "prompt": "`short s[7];` Where it is declared, what is `sizeof(s)`, on a target where a `short` is 2 bytes?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -9471,7 +9471,7 @@
         "array-decay",
         "undefined-behaviour"
       ],
-      "prompt": "int *a = malloc(4 * sizeof *a); a[4] = 1;   What is the name of this fault?",
+      "prompt": "`int *a = malloc(4 * sizeof *a); a[4] = 1;`   What is the name of this fault?",
       "responseType": "short_text",
       "difficulty": 1.2,
       "hints": [
@@ -9646,7 +9646,7 @@
         "system-call",
         "fork-exec"
       ],
-      "prompt": "A C program calls fork() twice in a row, with no conditions, and then calls printf once to print a line. Every process that exists after a fork continues to the next line. How many lines does the program print?",
+      "prompt": "A C program calls `fork()` twice in a row, with no conditions, and then calls `printf` once to print a line. Every process that exists after a fork continues to the next line. How many lines does the program print?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -9721,7 +9721,7 @@
         "system-call",
         "fork-exec"
       ],
-      "prompt": "A C program calls fork() four times in a row, with no conditions. How many processes exist afterwards, counting the original?",
+      "prompt": "A C program calls `fork()` four times in a row, with no conditions. How many processes exist afterwards, counting the original?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -9779,7 +9779,7 @@
         "system-call",
         "fork-exec"
       ],
-      "prompt": "if (fork() == 0) { fork(); }   How many processes exist afterwards, counting the original?",
+      "prompt": "`if (fork() == 0) { fork(); }`   How many processes exist afterwards, counting the original?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -9837,7 +9837,7 @@
         "system-call",
         "fork-exec"
       ],
-      "prompt": "Count the processes that exist after fork(); if (fork() == 0) { fork(); }",
+      "prompt": "Count the processes that exist after `fork(); if (fork() == 0) { fork(); }`",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -9895,7 +9895,7 @@
         "system-call",
         "fork-exec"
       ],
-      "prompt": "int x = 1; if (fork() == 0) { x = 5; _exit(0); } wait(NULL); printf(\"%d\", x);   The child changes x and exits, and the parent then waits and prints x. What does the parent print?",
+      "prompt": "`int x = 1; if (fork() == 0) { x = 5; _exit(0); } wait(NULL); printf(\"%d\", x);`   The child changes `x` and exits, and the parent then waits and prints `x`. What does the parent print?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -9942,7 +9942,7 @@
               6
             ]
           },
-          "feedback": "The two copies are not added; each process has its own x."
+          "feedback": "The two copies are not added; each process has its own `x`."
         }
       ]
     },
@@ -9953,7 +9953,7 @@
         "system-call",
         "fork-exec"
       ],
-      "prompt": "A C program calls fork() five times in a row, with no conditions. How many processes exist afterwards, counting the original?",
+      "prompt": "A C program calls `fork()` five times in a row, with no conditions. How many processes exist afterwards, counting the original?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -10011,7 +10011,7 @@
         "system-call",
         "fork-exec"
       ],
-      "prompt": "if (fork() == 0) { fork(); fork(); }   How many processes exist afterwards, counting the original?",
+      "prompt": "`if (fork() == 0) { fork(); fork(); }`   How many processes exist afterwards, counting the original?",
       "responseType": "numeric",
       "difficulty": 1.3,
       "hints": [
@@ -10222,7 +10222,7 @@
         "lowest-free",
         "stdio-buffer"
       ],
-      "prompt": "A C program runs printf(\"hi\\n\"); fork(); and then both processes exit. Its output is redirected to a file. How many times does hi appear in the file?",
+      "prompt": "A C program runs `printf(\"hi\\n\"); fork();` and then both processes exit. Its output is redirected to a file. How many times does `hi` appear in the file?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -10287,7 +10287,7 @@
         "lowest-free",
         "stdio-buffer"
       ],
-      "prompt": "printf(\"hi\"); fork(); printf(\"!\"); is run with its output piped to another program. How many characters does the pipe receive in total?",
+      "prompt": "`printf(\"hi\"); fork(); printf(\"!\");` is run with its output piped to another program. How many characters does the pipe receive in total?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -10310,7 +10310,7 @@
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "Two processes each write the three characters hi!, giving 6."
+        "workedAnswer": "Two processes each write the three characters `hi!`, giving 6."
       },
       "misconceptions": [
         {
@@ -10464,7 +10464,7 @@
         "lowest-free",
         "stdio-buffer"
       ],
-      "prompt": "A C program runs printf(\"hi\\n\"); fork(); with its output going to a terminal. How many times does hi appear on the screen?",
+      "prompt": "A C program runs `printf(\"hi\\n\"); fork();` with its output going to a terminal. How many times does `hi` appear on the screen?",
       "responseType": "numeric",
       "difficulty": 1.2,
       "hints": [
@@ -10617,7 +10617,7 @@
         "data-race",
         "arc-mutex"
       ],
-      "prompt": "Two threads each run counter += 1 once on a shared counter that starts at 0, with no synchronisation. Which final values can the program produce?",
+      "prompt": "Two threads each run `counter += 1` once on a shared counter that starts at 0, with no synchronisation. Which final values can the program produce?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -10682,7 +10682,7 @@
         "data-race",
         "arc-mutex"
       ],
-      "prompt": "A shared counter holds 10. Two threads each run counter += 1. Both load the counter before either stores. What is the final value?",
+      "prompt": "A shared counter holds 10. Two threads each run `counter += 1`. Both load the counter before either stores. What is the final value?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -10741,7 +10741,7 @@
         "data-race",
         "arc-mutex"
       ],
-      "prompt": "Which error code does rustc report when thread::spawn(|| c += 1) borrows a local variable c? It begins with E.",
+      "prompt": "Which error code does rustc report when `thread::spawn(|| c += 1)` borrows a local variable `c`? It begins with E.",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -10775,7 +10775,7 @@
         "data-race",
         "arc-mutex"
       ],
-      "prompt": "Three threads each increment an Arc<Mutex<i32>> that starts at 0, five hundred times. What is the final value?",
+      "prompt": "Three threads each increment an `Arc<Mutex<i32>>` that starts at 0, five hundred times. What is the final value?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -10968,7 +10968,7 @@
         "data-race",
         "arc-mutex"
       ],
-      "prompt": "Three threads each push one number into an Arc<Mutex<Vec<i32>>>, and the main thread waits for all of them. What does the Vec hold afterwards?",
+      "prompt": "Three threads each push one number into an `Arc<Mutex<Vec<i32>>>`, and the main thread waits for all of them. What does the `Vec` hold afterwards?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -11126,11 +11126,11 @@
         "data-race",
         "arc-mutex"
       ],
-      "prompt": "Write fn parallel_sum(v: Vec<u64>) -> u64 that splits v into at most three chunks, sums each chunk in its own thread (std::thread::scope is fine) and adds the results. parallel_sum((1..=1000).collect()) is 500500.",
+      "prompt": "Write `fn parallel_sum(v: Vec<u64>) -> u64` that splits `v` into at most three chunks, sums each chunk in its own thread (`std::thread::scope` is fine) and adds the results. `parallel_sum((1..=1000).collect())` is 500500.",
       "responseType": "code",
       "difficulty": 1.8,
       "hints": [
-        "chunks(n) splits a slice into pieces of at most n elements.",
+        "`chunks(n)` splits a slice into pieces of at most n elements.",
         "Each scoped thread can borrow its chunk, and join returns its sum."
       ],
       "sourceIds": [
@@ -11716,7 +11716,7 @@
         "round-robin",
         "deadlock"
       ],
-      "prompt": "Write fn average_wait(bursts: &[u32]) -> f64 giving the mean waiting time when jobs run first come, first served and all arrive at 0. average_wait(&[8, 4, 2]) is 6.666666666666667.",
+      "prompt": "Write `fn average_wait(bursts: &[u32]) -> f64` giving the mean waiting time when jobs run first come, first served and all arrive at 0. `average_wait(&[8, 4, 2])` is 6.666666666666667.",
       "responseType": "code",
       "difficulty": 1.6,
       "hints": [
@@ -12309,7 +12309,7 @@
         "page-table",
         "tlb"
       ],
-      "prompt": "Write fn split(addr: u32) -> (u32, u32) returning (page number, offset) for 4 KiB pages. split(0x12345) is (18, 837).",
+      "prompt": "Write `fn split(addr: u32) -> (u32, u32)` returning (page number, offset) for 4 KiB pages. `split(0x12345)` is `(18, 837)`.",
       "responseType": "code",
       "difficulty": 1.5,
       "hints": [
@@ -12857,7 +12857,7 @@
         "sysp-locality",
         "row-major"
       ],
-      "prompt": "Write fn lines_touched(addrs: &[u64], line: u64) -> usize returning how many distinct cache lines the byte addresses fall in. lines_touched(&[0, 4, 60, 64, 130, 200], 64) is 4.",
+      "prompt": "Write `fn lines_touched(addrs: &[u64], line: u64) -> usize` returning how many distinct cache lines the byte addresses fall in. `lines_touched(&[0, 4, 60, 64, 130, 200], 64)` is 4.",
       "responseType": "code",
       "difficulty": 1.6,
       "hints": [
@@ -12944,7 +12944,7 @@
         "raw-pointer",
         "ffi"
       ],
-      "prompt": "Here x is an i32, v is a Vec<i32>, and p has the type *const i32, a raw pointer to an i32. Which of these lines needs an unsafe block?",
+      "prompt": "Here `x` is an `i32`, `v` is a `Vec<i32>`, and `p` has the type `*const i32`, a raw pointer to an `i32`. Which of these lines needs an `unsafe` block?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -12956,7 +12956,7 @@
         "rust-ref",
         "man-pages"
       ],
-      "onCorrect": "*p reads memory through a raw pointer that nobody has checked, so it needs unsafe, whereas creating a raw pointer cannot cause harm by itself.",
+      "onCorrect": "`*p` reads memory through a raw pointer that nobody has checked, so it needs `unsafe`, whereas creating a raw pointer cannot cause harm by itself.",
       "skill": "list-unsafe-operations",
       "calculator": "off",
       "answerAuthority": {
@@ -12970,19 +12970,19 @@
       "choices": [
         {
           "id": "b",
-          "label": "let r = &mut v;"
+          "label": "`let r = &mut v;`"
         },
         {
           "id": "c",
-          "label": "v.push(1);"
+          "label": "`v.push(1);`"
         },
         {
           "id": "d",
-          "label": "let y = *p;"
+          "label": "`let y = *p;`"
         },
         {
           "id": "a",
-          "label": "let q = &x as *const i32;"
+          "label": "`let q = &x as *const i32;`"
         }
       ],
       "misconceptions": [
@@ -13053,7 +13053,7 @@
         "raw-pointer",
         "ffi"
       ],
-      "prompt": "A Rust program declares C's abs as fn abs(x: i32) -> i32; inside an unsafe extern \"C\" block and then calls abs(-3) inside an unsafe block. What happens?",
+      "prompt": "A Rust program declares C's `abs` as `fn abs(x: i32) -> i32;` inside an `unsafe extern \"C\"` block and then calls `abs(-3)` inside an `unsafe` block. What happens?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -13117,11 +13117,11 @@
         "raw-pointer",
         "ffi"
       ],
-      "prompt": "In the Rust declaration of a C function, which Rust type stands for C's size_t, the type strlen returns?",
+      "prompt": "In the Rust declaration of a C function, which Rust type stands for C's `size_t`, the type `strlen` returns?",
       "responseType": "short_text",
       "difficulty": 1.2,
       "hints": [
-        "size_t is the unsigned integer type that holds the size of an object.",
+        "`size_t` is the unsigned integer type that holds the size of an object.",
         "Rust's type for sizes and indices has the same width."
       ],
       "sourceIds": [
@@ -13130,7 +13130,7 @@
         "rust-ref",
         "man-pages"
       ],
-      "onCorrect": "size_t is as wide as a pointer, which is what usize is, so the two match.",
+      "onCorrect": "`size_t` is as wide as a pointer, which is what `usize` is, so the two match.",
       "skill": "declare-extern-function",
       "calculator": "off",
       "answerAuthority": {
@@ -13152,7 +13152,7 @@
         "raw-pointer",
         "ffi"
       ],
-      "prompt": "With strlen declared as unsafe extern \"C\", what does unsafe { strlen(b\"systems\\0\".as_ptr() as *const c_char) } return?",
+      "prompt": "With `strlen` declared as `unsafe extern \"C\"`, what does `unsafe { strlen(b\"systems\\0\".as_ptr() as *const c_char) }` return?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -13270,7 +13270,7 @@
         "raw-pointer",
         "ffi"
       ],
-      "prompt": "With strlen declared as unsafe extern \"C\", what does unsafe { strlen(b\"rust\\0\".as_ptr() as *const c_char) } return?",
+      "prompt": "With `strlen` declared as `unsafe extern \"C\"`, what does `unsafe { strlen(b\"rust\\0\".as_ptr() as *const c_char) }` return?",
       "responseType": "numeric",
       "difficulty": 1.2,
       "hints": [
@@ -13752,7 +13752,7 @@
         "array-decay",
         "undefined-behaviour"
       ],
-      "front": "On a typical 64-bit target, what does sizeof(int *) give?",
+      "front": "On a typical 64-bit target, what does `sizeof(int *)` give?",
       "back": "A pointer holds an address, which takes 8 bytes on a 64-bit target whatever it points at.",
       "sourceIds": [
         "c-ref",
@@ -13803,7 +13803,7 @@
         "array-decay",
         "undefined-behaviour"
       ],
-      "front": "Why does q + 2 move a pointer by eight bytes when q is an int *?",
+      "front": "Why does `q + 2` move a pointer by eight bytes when `q` is an `int *`?",
       "back": "Pointer arithmetic is scaled by the element size, so adding 2 moves two ints.",
       "sourceIds": [
         "c-ref",
@@ -13869,7 +13869,7 @@
         "system-call",
         "fork-exec"
       ],
-      "front": "A program calls fork() four times in a row. How many processes exist afterwards?",
+      "front": "A program calls `fork()` four times in a row. How many processes exist afterwards?",
       "back": "Each fork doubles the count, so four forks give 2^4 = 16.",
       "sourceIds": [
         "ostep",
@@ -13916,7 +13916,7 @@
         "lowest-free",
         "stdio-buffer"
       ],
-      "front": "Why can printf(\"hi\\n\"); fork(); print hi twice when output goes to a file?",
+      "front": "Why can `printf(\"hi\\n\"); fork();` print `hi` twice when output goes to a file?",
       "back": "A file is fully buffered, so hi is still in the buffer at the fork and both processes write it.",
       "sourceIds": [
         "ostep",
@@ -13934,7 +13934,7 @@
         "stdio-buffer"
       ],
       "front": "Which system call actually writes bytes to a descriptor?",
-      "back": "printf only collects the text in a buffer; write sends it to the kernel.",
+      "back": "`printf` only collects the text in a buffer; `write` sends it to the kernel.",
       "sourceIds": [
         "ostep",
         "man-pages",
@@ -13987,7 +13987,7 @@
         "data-race",
         "arc-mutex"
       ],
-      "front": "Why can two threads each running counter += 1 once leave the counter at 1?",
+      "front": "Why can two threads each running `counter += 1` once leave the counter at 1?",
       "back": "The statement is a load, an add and a store, and both threads can load before either stores.",
       "sourceIds": [
         "rust-book",
@@ -14250,8 +14250,8 @@
         "raw-pointer",
         "ffi"
       ],
-      "front": "Which Rust type matches C's size_t?",
-      "back": "usize is as wide as a pointer, as size_t is.",
+      "front": "Which Rust type matches C's `size_t`?",
+      "back": "`usize` is as wide as a pointer, as `size_t` is.",
       "sourceIds": [
         "rust-book",
         "rustonomicon",
