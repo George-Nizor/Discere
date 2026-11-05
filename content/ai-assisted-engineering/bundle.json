@@ -677,7 +677,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The simplest number teams track instead is the **acceptance rate**, the lines kept unchanged divided by the lines suggested, written as a percentage. If an assistant suggests 200 lines and you keep 130 of them as they came, the rate is 130 / 200, which is 0.65, or 65%. Lines you edited before keeping do not count as kept unchanged, and neither do lines you deleted."
+              "text": "The simplest number teams track instead is the **acceptance rate**, the lines kept unchanged divided by the lines suggested, written as a percentage. If an assistant suggests 160 lines and you keep 136 of them as they came, the rate is 136 / 160, which is 0.85, or 85%. Lines you edited before keeping do not count as kept unchanged, and neither do lines you deleted."
             }
           ],
           "introducesTerms": [
@@ -821,11 +821,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A codebase of 40,000 lines is about 400,000 tokens of text, at the rough rate of 10 tokens a line, and an assistant with a 200,000-token window can hold half of it at once. Everything the assistant does on a task comes out of what it can see, so the question of what to put in front of it is a real engineering decision, made before the first request."
+              "text": "A codebase of 40,000 lines is about 400,000 tokens of text, the small chunks a model reads text in, at the rough rate of 10 tokens a line, and an assistant with a 200,000-token window can hold half of it at once. Everything the assistant does on a task comes out of what it can see, so the question of what to put in front of it is a real engineering decision, made before the first request."
             },
             {
               "kind": "paragraph",
-              "text": "Part of that decision belongs to each task, since it means choosing the files the change needs and clearing a session once it has filled with failed attempts. The rest can be written down once, in a file in the repository that the assistant reads at the start of every session, so that the project's commands and conventions never have to be repeated. Between them they let you predict whether a project will fit in the window and keep the assistant's attention on the text the task actually needs."
+              "text": "Part of that decision belongs to each task, since it means choosing the files the change needs and deciding what to do with a session that has filled with failed attempts. The rest can be written down once, in a file in the repository that the assistant reads at the start of every session, so that the project's commands and conventions never have to be repeated. Between them they let you predict whether a project will fit in the window and keep the assistant's attention on the text the task actually needs."
             }
           ]
         },
@@ -936,6 +936,22 @@
           "activityId": ""
         },
         {
+          "id": "when-to-reset",
+          "kind": "predict",
+          "blocks": [],
+          "lead": [],
+          "reveal": [
+            {
+              "kind": "paragraph",
+              "text": "Resetting with a summary is the usual remedy. The summary carries over the findings, and the new session starts without the dead ends."
+            }
+          ],
+          "answerVisibility": "hidden-until-response",
+          "visualStateId": "",
+          "checkQuestionId": "aiae-context-and-instructions-reset",
+          "activityId": ""
+        },
+        {
           "id": "relevance",
           "kind": "explain",
           "blocks": [],
@@ -961,22 +977,6 @@
           ],
           "visualStateId": "",
           "checkQuestionId": "",
-          "activityId": ""
-        },
-        {
-          "id": "when-to-reset",
-          "kind": "predict",
-          "blocks": [],
-          "lead": [],
-          "reveal": [
-            {
-              "kind": "paragraph",
-              "text": "Resetting with a summary is the usual remedy. The summary carries over the findings, and the new session starts without the dead ends."
-            }
-          ],
-          "answerVisibility": "hidden-until-response",
-          "visualStateId": "",
-          "checkQuestionId": "aiae-context-and-instructions-reset",
           "activityId": ""
         },
         {
@@ -1237,19 +1237,19 @@
           "id": "derive-worked",
           "kind": "worked_example",
           "blocks": [],
-          "headline": "Derive the expected output for slugify('A  B--C') from the criteria.",
+          "headline": "Derive the expected output for slugify('Top  10--Tips') from the criteria.",
           "workedSteps": [
             {
-              "text": "Start from the input exactly as written, with two spaces after the A and two hyphens after the B.",
-              "math": "'A  B--C'"
+              "text": "Start from the input exactly as written, with two spaces after Top and two hyphens after the 10.",
+              "math": "'Top  10--Tips'"
             },
             {
               "text": "The first criterion makes the output lowercase.",
-              "math": "'a  b--c'"
+              "math": "'top  10--tips'"
             },
             {
               "text": "The second criterion turns each run of other characters into one hyphen. The two spaces are one run and the two hyphens are another, so each gives a single hyphen.",
-              "math": "'a-b-c'"
+              "math": "'  ' becomes '-', and '--' becomes '-'"
             },
             {
               "text": "No run touches either end, so the third criterion changes nothing. Write the expected output.",
@@ -1267,15 +1267,15 @@
           "id": "derive-faded",
           "kind": "faded_example",
           "blocks": [],
-          "headline": "Derive the expected output for slugify('  Hello, World! ').",
+          "headline": "Derive the expected output for slugify('  Release Notes, v2! ').",
           "workedSteps": [
             {
               "text": "Lowercase it. The input begins with two spaces and ends with an exclamation mark and a space.",
-              "math": "'  hello, world! '"
+              "math": "'  release notes, v2! '"
             },
             {
-              "text": "The comma and space between the words are one run, so they become one hyphen. The runs at the start and the end become hyphens as well, for the moment.",
-              "math": "'-hello-world-'"
+              "text": "The space between the first two words is one run, and the comma and space before v2 are another, so each becomes one hyphen. The runs at the start and the end become hyphens as well, for the moment.",
+              "math": "'-release-notes-v2-'"
             },
             {
               "text": "The third criterion allows no hyphen at either end. Write the final result.",
@@ -1301,7 +1301,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "You should therefore list the edge cases yourself, and give each one an expected result. For slugify, \"  ...  \" has no letters or digits, so after trimming nothing is left, and the criteria say the result is the empty string. The next two screens apply that."
+              "text": "You should therefore list the edge cases yourself, and give each one an expected result. For slugify, the empty string is settled by a criterion of its own, while a title made only of spaces and punctuation is not mentioned anywhere, so its result has to be worked out from the other three criteria before anyone can write a test for it. The next screen asks you to do that."
             }
           ],
           "introducesTerms": [
@@ -1447,7 +1447,7 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A function that decides whether a year is a leap year can be written in one line, year % 4 == 0, and it passes the obvious tests: 2024 is a leap year and 2023 is not. Every line of it runs under those tests, so a coverage report says 100%, and yet the function gives the wrong answer for years that neither test asks about. The tests passed because nobody asked the question that would have exposed the mistake."
+              "text": "A function that decides whether a year is a leap year can be written in one line, year % 4 == 0, and it passes the obvious tests: 2024 is a leap year and 2023 is not. Every line of it runs under those tests, so a coverage report, which records the share of lines the tests ran, says 100%, and yet the function gives the wrong answer for years that neither test asks about. The tests passed because nobody asked the question that would have exposed the mistake."
             },
             {
               "kind": "paragraph",
@@ -2129,7 +2129,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "One traced request tells you more than an hour of skimming, because it shows the layers in the order they run and shows which module calls which. The figure draws that path, along with the file tree and the import graph."
+              "text": "One traced request tells you more than an hour of skimming, because it shows the layers in the order they run and shows which module calls which. The figure draws that path, along with the file tree and the **import graph**, which shows for a module the other modules that import it."
             }
           ],
           "afterFigure": [
@@ -2420,7 +2420,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "Begin instead with the specification from earlier in the course. For list_orders the spec says: add an optional limit to the function, default 50. With that in hand each hunk in the diff can be asked one question, whether the spec asks for it. The answer is often *no*, because assistants tend to make adjacent improvements while they are in the file: they reformat, rename, reorder and tidy."
+              "text": "Begin instead with the specification from earlier in the course. For list_orders the spec says: add an optional limit to the function, default 50. With that in hand each **hunk**, a block of neighbouring changed lines in the diff, can be asked one question, whether the spec asks for it. The answer is often *no*, because assistants tend to make adjacent improvements while they are in the file: they reformat, rename, reorder and tidy."
             }
           ],
           "introducesTerms": [],
@@ -2799,15 +2799,15 @@
           "id": "slice-worked",
           "kind": "worked_example",
           "blocks": [],
-          "headline": "Trace page 2 of a 25-item list through items[p*size:(p+1)*size], with size 10.",
+          "headline": "Trace page 3 of a 25-item list through items[p*size:(p+1)*size], with size 7.",
           "workedSteps": [
             {
-              "text": "Substitute p = 2 and size = 10 into the slice.",
-              "math": "items[20:30]"
+              "text": "Substitute p = 3 and size = 7 into the slice.",
+              "math": "items[21:28]"
             },
             {
               "text": "The list has 25 items, so the indices run from 0 to 24 and the slice stops at the end of the list.",
-              "math": "indices 20 to 24 exist"
+              "math": "indices 21 to 24 exist"
             },
             {
               "text": "Count the items that come back.",
@@ -2825,14 +2825,14 @@
           "id": "slice-faded",
           "kind": "faded_example",
           "blocks": [],
-          "headline": "Now trace page 3 of the same list.",
+          "headline": "Now trace page 3 of the same list with size 8.",
           "workedSteps": [
             {
-              "text": "Substitute p = 3 and size = 10 into the slice.",
-              "math": "items[30:40]"
+              "text": "Substitute p = 3 and size = 8 into the slice.",
+              "math": "items[24:32]"
             },
             {
-              "text": "Work out how many items come back from indices 30 to 39 of a list that ends at index 24.",
+              "text": "Work out how many items come back from indices 24 to 31 of a list that ends at index 24.",
               "blank": {
                 "questionId": "aiae-defects-machines-make-faded-page3"
               }
@@ -2851,7 +2851,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Here is a billing function an assistant might write: it tries to add up the line items, and if anything goes wrong it returns 0. The except clause was added to make the function robust, which sounds like a virtue. What it does is turn every failure, whether a string among the numbers or a missing record, into a total of 0, and billing then carries on and issues an invoice for nothing."
+              "text": "Here is a billing function an assistant might write: it tries to add up the line items, and if anything goes wrong it returns 0. The except clause was added to make the function robust, which sounds like a virtue. What it does is turn every failure, whether a None where a price should be or a missing record, into a total of 0, and billing then carries on and issues an invoice for nothing."
             },
             {
               "kind": "paragraph",
@@ -2891,7 +2891,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The harder case is a call to a method that *exists* and behaves differently from what the assistant assumed. The list method sort changes the list in place and returns None, so names = names.sort() throws the list away. The code runs, and the next line fails far from the cause or does not fail at all. Reading generated code means checking that each unfamiliar call exists, and that it returns what the code assumes it returns."
+              "text": "The harder case is a call to a method that *exists* and behaves differently from what the assistant assumed. The list method extend adds another list's items in place and returns None, so names = names.extend(more) throws the list away. The code runs, and the next line fails far from the cause or does not fail at all. Reading generated code means checking that each unfamiliar call exists, and that it returns what the code assumes it returns."
             }
           ],
           "introducesTerms": [],
@@ -3595,8 +3595,7 @@
               "math": "250 < 100 is false, 400 < 100 is false"
             },
             {
-              "text": "Neither element is below the starting value, so m never changes.",
-              "math": "m = 100"
+              "text": "Neither element is below the starting value, so the loop never replaces m."
             },
             {
               "text": "Work out what my_min returns.",
@@ -4021,7 +4020,7 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A team that merged 40 changes a month, with 5% of them failing, merges 60 a month after adopting an assistant, and 10% of those now fail. Counted by merges, that is half as much work again, and counted by failures, it is three times as many broken changes, so whether the team has improved depends on what you count, and a team that counts only merges has the clearest case of success and the least information."
+              "text": "A team that merged 40 changes a month, with 5% of them failing, merges 60 a month after adopting an assistant, and 10% of those now fail. Counted by merges, that is half as much work again, and counted by failures it looks rather different, so whether the team has improved depends on what you count, and a team that counts only merges has the clearest case of success and the least information."
             },
             {
               "kind": "paragraph",
@@ -4071,7 +4070,7 @@
               {
                 "id": "both",
                 "label": "Together",
-                "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 640 340\"><defs><marker id=\"moboth\" markerWidth=\"8\" markerHeight=\"8\" refX=\"6\" refY=\"4\" orient=\"auto\"><path class=\"f-ink\" d=\"M0 0 L8 4 L0 8 z\"/></marker></defs><text class=\"t-big t-bold\" x=\"320\" y=\"30\" text-anchor=\"middle\">Together</text><text class=\"t-small t-bold t-muted\" x=\"24\" y=\"72\" text-anchor=\"start\">Before: 40 merges</text><rect class=\"f-green-soft s-green w2\" x=\"24\" y=\"84\" width=\"304\" height=\"44\" rx=\"4\"/><rect class=\"f-error-soft s-error w2\" x=\"328\" y=\"84\" width=\"16\" height=\"44\" rx=\"4\"/><text class=\"t-small t-bold\" x=\"176.0\" y=\"112\" text-anchor=\"middle\">38 good</text><text class=\"t-small t-bold t-error\" x=\"354\" y=\"112\" text-anchor=\"start\">2 failed</text><text class=\"t-small t-bold t-muted\" x=\"24\" y=\"182\" text-anchor=\"start\">After: 60 merges</text><rect class=\"f-green-soft s-green w2\" x=\"24\" y=\"194\" width=\"432\" height=\"44\" rx=\"4\"/><rect class=\"f-error-soft s-error w2\" x=\"456\" y=\"194\" width=\"48\" height=\"44\" rx=\"4\"/><text class=\"t-small t-bold\" x=\"240.0\" y=\"222\" text-anchor=\"middle\">54 good</text><text class=\"t-small t-bold t-error\" x=\"514\" y=\"222\" text-anchor=\"start\">6 failed</text><text class=\"t-small t-muted\" x=\"320\" y=\"320\" text-anchor=\"middle\">Good merges rose by about 42%, and failed changes tripled.</text></svg>"
+                "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 640 340\"><defs><marker id=\"moboth\" markerWidth=\"8\" markerHeight=\"8\" refX=\"6\" refY=\"4\" orient=\"auto\"><path class=\"f-ink\" d=\"M0 0 L8 4 L0 8 z\"/></marker></defs><text class=\"t-big t-bold\" x=\"320\" y=\"30\" text-anchor=\"middle\">Together</text><text class=\"t-small t-bold t-muted\" x=\"24\" y=\"72\" text-anchor=\"start\">Before: 40 merges</text><rect class=\"f-green-soft s-green w2\" x=\"24\" y=\"84\" width=\"304\" height=\"44\" rx=\"4\"/><rect class=\"f-error-soft s-error w2\" x=\"328\" y=\"84\" width=\"16\" height=\"44\" rx=\"4\"/><text class=\"t-small t-bold\" x=\"176.0\" y=\"112\" text-anchor=\"middle\">38 good</text><text class=\"t-small t-bold t-error\" x=\"354\" y=\"112\" text-anchor=\"start\">2 failed</text><text class=\"t-small t-bold t-muted\" x=\"24\" y=\"182\" text-anchor=\"start\">After: 60 merges</text><rect class=\"f-green-soft s-green w2\" x=\"24\" y=\"194\" width=\"432\" height=\"44\" rx=\"4\"/><rect class=\"f-error-soft s-error w2\" x=\"456\" y=\"194\" width=\"48\" height=\"44\" rx=\"4\"/><text class=\"t-small t-bold\" x=\"240.0\" y=\"222\" text-anchor=\"middle\">54 good</text><text class=\"t-small t-bold t-error\" x=\"514\" y=\"222\" text-anchor=\"start\">6 failed</text><text class=\"t-small t-muted\" x=\"320\" y=\"320\" text-anchor=\"middle\">Compare the good bars, then the failed bars.</text></svg>"
               }
             ],
             "initialCaseId": "both"
@@ -4105,7 +4104,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "In the figure the team merged 40 changes before the assistant, at a rate of 5%, and 60 afterwards, at 10%. Multiplying the merges by the rate gives the failed changes in each month, and subtracting gives the good ones. The next screens do it."
+              "text": "In the figure the team merged 40 changes before the assistant, at a rate of 5%, and 60 afterwards, at 10%. Multiplying the merges by the rate gives the failed changes in each month, which are the 2 and 6 in the figure, and subtracting gives the good ones. The next screens take the same two steps for a second team."
             }
           ],
           "introducesTerms": [
@@ -4119,7 +4118,7 @@
           "id": "failed-worked",
           "kind": "worked_example",
           "blocks": [],
-          "headline": "Work out the failed and good merges for the month before the assistant: 40 merges at a 5% failure rate.",
+          "headline": "A second team merged 140 changes in a month at a 5% failure rate. Work out its failed and good merges.",
           "workedSteps": [
             {
               "text": "The rate is a share of all the merges, so the failed count is the merges times the rate.",
@@ -4133,7 +4132,7 @@
             },
             {
               "text": "The good merges are the rest.",
-              "math": "40 - 2 = 38"
+              "math": "140 - 7 = 133"
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -4145,11 +4144,11 @@
           "id": "failed-faded",
           "kind": "faded_example",
           "blocks": [],
-          "headline": "Now the month after: 60 merges at a 10% failure rate.",
+          "headline": "The next month the same team merged 150 changes at a 6% failure rate.",
           "workedSteps": [
             {
               "text": "The failed count is the merges times the rate.",
-              "math": "10% = 0.10"
+              "math": "6% = 0.06"
             },
             {
               "text": "Multiply.",
@@ -4159,7 +4158,7 @@
             },
             {
               "text": "The good merges are the rest.",
-              "math": "60 - 6 = 54"
+              "math": "150 - 9 = 141"
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -4308,7 +4307,7 @@
         "blocks": [
           {
             "kind": "paragraph",
-            "text": "You computed the failed and good merges before and after assistance and saw that a rise of about 42% in good changes came with three times as many failures. Throughput and stability belong together, and skills that you stop practising fade, which is the reason to decide in advance what you never delegate."
+            "text": "You computed failed and good merges from a failure rate, and saw that the team's rise of about 42% in good changes came with three times as many failures. Throughput and stability belong together, and skills that you stop practising fade, which is the reason to decide in advance what you never delegate."
           },
           {
             "kind": "paragraph",
@@ -5038,25 +5037,25 @@
         "instruction-file",
         "context-rot"
       ],
-      "prompt": "A codebase has 40,000 lines at about 10 tokens a line. What share of it fits in a 200,000-token window, as a percentage?",
+      "prompt": "A codebase has 50,000 lines at about 10 tokens a line. What share of it fits in a 200,000-token window, as a percentage?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
         "First convert lines to tokens.",
-        "The codebase is 400,000 tokens.",
-        "Divide the window by 400,000 and scale to a percentage."
+        "The codebase is 500,000 tokens.",
+        "Divide the window by 500,000 and scale to a percentage."
       ],
       "sourceIds": [
         "claude-bp",
         "agents-md",
         "willison-blog"
       ],
-      "onCorrect": "Half the codebase fits, and the instructions and the conversation take part of that half.",
+      "onCorrect": "Two fifths of the codebase fit, and the instructions and the conversation take part of that share.",
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              200
+              250
             ]
           },
           "feedback": "That divides the other way round. Take the window as a share of the codebase."
@@ -5064,21 +5063,21 @@
         {
           "match": {
             "numeric": [
-              20
+              25
             ]
           },
-          "feedback": "That is 40,000 / 200,000 with the zeros dropped. Convert lines to tokens first."
+          "feedback": "That is 50,000 / 200,000, lines compared with tokens. Convert lines to tokens first."
         }
       ],
       "skill": "estimate-fit",
       "calculator": "off",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 50,
+        "value": 40,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "40,000 x 10 = 400,000 tokens, and 200,000 / 400,000 = 0.5, which is 50%."
+        "workedAnswer": "50,000 x 10 = 500,000 tokens, and 200,000 / 500,000 = 0.4, which is 40%."
       }
     },
     {
@@ -5254,10 +5253,10 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "slugify('A  B--C') returns 'a-b-c'"
+          "slugify('C++ & Rust') returns 'c-rust'"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "slugify('A  B--C') returns 'a-b-c'"
+        "exampleAnswer": "slugify('C++ & Rust') returns 'c-rust'"
       },
       "choices": [
         {
@@ -5274,7 +5273,7 @@
         },
         {
           "id": "a",
-          "label": "slugify('A  B--C') returns 'a-b-c'"
+          "label": "slugify('C++ & Rust') returns 'c-rust'"
         }
       ]
     },
@@ -5285,7 +5284,7 @@
         "edge-case",
         "non-goal"
       ],
-      "prompt": "What does slugify('A  B--C') return under the criteria?",
+      "prompt": "What does slugify('Top  10--Tips') return under the criteria?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -5302,7 +5301,7 @@
         {
           "match": {
             "textIdeas": [
-              "a--b--c"
+              "top--10--tips"
             ]
           },
           "feedback": "That keeps the runs at their original length. The criterion says each run becomes one hyphen."
@@ -5313,14 +5312,14 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "a-b-c"
+          "top-10-tips"
         ],
         "acceptedAlternatives": [
-          "'a-b-c'",
-          "\"a-b-c\""
+          "'top-10-tips'",
+          "\"top-10-tips\""
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "a-b-c"
+        "exampleAnswer": "top-10-tips"
       }
     },
     {
@@ -5330,11 +5329,11 @@
         "edge-case",
         "non-goal"
       ],
-      "prompt": "What does slugify('  Hello, World! ') return under the criteria?",
+      "prompt": "What does slugify('  Release Notes, v2! ') return under the criteria?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "The comma and space between the words form one run.",
+        "The comma and space before v2 form one run.",
         "The runs at the very start and end become nothing, because no hyphen may sit at either end."
       ],
       "sourceIds": [
@@ -5342,12 +5341,12 @@
         "google-review",
         "willison-blog"
       ],
-      "onCorrect": "The inner run becomes one hyphen and the runs at the ends are removed.",
+      "onCorrect": "The inner runs each become one hyphen and the runs at the ends are removed.",
       "misconceptions": [
         {
           "match": {
             "textIdeas": [
-              "-hello-world-"
+              "-release-notes-v2-"
             ]
           },
           "feedback": "That turns the runs at the ends into hyphens. The criterion forbids a hyphen at either end."
@@ -5358,14 +5357,14 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "hello-world"
+          "release-notes-v2"
         ],
         "acceptedAlternatives": [
-          "'hello-world'",
-          "\"hello-world\""
+          "'release-notes-v2'",
+          "\"release-notes-v2\""
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "hello-world"
+        "exampleAnswer": "release-notes-v2"
       }
     },
     {
@@ -5786,7 +5785,7 @@
         "mutation-score",
         "aiae-coverage"
       ],
-      "prompt": "What do you call the check inside a test that fails when the behaviour is wrong?",
+      "prompt": "A test calls is_leap(1900) and stores the result, but nothing compares that result with False, so the test passes whatever the function returns. What is the test missing?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -6369,7 +6368,7 @@
         "checkpoint",
         "aiae-revert"
       ],
-      "prompt": "Which git command makes a new commit that reverses an earlier one?",
+      "prompt": "After you undo a bad commit, the log still shows the bad commit, followed by a new commit that applies its exact opposite. Which git command produced that history?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -6531,47 +6530,47 @@
         "checkpoint",
         "aiae-revert"
       ],
-      "prompt": "A 1,200-line change is split into steps of at most 300 lines. What is the smallest number of steps?",
+      "prompt": "A 1,400-line change is split into steps of at most 300 lines. What is the smallest number of steps?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
         "Divide the lines by the most lines allowed in a step.",
-        "1,200 / 300 gives a whole number.",
-        "Check whether 300 goes into 1,200 with nothing left over."
+        "1,400 / 300 is about 4.67.",
+        "A remainder still needs a step of its own, so round up."
       ],
       "sourceIds": [
         "progit",
         "claude-bp",
         "google-review"
       ],
-      "onCorrect": "Four steps of 300 lines cover the change exactly.",
+      "onCorrect": "Four steps of 300 hold only 1,200 lines, so the last 200 need a fifth.",
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              3
+              4
             ]
           },
-          "feedback": "Three steps of 300 lines cover only 900."
+          "feedback": "Four steps of 300 lines cover only 1,200."
         },
         {
           "match": {
             "numeric": [
-              5
+              4.67
             ]
           },
-          "feedback": "Four steps already hold all 1,200 lines."
+          "feedback": "That is the exact quotient. A step cannot be split, so round up to a whole number."
         }
       ],
       "skill": "split-change",
       "calculator": "off",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 4,
+        "value": 5,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "1,200 / 300 = 4 exactly."
+        "workedAnswer": "1,400 / 300 = 4.67, which rounds up to 5 steps."
       }
     },
     {
@@ -7319,7 +7318,7 @@
         "review-order",
         "review-comment"
       ],
-      "prompt": "Before reading the first line of a diff, a reviewer reads something that says what the change was meant to do. What is it?",
+      "prompt": "A diff arrives that adds a cache, renames two variables and changes a query. Before you decide whether any of these belongs in it, what do you read?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -7845,13 +7844,13 @@
         "swallowed-error",
         "off-by-one"
       ],
-      "prompt": "How many items does page 2 return?",
+      "prompt": "How many items does page 3 return with size 7?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
-        "The slice is items[20:30].",
+        "The slice is items[21:28].",
         "The list ends at index 24.",
-        "Count items 20 to 24."
+        "Count items 21 to 24."
       ],
       "sourceIds": [
         "google-review",
@@ -7863,21 +7862,21 @@
         {
           "match": {
             "numeric": [
-              10
+              7
             ]
           },
-          "feedback": "The slice asks for ten, but only five items remain after index 20."
+          "feedback": "The slice asks for seven, but only four items remain from index 21."
         }
       ],
       "skill": "trace-off-by-one",
       "calculator": "off",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 5,
+        "value": 4,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "items[20:30] over 25 items returns 20 to 24, which is 5 items."
+        "workedAnswer": "items[21:28] over 25 items returns 21 to 24, which is 4 items."
       }
     },
     {
@@ -7887,47 +7886,47 @@
         "swallowed-error",
         "off-by-one"
       ],
-      "prompt": "How many items does page 3 return?",
+      "prompt": "How many items does page 3 return with size 8?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
-        "The slice is items[30:40].",
+        "The slice is items[24:32].",
         "The list has 25 items and its last index is 24.",
-        "There is nothing at index 30 or above."
+        "Check which of the indices 24 to 31 exist."
       ],
       "sourceIds": [
         "google-review",
         "pearce",
         "willison-blog"
       ],
-      "onCorrect": "A slice beyond the end of a list returns nothing, and raises no error.",
+      "onCorrect": "A slice that runs past the end of a list returns whatever is there, here a page of one item, and raises no error.",
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              5
+              8
             ]
           },
-          "feedback": "That is page 2. For page 3 the slice starts at 30, past the end of the list."
+          "feedback": "The slice asks for eight items, but the list ends at index 24."
         },
         {
           "match": {
             "numeric": [
-              10
+              0
             ]
           },
-          "feedback": "The slice asks for ten items, but the list ends before it begins."
+          "feedback": "Index 24 is the last item of the list and the slice starts there, so that one item is returned."
         }
       ],
       "skill": "trace-off-by-one",
       "calculator": "off",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 0,
+        "value": 1,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "items[30:40] starts beyond the end of a 25-item list, so it returns an empty list: 0 items."
+        "workedAnswer": "items[24:32] over a 25-item list returns only item 24, which is 1 item."
       }
     },
     {
@@ -9570,11 +9569,11 @@
         "licence-risk",
         "aiae-policy"
       ],
-      "prompt": "You pasted a production API key into a chat. What do you do with the key?",
+      "prompt": "A stack trace you pasted into a chat turns out to quote a live session token for the payment service in its last line. What do you do with the token?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "The key has already left your machine.",
+        "The token has already left your machine.",
         "Deleting the message does not recall it."
       ],
       "sourceIds": [
@@ -9582,7 +9581,7 @@
         "willison-blog",
         "nist-rmf"
       ],
-      "onCorrect": "Rotating issues a new key and revokes the old one, which ends the exposure whatever the vendor keeps.",
+      "onCorrect": "Rotating issues a new token and revokes the old one, which ends the exposure whatever the vendor keeps.",
       "misconceptions": [
         {
           "match": {
@@ -9594,7 +9593,7 @@
               "ignore"
             ]
           },
-          "feedback": "Deleting the message does not recall the copy that was sent. Replace the key so the old one is useless."
+          "feedback": "Deleting the message does not recall the copy that was sent. Replace the token so the old one is useless."
         },
         {
           "match": {
@@ -9603,7 +9602,7 @@
               "forget"
             ]
           },
-          "feedback": "An assistant cannot recall data that has reached storage. The key itself has to be replaced."
+          "feedback": "An assistant cannot recall data that has reached storage. The token itself has to be replaced."
         }
       ],
       "skill": "classify-paste",
@@ -9619,7 +9618,10 @@
           "replace it",
           "revoke it",
           "replace the key",
-          "regenerate it"
+          "regenerate it",
+          "replace the token",
+          "revoke the token",
+          "rotate the token"
         ],
         "rejectedIdeas": [],
         "exampleAnswer": "rotate"
@@ -10202,20 +10204,20 @@
         "working-rule",
         "skill-atrophy"
       ],
-      "prompt": "How many of the 40 merges failed?",
+      "prompt": "How many of the 140 merges failed?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
         "The rate is a share of all the merges.",
         "5% is 0.05.",
-        "Compute 40 x 0.05."
+        "Compute 140 x 0.05."
       ],
       "sourceIds": [
         "dora",
         "metr-rct",
         "nist-rmf"
       ],
-      "onCorrect": "Two failed and so 38 were good, which is the number the next step compares.",
+      "onCorrect": "Seven failed and so 133 were good.",
       "misconceptions": [
         {
           "match": {
@@ -10228,7 +10230,7 @@
         {
           "match": {
             "numeric": [
-              38
+              133
             ]
           },
           "feedback": "That is the number of good merges."
@@ -10238,11 +10240,11 @@
       "calculator": "off",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 2,
+        "value": 7,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "40 x 0.05 = 2 failed merges."
+        "workedAnswer": "140 x 0.05 = 7 failed merges."
       }
     },
     {
@@ -10252,25 +10254,25 @@
         "working-rule",
         "skill-atrophy"
       ],
-      "prompt": "How many of the 60 merges failed?",
+      "prompt": "How many of the 150 merges failed?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
         "The rate is a share of all the merges.",
-        "10% is 0.10.",
-        "Compute 60 x 0.10."
+        "6% is 0.06.",
+        "Compute 150 x 0.06."
       ],
       "sourceIds": [
         "dora",
         "metr-rct",
         "nist-rmf"
       ],
-      "onCorrect": "Six failures and 54 good merges, against 2 and 38 before.",
+      "onCorrect": "Nine failures and 141 good merges, against 7 and 133 the month before.",
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              10
+              6
             ]
           },
           "feedback": "That is the rate as a percentage, not a count of merges."
@@ -10278,7 +10280,7 @@
         {
           "match": {
             "numeric": [
-              54
+              141
             ]
           },
           "feedback": "That is the number of good merges."
@@ -10288,11 +10290,11 @@
       "calculator": "off",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 6,
+        "value": 9,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "60 x 0.10 = 6 failed merges."
+        "workedAnswer": "150 x 0.06 = 9 failed merges."
       }
     },
     {
@@ -10352,7 +10354,7 @@
         "working-rule",
         "skill-atrophy"
       ],
-      "prompt": "What name is given to the loss of skill in work you have stopped doing yourself?",
+      "prompt": "A developer who has let an assistant write every SQL query for a year finds that she no longer notices a missing join condition when she reads one. What is that loss called?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
