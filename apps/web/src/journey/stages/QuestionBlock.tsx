@@ -8,6 +8,18 @@ import { AnswerInput } from "../quiz/AnswerInput.js";
 import { QuestionFeedback } from "../quiz-shared/QuestionFeedback.js";
 import { type Attempt, type AttemptPolicy, useAttempt } from "../quiz-shared/use-attempt.js";
 
+/**
+ * Splits a prompt into its setup and the question itself, so the screen can set the question
+ * apart: "A function takes … on its value. Which kind of coupling …?" becomes the setup and the
+ * last sentence. A prompt that is one sentence, or whose last sentence holds a full stop (a
+ * decimal, an abbreviation), comes back whole as the question.
+ */
+export function splitPrompt(prompt: string): { setup: string; ask: string } {
+  const match = /^([\s\S]*[.!:)])\s+([^.!?\n]*\?)\s*$/.exec(prompt.trim());
+  if (!match?.[1] || !match[2]) return { setup: "", ask: prompt.trim() };
+  return { setup: match[1].trim(), ask: match[2].trim() };
+}
+
 /** Whether the last marked response is still the one on screen. */
 export function attemptMarksDraft(attempt: Attempt): boolean {
   return attempt.result !== null && attempt.markedResponse === attempt.response;
@@ -68,9 +80,10 @@ export function QuestionBlock({
     if (started) onStarted?.();
   }, [started, onStarted]);
   const Heading = heading;
+  const prompt = splitPrompt(question.prompt);
   const formId = `check-${question.id}`;
   const actions = !attempt.ready ? (
-    <div className="button-row check-actions">
+    <div className={"button-row check-actions" + (inline ? "" : " footer-primary")}>
       <button
         aria-busy={attempt.busy}
         disabled={attempt.busy || !attempt.response}
@@ -97,7 +110,14 @@ export function QuestionBlock({
     >
       {hidePrompt ? null : (
         <Heading className={promptClassName}>
-          <InlineRichText text={question.prompt} />
+          {prompt.setup ? (
+            <span className="prompt-setup">
+              <InlineRichText text={prompt.setup} />
+            </span>
+          ) : null}
+          <span className="prompt-ask">
+            <InlineRichText text={prompt.ask} />
+          </span>
         </Heading>
       )}
       {figure ? figure(attempt) : null}

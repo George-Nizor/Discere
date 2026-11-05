@@ -1,8 +1,7 @@
 import type { LessonFeedbackResponse } from "@discere/contracts";
 import { Check, Eye, X } from "lucide-react";
-import { Lightbulb } from "../../brand/icon-set.js";
 import { useState } from "react";
-import { LearningCompanion } from "../../ui/LearningCompanion.js";
+import { Lightbulb } from "../../brand/icon-set.js";
 import { RichBlocks } from "../../ui/RichBlocks.js";
 import { InlineRichText } from "../../ui/RichText.js";
 import { PlayerFooterSlot } from "../player-footer.js";
@@ -73,28 +72,24 @@ export function QuestionFeedback({
         }
         role="status"
       >
-        <LearningCompanion
-          expression={phase === "correct" ? "delighted" : unreadable ? "curious" : "encouraging"}
-          glow={phase === "correct"}
-        />
         <div>
           <p className="feedback-verdict">
             {phase === "correct" ? (
               <>
-                <Check aria-hidden="true" size={17} />
-                Correct.
+                <Check aria-hidden="true" size={18} />
+                Correct
               </>
             ) : unreadable ? (
-              <>That answer could not be read.</>
+              <>That answer could not be read</>
             ) : phase === "revealed" ? (
               <>
-                <Eye aria-hidden="true" size={17} />
-                {attempt.misses > 0 ? "Not right. Here is the answer." : "Here is the answer."}
+                <Eye aria-hidden="true" size={18} />
+                {attempt.misses > 0 ? "Not quite. Here is the answer" : "Here is the answer"}
               </>
             ) : (
               <>
-                <X aria-hidden="true" size={17} />
-                Not right{phase === "closed" ? "." : ", try again."}
+                <X aria-hidden="true" size={18} />
+                Not quite
               </>
             )}
           </p>

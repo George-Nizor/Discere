@@ -66,11 +66,13 @@ export function InlineMath({ expression }: { expression: string }) {
 
 /**
  * `**term**` is bold (a term at its definition, or a screen's key phrase), `*word*` is italic
- * (stress), and `[[term|note]]` is a hover term whose note recalls a term met earlier, as the
- * discere-lesson-voice skill writes them. A lone asterisk, as in "3 * 4", is left alone.
+ * (stress), `[[term|note]]` is a hover term whose note recalls a term met earlier, and
+ * `` `name` `` is code (an identifier, an expression or a command), as the discere-lesson-voice
+ * skill writes them. A lone asterisk, as in "3 * 4", is left alone, and nothing inside a code
+ * span is read as emphasis.
  */
 const EMPHASIS_PATTERN =
-  /\[\[([^|\]\n]+)\|([^\]\n]+)\]\]|\*\*([^*\n]+?)\*\*|(?<![\w*])\*(?=\S)([^*\n]+?)(?<=\S)\*(?![\w*])/g;
+  /`([^`\n]+)`|\[\[([^|\]\n]+)\|([^\]\n]+)\]\]|\*\*([^*\n]+?)\*\*|(?<![\w*])\*(?=\S)([^*\n]+?)(?<=\S)\*(?![\w*])/g;
 
 /**
  * A term the learner can hover, focus or tap to see a short reminder. The note is linked with
@@ -96,12 +98,16 @@ function Emphasis({ text }: { text: string }) {
     const start = match.index ?? 0;
     if (start > last) parts.push(text.slice(last, start));
     parts.push(
-      match[1] !== undefined && match[2] !== undefined ? (
-        <HoverTerm key={start} note={match[2]} term={match[1]} />
-      ) : match[3] !== undefined ? (
-        <strong key={start}>{match[3]}</strong>
+      match[1] !== undefined ? (
+        <code className="inline-code" key={start}>
+          {match[1]}
+        </code>
+      ) : match[2] !== undefined && match[3] !== undefined ? (
+        <HoverTerm key={start} note={match[3]} term={match[2]} />
+      ) : match[4] !== undefined ? (
+        <strong key={start}>{match[4]}</strong>
       ) : (
-        <em key={start}>{match[4]}</em>
+        <em key={start}>{match[5]}</em>
       ),
     );
     last = start + match[0].length;
@@ -114,8 +120,8 @@ function Emphasis({ text }: { text: string }) {
 export function stripEmphasis(text: string): string {
   return text.replace(
     EMPHASIS_PATTERN,
-    (_whole, term?: string, _note?: string, bold?: string, italic?: string) =>
-      String(term ?? bold ?? italic ?? ""),
+    (_whole, code?: string, term?: string, _note?: string, bold?: string, italic?: string) =>
+      String(code ?? term ?? bold ?? italic ?? ""),
   );
 }
 

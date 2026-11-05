@@ -4,7 +4,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { updateStudyPreferences } from "../api/endpoints.js";
 import { queryKeys, useStudyPreferences } from "../api/queries.js";
 import { cacheExperience, useExperience } from "../study/experience.js";
-import { Bonehead, type BoneheadAction, type BoneheadExpression, type BoneheadProp } from "./Bonehead.js";
+import {
+  Bonehead,
+  type BoneheadAction,
+  type BoneheadExpression,
+  type BoneheadProp,
+} from "./Bonehead.js";
 import { onMascot } from "./bus.js";
 import { toFractions, usePetPosition } from "./pet-position.js";
 
@@ -15,7 +20,6 @@ const LINES = {
   pet: ["Hello.", "Oh, hello.", "Hm?", "Still here."],
   lots: ["All right, all right.", "That tickles."],
   wake: ["Oh, I'm here.", "Back again."],
-  wrong: ["Not quite. Try another way in.", "Close. Look again.", "Mistakes are how this sticks."],
   combo: ["That's a run.", "Keep it going.", "On a roll."],
   levelup: ["New level.", "Level up."],
   chest: ["Ooh, a chest."],
@@ -48,7 +52,13 @@ export function MascotPet({ inLesson }: { inLesson: boolean }) {
   const clicks = useRef<number[]>([]);
   const answers = useRef(0);
   const { position, save, preview } = usePetPosition();
-  const drag = useRef<{ startX: number; startY: number; offsetX: number; offsetY: number; moved: boolean } | null>(null);
+  const drag = useRef<{
+    startX: number;
+    startY: number;
+    offsetX: number;
+    offsetY: number;
+    moved: boolean;
+  } | null>(null);
   const suppressClick = useRef(false);
 
   const later = (ms: number, fn: () => void) => {
@@ -58,15 +68,18 @@ export function MascotPet({ inLesson }: { inLesson: boolean }) {
     for (const timer of timers.current) window.clearTimeout(timer);
     timers.current = [];
   };
-  const sequence = useCallback((steps: Array<[BoneheadExpression, number]>, end: BoneheadExpression = "idle") => {
-    clear();
-    let at = 0;
-    for (const [state, ms] of steps) {
-      later(at, () => setExpression(state));
-      at += ms;
-    }
-    later(at, () => setExpression(end));
-  }, []);
+  const sequence = useCallback(
+    (steps: Array<[BoneheadExpression, number]>, end: BoneheadExpression = "idle") => {
+      clear();
+      let at = 0;
+      for (const [state, ms] of steps) {
+        later(at, () => setExpression(state));
+        at += ms;
+      }
+      later(at, () => setExpression(end));
+    },
+    [],
+  );
   const play = (name: BoneheadAction) => setAction({ name, key: Date.now() });
   const say = (text: string) => {
     setBubble(text);
@@ -94,7 +107,8 @@ export function MascotPet({ inLesson }: { inLesson: boolean }) {
               ["delighted", 1400],
               ["proud", 1500],
             ]);
-            if (event.combo === 5 || event.combo === 10 || event.combo === 20) say(pick(LINES.combo));
+            if (event.combo === 5 || event.combo === 10 || event.combo === 20)
+              say(pick(LINES.combo));
           } else {
             play("shake");
             setProps((current) => [...new Set([...current, "sweat" as const])]);
@@ -103,8 +117,8 @@ export function MascotPet({ inLesson }: { inLesson: boolean }) {
               ["curious", 450],
               ["encouraging", 2600],
             ]);
-            // One in three misses gets a word; every miss would nag.
-            if (answers.current % 3 === 1) say(pick(LINES.wrong));
+            // A miss gets no words: the lesson's feedback panel already says what went wrong, and
+            // a second voice ("Close. Look again.") contradicted it and lingered onto the next screen.
           }
         } else if (event.type === "levelup") {
           play("celebrate");
@@ -158,7 +172,11 @@ export function MascotPet({ inLesson }: { inLesson: boolean }) {
     window.addEventListener("pointermove", onMove, { passive: true });
     window.addEventListener("keydown", onKey);
     const idle = window.setInterval(() => {
-      if (!asleep.current && timers.current.length === 0 && Date.now() - lastInput.current > SLEEP_AFTER_MS) {
+      if (
+        !asleep.current &&
+        timers.current.length === 0 &&
+        Date.now() - lastInput.current > SLEEP_AFTER_MS
+      ) {
         asleep.current = true;
         setExpression("sleepy");
         setLook({ x: 0, y: 0 });
@@ -186,7 +204,13 @@ export function MascotPet({ inLesson }: { inLesson: boolean }) {
   };
   if (!visible)
     return inLesson ? null : (
-      <button type="button" className="pet-peek" aria-label="Bring Bonehead back" title="Bring Bonehead back" onClick={() => void setVisible(true)}>
+      <button
+        type="button"
+        className="pet-peek"
+        aria-label="Bring Bonehead back"
+        title="Bring Bonehead back"
+        onClick={() => void setVisible(true)}
+      >
         <Bonehead expression="curious" size={56} quiet />
       </button>
     );
@@ -228,7 +252,8 @@ export function MascotPet({ inLesson }: { inLesson: boolean }) {
   const onPointerMove = (event: React.PointerEvent<HTMLButtonElement>) => {
     const state = drag.current;
     if (!state) return;
-    if (!state.moved && Math.hypot(event.clientX - state.startX, event.clientY - state.startY) < 6) return;
+    if (!state.moved && Math.hypot(event.clientX - state.startX, event.clientY - state.startY) < 6)
+      return;
     state.moved = true;
     const size = event.currentTarget.offsetWidth;
     preview(toFractions(event.clientX - state.offsetX, event.clientY - state.offsetY, size));
