@@ -814,9 +814,9 @@
               "math": "200 reads : 1 write"
             },
             {
-              "text": "Multiply the write rate by 200 to get the read rate.",
+              "text": "Use the ratio to turn the write rate into the read rate.",
               "math": "5 × 200 = 1,000 reads per second",
-              "selfExplain": {
+              "blank": {
                 "questionId": "sysd-requirements-and-scope-why-multiply"
               }
             },
@@ -1210,24 +1210,24 @@
           "id": "a-years-storage",
           "kind": "worked_example",
           "blocks": [],
-          "headline": "Find the storage for one year of 100 million records a month at 500 bytes each.",
+          "headline": "Find the storage for one year of 40 million records a month at 2,000 bytes each.",
           "workedSteps": [
             {
               "text": "Start with the records added in one month.",
-              "math": "100,000,000 records"
+              "math": "40,000,000 records"
             },
             {
               "text": "Multiply by the size of one record to get the bytes added in a month.",
-              "math": "100,000,000 × 500 = 50,000,000,000 bytes"
+              "math": "40,000,000 × 2,000 = 80,000,000,000 bytes"
             },
             {
               "text": "Divide by a billion bytes per gigabyte to convert the unit.",
-              "math": "50,000,000,000 ÷ 1,000,000,000 = 50 GB per month"
+              "math": "80,000,000,000 ÷ 1,000,000,000 = 80 GB per month"
             },
             {
               "text": "Multiply by the retention of 12 months to get the total held.",
-              "math": "12 × 50 GB = 600 GB",
-              "selfExplain": {
+              "math": "12 × 80 GB = 960 GB",
+              "blank": {
                 "questionId": "sysd-back-of-the-envelope-estimation-why-twelve"
               }
             }
@@ -1655,22 +1655,22 @@
           "id": "ten-backends",
           "kind": "worked_example",
           "blocks": [],
-          "headline": "Find how often a request is slow when it waits for 10 backends, each slow 1% of the time.",
+          "headline": "Find how often a request is slow when it waits for 5 backends, each slow 1% of the time.",
           "workedSteps": [
             {
-              "text": "Each backend is fast with probability 0.99, and the request is fast only if all 10 are.",
-              "math": "P(all fast) = 0.99^10 ≈ 0.904"
+              "text": "Each backend is fast with probability 0.99, and the request is fast only if all 5 are.",
+              "math": "P(all fast) = 0.99^5 ≈ 0.951"
             },
             {
               "text": "The request is slow when at least one backend is slow, which is the opposite event.",
-              "math": "1 − 0.904 = 0.096",
-              "selfExplain": {
+              "math": "1 − 0.951 = 0.049",
+              "blank": {
                 "questionId": "sysd-latency-throughput-and-tails-why-subtract"
               }
             },
             {
-              "text": "Written as a percentage, a tenfold fan-out makes slow requests about ten times as common as a single backend does.",
-              "math": "≈ 9.6%"
+              "text": "Written as a percentage, a fivefold fan-out makes slow requests about five times as common as a single backend does.",
+              "math": "≈ 4.9%"
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -1712,7 +1712,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "In a **hedged request** the caller sends the same request to a second replica if the first has not answered within a short delay, for example the 95th percentile of normal latency, and uses whichever answer arrives first. The second request is sent only for the few that are already slow, so it adds a small share of extra load. A **timeout**, which a later lesson treats in full, sets a limit on how long the caller waits at all."
+              "text": "In a **hedged request** the caller sends the same request to a second replica, another server holding the same data, if the first has not answered within a short delay, for example the 95th percentile of normal latency, and uses whichever answer arrives first. The second request is sent only for the few that are already slow, so it adds a small share of extra load. A **timeout**, which a later lesson treats in full, sets a limit on how long the caller waits at all."
             }
           ],
           "afterFigure": [
@@ -1984,11 +1984,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Sizing combines the three ideas so far. Take the peak load from the estimate, which is the average times the peak factor, and take what one server handles at saturation. A server that handles 500 requests per second should be planned to carry only 70% of that at peak, which is 500 × 0.7 = 350 requests per second. If the peak is 6,000 requests per second, the fleet needs 6,000 ÷ 350 ≈ 17.1 servers, and because servers come whole the result is rounded *up* to 18."
+              "text": "Sizing combines the three ideas so far. Take the peak load from the estimate, which is the average times the peak factor, and take what one server handles at saturation. A server that handles 500 requests per second should be planned to carry only 70% of that at peak, which is 500 × 0.7 = 350 requests per second. If the peak is 4,500 requests per second, the fleet needs 4,500 ÷ 350 ≈ 12.9 servers, and because servers come whole the result is rounded *up* to 13."
             },
             {
               "kind": "paragraph",
-              "text": "The rounding goes up for a reason. With 17 servers each one would carry 6,000 ÷ 17 ≈ 353 requests per second, which is 70.6% of its capacity, a little over the plan, and on the steep part of the curve a little over is not free. With 18 servers each carries 333, or 66.7%, leaving a small margin that also helps when a server is lost."
+              "text": "The rounding goes up for a reason. With 12 servers each one would carry 4,500 ÷ 12 = 375 requests per second, which is 75% of its capacity, five points over the plan, and on the steep part of the curve being over is not free. With 13 servers each carries about 346, or 69.2%, leaving a small margin that also helps when a server is lost."
             }
           ],
           "afterFigure": [
@@ -2746,7 +2746,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "Depth grows very slowly. A hundredfold increase in the table, from 1,000,000 keys to 100,000,000, adds one level, from 3 to 4, because 100^4 = 100,000,000. The fan-out is the number that matters, and it is large because a page holds many keys."
+              "text": "Depth grows very slowly. A hundredfold increase in the table, from 10,000 keys to 1,000,000, adds one level, from 2 to 3, because 100^3 = 1,000,000. The fan-out is the number that matters, and it is large because a page holds many keys."
             }
           ],
           "afterFigure": [
@@ -2899,7 +2899,7 @@
             {
               "text": "An index needs the smallest number of levels whose reach is at least the number of keys.",
               "math": "100^4 = 100,000,000, so 4 levels",
-              "selfExplain": {
+              "blank": {
                 "questionId": "sysd-databases-and-indexes-levels-for-hundred-million"
               }
             },
@@ -3271,7 +3271,7 @@
             {
               "text": "Later keys separate in the same way, and key 11 shows it.",
               "math": "11 mod 3 = 2 but 11 mod 4 = 3",
-              "selfExplain": {
+              "blank": {
                 "questionId": "sysd-replication-and-partitioning-shard-of-eleven"
               }
             },
@@ -3604,7 +3604,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "A majority of n nodes is more than half of them, so a group keeps working while a majority is up. Five nodes need 3, and so tolerate 2 failures. Four nodes also need 3, and so tolerate only 1, the same as a group of three, which is why consensus groups usually have an odd size. Seven nodes need 4 and tolerate 3."
+              "text": "A majority of n nodes is more than half of them, so a group keeps working while a majority is up. Five nodes need 3, and so tolerate 2 failures. Four nodes also need 3, and so tolerate only 1, the same as a group of three, which is why consensus groups usually have an odd size. Nine nodes need 5 and tolerate 4."
             }
           ],
           "afterFigure": [
@@ -3961,7 +3961,7 @@
             {
               "text": "After arrivals fall to 60, the queue shrinks by the spare capacity each second.",
               "math": "100 − 60 = 40 per second",
-              "selfExplain": {
+              "blank": {
                 "questionId": "sysd-queues-and-event-streams-net-drain"
               }
             },
@@ -4257,34 +4257,6 @@
       "title": "Timeouts, retries and circuit breakers",
       "steps": [
         {
-          "id": "timeouts",
-          "kind": "explain",
-          "blocks": [],
-          "headline": "A timeout limits how long a caller waits, because a slow dependency otherwise ties up the caller until it fails as well.",
-          "lead": [
-            {
-              "kind": "paragraph",
-              "text": "A call to another service can end in three ways: it returns a result, it returns an error, or it returns nothing at all. The third is the awkward one, because silence does not say whether the request was lost on the way, is still being worked on, or was carried out and the reply was lost. The caller cannot wait for ever, since every waiting call holds a thread, a connection and some memory, and by Little's law the number held is the arrival rate times the wait. A **timeout** is a limit on that wait."
-            },
-            {
-              "kind": "paragraph",
-              "text": "Take a service that makes 100 calls per second to a dependency that has stopped answering. With a timeout of 30 seconds each call waits the full 30, so 100 × 30 = 3,000 calls are in flight at once, and the caller runs out of threads or memory and fails too, though nothing was wrong with it. With a timeout of 1 second only 100 × 1 = 100 are waiting. A timeout of 30 seconds is not a safe default, then: it is a long wait multiplied by a high rate."
-            }
-          ],
-          "afterFigure": [
-            {
-              "kind": "paragraph",
-              "text": "A timeout also has to fit inside the caller's own deadline. If a user's request must finish within 2 seconds and the call to the dependency is allowed 5, the user has gone long before the call gives up, and any work that finishes late is wasted. Each call in a chain should therefore be given a timeout shorter than the deadline of the call above it."
-            }
-          ],
-          "introducesTerms": [
-            "timeout"
-          ],
-          "visualStateId": "",
-          "checkQuestionId": "",
-          "activityId": ""
-        },
-        {
           "id": "predict-the-calls",
           "kind": "predict",
           "blocks": [],
@@ -4298,6 +4270,34 @@
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
           "checkQuestionId": "sysd-timeouts-retries-and-circuit-breakers-predict-in-flight",
+          "activityId": ""
+        },
+        {
+          "id": "timeouts",
+          "kind": "explain",
+          "blocks": [],
+          "headline": "A timeout limits how long a caller waits, because a slow dependency otherwise ties up the caller until it fails as well.",
+          "lead": [
+            {
+              "kind": "paragraph",
+              "text": "A call to another service can end in three ways: it returns a result, it returns an error, or it returns nothing at all. The third is the awkward one, because silence does not say whether the request was lost on the way, is still being worked on, or was carried out and the reply was lost. The caller cannot wait for ever, since every waiting call holds a thread, a connection and some memory, and by Little's law the number held is the arrival rate times the wait. A **timeout** is a limit on that wait."
+            },
+            {
+              "kind": "paragraph",
+              "text": "Take the service from the question, which makes 100 calls per second to a dependency that has stopped answering. With a timeout of 30 seconds each call waits the full 30, so 100 × 30 = 3,000 calls are in flight at once, and the caller runs out of threads or memory and fails too, though nothing was wrong with it. With a timeout of 1 second only 100 × 1 = 100 are waiting. A timeout of 30 seconds is not a safe default, then: it is a long wait multiplied by a high rate."
+            }
+          ],
+          "afterFigure": [
+            {
+              "kind": "paragraph",
+              "text": "A timeout also has to fit inside the caller's own deadline. If a user's request must finish within 2 seconds and the call to the dependency is allowed 5, the user has gone long before the call gives up, and any work that finishes late is wasted. Each call in a chain should therefore be given a timeout shorter than the deadline of the call above it."
+            }
+          ],
+          "introducesTerms": [
+            "timeout"
+          ],
+          "visualStateId": "",
+          "checkQuestionId": "",
           "activityId": ""
         },
         {
@@ -4541,9 +4541,9 @@
           "headline": "A makes up to 4 attempts to B, and B makes up to 3 attempts to C. C always fails. How many calls does C receive from one request to A?",
           "workedSteps": [
             {
-              "text": "Every attempt that A makes is a call to B, and B is working, so B receives one call per attempt.",
+              "text": "Every attempt that A makes is a call to B, which is up but fails because C does, so B receives one call per attempt.",
               "math": "B receives 4 calls",
-              "selfExplain": {
+              "blank": {
                 "questionId": "sysd-timeouts-retries-and-circuit-breakers-calls-to-b"
               }
             },
@@ -4677,6 +4677,22 @@
       "title": "Availability and redundancy",
       "steps": [
         {
+          "id": "predict-the-downtime",
+          "kind": "predict",
+          "blocks": [],
+          "lead": [],
+          "reveal": [
+            {
+              "kind": "paragraph",
+              "text": "The rule is the share of time that the service may be down, times the length of the period, and the next screen puts the common targets in a table."
+            }
+          ],
+          "answerVisibility": "hidden-until-response",
+          "visualStateId": "",
+          "checkQuestionId": "sysd-availability-and-redundancy-predict-downtime",
+          "activityId": ""
+        },
+        {
           "id": "percent-to-minutes",
           "kind": "explain",
           "blocks": [],
@@ -4727,22 +4743,6 @@
             ],
             "initialCaseId": "day"
           }
-        },
-        {
-          "id": "predict-the-downtime",
-          "kind": "predict",
-          "blocks": [],
-          "lead": [],
-          "reveal": [
-            {
-              "kind": "paragraph",
-              "text": "The rule is the share of time that the service may be down, times the length of the period, and the next screen puts the common targets in a table."
-            }
-          ],
-          "answerVisibility": "hidden-until-response",
-          "visualStateId": "",
-          "checkQuestionId": "sysd-availability-and-redundancy-predict-downtime",
-          "activityId": ""
         },
         {
           "id": "four-nines",
@@ -5321,7 +5321,7 @@
             {
               "text": "The even pace after 6 of the 30 days is the budget times 6 ÷ 30.",
               "math": "20,000 × 6 ÷ 30 = 4,000",
-              "selfExplain": {
+              "blank": {
                 "questionId": "sysd-observability-and-slos-even-pace-six"
               }
             },
@@ -5872,7 +5872,7 @@
           "activityId": "",
           "diagram": {
             "type": "svg_figure",
-            "alt": "A poster on the left and five boxes standing for many on the right. With fan-out on write, one post from an account with 200 followers becomes 200 feed writes, and from one with 20 million followers 20,000,000 writes, which at 100,000 a second takes 200 seconds. With fan-out on read, one feed view becomes 200 lookups, one for each account followed.",
+            "alt": "A poster on the left and five boxes standing for many on the right. With fan-out on write, one post from an account with 200 followers becomes 200 feed writes, and from one with 20 million followers 20,000,000 writes. With fan-out on read, one feed view becomes 200 lookups, one for each account followed.",
             "caption": "Where the work lands under each strategy. Use the buttons to compare an ordinary account, a very large one, and a feed view under fan-out on read.",
             "cases": [
               {
@@ -5883,7 +5883,7 @@
               {
                 "id": "w20m",
                 "label": "Write, 20 million followers",
-                "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 640 370\"><defs><marker id=\"w20mm\" markerWidth=\"8\" markerHeight=\"8\" refX=\"6\" refY=\"4\" orient=\"auto\"><path class=\"f-ink\" d=\"M0 0 L8 4 L0 8 z\"/></marker></defs><rect class=\"f-sunken s-ink w2\" x=\"24\" y=\"130\" width=\"110\" height=\"64\" rx=\"8\"/><text class=\"t\" x=\"79.0\" y=\"167.0\" text-anchor=\"middle\">poster</text><rect class=\"f-accent-soft s-accent w2\" x=\"470\" y=\"40\" width=\"146\" height=\"44\" rx=\"8\"/><text class=\"t-small\" x=\"543.0\" y=\"67.0\" text-anchor=\"middle\">follower feed</text><polyline class=\"f-none s-accent w2\" points=\"136,162 300,162 300,62 468,62\" marker-end=\"url(#w20mm)\"/><rect class=\"f-accent-soft s-accent w2\" x=\"470\" y=\"98\" width=\"146\" height=\"44\" rx=\"8\"/><text class=\"t-small\" x=\"543.0\" y=\"125.0\" text-anchor=\"middle\">follower feed</text><polyline class=\"f-none s-accent w2\" points=\"136,162 300,162 300,120 468,120\" marker-end=\"url(#w20mm)\"/><rect class=\"f-accent-soft s-accent w2\" x=\"470\" y=\"156\" width=\"146\" height=\"44\" rx=\"8\"/><text class=\"t-small\" x=\"543.0\" y=\"183.0\" text-anchor=\"middle\">follower feed</text><polyline class=\"f-none s-accent w2\" points=\"136,162 300,162 300,178 468,178\" marker-end=\"url(#w20mm)\"/><rect class=\"f-accent-soft s-accent w2\" x=\"470\" y=\"214\" width=\"146\" height=\"44\" rx=\"8\"/><text class=\"t-small\" x=\"543.0\" y=\"241.0\" text-anchor=\"middle\">follower feed</text><polyline class=\"f-none s-accent w2\" points=\"136,162 300,162 300,236 468,236\" marker-end=\"url(#w20mm)\"/><rect class=\"f-accent-soft s-accent w2\" x=\"470\" y=\"272\" width=\"146\" height=\"44\" rx=\"8\"/><text class=\"t-small\" x=\"543.0\" y=\"299.0\" text-anchor=\"middle\">follower feed</text><polyline class=\"f-none s-accent w2\" points=\"136,162 300,162 300,294 468,294\" marker-end=\"url(#w20mm)\"/><text class=\"t-bold\" x=\"250\" y=\"320\" text-anchor=\"middle\">1 post becomes 20,000,000 feed writes</text><text class=\"t t-warn\" x=\"250\" y=\"346\" text-anchor=\"middle\">At 100,000 a second, 200 seconds of work</text></svg>"
+                "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 640 370\"><defs><marker id=\"w20mm\" markerWidth=\"8\" markerHeight=\"8\" refX=\"6\" refY=\"4\" orient=\"auto\"><path class=\"f-ink\" d=\"M0 0 L8 4 L0 8 z\"/></marker></defs><rect class=\"f-sunken s-ink w2\" x=\"24\" y=\"130\" width=\"110\" height=\"64\" rx=\"8\"/><text class=\"t\" x=\"79.0\" y=\"167.0\" text-anchor=\"middle\">poster</text><rect class=\"f-accent-soft s-accent w2\" x=\"470\" y=\"40\" width=\"146\" height=\"44\" rx=\"8\"/><text class=\"t-small\" x=\"543.0\" y=\"67.0\" text-anchor=\"middle\">follower feed</text><polyline class=\"f-none s-accent w2\" points=\"136,162 300,162 300,62 468,62\" marker-end=\"url(#w20mm)\"/><rect class=\"f-accent-soft s-accent w2\" x=\"470\" y=\"98\" width=\"146\" height=\"44\" rx=\"8\"/><text class=\"t-small\" x=\"543.0\" y=\"125.0\" text-anchor=\"middle\">follower feed</text><polyline class=\"f-none s-accent w2\" points=\"136,162 300,162 300,120 468,120\" marker-end=\"url(#w20mm)\"/><rect class=\"f-accent-soft s-accent w2\" x=\"470\" y=\"156\" width=\"146\" height=\"44\" rx=\"8\"/><text class=\"t-small\" x=\"543.0\" y=\"183.0\" text-anchor=\"middle\">follower feed</text><polyline class=\"f-none s-accent w2\" points=\"136,162 300,162 300,178 468,178\" marker-end=\"url(#w20mm)\"/><rect class=\"f-accent-soft s-accent w2\" x=\"470\" y=\"214\" width=\"146\" height=\"44\" rx=\"8\"/><text class=\"t-small\" x=\"543.0\" y=\"241.0\" text-anchor=\"middle\">follower feed</text><polyline class=\"f-none s-accent w2\" points=\"136,162 300,162 300,236 468,236\" marker-end=\"url(#w20mm)\"/><rect class=\"f-accent-soft s-accent w2\" x=\"470\" y=\"272\" width=\"146\" height=\"44\" rx=\"8\"/><text class=\"t-small\" x=\"543.0\" y=\"299.0\" text-anchor=\"middle\">follower feed</text><polyline class=\"f-none s-accent w2\" points=\"136,162 300,162 300,294 468,294\" marker-end=\"url(#w20mm)\"/><text class=\"t-bold\" x=\"250\" y=\"320\" text-anchor=\"middle\">1 post becomes 20,000,000 feed writes</text><text class=\"t t-warn\" x=\"250\" y=\"346\" text-anchor=\"middle\">One write for every follower's feed</text></svg>"
               },
               {
                 "id": "read",
@@ -5982,7 +5982,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The usual answer is a **hybrid**. Posts from ordinary accounts are fanned out on write, since 200 writes are cheap, and posts from accounts with very large followings are not copied at all: they are fetched at read time and merged into the precomputed feed. A user who follows 200 accounts, 3 of them very large, then costs 1 read for the precomputed feed and 3 lookups for the large accounts, 4 in all, where fan-out on read would cost 200."
+              "text": "The usual answer is a **hybrid**. Posts from ordinary accounts are fanned out on write, since 200 writes are cheap, and posts from accounts with very large followings are not copied at all: they are fetched at read time and merged into the precomputed feed. A user who follows 300 accounts, 5 of them very large, then costs 1 read for the precomputed feed and 5 lookups for the large accounts, 6 in all, where fan-out on read would cost 300."
             }
           ],
           "afterFigure": [
@@ -6081,7 +6081,7 @@
           "id": "how-fast-it-fails",
           "kind": "worked_example",
           "blocks": [],
-          "headline": "Ten web servers have 50 threads each, and 20 calls per second hang on an email provider with no timeout. Find how long the site lasts.",
+          "headline": "Ten web servers have 50 threads each, and 10% of 200 requests per second call an email provider with no timeout. Find how long the site lasts.",
           "workedSteps": [
             {
               "text": "Count the threads that are available, which is every server's pool added together.",
@@ -6090,7 +6090,7 @@
             {
               "text": "Each call that hangs holds a thread for ever, and 10% of 200 requests per second hang.",
               "math": "200 × 0.1 = 20 threads lost per second",
-              "selfExplain": {
+              "blank": {
                 "questionId": "sysd-design-a-feed-and-review-hanging-rate"
               }
             },
@@ -6995,32 +6995,32 @@
         "storage-estimate",
         "bandwidth-estimate"
       ],
-      "prompt": "A service averages 2,300 requests per second, and you assume a peak factor of 3. What peak load, in requests per second, should the design meet?",
+      "prompt": "A service averages 1,400 requests per second, and you assume a peak factor of 3. What peak load, in requests per second, should the design meet?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
         "The peak is a multiple of the average.",
         "The multiplier is the peak factor, 3.",
-        "Multiply 2,300 by 3."
+        "Multiply 1,400 by 3."
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 6900,
+        "value": 4200,
         "unit": "requests per second",
         "absoluteTolerance": 100,
         "relativeTolerance": 0,
-        "workedAnswer": "The peak is the average times the peak factor: 2,300 × 3 = 6,900 requests per second."
+        "workedAnswer": "The peak is the average times the peak factor: 1,400 × 3 = 4,200 requests per second."
       },
       "sourceIds": [
         "system-design-primer",
         "sre-book"
       ],
-      "onCorrect": "The fleet must meet 6,900 requests per second at its busiest, three times what the average suggests.",
+      "onCorrect": "The fleet must meet 4,200 requests per second at its busiest, three times what the average suggests.",
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              2300
+              1400
             ]
           },
           "feedback": "That is the average. The design has to meet the peak, which is the average times the factor."
@@ -7028,7 +7028,7 @@
         {
           "match": {
             "numeric": [
-              767
+              467
             ]
           },
           "feedback": "That divides by 3. A peak is larger than the average, so the factor multiplies."
@@ -7036,7 +7036,7 @@
         {
           "match": {
             "numeric": [
-              2303
+              1403
             ]
           },
           "feedback": "That adds 3 to the average. The factor is a multiplier, not an amount to add."
@@ -7128,21 +7128,21 @@
         "storage-estimate",
         "bandwidth-estimate"
       ],
-      "prompt": "The estimate says 50 GB are added each month. How many gigabytes does that make over 12 months of retention?",
+      "prompt": "The estimate says 80 GB are added each month. How many gigabytes does that make over 12 months of retention?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
         "Retention is how long the data is kept.",
         "Twelve months each add the same amount.",
-        "Multiply 50 by 12."
+        "Multiply 80 by 12."
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 600,
+        "value": 960,
         "unit": "GB",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "12 months × 50 GB per month = 600 GB."
+        "workedAnswer": "12 months × 80 GB per month = 960 GB."
       },
       "sourceIds": [
         "system-design-primer",
@@ -7153,15 +7153,15 @@
         {
           "match": {
             "numeric": [
-              62
+              92
             ]
           },
-          "feedback": "That adds 12 to 50. Each month adds its own 50 GB, so the total is the monthly amount times 12."
+          "feedback": "That adds 12 to 80. Each month adds its own 80 GB, so the total is the monthly amount times 12."
         },
         {
           "match": {
             "numeric": [
-              50
+              80
             ]
           },
           "feedback": "That is a single month. A year of retention holds twelve of them."
@@ -7236,32 +7236,32 @@
         "storage-estimate",
         "bandwidth-estimate"
       ],
-      "prompt": "A network link is rated at 1 Gbit/s. At most how many megabytes per second can it carry? Use 1 byte = 8 bits.",
+      "prompt": "A network link is rated at 10 Gbit/s. At most how many megabytes per second can it carry? Use 1 byte = 8 bits.",
       "responseType": "numeric",
       "difficulty": 1.2,
       "hints": [
         "The rating counts bits, and the question asks for bytes.",
         "Divide the number of bits per second by the bits in a byte.",
-        "1,000,000,000 ÷ 8 is 125,000,000."
+        "10,000,000,000 ÷ 8 is 1,250,000,000."
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 125,
+        "value": 1250,
         "unit": "MB per second",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "1,000,000,000 bits per second ÷ 8 bits per byte = 125,000,000 bytes per second, which is 125 MB per second."
+        "workedAnswer": "10,000,000,000 bits per second ÷ 8 bits per byte = 1,250,000,000 bytes per second, which is 1,250 MB per second."
       },
       "sourceIds": [
         "system-design-primer",
         "sre-book"
       ],
-      "onCorrect": "A 1 Gbit/s link carries at most 125 MB per second, and in practice somewhat less once protocol overhead is counted.",
+      "onCorrect": "A 10 Gbit/s link carries at most 1,250 MB per second, and in practice somewhat less once protocol overhead is counted.",
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              1000
+              10000
             ]
           },
           "feedback": "That treats the bits as bytes. A byte is 8 bits, so the byte rate is one eighth of the bit rate."
@@ -7269,7 +7269,7 @@
         {
           "match": {
             "numeric": [
-              8000
+              80000
             ]
           },
           "feedback": "That multiplies by 8, which converts in the wrong direction. Going from bits to bytes divides."
@@ -7277,10 +7277,10 @@
         {
           "match": {
             "numeric": [
-              12.5
+              125
             ]
           },
-          "feedback": "That divides by 80. The conversion from bits to bytes divides by 8 only."
+          "feedback": "That is the figure for a 1 Gbit/s link. This link is ten times faster."
         }
       ],
       "skill": "estimate-bandwidth",
@@ -7837,21 +7837,21 @@
         "sysd-littles-law",
         "tail-amplification"
       ],
-      "prompt": "A service takes 50 ms per request, and arrivals rise from 200 to 400 requests per second. How many requests are in the service on average after the rise?",
+      "prompt": "A service takes 30 ms per request, and arrivals rise from 250 to 500 requests per second. How many requests are in the service on average after the rise?",
       "responseType": "numeric",
       "difficulty": 1.2,
       "hints": [
         "Latency has not changed, but the arrival rate has.",
-        "Convert 50 ms to 0.05 seconds.",
-        "Multiply 400 by 0.05."
+        "Convert 30 ms to 0.03 seconds.",
+        "Multiply 500 by 0.03."
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 20,
+        "value": 15,
         "unit": "requests",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "L = λW = 400 per second × 0.05 seconds = 20 requests, twice the 10 inside before."
+        "workedAnswer": "L = λW = 500 per second × 0.03 seconds = 15 requests, twice the 7.5 inside before."
       },
       "sourceIds": [
         "tail-at-scale",
@@ -7863,26 +7863,26 @@
         {
           "match": {
             "numeric": [
-              10
+              7.5
             ]
           },
-          "feedback": "That is the count at 200 per second. The arrivals have doubled, so the count has too."
+          "feedback": "That is the count at 250 per second. The arrivals have doubled, so the count has too."
         },
         {
           "match": {
             "numeric": [
-              8000
+              15000
             ]
           },
-          "feedback": "That multiplies 400 by 20 and 50 without converting units. The calculation is 400 × 0.05."
+          "feedback": "That multiplies 500 by 30 without converting units. The calculation is 500 × 0.03."
         },
         {
           "match": {
             "numeric": [
-              0.125
+              0.06
             ]
           },
-          "feedback": "That divides 50 by 400. The law multiplies the rate by the time."
+          "feedback": "That divides 30 by 500. The law multiplies the rate by the time."
         }
       ],
       "skill": "apply-littles-law",
@@ -8103,21 +8103,21 @@
         "sysd-littles-law",
         "tail-amplification"
       ],
-      "prompt": "The chance that all 10 backends are fast is about 0.904. As a decimal, what is the chance that at least one of them is slow?",
+      "prompt": "The chance that all 5 backends are fast is about 0.951. As a decimal, what is the chance that at least one of them is slow?",
       "responseType": "numeric",
       "difficulty": 1.2,
       "hints": [
         "Either every backend is fast or at least one is slow, and nothing else.",
         "The two chances add up to 1.",
-        "Subtract 0.904 from 1."
+        "Subtract 0.951 from 1."
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 0.096,
+        "value": 0.049,
         "unit": "",
         "absoluteTolerance": 0.002,
         "relativeTolerance": 0,
-        "workedAnswer": "The two events cover every case between them, so the chances sum to 1, and the answer is 1 − 0.904 = 0.096."
+        "workedAnswer": "The two events cover every case between them, so the chances sum to 1, and the answer is 1 − 0.951 = 0.049."
       },
       "sourceIds": [
         "tail-at-scale",
@@ -8129,10 +8129,10 @@
         {
           "match": {
             "numeric": [
-              0.904
+              0.951
             ]
           },
-          "feedback": "That is the chance that all 10 are fast. The question asks for the opposite event."
+          "feedback": "That is the chance that all 5 are fast. The question asks for the opposite event."
         },
         {
           "match": {
@@ -8140,7 +8140,7 @@
               0.01
             ]
           },
-          "feedback": "That is the chance for one backend. The request has ten chances to meet a slow one."
+          "feedback": "That is the chance for one backend. The request has five chances to meet a slow one."
         }
       ],
       "skill": "compute-fan-out-tail",
@@ -8154,28 +8154,28 @@
         "utilisation",
         "sysd-load-balancer"
       ],
-      "prompt": "A balancer receives 900 requests per second and uses round robin across three servers. One server fails its health check and is removed. How many requests per second does each remaining server receive?",
+      "prompt": "A balancer receives 1,200 requests per second and uses round robin across four servers. One server fails its health check and is removed. How many requests per second does each remaining server receive?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
         "The failed server no longer receives traffic.",
-        "Two servers remain to share all of the load.",
-        "Divide 900 by 2."
+        "Three servers remain to share all of the load.",
+        "Divide 1,200 by 3."
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 450,
+        "value": 400,
         "unit": "requests per second",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "The 900 requests are now shared by 2 servers, so each receives 900 ÷ 2 = 450 per second."
+        "workedAnswer": "The 1,200 requests are now shared by 3 servers, so each receives 1,200 ÷ 3 = 400 per second."
       },
       "sourceIds": [
         "sre-book",
         "k8s-docs-lb",
         "system-design-primer"
       ],
-      "onCorrect": "Each survivor now carries 50% more than before, which is why fleets are planned with headroom.",
+      "onCorrect": "Each survivor now carries a third more than before, which is why fleets are planned with headroom.",
       "misconceptions": [
         {
           "match": {
@@ -8183,7 +8183,7 @@
               300
             ]
           },
-          "feedback": "That is the share of each server before the failure. With two servers left, each takes half of the 900."
+          "feedback": "That is the share of each server before the failure. With three servers left, each takes a third of the 1,200."
         },
         {
           "match": {
@@ -8191,15 +8191,15 @@
               600
             ]
           },
-          "feedback": "That gives the failed server's 300 to only one of the survivors. Round robin spreads it over both."
+          "feedback": "That gives the failed server's 300 to only one of the survivors. Round robin spreads it over all three."
         },
         {
           "match": {
             "numeric": [
-              150
+              100
             ]
           },
-          "feedback": "That is the failed server's extra share split in two, not the whole new load."
+          "feedback": "That is the failed server's share split three ways, the extra each survivor takes, not its whole new load."
         }
       ],
       "skill": "size-a-fleet",
@@ -8276,33 +8276,33 @@
         "utilisation",
         "sysd-load-balancer"
       ],
-      "prompt": "A server handles 100 requests per second, and 95 requests arrive each second. Using 1 ÷ (service rate − arrival rate), what is the mean time in the system, in ms?",
+      "prompt": "A server handles 100 requests per second, and 96 requests arrive each second. Using 1 ÷ (service rate − arrival rate), what is the mean time in the system, in ms?",
       "responseType": "numeric",
       "difficulty": 1.2,
       "hints": [
         "The spare capacity is the service rate minus the arrival rate.",
-        "The spare capacity is 5 requests per second.",
+        "The spare capacity is 4 requests per second.",
         "Take 1 divided by that, then convert seconds to milliseconds."
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 200,
+        "value": 250,
         "unit": "ms",
         "absoluteTolerance": 1,
         "relativeTolerance": 0,
-        "workedAnswer": "1 ÷ (100 − 95) = 0.2 seconds, which is 200 ms."
+        "workedAnswer": "1 ÷ (100 − 96) = 0.25 seconds, which is 250 ms."
       },
       "sourceIds": [
         "sre-book",
         "k8s-docs-lb",
         "system-design-primer"
       ],
-      "onCorrect": "Five percentage points more load than the 90% case doubled the delay, from 100 ms to 200 ms.",
+      "onCorrect": "One more arrival per second than the 95% point on the curve adds 50 ms, because the spare capacity falls from 5 to 4.",
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              0.2
+              0.25
             ]
           },
           "feedback": "That is the answer in seconds. The question asks for milliseconds."
@@ -8310,7 +8310,7 @@
         {
           "match": {
             "numeric": [
-              5
+              4
             ]
           },
           "feedback": "That is the spare capacity per second, not the time. The time is 1 divided by it."
@@ -8318,7 +8318,7 @@
         {
           "match": {
             "numeric": [
-              95
+              96
             ]
           },
           "feedback": "That is the arrival rate. The delay is 1 divided by the spare capacity."
@@ -8827,33 +8827,33 @@
         "invalidation",
         "stampede"
       ],
-      "prompt": "A cache lookup takes 1 ms and a database read takes 20 ms. At a hit rate of 80%, what is the average latency in milliseconds?",
+      "prompt": "A cache lookup takes 1 ms and a database read takes 20 ms. At a hit rate of 75%, what is the average latency in milliseconds?",
       "responseType": "numeric",
       "difficulty": 1.1,
       "hints": [
         "The miss rate is 1 minus the hit rate.",
-        "The miss rate is 0.2.",
+        "The miss rate is 0.25.",
         "Add 1 ms to the miss rate times 20 ms."
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 5,
+        "value": 6,
         "unit": "ms",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "The miss rate is 20%, so the average is 1 + 0.2 × 20 = 5 ms."
+        "workedAnswer": "The miss rate is 25%, so the average is 1 + 0.25 × 20 = 6 ms."
       },
       "sourceIds": [
         "azure-patterns",
         "system-design-primer",
         "sre-book"
       ],
-      "onCorrect": "Five milliseconds is two and a half times the 2 ms at a 95% hit rate.",
+      "onCorrect": "Six milliseconds is three times the 2 ms at a 95% hit rate.",
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              4
+              5
             ]
           },
           "feedback": "That leaves out the 1 ms lookup that every request pays."
@@ -8861,10 +8861,10 @@
         {
           "match": {
             "numeric": [
-              17
+              16
             ]
           },
-          "feedback": "That weights the database time by the hit rate, 0.8 × 20 + 1. The misses are the ones that read the database."
+          "feedback": "That weights the database time by the hit rate, 0.75 × 20 + 1. The misses are the ones that read the database."
         },
         {
           "match": {
@@ -8945,41 +8945,41 @@
         "invalidation",
         "stampede"
       ],
-      "prompt": "An entry is cached at time 0 with a TTL of 60 seconds. The price in the database changes at second 10. For how many seconds after the change does a reader still see the old price?",
+      "prompt": "An entry is cached at time 0 with a TTL of 300 seconds. The price in the database changes at second 120. For how many seconds after the change does a reader still see the old price?",
       "responseType": "numeric",
       "difficulty": 1.2,
       "hints": [
         "The entry is removed when its TTL ends.",
-        "The TTL ends at second 60.",
+        "The TTL ends at second 300.",
         "Subtract the time of the change from the time the entry expires."
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 50,
+        "value": 180,
         "unit": "seconds",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "The entry stays until second 60, and the change happened at second 10, so the old price is shown for 60 − 10 = 50 seconds."
+        "workedAnswer": "The entry stays until second 300, and the change happened at second 120, so the old price is shown for 300 − 120 = 180 seconds."
       },
       "sourceIds": [
         "azure-patterns",
         "system-design-primer",
         "sre-book"
       ],
-      "onCorrect": "The worst case is a change just after the entry is stored, when readers see the old price for nearly the whole TTL of 60 seconds.",
+      "onCorrect": "The worst case is a change just after the entry is stored, when readers see the old price for nearly the whole TTL of 300 seconds.",
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              60
+              300
             ]
           },
-          "feedback": "That is the whole TTL. The change came 10 seconds into it, so the stale period is shorter."
+          "feedback": "That is the whole TTL. The change came 120 seconds into it, so the stale period is shorter."
         },
         {
           "match": {
             "numeric": [
-              10
+              120
             ]
           },
           "feedback": "That is when the change happened. The stale period runs from then until the entry expires."
@@ -8987,10 +8987,10 @@
         {
           "match": {
             "numeric": [
-              70
+              420
             ]
           },
-          "feedback": "That adds the time of the change to the TTL. The entry expires at second 60, not 70."
+          "feedback": "That adds the time of the change to the TTL. The entry expires at second 300, not 420."
         }
       ],
       "skill": "compute-average-latency",
@@ -9356,21 +9356,21 @@
         "invalidation",
         "stampede"
       ],
-      "prompt": "At a hit rate of 90%, what percentage of requests reaches the database?",
+      "prompt": "If the hit rate rose to 96%, what percentage of requests would reach the database?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
         "A hit is answered by the cache.",
         "Only the misses continue to the database.",
-        "Subtract the hit rate from the whole."
+        "Subtract the hit rate from 100%."
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 10,
+        "value": 4,
         "unit": "%",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "The hits stop at the cache, so the share that continues is the misses, 100% − 90% = 10%."
+        "workedAnswer": "The hits stop at the cache, so the share that continues is the misses, 100% − 96% = 4%."
       },
       "sourceIds": [
         "azure-patterns",
@@ -9382,7 +9382,7 @@
         {
           "match": {
             "numeric": [
-              90
+              96
             ]
           },
           "feedback": "That is the share the cache answers. The database receives only the misses."
@@ -10831,21 +10831,21 @@
         "sysd-quorum",
         "consensus"
       ],
-      "prompt": "A store keeps N = 5 replicas and acknowledges a write once W = 3 have it. What is the smallest R that guarantees a read overlaps the latest write?",
+      "prompt": "A store keeps N = 6 replicas and acknowledges a write once W = 3 have it. What is the smallest R that guarantees a read overlaps the latest write?",
       "responseType": "numeric",
       "difficulty": 1.2,
       "hints": [
         "The condition is R + W > N.",
-        "R + 3 must exceed 5.",
-        "R must be larger than 5 minus 3."
+        "R + 3 must exceed 6.",
+        "R must be larger than 6 minus 3."
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 3,
+        "value": 4,
         "unit": "replicas",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "R + 3 must be more than 5, so R must be more than 2, and the smallest whole number is 3."
+        "workedAnswer": "R + 3 must be more than 6, so R must be more than 3, and the smallest whole number is 4."
       },
       "sourceIds": [
         "raft",
@@ -10853,28 +10853,28 @@
         "dynamo",
         "mit-6824"
       ],
-      "onCorrect": "With W = 3 and R = 3 the sum is 6, one more than N, which is the smallest overlap the rule can give.",
+      "onCorrect": "With W = 3 and R = 4 the sum is 7, one more than N, which is the smallest overlap the rule can give.",
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              2
+              3
             ]
           },
-          "feedback": "With R = 2 the sum is 5, which is not more than 5, so the read can miss the write."
-        },
-        {
-          "match": {
-            "numeric": [
-              4
-            ]
-          },
-          "feedback": "R = 4 also works, but a smaller R already satisfies the condition."
+          "feedback": "With R = 3 the sum is 6, which is not more than 6, so the read can miss the write."
         },
         {
           "match": {
             "numeric": [
               5
+            ]
+          },
+          "feedback": "R = 5 also works, but a smaller R already satisfies the condition."
+        },
+        {
+          "match": {
+            "numeric": [
+              6
             ]
           },
           "feedback": "Reading every replica works, but it is more than the rule needs."
@@ -11705,41 +11705,41 @@
         "sysd-backpressure",
         "sysd-stream"
       ],
-      "prompt": "Arrivals are 120 per second for the first 10 minutes and then fall to 80 per second. Consumers process 100 per second, and the queue starts empty. How many seconds after the start is the queue empty again?",
+      "prompt": "Arrivals are 130 per second for the first 6 minutes and then fall to 75 per second. Consumers process 100 per second, and the queue starts empty. How many seconds after the start is the queue empty again?",
       "responseType": "numeric",
       "difficulty": 1.6,
       "hints": [
-        "The queue grows during the first 600 seconds and then drains.",
-        "The backlog at 600 seconds is 12,000.",
-        "The drain takes 12,000 divided by the spare capacity, and the total time is 600 plus that."
+        "The queue grows during the first 360 seconds and then drains.",
+        "The backlog at 360 seconds is 10,800.",
+        "The drain takes 10,800 divided by the spare capacity, and the total time is 360 plus that."
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 1200,
+        "value": 792,
         "unit": "seconds",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "The backlog reaches 20 × 600 = 12,000 at 600 seconds, and then drains at 100 − 80 = 20 per second, which takes 600 seconds, so the queue is empty at 1,200 seconds."
+        "workedAnswer": "The backlog reaches 30 × 360 = 10,800 at 360 seconds, and then drains at 100 − 75 = 25 per second, which takes 432 seconds, so the queue is empty at 360 + 432 = 792 seconds."
       },
       "sourceIds": [
         "kafka-docs",
         "azure-patterns",
         "sre-book"
       ],
-      "onCorrect": "The two phases take 600 seconds each, so a ten-minute burst costs ten more minutes to clear.",
+      "onCorrect": "The queue grew by 30 a second but drains by only 25, so clearing the burst takes longer than the burst itself.",
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              600
+              432
             ]
           },
-          "feedback": "That is the drain time alone. The question asks for the time since the start, which includes the first 10 minutes."
+          "feedback": "That is the drain time alone. The question asks for the time since the start, which includes the first 6 minutes."
         },
         {
           "match": {
             "numeric": [
-              12000
+              10800
             ]
           },
           "feedback": "That is the backlog, in messages. The question asks for a time in seconds."
@@ -11747,10 +11747,10 @@
         {
           "match": {
             "numeric": [
-              1800
+              720
             ]
           },
-          "feedback": "That adds a third 600 seconds. The growth phase and the drain phase each take 600 seconds."
+          "feedback": "That assumes the drain takes as long as the growth. The queue grew by 30 a second and drains by 25, so the drain takes 432 seconds."
         }
       ],
       "skill": "compute-drain-time",
@@ -12256,7 +12256,7 @@
         "backoff-jitter",
         "circuit-breaker"
       ],
-      "prompt": "A makes up to 4 attempts to B. B is down, so every attempt fails. How many calls does B receive from one request to A?",
+      "prompt": "A makes up to 4 attempts to B, and every attempt fails because C keeps failing. How many calls does B receive from one request to A?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -12670,44 +12670,52 @@
         "failure-domain",
         "sysd-rpo-rto"
       ],
-      "prompt": "A service must be 99.99% available over a 365-day year, which is 525,600 minutes. How many minutes of downtime does that allow?",
+      "prompt": "A service must be 99.95% available over a 365-day year, which is 525,600 minutes. How many minutes of downtime does that allow?",
       "responseType": "numeric",
       "difficulty": 1.2,
       "hints": [
-        "The allowed fraction is 100% − 99.99%.",
-        "That is 0.01%, which is 0.0001.",
-        "Multiply 0.0001 by 525,600."
+        "The allowed fraction is 100% − 99.95%.",
+        "That is 0.05%, which is 0.0005.",
+        "Multiply 0.0005 by 525,600."
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 52.56,
+        "value": 262.8,
         "unit": "minutes",
         "absoluteTolerance": 0.1,
         "relativeTolerance": 0,
-        "workedAnswer": "The allowed downtime is 0.01% of 525,600 minutes, which is 0.0001 × 525,600 = 52.56 minutes."
+        "workedAnswer": "The allowed downtime is 0.05% of 525,600 minutes, which is 0.0005 × 525,600 = 262.8 minutes."
       },
       "sourceIds": [
         "sre-book",
         "sre-workbook",
         "azure-patterns"
       ],
-      "onCorrect": "Fifty-two minutes a year is about one minute a week, which is why four nines usually needs automatic recovery.",
+      "onCorrect": "That is about four and a half hours a year, half of what three nines allows and five times what four nines allows.",
       "misconceptions": [
-        {
-          "match": {
-            "numeric": [
-              5256
-            ]
-          },
-          "feedback": "That uses 0.1%, the allowance for three nines. For 99.99% the fraction is 0.01%."
-        },
         {
           "match": {
             "numeric": [
               525.6
             ]
           },
-          "feedback": "That uses 0.1%, the allowance for three nines."
+          "feedback": "That uses 0.1%, the allowance for three nines. For 99.95% the fraction is 0.05%."
+        },
+        {
+          "match": {
+            "numeric": [
+              52.56
+            ]
+          },
+          "feedback": "That uses 0.01%, the allowance for four nines. For 99.95% the fraction is 0.05%."
+        },
+        {
+          "match": {
+            "numeric": [
+              2628
+            ]
+          },
+          "feedback": "That uses 0.5%. For 99.95% the fraction is 0.05%."
         },
         {
           "match": {
@@ -12847,28 +12855,28 @@
         "failure-domain",
         "sysd-rpo-rto"
       ],
-      "prompt": "Two independent replicas make a pair that is 99.99% available, but both sit behind one power supply that is 99.9% available, and all must have power to work. What is the availability of the whole, in percent, to two decimal places?",
+      "prompt": "Two independent replicas make a pair that is 99.99% available, but both sit behind one power supply that is 99.95% available, and all must have power to work. What is the availability of the whole, in percent, to two decimal places?",
       "responseType": "numeric",
       "difficulty": 1.4,
       "hints": [
         "The power supply and the pair must both work.",
         "Multiply the availability of the pair by that of the supply.",
-        "0.9999 × 0.999."
+        "0.9999 × 0.9995."
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 99.89,
+        "value": 99.94,
         "unit": "%",
         "absoluteTolerance": 0.011,
         "relativeTolerance": 0,
-        "workedAnswer": "The pair and the power supply are in series, so 0.9999 × 0.999 = 0.9989, which is 99.89%."
+        "workedAnswer": "The pair and the power supply are in series, so 0.9999 × 0.9995 ≈ 0.9994, which is 99.94%."
       },
       "sourceIds": [
         "sre-book",
         "sre-workbook",
         "azure-patterns"
       ],
-      "onCorrect": "The shared supply costs the design almost a whole nine, which a second supply in another rack would recover.",
+      "onCorrect": "Even a better supply caps the whole below its own 99.95%, so the shared component, not the pair, sets the limit.",
       "misconceptions": [
         {
           "match": {
@@ -12881,7 +12889,7 @@
         {
           "match": {
             "numeric": [
-              99.9
+              99.95
             ]
           },
           "feedback": "That is the supply alone. The pair adds a small further loss, which brings the total lower still."
@@ -12889,10 +12897,10 @@
         {
           "match": {
             "numeric": [
-              99.98
+              99.89
             ]
           },
-          "feedback": "That is 99.99 minus 0.01. The supply's failure rate is 0.1%, and the two availabilities multiply."
+          "feedback": "That is the result with a 99.9% supply. This supply is 99.95% available."
         }
       ],
       "skill": "combine-availability",
@@ -13425,32 +13433,32 @@
         "sysd-slo",
         "burn-rate"
       ],
-      "prompt": "An SLO says that 99.95% of requests must succeed. Over a window with 20,000,000 requests, how many may fail?",
+      "prompt": "An SLO says that 99.95% of requests must succeed. Over a window with 30,000,000 requests, how many may fail?",
       "responseType": "numeric",
       "difficulty": 1.3,
       "hints": [
         "The share that may fail is 100% − 99.95%.",
         "That share is 0.05%, which is 0.0005.",
-        "Multiply 0.0005 by 20,000,000."
+        "Multiply 0.0005 by 30,000,000."
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 10000,
+        "value": 15000,
         "unit": "requests",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "The share that may fail is 0.05%, so 0.0005 × 20,000,000 = 10,000 requests."
+        "workedAnswer": "The share that may fail is 0.05%, so 0.0005 × 30,000,000 = 15,000 requests."
       },
       "sourceIds": [
         "sre-book",
         "sre-workbook"
       ],
-      "onCorrect": "A stricter target on more requests gives the same budget here, since the two changes cancel.",
+      "onCorrect": "Half the failure share of a 99.9% target, on three times the requests, gives one and a half times the 10,000 of the example.",
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              20000000
+              30000000
             ]
           },
           "feedback": "That is the number of requests in the window."
@@ -13458,7 +13466,7 @@
         {
           "match": {
             "numeric": [
-              1000
+              1500
             ]
           },
           "feedback": "That takes 0.005% of the requests. The share that may fail is 0.05%."
@@ -13466,10 +13474,18 @@
         {
           "match": {
             "numeric": [
-              100000
+              150000
             ]
           },
           "feedback": "That takes 0.5% of the requests. The share that may fail is 0.05%."
+        },
+        {
+          "match": {
+            "numeric": [
+              30000
+            ]
+          },
+          "feedback": "That takes 0.1%, the share for a 99.9% target. The share that may fail here is 0.05%."
         }
       ],
       "skill": "compute-error-budget",
@@ -13882,44 +13898,52 @@
         "redirect-status",
         "worked-design"
       ],
-      "prompt": "How many seconds are in a 30-day month?",
+      "prompt": "The estimate uses a 30-day month. How many seconds are in a 31-day month?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
         "A day has 86,400 seconds.",
-        "Multiply the seconds in a day by 30.",
-        "86,400 × 30."
+        "Multiply the seconds in a day by 31.",
+        "86,400 × 31."
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 2592000,
+        "value": 2678400,
         "unit": "seconds",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "30 × 24 × 60 × 60 = 2,592,000 seconds, or 30 × 86,400."
+        "workedAnswer": "31 × 24 × 60 × 60 = 2,678,400 seconds, or 31 × 86,400."
       },
       "sourceIds": [
         "system-design-primer",
         "sre-book",
         "azure-patterns"
       ],
-      "onCorrect": "This is the divisor that turns a monthly total into a rate per second.",
+      "onCorrect": "The longer month lowers the write rate from 38.6 to about 37.3 per second, a change well inside the accuracy of the estimate.",
       "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              2592000
+            ]
+          },
+          "feedback": "That is a 30-day month. A 31-day month has one more day of 86,400 seconds."
+        },
         {
           "match": {
             "numeric": [
               86400
             ]
           },
-          "feedback": "That is one day. A month of 30 days has thirty times as many seconds."
+          "feedback": "That is one day. A month of 31 days has thirty-one times as many seconds."
         },
         {
           "match": {
             "numeric": [
-              2592
+              2678
             ]
           },
-          "feedback": "That drops three zeros. 30 × 86,400 is 2,592,000."
+          "feedback": "That drops three zeros. 31 × 86,400 is 2,678,400."
         }
       ],
       "skill": "estimate-the-read-load",
@@ -13990,52 +14014,52 @@
         "redirect-status",
         "worked-design"
       ],
-      "prompt": "Using 62 symbols, what is the smallest code length k for which 62^k is at least 6,000,000,000? Use 62^5 = 916,132,832 and 62^6 = 56,800,235,584.",
+      "prompt": "A smaller service expects 500,000,000 links in all. Using 62 symbols, what is the smallest code length k for which 62^k is at least 500,000,000? Use 62^4 = 14,776,336 and 62^5 = 916,132,832.",
       "responseType": "numeric",
       "difficulty": 1.2,
       "hints": [
-        "Compare 6,000,000,000 with the two values given.",
-        "62^5 is less than 6,000,000,000.",
+        "Compare 500,000,000 with the two values given.",
+        "62^4 is less than 500,000,000.",
         "Find the first length whose value reaches it."
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 6,
+        "value": 5,
         "unit": "characters",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "62^5 is about 916 million, which is too few, and 62^6 is about 56.8 billion, which is enough, so k = 6."
+        "workedAnswer": "62^4 is about 14.8 million, which is too few, and 62^5 is about 916 million, which is enough, so k = 5."
       },
       "sourceIds": [
         "system-design-primer",
         "sre-book",
         "azure-patterns"
       ],
-      "onCorrect": "The design uses 7 characters anyway, to keep the collision chance of random codes low.",
+      "onCorrect": "Five characters hold half a billion links, and the shortener's 6 billion need one character more.",
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              5
+              4
             ]
           },
-          "feedback": "62^5 is about 916 million, which is fewer than the 6 billion codes needed."
+          "feedback": "62^4 is about 14.8 million, which is far fewer than the 500 million codes needed."
         },
         {
           "match": {
             "numeric": [
-              7
+              6
             ]
           },
-          "feedback": "Seven characters are more than enough, but the smallest length that reaches 6 billion is one shorter."
+          "feedback": "Six characters are more than enough, but the smallest length that reaches 500 million is one shorter."
         },
         {
           "match": {
             "numeric": [
-              10
+              9
             ]
           },
-          "feedback": "That is the number of digits in 6,000,000,000, not the code length. Each character has 62 possibilities."
+          "feedback": "That is the number of digits in 500,000,000, not the code length. Each character has 62 possibilities."
         }
       ],
       "skill": "size-the-id-space",
@@ -14106,28 +14130,28 @@
         "redirect-status",
         "worked-design"
       ],
-      "prompt": "The service gets 100 redirects for each of 100 million new URLs a month, which is 10,000,000,000 redirects, and its SLO is 99.9% success. How many failed redirects does the monthly error budget allow?",
+      "prompt": "The service gets 10,000,000,000 redirects a month. Suppose its SLO were tightened from 99.9% to 99.95% success. How many failed redirects would the monthly error budget allow?",
       "responseType": "numeric",
       "difficulty": 1.4,
       "hints": [
-        "The share that may fail is 100% − 99.9%.",
-        "That share is 0.001.",
-        "Multiply 0.001 by 10,000,000,000."
+        "The share that may fail is 100% − 99.95%.",
+        "That share is 0.0005.",
+        "Multiply 0.0005 by 10,000,000,000."
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 10000000,
+        "value": 5000000,
         "unit": "redirects",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "0.1% of 10,000,000,000 is 0.001 × 10,000,000,000 = 10,000,000."
+        "workedAnswer": "0.05% of 10,000,000,000 is 0.0005 × 10,000,000,000 = 5,000,000."
       },
       "sourceIds": [
         "system-design-primer",
         "sre-book",
         "azure-patterns"
       ],
-      "onCorrect": "Ten million sounds large, but it is a small share, and a one-hour outage at the average rate would spend about 14 million of it.",
+      "onCorrect": "Halving the share that may fail halves the budget, from 10 million failed redirects to 5 million, so a one-hour outage at the average rate would now spend nearly three months' allowance.",
       "misconceptions": [
         {
           "match": {
@@ -14135,23 +14159,31 @@
               10000000000
             ]
           },
-          "feedback": "That is the number of redirects in the month. Only 0.1% of them may fail."
+          "feedback": "That is the number of redirects in the month. Only 0.05% of them may fail."
         },
         {
           "match": {
             "numeric": [
-              1000000
+              10000000
             ]
           },
-          "feedback": "That takes 0.01% of the redirects. The share that may fail is 0.1%."
+          "feedback": "That is the budget at 99.9%. A target of 99.95% allows half as much failure."
         },
         {
           "match": {
             "numeric": [
-              100000000
+              500000
             ]
           },
-          "feedback": "That takes 1% of the redirects. The share that may fail is 0.1%."
+          "feedback": "That takes 0.005% of the redirects. The share that may fail is 0.05%."
+        },
+        {
+          "match": {
+            "numeric": [
+              50000000
+            ]
+          },
+          "feedback": "That takes 0.5% of the redirects. The share that may fail is 0.05%."
         }
       ],
       "skill": "estimate-the-read-load",
@@ -14164,12 +14196,12 @@
         "redirect-status",
         "worked-design"
       ],
-      "prompt": "Which redirect status code lets browsers cache the redirect, so that repeat visits are hidden from the service? Answer with the three-digit code.",
+      "prompt": "A team prints short links on posters, wants as few repeat visits as possible to reach its servers, and has no need to count them. Which redirect status code should the service send? Answer with the three-digit code.",
       "responseType": "numeric",
       "difficulty": 1.1,
       "hints": [
-        "One code means moved permanently and the other means found, temporarily.",
-        "The permanent one is the one that may be cached.",
+        "The team wants browsers to remember the redirect.",
+        "Only the permanent redirect may be cached by browsers.",
         "Only two redirect codes are in play, and their last digits differ by one."
       ],
       "answerAuthority": {
@@ -14185,7 +14217,7 @@
         "sre-book",
         "azure-patterns"
       ],
-      "onCorrect": "The service that wants to count every visit therefore uses 302.",
+      "onCorrect": "A service that must count every visit makes the opposite choice and sends 302.",
       "misconceptions": [
         {
           "match": {
@@ -14193,7 +14225,7 @@
               302
             ]
           },
-          "feedback": "A 302 is a temporary redirect that browsers normally do not cache, so every visit reaches the service. The cacheable one is the permanent redirect."
+          "feedback": "A 302 is a temporary redirect that browsers normally do not cache, so every repeat visit would reach the servers, which is the load this team wants to avoid."
         }
       ],
       "skill": "choose-a-redirect",
