@@ -2,6 +2,12 @@
 
 Updated: 2026-11-06
 
+Release 1.11.2 is a full read of every lesson. Sixteen reviewers read each screen, question,
+hint, reveal, worked answer, feedback line and card in all 65 courses as a learner would, and made
+1,406 corrections: context the trim had cut and a later line relied on, facts and arithmetic,
+hints and reveals written for an earlier version of their question, giveaways, questions the lesson
+never prepared for, missed code formatting, and hover notes citing renamed screens.
+
 Release 1.11.1 fixes what a spot check of sixteen random lessons found: two passages the trim
 had cut that a recap and a definition relied on, three factual slips (carbon-14, a linked-list
 insert, where the bending moment peaks), two opener figures that showed a later answer, and a few

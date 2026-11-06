@@ -668,7 +668,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The header counts the *bytes*, since that is what the receiver reads from the connection. A body with one accented letter therefore has a `Content-Length` one greater than its character count, and a receiver told 30 when 31 bytes follow will either cut the body short or wait for bytes that never arrive."
+              "text": "The header counts the *bytes*, since that is what the receiver reads from the connection. A body with one accented letter therefore has a `Content-Length` one greater than its character count, and a receiver told 30 when 31 bytes follow will cut the body short, and one told 31 when only 30 follow will wait for a byte that never arrives."
             }
           ],
           "introducesTerms": [
@@ -793,7 +793,7 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "The client can issue GET /orders/812 straight away, without reading the body."
+              "text": "The client can issue `GET /orders/812` straight away, without reading the body."
             }
           ],
           "answerVisibility": "hidden-until-response"
@@ -1133,7 +1133,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A common belief holds that `POST` creates things and `PUT` updates them, and the two sentences above show why the rule is worth correcting. **PUT** carries a complete new version of the resource and sends it to the address where that resource lives, so using it to create something is quite normal when the client chooses the address, and using it again simply replaces what is there. **POST** hands the server a request to process in whatever way its design says, such as adding an order to a collection, and the server chooses the address."
+              "text": "A common belief holds that `POST` creates things and `PUT` updates them, and the retry rule above shows why that belief is worth correcting. **PUT** carries a complete new version of the resource and sends it to the address where that resource lives, so using it to create something is quite normal when the client chooses the address, and using it again simply replaces what is there. **POST** hands the server a request to process in whatever way its design says, such as adding an order to a collection, and the server chooses the address."
             },
             {
               "kind": "paragraph",
@@ -1740,7 +1740,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The lifetime itself is a choice about how often the data changes. A file whose name contains its version, such as app.4f2a9c.js, never changes under that name, so it can have a very long max-age. A response about the current user's account should be private and have a short lifetime, or none."
+              "text": "The lifetime itself is a choice about how often the data changes. A file whose name contains its version, such as `app.4f2a9c.js`, never changes under that name, so it can have a very long max-age. A response about the current user's account should be private and have a short lifetime, or none."
             }
           ],
           "introducesTerms": [
@@ -2061,11 +2061,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Not every operation is a create, a read or a delete, and cancelling an order is one example. The usual answer is to treat the action as a resource of its own: POST /orders/42/cancellation creates a cancellation of order 42, using a noun, and a method that is allowed to change state. The alternative GET /orders/42/cancel puts a verb in the path and changes data with a method that every crawler and prefetching browser assumes is safe, as the figure shows."
+              "text": "Not every operation is a create, a read or a delete, and cancelling an order is one example. The usual answer is to treat the action as a resource of its own: `POST /orders/42/cancellation` creates a cancellation of order 42, using a noun, and a method that is allowed to change state. The alternative `GET /orders/42/cancel` puts a verb in the path and changes data with a method that every crawler and prefetching browser assumes is safe, as the figure shows."
             },
             {
               "kind": "paragraph",
-              "text": "A path can also express a relationship. /customers/17/orders lists the orders of customer 17, and that reads clearly. Depth carries a cost, though, since every level of nesting makes the URL longer and ties the order to its parent."
+              "text": "A path can also express a relationship. `/customers/17/orders` lists the orders of customer 17, and that reads clearly. Depth carries a cost, though, since every level of nesting makes the URL longer and ties the order to its parent."
             }
           ],
           "introducesTerms": [
@@ -2248,7 +2248,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The names an API gives its resources decide how easily it can be used, because a client that has seen /orders and /orders/42 can guess that the first is the set of orders and the second is one of them, and the methods from the earlier lessons then supply the verbs without any new vocabulary."
+              "text": "The names an API gives its resources decide how easily it can be used, because a client that has seen `/orders` and `/orders/42` can guess that the first is the set of orders and the second is one of them, and the methods from the earlier lessons then supply the verbs without any new vocabulary."
             }
           ],
           "diagram": {
@@ -2322,7 +2322,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "What is sent is a **representation**, a particular encoding of its current state, and the same order can be encoded in more than one way. In the figure at the start of the lesson the client lists the media type it wants in an **Accept** header, and the server replies with that encoding and states which one it used in **Content-Type**."
+              "text": "Order 42 is a resource, and nobody sends the resource itself over the network. What is sent is a **representation**, a particular encoding of its current state, and the same order can be encoded in more than one way. In the figure at the start of the lesson the client lists the media type it wants in an **Accept** header, and the server replies with that encoding and states which one it used in **Content-Type**."
             },
             {
               "kind": "paragraph",
@@ -2833,7 +2833,7 @@
           "headline": "Read the operation POST /orders from the document in the first figure.",
           "workedSteps": [
             {
-              "text": "The path is /orders and the method is post, so the operation is POST /orders.",
+              "text": "The path is `/orders` and the method is `post`, so the operation is `POST /orders`.",
               "math": "POST /orders"
             },
             {
@@ -2891,7 +2891,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The 400 Invalid body response of POST /orders is just as much a part of the contract, and so are the 404 for a missing resource and the 401 and 403 of the earlier lesson."
+              "text": "A description of an API that lists only the successful response describes half of its behaviour. The 400 Invalid body response of `POST /orders` is just as much a part of the contract, and so are the 404 for a missing resource and the 401 and 403 of the earlier lesson."
             },
             {
               "kind": "paragraph",
@@ -3290,7 +3290,7 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A list of 137 orders returned in a single response grows with every new order, and sooner or later it is too large to send before the client gives up. The usual remedy is to return the list in pages and to ask for each page by the position at which it begins: with pages of 25 the first begins at position 0 and the sixth at position 125."
+              "text": "A list of 137 orders returned in a single response grows with every new order, and sooner or later it is too large to send before the client gives up. The usual remedy is to return the list in pages and to ask for each page by the position at which it begins: with pages of 25 the first begins at position 0 and the sixth at position 125. That position is called an **offset**, and the sixth page holds only 12 orders, since 137 is not a multiple of 25."
             },
             {
               "kind": "paragraph",
@@ -3711,7 +3711,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The remedy for the first is a convention that is written down in the contract: **clients ignore what they do not recognise**. A client that follows it is a **tolerant reader**, and it is what makes additive change safe in practice."
+              "text": "The remedy for the first of these, a new enum value, is a convention that is written down in the contract: **clients ignore what they do not recognise**. A client that follows it is a **tolerant reader**, and it is what makes additive change safe in practice."
             }
           ],
           "introducesTerms": [
@@ -3789,7 +3789,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The server then measures how many calls still read the old field. Putting a version in the URL, as in /v2/orders, or in a header changes only where the two contracts are named. In either design the real work is to keep both of them running until the clients have moved."
+              "text": "The server then measures how many calls still read the old field. In the figure that count falls from 12,000 a day when the notice goes out to 300 after the date, and the field is removed when nobody depends on it. Putting a version in the URL, as in `/v2/orders`, or in a header changes only where the two contracts are named. In either design the real work is to keep both of them running until the clients have moved."
             }
           ],
           "introducesTerms": [
@@ -5390,7 +5390,7 @@
         },
         {
           "id": "c",
-          "label": "GET /search HTTP/1.1"
+          "label": "`GET /search HTTP/1.1`"
         }
       ]
     },
@@ -5580,7 +5580,7 @@
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "The address is a path such as /orders/812.",
+        "The address is a path such as `/orders/812`.",
         "Its name says where something is."
       ],
       "answerAuthority": {
@@ -5875,7 +5875,7 @@
         "idempotent-method",
         "retry-rule"
       ],
-      "prompt": "A shop has 5 orders, numbered 1 to 5. The request DELETE /orders/4 is delivered three times. How many orders remain afterwards?",
+      "prompt": "A shop has 5 orders, numbered 1 to 5. The request `DELETE /orders/4` is delivered three times. How many orders remain afterwards?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -6650,7 +6650,7 @@
         "auth-codes",
         "conflict-codes"
       ],
-      "prompt": "Order 42 has already shipped, and its owner sends POST /orders/42/cancellation with a valid token. The request parses, the caller is identified and allowed, and order 42 is found. Which code does the request leave with?",
+      "prompt": "Order 42 has already shipped, and its owner sends `POST /orders/42/cancellation` with a valid token. The request parses, the caller is identified and allowed, and order 42 is found. Which code does the request leave with?",
       "responseType": "numeric",
       "difficulty": 1.2,
       "hints": [
@@ -7551,7 +7551,7 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "GET /orders/42/cancel"
+          "`GET /orders/42/cancel`"
         ],
         "rejectedIdeas": [],
         "exampleAnswer": "GET /orders/42/cancel"
@@ -7598,15 +7598,15 @@
         },
         {
           "id": "d",
-          "label": "DELETE /orders/42"
+          "label": "`DELETE /orders/42`"
         },
         {
           "id": "a",
-          "label": "POST /orders/42/cancellation"
+          "label": "`POST /orders/42/cancellation`"
         },
         {
           "id": "b",
-          "label": "GET /orders/42/cancel"
+          "label": "`GET /orders/42/cancel`"
         }
       ]
     },
@@ -7917,7 +7917,7 @@
       "choices": [
         {
           "id": "b",
-          "label": "/orders/42"
+          "label": "`/orders/42`"
         },
         {
           "id": "d",
@@ -7925,11 +7925,11 @@
         },
         {
           "id": "a",
-          "label": "/orders"
+          "label": "`/orders`"
         },
         {
           "id": "c",
-          "label": "/orders/42/items"
+          "label": "`/orders/42/items`"
         }
       ]
     },
@@ -8599,7 +8599,7 @@
         "bacad-schema",
         "bacad-contract"
       ],
-      "prompt": "How many responses does the POST /orders operation in the figure document?",
+      "prompt": "How many responses does the `POST /orders` operation in the figure document?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -8844,7 +8844,7 @@
         "bacad-schema",
         "bacad-contract"
       ],
-      "prompt": "An OpenAPI description documents only the 201 response of POST /orders. What is missing from the contract?",
+      "prompt": "An OpenAPI description documents only the 201 response of `POST /orders`. What is missing from the contract?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -9427,7 +9427,7 @@
         "bacad-idempotency-key",
         "exactly-once-effect"
       ],
-      "prompt": "A balance is 100. A client sends POST /charges for 30 and, after two timeouts, sends the same request twice more, so the server receives it three times. The server does nothing to recognise repeats. What is the balance afterwards?",
+      "prompt": "A balance is 100. A client sends `POST /charges` for 30 and, after two timeouts, sends the same request twice more, so the server receives it three times. The server does nothing to recognise repeats. What is the balance afterwards?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -9477,7 +9477,7 @@
         "bacad-idempotency-key",
         "exactly-once-effect"
       ],
-      "prompt": "A balance is 90. A client sends POST /charges for 25 with the same Idempotency-Key four times, because of retries, and the server stores the result under the key. What is the balance afterwards?",
+      "prompt": "A balance is 90. A client sends `POST /charges` for 25 with the same Idempotency-Key four times, because of retries, and the server stores the result under the key. What is the balance afterwards?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -9805,7 +9805,7 @@
         "bacad-idempotency-key",
         "exactly-once-effect"
       ],
-      "prompt": "A balance is 100. A client sends POST /charges for 30 with the same Idempotency-Key three times, two of them retries, and the server stores the result under the key. What is the balance afterwards?",
+      "prompt": "A balance is 100. A client sends `POST /charges` for 30 with the same Idempotency-Key three times, two of them retries, and the server stores the result under the key. What is the balance afterwards?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -13366,7 +13366,7 @@
         "bacad-idempotency-key",
         "exactly-once-effect"
       ],
-      "prompt": "A balance is 100. A client sends POST /charges for 30 and, after two timeouts, sends the same request twice more, so the server receives it three times. The server does nothing to recognise repeats. What is the balance afterwards?",
+      "prompt": "A balance is 100. A client sends `POST /charges` for 30 and, after two timeouts, sends the same request twice more, so the server receives it three times. The server does nothing to recognise repeats. What is the balance afterwards?",
       "difficulty": 1,
       "hints": [
         "Ask what the server has to go on when the third copy arrives.",
@@ -14067,7 +14067,7 @@
         "idempotent-method",
         "retry-rule"
       ],
-      "prompt": "A shop has 5 orders, numbered 1 to 5. The request DELETE /orders/4 is delivered three times. Which orders does the shop hold afterwards?",
+      "prompt": "A shop has 5 orders, numbered 1 to 5. The request `DELETE /orders/4` is delivered three times. Which orders does the shop hold afterwards?",
       "difficulty": 1,
       "hints": [
         "Order 4 can be removed only once.",
@@ -14668,7 +14668,7 @@
         "bacad-url-parts",
         "bacad-template"
       ],
-      "front": "Why is POST /orders/42/cancellation a better design than GET /orders/42/cancel?",
+      "front": "Why is `POST /orders/42/cancellation` a better design than `GET /orders/42/cancel`?",
       "back": "A GET is meant to be safe and software sends it freely, so a GET that cancels an order could be triggered by a crawler or a prefetch.",
       "sourceIds": [
         "rfc3986",

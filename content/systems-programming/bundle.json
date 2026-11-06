@@ -867,7 +867,7 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "The Rust statement `let x: u32 = 258;` puts a number in memory, which is a long row of numbered boxes that can each hold a single value from 0 to 255. Because 258 is too large for one box, a `u32` takes four consecutive boxes, and they contain 2, 1, 0 and 0, with the 2 first."
+              "text": "The Rust statement `let x: u32 = 258;` puts a number in memory, which is a long row of numbered boxes that can each hold a single value from 0 to 255. Because 258 is too large for one box, the four consecutive boxes of a `u32` hold it as 2, 1, 0 and 0, with the 2 first."
             },
             {
               "kind": "paragraph",
@@ -1043,7 +1043,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "With that, the layout rule has three parts. Each field starts at round_up(end of the previous field, the field's alignment). The struct's alignment is the largest field alignment. The size is round_up(end of the last field, the struct's alignment). The first field always starts at offset 0, and no part of the rule ever moves a field earlier than the order in which it was declared."
+              "text": "With that, the layout rule has three parts. Each field starts at `round_up(end of the previous field, the field's alignment)`. The struct's alignment is the largest field alignment. The size is `round_up(end of the last field, the struct's alignment)`. The first field always starts at offset 0, and no part of the rule ever moves a field earlier than the order in which it was declared."
             }
           ],
           "afterFigure": [],
@@ -1306,7 +1306,7 @@
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "Each frame holds only the names of its own function, so two calls of the same function get separate frames with separate variables. **Setting aside and releasing a frame is nothing more than moving one pointer**, which is why the stack is quick."
+              "text": "Each frame holds only the variables of its own function, so two calls of the same function get separate frames with separate variables. **Setting aside and releasing a frame is nothing more than moving one pointer**, which is why the stack is quick."
             }
           ],
           "introducesTerms": [
@@ -1369,7 +1369,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The compiler decides how large each frame is before the program runs, because making room for a call has to be one quick adjustment. It cannot work for the text a user types or a list that grows during a run, because nobody knows in advance how much room they need."
+              "text": "The compiler decides how large each frame is before the program runs, because making room for a call has to be one quick adjustment. This works for an `i32`, a struct or an array of four numbers, whose sizes are fixed by their types. It cannot work for the text a user types or a list that grows during a run, because nobody knows in advance how much room they need."
             },
             {
               "kind": "paragraph",
@@ -1835,7 +1835,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The move happens at the call, because the parameter of consume takes ownership, and the compiler suggests two repairs: change the parameter to borrow the value, which the next lesson explains, or clone the value if two copies are really wanted."
+              "text": "The figure passes the String to a function and then prints it. The move happens at the call, because the parameter of consume takes ownership, and the compiler suggests two repairs: change the parameter to borrow the value, which the next lesson explains, or clone the value if two copies are really wanted."
             }
           ],
           "afterFigure": [
@@ -2104,7 +2104,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Writing `&a` creates a **reference** to `a`, an address that the function can read through, and the function's parameter has the type `&String` instead of `String`. The owner stays the owner: the reference neither frees the buffer nor prevents the caller from using `a` again afterwards."
+              "text": "The previous lesson showed that handing a String to a function moves it, which is awkward when the function only needs to look at the text. The alternative is to *borrow* the value. Writing `&a` creates a **reference** to `a`, an address that the function can read through, and the function's parameter has the type `&String` instead of `String`. The owner stays the owner: the reference neither frees the buffer nor prevents the caller from using `a` again afterwards."
             },
             {
               "kind": "paragraph",
@@ -2168,7 +2168,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "If the array has to move to a larger block, the old block is freed, and the pointer is left pointing at memory that no longer belongs to the array. A pointer of this kind is **dangling**, and using it is a fault the C compiler does not detect. The figure shows the same thing with a Rust `Vec`, where `f` stands for a reference into the buffer and a push makes the buffer move."
+              "text": "In C a program can hold a pointer to the first element of an array and then call a function that grows the array. If the array has to move to a larger block, the old block is freed, and the pointer is left pointing at memory that no longer belongs to the array. A pointer of this kind is **dangling**, and using it is a fault the C compiler does not detect. The figure shows the same thing with a Rust `Vec`, where `f` stands for a reference into the buffer and a push makes the buffer move."
             },
             {
               "kind": "paragraph",
@@ -2631,7 +2631,7 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "The result is the same element that `p[2]` names, which is why a subscript and a pointer addition are interchangeable in C."
+              "text": "The result is the same element that `p[3]` names, which is why a subscript and a pointer addition are interchangeable in C."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -2647,7 +2647,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "In C the request is made by calling `malloc` with a number of bytes, and the result is a pointer to the block. The usual way of stating the size is `sizeof`, which gives a size in bytes: `malloc(sizeof *p)` asks for room for whatever `p` points at, and `malloc(10 * sizeof(int))` asks for ten ints."
+              "text": "Memory on the stack disappears with its frame, so a value that must outlive the function, or whose size is known only while the program runs, needs a block from the heap. In C the request is made by calling `malloc` with a number of bytes, and the result is a pointer to the block. The usual way of stating the size is `sizeof`, which gives a size in bytes: `malloc(sizeof *p)` asks for room for whatever `p` points at, and `malloc(10 * sizeof(int))` asks for ten ints."
             },
             {
               "kind": "paragraph",
@@ -2949,7 +2949,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "A system call is much more expensive than an ordinary function call, because of the mode switch, which is why library functions try to make as few as they can. printf is not itself a system call: it is user code that formats text and eventually calls write."
+              "text": "A system call is much more expensive than an ordinary function call, because of the mode switch, which is why library functions try to make as few as they can. `printf` is not itself a system call: it is user code that formats text and eventually calls `write`."
             }
           ],
           "afterFigure": [
@@ -3104,7 +3104,7 @@
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "When a fork sits inside an if that tests its own result, only the processes that received that value run the body. That changes the count, and the next screens count such cases."
+              "text": "When a fork sits inside an if that tests its own result, only the processes that received that value run the body. That changes the count, as the worked example later in this lesson shows."
             }
           ],
           "introducesTerms": [],
@@ -3327,8 +3327,8 @@
           ],
           "diagram": {
             "type": "svg_figure",
-            "alt": "Rows of boxes for the processes that exist after zero, one, two and three fork calls in a row: one, two, four and eight.",
-            "caption": "Each fork call doubles the number of processes. Use the buttons to add forks.",
+            "alt": "Rows of boxes for the processes that exist after zero and one fork calls in a row: one and two.",
+            "caption": "One fork call doubles the number of processes. Use the buttons to add a fork.",
             "cases": [
               {
                 "id": "n0",
@@ -3339,16 +3339,6 @@
                 "id": "n1",
                 "label": "1 fork",
                 "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 640 260\"><defs><marker id=\"hr1\" markerWidth=\"8\" markerHeight=\"8\" refX=\"6\" refY=\"4\" orient=\"auto\"><path class=\"f-ink\" d=\"M0 0 L8 4 L0 8 z\"/></marker></defs><text class=\"t-big\" x=\"320\" y=\"34\" text-anchor=\"middle\">processes after 1 fork call in a row</text><rect class=\"f-accent-soft s-accent w2\" x=\"260.0\" y=\"80\" width=\"56\" height=\"56\" rx=\"6\"/><text class=\"t-bold\" x=\"288.0\" y=\"114\" text-anchor=\"middle\">P</text><rect class=\"f-green-soft s-green w2\" x=\"324.0\" y=\"80\" width=\"56\" height=\"56\" rx=\"6\"/><text class=\"t-bold\" x=\"352.0\" y=\"114\" text-anchor=\"middle\">c</text><text class=\"t-bold t-accent\" x=\"320\" y=\"190\" text-anchor=\"middle\">2 processes</text><text class=\"t t-muted\" x=\"320\" y=\"225\" text-anchor=\"middle\">every existing process calls the next fork</text></svg>"
-              },
-              {
-                "id": "n2",
-                "label": "2 forks",
-                "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 640 260\"><defs><marker id=\"hr2\" markerWidth=\"8\" markerHeight=\"8\" refX=\"6\" refY=\"4\" orient=\"auto\"><path class=\"f-ink\" d=\"M0 0 L8 4 L0 8 z\"/></marker></defs><text class=\"t-big\" x=\"320\" y=\"34\" text-anchor=\"middle\">processes after 2 fork calls in a row</text><rect class=\"f-accent-soft s-accent w2\" x=\"196.0\" y=\"80\" width=\"56\" height=\"56\" rx=\"6\"/><text class=\"t-bold\" x=\"224.0\" y=\"114\" text-anchor=\"middle\">P</text><rect class=\"f-green-soft s-green w2\" x=\"260.0\" y=\"80\" width=\"56\" height=\"56\" rx=\"6\"/><text class=\"t-bold\" x=\"288.0\" y=\"114\" text-anchor=\"middle\">c</text><rect class=\"f-green-soft s-green w2\" x=\"324.0\" y=\"80\" width=\"56\" height=\"56\" rx=\"6\"/><text class=\"t-bold\" x=\"352.0\" y=\"114\" text-anchor=\"middle\">c</text><rect class=\"f-green-soft s-green w2\" x=\"388.0\" y=\"80\" width=\"56\" height=\"56\" rx=\"6\"/><text class=\"t-bold\" x=\"416.0\" y=\"114\" text-anchor=\"middle\">c</text><text class=\"t-bold t-accent\" x=\"320\" y=\"190\" text-anchor=\"middle\">4 processes</text><text class=\"t t-muted\" x=\"320\" y=\"225\" text-anchor=\"middle\">every existing process calls the next fork</text></svg>"
-              },
-              {
-                "id": "n3",
-                "label": "3 forks",
-                "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 640 260\"><defs><marker id=\"hr3\" markerWidth=\"8\" markerHeight=\"8\" refX=\"6\" refY=\"4\" orient=\"auto\"><path class=\"f-ink\" d=\"M0 0 L8 4 L0 8 z\"/></marker></defs><text class=\"t-big\" x=\"320\" y=\"34\" text-anchor=\"middle\">processes after 3 fork calls in a row</text><rect class=\"f-accent-soft s-accent w2\" x=\"68.0\" y=\"80\" width=\"56\" height=\"56\" rx=\"6\"/><text class=\"t-bold\" x=\"96.0\" y=\"114\" text-anchor=\"middle\">P</text><rect class=\"f-green-soft s-green w2\" x=\"132.0\" y=\"80\" width=\"56\" height=\"56\" rx=\"6\"/><text class=\"t-bold\" x=\"160.0\" y=\"114\" text-anchor=\"middle\">c</text><rect class=\"f-green-soft s-green w2\" x=\"196.0\" y=\"80\" width=\"56\" height=\"56\" rx=\"6\"/><text class=\"t-bold\" x=\"224.0\" y=\"114\" text-anchor=\"middle\">c</text><rect class=\"f-green-soft s-green w2\" x=\"260.0\" y=\"80\" width=\"56\" height=\"56\" rx=\"6\"/><text class=\"t-bold\" x=\"288.0\" y=\"114\" text-anchor=\"middle\">c</text><rect class=\"f-green-soft s-green w2\" x=\"324.0\" y=\"80\" width=\"56\" height=\"56\" rx=\"6\"/><text class=\"t-bold\" x=\"352.0\" y=\"114\" text-anchor=\"middle\">c</text><rect class=\"f-green-soft s-green w2\" x=\"388.0\" y=\"80\" width=\"56\" height=\"56\" rx=\"6\"/><text class=\"t-bold\" x=\"416.0\" y=\"114\" text-anchor=\"middle\">c</text><rect class=\"f-green-soft s-green w2\" x=\"452.0\" y=\"80\" width=\"56\" height=\"56\" rx=\"6\"/><text class=\"t-bold\" x=\"480.0\" y=\"114\" text-anchor=\"middle\">c</text><rect class=\"f-green-soft s-green w2\" x=\"516.0\" y=\"80\" width=\"56\" height=\"56\" rx=\"6\"/><text class=\"t-bold\" x=\"544.0\" y=\"114\" text-anchor=\"middle\">c</text><text class=\"t-bold t-accent\" x=\"320\" y=\"190\" text-anchor=\"middle\">8 processes</text><text class=\"t t-muted\" x=\"320\" y=\"225\" text-anchor=\"middle\">every existing process calls the next fork</text></svg>"
               }
             ],
             "initialCaseId": "n0"
@@ -3801,7 +3791,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A process can contain several, called **threads**, each with its own stack and its own position in the code. All the threads of a process see the same address space, so a value on the heap, or a global, written by one thread can be read by another at once, without a pipe or any copy."
+              "text": "The previous lessons treated a process as one stream of execution with memory of its own. A process can contain several, called **threads**, each with its own stack and its own position in the code. All the threads of a process see the same address space, so a value on the heap, or a global, written by one thread can be read by another at once, without a pipe or any copy."
             },
             {
               "kind": "paragraph",
@@ -4041,7 +4031,7 @@
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "The scoped threads of std::thread::scope are an alternative where the threads are known to finish before the function does. They may borrow from the caller, since the scope waits for them, and the next example uses them to sum a list in three parts."
+              "text": "The scoped threads of `std::thread::scope` are an alternative where the threads are known to finish before the function does. They may borrow from the caller, since the scope waits for them, and the next example uses them to sum a list in three parts."
             }
           ],
           "introducesTerms": [],
@@ -4250,7 +4240,7 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "The short jobs finish early and only the longest job finishes late. The next screen explains why this order is the best one when all the jobs arrive together."
+              "text": "The short jobs finish early and only the longest job finishes late. The screen on shortest job first explains why this order is the best one when all the jobs arrive together."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -5402,7 +5392,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The five are to dereference a raw pointer, to call an unsafe function, to access or modify a mutable static variable (a global that every thread can reach), to implement an unsafe trait (one whose implementer promises something the compiler cannot check), and to access a field of a union (a type whose fields share the same bytes). By writing unsafe, you state that you have checked that fact yourself."
+              "text": "The five are to dereference a raw pointer, to call an unsafe function, to access or modify a mutable static variable (a global that every thread can reach), to implement an unsafe trait (one whose implementer promises something the compiler cannot check), and to access a field of a union (a type whose fields share the same bytes). Each is an operation whose safety depends on a fact that the compiler cannot see. By writing unsafe, you state that you have checked that fact yourself."
             }
           ],
           "afterFigure": [
@@ -5442,7 +5432,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Rust also has **raw pointers**, written `*const T` and `*mut T`, which carry none of those promises. A raw pointer may be null, may point at freed memory, and may alias another pointer, much like a pointer in C. The expression `&x as *const i32` makes one from a reference, and is allowed anywhere, since a pointer that is never used does no harm."
+              "text": "A reference, as the lesson on borrowing showed, is checked: it is never dangling and it obeys the aliasing rule. Rust also has **raw pointers**, written `*const T` and `*mut T`, which carry none of those promises. A raw pointer may be null, may point at freed memory, and may alias another pointer, much like a pointer in C. The expression `&x as *const i32` makes one from a reference, and is allowed anywhere, since a pointer that is never used does no harm."
             },
             {
               "kind": "paragraph",
@@ -13298,7 +13288,7 @@
       "choices": [
         {
           "id": "d",
-          "label": "The pointer was created with Box::new"
+          "label": "The pointer was created with `Box::new`"
         },
         {
           "id": "b",
