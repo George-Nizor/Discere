@@ -663,7 +663,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "Every arrow means that the next step reads what the previous one wrote, so a step can start only when everything it reads has finished, and the graph holds exactly the information a scheduler needs to decide what can run and what must wait."
+              "text": "Every arrow means that the next step reads what the previous one wrote, so the chain forms a graph in which a step can start only when everything it reads has finished, and the graph holds exactly the information a scheduler needs to decide what can run and what must wait."
             }
           ],
           "afterFigure": [
@@ -1277,7 +1277,7 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "The record's values sit together in a row layout, so one contiguous read returns the whole order."
+              "text": "The record's values sit together in a row layout, so one contiguous read returns the whole record."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -1455,11 +1455,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The 7 rows on the previous screen came from a plain `INSERT`, which adds a row whether or not one with the same identity is already there. To make a replay harmless the table needs a **key**, a column such as `id` whose values identify a row, and the write has to say what to do when the key is already present. An **upsert** does exactly that: when no row has the key it inserts one, and when a row has the key it updates that row. In SQLite and PostgreSQL the statement is written `INSERT ... ON CONFLICT (id) DO UPDATE SET ...`"
+              "text": "The 7 rows on the previous screen came from a plain `INSERT`, which adds a row whether or not one with the same identity is already there. To make a replay harmless the table needs a **key**, a column such as `id` whose values identify a row, and the write has to say what to do when the key is already present. An **upsert** does exactly that: when no row has the key it inserts one, and when a row has the key it updates that row. In SQLite and PostgreSQL the statement is written `INSERT ... ON CONFLICT (id) DO UPDATE SET ...`."
             },
             {
               "kind": "paragraph",
-              "text": "The figure applies both writes to a products table. Run twice with a plain `INSERT`, the table grows from 4 rows to 8, with pad appearing three times at two different prices, while run twice as an upsert it has 5 rows after the first run and still 5 after the second, because the second run finds both keys present and sets the same values again."
+              "text": "The figure applies both writes to a products table. The incoming batch carries a new price for pad, product 3, and a new product, tape, product 5. Run twice with a plain `INSERT`, the table grows from 4 rows to 8, with pad appearing three times at two different prices. Run twice as an upsert, the table has 5 rows after the first run and still 5 after the second, because the second run finds both keys present and sets the same values again."
             }
           ],
           "afterFigure": [
@@ -2007,7 +2007,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A filter on `updated_at` works because a changed row carries a new timestamp, and it fails for a row that has been removed, because the row is gone and so is its timestamp. In the figure id 2 is hard-deleted at the source., and the warehouse goes on holding a row that no longer exists anywhere else."
+              "text": "A filter on `updated_at` works because a changed row carries a new timestamp, and it fails for a row that has been removed, because the row is gone and so is its timestamp. In the figure id 2 is hard-deleted at the source. The nightly query returns the rows that still exist, id 2 is not among them, and the warehouse goes on holding a row that no longer exists anywhere else."
             },
             {
               "kind": "paragraph",
@@ -2538,7 +2538,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "Once the period is a parameter the runs are independent, so they can go in parallel up to a limit that protects the source and the cluster. Take 20 daily partitions with at most 3 running at a time: there are 7 waves, because 20 ÷ 3 is a little over 6 and a partly filled wave still takes as long as a full one. If every run takes 10 minutes and a wave starts when the one before has ended, the backfill takes 7 × 10 = 70 minutes."
+              "text": "Once the period is a parameter the runs are independent, so they can go in parallel up to a limit that protects the source and the cluster. Take 20 daily partitions with at most 3 running at a time. They go in waves of 3, and the last wave holds only 2, so there are 7 waves, because 20 ÷ 3 is a little over 6 and a partly filled wave still takes as long as a full one. If every run takes 10 minutes and a wave starts when the one before has ended, the backfill takes 7 × 10 = 70 minutes."
             }
           ],
           "afterFigure": [
@@ -3122,7 +3122,7 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "The commits after the checkpoint are versions 21, 22, 23, 24, 25, 26 and 27, which is 7 files."
+              "text": "The commits after the checkpoint are versions 31 to 41, which is 11 files."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -3717,7 +3717,7 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A table of 730 GB holds three years of orders, and a report asks for the last week. If the files are laid out so that the report can tell which of them hold that week, it reads about 14 GB. If they are laid out without regard to date, it reads all 730 GB, and the query, the engine and the hardware are the same in both cases."
+              "text": "A table of 730 GB holds a year of orders, and a report asks for the last week. If the files are laid out so that the report can tell which of them hold that week, it reads about 14 GB. If they are laid out without regard to date, it reads all 730 GB, and the query, the engine and the hardware are the same in both cases."
             },
             {
               "kind": "paragraph",
@@ -4492,7 +4492,7 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "The order is newest first: 03-05 gets rn 1 and 03-02 comes next, so it gets rn 2."
+              "text": "The order is newest first: 03-05 gets `rn` 1 and 03-02 comes next, so it gets `rn` 2."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -4800,7 +4800,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The tumbling five-minute windows count 3, 0, 2, 0, 1 and 0 events, and the session windows give 3 sessions, because the pauses from minute 4 to 12 and from 14 to 22 are longer than the 5-minute gap."
+              "text": "The figure places six events, at minutes 1, 3, 4, 12, 14 and 22, under each kind. The tumbling five-minute windows count 3, 0, 2, 0, 1 and 0 events, and the session windows give 3 sessions, because the pauses from minute 4 to 12 and from 14 to 22 are longer than the 5-minute gap."
             }
           ],
           "afterFigure": [
@@ -5051,7 +5051,7 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "By arrival at 10:11 the purchase falls in the window that begins at 10:10, which is the wrong window for something that happened at 10:04."
+              "text": "By arrival at 13:36 the purchase falls in the window that begins at 13:35, which is the wrong window for something that happened at 13:22."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -5498,7 +5498,7 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "From 03:40 to 12:15 is 8 hours 35 minutes, which is 515 minutes. The target is 480 minutes, so the table is 35 minutes late."
+              "text": "From 04:25 to 13:10 is 8 hours 45 minutes, which is 525 minutes. The target is 480 minutes, so the table is 45 minutes late."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -5538,7 +5538,7 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "20 minutes is 1,200 seconds, and 240,000,000 ÷ 1,200 is 200,000 rows per second."
+              "text": "35 minutes is 2,100 seconds, and 252,000,000 ÷ 2,100 is 120,000 rows per second."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -6883,7 +6883,7 @@
         "parquet-format",
         "fabric-docs"
       ],
-      "onCorrect": "A row layout keeps each record's values together, so one contiguous read returns the whole order.",
+      "onCorrect": "A row layout keeps each record's values together, so one contiguous read returns the whole record.",
       "misconceptions": [
         {
           "match": {
@@ -9237,7 +9237,7 @@
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
-        "Does the checkpoint include version 20 itself?",
+        "Does the checkpoint include version 30 itself?",
         "Count the versions after 30 up to 41.",
         "41 minus 30."
       ],
@@ -10979,7 +10979,7 @@
       "responseType": "short_text",
       "difficulty": 1.1,
       "hints": [
-        "SUM adds every row in the table.",
+        "`SUM` adds every row in the table.",
         "How many rows does the table hold?"
       ],
       "answerAuthority": {
@@ -11227,7 +11227,7 @@
         },
         {
           "id": "c",
-          "label": "Both rows, since each has its own rn"
+          "label": "Both rows, since each has its own `rn`"
         },
         {
           "id": "b",
@@ -11289,7 +11289,7 @@
       "responseType": "numeric",
       "difficulty": 1.3,
       "hints": [
-        "TRIM removes the padding in ' 10.50'.",
+        "`TRIM` removes the padding in ' 10.50'.",
         "The cast of x gives 0.",
         "Add all six converted values."
       ],
