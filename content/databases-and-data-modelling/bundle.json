@@ -571,13 +571,13 @@
             },
             {
               "kind": "paragraph",
-              "text": "The date of an appointment shows why the question matters. It is tempting to write the date beside the patient, since patients are who the clinic thinks about first, but a patient with three appointments has three dates, and one column in the patient row has room for only one. The date changes from appointment to appointment, so it is a fact about the appointment."
+              "text": "The date of an appointment shows why the question matters. It is tempting to write the date beside the patient, but a patient with three appointments has three dates, and one column in the patient row has room for only one."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "A fact about *two* entities together, such as which doctor a patient saw, is not an attribute of either. It belongs to the relationship between them, which the next screens describe."
+              "text": "A fact about *two* entities together, such as which doctor a patient saw, is not an attribute of either, because it belongs to the relationship between them."
             }
           ],
           "introducesTerms": [
@@ -693,11 +693,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Peter Chen proposed drawing models as entities and relationships in 1976, six years after E. F. Codd's paper had introduced the relational model of tables. His diagrams are still read in the same way: a line between two boxes says something in both directions. For the clinic, \"a patient has many appointments\" is one sentence and \"an appointment belongs to exactly one patient\" is its partner, and the pair together gives the cardinality of that line."
+              "text": "Peter Chen proposed drawing models as entities and relationships in 1976, six years after E. F. Codd's paper had introduced the relational model of tables. His diagrams are still read in the same way: a line between two boxes says something in both directions, so \"a patient has many appointments\" is one sentence and \"an appointment belongs to exactly one patient\" is its partner, and the pair together gives the cardinality of that line."
             },
             {
               "kind": "paragraph",
-              "text": "If either sentence sounds wrong when you say it, the model is wrong, and it is far cheaper to find that out on paper than after the tables hold data. The same reading catches a missing entity: when a sentence needs a word like \"which\" or \"on\" to be complete, as in \"a patient sees a doctor *on* a date\", there is a fact that belongs to neither entity alone."
+              "text": "If either sentence sounds wrong when you say it, the model is wrong. The same reading catches a missing entity: when a sentence needs a word like \"which\" or \"on\" to be complete, as in \"a patient sees a doctor *on* a date\", there is a fact that belongs to neither entity alone."
             }
           ],
           "afterFigure": [],
@@ -817,11 +817,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "Here is how a clinic might describe itself: \"The clinic has 4 doctors and 30 patients. Patients book appointments, each with one doctor, at a start time and in a numbered room, and the clinic keeps each patient's phone number.\" Every clause states a fact about the business, but a database stores tables and not sentences, so before any table can be created someone has to decide which clauses name a kind of thing, which give a fact about a thing, and which say how two kinds of thing are connected."
+              "text": "Here is how a clinic might describe itself: \"The clinic has 4 doctors and 30 patients. Patients book appointments, each with one doctor, at a start time and in a numbered room, and the clinic keeps each patient's phone number.\" Every clause states a fact about the business, but a database stores tables and not sentences, so someone has to decide which clauses name a kind of thing, which give a fact about a thing, and which say how two kinds of thing are connected."
             },
             {
               "kind": "paragraph",
-              "text": "That decision is called **data modelling**, and it comes before the SQL you already know, because a join can only combine tables that exist and a query can only ask about columns that someone chose to store. A wrong decision here is expensive later, since a fact stored with the wrong thing gets repeated or lost and no query can repair that. Settling those questions from the description, before any table exists, tells you what the tables will hold and how they connect."
+              "text": "That decision is called **data modelling**, and it comes before the SQL you already know, because a join can only combine tables that exist and a query can only ask about columns that someone chose to store."
             }
           ],
           "diagram": {
@@ -969,11 +969,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Students and courses are many-to-many: Ana takes Databases and Algorithms, and Databases has Ana, Ben and Chloe. Neither table can hold a single foreign key, since each student has several courses and each course several students. The tempting fix is a list of ids in one column, \"10,11\" in Ana's row. The database treats that as one piece of text, so it cannot check that 10 and 11 are real courses, it cannot build an index on the ids inside it, and a join has nothing to match."
+              "text": "Students and courses are many-to-many: Ana takes Databases and Algorithms, and Databases has Ana, Ben and Chloe. The tempting fix is a list of ids in one column, \"10,11\" in Ana's row. The database treats that as one piece of text, so it cannot check that 10 and 11 are real courses, it cannot build an index on the ids inside it, and a join has nothing to match."
             },
             {
               "kind": "paragraph",
-              "text": "The solution is a third table with one row for each student-course pair, called a **junction table**. It holds two foreign keys, one to each side, so every cell contains a single value and the one many-to-many relationship becomes two one-to-many relationships, which is the same step as the appointment table in the clinic. For seven pairs the junction table has seven rows."
+              "text": "The solution is a third table with one row for each student-course pair, called a **junction table**. It holds two foreign keys, one to each side, so the one many-to-many relationship becomes two one-to-many relationships, which is the same step as the appointment table in the clinic."
             }
           ],
           "afterFigure": [
@@ -1070,11 +1070,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "To list who takes what, a query follows the relationships in reverse. It starts at `students`, joins `enrollments` on `student_id`, and then joins `courses` on `course_id`, so the junction table is a stepping stone between the two entities. Without any filter the result has one row for every row of `enrollments`, which here is seven. Add the condition `WHERE c.title = 'Databases'` and only the pairs that mention that course remain, so the three students on it appear."
+              "text": "To list who takes what, a query starts at `students`, joins `enrollments` on `student_id`, and then joins `courses` on `course_id`, so the junction table is a stepping stone between the two entities. Add the condition `WHERE c.title = 'Databases'` and only the pairs that mention that course remain."
             },
             {
               "kind": "paragraph",
-              "text": "The figure shows the second hop on its own, joining enrollments to courses. Choose each query and compare the result with the two tables: every row of the first result comes from a single row of enrollments, with the course's title looked up through the key, and the second query counts those rows for each title, giving 3 for Databases and 2 each for Algorithms and Compilers. This is the join you wrote in SQL: From Rows to Reports, and the model decides which join paths exist."
+              "text": "The figure shows the second hop on its own, joining enrollments to courses. Choose each query and compare the result with the two tables. This is the join you wrote in SQL: From Rows to Reports, and the model decides which join paths exist."
             }
           ],
           "afterFigure": [],
@@ -1387,11 +1387,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "In a table of orders, orders 101 and 102 belong to Ana and order 103 belongs to Ben, and the table records this with a single number in each row, the id of the customer, which is 1 for Ana and 2 for Ben. Nothing else connects an order to a customer, and the database finds Ana by looking for the row of the customers table whose id is 1."
+              "text": "In a table of orders, orders 101 and 102 belong to Ana and order 103 belongs to Ben, and the table records this with a single number in each row, the id of the customer."
             },
             {
               "kind": "paragraph",
-              "text": "That one number is how every relationship from the last lesson is stored, because a row that holds another row's id can be followed to it, and the database can check that the id belongs to a row that exists. Placed in the table on the many side it stores a one-to-many relationship, and a table whose rows are pairs of such numbers stores a many-to-many one. With that device you can decide where the link between any two entities belongs and write the join that reads it back."
+              "text": "That one number is how every relationship from the last lesson is stored, because a row that holds another row's id can be followed to it, and the database can check that the id belongs to a row that exists."
             }
           ],
           "diagram": {
@@ -1455,7 +1455,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Look at what happens to a key when the real world changes. The email identifies the customer's row, so every order that refers to the customer holds a copy of it, and the change must be made in the customers row and in each of those orders. The figure shows Ana's case: with the email as key, one new address means three rows to rewrite, and with a generated number as key it means one cell."
+              "text": "Look at what happens to a key when the real world changes. The figure shows Ana's case: with the email as key, one new address means three rows to rewrite, and with a generated number as key it means one cell."
             },
             {
               "kind": "paragraph",
@@ -1518,11 +1518,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A key taken from the data itself, such as an ISBN or a product code, is called a **natural key**. Its attraction is that it already means something, and its risk is the one just seen: anything meaningful can be renumbered, corrected or reused. A **surrogate key** is a number that the database generates and that means nothing outside it, so there is no reason for it ever to change. In PostgreSQL it is written `id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY`, and in SQLite `id INTEGER PRIMARY KEY` fills it in."
+              "text": "A key taken from the data itself, such as an ISBN or a product code, is called a **natural key**, and its risk is the one just seen: anything meaningful can be renumbered, corrected or reused. A **surrogate key** is a number that the database generates and that means nothing outside it, so there is no reason for it ever to change. In PostgreSQL it is written `id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY`, and in SQLite `id INTEGER PRIMARY KEY` fills it in."
             },
             {
               "kind": "paragraph",
-              "text": "A surrogate key does not make the natural value disappear. The product code is still a fact about the product that must be different for each product, and for that the table declares it UNIQUE, which the next screen describes. The id is what other tables refer to, and the code remains something users can search by and change in one place."
+              "text": "A surrogate key does not make the natural value disappear. The product code is still a fact about the product that must be different for each product, and for that the table declares it UNIQUE."
             }
           ],
           "afterFigure": [],
@@ -1558,11 +1558,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A rule kept only in an application is a rule kept only for that application, since a script, a second program or a bug can all write to the table without going through it. A **constraint** is a rule declared on the table, and the database checks it for every writer. `NOT NULL` refuses an empty value. `UNIQUE` refuses a value that another row already has. `CHECK` refuses a row for which a condition is false, such as `price >= 0`. In the figure the three statements meet these rules in turn, and the one that breaks none is accepted."
+              "text": "A rule kept only in an application is a rule kept only for that application, since a script, a second program or a bug can all write to the table without going through it. A **constraint** is a rule declared on the table, and the database checks it for every writer. `NOT NULL` refuses an empty value. `UNIQUE` refuses a value that another row already has. `CHECK` refuses a row for which a condition is false, such as `price >= 0`."
             },
             {
               "kind": "paragraph",
-              "text": "`UNIQUE` and `PRIMARY KEY` are related and not the same. A table has *one* primary key, which is unique and never null, but it can have many `UNIQUE` columns, and a `UNIQUE` column that allows `NULL` may hold several of them, because `NULL` means \"unknown\" and two unknowns are not known to be equal. The statement that is refused leaves the table as it was, so the rows already there are untouched."
+              "text": "`UNIQUE` and `PRIMARY KEY` are related and not the same. A table has *one* primary key, which is unique and never null, but it can have many `UNIQUE` columns, and a `UNIQUE` column that allows `NULL` may hold several of them, because `NULL` means \"unknown\" and two unknowns are not known to be equal."
             }
           ],
           "afterFigure": [],
@@ -1623,11 +1623,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A foreign key is a constraint as well. An insert of an enrollment for student 9 is refused if no student has the id 9, so no row can refer to something that does not exist. The same rule applies when a parent row is removed while children still point to it, and there the designer chooses the outcome. `NO ACTION`, which is the default, and `RESTRICT` refuse the delete. `ON DELETE CASCADE` deletes the children too. `ON DELETE SET NULL` keeps them and clears the reference, which needs a column that allows `NULL`."
+              "text": "A foreign key is a constraint as well. The same rule applies when a parent row is removed while children still point to it, and there the designer chooses the outcome. `NO ACTION`, which is the default, and `RESTRICT` refuse the delete. `ON DELETE CASCADE` deletes the children too. `ON DELETE SET NULL` keeps them and clears the reference, which needs a column that allows `NULL`."
             },
             {
               "kind": "paragraph",
-              "text": "The figure deletes Ana, who has two of the three orders. Under no action nothing changes, under cascade her two orders go with her and one remains, and under set null all three orders stay and two lose their customer. Which one is right depends on whether an order means anything without its customer. SQLite checks foreign keys only after `PRAGMA foreign_keys = ON`."
+              "text": "The figure deletes Ana, who has two of the three orders. Which outcome is right depends on whether an order means anything without its customer. SQLite checks foreign keys only after `PRAGMA foreign_keys = ON`."
             }
           ],
           "afterFigure": [],
@@ -1784,11 +1784,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A key is the column, or the group of columns, that identifies a row, and its value has to be different in every row. A customers table could use the email address for this, since no two customers share one, and every order would then store that address to say whose order it is. The choice stops working when Ana changes her address, because the address belongs to her and she can change it whenever she likes, and every order that copied the old one now holds an address that no customer has."
+              "text": "A key is the column, or the group of columns, that identifies a row, and its value has to be different in every row. A customers table could use the email address for this, since no two customers share one, and every order would then store that address to say whose order it is. The choice stops working when Ana changes her address, and every order that copied the old one now holds an address that no customer has."
             },
             {
               "kind": "paragraph",
-              "text": "Choosing a key that stays the same is half of making a table dependable, and the other half is deciding what the table will refuse. A rule such as \"a price is never negative\" written into one program holds only for that program, while the same rule declared on the table holds for every script, import and application that writes to it. Settling both tells you, for any statement sent to a table, whether it will be stored or turned away."
+              "text": "Choosing a key that stays the same is half of making a table dependable, and the other half is deciding what the table will refuse."
             }
           ],
           "diagram": {
@@ -2064,7 +2064,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The opposite problem is an **insert anomaly**. The shop begins to stock a Cap at price 3, and no one has ordered one. The price is a fact about the product, but a row of this table is an order line, which needs an `order_id` and a `qty`, and the table has no row that could hold a Cap alone without inventing them. Both problems come from the same cause, since one table stores facts about three different kinds of thing."
+              "text": "The opposite problem is an **insert anomaly**. The shop begins to stock a Cap at price 3, and no one has ordered one. A row of this table is an order line, which needs an `order_id` and a `qty`, and the table has no row that could hold a Cap alone without inventing them."
             }
           ],
           "afterFigure": [],
@@ -2186,11 +2186,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A dependency answers the question of what identifies a row. A **candidate key** is a set of columns that determines every column of the table and that has no unnecessary members: remove any column and it stops determining everything. Take a school `timetable(room, period, teacher, subject)`. Room alone does not fix the teacher, since a room is used in every period, and period alone does not either, since many rooms are in use at once. The pair `(room, period)` fixes both the teacher and the subject, and dropping either column loses that, so the pair is a candidate key."
+              "text": "A **candidate key** is a set of columns that determines every column of the table and that has no unnecessary members: remove any column and it stops determining everything. Take a school `timetable(room, period, teacher, subject)`. Room alone does not fix the teacher, since a room is used in every period, and period alone does not either, since many rooms are in use at once. The pair `(room, period)` fixes both the teacher and the subject, and dropping either column loses that, so the pair is a candidate key."
             },
             {
               "kind": "paragraph",
-              "text": "Designers sometimes speak as if a table has one key and the rest is extra, but a table may have several candidate keys. A users table with an id, an email and a username, each different in every row, has three, and the designer picks one as the primary key. The unchosen ones are usually kept as UNIQUE columns."
+              "text": "A table may have several candidate keys. A users table with an id, an email and a username, each different in every row, has three, and the designer picks one as the primary key."
             }
           ],
           "afterFigure": [],
@@ -2287,11 +2287,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "The table `orders_flat` keeps everything about a shop's sales in one place. For each product on each order it records the customer's name and email, the product with its price, and the quantity, so a single row answers the question of who bought what. The convenience has a price, because a customer's email is written again for every line she has ordered, and a product's price is written again for every order that includes it."
+              "text": "The table `orders_flat` keeps everything about a shop's sales in one place. The convenience has a price, because a customer's email is written again for every line she has ordered, and a product's price is written again for every order that includes it."
             },
             {
               "kind": "paragraph",
-              "text": "A fact written in several places can later be changed in some of them and not in others, and then the table says two different things about the same customer, with nothing in it to show which is right. The cause is always a rule of the business that the table does not respect, such as that each order has exactly one customer, and stating those rules is how you predict where a wide table will go wrong and find the columns that identify a row."
+              "text": "The cause is always a rule of the business that the table does not respect, such as that each order has exactly one customer, and stating those rules is how you predict where a wide table will go wrong and find the columns that identify a row."
             }
           ],
           "diagram": {
@@ -2375,7 +2375,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "A decomposition is **lossless** when joining the pieces returns exactly the original rows, and a decomposition that is not lossless is *lossy*. The guarantee is that the columns the pieces share are a key of at least one piece, because then each row on the other side matches exactly one row there and no multiplication can happen. Every split in this lesson will be checked against that test."
+              "text": "A decomposition is **lossless** when joining the pieces returns exactly the original rows, and a decomposition that is not lossless is *lossy*. The guarantee is that the columns the pieces share are a key of at least one piece, because then each row on the other side matches exactly one row there and no multiplication can happen."
             }
           ],
           "afterFigure": [],
@@ -2531,11 +2531,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The first of the normal forms is the simplest to state. A table is in **first normal form** when every cell holds a single value. A column called `phone1`, `phone2`, a list such as \"555-0101, 555-0188\" in one cell, or a nested row all break it, for the reason met in the last lesson: the database cannot check, index or join on a value that is really several. The remedy is the one used for a many-to-many relationship, which is a row for each value, normally in a table of its own."
+              "text": "A table is in **first normal form** when every cell holds a single value. A column called `phone1`, `phone2`, a list such as \"555-0101, 555-0188\" in one cell, or a nested row all break it, for the reason met in the last lesson: the database cannot check, index or join on a value that is really several. The remedy is the one used for a many-to-many relationship, which is a row for each value, normally in a table of its own."
             },
             {
               "kind": "paragraph",
-              "text": "The word *normal* comes from relational theory. E. F. Codd's 1970 paper already described replacing relations that contain nested relations with simple ones, and the stricter forms that follow are all conditions of this kind on the dependencies in a table. Each form adds a condition to the one before, so a table in third normal form is also in second and first."
+              "text": "Each form adds a condition to the one before, so a table in third normal form is also in second and first."
             }
           ],
           "afterFigure": [],
@@ -2554,7 +2554,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A table is in **second normal form** when it is in first and no non-key column depends on *part* of a candidate key. The check starts from the key found in the last lesson. In `orders_flat` the key is `(order_id, product)`, but the customer columns depend on `order_id` alone and `product_price` depends on `product` alone, so both are partial dependencies. Only `qty` needs the whole pair."
+              "text": "A table is in **second normal form** when it is in first and no non-key column depends on *part* of a candidate key. In `orders_flat` the key is `(order_id, product)`, but the customer columns depend on `order_id` alone and `product_price` depends on `product` alone, so both are partial dependencies. Only `qty` needs the whole pair."
             },
             {
               "kind": "paragraph",
@@ -2621,7 +2621,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "That gives `customers` its own table, and with generated ids the schema in the figure has four tables. `customers` has 2 rows, `products` 3, `orders` 3 and `order_items` 4. Ana's name is now stored in 1 cell instead of 3, so an address change touches one row, deleting an order cannot delete a customer, and a new product can be inserted before anyone orders it."
+              "text": "That gives `customers` its own table, and with generated ids the schema in the figure has four tables. Ana's name is now stored in 1 cell instead of 3, so an address change touches one row, deleting an order cannot delete a customer, and a new product can be inserted before anyone orders it."
             }
           ],
           "afterFigure": [
@@ -2631,7 +2631,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "There are stricter forms beyond the third. The best known is **Boyce-Codd normal form**, or BCNF, which requires that every set of columns that determines another column contains a candidate key, and a table in third normal form usually meets it already. This course stops at the third."
+              "text": "There are stricter forms beyond the third. The best known is **Boyce-Codd normal form**, or BCNF, which requires that every set of columns that determines another column contains a candidate key, and a table in third normal form usually meets it already."
             }
           ],
           "introducesTerms": [
@@ -2786,11 +2786,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "Take a table of two rows, (Ana, P1, SQL) and (Ben, P1, Rust), which record that Ana used SQL on project P1 and that Ben used Rust on the same project. Cut it in two by columns, one piece holding employee and project and the other holding project and skill, and every value is still stored in one piece or the other. Joining the pieces on project is the obvious way to put the table back together."
+              "text": "Take a table of two rows, (Ana, P1, SQL) and (Ben, P1, Rust). Cut it in two by columns, one piece holding employee and project and the other holding project and skill, and every value is still stored in one piece or the other. Joining the pieces on project is the obvious way to put the table back together."
             },
             {
               "kind": "paragraph",
-              "text": "Whether the join restores the original depends on how the columns are tied to one another, which the last lesson showed how to write down as dependencies. A split that follows the dependencies is safe, and the standard way to find one for a wide table is to apply the normal forms in turn, checking each result by joining the pieces and comparing the rows with the original. That makes it possible to repair a table like the one in the last lesson and to show that nothing was lost in doing so."
+              "text": "Whether the join restores the original depends on how the columns are tied to one another, which the last lesson showed how to write down as dependencies."
             }
           ],
           "diagram": {
@@ -2849,11 +2849,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A database does two quite different jobs. One is recording changes safely, as an order is placed or an item added, which is the work the earlier lessons designed for: every fact stored once. The other is answering a question over many rows, such as the revenue for each month and product category, which reads a great deal and changes little. The figure on the previous screen shows the six sales of a small shop. Each row is one sale, and every column is either a number to add up or a key pointing at something that describes it."
+              "text": "A database does two quite different jobs. One is recording changes safely, which is the work the earlier lessons designed for: every fact stored once. The other is answering a question over many rows, which reads a great deal and changes little. The figure on the previous screen shows the six sales of a small shop, where every column is either a number to add up or a key pointing at something that describes it."
             },
             {
               "kind": "paragraph",
-              "text": "A table of this kind is a **fact table**: it has one row for each event, a few numeric **measures** such as units and amount, and foreign keys to the tables that say who, what and when. It is usually the largest table in a reporting database, which is why it holds as little text as possible."
+              "text": "A table of this kind is a **fact table**: it has one row for each event, a few numeric **measures** such as units and amount, and foreign keys to the tables that say who, what and when."
             }
           ],
           "afterFigure": [],
@@ -2889,11 +2889,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The tables that describe the facts are called **dimensions**. Here `dim_product` holds a name and a category for each product, and `dim_date` holds the day and month for each date. A dimension is small next to the fact table, because a shop has few products and a year has 365 days, and it is wide, with many descriptive columns, because those are the things a report groups by. Drawn with the fact table in the middle and one line to each dimension, the layout looks like a star, and so it is called a **star schema**."
+              "text": "The tables that describe the facts are called **dimensions**. Here `dim_product` holds a name and a category for each product, and `dim_date` holds the day and month for each date. A dimension is small next to the fact table, and it is wide, with many descriptive columns, because those are the things a report groups by. Drawn with the fact table in the middle and one line to each dimension, the layout looks like a star, and so it is called a **star schema**."
             },
             {
               "kind": "paragraph",
-              "text": "The key point is where each kind of information lives. The numbers to be added, units and amount, belong to the event and stay in the fact table. The words to group by, category and month, belong to the thing described and stay in a dimension, once. The second view of the figure shows the report that these tables produce."
+              "text": "The key point is where each kind of information lives. The numbers to be added, units and amount, belong to the event and stay in the fact table. The words to group by, category and month, belong to the thing described and stay in a dimension, once."
             }
           ],
           "afterFigure": [],
@@ -2931,11 +2931,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Revenue by month and category takes three tables. The query joins `fact_sales` to `dim_date` on `date_id` and to `dim_product` on `product_id`, groups the rows by month and category, and adds up `amount` in each group: `SELECT d.month, p.category, SUM(f.amount) FROM fact_sales f JOIN dim_date d ON d.date_id = f.date_id JOIN dim_product p ON p.product_id = f.product_id GROUP BY d.month, p.category`. This is the join and `GROUP BY` of *SQL: From Rows to Reports*, and the star layout means every report needs the same shape of query, with a different choice of dimension columns."
+              "text": "Revenue by month and category takes three tables: `SELECT d.month, p.category, SUM(f.amount) FROM fact_sales f JOIN dim_date d ON d.date_id = f.date_id JOIN dim_product p ON p.product_id = f.product_id GROUP BY d.month, p.category`. This is the join and `GROUP BY` of *SQL: From Rows to Reports*, and the star layout means every report needs the same shape of query, with a different choice of dimension columns."
             },
             {
               "kind": "paragraph",
-              "text": "The figure here joins one dimension at a time. Grouped by category the 84 of revenue splits into 24 for Kitchen and 60 for Stationery, and grouped by product name it splits into 8, 60 and 16. Nothing in the fact table changed between the two reports, and only the dimension column in `GROUP BY` changed."
+              "text": "The figure here joins one dimension at a time. Nothing in the fact table changed between the two reports, and only the dimension column in `GROUP BY` changed."
             }
           ],
           "afterFigure": [],
@@ -3353,11 +3353,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A table with 1,000,000 rows is not read row by row. The database stores rows in fixed-size blocks called **pages**, 8 kB each in PostgreSQL, and always transfers a whole page at a time, so the useful measure of work is the number of pages read. With 50 rows on a page, 1,000,000 rows fill 1,000,000 ÷ 50 = 20,000 pages."
+              "text": "The database stores rows in fixed-size blocks called **pages**, 8 kB each in PostgreSQL, and always transfers a whole page at a time, so the useful measure of work is the number of pages read. With 50 rows on a page, 1,000,000 rows fill 1,000,000 ÷ 50 = 20,000 pages."
             },
             {
               "kind": "paragraph",
-              "text": "Without any help, finding one row means reading page after page until it turns up, and since the database cannot know in advance that a row is unique it must read them all. This is a **table scan**, and it costs 20,000 page reads however few rows match. The figure draws the 20,000 pages as 50 squares of 400 pages each. A scan colours all of them."
+              "text": "Without any help, finding one row means reading page after page until it turns up, and since the database cannot know in advance that a row is unique it must read them all. This is a **table scan**, and it costs 20,000 page reads however few rows match."
             }
           ],
           "afterFigure": [],
@@ -3506,11 +3506,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The cost of finding one row by index is therefore the height of the tree plus one read of the table page that the leaf points to. For the table of 1,000,000 rows that is 3 + 1 = 4 page reads, against 20,000 for the scan, which is 20,000 ÷ 4 = 5,000 times fewer."
+              "text": "The cost of finding one row by index is therefore the height of the tree plus one read of the table page that the leaf points to. For the table of 1,000,000 rows that is 3 + 1 = 4 page reads, against 20,000 for the scan."
             },
             {
               "kind": "paragraph",
-              "text": "The tree stays shallow however large the table grows. With a fan-out of 100, a billion rows need only 5 levels, because 100^4 = 100,000,000 is too few and 100^5 = 10,000,000,000 is enough. Real fan-outs are often several hundred, so real trees are no taller. The price is paid on writes, since every insert or delete must also update the index pages, which is why a table is not given an index on every column."
+              "text": "The tree stays shallow however large the table grows: with a fan-out of 100, a billion rows need only 5 levels. The price is paid on writes, since every insert or delete must also update the index pages, which is why a table is not given an index on every column."
             }
           ],
           "afterFigure": [],
@@ -3588,13 +3588,13 @@
             },
             {
               "kind": "paragraph",
-              "text": "Beyond that point the scan is cheaper, even though the index exists. This is why the **planner**, the part of the database that decides how to carry out each query, sometimes ignores an index, and why an index does not always help: it serves queries that match a small share of the rows. The figure shows the cost of each as the number of matching rows grows."
+              "text": "Beyond that point the scan is cheaper, even though the index exists. This is why the **planner**, the part of the database that decides how to carry out each query, sometimes ignores an index, and why an index does not always help: it serves queries that match a small share of the rows."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "PostgreSQL makes the same comparison with its own cost settings, and a later lesson shows where the planner's choice appears in a query plan."
+              "text": "PostgreSQL makes the same comparison with its own cost settings."
             }
           ],
           "introducesTerms": [
@@ -3699,11 +3699,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A table of 1,000,000 rows with 50 rows on each page occupies 20,000 pages, and a database reads whole pages and never single rows. To find one customer in such a table without any other structure, it has to read page after page until the row turns up, and since it cannot know that no second matching row exists, it reads all 20,000 of them."
+              "text": "A table of 1,000,000 rows with 50 rows on each page occupies 20,000 pages, and a database reads whole pages and never single rows. To find one customer in such a table without any other structure, it has to read page after page until the row turns up."
             },
             {
               "kind": "paragraph",
-              "text": "With an index on the column being searched, the same customer is found in four page reads, because the index leads from the value to the row through a few levels of index pages and not through the table. The four comes from arithmetic on rows, pages and the number of entries a page can hold, and the same arithmetic shows the point at which an index stops being faster than reading everything."
+              "text": "With an index on the column being searched, the same customer is found in four page reads, because the index leads from the value to the row through a few levels of index pages and not through the table."
             }
           ],
           "diagram": {
@@ -3844,7 +3844,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "A `status` column with three values behaves differently. If 90 percent of the rows are `'done'`, the condition `status = 'done'` keeps 9 rows in 10, and an index on it saves almost nothing, since a scan would be cheaper. The same index can still be useful for the rare value: if `'failed'` covers 1 percent of rows, `status = 'failed'` keeps 10,000 of them. Selectivity depends on the value asked for, as well as on the column."
+              "text": "A `status` column with three values behaves differently. If 90 percent of the rows are `'done'`, the condition `status = 'done'` keeps 9 rows in 10, and an index on it saves almost nothing. The same index can still be useful for the rare value: if `'failed'` covers 1 percent of rows, `status = 'failed'` keeps 10,000 of them."
             }
           ],
           "afterFigure": [],
@@ -3879,19 +3879,14 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "SQLite's `EXPLAIN QUERY PLAN` prints one line for each table in a query, saying how it will be read. `SCAN` means every row, as when `first_name` alone is the filter. `SEARCH ... USING INDEX` means a seek in the index, and the part in brackets, such as `(last_name=?)`, names the columns the seek used. `SEARCH ... USING INTEGER PRIMARY KEY (rowid=?)` is the same for a lookup by id."
+              "text": "SQLite's `EXPLAIN QUERY PLAN` prints one line for each table in a query, saying how it will be read. `SCAN` means every row, as when `first_name` alone is the filter. `SEARCH ... USING INDEX` means a seek in the index, and the part in brackets, such as `(last_name=?)`, names the columns the seek used."
             },
             {
               "kind": "paragraph",
-              "text": "When an index holds *every* column a query reads, the table need not be visited at all. The query `SELECT first_name FROM emp WHERE last_name = 'L3'` needs only `last_name` and `first_name`, both in `idx_name`, so the plan says `USING COVERING INDEX`, and the lookup costs the tree height without the extra table page. An index like this is a **covering index** for that query. The figure shows the three lines with the query for each."
+              "text": "When an index holds *every* column a query reads, the table need not be visited at all. The query `SELECT first_name FROM emp WHERE last_name = 'L3'` needs only `last_name` and `first_name`, both in `idx_name`, so the plan says `USING COVERING INDEX`, and the lookup costs the tree height without the extra table page. An index like this is a **covering index** for that query."
             }
           ],
-          "afterFigure": [
-            {
-              "kind": "paragraph",
-              "text": "The lines shown here come from SQLite 3.45, and the wording differs a little in older versions. PostgreSQL prints different, longer plans, which the next lesson reads."
-            }
-          ],
+          "afterFigure": [],
           "introducesTerms": [
             "covering index"
           ],
@@ -3950,7 +3945,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The same index serves an `ORDER BY`. Within one department the salaries are already sorted, so `WHERE dept = 'D2' ORDER BY salary` reads the rows in the order requested and needs no separate sort step. SQLite shows a sort as a plan line, `USE TEMP B-TREE FOR ORDER BY`, and with this index that line is absent."
+              "text": "The same index serves an `ORDER BY`. Within one department the salaries are already sorted, so `WHERE dept = 'D2' ORDER BY salary` reads the rows in the order requested and needs no separate sort step."
             }
           ],
           "afterFigure": [],
@@ -4073,7 +4068,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "Whether a query can use such an index depends on whether the rows it wants sit together in that order, and the question has a second half, which is how many rows a filter will keep, since an index that leads to half the table is not worth following. Answering both for a given query, and reading the line of a plan that shows what the database chose, settles which columns an index should have and in what order, before it is built."
+              "text": "Whether a query can use such an index depends on whether the rows it wants sit together in that order, and the question has a second half, which is how many rows a filter will keep, since an index that leads to half the table is not worth following."
             }
           ],
           "diagram": {
@@ -4275,7 +4270,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The planner cannot count the rows a filter will keep without running it, so it estimates from **statistics** that the database keeps about each column: the number of rows, the most common values and how the rest are spread. When a table has changed a great deal since the statistics were gathered, or never had them gathered, the estimates drift, and the planner may choose a plan that would have suited the old data. The command `ANALYZE` refreshes them, and PostgreSQL's autovacuum normally runs it in the background."
+              "text": "The planner cannot count the rows a filter will keep without running it, so it estimates from **statistics** that the database keeps about each column: the number of rows, the most common values and how the rest are spread. When a table has changed a great deal since the statistics were gathered, the estimates drift. The command `ANALYZE` refreshes them, and PostgreSQL's autovacuum normally runs it in the background."
             },
             {
               "kind": "paragraph",
@@ -4422,7 +4417,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "A slow query is usually slow because of one step, and the step to suspect is one whose estimate is far from its real count, since the planner chose everything above it for a size that never occurred. Reading a plan therefore means working up from the leaves, comparing each estimate with its count, and knowing how much work each of the three join strategies does at a given size."
+              "text": "A slow query is usually slow because of one step, and the step to suspect is one whose estimate is far from its real count, since the planner chose everything above it for a size that never occurred. Reading a plan therefore means working up from the leaves, comparing each estimate with its count."
             }
           ],
           "diagram": {
@@ -4561,7 +4556,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The four letters stand for four separate properties. **Atomicity** was the previous screen: all or nothing. **Consistency** means that the data satisfies its declared rules, the constraints of the earlier lessons, both before and after a transaction, so a transaction that would break a `CHECK` or a foreign key is refused. **Isolation** says that concurrent transactions do not interfere with each other, in a degree that depends on the isolation level chosen, a topic for the next lesson. **Durability** says that once `COMMIT` has returned, a later crash will not lose the change."
+              "text": "The four letters stand for four separate properties. **Atomicity** was the previous screen: all or nothing. **Consistency** means that the data satisfies its declared rules, the constraints of the earlier lessons, both before and after a transaction, so a transaction that would break a `CHECK` or a foreign key is refused. **Isolation** says that concurrent transactions do not interfere with each other, in a degree that depends on the isolation level chosen. **Durability** says that once `COMMIT` has returned, a later crash will not lose the change."
             },
             {
               "kind": "paragraph",
@@ -4606,15 +4601,10 @@
             },
             {
               "kind": "paragraph",
-              "text": "After a crash, the database reads the log. Transactions whose commit record is present are replayed onto the table pages, and any change without a commit record is discarded. In the figure the commit record reached the disk and the pages did not, and recovery still produced A = 400 and B = 300. So committing means that the *log record* is durable, and does not mean that the table files were written."
+              "text": "After a crash, the database reads the log. Transactions whose commit record is present are replayed onto the table pages, and any change without a commit record is discarded. So committing means that the *log record* is durable, and does not mean that the table files were written."
             }
           ],
-          "afterFigure": [
-            {
-              "kind": "paragraph",
-              "text": "The PostgreSQL documentation describes this as the central concept of write-ahead logging: changes to data files must be written only after the log records describing them have reached permanent storage."
-            }
-          ],
+          "afterFigure": [],
           "introducesTerms": [
             "write-ahead logging"
           ],
@@ -4851,11 +4841,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "In the opening schedule x is 100, T1 and T2 each read it, T1 writes 110 and T2 writes 120. T2 computed 120 from the 100 it had read, so it knew nothing of T1's change, and its write replaced the 110. The final value is 120. Run one transaction after the other, in a **serial** order, and the answer would be 130, because the second would start from the value the first had left."
+              "text": "In the opening schedule x is 100, T1 and T2 each read it, T1 writes 110 and T2 writes 120. T2 computed 120 from the 100 it had read, so its write replaced the 110. Run one transaction after the other, in a **serial** order, and the answer would be 130."
             },
             {
               "kind": "paragraph",
-              "text": "The test for every anomaly in this lesson is the same one. The result of a set of concurrent transactions is correct if it equals the result of *some* serial order of them. A lost update is an **anomaly** because 120 matches neither order. The figure steps through the schedule and ends on the value 120, where T1's change of 10 has been lost."
+              "text": "The test for every anomaly in this lesson is the same one. The result of a set of concurrent transactions is correct if it equals the result of *some* serial order of them. A lost update is an **anomaly** because 120 matches neither order."
             }
           ],
           "afterFigure": [],
@@ -4914,11 +4904,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Three further anomalies concern what a transaction *reads*. In a **dirty read**, T2 reads a change that T1 has not committed, and T1 then rolls it back, so T2 has used a value that never officially existed. PostgreSQL does not allow this at any level, and its Read Uncommitted level behaves as Read Committed. In a **non-repeatable read**, T1 reads a row, T2 commits a change to it, and T1's second read of the same row gives a different value, 100 and then 150 in the figure."
+              "text": "Three further anomalies concern what a transaction *reads*. In a **dirty read**, T2 reads a change that T1 has not committed, and T1 then rolls it back, so T2 has used a value that never officially existed. PostgreSQL does not allow this at any level, and its Read Uncommitted level behaves as Read Committed. In a **non-repeatable read**, T1 reads a row, T2 commits a change to it, and T1's second read of the same row gives a different value."
             },
             {
               "kind": "paragraph",
-              "text": "A **phantom read** is the same thing for a set of rows. T1 counts the rows with `dept = 'A'` and gets 3, T2 commits a new row in that department, and T1's second count is 4. The row did not exist at the first query and appeared before the second. Each of these gives a result that no serial order would give, since in a serial order T1 would see T2's work either wholly or not at all."
+              "text": "A **phantom read** is the same thing for a set of rows. T1 counts the rows with `dept = 'A'` and gets 3, T2 commits a new row in that department, and T1's second count is 4. Each of these gives a result that no serial order would give, since in a serial order T1 would see T2's work either wholly or not at all."
             }
           ],
           "afterFigure": [],
@@ -5211,7 +5201,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "Run at the same time, the two overlap, and the order in which their reads and writes interleave decides what x ends up holding. Some interleavings give a result that no serial order could, and these are the anomalies. Any program that reads a value and then writes a result based on it can meet one, and the database's rules about which interleavings it will allow are its isolation levels."
+              "text": "Run at the same time, the two overlap, and the order in which their reads and writes interleave decides what x ends up holding. Some interleavings give a result that no serial order could, and these are the anomalies."
             }
           ],
           "diagram": {
@@ -5344,11 +5334,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "MVCC lets readers and writers coexist, but two writers cannot change the same row at once. An `UPDATE` takes a **row lock** on the rows it changes and holds it until the transaction ends, so a second writer to the same row waits until the first commits or rolls back. Under Repeatable Read the second writer is aborted instead, as the previous lesson said."
+              "text": "MVCC lets readers and writers coexist, but two writers cannot change the same row at once. An `UPDATE` takes a **row lock** on the rows it changes and holds it until the transaction ends, so a second writer to the same row waits until the first commits or rolls back."
             },
             {
               "kind": "paragraph",
-              "text": "Waiting can go wrong. Suppose T1 locks row 1 and then wants row 2, while T2 locks row 2 and then wants row 1. Each waits for a lock the other holds, which is a **deadlock**. PostgreSQL detects the cycle and aborts one transaction, so exactly one of the two must be rerun. A deadlock is not a fault of the database. It follows from the order in which the transactions take their locks, and the usual cure is for every transaction to lock rows in the *same order*, which removes the cycle, as in the second view of the figure, with retry as the fallback."
+              "text": "Waiting can go wrong. Suppose T1 locks row 1 and then wants row 2, while T2 locks row 2 and then wants row 1. Each waits for a lock the other holds, which is a **deadlock**. PostgreSQL detects the cycle and aborts one transaction, and the usual cure is for every transaction to lock rows in the *same order*, which removes the cycle, with retry as the fallback."
             }
           ],
           "afterFigure": [],
@@ -5442,7 +5432,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Sometimes holding a lock is not possible, for instance when a person opens a form, edits it for ten minutes and then saves, because no database lock should be held across that time. The **optimistic** approach hopes there is no conflict, and checks at the end. The row carries a **version column**, which the application reads along with the data and sends back in the update: `UPDATE accounts SET balance = 150, version = 4 WHERE id = 7 AND version = 3`."
+              "text": "Sometimes holding a lock is not possible, for instance when a person opens a form, edits it for ten minutes and then saves. The **optimistic** approach hopes there is no conflict, and checks at the end. The row carries a **version column**, which the application reads along with the data and sends back in the update: `UPDATE accounts SET balance = 150, version = 4 WHERE id = 7 AND version = 3`."
             },
             {
               "kind": "paragraph",
@@ -5588,7 +5578,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The effect is that a long report can read a million rows without stopping the payments that change them, because neither has to wait for the other. What remains are conflicts between two writers of the same row, and between a read and the write that follows it, and an application has to detect or prevent those itself."
+              "text": "The effect is that a long report can read a million rows without stopping the payments that change them. What remains are conflicts between two writers of the same row, and between a read and the write that follows it."
             }
           ],
           "diagram": {
@@ -5647,11 +5637,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Many workloads ask the same narrow question over and over: given this id, return this thing, and quickly. A session for a logged-in user, a page-view counter and a cached page are all of this kind. A **key-value store** serves it directly. It maps a **key**, a string such as `session:41`, to a **value**, and offers a few operations on a key: set it, get it, delete it, and some arithmetic on it. Redis is the best known, and it keeps its data in memory, which is why it is fast."
+              "text": "Many workloads ask the same narrow question over and over: given this id, return this thing, and quickly. A **key-value store** serves it directly. It maps a **key**, a string such as `session:41`, to a **value**, and offers a few operations on a key: set it, get it, delete it, and some arithmetic on it. Redis is the best known, and it keeps its data in memory, which is why it is fast."
             },
             {
               "kind": "paragraph",
-              "text": "What it gives up is everything that needs to look *inside* the data. The relational model can find every customer named Ana or join two tables, and a key-value store can only go to the key. A request for all values that contain \"ana\" has no shortcut, and it means reading every value, unless the application keeps its own index as more keys. The figure compares the two requests."
+              "text": "What it gives up is everything that needs to look *inside* the data. The relational model can find every customer named Ana or join two tables, and a key-value store can only go to the key. A request for all values that contain \"ana\" has no shortcut, and it means reading every value, unless the application keeps its own index as more keys."
             }
           ],
           "afterFigure": [],
@@ -5709,7 +5699,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The figure runs a short session. After SET a 5, the command INCR a replies 6, and GET a then replies the string \"6\", which is stored as text even though INCR gave an integer. DEL a replies 1, and a later GET a replies nil because the key is gone. On the fresh key n, two INCR commands reply 1 and 2, and DEL zz replies 0, since no such key existed. A counter such as INCR visits:home, run three times on a new key, replies 1, 2 and 3."
+              "text": "The figure runs a short session. After SET a 5, the command INCR a replies 6, and GET a then replies the string \"6\", which is stored as text even though INCR gave an integer."
             }
           ],
           "afterFigure": [],
@@ -5779,11 +5769,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A value need not be a string. Redis also stores **hashes**, which hold named fields, **lists**, **sets**, and **sorted sets**, in which every member has a score and the set is kept in score order. A sorted set suits a leaderboard: the members are players, the scores are points, and asking for the top ten reads the first ten entries without sorting anything. Each type comes with commands that work on it directly, so the store does the update in one step."
+              "text": "A value need not be a string. Redis also stores **hashes**, which hold named fields, **lists**, **sets**, and **sorted sets**, in which every member has a score and the set is kept in score order. A sorted set suits a leaderboard: asking for the top ten reads the first ten entries without sorting anything."
             },
             {
               "kind": "paragraph",
-              "text": "Behind this is a different way of designing. A relational design starts from the entities and lets queries be written later, while these stores start from the queries that must be fast and shape the data to answer them. There is also a common misunderstanding about the word NoSQL, which does not mean there is no schema. The schema moves into the application, which decides what each key or field means, and documents written last year keep last year's shape unless something rewrites them."
+              "text": "Behind this is a different way of designing. A relational design starts from the entities and lets queries be written later, while these stores start from the queries that must be fast and shape the data to answer them. There is also a common misunderstanding about the word NoSQL, which does not mean there is no schema. The schema moves into the application, which decides what each key or field means."
             }
           ],
           "afterFigure": [],
@@ -5807,7 +5797,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "That is the gain, and it comes from deciding in advance what is read together, which is the access pattern. The cost is that the items are now inside the order. A query for every order that contains ink has to look into each document, and a change to something shared, such as a product name copied into many orders, has to be made in every copy."
+              "text": "That is the gain, and it comes from deciding in advance what is read together, which is the access pattern. The cost is that a query for every order that contains ink has to look into each document, and a change to something shared, such as a product name copied into many orders, has to be made in every copy."
             }
           ],
           "afterFigure": [],
@@ -5987,11 +5977,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A page-view counter needs very little from a database. It has a name, visits:home, and a number, and the only operations are to add one to the number and to read it. A relational database can do this, with a table, a primary key and an UPDATE, but it also does a good deal that the counter will never use, and some workloads are better served by a store that does only the narrow job and does it in memory."
+              "text": "A page-view counter needs very little from a database. A relational database can do this, with a table, a primary key and an UPDATE, but it also does a good deal that the counter will never use, and some workloads are better served by a store that does only the narrow job and does it in memory."
             },
             {
               "kind": "paragraph",
-              "text": "A **key-value store** is built for that narrow job: it keeps each value under a key and answers by key alone. A document store extends the idea by keeping a nested record under each key, so that data which is read together can be stored together. Both give up the relational database's freedom to search across the data and join it, in return for speed and a simpler layout, and the way to decide what such a store should hold is to start from the questions it must answer quickly and to keep together what is read together."
+              "text": "A **key-value store** is built for that narrow job: it keeps each value under a key and answers by key alone. A document store extends the idea by keeping a nested record under each key, so that data which is read together can be stored together. Both give up the relational database's freedom to search across the data and join it, in return for speed and a simpler layout."
             }
           ],
           "diagram": {
@@ -6054,7 +6044,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The copies are usually updated *asynchronously*, so a replica may be behind. In the figure the write x = 7 has reached the primary and replica 1, and replica 2 still holds 6, so a read there returns an old value. This **replication lag** gives the read-your-writes problem: a user saves a change, reads it back from a lagging replica, and sees the old data. A replica is also not a backup, since it receives every change, including a mistaken `DELETE`, as faithfully as the good ones."
+              "text": "The copies are usually updated *asynchronously*, so a replica may be behind. This **replication lag** gives the read-your-writes problem: a user saves a change, reads it back from a lagging replica, and sees the old data. A replica is also not a backup, since it receives every change, including a mistaken `DELETE`, as faithfully as the good ones."
             }
           ],
           "afterFigure": [],
@@ -6172,11 +6162,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Replication copies the *same* data to several nodes, so it does not help when the data no longer fits on one. **Sharding** splits the data, with each key stored on one shard. The simplest rule is to place key k on node k mod n. With 12 keys and 3 nodes, keys 0, 3, 6 and 9 go to node 0, and so on. When a fourth node is added, the same keys are placed by k mod 4, and the figure shows what happens: only keys 0, 1 and 2 stay where they were, and the other 9 of the 12 move."
+              "text": "Replication copies the *same* data to several nodes, so it does not help when the data no longer fits on one. **Sharding** splits the data, with each key stored on one shard. The simplest rule is to place key k on node k mod n. When a fourth node is added, the same keys are placed by k mod 4, and the figure shows what happens: only keys 0, 1 and 2 stay where they were, and the other 9 of the 12 move."
             },
             {
               "kind": "paragraph",
-              "text": "For keys 0 to 99, going from 3 nodes to 4 moves 73 of them. Moving data is the expensive part of resizing a cluster, so a rule that changes nearly every placement scales badly, and with this rule adding a node costs almost a full reshuffle."
+              "text": "Moving data is the expensive part of resizing a cluster, so a rule that changes nearly every placement scales badly."
             }
           ],
           "afterFigure": [],
@@ -6286,11 +6276,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Every store in this course gives something up for something else. A relational database enforces rules, joins freely and offers strong transactions, which suits data with many relationships and rules to keep, such as orders, stock and invoices. A key-value store gives the fastest lookup by key and nothing else, which suits sessions and counters. A document store keeps data that is read together in one record, which suits product pages and similar nested data. When the data is spread over many machines there is a further choice, which the **CAP theorem** states: during a network partition, a replicated store can stay *consistent* and refuse some requests, or stay *available* and risk returning stale data. Eric Brewer put forward the idea in 2000, and Gilbert and Lynch proved a formal version in 2002."
+              "text": "Every store in this course gives something up for something else. A relational database enforces rules, joins freely and offers strong transactions, which suits data with many relationships and rules to keep, such as orders, stock and invoices. When the data is spread over many machines there is a further choice, which the **CAP theorem** states: during a network partition, a replicated store can stay *consistent* and refuse some requests, or stay *available* and risk returning stale data. Eric Brewer put forward the idea in 2000, and Gilbert and Lynch proved a formal version in 2002."
             },
             {
               "kind": "paragraph",
-              "text": "The theorem is often misread as a permanent choice of two out of three. The choice appears only while a partition is happening, and at other times a system can be both consistent and available. The practical advice is to start with a relational database, which handles most workloads, and to move a part of the system to another kind of store only when a measured need says so."
+              "text": "The theorem is often misread as a permanent choice of two out of three, but the choice appears only while a partition is happening. The practical advice is to start with a relational database, which handles most workloads, and to move a part of the system to another kind of store only when a measured need says so."
             }
           ],
           "afterFigure": [],
@@ -6416,7 +6406,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "Whether a read is certain to see the newest value comes down to two numbers, how many copies acknowledged the write and how many the read asks, and the sum of the two can be checked against the number of copies. When the data no longer fits on one machine the same kind of counting applies to how many keys move when a machine is added, and it shows why some placement rules scale and others do not. A choice of store then comes down to which of these costs the workload can afford."
+              "text": "Whether a read is certain to see the newest value comes down to two numbers, how many copies acknowledged the write and how many the read asks, and the sum of the two can be checked against the number of copies. When the data no longer fits on one machine the same kind of counting applies to how many keys move when a machine is added. A choice of store then comes down to which of these costs the workload can afford."
             }
           ],
           "diagram": {

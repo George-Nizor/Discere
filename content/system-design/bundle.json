@@ -634,17 +634,17 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Return to the one-sentence request, a service that shortens links, and ask what a team would have to agree on before building anything. Some of the answers describe behaviour: a user gives the service a long URL and receives a short one, and anyone who opens the short one is sent to the long one. Statements of this kind are called **functional requirements**, because they say what the system *does*, and each can be checked by trying it once and seeing whether it happens."
+              "text": "Return to the one-sentence request, a service that shortens links, and ask what a team would have to agree on before building anything. Some of the answers describe behaviour: a user gives the service a long URL and receives a short one, and anyone who opens the short one is sent to the long one. Statements of this kind are called **functional requirements**, because they say what the system *does*."
             },
             {
               "kind": "paragraph",
-              "text": "Other answers describe quality: how quickly the redirect arrives, how often the service can be reached, and whether a link survives the failure of a disk. These are **quality targets**, and they say how *well* the behaviour must be delivered. The figure shows four statements about the shortener as they might arrive in a meeting, mixed together, and a second view sorts them into the two kinds."
+              "text": "Other answers describe quality: how quickly the redirect arrives, how often the service can be reached, and whether a link survives the failure of a disk. These are **quality targets**, and they say how *well* the behaviour must be delivered."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "The sorting matters because the two kinds shape a design in different ways. The behaviours are few and easy to satisfy on a single machine, since a table of short codes and a redirect will do the job. The quality targets are where the effort goes, because a requirement such as *never lost* forces the system to keep several copies of every link, and one such as *under 100 ms for 99% of requests* decides how close to the reader the data must sit. A design is largely the set of answers to its quality targets, so a request that names none of them has not yet become a design problem."
+              "text": "The sorting matters because the two kinds shape a design in different ways. The behaviours are few and easy to satisfy on a single machine, and the quality targets are where the effort goes, because a requirement such as *never lost* forces the system to keep several copies of every link."
             }
           ],
           "introducesTerms": [
@@ -761,16 +761,12 @@
             {
               "kind": "paragraph",
               "text": "The choice you just made rests on one number, the **read/write ratio**, which counts the reads for every write. A ratio of 100 to 1 means that each time a link is created it is opened 100 times, so 10 writes per second imply 100 × 10 = 1,000 reads per second. The ratio fixes one rate from the other: you usually know one rate from the product's numbers, and the ratio supplies the second."
-            },
-            {
-              "kind": "paragraph",
-              "text": "The figure draws writes and reads to one scale for three services. In the first, the link shortener, the green bar of reads is a hundred times the length of the accent bar of writes; in the second the two are equal; in the third, a service that collects log lines which are rarely read, the writes dominate and run at 1,000 per second against 10 reads."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "The ratio points to where the effort should go. When reads dominate, the same answers are requested again and again, so keeping copies of answers close to the reader pays off. When writes dominate, the cost of storing every item safely and in order is what limits the system. A design that optimises the wrong side spends effort where the load is not, which is why the ratio is asked for before any box is drawn."
+              "text": "The ratio points to where the effort should go. When reads dominate, the same answers are requested again and again, so keeping copies of answers close to the reader pays off. When writes dominate, the cost of storing every item safely and in order is what limits the system."
             }
           ],
           "introducesTerms": [
@@ -870,7 +866,7 @@
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "The order is not arbitrary. The load cannot be estimated until the scope says what counts as a request, and a component cannot be chosen until the load says how much work it has to do, so a cache drawn before the ratio is known is a guess about a problem nobody has measured. The last step also feeds back: a bottleneck found there sends you to an earlier step with a new number, not forward to a bigger box."
+              "text": "The order is not arbitrary: the load cannot be estimated until the scope says what counts as a request, and a component cannot be chosen until the load says how much work it has to do."
             }
           ],
           "introducesTerms": [
@@ -927,13 +923,13 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A scope that stays in someone's head is a scope that two people will read differently. After the behaviours and the targets, a design states its **assumptions**, the facts it takes as given because nobody has measured them yet, such as \"each link is opened 100 times\", and its **non-goals**, the things it deliberately will not do, such as \"links cannot be edited after they are created\" or \"no record of who clicked\". Assumptions are numbers that can be revised later, whereas non-goals are boundaries that save work."
+              "text": "After the behaviours and the targets, a design states its **assumptions**, the facts it takes as given because nobody has measured them yet, such as \"each link is opened 100 times\", and its **non-goals**, the things it deliberately will not do, such as \"links cannot be edited after they are created\" or \"no record of who clicked\". Assumptions are numbers that can be revised later, whereas non-goals are boundaries that save work."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "Writing them down has a practical use. When the estimate turns out to be wrong, the assumption names exactly which figure to revise, and when someone asks for a feature, the non-goal shows that leaving it out was a decision and not an oversight. A chat system with the same request rate as the shortener would list different assumptions, since a message must reach the other participants almost at once, and different non-goals, which is how two services with identical loads end up as different designs."
+              "text": "When the estimate turns out to be wrong, the assumption names exactly which figure to revise, and when someone asks for a feature, the non-goal shows that leaving it out was a decision and not an oversight."
             }
           ],
           "introducesTerms": [
@@ -998,11 +994,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "The request is one sentence long: build a service that shortens links. Nothing in it says how many links there will be, how fast a short link must open, or whether a link may ever be lost, and each of those answers leads to a different system. A service that is opened a thousand times a second cannot be designed in the same way as one that is opened once an hour, although both would pass the same test of \"works\"."
+              "text": "The request is one sentence long: build a service that shortens links. Nothing in it says how many links there will be, how fast a short link must open, or whether a link may ever be lost, and each of those answers leads to a different system."
             },
             {
               "kind": "paragraph",
-              "text": "Design begins by turning such a sentence into statements that can be checked, which means separating what the system does from how well it does it and putting a number on the second. One further number, the ratio of reads to writes, then tells you which side of the service the load falls on, and so which components are worth drawing."
+              "text": "Design begins by turning such a sentence into statements that can be checked, which means separating what the system does from how well it does it and putting a number on the second."
             }
           ]
         },
@@ -1108,11 +1104,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The average hides the shape of the day. People use a service when they are awake and near a screen, so the busiest hour carries far more traffic than the quietest, and a fleet that handles the average load exactly will be overloaded for part of every day. Designers therefore multiply the average by a **peak factor**, commonly assumed to be between two and three, and size the system for the result."
+              "text": "People use a service when they are awake and near a screen, so the busiest hour carries far more traffic than the quietest, and a fleet that handles the average load exactly will be overloaded for part of every day. Designers therefore multiply the average by a **peak factor**, commonly assumed to be between two and three, and size the system for the result."
             },
             {
               "kind": "paragraph",
-              "text": "For the service above, the average of about 2,300 requests per second becomes 2,300 × 3 = 6,900 at the upper end of that assumption. The factor is itself a guess, and it can be measured once the service has real traffic, but a stated factor of three is far better than silently assuming a factor of one. A service with sharp bursts, such as one that sells tickets at a fixed time, may need a much larger factor."
+              "text": "For the service above, the average of about 2,300 requests per second becomes 2,300 × 3 = 6,900 at the upper end of that assumption."
             }
           ],
           "afterFigure": [
@@ -1172,13 +1168,13 @@
             },
             {
               "kind": "paragraph",
-              "text": "The units step by factors of 1,000: a kilobyte is a thousand bytes, a megabyte a thousand kilobytes, a gigabyte a thousand megabytes, and so on to terabytes and petabytes. The figure draws them on a scale of powers of ten, and the estimates fall where the arithmetic says: a record at a few hundred bytes, the month at tens of gigabytes, the year at hundreds."
+              "text": "The units step by factors of 1,000: a kilobyte is a thousand bytes, a megabyte a thousand kilobytes, a gigabyte a thousand megabytes, and so on to terabytes and petabytes."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "The scale gives a quick check on an answer. If a month of 500-byte records came out in megabytes or in petabytes, the slip would be visible at once, since the records are far too numerous for the first and far too few for the second. Copies kept for durability multiply the total again, a point that later lessons return to."
+              "text": "The scale gives a quick check on an answer: if a month of 500-byte records came out in megabytes or in petabytes, the slip would be visible at once."
             }
           ],
           "introducesTerms": [
@@ -1275,13 +1271,13 @@
             },
             {
               "kind": "paragraph",
-              "text": "Network capacity is quoted in *bits* per second, while sizes are counted in *bytes*, and a byte is 8 bits. Multiplying by 8 gives 1,600,000,000 bits per second, or **1.6 Gbit/s**. The figure draws that result beside a link of 1 Gbit/s, which is 125 MB/s, and the bar for the service is longer than the link, so a single such link cannot carry the traffic."
+              "text": "Network capacity is quoted in *bits* per second, while sizes are counted in *bytes*, and a byte is 8 bits. Multiplying by 8 gives 1,600,000,000 bits per second, or **1.6 Gbit/s**."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "The factor of 8 is the most common slip in this kind of estimate, and it is easy to catch by writing the unit at every step: bytes per second becomes bits per second only by a multiplication. The same check applies to the lowercase and uppercase b in the units, where Gbit/s counts bits and GB counts bytes."
+              "text": "The factor of 8 is the most common slip in this kind of estimate, and it is easy to catch by writing the unit at every step."
             }
           ],
           "introducesTerms": [
@@ -1337,13 +1333,13 @@
             },
             {
               "kind": "paragraph",
-              "text": "That answer is more useful than a count of machines, because it says what to change. Two machines would each carry 0.8 Gbit/s and solve the problem, but so would compressing the responses, serving some of them from copies closer to the reader, or sending smaller ones. The resource that runs out first is the one the design has to be built around, and it is often not the processor."
+              "text": "That answer is more useful than a count of machines, because it says what to change. The resource that runs out first is the one the design has to be built around, and it is often not the processor."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "The assumptions about the machine are part of the estimate and are stated with it, in the same way that the peak factor is. If a later measurement shows that the machine handles 20,000 requests per second, one line of the estimate changes and the rest stays."
+              "text": "The assumptions about the machine are part of the estimate and are stated with it, in the same way that the peak factor is."
             }
           ],
           "introducesTerms": [],
@@ -1405,11 +1401,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "Ten million people use a service each day and make 20 requests apiece, which comes to 200 million requests, a number too large to feel. Divide it by the 86,400 seconds in a day and it becomes about 2,300 requests per second, a figure small enough to set beside the capacity of a single machine, which is the comparison that decides whether the design needs more than one."
+              "text": "Ten million people use a service each day and make 20 requests apiece, which comes to 200 million requests, a number too large to feel. Divide it by the 86,400 seconds in a day and it becomes about 2,300 requests per second."
             },
             {
               "kind": "paragraph",
-              "text": "Estimates of this kind need only multiplication and a handful of round constants, and what they have to get right is the power of ten: a design for 2,000 requests per second is the same design at 2,300, and a different one at 230,000."
+              "text": "Estimates of this kind need only multiplication and a handful of round constants, and what they have to get right is the power of ten."
             }
           ]
         },
@@ -1531,17 +1527,17 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Latency says how long one request takes, and **throughput** says how many requests finish each second. They are different measurements, and one more quantity links them: the number of requests that are inside the service at once, having arrived and not yet been answered. If 200 requests arrive each second and each stays for 50 ms, then at any moment the requests of the last 50 ms are still inside, and that is 200 × 0.05 = 10 of them."
+              "text": "Latency says how long one request takes, and **throughput** says how many requests finish each second. One more quantity links them: the number of requests that are inside the service at once. If 200 requests arrive each second and each stays for 50 ms, then at any moment the requests of the last 50 ms are still inside, and that is 200 × 0.05 = 10 of them."
             },
             {
               "kind": "paragraph",
-              "text": "This is **Little's law**, which says that the average number in the system, L, equals the arrival rate, written λ, times the average time W that each request spends there: L = λW. John Little proved it for queues in general in 1961, and it holds whatever order the requests are served in, provided the system is stable over the long run."
+              "text": "This is **Little's law**, which says that the average number in the system, L, equals the arrival rate, written λ, times the average time W that each request spends there: L = λW."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "The law lets you measure two of the three quantities and infer the third, and it explains a common failure. If a dependency becomes slow and each request stays twice as long, the same arrival rate puts twice as many requests inside, each holding a connection, a thread and some memory, and those resources run out long before the arrival rate has changed. The figure shows the two cases."
+              "text": "If a dependency becomes slow and each request stays twice as long, the same arrival rate puts twice as many requests inside, each holding a connection, a thread and some memory, and those resources run out long before the arrival rate has changed."
             }
           ],
           "introducesTerms": [
@@ -1614,13 +1610,13 @@
             },
             {
               "kind": "paragraph",
-              "text": "In general, a request that waits for n backends, each slow with probability p, is slow with probability 1 − (1 − p)^n. Dean and Barroso gave this case, with 100 servers and 63%, in *The Tail at Scale* (2013), and the formula is what the figure draws in its last view, where the share of slow requests climbs from 1% for one backend to 9.6% for 10 and 86.6% for 200."
+              "text": "In general, a request that waits for n backends, each slow with probability p, is slow with probability 1 − (1 − p)^n. Dean and Barroso gave this case, with 100 servers and 63%, in *The Tail at Scale* (2013)."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "The first two views of the figure show the mechanism. A single slow call among the hundred is enough to make the whole request slow, and the 100 calls are all fast only about 37% of the time. This is why a p99 that looks acceptable for one service can ruin the page that depends on a hundred of them."
+              "text": "A single slow call among the hundred is enough to make the whole request slow, and the 100 calls are all fast only about 37% of the time. This is why a p99 that looks acceptable for one service can ruin the page that depends on a hundred of them."
             }
           ],
           "introducesTerms": [],
@@ -1708,17 +1704,17 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "In 1 − (1 − p)^n there are two numbers to reduce. Lowering n means asking fewer backends, or answering some parts of the request from a copy that does not have to wait. Lowering p means making each backend's slow responses rarer, which is a matter of what the backend does while it is serving. Neither is always possible, so a third remedy works around the tail instead of removing it."
+              "text": "In 1 − (1 − p)^n there are two numbers to reduce. Lowering n means asking fewer backends, and lowering p means making each backend's slow responses rarer."
             },
             {
               "kind": "paragraph",
-              "text": "In a **hedged request** the caller sends the same request to a second replica, another server holding the same data, if the first has not answered within a short delay, for example the 95th percentile of normal latency, and uses whichever answer arrives first. The second request is sent only for the few that are already slow, so it adds a small share of extra load. A **timeout**, which a later lesson treats in full, sets a limit on how long the caller waits at all."
+              "text": "In a **hedged request** the caller sends the same request to a second replica, another server holding the same data, if the first has not answered within a short delay, and uses whichever answer arrives first. A **timeout** sets a limit on how long the caller waits at all."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "Each remedy has a price. Fewer calls may mean a less complete answer, hedging adds load at exactly the moment a backend is struggling, and a timeout turns a slow answer into a missing one. The estimate of how often the tail occurs is what tells you whether the price is worth paying."
+              "text": "Each remedy has a price: fewer calls may mean a less complete answer, hedging adds load at exactly the moment a backend is struggling, and a timeout turns a slow answer into a missing one."
             }
           ],
           "introducesTerms": [
@@ -1803,7 +1799,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "A fair summary of delay has to say what the slowest requests do, and a request built from many smaller calls makes the slow ones less rare than they seem: when it waits for every one of them, the rare slow call of each part becomes the ordinary experience of the whole."
+              "text": "A fair summary of delay has to say what the slowest requests do."
             }
           ]
         },
@@ -1845,13 +1841,13 @@
             },
             {
               "kind": "paragraph",
-              "text": "The balancer has to choose, and three rules are common. *Round robin* sends requests to the servers in turn, *least connections* sends each one to the server with the fewest requests in progress, and *hashing* sends requests with the same key, such as a user id, to the same server each time. The balancer also runs **health checks**, small requests sent to every server at intervals, and stops sending traffic to any server that fails them. In the figure, 900 requests per second reach a balancer in front of three servers."
+              "text": "The balancer has to choose, and three rules are common. *Round robin* sends requests to the servers in turn, *least connections* sends each one to the server with the fewest requests in progress, and *hashing* sends requests with the same key, such as a user id, to the same server each time. The balancer also runs **health checks**, small requests sent to every server at intervals, and stops sending traffic to any server that fails them."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "Balancers work at two layers. A layer 4 balancer decides from the connection alone, the addresses and ports, so it is fast and knows nothing about the request, whereas a layer 7 balancer reads the HTTP request and can route by path or header at the cost of more work for each one. Kubernetes builds the same idea into its Services, which spread traffic across the identical pods behind them that are ready to receive it."
+              "text": "Balancers work at two layers. A layer 4 balancer decides from the connection alone, so it is fast and knows nothing about the request, whereas a layer 7 balancer reads the HTTP request and can route by path or header."
             }
           ],
           "introducesTerms": [
@@ -1988,13 +1984,13 @@
             },
             {
               "kind": "paragraph",
-              "text": "The rounding goes up for a reason. With 12 servers each one would carry 4,500 ÷ 12 = 375 requests per second, which is 75% of its capacity, five points over the plan, and on the steep part of the curve being over is not free. With 13 servers each carries about 346, or 69.2%, leaving a small margin that also helps when a server is lost."
+              "text": "The rounding goes up for a reason. With 12 servers each one would carry 4,500 ÷ 12 = 375 requests per second, which is 75% of its capacity, five points over the plan, and on the steep part of the curve being over is not free."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "The target of 70% is a decision that belongs in the design's assumptions, in the same way as the peak factor. A service that can tolerate more delay, such as a batch job, might use 85%, and one with a strict latency target might use 50%, and the same arithmetic gives a different fleet each time."
+              "text": "The target of 70% is a decision that belongs in the design's assumptions, in the same way as the peak factor."
             }
           ],
           "introducesTerms": [],
@@ -2067,13 +2063,13 @@
             },
             {
               "kind": "paragraph",
-              "text": "A **stateless** service keeps no such information between requests. What must survive is held where every server can reach it: in a signed cookie that the client sends back with each request, in a shared cache, or in a database. Then any server can answer any request, a failed server loses nothing that was not already stored elsewhere, and capacity grows by adding servers. The alternative, *sticky* routing, sends each user back to the server that holds their session, and it works, but it spreads load unevenly and loses the session when that server fails."
+              "text": "A **stateless** service keeps no such information between requests. What must survive is held where every server can reach it: in a signed cookie that the client sends back with each request, in a shared cache, or in a database. Then any server can answer any request, a failed server loses nothing that was not already stored elsewhere, and capacity grows by adding servers."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "The state has not disappeared. It has moved to a shared store, and that store is now the part that has to be fast, large and safe, which the following lessons on caching, databases and replication take up. Making the servers stateless is a way of concentrating the hard problem in a few places that are built for it."
+              "text": "The state has not disappeared. It has moved to a shared store, and that store is now the part that has to be fast, large and safe."
             }
           ],
           "introducesTerms": [
@@ -2126,19 +2122,14 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Every request passes through the load balancer, so a single balancer is a single point of failure, however many servers stand behind it. The usual remedy is to run two or more, with one taking over when its partner fails or with traffic shared between them, and the lesson on availability puts numbers on how much this helps."
+              "text": "Every request passes through the load balancer, so a single balancer is a single point of failure, however many servers stand behind it. The usual remedy is to run two or more, with one taking over when its partner fails or with traffic shared between them."
             },
             {
               "kind": "paragraph",
               "text": "**Autoscaling** adds and removes servers according to a measured signal, such as processor use or the number of requests in flight, and it always lags behind the load. A new server needs time to start and warm up, so a sudden surge is met first by the servers that already exist, and the margin of a target utilisation below 100% is what carries the service across that gap."
             }
           ],
-          "afterFigure": [
-            {
-              "kind": "paragraph",
-              "text": "Autoscaling is therefore a way of following the daily shape of the load, and not a substitute for planning for the peak. The estimate says how large the fleet must be at the busiest hour, and the autoscaler decides how much of it to run the rest of the day."
-            }
-          ],
+          "afterFigure": [],
           "introducesTerms": [
             "autoscaling"
           ],
@@ -2201,11 +2192,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A server that can handle 100 requests per second answers in about 10 ms when it is idle, and when 50 requests arrive each second the average request already takes 20 ms. The server has not slowed down at all, and the only thing that has changed is how little room it has left to absorb requests that arrive close together."
+              "text": "A server that can handle 100 requests per second answers in about 10 ms when it is idle, and when 50 requests arrive each second the average request already takes 20 ms."
             },
             {
               "kind": "paragraph",
-              "text": "How quickly that delay grows as a server fills is what decides how many servers a design needs, since the aim is to have enough machines that none of them comes near the steep part of the curve. Spreading requests across them is the job of a load balancer, and the size of the fleet can be worked out from the expected load before any server is bought."
+              "text": "How quickly that delay grows as a server fills is what decides how many servers a design needs, since the aim is to have enough machines that none of them comes near the steep part of the curve."
             }
           ]
         },
@@ -2243,11 +2234,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A **cache** is a small, fast store of copies, kept so that repeated requests do not repeat the work. The usual arrangement is **cache-aside**: the application looks the key up in the cache first, and if the answer is there, which is a **hit**, it returns it. If not, which is a **miss**, the application reads the database, stores the result in the cache, and then returns it. Nothing else has to change, because the cache sits beside the database and not in front of it."
-            },
-            {
-              "kind": "paragraph",
-              "text": "Caches can sit at several layers, and each one answers some requests before they reach the next. The browser keeps copies for its user, a content delivery network (CDN) keeps copies at sites near readers, the application keeps a shared cache in memory, and the database keeps its recently used pages. Each layer accepts a little staleness in return for a shorter trip and a lighter load on whatever lies behind it."
+              "text": "A **cache** is a small, fast store of copies, kept so that repeated requests do not repeat the work. The usual arrangement is **cache-aside**: the application looks the key up in the cache first, and if the answer is there, which is a **hit**, it returns it. If not, which is a **miss**, the application reads the database, stores the result in the cache, and then returns it."
             }
           ],
           "afterFigure": [
@@ -2360,7 +2347,7 @@
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "This is why hit rates near 100% repay effort, and why a cache that loses its contents can bring a database down. A freshly restarted cache has a hit rate of zero, so the database must briefly serve all 10,000 requests per second, which is 20 times the 500 that it was sized for."
+              "text": "A freshly restarted cache has a hit rate of zero, so the database must briefly serve all 10,000 requests per second, which is 20 times the 500 that it was sized for."
             }
           ],
           "introducesTerms": [],
@@ -2392,13 +2379,13 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A copy goes out of date the moment the data changes, and the policy for removing it sets how long a reader may be shown the old value. The simplest policy is a **time to live**, or TTL: each entry expires a fixed time after it is stored. If a product page is cached for 60 seconds and its price changes 10 seconds after the page was cached, readers see the old price for the remaining 50 seconds, so the page is late by at most 60. Two alternatives are *explicit invalidation*, in which the code that changes the data also removes the cached entry, and *write-through*, in which a write updates the cache and the database together."
+              "text": "A copy goes out of date the moment the data changes, and the policy for removing it sets how long a reader may be shown the old value. The simplest policy is a **time to live**, or TTL: each entry expires a fixed time after it is stored. Two alternatives are *explicit invalidation*, in which the code that changes the data also removes the cached entry, and *write-through*, in which a write updates the cache and the database together."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "The choice trades freshness against load. A short TTL keeps answers fresh but sends more requests to the database, since each key has to be reloaded once per TTL, and a long one saves load at the price of older answers. Explicit invalidation gives the freshest answers, but every code path that changes the data must remember to use it, and one that forgets leaves a stale entry for as long as the TTL allows."
+              "text": "The choice trades freshness against load. A short TTL keeps answers fresh but sends more requests to the database, and a long one saves load at the price of older answers. Explicit invalidation gives the freshest answers, but every code path that changes the data must remember to use it."
             }
           ],
           "introducesTerms": [
@@ -2434,19 +2421,14 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Consider a key that is requested 1,000 times per second, whose database read takes 200 ms. When the entry expires, the first request misses and starts the read, and so does every request that arrives before the result has been stored, since none of them can tell that a refresh is under way. In 200 ms, 1,000 × 0.2 = 200 requests read the same row at once, a burst that the database was never expected to see for one key. This is a **stampede**."
+              "text": "Consider a key that is requested 1,000 times per second, whose database read takes 200 ms. When the entry expires, the first request misses and starts the read, and so does every request that arrives before the result has been stored, since none of them can tell that a refresh is under way. In 200 ms, 1,000 × 0.2 = 200 requests read the same row at once. This is a **stampede**."
             },
             {
               "kind": "paragraph",
               "text": "Three remedies are standard. In *request coalescing*, one request refreshes the key while the others wait for its result, so the database sees one read. In *serving stale*, the others are given the expired value while the refresh runs. And *jittered TTLs* add a random amount to each expiry so that keys stored together do not expire together: 10,000 keys with a 60-second TTL all expire at second 60, whereas the same keys with a random extra of 0 to 9 seconds expire at about 1,000 per second."
             }
           ],
-          "afterFigure": [
-            {
-              "kind": "paragraph",
-              "text": "The figure draws the two cases to one scale. The first two remedies protect a single hot key, and jitter protects against many keys expiring in unison, which commonly follows a restart or a bulk load that stored them all in the same instant."
-            }
-          ],
+          "afterFigure": [],
           "introducesTerms": [
             "stampede"
           ],
@@ -2600,7 +2582,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "A cache is therefore a bet on repetition, and its value can be worked out before it is built. The same number that sets the average latency also sets the load that the database must carry, and the way entries expire decides both how stale an answer may be and what happens when a popular one disappears."
+              "text": "A cache is therefore a bet on repetition, and its value can be worked out before it is built."
             }
           ]
         },
@@ -2641,12 +2623,7 @@
               "text": "Before choosing a database, write down how its data will be read. Four patterns cover most cases. A lookup *by key* fetches one record from its id, and a key-value store is built for it. A *range* query reads the records between two keys, such as one customer's orders in a month. A *join* combines rows from several tables by a shared value, which a relational database does well, and a *traversal* follows links from one record to the next, such as the friends of friends of a user, which is what a graph store is for. The set of patterns a system has to serve is called its **access pattern**."
             }
           ],
-          "afterFigure": [
-            {
-              "kind": "paragraph",
-              "text": "The question is therefore not SQL against NoSQL as a matter of fashion. It is which pattern dominates and what each store makes cheap. A relational database serves several of these patterns reasonably well, and most designs begin there. A specialised store is justified when a number from the estimate shows that the pattern does not fit, for instance a write volume that no single machine can carry, or a traversal that would need a join for every hop."
-            }
-          ],
+          "afterFigure": [],
           "introducesTerms": [
             "access pattern"
           ],
@@ -2746,13 +2723,13 @@
             },
             {
               "kind": "paragraph",
-              "text": "Depth grows very slowly. A hundredfold increase in the table, from 10,000 keys to 1,000,000, adds one level, from 2 to 3, because 100^3 = 1,000,000. The fan-out is the number that matters, and it is large because a page holds many keys."
+              "text": "Depth grows very slowly. A hundredfold increase in the table, from 10,000 keys to 1,000,000, adds one level, from 2 to 3, because 100^3 = 1,000,000."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "Real pages hold hundreds of keys, so a fan-out of 100 is a modest assumption, and in practice the top levels are usually kept in memory, which lowers the real cost further. The conclusion survives the rough numbers: a lookup through an index costs a handful of page reads however large the table becomes."
+              "text": "Real pages hold hundreds of keys, so a fan-out of 100 is a modest assumption, and a lookup through an index costs a handful of page reads however large the table becomes."
             }
           ],
           "introducesTerms": [
@@ -2787,7 +2764,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "An index is not free. Every insert, update or delete that touches an indexed column has to change the index as well as the table, so a table with five indexes turns each insert into one write to the table and five more to the indexes, and every index takes space of its own. A table that is read far more often than it is written, as the first lesson's 100 to 1 ratio suggested for the shortener, can afford many; a table that takes mostly writes may not."
+              "text": "An index is not free. Every insert, update or delete that touches an indexed column has to change the index as well as the table, so a table with five indexes turns each insert into one write to the table and five more to the indexes, and every index takes space of its own."
             },
             {
               "kind": "paragraph",
@@ -2797,7 +2774,7 @@
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "One further property affects the choice of store. A **transaction** groups several changes so that they all happen or none does, as when a transfer must both debit one account and credit another. Relational databases provide this as standard, and the databases course treats it in detail, so here it matters only as one of the reasons for preferring a relational store."
+              "text": "One further property affects the choice of store. A **transaction** groups several changes so that they all happen or none does, as when a transfer must both debit one account and credit another, and relational databases provide this as standard."
             }
           ],
           "introducesTerms": [
@@ -2832,19 +2809,14 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A page lists 50 orders and shows each customer's name. The code runs one query for the 50 orders and then, for each order, a separate query for its customer, which is 1 + 50 = 51 queries. This pattern is called **N+1**. Each query may be fast, because the lookup by key uses an index, but each also pays a round trip to the database, and 51 round trips add up as a whole."
+              "text": "A page lists 50 orders and shows each customer's name. The code runs one query for the 50 orders and then, for each order, a separate query for its customer, which is 1 + 50 = 51 queries. This pattern is called **N+1**. Each query may be fast, but each also pays a round trip to the database."
             },
             {
               "kind": "paragraph",
-              "text": "The cure is to ask for the related rows together: a join returns each order with its customer in one query, or a second query can fetch all 50 customers by their ids at once, for a total of two. The figure draws the 51 separate queries and the single one."
+              "text": "The cure is to ask for the related rows together: a join returns each order with its customer in one query, or a second query can fetch all 50 customers by their ids at once, for a total of two."
             }
           ],
-          "afterFigure": [
-            {
-              "kind": "paragraph",
-              "text": "The pattern often hides inside code that reads well, such as a loop that calls a function for each item, and it grows with the size of the list, so it passes every test on a small sample and fails on a large page. Counting the queries a page runs is a quick check, and many frameworks can log them."
-            }
-          ],
+          "afterFigure": [],
           "introducesTerms": [
             "N+1"
           ],
@@ -2994,11 +2966,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A query for one order in a table of 1,000,000 rows can be answered in two ways. The database can read the table page by page until it meets the row, or it can walk a sorted index that leads to the row in a handful of page reads, and a table a hundred times larger needs only one page more. The query is the same in both cases, and what differs is whether the database has a sorted structure to walk."
+              "text": "A query for one order in a table of 1,000,000 rows can be answered in two ways. The database can read the table page by page until it meets the row, or it can walk a sorted index that leads to the row in a handful of page reads, and a table a hundred times larger needs only one page more."
             },
             {
               "kind": "paragraph",
-              "text": "That difference decides whether a design survives its own growth, and it follows from two numbers, the fan-out of a page and the number of keys. Before reaching for an index, though, the first question is how the data will be read, because that decides both the store and the index."
+              "text": "That difference decides whether a design survives its own growth, and it follows from two numbers, the fan-out of a page and the number of keys."
             }
           ]
         },
@@ -3040,13 +3012,13 @@
             },
             {
               "kind": "paragraph",
-              "text": "The copying takes time. A follower applies a change only after the leader has made it, and the gap, called **replication lag**, may be a few milliseconds or a good deal more under load. The figure follows one write to the leader: for a moment the leader holds the new value while the followers still hold the old one, and a read sent to a follower in that interval returns old data."
+              "text": "The copying takes time. A follower applies a change only after the leader has made it, and the gap, called **replication lag**, may be a few milliseconds or a good deal more under load."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "Two consequences follow. Replication does not make writes faster, since every write must still be made by the leader and then repeated on every follower, so adding followers adds read capacity and survives failures but leaves the write capacity where it was. And a user who saves a profile and is then sent to a follower that has not caught up will see the old one, because the system has no *read-your-writes* guarantee. The usual remedies are to read from the leader for a short time after a write by the same user, or to choose a follower that is known to have caught up."
+              "text": "Two consequences follow. Replication does not make writes faster, since every write must still be made by the leader and then repeated on every follower, so adding followers adds read capacity and survives failures but leaves the write capacity where it was. And a user who saves a profile and is then sent to a follower that has not caught up will see the old one, because the system has no *read-your-writes* guarantee."
             }
           ],
           "introducesTerms": [
@@ -3131,7 +3103,7 @@
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "Each shard is usually replicated as well, so the two ideas combine: the data is divided for capacity and every part is copied for availability. The remaining question is what happens when the number of shards has to change, which it will."
+              "text": "Each shard is usually replicated as well, so the two ideas combine: the data is divided for capacity and every part is copied for availability."
             }
           ],
           "introducesTerms": [
@@ -3237,15 +3209,10 @@
             },
             {
               "kind": "paragraph",
-              "text": "The choice of shard key follows from the access pattern. Sharding orders by customer id keeps all of one customer's orders on one shard, so the query for that customer's orders asks a single shard. Sharding them by date would instead send all of today's writes to the shard that holds today, which becomes a hot spot while the others sit idle."
+              "text": "The choice of shard key follows from the access pattern. Sharding orders by customer id keeps all of one customer's orders on one shard, while sharding them by date would instead send all of today's writes to the shard that holds today, which becomes a hot spot while the others sit idle."
             }
           ],
-          "afterFigure": [
-            {
-              "kind": "paragraph",
-              "text": "A shard key is therefore chosen to satisfy two things at once: it should spread the load evenly, and it should keep together the records that one request needs. The two can conflict, and writing the main queries down first, as in the first lesson, is how the conflict gets noticed."
-            }
-          ],
+          "afterFigure": [],
           "introducesTerms": [
             "skew",
             "shard key"
@@ -3367,11 +3334,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "When a database keeps a copy of its data on a second machine, the copy is always a little behind. The original accepts a write at once and passes the change on, so for the milliseconds that the change takes to arrive the two machines disagree, and a read that lands on the copy returns the value from before the write."
+              "text": "When a database keeps a copy of its data on a second machine, the copy is always a little behind, and a read that lands on the copy returns the value from before the write."
             },
             {
               "kind": "paragraph",
-              "text": "Copying is one of two ways for data to outgrow a single machine, and splitting it by a key is the other. Each has a cost that can be counted before anything is built: for copies, how out of date a read can be, and for splits, how many records have to move when the number of machines changes."
+              "text": "Copying is one of two ways for data to outgrow a single machine, and splitting it by a key is the other."
             }
           ]
         },
@@ -3408,19 +3375,14 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The previous lesson ended with a user who saved a profile and read the old one back. How a system answers such a read is described by its **consistency**. A **strongly consistent** system behaves as if there were a single copy: once a write has been acknowledged, every later read returns it or something newer. An **eventually consistent** system promises less: if no further writes arrive, all copies will in time hold the same value, but a read in the meantime may return an older one."
+              "text": "How a system answers a read after a write is described by its **consistency**. A **strongly consistent** system behaves as if there were a single copy: once a write has been acknowledged, every later read returns it or something newer. An **eventually consistent** system promises less: if no further writes arrive, all copies will in time hold the same value, but a read in the meantime may return an older one."
             },
             {
               "kind": "paragraph",
-              "text": "Between the two lies a useful middle, *read-your-writes*, which promises only that a user sees their own writes at once, whatever others see. Eventual consistency is sometimes taken to mean \"wrong\", and it is not: a like count that is a few seconds behind is harmless, and the weaker the promise, the cheaper it is to keep, since fewer machines must agree before an answer is given."
+              "text": "Between the two lies a useful middle, *read-your-writes*, which promises only that a user sees their own writes at once. Eventual consistency is sometimes taken to mean \"wrong\", and it is not: a like count that is a few seconds behind is harmless, and the weaker the promise, the cheaper it is to keep."
             }
           ],
-          "afterFigure": [
-            {
-              "kind": "paragraph",
-              "text": "What the stronger promise costs is the subject of the rest of the lesson: coordination between copies, which takes time, and which cannot be had at all when the copies cannot reach one another."
-            }
-          ],
+          "afterFigure": [],
           "introducesTerms": [
             "consistency",
             "strongly consistent",
@@ -3464,7 +3426,7 @@
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "The figure shows both policies for the same partition. CAP says nothing about speed, and nothing about the other trade-offs that systems make, such as latency against consistency even when no partition is present. It is a narrow result, which is its value: it names the one decision that cannot be avoided when the network splits."
+              "text": "CAP says nothing about speed, and nothing about the other trade-offs that systems make, such as latency against consistency even when no partition is present. It is a narrow result, which is its value: it names the one decision that cannot be avoided when the network splits."
             }
           ],
           "introducesTerms": [
@@ -3537,7 +3499,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The figure draws the idea for five replicas. With W = 2 and R = 3 the sum is 5, which does not exceed N, and the write and the read can use different replicas, as the first view shows. Raising R to 4 gives 6, and the sets must share one. Choosing W = 3 and R = 3 also works. The rule is for N = 5 and W = 2: R must be greater than 5 − 2 = 3, so the smallest R is 4."
+              "text": "With W = 2 and R = 3 the sum is 5, which does not exceed N, and the write and the read can use different replicas, as the first view shows. Raising R to 4 gives 6, and the sets must share one. The rule is for N = 5 and W = 2: R must be greater than 5 − 2 = 3, so the smallest R is 4."
             }
           ],
           "afterFigure": [
@@ -3604,13 +3566,13 @@
             },
             {
               "kind": "paragraph",
-              "text": "A majority of n nodes is more than half of them, so a group keeps working while a majority is up. Five nodes need 3, and so tolerate 2 failures. Four nodes also need 3, and so tolerate only 1, the same as a group of three, which is why consensus groups usually have an odd size. Nine nodes need 5 and tolerate 4."
+              "text": "A majority of n nodes is more than half of them, so a group keeps working while a majority is up. Five nodes need 3, and so tolerate 2 failures. Four nodes also need 3, and so tolerate only 1, the same as a group of three, which is why consensus groups usually have an odd size."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "The figure shows five nodes with two and then three down. In the second case only two are up, and a group that could not reach a majority stops accepting changes, which is CAP's choice made visible: it keeps the one history by refusing to make progress."
+              "text": "A group that could not reach a majority stops accepting changes, which is CAP's choice made visible: it keeps the one history by refusing to make progress."
             }
           ],
           "introducesTerms": [
@@ -3663,19 +3625,14 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The right guarantee depends on the data. An account balance needs strong consistency, because a stale read can let a withdrawal go through twice, and a design that gives up availability during a partition to protect it is making the right trade. A like count can be eventually consistent, because a number a few seconds behind harms no one, and the cheaper guarantee lets the feature keep working when the network splits."
+              "text": "The right guarantee depends on the data. An account balance needs strong consistency, because a stale read can let a withdrawal go through twice. A like count can be eventually consistent, because a number a few seconds behind harms no one."
             },
             {
               "kind": "paragraph",
-              "text": "The Dynamo paper described a shopping cart that is always writable: during a failure, the cart accepts additions on either side and merges them afterwards, since a customer who cannot add an item loses more than one who sees a briefly different cart. This is a decision for availability, made for one feature. The first lesson's chat system and link shortener fit the same pattern: with the same load, one needs messages to appear for everyone almost at once, and the other can tolerate a short delay."
+              "text": "The Dynamo paper described a shopping cart that is always writable: during a failure, the cart accepts additions on either side and merges them afterwards, since a customer who cannot add an item loses more than one who sees a briefly different cart."
             }
           ],
-          "afterFigure": [
-            {
-              "kind": "paragraph",
-              "text": "A single system therefore often uses more than one level, with a strongly consistent store for money and an eventually consistent one for counts. Writing the consistency need beside each feature in the requirements is the practical form of this idea."
-            }
-          ],
+          "afterFigure": [],
           "introducesTerms": [],
           "visualStateId": "",
           "checkQuestionId": "",
@@ -3794,7 +3751,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "Every replicated system has to make that choice, and it makes it feature by feature, according to what a stale answer would cost. The choice comes with arithmetic: how many replicas must acknowledge a write, and how many a read must ask, decide how many failures a service survives and whether a read is certain to see the latest write."
+              "text": "The choice comes with arithmetic: how many replicas must acknowledge a write, and how many a read must ask, decide how many failures a service survives and whether a read is certain to see the latest write."
             }
           ]
         },
@@ -3832,13 +3789,13 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "When a user signs up, the service must store the account and also send a welcome email. The email may take a second or more, and the user need not wait for it. Putting the email request into a **queue** lets the sign-up code hand it over and return at once, while a separate worker, the **consumer**, takes requests from the queue one after another and sends them. The code that adds them is the **producer**. The two no longer have to run at the same speed, or even at the same time."
+              "text": "When a user signs up, the service must store the account and also send a welcome email. Putting the email request into a **queue** lets the sign-up code hand it over and return at once, while a separate worker, the **consumer**, takes requests from the queue one after another and sends them. The code that adds them is the **producer**."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "A queue also absorbs bursts. If requests arrive faster than the consumer can handle them for a minute and then slow down again, the queue holds the excess where otherwise the producer would fail, a pattern that Microsoft's cloud design patterns call queue-based load levelling. A queue does not make a slow consumer fast, though, and the next screens show what happens to it when the consumer is too slow for too long."
+              "text": "A queue also absorbs bursts. If requests arrive faster than the consumer can handle them for a minute and then slow down again, the queue holds the excess where otherwise the producer would fail."
             }
           ],
           "introducesTerms": [
@@ -3880,7 +3837,7 @@
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "These straight lines are the whole behaviour while the rates stay steady. A queue is therefore safe only while the arrival rate stays below the consumers' capacity on average, and a longer queue means a longer wait: a message that joins behind 12,000 others, with consumers handling 100 per second, waits 12,000 ÷ 100 = 120 seconds before it is processed."
+              "text": "A queue is therefore safe only while the arrival rate stays below the consumers' capacity on average, and a longer queue means a longer wait: a message that joins behind 12,000 others, with consumers handling 100 per second, waits 12,000 ÷ 100 = 120 seconds before it is processed."
             }
           ],
           "introducesTerms": [
@@ -3932,13 +3889,13 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Suppose the arrival rate stays above capacity. The backlog grows without limit and so does the wait of every message, until either the memory is exhausted or the messages are so old that nobody wants them. The queue has not fixed the slow consumer, it has only delayed the moment when the slowness shows. The system has to respond, and the response is called **backpressure**: telling producers to slow down, for example by rejecting new requests with an error that asks the client to try again later; dropping the least valuable work, which is called *shedding load*; or adding consumers so that capacity exceeds arrivals, which helps only if the work can be shared between them."
+              "text": "Suppose the arrival rate stays above capacity. The backlog grows without limit and so does the wait of every message. The system has to respond, and the response is called **backpressure**: telling producers to slow down, for example by rejecting new requests with an error that asks the client to try again later; dropping the least valuable work, which is called *shedding load*; or adding consumers so that capacity exceeds arrivals, which helps only if the work can be shared between them."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "Draining takes time, and the time depends on the spare capacity. With a backlog of 12,000, arrivals at 80 per second and capacity of 100 per second, the spare 20 per second clears the backlog in 600 seconds, and with arrivals at 95 per second the same backlog would take 2,400 seconds. A system that is sized exactly for its average load has no spare capacity, so a backlog never drains, which is the reason the fleet lesson set a target utilisation well below 100%."
+              "text": "Draining takes time, and the time depends on the spare capacity. With a backlog of 12,000, arrivals at 80 per second and capacity of 100 per second, the spare 20 per second clears the backlog in 600 seconds. A system that is sized exactly for its average load has no spare capacity, so a backlog never drains."
             }
           ],
           "introducesTerms": [
@@ -4013,7 +3970,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "What systems achieve in practice is **effectively-once** processing: at-least-once delivery together with a consumer that is **idempotent**, which means that processing a message twice has the same effect as processing it once. Some systems offer exactly-once inside narrow bounds, such as within one broker, but a message that causes an effect outside it, such as charging a card, still needs a consumer that can cope with repeats. The figure draws the three cases for three messages, with the second the one that goes wrong."
+              "text": "What systems achieve in practice is **effectively-once** processing: at-least-once delivery together with a consumer that is **idempotent**, which means that processing a message twice has the same effect as processing it once. Some systems offer exactly-once inside narrow bounds, such as within one broker, but a message that causes an effect outside it, such as charging a card, still needs a consumer that can cope with repeats."
             }
           ],
           "afterFigure": [
@@ -4087,12 +4044,7 @@
               "text": "Some messages can never be processed, because they are malformed or trigger a bug, and a consumer that retries such a **poison message** for ever blocks everything behind it. After a set number of attempts the message is moved to a **dead-letter queue**, where it can be inspected, and the main queue moves on."
             }
           ],
-          "afterFigure": [
-            {
-              "kind": "paragraph",
-              "text": "Idempotence is therefore the property that turns at-least-once delivery into something safe, and the dead-letter queue is what stops one bad message from stalling the rest. Both are cheap to build compared with the cost of discovering their absence in production."
-            }
-          ],
+          "afterFigure": [],
           "introducesTerms": [
             "poison message",
             "dead-letter queue"
@@ -4109,7 +4061,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A queue deletes a message once it has been consumed, whereas an **event stream** keeps it. A stream is an ordered log, retained for a set time, in which each event has a position called its **offset**. Each consumer keeps its own offset, so many consumers can read the same events at their own pace, and a new one can start from the beginning and replay the history. Apache Kafka is the best-known example. To scale, the log is divided into **partitions**, each its own ordered log, and the consumers in a **consumer group** share the partitions, each partition being read by one consumer of the group at a time."
+              "text": "A queue deletes a message once it has been consumed, whereas an **event stream** keeps it. A stream is an ordered log, retained for a set time, in which each event has a position called its **offset**. Each consumer keeps its own offset, so many consumers can read the same events at their own pace, and a new one can start from the beginning and replay the history. To scale, the log is divided into **partitions**, each its own ordered log, and the consumers in a **consumer group** share the partitions, each partition being read by one consumer of the group at a time."
             },
             {
               "kind": "paragraph",
@@ -4119,7 +4071,7 @@
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "Order is guaranteed only within a partition. Events with the same key, such as one account, go to the same partition and so are read in order, but there is no order between events in different partitions, and the belief that a stream has a single global order is a common error. The number of partitions also caps the parallelism: a group with more consumers than partitions leaves the extra ones idle."
+              "text": "Order is guaranteed only within a partition. Events with the same key, such as one account, go to the same partition and so are read in order, but there is no order between events in different partitions. The number of partitions also caps the parallelism: a group with more consumers than partitions leaves the extra ones idle."
             }
           ],
           "introducesTerms": [
@@ -4222,11 +4174,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A queue between two parts of a system lets the producer carry on without waiting for the consumer, and the price is a line of waiting messages whenever the producer sends them faster than the consumer can handle them. That line is the delay that users eventually notice, and how long it becomes depends on two rates that can be measured."
+              "text": "A queue between two parts of a system lets the producer carry on without waiting for the consumer, and the price is a line of waiting messages whenever the producer sends them faster than the consumer can handle them."
             },
             {
               "kind": "paragraph",
-              "text": "A message that crosses a network can also be lost or delivered twice, so a queue raises a second question, which is what a consumer must be like for a repeated message to do no harm. Both questions have exact answers, and together they decide whether a queue protects a system from a failing part or only postpones the failure."
+              "text": "A message that crosses a network can also be lost or delivered twice, so a queue raises a second question, which is what a consumer must be like for a repeated message to do no harm."
             }
           ]
         },
@@ -4280,11 +4232,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A call to another service can end in three ways: it returns a result, it returns an error, or it returns nothing at all. The third is the awkward one, because silence does not say whether the request was lost on the way, is still being worked on, or was carried out and the reply was lost. The caller cannot wait for ever, since every waiting call holds a thread, a connection and some memory, and by Little's law the number held is the arrival rate times the wait. A **timeout** is a limit on that wait."
+              "text": "A call to another service can end in three ways: it returns a result, it returns an error, or it returns nothing at all. The third is the awkward one, because silence does not say whether the request was lost on the way, is still being worked on, or was carried out and the reply was lost. The caller cannot wait for ever, since every waiting call holds a thread, a connection and some memory. A **timeout** is a limit on that wait."
             },
             {
               "kind": "paragraph",
-              "text": "Take the service from the question, which makes 100 calls per second to a dependency that has stopped answering. With a timeout of 30 seconds each call waits the full 30, so 100 × 30 = 3,000 calls are in flight at once, and the caller runs out of threads or memory and fails too, though nothing was wrong with it. With a timeout of 1 second only 100 × 1 = 100 are waiting. A timeout of 30 seconds is not a safe default, then: it is a long wait multiplied by a high rate."
+              "text": "Take the service from the question, which makes 100 calls per second to a dependency that has stopped answering. With a timeout of 30 seconds each call waits the full 30, so 100 × 30 = 3,000 calls are in flight at once, and the caller runs out of threads or memory and fails too, though nothing was wrong with it. With a timeout of 1 second only 100 × 1 = 100 are waiting."
             }
           ],
           "afterFigure": [
@@ -4324,7 +4276,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Many failures are brief: a lost packet, a server restarting, one slow machine. A **retry**, which repeats the call, turns such a failure into a success, and it is the cheapest way to improve reliability. It has two dangers. The first is repeating something that should not be repeated. A call that charged a card may have succeeded before its reply was lost, and a second attempt charges again unless the request carries an idempotency key, as in the previous lesson. The second danger is amplification."
+              "text": "Many failures are brief: a lost packet, a server restarting, one slow machine. A **retry**, which repeats the call, turns such a failure into a success. It has two dangers. The first is repeating something that should not be repeated. A call that charged a card may have succeeded before its reply was lost, and a second attempt charges again unless the request carries an idempotency key, as in the previous lesson. The second danger is amplification."
             },
             {
               "kind": "paragraph",
@@ -4334,7 +4286,7 @@
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "That is why retries can deepen an overload they were meant to survive. The remedies are to retry at only one layer, usually the one nearest the user, to cap retries with a budget, such as a small fraction of the normal traffic, and to stop calling quickly when a dependency is plainly down, which is the job of the circuit breaker described below."
+              "text": "The remedies are to retry at only one layer, usually the one nearest the user, to cap retries with a budget, such as a small fraction of the normal traffic, and to stop calling quickly when a dependency is plainly down, which is the job of the circuit breaker described below."
             }
           ],
           "introducesTerms": [
@@ -4387,17 +4339,17 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Retrying at once is poor practice, because a dependency that failed a moment ago has probably not recovered. **Exponential backoff** waits longer after each failure, doubling the wait: 100, 200, 400 and 800 ms before four successive retries, which is 100 + 200 + 400 + 800 = 1,500 ms of waiting in all. The waits give the dependency time to recover and spread the retries out in time."
+              "text": "Retrying at once is poor practice, because a dependency that failed a moment ago has probably not recovered. **Exponential backoff** waits longer after each failure, doubling the wait: 100, 200, 400 and 800 ms before four successive retries, which is 100 + 200 + 400 + 800 = 1,500 ms of waiting in all."
             },
             {
               "kind": "paragraph",
-              "text": "Doubling is not enough when many clients fail together, since they start in step and retry in step, and every retry arrives as a spike. **Jitter** adds a random offset to each wait so that the clients spread out, and the Amazon Builders' Library recommends it for this reason. In the figure, 1,000 clients that all wait 100 ms hit the dependency together at 100 ms, whereas the same clients waiting a random time between 0 and 200 ms arrive at about 100 in each 20 ms slot."
+              "text": "Doubling is not enough when many clients fail together, since they start in step and retry in step, and every retry arrives as a spike. **Jitter** adds a random offset to each wait so that the clients spread out."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "The average wait is the same in both cases, 100 ms, and what changes is the peak, which falls from 1,000 retries in one slot to about 100. Backoff with jitter is cheap to add and is the standard way to retry a call that may be failing because the dependency is overloaded."
+              "text": "Backoff with jitter is cheap to add and is the standard way to retry a call that may be failing because the dependency is overloaded."
             }
           ],
           "introducesTerms": [
@@ -4456,7 +4408,7 @@
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "A call that is rejected in a microsecond is much cheaper than one that waits for a timeout, and the dependency is given room to recover. The price is that some calls that would have worked are refused, which is why a breaker's limit is tuned from the failure rate that the service can tolerate."
+              "text": "A call that is rejected in a microsecond is much cheaper than one that waits for a timeout, and the dependency is given room to recover."
             }
           ],
           "introducesTerms": [
@@ -4522,7 +4474,7 @@
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "Each of these is a form of backpressure, the idea from the queue lesson, applied to calls instead of messages. Together with timeouts, jittered retries and a breaker they make a call fail quickly and safely, so that a problem in one place does not become a problem everywhere."
+              "text": "Each of these is a form of backpressure, the idea from the queue lesson, applied to calls instead of messages."
             }
           ],
           "introducesTerms": [
@@ -4642,11 +4594,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "Three services in a chain each try a failing call up to three times before giving up, and the database at the end of the chain is down. The first service makes one request, and the database receives 27: three attempts at each of three layers multiply, and a database that is already struggling is handed twenty-seven times the traffic of a single request. Retries were meant to improve reliability, and here they deepen the failure."
+              "text": "Three services in a chain each try a failing call up to three times before giving up, and the database at the end of the chain is down. The first service makes one request, and the database receives 27: three attempts at each of three layers multiply, and a database that is already struggling is handed twenty-seven times the traffic of a single request."
             },
             {
               "kind": "paragraph",
-              "text": "Every call between services can be slow, lost or repeated, and what a caller does about it comes down to a few numbers: how long it waits, how many attempts it makes at each layer and how long it pauses between them. Choosing those numbers well decides whether a fault in one service stays there or climbs the chain to every service that depends on it."
+              "text": "Every call between services can be slow, lost or repeated, and what a caller does about it comes down to a few numbers: how long it waits, how many attempts it makes at each layer and how long it pauses between them."
             }
           ]
         },
@@ -4700,17 +4652,17 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A service is 99.9% available when it works for 99.9% of the time, which leaves 0.1% for failure. Over 30 days, which is 43,200 minutes, that is 0.001 × 43,200 = 43.2 minutes of downtime. The conversion is the same for any target: the allowed downtime is (1 − availability) × the length of the period. Over a 365-day year, which is 525,600 minutes, a target of 99.99% allows 0.0001 × 525,600 = 52.56 minutes."
+              "text": "A service is 99.9% available when it works for 99.9% of the time, which leaves 0.1% for failure. Over 30 days, which is 43,200 minutes, that is 0.001 × 43,200 = 43.2 minutes of downtime. The conversion is the same for any target: the allowed downtime is (1 − availability) × the length of the period."
             },
             {
               "kind": "paragraph",
-              "text": "Targets are often named by their number of nines: 99% is two nines, 99.9% three and 99.99% four. Each added nine multiplies the allowed downtime by one tenth, so three nines and four nines are not close to each other: the first allows 43.2 minutes in 30 days and the second 4.32. The figure tabulates four targets over three periods."
+              "text": "Targets are often named by their number of nines: 99% is two nines, 99.9% three and 99.99% four, and each added nine multiplies the allowed downtime by one tenth."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "A target is also a cost. Each extra nine usually needs another layer of redundancy, automation and testing, and it matters to users only if the rest of the chain is as reliable, since the service they reach is no more available than its weakest part."
+              "text": "A target is also a cost, since each extra nine usually needs another layer of redundancy, automation and testing."
             }
           ],
           "introducesTerms": [
@@ -4774,7 +4726,7 @@
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "Series is the reason a long chain of dependencies drains availability, and parallel is the reason replication buys so much: two copies at two nines make four. The word that carries the weight in the parallel case is *independent*, and the screen after next shows what happens when it is not true."
+              "text": "Series is the reason a long chain of dependencies drains availability, and parallel is the reason replication buys so much: two copies at two nines make four."
             }
           ],
           "introducesTerms": [
@@ -4854,7 +4806,7 @@
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "The remedy is to put replicas in different failure domains, in separate racks, zones or regions, so that the shared component drops out of the series. Each step outward costs more and is slower to coordinate, which is another reason to settle the target before choosing the layout."
+              "text": "The remedy is to put replicas in different failure domains, in separate racks, zones or regions, so that the shared component drops out of the series."
             }
           ],
           "introducesTerms": [
@@ -4898,7 +4850,7 @@
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "A backup that has never been restored is a hope, not a backup. A restore can fail because of a corrupt file, missing keys, or a procedure that nobody has run, and the RTO is known only by timing one. Regular restore drills are the only evidence that the numbers are real."
+              "text": "A backup that has never been restored is a hope, not a backup, and the RTO is known only by timing one."
             }
           ],
           "introducesTerms": [
@@ -5023,7 +4975,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The combining is arithmetic: components that all must work multiply their availabilities and so lose ground in a chain, whereas independent replicas fail together only when all of them fail, which is why a second independent copy removes nearly all of the downtime of the first. The arithmetic is honest only while the replicas really are independent, and the rack, the power supply and the region that they share decide whether they are."
+              "text": "The combining is arithmetic: components that all must work multiply their availabilities and so lose ground in a chain, whereas independent replicas fail together only when all of them fail, which is why a second independent copy removes nearly all of the downtime of the first."
             }
           ]
         },
@@ -5061,17 +5013,17 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A system that cannot be seen cannot be fixed, and three kinds of record make one visible. **Logs** record individual events, such as \"order 8841 failed: card declined\", and are the most detailed and the hardest to search at scale. **Metrics** record numbers over time, such as requests per second or the 99th-percentile latency, and are cheap to store and quick to chart. **Traces** follow a single request across the services it touches and record how long each step took."
+              "text": "**Logs** record individual events, such as \"order 8841 failed: card declined\", and are the most detailed and the hardest to search at scale. **Metrics** record numbers over time, such as requests per second or the 99th-percentile latency, and are cheap to store and quick to chart. **Traces** follow a single request across the services it touches and record how long each step took."
             },
             {
               "kind": "paragraph",
-              "text": "Each answers a different question. A metric says *that* the p99 latency has doubled, a trace says *where*, by showing which call in the chain took the time, and a log says *why*, by recording what that call reported. In the figure one request took 520 ms across a gateway and three services, and the trace shows at once that 400 ms of it went to the payment service."
+              "text": "Each answers a different question. A metric says *that* the p99 latency has doubled, a trace says *where*, by showing which call in the chain took the time, and a log says *why*, by recording what that call reported."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "A trace works because each service passes an identifier along with the request, so that the pieces recorded on different machines can be joined into one picture. Without it, the logs of the four machines have to be matched by hand, using their timestamps."
+              "text": "A trace works because each service passes an identifier along with the request, so that the pieces recorded on different machines can be joined into one picture."
             }
           ],
           "introducesTerms": [
@@ -5125,13 +5077,13 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The SRE book recommends watching four signals for any service that users depend on. **Latency** is how long requests take, reported as percentiles and separately for successes and failures, since a fast error can hide in an average. **Traffic** is how much demand the service receives, such as requests per second. **Errors** are the requests that fail, whether outright or by returning a wrong answer. **Saturation** is how full the service is, the share of its most constrained resource that is in use, which the fleet lesson showed to be the early warning of rising delay."
+              "text": "The SRE book recommends watching four signals for any service that users depend on. **Latency** is how long requests take, reported as percentiles and separately for successes and failures. **Traffic** is how much demand the service receives, such as requests per second. **Errors** are the requests that fail, whether outright or by returning a wrong answer. **Saturation** is how full the service is, the share of its most constrained resource that is in use."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "Together these say how users are doing, and a figure such as the average processor use does not. A machine can sit at 40% processor and still drop requests because its connection pool is exhausted, and one at 90% can be serving everyone within the target. A good dashboard starts from what users experience and goes down to resources only to explain it."
+              "text": "Together these say how users are doing, and a figure such as the average processor use does not."
             }
           ],
           "introducesTerms": [
@@ -5288,19 +5240,14 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Alerting is where telemetry meets people, and more alerts do not mean safer operation: an engineer who is woken by alerts that need no action learns to ignore them. Alert on symptoms that users feel, such as a rising error rate, and not on causes such as a high processor figure, and page a person only when a human must act now. Burn rate fits this well. A very high rate means the budget will be gone within hours and deserves a page, while a modest one that would exhaust it over weeks can wait for a ticket."
+              "text": "Alerting is where telemetry meets people, and more alerts do not mean safer operation: an engineer who is woken by alerts that need no action learns to ignore them. Alert on symptoms that users feel, such as a rising error rate, and not on causes such as a high processor figure, and page a person only when a human must act now. A very high burn rate means the budget will be gone within hours and deserves a page, while a modest one that would exhaust it over weeks can wait for a ticket."
             },
             {
               "kind": "paragraph",
-              "text": "The SRE Workbook gives a worked example: a burn rate of 14.4 for one hour spends 14.4 × 1 ÷ 720 = 2% of a 30-day budget, since the window holds 720 hours, and it suggests 2% of the budget in one hour as a starting point for paging. After an incident, a **blameless postmortem** records what happened and what will change, asking what let the failure occur, and not who made it."
+              "text": "After an incident, a **blameless postmortem** records what happened and what will change, asking what let the failure occur, and not who made it."
             }
           ],
-          "afterFigure": [
-            {
-              "kind": "paragraph",
-              "text": "The postmortem is how a team turns a spent budget into better numbers. Its output is a list of actions with owners, so that the same failure costs less the next time."
-            }
-          ],
+          "afterFigure": [],
           "introducesTerms": [
             "blameless postmortem"
           ],
@@ -5419,7 +5366,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "Knowing where the time went is only half of operating a system. The other half is agreeing in advance how much failure is acceptable, so that a team can tell a bad day from a normal one, and that agreement takes the form of a number: a target for a measurement, and the amount of failure the target allows. It tells a team when to ship, when to slow down and when to wake someone."
+              "text": "Knowing where the time went is only half of operating a system. The other half is agreeing in advance how much failure is acceptable, so that a team can tell a bad day from a normal one, and that agreement takes the form of a number: a target for a measurement, and the amount of failure the target allows."
             }
           ]
         },
@@ -5456,19 +5403,14 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "This lesson builds one design from start to finish, using every tool so far, with a number behind each choice. The request is the one from the first lesson, a service that shortens links. Its *functional requirements* are two: create a short link for a long URL, and redirect a visitor who opens a short link. Its *quality targets* are that 99% of redirects complete in under 100 ms and that the service is 99.9% available, and it is to be sized for 100 million new URLs a month, with 100 redirects for each URL created, kept for five years."
+              "text": "The request is the one from the first lesson, a service that shortens links. Its *functional requirements* are two: create a short link for a long URL, and redirect a visitor who opens a short link. Its *quality targets* are that 99% of redirects complete in under 100 ms and that the service is 99.9% available, and it is to be sized for 100 million new URLs a month, with 100 redirects for each URL created, kept for five years."
             },
             {
               "kind": "paragraph",
-              "text": "It also states non-goals: links cannot be edited after they are created, and the only analytics is a count of visits. A design that skipped this step would have no way to say that a component was unnecessary, since every component answers to something written here."
+              "text": "It also states non-goals: links cannot be edited after they are created, and the only analytics is a count of visits."
             }
           ],
-          "afterFigure": [
-            {
-              "kind": "paragraph",
-              "text": "The numbers that decide the design are the read rate and the retention, and not the hashing of the URLs, on which people tend to dwell. The reads set the cache and the fleet, and the retention sets the storage and the length of the identifier."
-            }
-          ],
+          "afterFigure": [],
           "introducesTerms": [],
           "visualStateId": "",
           "checkQuestionId": "",
@@ -5482,13 +5424,13 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Estimation follows the method of the second lesson. A 30-day month has 30 × 86,400 = 2,592,000 seconds, so 100 million new URLs a month is 100,000,000 ÷ 2,592,000 = 38.6 writes per second. The ratio of 100 reads for each write gives 3,858 redirects per second on average, and a peak factor of 3 raises that to about 11,600. A record, which holds a code, a URL and some metadata, takes about 500 bytes, so a month adds 100,000,000 × 500 B = 50 GB and five years hold 60 × 50 GB = 3 TB before any copies. The bandwidth is small: a redirect response of about 500 bytes at 3,858 per second is 15 Mbit/s."
+              "text": "Estimation follows the method of the second lesson. A 30-day month has 30 × 86,400 = 2,592,000 seconds, so 100 million new URLs a month is 100,000,000 ÷ 2,592,000 = 38.6 writes per second. The ratio of 100 reads for each write gives 3,858 redirects per second on average, and a peak factor of 3 raises that to about 11,600. A record, which holds a code, a URL and some metadata, takes about 500 bytes, so a month adds 100,000,000 × 500 B = 50 GB and five years hold 60 × 50 GB = 3 TB before any copies."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "These numbers already rule things out. We assume that a single database node accepts at least hundreds of simple writes per second, so 38.6 writes per second does not call for sharding, and 3 TB fits on a few disks. The reads, at about 11,600 per second at peak, are the load that the design has to take seriously, and the figure sets out the estimates for load, storage and identifiers."
+              "text": "These numbers already rule things out. We assume that a single database node accepts at least hundreds of simple writes per second, so 38.6 writes per second does not call for sharding, and 3 TB fits on a few disks. The reads, at about 11,600 per second at peak, are the load that the design has to take seriously."
             }
           ],
           "introducesTerms": [],
@@ -5584,7 +5526,7 @@
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "The length therefore follows from the retention number, as the estimate said. Ten times as many URLs would still fit in 7 characters, which is why the choice is cheap to make generously, and the hashing that people expect to be the interesting part is one line of the design."
+              "text": "The length therefore follows from the retention number, as the estimate said."
             }
           ],
           "introducesTerms": [
@@ -5622,13 +5564,13 @@
             },
             {
               "kind": "paragraph",
-              "text": "The database is replicated. A leader takes the 38.6 writes per second, followers serve the reads that miss the cache, and they sit in different failure domains. A follower may lag, so a link created a moment ago might not yet be found on one; the app falls back to the leader for a code that is not found, which gives the creator read-your-writes."
+              "text": "The database is replicated. A leader takes the 38.6 writes per second, followers serve the reads that miss the cache, and they sit in different failure domains."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "Each box in the figure answers to a number: the fleet to the peak read rate, the cache to the read ratio, the replicas to the 99.9% target and the ID block to the write path. There is no queue and no shard, because no number in the estimate asks for either."
+              "text": "There is no queue and no shard, because no number in the estimate asks for either."
             }
           ],
           "introducesTerms": [],
@@ -5683,19 +5625,14 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Failure comes next, one component at a time. If an app server fails, the balancer's health check removes it and the other eight carry on, since 9 were sized with margin. If a follower fails, reads go to the others. If the cache fails, every read becomes a miss, and the database receives 3,858 reads per second instead of 193, twenty times as many, which the replicas must be sized to survive or the app must shed load; a timeout and a circuit breaker keep a slow cache from holding the app's threads. If the leader fails, a follower is promoted and writes pause for the time that takes, and the clients retry with backoff and an idempotency key so that a retry does not create two codes."
+              "text": "Failure comes next, one component at a time. If an app server fails, the balancer's health check removes it and the other eight carry on, since 9 were sized with margin. If a follower fails, reads go to the others. If the cache fails, every read becomes a miss, and the database receives 3,858 reads per second instead of 193, twenty times as many, which the replicas must be sized to survive or the app must shed load. If the leader fails, a follower is promoted and writes pause for the time that takes, and the clients retry with backoff and an idempotency key so that a retry does not create two codes."
             },
             {
               "kind": "paragraph",
               "text": "The 99.9% target allows 43.2 minutes of downtime in 30 days. Counted in requests, it gives an error budget of 0.1% of the 10,000,000,000 redirects a month, which is 10,000,000 failed redirects. The signals to watch are the p99 latency against the 100 ms target, the redirect rate, the error rate, and the cache hit rate and database load as signs of saturation."
             }
           ],
-          "afterFigure": [
-            {
-              "kind": "paragraph",
-              "text": "Each failure answers a question that the earlier lessons taught us to ask: what is the single point of failure, what is unbounded, and what is unmeasured. A design that can answer them with numbers is one that can be operated."
-            }
-          ],
+          "afterFigure": [],
           "introducesTerms": [],
           "visualStateId": "",
           "checkQuestionId": "",
@@ -5731,7 +5668,7 @@
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "The choice trades the load that the estimates predicted against a feature. With 302 the 3,858 reads per second include every visit, and with 301 some repeat visits would never arrive and the real rate would be lower than the estimate. Two designs for the same requirement of redirecting can differ for this reason alone."
+              "text": "The choice trades the load that the estimates predicted against a feature. With 302 the 3,858 reads per second include every visit, and with 301 some repeat visits would never arrive and the real rate would be lower than the estimate."
             }
           ],
           "introducesTerms": [
@@ -5817,7 +5754,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "What remains is to ask, for each component, which number or requirement calls for it. The read ratio justifies a cache, the availability target justifies replicas, and nothing in the estimate justifies a queue or a shard, so neither is drawn."
+              "text": "What remains is to ask, for each component, which number or requirement calls for it."
             }
           ]
         },
@@ -5861,7 +5798,7 @@
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "Writes of this kind can be queued and done in the background, since a follower need not see a post in the same second, as in the queue lesson. The first two views of the figure show one post reaching the feeds of 200 followers, and then what happens when the poster has 20,000,000."
+              "text": "Writes of this kind can be queued and done in the background, since a follower need not see a post in the same second, as in the queue lesson."
             }
           ],
           "introducesTerms": [
@@ -5928,7 +5865,7 @@
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "Neither is simply better. Fan-out on write pays when a post is made so that reads are cheap, and suits a platform where feeds are read often. Fan-out on read wastes nothing on followers who never open the app, whereas fan-out on write fills feeds that may never be read. The totals are comparable here, and the difference is in where the work falls and when."
+              "text": "Neither is simply better. Fan-out on write pays when a post is made so that reads are cheap, and suits a platform where feeds are read often. The totals are comparable here, and the difference is in where the work falls and when."
             }
           ],
           "introducesTerms": [
@@ -5978,7 +5915,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The averages hide the case that breaks fan-out on write. An account with 20,000,000 followers that posts once causes 20,000,000 feed writes, and at 100,000 writes per second that takes 20,000,000 ÷ 100,000 = 200 seconds, during which the queue of fan-out work grows and ordinary posts wait behind it. Doing the work in the background, and accepting that some followers see the post a few minutes late, is acceptable, but a feed pipeline that stalls for everyone is not."
+              "text": "The averages hide the case that breaks fan-out on write. An account with 20,000,000 followers that posts once causes 20,000,000 feed writes, and at 100,000 writes per second that takes 20,000,000 ÷ 100,000 = 200 seconds, during which the queue of fan-out work grows and ordinary posts wait behind it."
             },
             {
               "kind": "paragraph",
@@ -6022,19 +5959,14 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The last skill is to review a design, which is a different activity from building one. A review asks questions about failure, and three do most of the work. *What is the single point of failure?* Every component that has nothing to take over from it is one. *What is unbounded?* A queue, a timeout, a retry count or a request rate with no limit will in time be exceeded. *What is unmeasured?* A number that nobody has estimated, or a signal that nobody watches, is a place where the design is a guess."
+              "text": "A review asks questions about failure, and three do most of the work. *What is the single point of failure?* Every component that has nothing to take over from it is one. *What is unbounded?* A queue, a timeout, a retry count or a request rate with no limit will in time be exceeded. *What is unmeasured?* A number that nobody has estimated, or a signal that nobody watches, is a place where the design is a guess."
             },
             {
               "kind": "paragraph",
               "text": "Take a design that looks ordinary: users reach ten web servers, which read and write one database, and sign-up requests call an email provider while the user waits. The figure's second view marks what a review finds. The database has one copy, so it is a **single point of failure**. The email call has no timeout, so a slow provider ties up web-server threads, as in the timeouts lesson. Callers have no limits, and no metric or alert would show any of this happening."
             }
           ],
-          "afterFigure": [
-            {
-              "kind": "paragraph",
-              "text": "A review by style, which asks whether the design uses the usual components, finds none of this. A review by failure finds it in minutes, because it asks what happens next and not what the design looks like."
-            }
-          ],
+          "afterFigure": [],
           "introducesTerms": [
             "single point of failure",
             "design review"
@@ -6154,11 +6086,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A design is finished when its trade-offs are stated, and not when it has no faults. For the feed, fan-out on write was accepted for ordinary accounts, at the cost of delayed delivery when a very large account posts. The hybrid was accepted at the cost of a second code path. Eventual consistency of feeds was accepted because a post that arrives a minute late harms nobody. Each of these points back at a number or a requirement."
+              "text": "A design is finished when its trade-offs are stated, and not when it has no faults. For the feed, fan-out on write was accepted for ordinary accounts, at the cost of delayed delivery when a very large account posts. The hybrid was accepted at the cost of a second code path. Eventual consistency of feeds was accepted because a post that arrives a minute late harms nobody."
             },
             {
               "kind": "paragraph",
-              "text": "That is the discipline of the whole course, in the order of the first lesson: state the requirements, estimate the load, define the interface and the data, sketch the components, and probe the sketch for the bottleneck and for failure. Every component in the design should be there because a number put it there."
+              "text": "Every component in the design should be there because a number put it there."
             }
           ],
           "introducesTerms": [],
@@ -6208,7 +6140,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "Whether the work of building a feed should be done when a post is made or when a feed is opened turns on how often each happens, and a platform with both kinds of account has to choose with numbers. The same numbers let you review any finished design by asking what fails first, which is a different skill from building one and shows what a design has left unmeasured."
+              "text": "Whether the work of building a feed should be done when a post is made or when a feed is opened turns on how often each happens, and a platform with both kinds of account has to choose with numbers."
             }
           ]
         },

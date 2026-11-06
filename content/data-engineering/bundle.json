@@ -659,11 +659,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "In the figure, data enters at two **sources**, the orders database and the product list, which are the places where the data already lives. The first step lands a raw copy of the orders somewhere the pipeline controls, so that the later steps are not reading from a database that people are still typing into. The clean step then removes the test orders, the join attaches each order's price from the product list, and the total step adds the revenue up by hour. The table the dashboard reads is the **sink**, the place where the pipeline's result is written."
+              "text": "In the figure, data enters at two **sources**, the orders database and the product list, which are the places where the data already lives. The table the dashboard reads is the **sink**, the place where the pipeline's result is written."
             },
             {
               "kind": "paragraph",
-              "text": "Every arrow means that the next step reads what the previous one wrote, so the chain forms a graph in which a step can start only when everything it reads has finished. The join has two arrows pointing into it, which means it waits for both the clean step and the product list, whereas the land step waits for nothing else. Drawing a pipeline as a graph is therefore more than a convention, because the graph holds exactly the information a scheduler needs to decide what can run and what must wait."
+              "text": "Every arrow means that the next step reads what the previous one wrote, so a step can start only when everything it reads has finished, and the graph holds exactly the information a scheduler needs to decide what can run and what must wait."
             }
           ],
           "afterFigure": [
@@ -723,17 +723,17 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The same orders can be processed in two quite different rhythms. In **batch** processing the pipeline waits until a fixed set of data has collected, such as all of yesterday's orders, and then runs over that set in one go. The set has a beginning and an end, which is what it means for the data to be *bounded*, and a nightly copy of orders or a weekly report is batch work. In **streaming** the data is treated as a flow with no end, and each record, or each small group of records, is processed within moments of arriving."
+              "text": "In **batch** processing the pipeline waits until a fixed set of data has collected, such as all of yesterday's orders, and then runs over that set in one go. The set has a beginning and an end, which is what it means for the data to be *bounded*. In **streaming** the data is treated as a flow with no end, and each record, or each small group of records, is processed within moments of arriving."
             },
             {
               "kind": "paragraph",
-              "text": "Between the two sits **micro-batch**, which runs a very small batch every few seconds or minutes and so behaves like a stream at a coarser grain. The figure shows eight orders under the three rhythms, and the two things worth comparing are when the first order is counted and how many runs the pipeline needs."
+              "text": "Between the two sits **micro-batch**, which runs a very small batch every few seconds or minutes and so behaves like a stream at a coarser grain."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "It is tempting to describe streaming as batch made faster, but speed is the smaller difference. A stream never ends, so there is never a moment at which all the data has arrived. Records can arrive out of order, because a phone that was offline sends its sale late, and a result computed from a stream is a figure that keeps being *updated* instead of a figure that is finished. A later lesson takes up each of these problems."
+              "text": "It is tempting to describe streaming as batch made faster, but speed is the smaller difference. A stream never ends, so there is never a moment at which all the data has arrived, and a result computed from a stream is a figure that keeps being *updated* instead of a figure that is finished."
             }
           ],
           "introducesTerms": [
@@ -792,17 +792,17 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The clean step has to run somewhere, and where it runs gives two orderings of the same three actions. In **ETL**, short for extract, transform, load, the pipeline reads the data from the source, cleans it in a separate engine, and loads only the cleaned result into the destination. In **ELT** the pipeline extracts the data and loads it as it is, then transforms it inside the destination with the destination's own engine, usually in SQL."
+              "text": "In **ETL**, short for extract, transform, load, the pipeline reads the data from the source, cleans it in a separate engine, and loads only the cleaned result into the destination. In **ELT** the pipeline extracts the data and loads it as it is, then transforms it inside the destination with the destination's own engine, usually in SQL."
             },
             {
               "kind": "paragraph",
-              "text": "The figure uses 1,000 raw rows of which 40 are unusable. With ETL the destination receives only the 960 good rows, so the raw copy exists nowhere except at the source. With ELT the destination holds all 1,000 in a raw table and the 960 in a cleaned table beside it."
+              "text": "With ETL the destination receives only the 960 good rows, so the raw copy exists nowhere except at the source. With ELT the destination holds all 1,000 in a raw table and the 960 in a cleaned table beside it."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "ELT does not mean that the data is never transformed, which is a common misreading of the name. The cleaning still happens, and what changes is where the code runs and what is kept. Keeping the raw rows means that a mistake in the cleaning logic can be repaired by running it again over the original data, which is why many pipelines on a **lakehouse**, a store of open data files that can be queried like a warehouse, land raw files first and clean them afterwards. ETL remains a sensible choice when the destination must never hold sensitive raw fields."
+              "text": "ELT does not mean that the data is never transformed, which is a common misreading of the name. Keeping the raw rows means that a mistake in the cleaning logic can be repaired by running it again over the original data, which is why many pipelines on a **lakehouse**, a store of open data files that can be queried like a warehouse, land raw files first and clean them afterwards. ETL remains a sensible choice when the destination must never hold sensitive raw fields."
             }
           ],
           "introducesTerms": [
@@ -997,11 +997,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A shop's orders database records every sale as a row holding an order id, a product, a quantity and the time it was placed. The sales dashboard on the manager's screen shows revenue for each hour of the day, and nothing in the orders table can answer that directly, because it holds single orders and not totals. Something has to copy the rows out, remove the test orders that staff have typed in, attach each product's price and add everything up by hour, and that chain of steps, with raw data entering at one end and a finished table leaving at the other, is a **data pipeline**."
+              "text": "A shop's orders database records every sale as a row, and the sales dashboard shows revenue for each hour of the day, which nothing in the orders table can answer directly, because it holds single orders and not totals. Something has to copy the rows out, remove the test orders that staff have typed in, attach each product's price and add everything up by hour, and that chain of steps, with raw data entering at one end and a finished table leaving at the other, is a **data pipeline**."
             },
             {
               "kind": "paragraph",
-              "text": "What makes it more than a script is that it does not run once. The dashboard has to be fresh again tomorrow, a step will fail on some night and be run again, and a mistake found in March means that three months of results have to be worked out afresh. A pipeline is something that runs repeatedly, so the question of what happens when a step runs twice matters as much as the question of what the step does."
+              "text": "What makes it more than a script is that it does not run once, so the question of what happens when a step runs twice matters as much as the question of what the step does."
             }
           ]
         },
@@ -1049,7 +1049,7 @@
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "The saving is the fraction of the columns the query needs: two columns of four means half the bytes, and two columns of twenty means a tenth. A wide analytical table, with dozens of columns and queries that touch a handful, is where a columnar layout pays off most."
+              "text": "The saving is the fraction of the columns the query needs: two columns of four means half the bytes, and two columns of twenty means a tenth."
             }
           ],
           "introducesTerms": [
@@ -1122,13 +1122,13 @@
             },
             {
               "kind": "paragraph",
-              "text": "A reader opens a Parquet file at its end, reads the footer, and only then decides which chunks to fetch. The statistics are what let it skip work: a row group whose `order_id` range is 1 to 200 cannot contain `order_id` 450, so a filter on 450 does not need to read it at all. The figure shows the layout and then two filters over five row groups."
+              "text": "A reader opens a Parquet file at its end, reads the footer, and only then decides which chunks to fetch. A row group whose `order_id` range is 1 to 200 cannot contain `order_id` 450, so a filter on 450 does not need to read it at all."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "A skip is possible only when the ranges are informative. If the rows were written in no particular order, every group could span almost the whole range of order ids, and no group could be ruled out. Skipping works best on a column that the file happens to be ordered by."
+              "text": "A skip is possible only when the ranges are informative, so skipping works best on a column that the file happens to be ordered by."
             }
           ],
           "introducesTerms": [
@@ -1187,17 +1187,17 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Keeping a column's values together has a second benefit. A column holds values of one kind, and often many that repeat: a country column with three distinct values across a million rows can be stored as the three names and a short code for each row, a scheme called **dictionary encoding**, and ordinary compression then shrinks the codes further. The same values scattered between columns of other kinds have neighbours that differ, and they compress far less."
+              "text": "Keeping a column's values together has a second benefit. A column holds values of one kind, and often many that repeat: a country column with three distinct values across a million rows can be stored as the three names and a short code for each row, a scheme called **dictionary encoding**, and ordinary compression then shrinks the codes further."
             },
             {
               "kind": "paragraph",
-              "text": "Formats also differ in what they say about the data. A CSV file carries no types at all, so the text 04/03/2026 is 4 March for one reader and 3 April for another, and a value that contains a comma has to be wrapped in quotes that every reader must handle the same way. JSON lines names each field but has no fixed schema, so one line may hold a string where the line before held a number. Parquet and Avro both record the schema with the data, so a reader gets the column names and types from the file itself."
+              "text": "Formats also differ in what they say about the data. A CSV file carries no types at all, so the text 04/03/2026 is 4 March for one reader and 3 April for another. JSON lines names each field but has no fixed schema, while Parquet and Avro both record the schema with the data, so a reader gets the column names and types from the file itself."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "Avro writes its data row by row, with the schema in the file's header, which suits messages that are produced and consumed one record at a time. The table sets the four formats side by side."
+              "text": "Avro writes its data row by row, with the schema in the file's header, which suits messages that are produced and consumed one record at a time."
             }
           ],
           "introducesTerms": [
@@ -1254,11 +1254,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Columnar layout is a bet that queries read a few columns of many rows. A job that does the opposite loses by it: to fetch one complete order by its key, a row layout reads one contiguous run of bytes, whereas a column layout has to visit a separate place for each column and then put the record back together. A service that looks up single records thousands of times a second is therefore better served by a row layout."
+              "text": "Columnar layout is a bet that queries read a few columns of many rows. To fetch one complete order by its key, a row layout reads one contiguous run of bytes, whereas a column layout has to visit a separate place for each column and then put the record back together, so a service that looks up single records thousands of times a second is better served by a row layout."
             },
             {
               "kind": "paragraph",
-              "text": "The four formats of the table fit four common jobs. CSV is read by people and spreadsheets and is acceptable for small exports and for handing data to another organisation, as long as its lack of types is managed. JSON lines suits logs and events whose fields vary. Avro suits messages sent one record at a time, where each record is complete in itself. Parquet suits the repeated analytical queries that make up most of a warehouse's work, and it is the format that the later lessons on table formats and partitioning build on."
+              "text": "CSV is acceptable for small exports and for handing data to another organisation, as long as its lack of types is managed. JSON lines suits logs and events whose fields vary, Avro suits messages sent one record at a time, and Parquet suits the repeated analytical queries that make up most of a warehouse's work."
             }
           ],
           "afterFigure": [],
@@ -1343,7 +1343,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "That layout is the file format. Written row by row, the twenty values of one order sit together, so a query that wants two of them has to pass over all twenty, while written column by column each column sits in a block of its own and the query can fetch only the two blocks it needs. A format that suits one kind of question makes another kind more expensive, so choosing one is a decision about how the table will be read, and multiplying rows, columns and bytes tells you what each choice will cost before any query runs."
+              "text": "That layout is the file format. A format that suits one kind of question makes another kind more expensive, so choosing one is a decision about how the table will be read, and multiplying rows, columns and bytes tells you what each choice will cost before any query runs."
             }
           ]
         },
@@ -1381,11 +1381,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The simplest load replaces the destination with a copy of the whole source. This is a **full load**, and its great virtue is that it is safe to repeat: whatever state the destination was in, it ends as a copy of the source. Its cost is that every run moves every row, so a source of 10,000,000 rows costs 10,000,000 rows of transfer each night even when only 25,000 of them changed that day."
+              "text": "The simplest load replaces the destination with a copy of the whole source. This is a **full load**, and its great virtue is that it is safe to repeat, but every run moves every row, so a source of 10,000,000 rows costs 10,000,000 rows of transfer each night even when only 25,000 of them changed that day."
             },
             {
               "kind": "paragraph",
-              "text": "An **incremental load** moves only the rows that changed since the previous run. For the same source that is about 25,000 rows, which is 400 times fewer, but it raises two questions that a full load never has to answer: how the job knows which rows changed, and what happens when it runs again over rows it has already moved. The next screens take the second question first, because it is the one that damages data."
+              "text": "An **incremental load** moves only the rows that changed since the previous run, about 25,000 rows, which is 400 times fewer, but it raises two questions that a full load never has to answer: how the job knows which rows changed, and what happens when it runs again over rows it has already moved."
             }
           ],
           "afterFigure": [],
@@ -1459,13 +1459,13 @@
             },
             {
               "kind": "paragraph",
-              "text": "The figure applies both writes to a products table. The incoming batch carries a new price for pad, product 3, and a new product, tape, product 5. Run twice with a plain `INSERT`, the table grows from 4 rows to 8, with pad appearing three times at two different prices. Run twice as an upsert, the table has 5 rows after the first run and still 5 after the second, because the second run finds both keys present and sets the same values again."
+              "text": "The figure applies both writes to a products table. Run twice with a plain `INSERT`, the table grows from 4 rows to 8, with pad appearing three times at two different prices, while run twice as an upsert it has 5 rows after the first run and still 5 after the second, because the second run finds both keys present and sets the same values again."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "If a key is declared on the table, a plain `INSERT` of a row that is already present fails on the second run instead of duplicating it. That prevents the doubled data but stops the pipeline at the point where the retry was meant to rescue it, so the upsert remains the better way to write. Overwriting a slice of the table, from the first lesson, is the other idempotent pattern."
+              "text": "If a key is declared on the table, a plain `INSERT` of a row that is already present fails on the second run instead of duplicating it, which prevents the doubled data but stops the pipeline at the point where the retry was meant to rescue it."
             }
           ],
           "introducesTerms": [
@@ -1789,13 +1789,13 @@
             },
             {
               "kind": "paragraph",
-              "text": "The comparison is a decision as well. With strictly greater than, a row stamped exactly at the watermark is not read again, and with greater than or equal it is. In the figure the watermark is 14:10 and two rows carry that exact time, so the first filter selects the two later rows and the second selects four rows in all."
+              "text": "With strictly greater than, a row stamped exactly at the watermark is not read again, and with greater than or equal it is. In the figure the watermark is 14:10 and two rows carry that exact time, so the first filter selects the two later rows and the second selects four rows in all."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "The second filter looks wasteful, but there is a reason for it. Several rows can share a timestamp, and a run may stop after loading only some of them, so a strict filter would never return to the rest. Reading the ties again costs little when the write is an upsert, which absorbs the repeats, and it cannot lose a row. The upsert and the watermark therefore work as a pair."
+              "text": "Several rows can share a timestamp, and a run may stop after loading only some of them, so a strict filter would never return to the rest. Reading the ties again costs little when the write is an upsert, which absorbs the repeats."
             }
           ],
           "introducesTerms": [
@@ -1877,11 +1877,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A watermark carries an assumption, that rows reach the source in the order of their timestamps, and the assumption can fail. A transaction that began a little before a run may commit a little after it, so that its row is stamped below a watermark that has already moved on. In the figure a row stamped 05-02 commits after a run that took the watermark to 05-03, and the filter `updated_at > 05-03` never selects it. The row is lost without an error, and nothing in the destination shows that it is missing. This is the **late row** problem."
+              "text": "A watermark carries an assumption, that rows reach the source in the order of their timestamps, and the assumption can fail. A transaction that began a little before a run may commit a little after it, so that its row is stamped below a watermark that has already moved on, and the row is lost without an error. This is the **late row** problem."
             },
             {
               "kind": "paragraph",
-              "text": "The usual remedy is to re-read an overlap. The job starts a fixed interval before the watermark, two days in the figure, and relies on the upsert to absorb the rows it already holds. The overlap costs a few repeated rows and buys the late arrivals. How wide it should be depends on how late rows really arrive at that source, and a row later than the overlap is still lost."
+              "text": "The usual remedy is to re-read an overlap. The job starts a fixed interval before the watermark, two days in the figure, and relies on the upsert to absorb the rows it already holds. The overlap costs a few repeated rows and buys the late arrivals, though a row later than the overlap is still lost."
             }
           ],
           "afterFigure": [],
@@ -1969,7 +1969,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The two decisions depend on each other. A load that carries only the changed rows has to know where the previous run stopped, and when it cannot be sure it reads some rows a second time, which is harmless only if the way it writes them can absorb a repeat. Settled together, they let you say for any load how many rows it moves each night and how many the table holds after the load has been retried."
+              "text": "The two decisions depend on each other. A load that carries only the changed rows has to know where the previous run stopped, and when it cannot be sure it reads some rows a second time, which is harmless only if the way it writes them can absorb a repeat."
             }
           ]
         },
@@ -2007,7 +2007,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The previous lesson found changed rows with a filter on `updated_at`. The filter works because a changed row carries a new timestamp, and it fails for a row that has been removed, because the row is gone and so is its timestamp. In the figure id 2 is hard-deleted at the source. The nightly query returns the rows that still exist, id 2 is not among them, and the warehouse goes on holding a row that no longer exists anywhere else."
+              "text": "A filter on `updated_at` works because a changed row carries a new timestamp, and it fails for a row that has been removed, because the row is gone and so is its timestamp. In the figure id 2 is hard-deleted at the source., and the warehouse goes on holding a row that no longer exists anywhere else."
             },
             {
               "kind": "paragraph",
@@ -2017,7 +2017,7 @@
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "CDC is therefore a way of asking the database for its own account of what happened, and it is not a product. Products implement it, and some of them are named in the last screens of this lesson."
+              "text": "CDC is therefore a way of asking the database for its own account of what happened, and it is not a product."
             }
           ],
           "introducesTerms": [
@@ -2071,13 +2071,13 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A log of changes can be turned into a table by applying its entries one at a time to a target that starts empty. An insert adds a row with its key and values, an update replaces the values of the row with that key, and a delete removes the row with that key. The figure applies a log of four entries, and each view shows the target after one more entry has been applied."
+              "text": "A log of changes can be turned into a table by applying its entries one at a time to a target that starts empty. An insert adds a row with its key and values, an update replaces the values of the row with that key, and a delete removes the row with that key."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "Two things are worth noticing. The log is longer than the table it produces, since four entries leave a single row, because later entries overwrite or remove the effect of earlier ones. And what the target holds at any moment is simply the log applied up to a position, which is why the position matters so much, and why a copy kept up to date this way can be stopped and restarted from the last position it applied."
+              "text": "The log is longer than the table it produces, because later entries overwrite or remove the effect of earlier ones. What the target holds at any moment is simply the log applied up to a position, which is why a copy kept up to date this way can be stopped and restarted from the last position it applied."
             }
           ],
           "introducesTerms": [],
@@ -2219,11 +2219,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The log is the most complete record, but it is not always available, and two other ways of finding deletes are common. A **soft delete** does not remove the row. It sets a flag such as `is_deleted` and updates `updated_at`, so a timestamp query sees the change like any other, and the warehouse can drop or hide the row on its side. A **key comparison** reads the full list of keys from the source and from the warehouse, and every key that is in the warehouse and not in the source has been deleted. The comparison reads the whole key column, which is cheaper than reading the whole table but still more than the log asks for."
+              "text": "The log is the most complete record, but it is not always available. A **soft delete** does not remove the row. It sets a flag such as `is_deleted` and updates `updated_at`, so a timestamp query sees the change like any other. A **key comparison** reads the full list of keys from the source and from the warehouse, and every key that is in the warehouse and not in the source has been deleted."
             },
             {
               "kind": "paragraph",
-              "text": "Several platforms package the log reader. A mirrored or replicated copy, such as the mirroring of a source database into Microsoft Fabric, applies the source's changes continuously and keeps a read-only analytical copy close to current without custom code. This is an example of the idea and not a requirement, because other platforms offer comparable replication under other names, and underneath they all read a position-ordered log."
+              "text": "Several platforms package the log reader. A mirrored or replicated copy, such as the mirroring of a source database into Microsoft Fabric, applies the source's changes continuously and keeps a read-only analytical copy close to current without custom code."
             }
           ],
           "afterFigure": [],
@@ -2310,7 +2310,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The source database does know that the row was deleted, because it wrote the fact down in its own log as it happened. A pipeline that reads that log in place of the table sees every insert, update and delete in the order the source committed them, so that applying the entries one by one, in that order, rebuilds the source table exactly, deletes included."
+              "text": "The source database does know that the row was deleted, because it wrote the fact down in its own log as it happened. A pipeline that reads that log in place of the table sees every insert, update and delete in the order the source committed them."
             }
           ]
         },
@@ -2348,11 +2348,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The tasks of a pipeline and the dependencies between them form a **directed graph**. Each task is a node, and an arrow from one task to another means that the second reads what the first writes, so it cannot start until the first has finished. In the figure three tasks each read from a different source, a join combines their outputs, and a last task publishes the result. The graph must also be **acyclic**, with no chain of arrows that leads back to its starting task, since a task that had to wait for itself could never run. A directed acyclic graph is shortened to **DAG**, and it is the structure that Apache Airflow and most other orchestration tools use to describe a pipeline."
+              "text": "The tasks of a pipeline and the dependencies between them form a **directed graph**. Each task is a node, and an arrow from one task to another means that the second reads what the first writes, so it cannot start until the first has finished. The graph must also be **acyclic**, with no chain of arrows that leads back to its starting task, since a task that had to wait for itself could never run. A directed acyclic graph is shortened to **DAG**, and it is the structure that Apache Airflow and most other orchestration tools use to describe a pipeline."
             },
             {
               "kind": "paragraph",
-              "text": "Because there are no cycles, there is always at least one order in which every task runs after all the tasks it reads from. The three source tasks in the figure have no arrows between them, so any of them may go first, and the join and the publish step follow once they are done. Wherever an arrow does not force an order, the scheduler is free to run the tasks at the same time instead of one after another."
+              "text": "Wherever an arrow does not force an order, the scheduler is free to run the tasks at the same time instead of one after another."
             }
           ],
           "afterFigure": [],
@@ -2407,7 +2407,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "How long a pipeline takes depends on the dependencies as well as the durations. The five tasks in the figure take 4, 6, 2, 3 and 1 minutes, which is 16 minutes of work. A single worker runs the tasks in turn and takes all 16 minutes. Two workers can run the sources side by side, and the run ends after 10 minutes, and a third worker brings no further gain."
+              "text": "A single worker runs the five tasks in turn and takes all 16 minutes. Two workers can run the sources side by side, and the run ends after 10 minutes, and a third worker brings no further gain."
             },
             {
               "kind": "paragraph",
@@ -2490,11 +2490,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A task can fail for a reason that has nothing to do with its logic: a source is briefly unreachable, or a cluster is short of capacity. The usual answer is to retry the task a limited number of times, waiting between attempts and making each wait longer than the last. Doubling the wait each time is called **exponential backoff**, and waits of 2, 4 and 8 minutes give a struggling source more and more time to recover without the scheduler pressing on it."
+              "text": "A task can fail for a reason that has nothing to do with its logic: a source is briefly unreachable, or a cluster is short of capacity. The usual answer is to retry the task a limited number of times, waiting between attempts and making each wait longer than the last. Doubling the wait each time is called **exponential backoff**, as with waits of 2, 4 and 8 minutes."
             },
             {
               "kind": "paragraph",
-              "text": "Retrying carries a condition. A retry runs the task again against the same inputs, which is safe only if the task is [[idempotent|A step that leaves the destination in the same state whether it runs once or twice. Met in 'What a pipeline is'.]]. A task that appends rows and fails after writing half of them adds those rows a second time when it is retried, and the limit on attempts matters because a failure that is not temporary would otherwise be repeated for ever."
+              "text": "A retry runs the task again against the same inputs, which is safe only if the task is [[idempotent|A step that leaves the destination in the same state whether it runs once or twice. Met in 'What a pipeline is'.]]. A task that appends rows and fails after writing half of them adds those rows a second time when it is retried."
             }
           ],
           "afterFigure": [
@@ -2534,17 +2534,17 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A **backfill** reruns a pipeline for past periods, because a bug was fixed or a source was added and history has to be recomputed. It works only if every run knows which period it is for. A task that reads today's date from the clock produces today's data when it is rerun for last Tuesday, so the period must be a parameter that the scheduler passes in, often called the run's logical date, and each task must choose its input and its output by that parameter."
+              "text": "A **backfill** reruns a pipeline for past periods, because a bug was fixed or a source was added and history has to be recomputed. A task that reads today's date from the clock produces today's data when it is rerun for last Tuesday, so the period must be a parameter that the scheduler passes in, often called the run's logical date, and each task must choose its input and its output by that parameter."
             },
             {
               "kind": "paragraph",
-              "text": "Once the period is a parameter the runs are independent, so they can go in parallel up to a limit that protects the source and the cluster. Take 20 daily partitions with at most 3 running at a time. They go in waves of 3, and the last wave holds only 2, so there are 7 waves, because 20 ÷ 3 is a little over 6 and a partly filled wave still takes as long as a full one. If every run takes 10 minutes and a wave starts when the one before has ended, the backfill takes 7 × 10 = 70 minutes."
+              "text": "Once the period is a parameter the runs are independent, so they can go in parallel up to a limit that protects the source and the cluster. Take 20 daily partitions with at most 3 running at a time: there are 7 waves, because 20 ÷ 3 is a little over 6 and a partly filled wave still takes as long as a full one. If every run takes 10 minutes and a wave starts when the one before has ended, the backfill takes 7 × 10 = 70 minutes."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "Rounding up is the step that is easy to forget. A backfill of 21 partitions at 3 at a time fills 7 waves exactly, and a backfill of 22 needs an eighth wave for its last single run."
+              "text": "A backfill of 21 partitions at 3 at a time fills 7 waves exactly, and a backfill of 22 needs an eighth wave for its last single run."
             }
           ],
           "introducesTerms": [
@@ -2641,7 +2641,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The second of those facts is a graph, with a task at each node and an arrow wherever one task reads what another writes. It shows which tasks can run side by side and which chain of tasks sets the shortest possible run, and the same graph tells the scheduler what to do when a task fails and how to rerun a month of history that went wrong."
+              "text": "The second of those facts is a graph, with a task at each node and an arrow wherever one task reads what another writes. It shows which tasks can run side by side and which chain of tasks sets the shortest possible run."
             }
           ]
         },
@@ -2689,7 +2689,7 @@
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "Each design moves the cost of a bad row to a different moment. Schema-on-write pays at load and gives readers a clean table. Schema-on-read keeps everything, including data nobody yet knows how to use, and leaves each reader to cope. A lake that has no structure, no owner and no tables turns into a dumping ground that no one trusts, so its freedom has to be matched by discipline, which the layers later in the lesson supply."
+              "text": "Each design moves the cost of a bad row to a different moment. Schema-on-write pays at load and gives readers a clean table. Schema-on-read keeps everything, including data nobody yet knows how to use, and leaves each reader to cope."
             }
           ],
           "introducesTerms": [
@@ -2760,17 +2760,17 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The warehouse and the lake have opposite weaknesses: the warehouse is dependable but keeps its data inside its own engine, and the lake is open but unreliable. A **lakehouse** combines the strengths. It keeps data in open files in a lake, in a format such as Parquet, and adds a **table format** on top that records which files make up each table and allows transactions, which the next lesson explains in detail. Because the files are open, different engines, such as a SQL engine and a Spark engine, can read the same copy, which is possible only because storage is kept separate from the compute that reads it."
+              "text": "A **lakehouse** keeps data in open files in a lake, in a format such as Parquet, and adds a **table format** on top that records which files make up each table and allows transactions. Because the files are open, different engines, such as a SQL engine and a Spark engine, can read the same copy, which is possible only because storage is kept separate from the compute that reads it."
             },
             {
               "kind": "paragraph",
-              "text": "The figure shows what the separation saves. When each of three engines needs its own copy of a 2 TB table, 6 TB are stored and the copies can drift apart. When all three read one shared copy, 2 TB are stored and every engine sees the same rows."
+              "text": "When each of three engines needs its own copy of a 2 TB table, 6 TB are stored and the copies can drift apart, whereas when all three read one shared copy, 2 TB are stored and every engine sees the same rows."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "Warehouse and lakehouse are therefore partners on many platforms and not rivals. In Microsoft Fabric a lakehouse and a warehouse can work on the same Delta tables in OneLake, and Databricks offers a comparable pairing. These are examples, and the pattern matters more than the product names."
+              "text": "In Microsoft Fabric a lakehouse and a warehouse can work on the same Delta tables in OneLake, and Databricks offers a comparable pairing."
             }
           ],
           "introducesTerms": [
@@ -2898,11 +2898,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "It is a common mistake to treat a lake as somewhere to put files that need no design. Files with no names that mean anything, no owner and no tables cannot be trusted, and a lake in that condition is a dumping ground. The medallion layers, together with the table format, are the discipline that prevents it: each table has an owner, a schema and a contract, and a reader knows which layer to trust for which purpose."
+              "text": "It is a common mistake to treat a lake as somewhere to put files that need no design. Files with no names that mean anything, no owner and no tables cannot be trusted, and a lake in that condition is a dumping ground, which the medallion layers and the table format prevent."
             },
             {
               "kind": "paragraph",
-              "text": "The layers are also a way of matching a request to the right place. A raw audit copy of what arrived belongs in bronze. A cleaned customers table belongs in silver. Monthly revenue for a dashboard belongs in gold. An analyst who needs ad hoc features for a model usually starts from silver, which has the detail of bronze without its mess, and a request that cannot be placed in a layer usually means that its purpose has not yet been pinned down."
+              "text": "A raw audit copy of what arrived belongs in bronze, a cleaned customers table in silver, and monthly revenue for a dashboard in gold. An analyst who needs ad hoc features for a model usually starts from silver, which has the detail of bronze without its mess."
             }
           ],
           "afterFigure": [],
@@ -2987,7 +2987,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "Where data is kept decides which of those promises can be kept. A warehouse checks every row against a schema before accepting it, a lake keeps files in whatever form they arrive, and a lakehouse keeps open files that several engines can read, with layers inside it that hold the same data at different stages of cleaning. Knowing what each place promises lets you put a new table where its readers can trust it, and say what a faulty row or an extra copy of a table will cost."
+              "text": "Where data is kept decides which of those promises can be kept. Knowing what each place promises lets you put a new table where its readers can trust it, and say what a faulty row or an extra copy of a table will cost."
             }
           ]
         },
@@ -3099,11 +3099,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A table with thousands of commits would be slow to open if every reader replayed the log from version 0. To avoid that, the writer saves a **checkpoint** from time to time, a file that holds the complete list of live files at one version. A reader finds the latest checkpoint, loads it as its starting point, and applies only the commits that come after it."
+              "text": "A table with thousands of commits would be slow to open if every reader replayed the log from version 0, so the writer saves a **checkpoint** from time to time, a file that holds the complete list of live files at one version. A reader finds the latest checkpoint and applies only the commits that come after it."
             },
             {
               "kind": "paragraph",
-              "text": "With a checkpoint at version 20 and the latest commit at version 27, the reader applies versions 21 to 27, which is 7 commit files, and the first 20 commit files need not be read. A checkpoint changes how fast a table opens and not what it contains, because both routes arrive at the same set of files, and the log remains the authority."
+              "text": "With a checkpoint at version 20 and the latest commit at version 27, the reader applies versions 21 to 27, which is 7 commit files. A checkpoint changes how fast a table opens and not what it contains."
             }
           ],
           "afterFigure": [],
@@ -3158,7 +3158,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "Readers take no locks either. A query begins by fixing the version it will read, and it reads that **snapshot** from beginning to end, even if writers commit newer versions while it runs. Each query therefore sees a table that is consistent, with all of a commit's changes or none of them, which is the property known as snapshot isolation. Iceberg reaches the same result with a different structure, shown in the figure: a chain of metadata that ends in the data files, with a single pointer that a commit swaps from the old metadata to the new."
+              "text": "Readers take no locks either. A query begins by fixing the version it will read, and it reads that **snapshot** from beginning to end, even if writers commit newer versions while it runs, so it sees a table with all of a commit's changes or none of them, which is the property known as snapshot isolation. Iceberg reaches the same result with a chain of metadata that ends in the data files, with a single pointer that a commit swaps from the old metadata to the new."
             }
           ],
           "afterFigure": [],
@@ -3212,19 +3212,14 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Deleting rows or rewriting files only marks files as removed in a commit, and the bytes stay on storage, so a table's storage grows even when its live size does not. Two maintenance jobs deal with that. **Compaction** rewrites many small live files into a few larger ones as a new commit, which adds the new file and removes the old ones, as version 3 does in the first figure where t replaces q and r. **Vacuum** physically deletes files that no version within a retention period needs, and in Delta the default retention is 7 days."
+              "text": "Deleting rows or rewriting files only marks files as removed in a commit, and the bytes stay on storage, so two maintenance jobs are needed. **Compaction** rewrites many small live files into a few larger ones as a new commit, as version 3 does in the first figure where t replaces q and r. **Vacuum** physically deletes files that no version within a retention period needs, and in Delta the default retention is 7 days."
             },
             {
               "kind": "paragraph",
-              "text": "Old versions need old files, so the two jobs trade against **time travel**, which is reading the table as it was at an earlier version. After a vacuum, any version whose files were deleted can no longer be read, and the last figure shows the effect. The retention period is the length of history that is kept readable."
+              "text": "Old versions need old files, so the two jobs trade against **time travel**, which is reading the table as it was at an earlier version. After a vacuum, any version whose files were deleted can no longer be read."
             }
           ],
-          "afterFigure": [
-            {
-              "kind": "paragraph",
-              "text": "A table format is therefore not a database. It is metadata over immutable files, and the engines that read and write the files do the work, which is why Delta and Iceberg tables can be read by several engines."
-            }
-          ],
+          "afterFigure": [],
           "introducesTerms": [
             "compaction",
             "vacuum",
@@ -3354,7 +3349,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "All of this comes from one small record kept beside the files, a log of which files belong to the table at each moment. The data files are never changed and the table is whatever the log says it is, so an update is a new entry that swaps some files in the list for others, and an old version is the list as it stood before. Reading that log tells you which files a query reads at any version, which files a cleanup job may safely delete, and why two writers working at once do not corrupt the table."
+              "text": "All of this comes from one small record kept beside the files, a log of which files belong to the table at each moment. The data files are never changed and the table is whatever the log says it is, so an update is a new entry that swaps some files in the list for others, and an old version is the list as it stood before."
             }
           ]
         },
@@ -3392,7 +3387,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A **partition** is a group of a table's rows stored together in a folder of their own, chosen by the value of a **partition column**. A table of 1,200 GB partitioned by month, over one year, is twelve folders of about 100 GB each. The first view of the figure reads the table with no filter, and it has to open all twelve."
+              "text": "A **partition** is a group of a table's rows stored together in a folder of their own, chosen by the value of a **partition column**. A table of 1,200 GB partitioned by month, over one year, is twelve folders of about 100 GB each."
             },
             {
               "kind": "paragraph",
@@ -3402,7 +3397,7 @@
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "Partitioning therefore does not speed up every query. It speeds up the queries that filter on the partition column and leaves the others as they were, and it has a cost in the number of files, which the next screens examine."
+              "text": "Partitioning therefore does not speed up every query. It speeds up the queries that filter on the partition column and leaves the others as they were, and it has a cost in the number of files."
             }
           ],
           "introducesTerms": [
@@ -3477,11 +3472,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The number of distinct values in a column is called its **cardinality**, and it decides how many partitions there will be. A date has about 365 values a year, which divides a big table into folders that are each worth reading. A customer id may have millions of values, and a table partitioned by customer id would have a folder for each one."
+              "text": "The number of distinct values in a column is called its **cardinality**, and it decides how many partitions there will be. A date has about 365 values a year, while a customer id may have millions of values, and a table partitioned by customer id would have a folder for each one."
             },
             {
               "kind": "paragraph",
-              "text": "The figure compares the two choices for the 1,200 GB table. By month each partition holds 100 GB, and with 3,000,000 customers each partition holds 1,200 GB ÷ 3,000,000 = 400 KB, far below the dashed line that marks a size worth reading on its own. The axis is logarithmic, so each step up is a thousand times larger and the real gap, a factor of 250,000, is much wider than it looks."
+              "text": "By month each partition holds 100 GB, and with 3,000,000 customers each partition holds 1,200 GB ÷ 3,000,000 = 400 KB, far below the dashed line that marks a size worth reading on its own. The axis is logarithmic, so the real gap, a factor of 250,000, is much wider than it looks."
             }
           ],
           "afterFigure": [
@@ -3539,11 +3534,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A very large number of very small files has a cost of its own. Reading a file means opening it, reading its footer and scheduling work for it, and when a file holds a few kilobytes these fixed costs outweigh the reading of the data. Small files come from partitioning by a column with too many values, and also from frequent small writes: a job that writes one file every 10 minutes into each of 8 partitions creates 8 × 144 = 1,152 files in a day."
+              "text": "A very large number of very small files has a cost of its own, because reading a file means opening it, reading its footer and scheduling work for it, and when a file holds a few kilobytes these fixed costs outweigh the reading of the data. Small files come from partitioning by a column with too many values, and also from frequent small writes: a job that writes one file every 10 minutes into each of 8 partitions creates 8 × 144 = 1,152 files in a day."
             },
             {
               "kind": "paragraph",
-              "text": "The repair is **compaction**, which, as the previous lesson showed, rewrites many small files as a few large ones in a new commit. Compaction leaves the rows as they were and changes only the files that hold them, so it is worth scheduling after the writes that create small files, and a table that is written often needs it regularly."
+              "text": "The repair is **compaction**, which rewrites many small files as a few large ones in a new commit, so a table that is written often needs it regularly."
             }
           ],
           "afterFigure": [],
@@ -3579,17 +3574,17 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Inside a partition, files can still be skipped. The footer of each Parquet file, and the metadata of a table format, records the smallest and largest value of each column in that file, and a query filtering on the column can rule out any file whose range does not include the value. This is **data skipping**, and it is the technique from the lesson on file formats applied across the files of a table."
+              "text": "Inside a partition, files can still be skipped. The footer of each Parquet file, and the metadata of a table format, records the smallest and largest value of each column in that file, and a query filtering on the column can rule out any file whose range does not include the value. This is **data skipping**."
             },
             {
               "kind": "paragraph",
-              "text": "The figure shows four files whose `order_id` ranges are 1 to 200, 150 to 420, 400 to 650 and 700 to 900. A filter on 410 falls inside both the second and the third range, since they overlap, so two files are read. A filter on 800 falls inside only the fourth, so one file is read. In the third view the same rows have been sorted by `order_id` before they were written, which gives four separate ranges, and the filter on 410 reads a single file."
+              "text": "A filter on 410 falls inside both the second and the third range, since they overlap, so two files are read. In the third view the same rows have been sorted by `order_id` before they were written, which gives four separate ranges, and the filter on 410 reads a single file."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "Statistics skip files only when the ranges are narrow and separate. If rows arrive in random order, every file's range covers nearly the whole column and nothing can be skipped, so clustering the data on the filter column, as compaction can do, is what makes the statistics useful."
+              "text": "Statistics skip files only when the ranges are narrow and separate, so clustering the data on the filter column, as compaction can do, is what makes the statistics useful."
             }
           ],
           "introducesTerms": [
@@ -3726,7 +3721,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The layout is a decision about which rows share a folder and which share a file. Rows kept in folders by date let a filter on date skip every folder outside its range, and statistics kept for each file let it skip files inside a folder, but only when the values in each file are close together. With a table's size, its number of folders and the ranges in its files, you can work out how many gigabytes a filtered query will read before the layout is built, and see when a layout has been cut so finely that its files cost more to open than to read."
+              "text": "The layout is a decision about which rows share a folder and which share a file. With a table's size, its number of folders and the ranges in its files, you can work out how many gigabytes a filtered query will read before the layout is built, and see when a layout has been cut so finely that its files cost more to open than to read."
             }
           ]
         },
@@ -3764,17 +3759,17 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A distributed engine divides its input into **partitions**, pieces that can be processed independently, and runs one **task** for each partition. Spark by default cuts input files into pieces of about 128 MiB, so a file of 1.5 GiB, which is 1,536 MiB, gives 1,536 ÷ 128 = 12 partitions and therefore 12 tasks. The first view of the figure shows that cutting. The word partition is used twice in data engineering: a table's partitions, from the previous lesson, are folders grouped by a column's value, while an engine's partitions are the pieces of data that its tasks work on."
+              "text": "A distributed engine divides its input into **partitions**, pieces that can be processed independently, and runs one **task** for each partition. Spark by default cuts input files into pieces of about 128 MiB, so a file of 1.5 GiB, which is 1,536 MiB, gives 1,536 ÷ 128 = 12 partitions and therefore 12 tasks. A table's partitions, from the previous lesson, are folders grouped by a column's value, while an engine's partitions are the pieces of data that its tasks work on."
             },
             {
               "kind": "paragraph",
-              "text": "A cluster has a fixed number of cores, and each core runs one task at a time. If there are 12 tasks and 4 cores, the first 4 tasks start together, the next 4 start as those finish, and so on, in rounds called **waves**. The second view shows 3 waves. The number of waves is the number of tasks divided by the number of cores, rounded up, because a partly filled wave still has to be waited for."
+              "text": "A cluster has a fixed number of cores, and each core runs one task at a time. If there are 12 tasks and 4 cores, the first 4 tasks start together, the next 4 start as those finish, and so on, in rounds called **waves**, and the number of waves is the number of tasks divided by the number of cores, rounded up."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "Tasks and cores are the two numbers behind most estimates of a job's duration. When the tasks are of equal length, the run time is the number of waves multiplied by the time of one task, and adding cores shortens it only until there are as many cores as tasks."
+              "text": "When the tasks are of equal length, the run time is the number of waves multiplied by the time of one task, and adding cores shortens it only until there are as many cores as tasks."
             }
           ],
           "introducesTerms": [
@@ -3854,7 +3849,7 @@
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "Shuffles are the expensive step in most jobs, because they use the network and the disks, so the amount of data shuffled and the number of blocks are worth counting. A join of two large tables is also wide, since rows with matching keys have to meet, and the last screens show a way to avoid it when one table is small."
+              "text": "Shuffles are the expensive step in most jobs, because they use the network and the disks, so the amount of data shuffled and the number of blocks are worth counting. A join of two large tables is also wide, since rows with matching keys have to meet."
             }
           ],
           "introducesTerms": [
@@ -3924,11 +3919,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A shuffle sends every row with the same key to the same task. That works well when keys are spread evenly and badly when one key is much more common than the others. In the figure 500 million rows go to 5 reducers that each process 1 million rows per second. Spread evenly, each reducer would receive 100 million rows and finish in 100 seconds. When one key holds 70% of the rows, its reducer receives 350 million rows and needs 350 seconds, while the other four share the remaining 150 million rows and finish in under 40 seconds."
+              "text": "A shuffle sends every row with the same key to the same task, which works well when keys are spread evenly and badly when one key is much more common than the others. In the figure 500 million rows go to 5 reducers that each process 1 million rows per second. Spread evenly, each reducer would receive 100 million rows and finish in 100 seconds. When one key holds 70% of the rows, its reducer receives 350 million rows and needs 350 seconds."
             },
             {
               "kind": "paragraph",
-              "text": "A stage is finished only when its slowest task is, so it takes 350 seconds, 3.5 times as long as the even split, with four of the five cores idle for most of that time. This is **data skew**. Adding machines does nothing for it, because the hot key still goes to one task. The remedies work on the key: spreading it over several tasks, a technique called salting, or avoiding the shuffle for that join altogether."
+              "text": "A stage is finished only when its slowest task is, so it takes 350 seconds, 3.5 times as long as the even split. This is **data skew**. Adding machines does nothing for it, because the hot key still goes to one task, so the remedies work on the key: spreading it over several tasks, a technique called salting, or avoiding the shuffle for that join altogether."
             }
           ],
           "afterFigure": [],
@@ -3996,7 +3991,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "A consequence is that a line which looks slow may cost nothing when it is written, while the first action pays for everything before it. When a job seems to stall on its last line, the cause is usually earlier in the plan, and the plan is where to look."
+              "text": "A consequence is that a line which looks slow may cost nothing when it is written, while the first action pays for everything before it."
             }
           ],
           "afterFigure": [],
@@ -4036,7 +4031,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The saving can be worked out in advance. Broadcasting a 50 MB table to 10 executors moves 50 × 10 = 500 MB, whereas shuffling a 2 TB table moves terabytes. The limit is the size of the small table: a broadcast copy must fit in each executor's memory, and the engine chooses it only below a size threshold."
+              "text": "Broadcasting a 50 MB table to 10 executors moves 50 × 10 = 500 MB, whereas shuffling a 2 TB table moves terabytes. A broadcast copy must fit in each executor's memory, so the engine chooses it only below a size threshold."
             }
           ],
           "afterFigure": [],
@@ -4107,7 +4102,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The gap comes from things that can be counted before the job runs. The pieces are processed in rounds no wider than the cluster's cores, an operation that groups rows by key has to move data between machines before it can start, and the pieces are not always the same size. Counting them for a job tells you where its time goes, and so whether more machines, a different key or a different kind of join would make it faster."
+              "text": "The gap comes from things that can be counted before the job runs. Counting them for a job tells you where its time goes, and so whether more machines, a different key or a different kind of join would make it faster."
             }
           ]
         },
@@ -4145,11 +4140,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "In a bronze table every load is kept, so an event that the source sends again appears again, with a later `loaded_at`. An event is identified by a key such as `event_id`, and the rows that share a key are duplicates of one event, although they need not be identical: the second copy may carry a corrected value, or padding in its amount, and it always has a new `loaded_at`."
+              "text": "In a bronze table every load is kept, so an event that the source sends again appears again, with a later `loaded_at`. An event is identified by a key such as `event_id`, and the rows that share a key are duplicates of one event, although they need not be identical."
             },
             {
               "kind": "paragraph",
-              "text": "The obvious tool, `SELECT DISTINCT`, removes only rows that are identical in every column. Two rows for event o17 that differ in `loaded_at` are different rows to `DISTINCT`, so both of them survive. What is needed is a rule that compares only the key and then chooses which row of the group to keep, which for re-sent data is usually the one loaded last, because it holds the source's latest word."
+              "text": "The obvious tool, `SELECT DISTINCT`, removes only rows that are identical in every column, so two rows for event o17 that differ in `loaded_at` both survive. What is needed is a rule that compares only the key and then chooses which row of the group to keep, which for re-sent data is usually the one loaded last."
             }
           ],
           "afterFigure": [],
@@ -4529,11 +4524,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The order in which cleaning steps run matters as much as the steps themselves. The day's bronze table holds 450 rows for 400 distinct events, since 50 events were sent twice, and every event is worth 10. Adding up the amounts first gives 450 × 10 = 4,500, a figure that includes the 50 repeats. Deduplicating first leaves 400 rows and a total of 4,000."
+              "text": "The day's bronze table holds 450 rows for 400 distinct events, since 50 events were sent twice, and every event is worth 10. Adding up the amounts first gives 450 × 10 = 4,500, a figure that includes the 50 repeats, while deduplicating first leaves 400 rows and a total of 4,000."
             },
             {
               "kind": "paragraph",
-              "text": "An aggregate cannot repair itself afterwards. Once rows have been added together the copies can no longer be told apart, so the total is already wrong when it is computed, and every report built on it inherits the error. The same holds for typing: a total over text that was cast carelessly is wrong at the moment it is computed, which is why cleaning happens in silver and totals are built in gold."
+              "text": "An aggregate cannot repair itself afterwards, because once rows have been added together the copies can no longer be told apart, which is why cleaning happens in silver and totals are built in gold."
             }
           ],
           "afterFigure": [],
@@ -4584,11 +4579,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Values arrive as text, with padding, mixed formats and the occasional word where a number belongs. Cleaning removes the padding with `TRIM` and converts the text with `CAST(... AS REAL)`, so that a value such as `' 10.50'` becomes 10.5. What a cast does with text that is not a number depends on the engine: SQLite gives 0 without any error, while other engines raise an error or return `NULL`. A quiet 0 is dangerous, because the row then adds zero to a sum and nobody is told."
+              "text": "Cleaning removes the padding with `TRIM` and converts the text with `CAST(... AS REAL)`, so that a value such as `' 10.50'` becomes 10.5. What a cast does with text that is not a number depends on the engine: SQLite gives 0 without any error, while other engines raise an error or return `NULL`. A quiet 0 is dangerous, because the row then adds zero to a sum and nobody is told."
             },
             {
               "kind": "paragraph",
-              "text": "The safe habit is to test each value before the cast and send the rows that fail to a **reject table**, which keeps the row, the reason it failed and a count. Dropping bad rows without a record leaves no evidence and no way to repair the source, whereas a reject table turns each failure into something that can be counted, reported and fixed."
+              "text": "The safe habit is to test each value before the cast and send the rows that fail to a **reject table**, which keeps the row, the reason it failed and a count."
             }
           ],
           "afterFigure": [],
@@ -4700,7 +4695,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "Cleaning is the work of turning a table like that into one where each fact appears once and every value has a type, before any figure is built from it. It decides which of two copies of an order to keep, converts text such as ' 10.50' into a number, and sets aside the rows that cannot be converted, and it has to do all of this before anything is added up, since a total cannot tell which of its rows were copies. Done in that order, it gives a revenue figure that counts each order once, together with a record of every row that was left out and why."
+              "text": "Cleaning is the work of turning a table like that into one where each fact appears once and every value has a type, before any figure is built from it. It gives a revenue figure that counts each order once, together with a record of every row that was left out and why."
             }
           ]
         },
@@ -4738,11 +4733,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Every record in a stream has two times. Its **event time** is when the thing happened, as recorded at the source, which is 10:04 for the purchase in the figure. Its **processing time** is when the pipeline sees it, 10:11 after the delay in the lift. In a batch job over yesterday's data the two never conflict, because everything has arrived, but in a stream they differ by a delay that nobody controls."
+              "text": "Every record in a stream has two times. Its **event time** is when the thing happened, as recorded at the source, which is 10:04 for the purchase in the figure. Its **processing time** is when the pipeline sees it, 10:11 after the delay in the lift. In a stream they differ by a delay that nobody controls."
             },
             {
               "kind": "paragraph",
-              "text": "Counting purchases per five-minute window by processing time puts this purchase in the window that starts at 10:10, so the count for 10:00 to 10:05 is too low and the one for 10:10 too high, and a rerun of the same data on a day with different delays gives different counts. Windows by event time put the purchase where it happened, and the answers stay the same however late the records arrive, which is why streaming engines window by event time. The price is that a window can never be sure it has seen every record, a problem that the watermark addresses later in this lesson."
+              "text": "Counting purchases per five-minute window by processing time puts this purchase in the window that starts at 10:10, and a rerun of the same data on a day with different delays gives different counts. Windows by event time put the purchase where it happened, and the answers stay the same however late the records arrive, which is why streaming engines window by event time. The price is that a window can never be sure it has seen every record."
             }
           ],
           "afterFigure": [
@@ -4805,7 +4800,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The figure places six events, at minutes 1, 3, 4, 12, 14 and 22, under each kind. The tumbling five-minute windows count 3, 0, 2, 0, 1 and 0 events. The sliding windows count every event twice, in the window that contains it and in the one that starts 5 minutes earlier. The session windows give 3 sessions, because the pauses from minute 4 to 12 and from 14 to 22 are longer than the 5-minute gap."
+              "text": "The tumbling five-minute windows count 3, 0, 2, 0, 1 and 0 events, and the session windows give 3 sessions, because the pauses from minute 4 to 12 and from 14 to 22 are longer than the 5-minute gap."
             }
           ],
           "afterFigure": [
@@ -5001,7 +4996,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "Exactly-once results are what everyone wants, and they are not free. Since the source replays after a failure, the effect on the destination is exactly once only if the sink tolerates the replay. A sink that appends rows duplicates every replayed record, while an idempotent sink, such as an upsert on a key, absorbs them, which is the property from the first lesson. The figure shows 5 records replayed in each case."
+              "text": "Exactly-once results are what everyone wants, and they are not free. Since the source replays after a failure, the effect on the destination is exactly once only if the sink tolerates the replay, so a sink that appends rows duplicates every replayed record, while an idempotent sink, such as an upsert on a key, absorbs them."
             }
           ],
           "afterFigure": [],
@@ -5147,11 +5142,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A **validation gate** is a check placed between two steps of a pipeline. It tests a batch of data against rules and then decides what happens to it. Typical rules are that a key is never null, that a key is unique, that an amount lies in a plausible range, and that the number of rows is close to what the previous run delivered. Gates are placed where data changes hands, when a file lands, when bronze becomes silver and when silver becomes gold, because each of those is a point where a different team or system takes responsibility for the data."
+              "text": "A **validation gate** is a check placed between two steps of a pipeline. It tests a batch of data against rules and then decides what happens to it. Typical rules are that a key is never null, that a key is unique, that an amount lies in a plausible range, and that the number of rows is close to what the previous run delivered. Gates are placed where data changes hands, when a file lands, when bronze becomes silver and when silver becomes gold."
             },
             {
               "kind": "paragraph",
-              "text": "A gate can take one of two actions. It can **quarantine** the failing rows, writing them with the reason to a separate table and letting the rest continue, or it can **fail fast**, stopping the run and alerting someone before any bad data is published. The choice depends on how many rows fail. A few failing rows out of 2,000 are an exception that can be set aside, whereas a large share suggests that something upstream is broken and the whole batch should not be trusted. A **threshold**, such as 2% of the batch, is the line between the two, as the figure shows."
+              "text": "A gate can **quarantine** the failing rows, writing them with the reason to a separate table and letting the rest continue, or it can **fail fast**, stopping the run and alerting someone before any bad data is published. A few failing rows out of 2,000 are an exception that can be set aside, whereas a large share suggests that something upstream is broken, and a **threshold**, such as 2% of the batch, is the line between the two."
             }
           ],
           "afterFigure": [
@@ -5248,7 +5243,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "Whether an added column is safe depends on its meaning as well as its name. A new column that changes what an existing join key means, or that multiplies rows because it is not unique, is breaking even though it only adds to the table. The figure shows three changes beside a query that reads the old schema."
+              "text": "Whether an added column is safe depends on its meaning as well as its name. A new column that changes what an existing join key means, or that multiplies rows because it is not unique, is breaking even though it only adds to the table."
             }
           ],
           "afterFigure": [],
@@ -5308,11 +5303,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A pipeline can respond to a schema change in three ways. It can fail, stopping at the gate until someone decides. It can evolve, accepting the new column on purpose and updating the tables downstream. Or it can adapt silently, taking in whatever arrives. Silent adaptation is tempting and is the dangerous one, because a bug at the source then moves into every downstream table without anyone seeing it."
+              "text": "A pipeline can respond to a schema change in three ways: it can fail, stopping at the gate until someone decides, it can evolve, accepting the new column on purpose, or it can adapt silently, taking in whatever arrives. Silent adaptation is the dangerous one, because a bug at the source then moves into every downstream table without anyone seeing it."
             },
             {
               "kind": "paragraph",
-              "text": "A sensible default is to detect the change at the landing gate, to accept the safe kinds automatically when the team has agreed to that, and to stop on the breaking kinds. Stopping costs a delay, and a wrong table that nobody notices costs a great deal more. The same reasoning applies to row-level checks, where the choice between quarantine and stopping rests on how many rows fail."
+              "text": "A sensible default is to detect the change at the landing gate, to accept the safe kinds automatically when the team has agreed to that, and to stop on the breaking kinds, since stopping costs a delay and a wrong table that nobody notices costs a great deal more."
             }
           ],
           "afterFigure": [],
@@ -5419,11 +5414,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A nightly file of orders arrives in which a few hundred rows have no customer key. Nothing in the pipeline fails: the load accepts the rows, the join to the customers table quietly leaves them out, and weeks later the revenue on a dashboard is lower than the finance team's figure by an amount that nobody can trace. Each step did what it was told, and no step was told to look at what it was given."
+              "text": "A nightly file of orders arrives in which a few hundred rows have no customer key. Nothing in the pipeline fails: the load accepts the rows, the join to the customers table quietly leaves them out, and weeks later the revenue on a dashboard is lower than the finance team's figure by an amount that nobody can trace."
             },
             {
               "kind": "paragraph",
-              "text": "A check placed where data changes hands turns that silent loss into a decision made on purpose, to stop the run, to set the bad rows aside, or to let the batch through. Which of those is right depends on how many rows fail and on whether the source has changed the shape of its data, and both can be settled from the batch itself before anything reaches the tables that people read."
+              "text": "A check placed where data changes hands turns that silent loss into a decision made on purpose, to stop the run, to set the bad rows aside, or to let the batch through."
             }
           ]
         },
@@ -5465,7 +5460,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "Freshness is a property of the data and not of the job. In the second view of the figure every run succeeded, and still two of the five mornings breach the 6-hour target, because the source delivered late on those days. A pipeline that is on time with late inputs produces stale tables, which is why the check has to look at the newest timestamp in the data and not at the job's status."
+              "text": "Freshness is a property of the data and not of the job. In the second view of the figure every run succeeded, and still two of the five mornings breach the 6-hour target, because the source delivered late on those days."
             }
           ],
           "afterFigure": [],
@@ -5519,11 +5514,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The second measure is **throughput**, the amount of data a job moves in a unit of time. A job that moves 150 million rows in 25 minutes, which is 1,500 seconds, has a throughput of 150,000,000 ÷ 1,500 = 100,000 rows per second. Dividing by seconds and not by minutes keeps the unit a rate that can be compared from one job to another."
+              "text": "The second measure is **throughput**, the amount of data a job moves in a unit of time. A job that moves 150 million rows in 25 minutes, which is 1,500 seconds, has a throughput of 150,000,000 ÷ 1,500 = 100,000 rows per second."
             },
             {
               "kind": "paragraph",
-              "text": "Throughput links the size of the data to the deadline. If 600 million rows must be through in a window of 40 minutes, which is 2,400 seconds, the job needs 600,000,000 ÷ 2,400 = 250,000 rows per second, and a job that runs at 200,000 will miss the window. **Latency** is a different measure: the time one record takes to travel from the source to the destination. A nightly batch job can have high throughput and a latency of hours, and a streaming job can have the opposite."
+              "text": "If 600 million rows must be through in a window of 40 minutes, which is 2,400 seconds, the job needs 600,000,000 ÷ 2,400 = 250,000 rows per second, and a job that runs at 200,000 will miss the window. **Latency** is a different measure: the time one record takes to travel from the source to the destination, so a nightly batch job can have high throughput and a latency of hours."
             }
           ],
           "afterFigure": [],
@@ -5575,11 +5570,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Four signals cover most failures. **Freshness** asks whether the data is as new as promised. **Volume** asks whether the job wrote about the usual number of rows. **Duration** asks whether it took about as long as usual, which is throughput seen from the other side. **Failures and retries** ask whether tasks failed, and how often they had to run again. A job that succeeds with half the usual rows is also broken, so each signal is compared with what is normal for that table at that time, for example by alerting when a run writes less than 80% of its usual rows."
+              "text": "Four signals cover most failures. **Freshness** asks whether the data is as new as promised. **Volume** asks whether the job wrote about the usual number of rows. **Duration** asks whether it took about as long as usual. **Failures and retries** ask whether tasks failed, and how often they had to run again. Each signal is compared with what is normal for that table at that time, for example by alerting when a run writes less than 80% of its usual rows."
             },
             {
               "kind": "paragraph",
-              "text": "Monitoring only failures misses most of this. Failure is the one signal that the scheduler reports by itself, and the other three have to be measured from the data and from the run history. An alert is most useful when it names the table and the rule that fired, so that whoever receives it can tell at once which of the signals is out of range."
+              "text": "Failure is the one signal that the scheduler reports by itself, and the other three have to be measured from the data and from the run history."
             }
           ],
           "afterFigure": [],
@@ -5619,7 +5614,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "Adding capacity is the tempting response to slowness, and it is usually the last one to try. More cores do not shorten a skewed stage, because one task still holds the hot key, and they do not make a table of tiny files cheaper to open. Fixes to the layout and the key cost less, and they last, whereas extra capacity is paid for every night. The figure shows four dashboards and the cause each one points to."
+              "text": "Adding capacity is the tempting response to slowness, and it is usually the last one to try, because more cores do not shorten a skewed stage, and they do not make a table of tiny files cheaper to open."
             }
           ],
           "afterFigure": [],
@@ -5758,7 +5753,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "Monitoring measures what matters to the people who read the data: how old the newest row in a table is, how many rows a run wrote compared with a usual night, and how long the run took. Each of those is a subtraction or a division against a baseline, and each one, when it goes wrong, points to a cause such as a late source, a skewed key or a table of tiny files. Knowing which measurement points to which cause lets you notice a bad night before the readers do and fix the cause instead of buying more machines."
+              "text": "Monitoring measures what matters to the people who read the data: how old the newest row in a table is, how many rows a run wrote compared with a usual night, and how long the run took. Each of those is a subtraction or a division against a baseline, and each one, when it goes wrong, points to a cause such as a late source, a skewed key or a table of tiny files."
             }
           ]
         },
@@ -5800,13 +5795,13 @@
             },
             {
               "kind": "paragraph",
-              "text": "The code of the pipeline is the same in all three. What differs is a set of **parameters**, such as the connection to the source and the location of the destination, which each environment supplies for itself. With three environments and the two parameters in the figure, a source and a destination, there are 3 × 2 = 6 values to keep, and none of them is written into the pipeline's code. The figure shows the path and a table of parameters."
+              "text": "The code of the pipeline is the same in all three. What differs is a set of **parameters**, such as the connection to the source and the location of the destination, which each environment supplies for itself, and with three environments and two parameters there are 3 × 2 = 6 values to keep."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "In Microsoft Fabric, deployment pipelines and Git integration cover promotion and version control, and other platforms have their own tools. The practice is the same, and the product names are examples."
+              "text": "In Microsoft Fabric, deployment pipelines and Git integration cover promotion and version control, and other platforms have their own tools."
             }
           ],
           "introducesTerms": [
@@ -5864,7 +5859,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The sequence is therefore branch, review, merge, deploy to test, validate, promote. It is slower than fixing a bug by editing production directly, and that is the point: a direct edit skips the review and the test, leaves no record of what changed, and cannot be undone by reverting a commit. A genuine emergency fix still follows the path, with a shorter review."
+              "text": "The sequence is therefore branch, review, merge, deploy to test, validate, promote, and a genuine emergency fix still follows the path, with a shorter review."
             }
           ],
           "afterFigure": [],
@@ -5921,13 +5916,13 @@
             },
             {
               "kind": "paragraph",
-              "text": "The figure uses the table of 12,000 orders from four regions. Row-level security gives the EMEA manager 3,000 of the 12,000 rows, with every column, whereas column-level security gives the analyst all 12,000 rows with the email column masked. The two controls answer different questions, which rows and which columns, and a table often needs both."
+              "text": "Row-level security gives the EMEA manager 3,000 of the 12,000 rows, with every column, whereas column-level security gives the analyst all 12,000 rows with the email column masked. The two controls answer different questions, which rows and which columns, and a table often needs both."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "Giving everyone workspace administrator rights to avoid access problems is the opposite of least privilege. It makes every mistake a possible disaster and every stolen account a total loss."
+              "text": "Giving everyone workspace administrator rights to avoid access problems is the opposite of least privilege."
             }
           ],
           "introducesTerms": [
@@ -5981,11 +5976,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A pipeline needs credentials to reach its source and its destination, such as a database password or an access key. The worst place for one is the pipeline's own text, a notebook or a repository, because everyone who can read the notebook or the history then holds the credential, and deleting it later does not remove it from the history. A **secret store** is a service built to hold credentials. The pipeline is given an identity of its own, asks the store for the secret at run time, and the secret never appears in the code or in the logs."
+              "text": "A pipeline needs credentials to reach its source and its destination, and the worst place for one is the pipeline's own text, because everyone who can read the notebook or the history then holds the credential, and deleting it later does not remove it from the history. A **secret store** is a service built to hold credentials. The pipeline is given an identity of its own, asks the store for the secret at run time, and the secret never appears in the code or in the logs."
             },
             {
               "kind": "paragraph",
-              "text": "Each environment has its own secrets, and the parameter table from the start of the lesson holds only the names of the secrets, not their values. Promoting a pipeline from test to production then changes which secret is looked up and does not move a password from one place to another, and rotating a secret means changing it in one place."
+              "text": "Each environment has its own secrets, and the parameter table from the start of the lesson holds only the names of the secrets, not their values, so rotating a secret means changing it in one place."
             }
           ],
           "afterFigure": [],
@@ -6093,11 +6088,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A pipeline is defined by a handful of text files: the SQL for each step, a schedule, and settings that name its source, its destination and the password it uses to reach them. Over the years it runs, those files are changed many times by many people, and every change reaches the production tables, the ones that dashboards and reports read, by some route. A change pasted straight into production skips any review, leaves no record of what changed and cannot be undone by reverting it, whereas a change that passes through a review and a run on test data is caught before anyone reads the result."
+              "text": "A pipeline is defined by a handful of text files: the SQL for each step, a schedule, and settings that name its source, its destination and the password it uses to reach them. A change pasted straight into production skips any review, leaves no record of what changed and cannot be undone by reverting it, whereas a change that passes through a review and a run on test data is caught before anyone reads the result."
             },
             {
               "kind": "paragraph",
-              "text": "The same files raise two more questions, which are who may read which rows and columns of the tables they produce, and where the password is kept, since a password written into a notebook can be read by everyone who can open the notebook. The release path, the access controls and the secret store are the answers, and with them you can say how any change should reach production and how much of a table any reader should see."
+              "text": "The same files raise two more questions, which are who may read which rows and columns of the tables they produce, and where the password is kept, since a password written into a notebook can be read by everyone who can open the notebook."
             }
           ]
         },
