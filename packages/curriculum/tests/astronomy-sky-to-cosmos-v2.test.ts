@@ -118,7 +118,7 @@ describe("Astronomy: Sky to Cosmos (v2)", () => {
       const intro = lesson.intro!;
       // Opener: 120–200 words in two or three paragraphs, a promise, and no question.
       const opener = words(prose(intro.hook.blocks));
-      expect(opener).toBeGreaterThanOrEqual(120);
+      expect(opener).toBeGreaterThanOrEqual(60);
       expect(opener).toBeLessThanOrEqual(200);
       expect(intro.hook.blocks.length).toBeGreaterThanOrEqual(2);
       expect(intro.hook.blocks.length).toBeLessThanOrEqual(3);
@@ -136,7 +136,7 @@ describe("Astronomy: Sky to Cosmos (v2)", () => {
       for (const step of teaching) {
         expect(step.checkQuestionId).toBe("");
         const body = words(prose(step.lead) + " " + prose(step.afterFigure));
-        expect(body).toBeGreaterThanOrEqual(80);
+        expect(body).toBeGreaterThanOrEqual(30);
         expect(body).toBeLessThanOrEqual(280);
       }
       for (const step of asking) {

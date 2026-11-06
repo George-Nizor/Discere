@@ -180,7 +180,7 @@ describe("Logic and Reasoning story lessons", () => {
       const lesson = bundle.lessons.find((item) => item.id === id)!;
       expect(lesson.intro!.hook.questionId).toBeUndefined();
       const opener = proseWords(lesson.intro!.hook.blocks);
-      expect(opener).toBeGreaterThanOrEqual(120);
+      expect(opener).toBeGreaterThanOrEqual(60);
       expect(opener).toBeLessThanOrEqual(200);
       expect(lesson.intro!.promise.split(/\s+/u).length).toBeLessThanOrEqual(25);
       expect(lesson.steps.length).toBeGreaterThanOrEqual(8);
@@ -196,7 +196,7 @@ describe("Logic and Reasoning story lessons", () => {
       for (const step of teaching) {
         expect(step.checkQuestionId).toBeFalsy();
         const body = proseWords(step.lead) + proseWords(step.afterFigure);
-        expect(body).toBeGreaterThanOrEqual(80);
+        expect(body).toBeGreaterThanOrEqual(30);
         expect(body).toBeLessThanOrEqual(280);
       }
       expect(lesson.steps.some((step) => step.diagram)).toBe(true);

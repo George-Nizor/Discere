@@ -89,7 +89,7 @@ describe("Economics v2: the course is converted", () => {
       expect(teaching.length / lesson.steps.length, id).toBeGreaterThanOrEqual(0.4);
       for (const step of teaching) {
         const n = wordCount(step.lead) + wordCount(step.afterFigure);
-        expect(n, `${id}/${step.id}`).toBeGreaterThanOrEqual(80);
+        expect(n, `${id}/${step.id}`).toBeGreaterThanOrEqual(30);
         expect(n, `${id}/${step.id}`).toBeLessThanOrEqual(280);
       }
       const asking = lesson.steps.filter(

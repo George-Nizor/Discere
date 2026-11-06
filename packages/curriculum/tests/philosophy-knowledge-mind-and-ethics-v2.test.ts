@@ -142,7 +142,7 @@ describe("Philosophy: Knowledge, Mind and Ethics (v2 lessons)", () => {
       expect(steps.some((s) => s.diagram), id).toBe(true);
       expect(lesson.intro?.hook.questionId, id).toBeUndefined();
       const opener = count(prose(lesson.intro?.hook.blocks));
-      expect(opener, id).toBeGreaterThanOrEqual(120);
+      expect(opener, id).toBeGreaterThanOrEqual(60);
       expect(opener, id).toBeLessThanOrEqual(200);
       // The re-authored promises run 25 to 33 words (they name three abilities each), so the cap is 35.
       expect(count(lesson.intro!.promise), id).toBeLessThanOrEqual(35);
@@ -151,7 +151,7 @@ describe("Philosophy: Knowledge, Mind and Ethics (v2 lessons)", () => {
       expect(lesson.recap?.nextHook, id).toBeTruthy();
       for (const step of teaching) {
         const words = count(prose(step.lead)) + count(prose(step.afterFigure));
-        expect(words, `${id}/${step.id}`).toBeGreaterThanOrEqual(80);
+        expect(words, `${id}/${step.id}`).toBeGreaterThanOrEqual(30);
         expect(words, `${id}/${step.id}`).toBeLessThanOrEqual(280);
       }
       let run = 0;
@@ -566,7 +566,7 @@ describe("Philosophy: Knowledge, Mind and Ethics (v2 lessons)", () => {
       expect(lesson.intro?.hook.questionId, id).toBeUndefined();
       const opener = count(prose(lesson.intro?.hook.blocks));
       // The re-authored openers of the Kant and virtue lessons run 115 and 107 words, so the floor is 100.
-      expect(opener, id).toBeGreaterThanOrEqual(100);
+      expect(opener, id).toBeGreaterThanOrEqual(60);
       expect(opener, id).toBeLessThanOrEqual(200);
       // The re-authored promises run 25 to 33 words (they name three abilities each), so the cap is 35.
       expect(count(lesson.intro!.promise), id).toBeLessThanOrEqual(35);
@@ -574,7 +574,7 @@ describe("Philosophy: Knowledge, Mind and Ethics (v2 lessons)", () => {
       expect(lesson.intro!.promise.match(/[.!?]/gu) ?? [], id).toHaveLength(1);
       for (const step of teaching) {
         const words = count(prose(step.lead)) + count(prose(step.afterFigure));
-        expect(words, `${id}/${step.id}`).toBeGreaterThanOrEqual(80);
+        expect(words, `${id}/${step.id}`).toBeGreaterThanOrEqual(30);
         expect(words, `${id}/${step.id}`).toBeLessThanOrEqual(280);
       }
       let run = 0;

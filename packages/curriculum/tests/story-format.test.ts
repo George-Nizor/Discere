@@ -54,7 +54,7 @@ describe("teaching-only explain screens", () => {
 
   it("warns when a teaching screen is too thin to tell the idea", () => {
     const bundle = withLesson((lesson) => {
-      lesson.steps[0] = teaching("story", 30);
+      lesson.steps[0] = teaching("story", 12);
     });
     const issue = validateCourseBundle(bundle).issues.find(
       (item) => item.code === "EXPLAIN_TOO_THIN",

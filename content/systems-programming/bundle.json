@@ -484,17 +484,17 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Each box in memory holds eight binary digits, and eight bits can be set in 2^8 = 256 different patterns, so a single box holds one number from 0 to 255. Such a box is a **byte**, and its position in the row is its **address**, which is itself just a number: the byte at address 0x1000 is followed by the byte at 0x1001, and so on. A value larger than 255, such as 258, is stored across several consecutive bytes, which is why the opening example needed four of them."
+              "text": "Each box in memory holds eight binary digits, and eight bits can be set in 2^8 = 256 different patterns, so a single box holds one number from 0 to 255. Such a box is a **byte**, and its position in the row is its **address**, which is itself just a number: the byte at address 0x1000 is followed by the byte at 0x1001, and so on."
             },
             {
               "kind": "paragraph",
-              "text": "Writing a byte as eight binary digits is exact but tiring to read, so programmers group the bits in fours. Four bits can be set in sixteen patterns, and **hexadecimal**, or base 16, gives each pattern one digit: the digits 0 to 9, followed by A to F for ten to fifteen. A byte is therefore always exactly two hex digits, and the prefix `0x` marks a number as hex. The figure shows the byte 10110111 in both forms."
+              "text": "Writing a byte as eight binary digits is exact but tiring to read, so programmers group the bits in fours. Four bits can be set in sixteen patterns, and **hexadecimal**, or base 16, gives each pattern one digit: the digits 0 to 9, followed by A to F for ten to fifteen. A byte is therefore always exactly two hex digits, and the prefix `0x` marks a number as hex."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "The leftmost bit of a byte is worth 128 and each bit to its right is worth half of the one before, so 10110111 is 128 + 32 + 16 + 4 + 2 + 1, which is 183. Hex reaches the same answer faster. The left four bits 1011 are eleven, which is the digit B, and the right four bits 0111 are seven, so the byte is 0xB7, and 11 × 16 + 7 is again 183. **To convert hex to decimal, multiply each digit by its place value and add**, where a two-digit number has place values 16 and 1 and a three-digit number has 256, 16 and 1."
+              "text": "The leftmost bit of a byte is worth 128 and each bit to its right is worth half of the one before, so 10110111 is 128 + 32 + 16 + 4 + 2 + 1, which is 183. The left four bits 1011 are eleven, which is the digit B, and the right four bits 0111 are seven, so the byte is 0xB7, and 11 × 16 + 7 is again 183. **To convert hex to decimal, multiply each digit by its place value and add**, where a two-digit number has place values 16 and 1 and a three-digit number has 256, 16 and 1."
             }
           ],
           "introducesTerms": [
@@ -549,16 +549,12 @@
             {
               "kind": "paragraph",
               "text": "Rust names the width of every integer type: `u8` and `i8` use one byte, `u16` and `i16` two, `u32` and `i32` four, and `u64` and `i64` eight. A width of n bits has 2^n patterns, so an **unsigned** type, written with a u, reads them as the numbers 0 up to 2^n − 1, and a `u8` therefore runs from 0 to 255. A **signed** type, written with an i, has to give some of its patterns to negative numbers, and the split is even: it runs from -2^(n-1) up to 2^(n-1) − 1, which for an `i8` is -128 to 127."
-            },
-            {
-              "kind": "paragraph",
-              "text": "The figure uses three bits, so that all eight patterns fit on one row."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "Read as unsigned, the patterns count from 0 up to 7. Read as signed, the first four keep their values 0 to 3 and the last four become -4 to -1. **The patterns do not change; only the numbers assigned to them do.** The machine stores nothing but the pattern, and the type, `u8` or `i8`, tells the compiler which reading to apply."
+              "text": "**The patterns do not change; only the numbers assigned to them do.** The machine stores nothing but the pattern, and the type, `u8` or `i8`, tells the compiler which reading to apply."
             }
           ],
           "introducesTerms": [
@@ -770,7 +766,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "When the true result of an arithmetic operation does not fit in the type, the operation **overflows**. A plain `a + b` in Rust makes a choice that you did not write: a debug build panics, which stops the program with an error message, while a release build wraps around unless overflow checks have been switched on. The same source therefore behaves differently depending on how it was built, and the standard library offers four methods whose meaning is the same in every build."
+              "text": "When the true result of an arithmetic operation does not fit in the type, the operation **overflows**. A plain `a + b` in Rust makes a choice that you did not write: a debug build panics, which stops the program with an error message, while a release build wraps around unless overflow checks have been switched on."
             },
             {
               "kind": "paragraph",
@@ -780,7 +776,7 @@
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "The figure adds 100 to a `u8` holding 200. The true result, 300, does not fit, so `wrapping_add` returns 300 − 256 = 44, `saturating_add` returns 255, `checked_add` returns `None`, and `overflowing_add` returns `(44, true)`. C treats the same mistake very differently: overflow of a *signed* integer is undefined behaviour, which means the language places no requirement at all on what the program then does, and a later lesson returns to that."
+              "text": "The true result, 300, does not fit, so `wrapping_add` returns 300 − 256 = 44, `saturating_add` returns 255, `checked_add` returns `None`, and `overflowing_add` returns `(44, true)`. C treats the same mistake very differently: overflow of a *signed* integer is undefined behaviour, which means the language places no requirement at all on what the program then does."
             }
           ],
           "introducesTerms": [
@@ -871,11 +867,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "The Rust statement `let x: u32 = 258;` puts a number in memory, which is a long row of numbered boxes that can each hold a single value from 0 to 255. Because 258 is too large for one box, a `u32` takes four consecutive boxes, and they contain 2, 1, 0 and 0, with the 2 first. The number exists in memory only as those four small values, and what it means depends on their order and on the type used to read them."
+              "text": "The Rust statement `let x: u32 = 258;` puts a number in memory, which is a long row of numbered boxes that can each hold a single value from 0 to 255. Because 258 is too large for one box, a `u32` takes four consecutive boxes, and they contain 2, 1, 0 and 0, with the 2 first."
             },
             {
               "kind": "paragraph",
-              "text": "Knowing how the boxes are filled lets you read the bytes of any integer and say what the same pattern means as a signed or an unsigned number. It also lets you predict what an addition does when its result is too big for the boxes it was given, a case with more than one possible outcome in Rust, since the program can panic, wrap around, stop at the largest value or report the problem, and the programmer has to choose which."
+              "text": "Knowing how the boxes are filled lets you read the bytes of any integer and predict what an addition does when its result is too big for the boxes it was given, a case with more than one possible outcome in Rust."
             }
           ],
           "diagram": {
@@ -934,17 +930,17 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A processor does not fetch memory one byte at a time. It loads aligned chunks, and a four-byte value that sits inside one chunk arrives in a single load, whereas a value that straddles the boundary between two chunks needs two loads and some shifting to be put together. On some processors a misaligned load is not allowed at all and faults. The remedy built into every compiler is a rule: a type has an **alignment**, and a value of that type must start at an address that is a multiple of it."
+              "text": "A processor does not fetch memory one byte at a time. It loads aligned chunks, and a four-byte value that sits inside one chunk arrives in a single load, whereas a value that straddles the boundary between two chunks needs two loads and some shifting to be put together. The remedy built into every compiler is a rule: a type has an **alignment**, and a value of that type must start at an address that is a multiple of it."
             },
             {
               "kind": "paragraph",
-              "text": "For the primitive types on a typical 64-bit machine the alignment equals the size, so a u8 has alignment 1, a u16 has 2, a u32 has 4 and a u64 has 8. The figure shows the same four-byte value at address 4, which is a multiple of 4, and at address 6, which is not."
+              "text": "For the primitive types on a typical 64-bit machine the alignment equals the size, so a u8 has alignment 1, a u16 has 2, a u32 has 4 and a u64 has 8."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "At address 4 the value fills exactly one word. At address 6 it covers the last two bytes of one word and the first two of the next, which is the layout the alignment rule forbids. The rule costs some space, as the next screens show, and **that space is the price paid for loads that stay fast and legal**."
+              "text": "The rule costs some space, as the next screens show, and **that space is the price paid for loads that stay fast and legal**."
             }
           ],
           "introducesTerms": [
@@ -1147,17 +1143,17 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The worked example needed 12 bytes for six bytes of data, and the same fields declared as a, c, b needed 8. Alignment is always a power of two, so putting fields in order of decreasing alignment leaves no gap between them, and the only padding left is at the end. That is why reordering can shrink a struct, and why a library that must keep a fixed order, as one that matches a C header does, pays for padding that a free order would avoid."
+              "text": "Alignment is always a power of two, so putting fields in order of decreasing alignment leaves no gap between them, and the only padding left is at the end. That is why reordering can shrink a struct, and why a library that must keep a fixed order, as one that matches a C header does, pays for padding that a free order would avoid."
             },
             {
               "kind": "paragraph",
-              "text": "You do not have to compute these sizes by hand. `std::mem::size_of` and `std::mem::align_of` report them, and the macro `offset_of!` reports where a field starts. The figure prints the sizes of three structs built from the same three fields."
+              "text": "You do not have to compute these sizes by hand. `std::mem::size_of` and `std::mem::align_of` report them, and the macro `offset_of!` reports where a field starts."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "The first two lines agree with the hand calculations: 12 for the order `a`, `b`, `c` and 8 for `a`, `c`, `b`. The third struct has no `repr(C)`, so Rust may choose the order, and the compiler used here chose one that gives 8. The language does not promise that order, which is exactly why `repr(C)` exists for code that must match another language's layout."
+              "text": "The third struct has no `repr(C)`, so Rust may choose the order, and the compiler used here chose one that gives 8. The language does not promise that order, which is exactly why `repr(C)` exists for code that must match another language's layout."
             }
           ],
           "introducesTerms": [],
@@ -1246,11 +1242,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "The `struct { a: u8, b: u32 }` has a one-byte field and a four-byte field, so its data adds up to five bytes, yet Rust reports its size as eight. The three extra bytes are inserted by the compiler after `a`, so that `b` starts at an address divisible by four, which is where a processor can load a four-byte value in a single step."
+              "text": "The `struct { a: u8, b: u32 }` has a one-byte field and a four-byte field, so its data adds up to five bytes, yet Rust reports its size as eight."
             },
             {
               "kind": "paragraph",
-              "text": "The gap follows from a rule that is simple enough to apply on paper. Applied to any struct, it gives the size, and so the memory a million of them occupy, and it shows why swapping two field declarations can shrink a struct without removing any data."
+              "text": "The gap follows from a rule that is simple enough to apply on paper, and it shows why swapping two field declarations can shrink a struct without removing any data."
             }
           ],
           "diagram": {
@@ -1300,17 +1296,17 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "When a function is called, the program sets aside a block of memory for it, the function's **stack frame**, which holds its parameters, its local variables and the place to return to. When the function returns, the block is released at once. Because the last function called is always the first to return, the frames form a **stack**: new ones go on top, and only the top one is removed."
+              "text": "When a function is called, the program sets aside a block of memory for it, the function's **stack frame**, which holds its parameters, its local variables and the place to return to. Because the last function called is always the first to return, the frames form a **stack**: new ones go on top, and only the top one is removed."
             },
             {
               "kind": "paragraph",
-              "text": "The figure follows the program in the opener. main calls f with 3, and f calls g with 4. At the moment g runs, three frames exist, one for each function that has been called and has not yet finished."
+              "text": "At the moment g runs, three frames exist, one for each function that has been called and has not yet finished."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "Each frame holds only the names of its own function, so two calls of the same function get separate frames with separate variables. When `g` returns, its frame disappears and `f`'s frame is on top again, with the value `g` produced ready to use. **Setting aside and releasing a frame is nothing more than moving one pointer**, which is why the stack is quick."
+              "text": "Each frame holds only the names of its own function, so two calls of the same function get separate frames with separate variables. **Setting aside and releasing a frame is nothing more than moving one pointer**, which is why the stack is quick."
             }
           ],
           "introducesTerms": [
@@ -1373,7 +1369,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The compiler decides how large each frame is before the program runs, because making room for a call has to be one quick adjustment. This works for an i32, a struct or an array of four numbers, whose sizes are fixed by their types. It cannot work for the text a user types or a list that grows during a run, because nobody knows in advance how much room they need."
+              "text": "The compiler decides how large each frame is before the program runs, because making room for a call has to be one quick adjustment. It cannot work for the text a user types or a list that grows during a run, because nobody knows in advance how much room they need."
             },
             {
               "kind": "paragraph",
@@ -1422,7 +1418,7 @@
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "Rust can report these sizes for you with `std::mem::size_of`, so `size_of::<Box<i32>>()` gives 8, and for a `Vec` or a `String` it gives the size of the three-word handle. **The handle is the same size whether the Vec holds three elements or three million**, because the elements are not in it."
+              "text": "**The handle is the same size whether the Vec holds three elements or three million**, because the elements are not in it."
             }
           ],
           "introducesTerms": [
@@ -1485,11 +1481,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The elements of a Vec must sit next to each other, because that is what makes indexing a single addition. A full buffer cannot simply be extended, since the memory that follows it may be in use by something else, so the Vec asks the allocator for a new, larger buffer, copies every element into it, updates the pointer and capacity in its handle, and hands the old buffer back. The figure shows the three stages for a Vec with room for four elements."
+              "text": "The elements of a Vec must sit next to each other, because that is what makes indexing a single addition. A full buffer cannot simply be extended, since the memory that follows it may be in use by something else, so the Vec asks the allocator for a new, larger buffer, copies every element into it, updates the pointer and capacity in its handle, and hands the old buffer back."
             },
             {
               "kind": "paragraph",
-              "text": "The standard library currently doubles the capacity each time, so a Vec started empty reports capacity 4 and then 8 as it grows, which means most pushes cost nothing extra and the copying happens now and then. The exact growth rule is not promised by the documentation, only that pushing is cheap on average."
+              "text": "The standard library currently doubles the capacity each time, so a Vec started empty reports capacity 4 and then 8 as it grows, which means most pushes cost nothing extra and the copying happens now and then."
             }
           ],
           "afterFigure": [
@@ -1656,7 +1652,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "That arrangement works only because the amount is known before the program runs. A value whose size is decided during a run, such as the text a user types, needs a second region that hands out blocks of whatever size is asked for, at a higher cost for each request. A Vec keeps a small fixed-size part in the first region and its elements in the second, and seeing how the two fit together explains what happens when its buffer fills up."
+              "text": "A value whose size is decided during a run, such as the text a user types, needs a second region that hands out blocks of whatever size is asked for, at a higher cost for each request. A Vec keeps a small fixed-size part in the first region and its elements in the second, and seeing how the two fit together explains what happens when its buffer fills up."
             }
           ],
           "diagram": {
@@ -1706,19 +1702,14 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The previous lesson ended with a `Vec` or a `String` as a handle on the stack pointing to a buffer on the heap, which raises the question of who gives the buffer back. If copying the handle produced a second handle with an equal right to free the buffer, the buffer would be freed twice, and freeing the same block twice corrupts the allocator's records. Rust avoids this with a rule: each value has exactly one **owner**, which is the variable that holds it."
+              "text": "If copying the handle produced a second handle with an equal right to free the buffer, the buffer would be freed twice, and freeing the same block twice corrupts the allocator's records. Rust avoids this with a rule: each value has exactly one **owner**, which is the variable that holds it."
             },
             {
               "kind": "paragraph",
               "text": "When the owner goes out of scope, which for a local variable means reaching the closing brace of the block that declares it, Rust **drops** the value, running its cleanup and releasing the buffer. The point of the drop is fixed by the shape of the program, so it is the same on every run and no collector ever has to search for garbage."
             }
           ],
-          "afterFigure": [
-            {
-              "kind": "paragraph",
-              "text": "The figure shows the fault the rule prevents. When two handles both think they own the buffer, each one frees it as it goes away, and the second free acts on memory that has already been returned."
-            }
-          ],
+          "afterFigure": [],
           "introducesTerms": [
             "owner",
             "drop"
@@ -1788,7 +1779,7 @@
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "Moving is cheap, since the cost is the size of the handle whatever the length of the text, and it is safe, since there is never more than one owner to free the buffer. The figure shows the two stages, with the original handle drawn dashed once it has given up its value."
+              "text": "Moving is cheap, since the cost is the size of the handle whatever the length of the text, and it is safe, since there is never more than one owner to free the buffer."
             }
           ],
           "introducesTerms": [
@@ -1844,13 +1835,13 @@
             },
             {
               "kind": "paragraph",
-              "text": "The figure passes the String to a function and then prints it. The move happens at the call, because the parameter of consume takes ownership, and the compiler suggests two repairs: change the parameter to borrow the value, which the next lesson explains, or clone the value if two copies are really wanted."
+              "text": "The move happens at the call, because the parameter of consume takes ownership, and the compiler suggests two repairs: change the parameter to borrow the value, which the next lesson explains, or clone the value if two copies are really wanted."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "Read the marked lines in order, declaration, move, use, and the fault is usually clear at once. The error is not about memory being unsafe at that moment. It is the compiler refusing to accept a program in which a name could outlive its value."
+              "text": "Read the marked lines in order, declaration, move, use, and the fault is usually clear at once."
             }
           ],
           "introducesTerms": [
@@ -1912,7 +1903,7 @@
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "The caller cannot drop `a` a second time, since it no longer owns it, and that is the single-owner rule at work again. **Whoever owns a value when its scope ends is the one that drops it.**"
+              "text": "**Whoever owns a value when its scope ends is the one that drops it.**"
             }
           ],
           "introducesTerms": [],
@@ -1957,7 +1948,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "Types whose whole value is small and lives on the stack are different. An `i32` has no buffer to free, so a copy of it is as good as the original, and such types are marked **Copy**: assigning one copies it, and the original stays usable. The figure shows a clone of a `String` and a copy of an `i32`."
+              "text": "Types whose whole value is small and lives on the stack are different. An `i32` has no buffer to free, so a copy of it is as good as the original, and such types are marked **Copy**: assigning one copies it, and the original stays usable."
             }
           ],
           "afterFigure": [],
@@ -2068,11 +2059,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "A String is a handle of three words on the stack that points to a buffer on the heap, so copying the handle byte for byte would leave two variables pointing at one buffer. When both went out of scope, each would free it, and the same block would be returned to the allocator twice. In C this is a classic fault known as a double free, and it damages the records the allocator keeps about which blocks are free, often long before the program visibly fails."
+              "text": "A String is a handle of three words on the stack that points to a buffer on the heap, so copying the handle byte for byte would leave two variables pointing at one buffer. When both went out of scope, each would free it, and the same block would be returned to the allocator twice."
             },
             {
               "kind": "paragraph",
-              "text": "Rust rules the fault out by giving every buffer a single owner, the one variable responsible for freeing it. With that rule you can follow a program line by line and say which variable owns each value, what an assignment or a function call does to it, and when it is freed."
+              "text": "Rust rules the fault out by giving every buffer a single owner, the one variable responsible for freeing it."
             }
           ]
         },
@@ -2113,17 +2104,17 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The previous lesson showed that handing a String to a function moves it, which is awkward when the function only needs to look at the text. The alternative is to *borrow* the value. Writing `&a` creates a **reference** to `a`, an address that the function can read through, and the function's parameter has the type `&String` instead of `String`. The owner stays the owner: the reference neither frees the buffer nor prevents the caller from using `a` again afterwards."
+              "text": "Writing `&a` creates a **reference** to `a`, an address that the function can read through, and the function's parameter has the type `&String` instead of `String`. The owner stays the owner: the reference neither frees the buffer nor prevents the caller from using `a` again afterwards."
             },
             {
               "kind": "paragraph",
-              "text": "A reference of this kind is a **shared borrow**, and any number of them may exist at once, because reading does not interfere with reading. A **mutable borrow**, written `&mut a`, allows the holder to change the value. The figure passes `&a` to a function and then prints `a`, which a move would have forbidden."
+              "text": "A reference of this kind is a **shared borrow**, and any number of them may exist at once, because reading does not interfere with reading. A **mutable borrow**, written `&mut a`, allows the holder to change the value."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "The word borrow is accurate: the reference is lent for a while and the owner has the value back when the borrow ends. What remains to be settled is how long a borrow may last and what the owner may do meanwhile, and that is the subject of the rest of this lesson."
+              "text": "The word borrow is accurate: the reference is lent for a while and the owner has the value back when the borrow ends."
             }
           ],
           "introducesTerms": [
@@ -2177,7 +2168,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "In C a program can hold a pointer to the first element of an array and then call a function that grows the array. If the array has to move to a larger block, the old block is freed, and the pointer is left pointing at memory that no longer belongs to the array. A pointer of this kind is **dangling**, and using it is a fault the C compiler does not detect. The figure shows the same thing with a Rust `Vec`, where `f` stands for a reference into the buffer and a push makes the buffer move."
+              "text": "If the array has to move to a larger block, the old block is freed, and the pointer is left pointing at memory that no longer belongs to the array. A pointer of this kind is **dangling**, and using it is a fault the C compiler does not detect. The figure shows the same thing with a Rust `Vec`, where `f` stands for a reference into the buffer and a push makes the buffer move."
             },
             {
               "kind": "paragraph",
@@ -2224,17 +2215,17 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Each code names one way of breaking the rules. E0502 appears when a mutable borrow is taken while a shared one is still going to be used, as in the Vec example. E0499 appears when a second mutable borrow is taken while the first is still going to be used. E0597 appears when a reference is kept after the value it points to has been dropped, which the compiler words as the value not living long enough."
+              "text": "E0502 appears when a mutable borrow is taken while a shared one is still going to be used, as in the Vec example. E0499 appears when a second mutable borrow is taken while the first is still going to be used. E0597 appears when a reference is kept after the value it points to has been dropped, which the compiler words as the value not living long enough."
             },
             {
               "kind": "paragraph",
-              "text": "The figure shows E0597. The variable `x` is declared in an inner block and is dropped at the closing brace, but `r`, declared outside the block, still refers to it, and the later `println!` would read the freed value. The message marks four places: where `x` is declared, where the borrow is taken, where `x` is dropped while still borrowed, and where the borrow is used afterwards."
+              "text": "The figure shows E0597. The variable `x` is declared in an inner block and is dropped at the closing brace, but `r`, declared outside the block, still refers to it, and the later `println!` would read the freed value."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "Reading the labelled spans in order tells you which of the three rules applies and where to look for the repair. The usual repairs are to end the borrow earlier, to give the value a longer scope, or, where two owners are really needed, to clone."
+              "text": "The usual repairs are to end the borrow earlier, to give the value a longer scope, or, where two owners are really needed, to clone."
             }
           ],
           "introducesTerms": [],
@@ -2279,13 +2270,13 @@
             },
             {
               "kind": "paragraph",
-              "text": "The compiler therefore stops at the signature, with error E0106, missing lifetime specifier. The message says that the return type contains a borrowed value, but the signature does not say whether it is borrowed from a or b. It also shows the repair, in which each reference gets a name written with an apostrophe, such as 'a."
+              "text": "The compiler therefore stops at the signature, with error E0106, missing lifetime specifier. It also shows the repair, in which each reference gets a name written with an apostrophe, such as 'a."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "A **lifetime** is the stretch of the program during which a reference is valid, and naming one lets a signature talk about it. The next screen shows what the name promises."
+              "text": "A **lifetime** is the stretch of the program during which a reference is valid, and naming one lets a signature talk about it."
             }
           ],
           "introducesTerms": [
@@ -2372,7 +2363,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "It would be natural to expect a reference to be alive until the closing brace of the block that declares it. Since the 2018 edition of Rust, the compiler is more precise: a borrow lasts only until the last line that uses it. This is known as non-lexical lifetimes. The figure marks, for the Vec program, the lines during which f is borrowed and the line that pushes."
+              "text": "It would be natural to expect a reference to be alive until the closing brace of the block that declares it. Since the 2018 edition of Rust, the compiler is more precise: a borrow lasts only until the last line that uses it. This is known as non-lexical lifetimes."
             },
             {
               "kind": "paragraph",
@@ -2382,7 +2373,7 @@
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "This makes reordering one of the cheapest repairs for E0502 and E0499. Finish with a reference before changing the value, and the compiler no longer sees a conflict."
+              "text": "This makes reordering one of the cheapest repairs for E0502 and E0499."
             }
           ],
           "introducesTerms": [],
@@ -2505,11 +2496,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "In C, a program can take the address of the first element of an array stored in a buffer from malloc, the C function that hands out heap memory, and then call realloc, which resizes such a buffer, to make it bigger. If the allocator moves the data to a new block, the old block is freed and the saved address points at memory that belongs to nobody. Nothing in the language stops the program from reading it, and it often appears to work until the day the freed block is reused."
+              "text": "In C, a program can take the address of the first element of an array stored in a buffer from malloc, the C function that hands out heap memory, and then call realloc, which resizes such a buffer, to make it bigger. If the allocator moves the data to a new block, the old block is freed and the saved address points at memory that belongs to nobody."
             },
             {
               "kind": "paragraph",
-              "text": "Rust prevents the same situation when the program is compiled. A Vec can grow while a reference into it is held, just as the buffer from malloc can, so the compiler restricts how references to one value may overlap. Those restrictions are what its error messages report, and a reader who knows them can say which one a program breaks and repair it, often by moving a single line."
+              "text": "A Vec can grow while a reference into it is held, just as the buffer from malloc can, so the compiler restricts how references to one value may overlap."
             }
           ]
         },
@@ -2550,19 +2541,14 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Memory is a row of numbered bytes, as the first lesson described, and a C variable lives at one of the addresses. The expression `&x` gives the address of `x`, and a variable that can hold such an address is a **pointer**. In `int x = 7; int *p = &x;` the second line declares `p` as a pointer to an `int` and stores the address of `x` in it. The star in front of `p` in an expression, written `*p`, is the reverse operation: it means the object at the address `p` holds."
+              "text": "The expression `&x` gives the address of `x`, and a variable that can hold such an address is a **pointer**. In `int x = 7; int *p = &x;` the second line declares `p` as a pointer to an `int` and stores the address of `x` in it. The star in front of `p` in an expression, written `*p`, is the reverse operation: it means the object at the address `p` holds."
             },
             {
               "kind": "paragraph",
               "text": "Because `*p` is that object itself and not a copy of its value, it can stand on the left of an assignment. After `*p = 8` the variable `x` holds 8, though `x` was never named, and a function that receives a pointer can change its caller's variable in this way. A pointer is itself a value of fixed size, 8 bytes on a typical 64-bit target, whatever it points at."
             }
           ],
-          "afterFigure": [
-            {
-              "kind": "paragraph",
-              "text": "Rust's references work in a similar way, with a promise attached. A C pointer carries no promise at all: it may point at freed memory, at nothing, or at the wrong place, and the language does not check."
-            }
-          ],
+          "afterFigure": [],
           "introducesTerms": [
             "pointer"
           ],
@@ -2598,7 +2584,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The subscript is defined in terms of this: `p[i]` is `*(p + i)`, and for an `int` array `p` the element `p[2]` is the `int` at the address eight bytes after `p`. The figure draws three ints in twelve bytes, with the pointer `q` at each of three positions."
+              "text": "The subscript is defined in terms of this: `p[i]` is `*(p + i)`, and for an `int` array `p` the element `p[2]` is the `int` at the address eight bytes after `p`."
             }
           ],
           "afterFigure": [
@@ -2661,17 +2647,17 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Memory on the stack disappears with its frame, so a value that must outlive the function, or whose size is known only while the program runs, needs a block from the heap. In C the request is made by calling `malloc` with a number of bytes, and the result is a pointer to the block. The usual way of stating the size is `sizeof`, which gives a size in bytes: `malloc(sizeof *p)` asks for room for whatever `p` points at, and `malloc(10 * sizeof(int))` asks for ten ints."
+              "text": "In C the request is made by calling `malloc` with a number of bytes, and the result is a pointer to the block. The usual way of stating the size is `sizeof`, which gives a size in bytes: `malloc(sizeof *p)` asks for room for whatever `p` points at, and `malloc(10 * sizeof(int))` asks for ten ints."
             },
             {
               "kind": "paragraph",
-              "text": "Nothing returns the block automatically. When the program has finished with it, it calls `free` with the same pointer, and the block goes back to the allocator. The programmer has to match the calls: a block that is never freed is a *leak*, a block freed twice damages the allocator, and a block used after free is no longer the program's. Nothing in the language records which pointers have been freed, so the pointer `p` still holds its old address after `free(p)`."
+              "text": "When the program has finished with it, it calls `free` with the same pointer, and the block goes back to the allocator. The programmer has to match the calls: a block that is never freed is a *leak*, a block freed twice damages the allocator, and a block used after free is no longer the program's. Nothing in the language records which pointers have been freed, so the pointer `p` still holds its old address after `free(p)`."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "This is the job that Rust gave to the owner. Where C asks the programmer to remember, Rust's drop frees the block when the owner goes out of scope, once, and the compiler refuses programs that could use it afterwards."
+              "text": "Where C asks the programmer to remember, Rust's drop frees the block when the owner goes out of scope, once, and the compiler refuses programs that could use it afterwards."
             }
           ],
           "introducesTerms": [
@@ -2713,12 +2699,7 @@
               "text": "A parameter written `int a[]` is therefore not an array at all: the compiler treats it as `int *a`, so inside the function `sizeof(a)` is the size of a pointer, 8 bytes on a typical 64-bit target, and the length of the original array is lost. This is why C functions that take arrays take the length as a separate argument."
             }
           ],
-          "afterFigure": [
-            {
-              "kind": "paragraph",
-              "text": "The practical consequence is that the length has to travel by hand. A function that is given a pointer and the wrong length will happily read or write beyond the array, since nothing in the pointer says where the array ends."
-            }
-          ],
+          "afterFigure": [],
           "introducesTerms": [
             "array decay"
           ],
@@ -2750,7 +2731,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A **use after free** reads or writes through a pointer whose block has been freed. A **double free** passes the same block to `free` twice. A **buffer overflow** writes beyond the end of a block, as `p[2]` does to a block with room for two ints. The figure shows each in a few lines of C, with the heap drawn beside it."
+              "text": "A **use after free** reads or writes through a pointer whose block has been freed. A **double free** passes the same block to `free` twice. A **buffer overflow** writes beyond the end of a block, as `p[2]` does to a block with room for two ints."
             },
             {
               "kind": "paragraph",
@@ -2897,7 +2878,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "A pointer is only an address, so a program can add to it, keep using it after its block has been freed, or pass it to a function that has no way to tell how long the array behind it is, and the language checks none of these. Following the arithmetic by hand shows where each pointer lands and which memory fault a fragment commits, and Rust's ownership and borrowing rule out every one of those faults."
+              "text": "A pointer is only an address, so a program can add to it, keep using it after its block has been freed, or pass it to a function that has no way to tell how long the array behind it is, and the language checks none of these."
             }
           ]
         },
@@ -2938,19 +2919,14 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Every program you write runs on top of a single program that is trusted with the machine, the **kernel**. The processor has two privilege levels. In **kernel mode** code may use any instruction and reach any memory or device, and in **user mode** it may not, so a program running in user mode cannot read the disk, send a packet or change another program's memory. Only the kernel runs in kernel mode, and it decides what the other programs may do."
+              "text": "Every program you write runs on top of a single program that is trusted with the machine, the **kernel**. The processor has two privilege levels. In **kernel mode** code may use any instruction and reach any memory or device, and in **user mode** it may not, so a program running in user mode cannot read the disk, send a packet or change another program's memory."
             },
             {
               "kind": "paragraph",
               "text": "A program that is running, together with the memory and resources the kernel has given it, is a **process**. Each process has its own *address space*, the set of addresses it can use, which the kernel keeps separate from every other process's. The kernel also keeps a record for each process, containing its identification number or **pid**, its open files and its place in the schedule, and it switches between processes so quickly that many appear to run at once."
             }
           ],
-          "afterFigure": [
-            {
-              "kind": "paragraph",
-              "text": "Rust, C and every other language live on the user side of this line. Nothing a program does in its own code can reach beyond it, except by asking the kernel."
-            }
-          ],
+          "afterFigure": [],
           "introducesTerms": [
             "kernel",
             "process",
@@ -2969,17 +2945,17 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "When a program wants something that only the kernel can do, such as writing text to a terminal, it makes a **system call**. The call `write(1, buf, 5)` asks the kernel to write five bytes, taken from the memory at `buf`, to the file with the number 1, which is the terminal's output. The processor switches to kernel mode, the kernel checks the request and copies the bytes, and it returns the number of bytes written, 5, after which the program carries on in user mode."
+              "text": "When a program wants something that only the kernel can do, such as writing text to a terminal, it makes a **system call**. The call `write(1, buf, 5)` asks the kernel to write five bytes, taken from the memory at `buf`, to the file with the number 1, which is the terminal's output."
             },
             {
               "kind": "paragraph",
-              "text": "The figure steps through this. A system call is much more expensive than an ordinary function call, because of the mode switch, which is why library functions try to make as few as they can. printf is not itself a system call: it is user code that formats text and eventually calls write."
+              "text": "A system call is much more expensive than an ordinary function call, because of the mode switch, which is why library functions try to make as few as they can. printf is not itself a system call: it is user code that formats text and eventually calls write."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "This is the whole boundary. Anything a program wants from the machine, a file, a network connection, a new process, more memory or the time, comes as a system call, and so every one of them can be checked, refused or logged by the kernel."
+              "text": "Anything a program wants from the machine, a file, a network connection, a new process, more memory or the time, comes as a system call, and so every one of them can be checked, refused or logged by the kernel."
             }
           ],
           "introducesTerms": [
@@ -3029,7 +3005,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "A program therefore tests the result with an if, and sends the two processes down different branches. The figure shows the parent with pid 100 and a child with pid 101, each with its own copy of the variable x."
+              "text": "A program therefore tests the result with an if, and sends the two processes down different branches."
             }
           ],
           "afterFigure": [
@@ -3204,7 +3180,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The **exec** family of system calls replaces the program a process is running. The process keeps its pid and its open files, but its code and data are thrown away and replaced by those of a new program, which starts from the beginning. A call to `exec` does not return when it succeeds, since the code that called it no longer exists. Neither `fork` nor `exec` alone starts a new program in a new process, and Unix combines them. A shell forks, the child calls `exec` to become `ls`, and the shell continues as the parent."
+              "text": "The **exec** family of system calls replaces the program a process is running. The process keeps its pid and its open files, but its code and data are thrown away and replaced by those of a new program, which starts from the beginning. A call to `exec` does not return when it succeeds, since the code that called it no longer exists. A shell forks, the child calls `exec` to become `ls`, and the shell continues as the parent."
             },
             {
               "kind": "paragraph",
@@ -3346,7 +3322,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "A process is a running program that the operating system keeps apart from every other one, and creating a new process, like anything else beyond a program's own memory, needs a request to the operating system called a system call. What fork returns in each of the processes it creates decides which lines each one goes on to run, and that is enough to work out by hand how many times a line like this prints."
+              "text": "What fork returns in each of the processes it creates decides which lines each one goes on to run, and that is enough to work out by hand how many times a line like this prints."
             }
           ],
           "diagram": {
@@ -3415,17 +3391,17 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "When a process opens a file, the kernel does not hand over the file. It records the open file in a table belonging to the process and returns the number of the entry, a small non-negative integer called a **file descriptor**. Every later call that reads, writes or closes the file names it by that number, so the program never holds anything but an integer and the kernel keeps everything else."
+              "text": "When a process opens a file, the kernel does not hand over the file. It records the open file in a table belonging to the process and returns the number of the entry, a small non-negative integer called a **file descriptor**."
             },
             {
               "kind": "paragraph",
-              "text": "A process begins with three descriptors already open: 0 is **standard input**, 1 is **standard output** and 2 is **standard error**. The shell normally points all three at the terminal, but that is a choice made for the process and not a property of the numbers. Descriptor 1 is whatever the process was given: a terminal, a file or a pipe, and the program writing to it cannot tell which."
+              "text": "A process begins with three descriptors already open: 0 is **standard input**, 1 is **standard output** and 2 is **standard error**. Descriptor 1 is whatever the process was given: a terminal, a file or a pipe, and the program writing to it cannot tell which."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "A descriptor is not only for files. Terminals, pipes between processes and network connections all appear as descriptors too, which is why one set of calls, read and write, works with all of them."
+              "text": "Terminals, pipes between processes and network connections all appear as descriptors too, which is why one set of calls, read and write, works with all of them."
             }
           ],
           "introducesTerms": [
@@ -3445,16 +3421,12 @@
             {
               "kind": "paragraph",
               "text": "The rule that decides which number a new descriptor gets is simple: the kernel gives the **lowest number that is not in use**. In a process that has only 0, 1 and 2, the first open returns 3, the second 4 and the third 5. If the process then closes 4, that row of the table becomes free, and the next open, which takes the lowest free number, returns 4 again, although 6 would be the next number in sequence."
-            },
-            {
-              "kind": "paragraph",
-              "text": "The figure shows exactly this with four files. Nothing records the history of the numbers, only which rows are in use at this moment."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "The rule has no exceptions for the standard descriptors. If descriptor 1 has been closed, the next open returns 1, and the program's standard output then goes to that file. The next screen shows how a shell uses this."
+              "text": "If descriptor 1 has been closed, the next open returns 1, and the program's standard output then goes to that file."
             }
           ],
           "introducesTerms": [
@@ -3536,7 +3508,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The program ls knows only that it writes its listing to descriptor 1. It prints to the file instead of the terminal without being changed, and without knowing. The figure shows the table of the child before and after the redirection."
+              "text": "The program ls knows only that it writes its listing to descriptor 1. The figure shows the table of the child before and after the redirection."
             }
           ],
           "afterFigure": [
@@ -3598,7 +3570,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The buffer lives in the process's address space, and fork copies the address space. A process that forks with unflushed text in its buffer therefore creates a child with the same text in its own buffer, and each flushes its copy later. The figure follows hi through printf, fork and exit when the output is a file."
+              "text": "The buffer lives in the process's address space, and fork copies the address space. A process that forks with unflushed text in its buffer therefore creates a child with the same text in its own buffer, and each flushes its copy later."
             }
           ],
           "afterFigure": [
@@ -3662,11 +3634,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Rust's standard output keeps a buffer that is flushed at each newline, so `print!` with no newline may wait while `println!` does not. A `BufWriter` wraps any writer in a larger buffer of your own, which gathers many small writes into few, and it must be flushed, either by calling `flush` or by dropping the `BufWriter`. The program in the figure writes two lines through a `BufWriter` and flushes it."
+              "text": "Rust's standard output keeps a buffer that is flushed at each newline, so `print!` with no newline may wait while `println!` does not. A `BufWriter` wraps any writer in a larger buffer of your own, which gathers many small writes into few, and it must be flushed, either by calling `flush` or by dropping the `BufWriter`."
             },
             {
               "kind": "paragraph",
-              "text": "At the bottom of every one of these layers is the system call `write(fd, buf, n)`, which has no buffer in the process at all: the bytes go to the kernel immediately. `printf`, `println!` and `BufWriter` are all ways of making fewer calls to it."
+              "text": "At the bottom of every one of these layers is the system call `write(fd, buf, n)`, which has no buffer in the process at all: the bytes go to the kernel immediately."
             }
           ],
           "afterFigure": [
@@ -3775,7 +3747,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "Both come down to the file descriptor, the small number by which a process names everything it has open, and to the way the C library collects text before writing it. Between them they explain how many times a line appears after a fork, and what a shell changes when it redirects a program's output to a file."
+              "text": "Both come down to the file descriptor, the small number by which a process names everything it has open, and to the way the C library collects text before writing it."
             }
           ],
           "diagram": {
@@ -3834,17 +3806,17 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The previous lessons treated a process as one stream of execution with memory of its own. A process can contain several, called **threads**, each with its own stack and its own position in the code. All the threads of a process see the same address space, so a value on the heap, or a global, written by one thread can be read by another at once, without a pipe or any copy."
+              "text": "A process can contain several, called **threads**, each with its own stack and its own position in the code. All the threads of a process see the same address space, so a value on the heap, or a global, written by one thread can be read by another at once, without a pipe or any copy."
             },
             {
               "kind": "paragraph",
-              "text": "The figure sets this beside two separate processes. Shared memory is the reason to use threads, since splitting a job over several processors is far easier when the pieces can reach the same data, and it is also the hazard, because two threads can now touch the same data at the same time."
+              "text": "Shared memory is the reason to use threads, since splitting a job over several processors is far easier when the pieces can reach the same data, and it is also the hazard, because two threads can now touch the same data at the same time."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "A thread is cheaper to create than a process for the same reason: there is no new address space to build. The cost is that the isolation the kernel gave each process is gone, and the program itself has to keep its threads from interfering."
+              "text": "A thread is cheaper to create than a process for the same reason: there is no new address space to build."
             }
           ],
           "introducesTerms": [
@@ -3900,13 +3872,13 @@
             },
             {
               "kind": "paragraph",
-              "text": "The figure shows both orders for two threads. In the interleaved case thread B computed its result from a value that was already out of date by the time it stored. A program in which two threads access the same memory without ordering, and at least one of them writes, has a **data race**, and its result depends on timing."
+              "text": "In the interleaved case thread B computed its result from a value that was already out of date by the time it stored. A program in which two threads access the same memory without ordering, and at least one of them writes, has a **data race**, and its result depends on timing."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "The same counter in C, with two threads each adding one a million times, typically finishes well below two million, and the figure differs from run to run. Nothing in the C language objects, because the language accepts the race silently, and the damage grows with the number of increments."
+              "text": "Nothing in the C language objects, because the language accepts the race silently, and the damage grows with the number of increments."
             }
           ],
           "introducesTerms": [
@@ -3959,7 +3931,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Rust does not wait for the program to run before dealing with such sharing. A closure passed to `thread::spawn` may keep running after the function that started it has returned, so it cannot be allowed to borrow that function's local variables, which would be gone by then. When it tries, rustc reports **E0373**, closure may outlive the current function, and suggests the `move` keyword, which gives the closure ownership of the variable."
+              "text": "A closure passed to `thread::spawn` may keep running after the function that started it has returned, so it cannot be allowed to borrow that function's local variables, which would be gone by then. When it tries, rustc reports **E0373**, closure may outlive the current function, and suggests the `move` keyword, which gives the closure ownership of the variable."
             },
             {
               "kind": "paragraph",
@@ -3969,7 +3941,7 @@
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "The aliasing rule from the lesson on borrowing carries over: mutable access must be exclusive, and threads are one more way for two names to reach a value. The question is how threads may share a value on purpose, and the answer is a lock."
+              "text": "The aliasing rule from the lesson on borrowing carries over: mutable access must be exclusive, and threads are one more way for two names to reach a value."
             }
           ],
           "introducesTerms": [],
@@ -4064,11 +4036,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "It is tempting to put the counter in a `Mutex` and to move it into each thread. The first closure that is created takes the `Mutex` by value, and the loop then reaches the second thread with nothing left to give it, so rustc reports the use of a moved value, **E0382**, exactly as for any other move. The figure shows this program."
+              "text": "It is tempting to put the counter in a `Mutex` and to move it into each thread. The first closure that is created takes the `Mutex` by value, and the loop then reaches the second thread with nothing left to give it, so rustc reports the use of a moved value, **E0382**, exactly as for any other move."
             },
             {
               "kind": "paragraph",
-              "text": "The error says what is missing: more than one owner. `Arc` supplies the owners, and `Mutex` supplies the exclusion, and neither does the other's job. A `Vec` that several threads add to, or any value shared in the same way, takes the same `Arc<Mutex<T>>` treatment."
+              "text": "The error says what is missing: more than one owner. `Arc` supplies the owners, and `Mutex` supplies the exclusion, and neither does the other's job."
             }
           ],
           "afterFigure": [
@@ -4211,7 +4183,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "When two threads share memory, a statement that looks like a single step can be broken up by the other thread, and a result that depends on that timing changes from run to run. Tracing what each thread does to the counter shows which results are possible and why Rust refuses to compile the racy version. A lock, together with shared ownership, makes the counter come out the same on every run."
+              "text": "When two threads share memory, a statement that looks like a single step can be broken up by the other thread, and a result that depends on that timing changes from run to run."
             }
           ]
         },
@@ -4256,13 +4228,13 @@
             },
             {
               "kind": "paragraph",
-              "text": "From these come the two measures used in this lesson. The **turnaround time** of a job is its completion time minus its arrival time, which is how long the user waited for the result. The **waiting time** is the turnaround time minus the burst, the time the job spent ready but not running. All the jobs in this lesson arrive at time 0, so a job's turnaround time is simply the time at which it completes."
+              "text": "The **turnaround time** of a job is its completion time minus its arrival time, which is how long the user waited for the result. The **waiting time** is the turnaround time minus the burst, the time the job spent ready but not running. All the jobs in this lesson arrive at time 0, so a job's turnaround time is simply the time at which it completes."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "Lower means are better for both measures. Which policy gives the lowest depends on what is known about the jobs, as the next screens show with one set of three jobs, of lengths 8, 4 and 2."
+              "text": "Lower means are better for both measures."
             }
           ],
           "introducesTerms": [
@@ -4299,7 +4271,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The simplest policy runs jobs in the order they arrived, each until it finishes. With bursts of 8, 4 and 2 arriving together in that order, job A runs from 0 to 8, job B from 8 to 12 and job C from 12 to 14, so the completion times are 8, 12 and 14. The short job C has waited twelve time units to run for two."
+              "text": "The simplest policy runs jobs in the order they arrived, each until it finishes. With bursts of 8, 4 and 2 arriving together in that order, job A runs from 0 to 8, job B from 8 to 12 and job C from 12 to 14, so the completion times are 8, 12 and 14."
             },
             {
               "kind": "paragraph",
@@ -4309,7 +4281,7 @@
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "**The order in which the same jobs run changes the mean completion time**, though it cannot change when the last one finishes. That makes the order a decision worth making deliberately."
+              "text": "**The order in which the same jobs run changes the mean completion time**, though it cannot change when the last one finishes."
             }
           ],
           "introducesTerms": [
@@ -4361,19 +4333,14 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The policy **shortest job first** always runs the job with the smallest burst next. For jobs that all arrive at once, it gives the lowest possible mean turnaround time, because the burst of each job is added to the completion time of every job behind it, so running the short bursts first means the small numbers are counted most often. In the figure the completion times are 2, 6 and 14."
+              "text": "The policy **shortest job first** always runs the job with the smallest burst next. For jobs that all arrive at once, it gives the lowest possible mean turnaround time, because the burst of each job is added to the completion time of every job behind it, so running the short bursts first means the small numbers are counted most often."
             },
             {
               "kind": "paragraph",
               "text": "It has two weaknesses. The kernel does not know in advance how long a process will compute, so a real scheduler has to estimate from past behaviour. And if short jobs keep arriving, a long job may wait forever, a failure called **starvation**."
             }
           ],
-          "afterFigure": [
-            {
-              "kind": "paragraph",
-              "text": "So shortest job first is the best order for mean turnaround in the ideal case, and a yardstick for other policies, rather than something a general-purpose kernel can do exactly."
-            }
-          ],
+          "afterFigure": [],
           "introducesTerms": [
             "shortest job first",
             "starvation"
@@ -4407,7 +4374,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "Every job starts running within a few slices of arriving, which is why interactive systems use it, and the policy needs no knowledge of burst lengths. The price is paid in turnaround. The completion times 14, 10 and 6 have a mean of 10, against 7.33 for shortest job first, so round robin is not the faster policy. Each switch between jobs also costs a *context switch*, in which the kernel saves the state of one job and loads that of the next, and a very short quantum makes these switches frequent enough to be expensive."
+              "text": "Every job starts running within a few slices of arriving, which is why interactive systems use it. The completion times 14, 10 and 6 have a mean of 10, against 7.33 for shortest job first, so round robin is not the faster policy. Each switch between jobs also costs a *context switch*, in which the kernel saves the state of one job and loads that of the next, and a very short quantum makes these switches frequent enough to be expensive."
             }
           ],
           "afterFigure": [],
@@ -4595,7 +4562,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The scheduler makes that choice, and the cost of each policy it might use can be worked out by hand, which lets you compare policies by what they give up. Order matters in a second way when threads take locks, because two threads that hold one lock each and wait for the other's can never continue, and agreeing on one order for taking locks rules this out."
+              "text": "Order matters in a second way when threads take locks, because two threads that hold one lock each and wait for the other's can never continue, and agreeing on one order for taking locks rules this out."
             }
           ]
         },
@@ -4636,11 +4603,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Two processes can both use the address 0x1000 without touching each other's data. Each program uses **virtual addresses**, and a piece of hardware, the memory management unit, translates every virtual address to a **physical address**, a position in the actual memory chips, using tables that the kernel sets up for each process. The same virtual address in two processes can therefore lead to two different physical places."
+              "text": "Each program uses **virtual addresses**, and a piece of hardware, the memory management unit, translates every virtual address to a **physical address**, a position in the actual memory chips, using tables that the kernel sets up for each process. The same virtual address in two processes can therefore lead to two different physical places."
             },
             {
               "kind": "paragraph",
-              "text": "This is the mechanism that makes the isolation of the lesson on processes real. A process cannot even name another process's memory, because none of its virtual addresses lead there, and the kernel can place a process's data wherever memory is free, without the program ever knowing. The translation also gives every program the same tidy view, an address space that starts at the same place however much memory the machine has."
+              "text": "A process cannot even name another process's memory, because none of its virtual addresses lead there, and the kernel can place a process's data wherever memory is free, without the program ever knowing. The translation also gives every program the same tidy view, an address space that starts at the same place however much memory the machine has."
             }
           ],
           "afterFigure": [
@@ -4844,19 +4811,14 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A page table with one entry for every page number has 2^20 entries for a 32-bit address space with 4 KiB pages. At 4 bytes an entry that is 4 MiB, for every process, and most of it describes addresses the process never uses. For a 48-bit address space the flat table would be far too large to hold at all."
+              "text": "A page table with one entry for every page number has 2^20 entries for a 32-bit address space with 4 KiB pages. At 4 bytes an entry that is 4 MiB, for every process, and most of it describes addresses the process never uses."
             },
             {
               "kind": "paragraph",
               "text": "Real processors therefore use a **multi-level page table**, a tree in which the upper bits of the page number choose an entry in a first-level table, which points to a second-level table, and so on, and parts of the tree with nothing mapped are simply left out. x86-64 uses four levels, each indexed by 9 bits of the address, which together with the 12-bit offset makes a 48-bit virtual address. The price is that a translation that is not cached must read one table per level."
             }
           ],
-          "afterFigure": [
-            {
-              "kind": "paragraph",
-              "text": "That cost is the reason the next idea exists. A walk through several tables on every access would slow every instruction down, and a small piece of hardware avoids it for almost all of them."
-            }
-          ],
+          "afterFigure": [],
           "introducesTerms": [
             "multi-level page table"
           ],
@@ -5014,7 +4976,7 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "Two programs can both read the address 0x1000 and each find its own data there. Neither is overwritten, and neither can reach the other's memory, though they run on one machine with one set of memory chips. The addresses a program uses are not the addresses the hardware sees, and the translation between them happens on every load and every store."
+              "text": "Two programs can both read the address 0x1000 and each find its own data there. The addresses a program uses are not the addresses the hardware sees, and the translation between them happens on every load and every store."
             },
             {
               "kind": "paragraph",
@@ -5059,17 +5021,17 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A modern processor can finish an instruction in a fraction of a nanosecond, but a read from main memory takes much longer, hundreds of processor cycles in the usual case. Left to wait on memory for every operand, the processor would spend most of its time idle. The remedy is a **cache**, a small amount of much faster memory between the processor and main memory, which holds copies of data that was used recently."
+              "text": "A modern processor can finish an instruction in a fraction of a nanosecond, but a read from main memory takes much longer, hundreds of processor cycles in the usual case. The remedy is a **cache**, a small amount of much faster memory between the processor and main memory, which holds copies of data that was used recently."
             },
             {
               "kind": "paragraph",
-              "text": "When the program reads an address, the hardware looks in the cache first. If the data is there, a **hit**, the read takes a few cycles. If it is not, a **miss**, the read goes to main memory and takes far longer, and the data is copied into the cache on its way back. Since the cache is small, it has to discard something to make room, and it usually discards the line that was used longest ago, a rule called *least recently used*, or **LRU**."
+              "text": "If the data is there, a **hit**, the read takes a few cycles. If it is not, a **miss**, the read goes to main memory and takes far longer, and the data is copied into the cache on its way back. Since the cache is small, it has to discard something to make room, and it usually discards the line that was used longest ago, a rule called *least recently used*, or **LRU**."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "So the cost of an access is not fixed. The same instruction can take a few cycles or hundreds, depending on whether the data was already in the cache, and that makes the order in which a program visits memory a matter of speed."
+              "text": "The same instruction can take a few cycles or hundreds, depending on whether the data was already in the cache, and that makes the order in which a program visits memory a matter of speed."
             }
           ],
           "introducesTerms": [
@@ -5090,16 +5052,12 @@
             {
               "kind": "paragraph",
               "text": "The cache does not fetch single bytes. It moves memory in blocks called **cache lines**, which are 64 bytes on current x86 and most ARM processors. A line starts at an address that is a multiple of 64, so any read loads the whole aligned block that contains it. A four-byte integer is one sixteenth of a line, so one miss brings sixteen consecutive integers into the cache."
-            },
-            {
-              "kind": "paragraph",
-              "text": "The figure follows three reads in an array of 32 integers, which fills two lines. Reading integer 3 misses and loads line 0. Reading integer 9 hits, since it is in that line. Reading integer 17 misses again, and loads line 1."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "The line is what makes a sequential read cheap: one miss in every sixteen reads, and the other fifteen are hits. **The cost of a pattern is counted in the lines it loads, and not in the integers it reads.** That is why the alignment lesson placed so much weight on where values sit."
+              "text": "The line is what makes a sequential read cheap: one miss in every sixteen reads, and the other fifteen are hits. **The cost of a pattern is counted in the lines it loads, and not in the integers it reads.**"
             }
           ],
           "introducesTerms": [
@@ -5156,19 +5114,14 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Caches work because programs behave in two regular ways. They tend to use again what they used recently, which is **temporal locality**, and they tend to use what is next to what they used, which is **spatial locality**. A loop over an array has both: it reuses the loop variable at every step, and it reads neighbouring elements one after another."
+              "text": "Caches work because programs behave in two regular ways. They tend to use again what they used recently, which is **temporal locality**, and they tend to use what is next to what they used, which is **spatial locality**."
             },
             {
               "kind": "paragraph",
-              "text": "The distance between consecutive reads is the **stride**. A stride of one element reads a line fully before moving on. As the stride grows to a whole line or more, each read lands in a line of its own, and the cache loads sixteen integers to use one. The figure reads 64 integers twice, once at every integer and once at every sixteenth, and in both cases four lines are loaded. The second loop does a sixteenth of the work for the same memory traffic."
+              "text": "The distance between consecutive reads is the **stride**. A stride of one element reads a line fully before moving on. As the stride grows to a whole line or more, each read lands in a line of its own, and the cache loads sixteen integers to use one."
             }
           ],
-          "afterFigure": [
-            {
-              "kind": "paragraph",
-              "text": "The comparison also shows that the number of reads does not decide the cost. Four reads and 64 reads loaded the same lines, so the second loop wasted nearly all of what the memory brought in."
-            }
-          ],
+          "afterFigure": [],
           "introducesTerms": [
             "locality",
             "stride"
@@ -5285,13 +5238,13 @@
             },
             {
               "kind": "paragraph",
-              "text": "The cache can fail to help even when it is large enough for a whole row. What decides it is whether the lines needed again are still present, and a column order that cycles through more lines than the cache holds always evicts the line it needs next. A cache of 16 lines would keep every row, and the two orders would then tie. A real cache holds many more lines than eight, but a large matrix has far more rows than that."
+              "text": "The cache can fail to help even when it is large enough for a whole row. What decides it is whether the lines needed again are still present, and a column order that cycles through more lines than the cache holds always evicts the line it needs next. A cache of 16 lines would keep every row, and the two orders would then tie."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "The practical rule is to make the innermost loop run along the direction in which memory is laid out. Rust and C use row-major order, so the column index goes in the inner loop. Measured times vary from run to run and with other work on the machine, so a difference needs to be large and repeated before it is believed."
+              "text": "The practical rule is to make the innermost loop run along the direction in which memory is laid out. Rust and C use row-major order, so the column index goes in the inner loop."
             }
           ],
           "introducesTerms": [],
@@ -5409,7 +5362,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The difference comes from memory, because the processor does not read one number at a time from the chips but a whole block, and the next read is cheap only if it falls in a block already held. Counting the blocks a loop loads is therefore a better measure of its cost than counting its additions, and it lets you say, before running anything, which of two loops will be the faster."
+              "text": "The difference comes from memory, because the processor does not read one number at a time from the chips but a whole block, and the next read is cheap only if it falls in a block already held."
             }
           ]
         },
@@ -5454,13 +5407,13 @@
             },
             {
               "kind": "paragraph",
-              "text": "The five are to dereference a raw pointer, to call an unsafe function, to access or modify a mutable static variable (a global that every thread can reach), to implement an unsafe trait (one whose implementer promises something the compiler cannot check), and to access a field of a union (a type whose fields share the same bytes). Each is an operation whose safety depends on a fact that the compiler cannot see. By writing unsafe, you state that you have checked that fact yourself."
+              "text": "The five are to dereference a raw pointer, to call an unsafe function, to access or modify a mutable static variable (a global that every thread can reach), to implement an unsafe trait (one whose implementer promises something the compiler cannot check), and to access a field of a union (a type whose fields share the same bytes). By writing unsafe, you state that you have checked that fact yourself."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "The word is a promise and not a switch. The standard library is full of unsafe code, with safe interfaces around it, and an ordinary program may never contain an unsafe block of its own."
+              "text": "The standard library is full of unsafe code, with safe interfaces around it, and an ordinary program may never contain an unsafe block of its own."
             }
           ],
           "introducesTerms": [
@@ -5494,7 +5447,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A reference, as the lesson on borrowing showed, is checked: it is never dangling and it obeys the aliasing rule. Rust also has **raw pointers**, written `*const T` and `*mut T`, which carry none of those promises. A raw pointer may be null, may point at freed memory, and may alias another pointer, much like a pointer in C. The expression `&x as *const i32` makes one from a reference, and is allowed anywhere, since a pointer that is never used does no harm."
+              "text": "Rust also has **raw pointers**, written `*const T` and `*mut T`, which carry none of those promises. A raw pointer may be null, may point at freed memory, and may alias another pointer, much like a pointer in C. The expression `&x as *const i32` makes one from a reference, and is allowed anywhere, since a pointer that is never used does no harm."
             },
             {
               "kind": "paragraph",
@@ -5504,7 +5457,7 @@
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "The effect is to put the risk in a few visible places. A reader looking for the cause of a memory fault in a Rust program can search for unsafe, which no equivalent search offers in C."
+              "text": "A reader looking for the cause of a memory fault in a Rust program can search for unsafe, which no equivalent search offers in C."
             }
           ],
           "introducesTerms": [
@@ -5535,7 +5488,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "This matters when you read or write unsafe code. The compiler still guards everything that is not one of the five operations, so the part of the program that must be checked by a person is small and well defined: the places where one of the five operations is used."
+              "text": "The compiler still guards everything that is not one of the five operations, so the part of the program that must be checked by a person is small and well defined: the places where one of the five operations is used."
             }
           ],
           "afterFigure": [
@@ -5614,12 +5567,7 @@
               "text": "A call to such a function needs an unsafe block, since the compiler has only the declaration to go on. It cannot check that the types in the declaration are the true ones, or that the C code obeys any of Rust's rules. In the 2024 edition the block itself must be written unsafe extern. An older extern \"C\" block, as in the figure, is rejected with the message that extern blocks must be unsafe, which is a common surprise with examples from older books."
             }
           ],
-          "afterFigure": [
-            {
-              "kind": "paragraph",
-              "text": "Declaring the wrong type is a mistake the compiler cannot find. A function declared with the wrong argument type compiles and runs, and then reads or writes the wrong bytes."
-            }
-          ],
+          "afterFigure": [],
           "introducesTerms": [
             "extern block",
             "FFI"
@@ -5645,11 +5593,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The documentation of a C function states what it requires. The manual page for `strlen` says that its argument must point to a string that ends with a zero byte, the NUL, and `strlen` reads bytes until it finds one. If the pointer is null, if it points to freed memory, or if the bytes have no terminator, `strlen` reads on past the data, which is undefined behaviour. This requirement is the function's **contract**."
+              "text": "The manual page for `strlen` says that its argument must point to a string that ends with a zero byte, the NUL, and `strlen` reads bytes until it finds one. If the pointer is null, if it points to freed memory, or if the bytes have no terminator, `strlen` reads on past the data, which is undefined behaviour. This requirement is the function's **contract**."
             },
             {
               "kind": "paragraph",
-              "text": "The unsafe block at the call site is where the programmer takes the contract on. The figure marks it with the contract note beside the C function. The compiler checks nothing about it, so the person writing the call must be able to say why the pointer satisfies the contract, and a short comment beginning SAFETY: is the usual way of writing that reason down."
+              "text": "The unsafe block at the call site is where the programmer takes the contract on. The compiler checks nothing about it, so the person writing the call must be able to say why the pointer satisfies the contract, and a short comment beginning SAFETY: is the usual way of writing that reason down."
             }
           ],
           "afterFigure": [
@@ -5721,7 +5669,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "In the figure, `c_length(\"hello\")` returns `Some(5)`. The string `\"a\\0b\"` contains a NUL, so `CString::new` fails and the function returns `None` instead of calling C with a string that `strlen` would cut short. The unsafe block is a single line, and the reasons it is sound are all within sight of it."
+              "text": "In the figure, `c_length(\"hello\")` returns `Some(5)`. The string `\"a\\0b\"` contains a NUL, so `CString::new` fails and the function returns `None` instead of calling C with a string that `strlen` would cut short."
             }
           ],
           "afterFigure": [
@@ -5815,7 +5763,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "Rust reaches that layer through unsafe. An unsafe block allows a small, fixed set of extra operations, such as calling a function written in C, and each one depends on a fact that the compiler cannot check and the programmer therefore has to. Knowing exactly which operations those are makes the unsafe code in a systems library readable and tells you what to check when you write a call into C."
+              "text": "Rust reaches that layer through unsafe. An unsafe block allows a small, fixed set of extra operations, such as calling a function written in C, and each one depends on a fact that the compiler cannot check and the programmer therefore has to."
             }
           ]
         },
