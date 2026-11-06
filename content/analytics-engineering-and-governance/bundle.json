@@ -1587,7 +1587,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "To report the sales by region as it was at the time, the fact table has to be joined to the dimension on two conditions: the same representative, and a sale date that falls in the row's range, so `valid_from` is at most the sale date and the sale date is before `valid_to`. This is an **as-of join**, and the query in the first view of the figure does exactly that. It gives the North 130 and the South 25, because the sales of 40 and 60 find the North row and the sale of 25 finds the South row."
+              "text": "To report the sales by region as it was at the time, the fact table has to be joined to the dimension on two conditions: the same representative, and a sale date that falls in the row's range, so `valid_from` is at most the sale date and the sale date is before `valid_to`. This is an **as-of join**, and the query in the first view of the figure does exactly that. It gives the North 130 and the South 25, because the sales of 40 and 60 find R1's North row, R2's sale of 30 is in the North as well, and the sale of 25 finds R1's South row."
             }
           ],
           "afterFigure": [
@@ -1821,7 +1821,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "**Type 0** never changes an attribute once it has been loaded. **Type 3** adds a column for the previous value, so that one step of history is kept without a new row. **Type 6**, a hybrid, combines the first, second and third by adding a row for each version and also carrying the current value on every row. Tools build the versions for you, and dbt's snapshots record each change as a new row with validity dates in the same way."
+              "text": "Type 1 and Type 2 are the two forms that matter most, and the others can be put in a line each. **Type 0** never changes an attribute once it has been loaded. **Type 3** adds a column for the previous value, so that one step of history is kept without a new row. **Type 6**, a hybrid, combines Types 1, 2 and 3 by adding a row for each version and also carrying the current value on every row. Tools build the versions for you, and dbt's snapshots record each change as a new row with validity dates in the same way."
             },
             {
               "kind": "paragraph",
@@ -1910,7 +1910,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "A dimension designed to keep such versions lets a report on the past give the same answer whenever it is run, while one that simply overwrites the region changes every earlier report the moment the representative moves."
+              "text": "A dimension designed to keep the old value as well as the new lets a report on the past give the same answer whenever it is run."
             }
           ],
           "diagram": {
@@ -2687,7 +2687,7 @@
           "headline": "Work out the build rounds for the graph: put each model in the earliest round after all of its parents.",
           "workedSteps": [
             {
-              "text": "The three staging models read only sources, so all three can run in round 1.",
+              "text": "Start with the three staging models, which all go in round 1.",
               "math": "stg_customers, stg_orders, stg_payments: round 1",
               "selfExplain": {
                 "questionId": "anaeg-layers-of-models-why-parallel"
@@ -2877,7 +2877,7 @@
           "diagram": {
             "type": "svg_figure",
             "alt": "A timeline from 8 to 12 June with six numbered source rows at the date each was last updated. In the first view a cut-off line at 10 June separates the rows read, 2, 5 and 6, from the rest, and row 4, a late row, is missed. In the second view the cut-off is 8 June and rows 2 to 6 are read.",
-            "caption": "The filter reads only rows after the line. Use the buttons to compare the filter with a lookback.",
+            "caption": "The filter reads only rows after the line. Use the buttons to move the line back two days.",
             "cases": [
               {
                 "id": "filter",
@@ -2886,8 +2886,8 @@
               },
               {
                 "id": "lookback",
-                "label": "Lookback",
-                "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 640 340\"><defs><marker id=\"t2\" markerWidth=\"8\" markerHeight=\"8\" refX=\"6\" refY=\"4\" orient=\"auto\"><path class=\"f-ink\" d=\"M0 0 L8 4 L0 8 z\"/></marker></defs><text class=\"t-bold\" x=\"320\" y=\"30\" text-anchor=\"middle\">The same rows with a lookback of 2 days</text><line class=\"s-ink w2\" x1=\"60\" y1=\"270\" x2=\"560\" y2=\"270\"/><line class=\"s-ink w2\" x1=\"90\" y1=\"264\" x2=\"90\" y2=\"276\"/><text class=\"t-small t-muted\" x=\"90\" y=\"298\" text-anchor=\"middle\">8 Jun</text><line class=\"s-ink w2\" x1=\"200\" y1=\"264\" x2=\"200\" y2=\"276\"/><text class=\"t-small t-muted\" x=\"200\" y=\"298\" text-anchor=\"middle\">9 Jun</text><line class=\"s-ink w2\" x1=\"310\" y1=\"264\" x2=\"310\" y2=\"276\"/><text class=\"t-small t-muted\" x=\"310\" y=\"298\" text-anchor=\"middle\">10 Jun</text><line class=\"s-ink w2\" x1=\"420\" y1=\"264\" x2=\"420\" y2=\"276\"/><text class=\"t-small t-muted\" x=\"420\" y=\"298\" text-anchor=\"middle\">11 Jun</text><line class=\"s-ink w2\" x1=\"530\" y1=\"264\" x2=\"530\" y2=\"276\"/><text class=\"t-small t-muted\" x=\"530\" y=\"298\" text-anchor=\"middle\">12 Jun</text><line class=\"s-accent w3 dash\" x1=\"90\" y1=\"70\" x2=\"90\" y2=\"270\"/><text class=\"t-bold t-accent\" x=\"60\" y=\"58\" text-anchor=\"start\">max minus 2 days: 8 Jun</text><circle class=\"f-sunken s-ink w2\" cx=\"90\" cy=\"230\" r=\"18\"/><text class=\"t-bold\" x=\"90\" y=\"236\" text-anchor=\"middle\">1</text><circle class=\"f-accent-soft s-accent w3\" cx=\"200\" cy=\"230\" r=\"18\"/><text class=\"t-bold\" x=\"200\" y=\"236\" text-anchor=\"middle\">4</text><circle class=\"f-accent-soft s-accent w3\" cx=\"310\" cy=\"230\" r=\"18\"/><text class=\"t-bold\" x=\"310\" y=\"236\" text-anchor=\"middle\">3</text><circle class=\"f-accent-soft s-accent w3\" cx=\"420\" cy=\"230\" r=\"18\"/><text class=\"t-bold\" x=\"420\" y=\"236\" text-anchor=\"middle\">2</text><circle class=\"f-accent-soft s-accent w3\" cx=\"420\" cy=\"170\" r=\"18\"/><text class=\"t-bold\" x=\"420\" y=\"176\" text-anchor=\"middle\">5</text><circle class=\"f-accent-soft s-accent w3\" cx=\"530\" cy=\"230\" r=\"18\"/><text class=\"t-bold\" x=\"530\" y=\"236\" text-anchor=\"middle\">6</text><text class=\"t-small t-muted\" x=\"320\" y=\"326\" text-anchor=\"middle\">Rows 2, 3, 4, 5 and 6 are read. Only row 1 is left out.</text></svg>"
+                "label": "Line moved back",
+                "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 640 340\"><defs><marker id=\"t2\" markerWidth=\"8\" markerHeight=\"8\" refX=\"6\" refY=\"4\" orient=\"auto\"><path class=\"f-ink\" d=\"M0 0 L8 4 L0 8 z\"/></marker></defs><text class=\"t-bold\" x=\"320\" y=\"30\" text-anchor=\"middle\">The same rows with the line moved back 2 days</text><line class=\"s-ink w2\" x1=\"60\" y1=\"270\" x2=\"560\" y2=\"270\"/><line class=\"s-ink w2\" x1=\"90\" y1=\"264\" x2=\"90\" y2=\"276\"/><text class=\"t-small t-muted\" x=\"90\" y=\"298\" text-anchor=\"middle\">8 Jun</text><line class=\"s-ink w2\" x1=\"200\" y1=\"264\" x2=\"200\" y2=\"276\"/><text class=\"t-small t-muted\" x=\"200\" y=\"298\" text-anchor=\"middle\">9 Jun</text><line class=\"s-ink w2\" x1=\"310\" y1=\"264\" x2=\"310\" y2=\"276\"/><text class=\"t-small t-muted\" x=\"310\" y=\"298\" text-anchor=\"middle\">10 Jun</text><line class=\"s-ink w2\" x1=\"420\" y1=\"264\" x2=\"420\" y2=\"276\"/><text class=\"t-small t-muted\" x=\"420\" y=\"298\" text-anchor=\"middle\">11 Jun</text><line class=\"s-ink w2\" x1=\"530\" y1=\"264\" x2=\"530\" y2=\"276\"/><text class=\"t-small t-muted\" x=\"530\" y=\"298\" text-anchor=\"middle\">12 Jun</text><line class=\"s-accent w3 dash\" x1=\"90\" y1=\"70\" x2=\"90\" y2=\"270\"/><text class=\"t-bold t-accent\" x=\"60\" y=\"58\" text-anchor=\"start\">max minus 2 days: 8 Jun</text><circle class=\"f-sunken s-ink w2\" cx=\"90\" cy=\"230\" r=\"18\"/><text class=\"t-bold\" x=\"90\" y=\"236\" text-anchor=\"middle\">1</text><circle class=\"f-accent-soft s-accent w3\" cx=\"200\" cy=\"230\" r=\"18\"/><text class=\"t-bold\" x=\"200\" y=\"236\" text-anchor=\"middle\">4</text><circle class=\"f-accent-soft s-accent w3\" cx=\"310\" cy=\"230\" r=\"18\"/><text class=\"t-bold\" x=\"310\" y=\"236\" text-anchor=\"middle\">3</text><circle class=\"f-accent-soft s-accent w3\" cx=\"420\" cy=\"230\" r=\"18\"/><text class=\"t-bold\" x=\"420\" y=\"236\" text-anchor=\"middle\">2</text><circle class=\"f-accent-soft s-accent w3\" cx=\"420\" cy=\"170\" r=\"18\"/><text class=\"t-bold\" x=\"420\" y=\"176\" text-anchor=\"middle\">5</text><circle class=\"f-accent-soft s-accent w3\" cx=\"530\" cy=\"230\" r=\"18\"/><text class=\"t-bold\" x=\"530\" y=\"236\" text-anchor=\"middle\">6</text><text class=\"t-small t-muted\" x=\"320\" y=\"326\" text-anchor=\"middle\">Rows 2, 3, 4, 5 and 6 are read. Only row 1 is left out.</text></svg>"
               }
             ],
             "initialCaseId": "filter"
@@ -3231,7 +3231,7 @@
               "math": "ids 2, 3, 4, 5, 6"
             },
             {
-              "text": "Merge by id. Id 3 is already in the target, so it replaces itself.",
+              "text": "Merge by id. Id 3 is already in the target.",
               "math": "id 3: update, no duplicate",
               "selfExplain": {
                 "questionId": "anaeg-incremental-builds-why-no-dup"
@@ -3281,7 +3281,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "If the definition of a model changes, say to store amounts in cents, an incremental run applies the new logic only to the rows it reads, and every other row keeps the old one, so the table holds a mixture. A row that was missed long ago is out of the window as well. The remedy is a **full refresh**, which drops the table and rebuilds it from the whole source, and it costs the long build that incremental models exist to avoid."
+              "text": "Some faults a lookback cannot reach. If the definition of a model changes, say to store amounts in cents, an incremental run applies the new logic only to the rows it reads, and every other row keeps the old one, so the table holds a mixture. A row that was missed long ago is out of the window as well. The remedy is a **full refresh**, which drops the table and rebuilds it from the whole source, and it costs the long build that incremental models exist to avoid."
             },
             {
               "kind": "paragraph",
@@ -4507,7 +4507,7 @@
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "Both are the same walk run in opposite directions. The count includes every node on *any* path, so a node reached by two routes, such as the revenue mart, is counted once."
+              "text": "Both are the same walk run in opposite directions. The count includes every node on *any* path, so a node reached by two routes, such as `dash_exec` below `stg_crm`, is counted once."
             }
           ],
           "introducesTerms": [
@@ -4570,7 +4570,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "A change to crm, in the second view, reaches six nodes and both dashboards, because customer data is used by the revenue and marketing paths alike. Without a graph the question is answered from memory, and the dashboard that nobody remembered is the one that breaks."
+              "text": "A change to crm, in the second view, reaches six nodes, among them both dashboards, because customer data is used by the revenue and marketing paths alike. Without a graph the question is answered from memory, and the dashboard that nobody remembered is the one that breaks."
             }
           ],
           "afterFigure": [
@@ -4587,7 +4587,7 @@
           "activityId": "",
           "diagram": {
             "type": "svg_figure",
-            "alt": "The same lineage graph with two changes marked. If the ads source changes shape, the nodes downstream of it are stg_ads, mart_marketing and dash_exec, so one dashboard is affected. If the crm source changes, five models and both dashboards are affected.",
+            "alt": "The same lineage graph with two changes marked. If the ads source changes shape, the nodes downstream of it are stg_ads, mart_marketing and dash_exec, so one dashboard is affected. If the crm source changes, four models and both dashboards are affected.",
             "caption": "A change at a source reaches every node downstream. Use the buttons to compare two sources.",
             "cases": [
               {
@@ -5866,7 +5866,7 @@
               "math": "(20-29, N1): 2, (30-39, N1): 1, (30-39, N2): 3"
             },
             {
-              "text": "k is the size of the smallest group, since the weakest group is the most exposed.",
+              "text": "k is the size of the smallest group.",
               "math": "smallest group: 1",
               "selfExplain": {
                 "questionId": "anaeg-classifying-and-protecting-data-why-min"
@@ -6517,7 +6517,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "A scan can collect the technical and operational fields, and lineage from run events, which the lineage lesson described, can fill itself. A description, an owner, a classification and a glossary term need a person, which is why the steward matters."
+              "text": "A scan can collect the technical and operational fields, and the run events that the lineage lesson described can fill in the lineage. A description, an owner, a classification and a glossary term need a person, which is why the steward matters."
             }
           ],
           "introducesTerms": [
@@ -9807,7 +9807,7 @@
         "full-refresh",
         "snapshot-model"
       ],
-      "prompt": "The run reads ids 2, 5 and 6 and merges them into the target by id. Id 2 already exists there, and ids 5 and 6 do not. How many rows does the target hold afterwards?",
+      "prompt": "Before the run the target holds three rows. The run reads ids 2, 5 and 6 and merges them into the target by id. Id 2 already exists there, and ids 5 and 6 do not. How many rows does the target hold afterwards?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -11604,7 +11604,7 @@
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
-        "List the consumers of `stg_ads`.",
+        "List the consumers of `stg_shop`.",
         "Then list the consumers of those.",
         "Count each once."
       ],
