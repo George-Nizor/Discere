@@ -2,6 +2,13 @@
 
 Updated: 2026-11-06
 
+Release 1.11.0 makes each teaching screen as long as its idea needs. George read two lessons with
+easy screens shortened and hard ones left whole, and found them better to read. Every course now has
+that treatment: easy and moderate screens lost the sentences that restated a point, described the
+figure or previewed another screen, and the core screens of each lesson are unchanged. Teaching
+text is 19% shorter across the 65 courses. The validator's floor for a teaching screen is now 30
+words, down from 80, and the voice guide no longer sets a fixed length.
+
 Release 1.10.0 changes how a lesson screen reads. Every teaching screen in the 65 courses now has
 a short title naming its topic. The old heading was a sentence that summarised the screen, and the
 paragraph below often repeated it. Worked and faded examples keep their problem as the heading, set

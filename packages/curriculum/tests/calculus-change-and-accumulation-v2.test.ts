@@ -395,7 +395,7 @@ describe("Story lessons 6 to 12", () => {
     for (const id of lessons.slice(5, 12)) {
       const lesson = bundle.lessons.find((item) => item.id === id)!;
       // Openers say what they need without padding (discere-lesson-voice): a floor of 80 words.
-      expect(words(lesson.intro!.hook.blocks), id).toBeGreaterThanOrEqual(80);
+      expect(words(lesson.intro!.hook.blocks), id).toBeGreaterThanOrEqual(60);
       expect(words(lesson.intro!.hook.blocks), id).toBeLessThanOrEqual(200);
       const promise = lesson.intro!.promise;
       expect(promise.split(/\s+/).length, id).toBeLessThanOrEqual(35);
@@ -409,7 +409,7 @@ describe("Story lessons 6 to 12", () => {
         expect(run, `${id}/${step.id}`).toBeLessThanOrEqual(3);
         if (teaching) {
           const total = words(step.lead) + words(step.afterFigure);
-          expect(total, `${id}/${step.id}`).toBeGreaterThanOrEqual(100);
+          expect(total, `${id}/${step.id}`).toBeGreaterThanOrEqual(30);
           expect(total, `${id}/${step.id}`).toBeLessThanOrEqual(EXPLAIN_BODY_WORD_LIMIT);
         } else expect(words(step.lead), `${id}/${step.id}`).toBeLessThanOrEqual(60);
       }

@@ -68,8 +68,11 @@ a question, an argument or an interpretation.
    that.
 5. **Show, then name.** Describe the thing first, then give its name in bold ("…is called the
    star's **parallax angle**").
-6. **Spend words where the idea is foundational,** and fewer on narrow ones. Teaching screens of
-   150 to 350 words are normal. Do not pad, and do not compress.
+6. **Length follows how hard the idea is.** An easy idea is said once, in a few full sentences,
+   and the figure shows the rest; a hard idea gets the room it needs. Never restate a point in
+   other words or describe in prose what the figure already shows. Shorter means fewer sentences,
+   never clipped ones. George tested this in November 2026 and found it reads better: less time
+   wasted.
 7. **No verdict words in feedback.** State the fact and the reason in one or two connected
    sentences. Do not write "Correct!", "Not quite", "Great job" or "Here's the explanation".
 

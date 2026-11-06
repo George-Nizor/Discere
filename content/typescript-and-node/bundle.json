@@ -652,16 +652,12 @@
             {
               "kind": "paragraph",
               "text": "In `let n: number = 5;` the part `: number` is an **annotation**, a note to the compiler that `n` is to hold numbers. From then on the compiler treats every use of `n` as a use of a number, and the label is called `n`'s **static type**, static because it is fixed and checked while the code is still just text. Line 2 of the figure assigns the string `\"five\"` to `n`, which contradicts the label, so the compiler refuses it."
-            },
-            {
-              "kind": "paragraph",
-              "text": "The refusal is a message, and it has the same four parts every time. The file name and position say where to look, the word *error* gives the severity, the code TS2322 is a number that can be searched for, and the sentence after it says what was wrong. Reading the sentence from left to right gives you the whole mistake: the value on the line is a string, and the place it is going to accepts only a number."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "The compiler reached this conclusion without running anything. It did not need to see \"five\" arrive in n, because the types alone were enough to show that the assignment cannot be right, and that is the whole use of the checker: it finds a mistake of this kind on the day you type it, and not on the day a user triggers it."
+              "text": "The compiler did not need to see \"five\" arrive in n, because the types alone were enough to show that the assignment cannot be right, and that is the whole use of the checker: it finds a mistake of this kind on the day you type it, and not on the day a user triggers it."
             }
           ],
           "introducesTerms": [
@@ -861,17 +857,17 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The checker's list of errors does not feed back into the emitter, so with default settings both stages always run. You can see this when you compile a file with the error from the first screen: the message appears, the command ends with a non-zero exit status, and the .js file is on disk all the same. A build script can therefore tell that something was wrong from the exit status, even though the output exists."
+              "text": "The checker's list of errors does not feed back into the emitter, so with default settings both stages always run. You can see this when you compile a file with the error from the first screen: the message appears, the command ends with a non-zero exit status, and the .js file is on disk all the same."
             },
             {
               "kind": "paragraph",
-              "text": "A project that wants no output from a broken build sets the compiler option `noEmitOnError` to `true` in its `tsconfig.json`, the file in which tsc finds the settings for a project, such as which files to compile and which JavaScript version to target. With that option set the figure changes: the error list is the same, but the emitter writes nothing."
+              "text": "A project that wants no output from a broken build sets the compiler option `noEmitOnError` to `true` in its `tsconfig.json`, the file in which tsc finds the settings for a project."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "The default exists for good reasons. During development you often want to run a half-finished change and see what it does, and the exit status still lets a build or a test pipeline refuse to continue."
+              "text": "During development you often want to run a half-finished change and see what it does, and the exit status still lets a build or a test pipeline refuse to continue."
             }
           ],
           "introducesTerms": [
@@ -907,17 +903,17 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "TypeScript was announced by Microsoft in October 2012, with Anders Hejlsberg leading the language design, as a way to give JavaScript the kind of checking that larger programs need. Its types do three jobs. They catch mistakes before the program runs, as the first screen showed. They document intent, because `function f(a: number): string` tells a reader what goes in and what comes out without a comment. And they let an editor offer completion and renaming, because the editor can use the same labels the compiler does."
+              "text": "TypeScript was announced by Microsoft in October 2012, with Anders Hejlsberg leading the language design, as a way to give JavaScript the kind of checking that larger programs need. Its types do three jobs. They catch mistakes before the program runs. They document intent, because `function f(a: number): string` tells a reader what goes in and what comes out without a comment. And they let an editor offer completion and renaming, because the editor can use the same labels the compiler does."
             },
             {
               "kind": "paragraph",
-              "text": "There is one thing they do not do. A type describes what the author *promises* about a value, and since the labels are erased, nothing checks the promise when a value arrives from a file, a network request or a user. Look at the figure's code: `JSON.parse` returns data whose shape the compiler cannot know, so it allows it to be labelled `User`, and the label is a promise nobody has tested."
+              "text": "A type describes what the author *promises* about a value, and since the labels are erased, nothing checks the promise when a value arrives from a file, a network request or a user. Look at the figure's code: `JSON.parse` returns data whose shape the compiler cannot know, so it allows it to be labelled `User`, and the label is a promise nobody has tested."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "The compiler accepted line 2 because it was told to trust the label, and the program then fails at run time on a value the label said would be there. Later lessons return to this gap, and the last two lessons close it by checking data as it enters the program."
+              "text": "The compiler accepted line 2 because it was told to trust the label, and the program then fails at run time on a value the label said would be there."
             }
           ],
           "introducesTerms": [
@@ -1018,7 +1014,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "That tool works in two stages: a checker that reads the labels and reports every mistake it finds, and an emitter that writes the JavaScript which Node or a browser will actually run. The stages are separate, so the checker can reject the second line while the file is still only text, long before any user could reach it. Keeping them apart is also the reason a program with errors can still run, and the reason a type can never be looked at while the program does."
+              "text": "That tool works in two stages: a checker that reads the labels and reports every mistake it finds, and an emitter that writes the JavaScript which Node or a browser will actually run."
             }
           ],
           "diagram": {
@@ -1078,11 +1074,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Every declaration in the figure on the previous screen was written without a type, and each still has one. The compiler looks at the value on the right of the equals sign, sees that 5 is a number, and gives the variable that type, a process called **type inference**. Writing `: number` after `a` would add nothing, and a reader who knows the rule can read the declared type straight off the value."
+              "text": "The compiler looks at the value on the right of the equals sign, sees that 5 is a number, and gives the variable that type, a process called **type inference**. Writing `: number` after `a` would add nothing, and a reader who knows the rule can read the declared type straight off the value."
             },
             {
               "kind": "paragraph",
-              "text": "Inference runs on the same rules as annotations, so an inferred type is as binding as a written one: after `let a = 5;` the assignment `a = \"five\"` produces the TS2322 error from the previous lesson. What inference adds is that you only have to write a type where there is no value for the compiler to learn it from, a point the last screen of this lesson returns to."
+              "text": "Inference runs on the same rules as annotations, so an inferred type is as binding as a written one: after `let a = 5;` the assignment `a = \"five\"` produces the TS2322 error from the previous lesson."
             }
           ],
           "introducesTerms": [
@@ -1213,11 +1209,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Put `as const` after an object or an array literal and the compiler stops widening anywhere inside it. Each string and number keeps its exact value as a literal type, each object property becomes `readonly`, and an array stops being a list of any length and becomes a **tuple** of exactly the elements written, which is also read-only. The figure compares the two forms of the same two declarations."
+              "text": "Put `as const` after an object or an array literal and the compiler stops widening anywhere inside it. Each string and number keeps its exact value as a literal type, each object property becomes `readonly`, and an array stops being a list of any length and becomes a **tuple** of exactly the elements written, which is also read-only."
             },
             {
               "kind": "paragraph",
-              "text": "The array case is the one used most. After `const dirs = [\"up\", \"down\"] as const`, the type of `dirs` is the `readonly` pair of exactly those two strings, and `dirs.push(\"left\")` is rejected because a `readonly` tuple has no `push`."
+              "text": "After `const dirs = [\"up\", \"down\"] as const`, the type of `dirs` is the `readonly` pair of exactly those two strings, and `dirs.push(\"left\")` is rejected because a `readonly` tuple has no `push`."
             }
           ],
           "afterFigure": [
@@ -1279,15 +1275,10 @@
             },
             {
               "kind": "paragraph",
-              "text": "A tuple's errors say what went wrong with the length or the order. Assigning `[\"a\", 1, 2]` to `[string, number]` is reported as TS2322 followed by the line `Source has 3 element(s) but target allows only 2`. Assigning `[\"a\"]` gives `Source has 1 element(s) but target requires 2`, and putting the number first reports a mismatch at each position."
+              "text": "A tuple's errors say what went wrong with the length or the order. Assigning `[\"a\", 1, 2]` to `[string, number]` is reported as TS2322 followed by the line `Source has 3 element(s) but target allows only 2`. Assigning `[\"a\"]` gives `Source has 1 element(s) but target requires 2`."
             }
           ],
-          "afterFigure": [
-            {
-              "kind": "paragraph",
-              "text": "Both messages are about the two things a tuple promises, how many elements there are and what each one is, so reading one tells you which promise was broken."
-            }
-          ],
+          "afterFigure": [],
           "introducesTerms": [
             "tuple type"
           ],
@@ -1341,7 +1332,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "An empty collection is the other case. The declaration `const xs: number[] = []` says what the list will hold, which the empty brackets cannot. Elsewhere, a local variable with a value, such as `const total = 0`, is better left alone, since an annotation there only repeats what the value already says."
+              "text": "An empty collection is the other case. The declaration `const xs: number[] = []` says what the list will hold, which the empty brackets cannot."
             }
           ],
           "introducesTerms": [
@@ -1405,10 +1396,6 @@
             {
               "kind": "paragraph",
               "text": "A TypeScript declaration can be written with no type at all, as in `let a = 5`, `const b = 5` and `let c = [1, \"a\"]`, and the compiler still gives each variable a type by reading the value on the right of the equals sign. The three types it chooses are not alike, because what the compiler concludes depends on what the value contains and on whether the variable can be changed later."
-            },
-            {
-              "kind": "paragraph",
-              "text": "Being able to predict those conclusions is what lets you read the many TypeScript files that have almost no written types, since the type of each variable there is whatever the compiler has worked out. It also tells you which types you must still write yourself, namely those the compiler has no value to learn from, such as a function's parameters before anyone has called it."
             }
           ],
           "diagram": {
@@ -1468,11 +1455,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "An object type is a description of the properties a value should have. In the figure on the previous screen the interface `Person` requires a `name` that is a string, allows a `nick` that is a string, and has an `id` that is a number. Writing it as `interface Person { name: string }` and writing it inline as `{ name: string }` describe the same shape, and the inline form is useful for a type that is used once."
+              "text": "An object type is a description of the properties a value should have."
             },
             {
               "kind": "paragraph",
-              "text": "A property is **optional** when its name is followed by a question mark. Reading an optional property gives its type or `undefined`, so with the compiler's `strict` option on, which most projects set in `tsconfig.json`, `person.nick.length` is rejected with TS18048, `'person.nick' is possibly 'undefined'`, until the code has checked that `nick` is there. A property marked **readonly** can be set when the object is created and never assigned to afterwards, and the second error you meet below is the one that enforces it."
+              "text": "A property is **optional** when its name is followed by a question mark. Reading an optional property gives its type or `undefined`, so with the compiler's `strict` option on, which most projects set in `tsconfig.json`, `person.nick.length` is rejected with TS18048, `'person.nick' is possibly 'undefined'`, until the code has checked that `nick` is there. A property marked **readonly** can be set when the object is created and never assigned to afterwards."
             }
           ],
           "introducesTerms": [
@@ -1582,12 +1569,7 @@
               "text": "The check applies only to a fresh literal, meaning one written at the place of use. Put the same object in a variable first, as the second view of the figure shows, and the assignment passes, because the variable already existed and no longer looks like a typo."
             }
           ],
-          "afterFigure": [
-            {
-              "kind": "paragraph",
-              "text": "It follows that the error is about the *literal*, not about the data. At run time the extra property is harmless, and the checker is guarding against a slip in the code you have just written."
-            }
-          ],
+          "afterFigure": [],
           "introducesTerms": [
             "excess property check",
             "fresh literal"
@@ -1656,11 +1638,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Both modifiers are enforced at the same moment as every other type rule, which is when the code is checked. With `interface P { readonly x: number }`, the line `p.x = 2` is rejected with TS2540, `Cannot assign to 'x' because it is a read-only property`. The compiled JavaScript contains no trace of the modifier, so it is a promise about the code you have written and does not protect the object while the program runs."
+              "text": "With `interface P { readonly x: number }`, the line `p.x = 2` is rejected with TS2540, `Cannot assign to 'x' because it is a read-only property`. The compiled JavaScript contains no trace of the modifier, so it is a promise about the code you have written and does not protect the object while the program runs."
             },
             {
               "kind": "paragraph",
-              "text": "An optional property is a promise of a different kind. The type of `nick` in the previous figure is `string | undefined`, so you may leave it out when creating the object and you must deal with its absence when reading it. A line such as `const m: Person = { name: \"a\", id: 1 }` is fine, and a read of `m.nick` that assumes a string is the error from the first screen."
+              "text": "The type of `nick` in the previous figure is `string | undefined`, so you may leave it out when creating the object and you must deal with its absence when reading it."
             }
           ],
           "introducesTerms": [
@@ -1694,19 +1676,14 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "For describing an object the two are nearly interchangeable. `interface Child extends Base { name: string }` adds a property to an existing shape, and an alias reaches the same result with an intersection, `type Child = Base & { name: string }`, which combines the two shapes. An interface has one extra ability, which is that two declarations of the same name are merged into one type, as the first view of the figure shows. An alias has the opposite rule, and a repeated name is an error."
+              "text": "For describing an object the two are nearly interchangeable. `interface Child extends Base { name: string }` adds a property to an existing shape, and an alias reaches the same result with an intersection, `type Child = Base & { name: string }`, which combines the two shapes. An interface has one extra ability, which is that two declarations of the same name are merged into one type. An alias has the opposite rule, and a repeated name is an error."
             },
             {
               "kind": "paragraph",
-              "text": "An alias can name things that an interface cannot, such as the union `type U = string | number`, and that is the next lesson's subject. A sensible default is to use an interface for an object shape that may be extended and an alias for everything else, and to follow whatever a project already does."
+              "text": "An alias can name things that an interface cannot, such as the union `type U = string | number`. A sensible default is to use an interface for an object shape that may be extended and an alias for everything else, and to follow whatever a project already does."
             }
           ],
-          "afterFigure": [
-            {
-              "kind": "paragraph",
-              "text": "Neither survives compilation, so the choice affects only how you write types and what the checker reports, and never what runs."
-            }
-          ],
+          "afterFigure": [],
           "introducesTerms": [
             "interface merging"
           ],
@@ -1786,10 +1763,6 @@
             {
               "kind": "paragraph",
               "text": "A function that greets a user needs one thing from its argument, a property called `name` that holds a string, and it makes no difference to the function whether the argument was built by a class or parsed from JSON. TypeScript writes that need down as an object type, such as `{ name: string }`, which lists the properties a value must have and the type of each, so that checking a call becomes a question of whether the value handed over has what the type lists."
-            },
-            {
-              "kind": "paragraph",
-              "text": "Once you can say from the properties alone whether a value fits, you can predict which assignments the compiler will accept, and you can read its refusals, which name the property that is missing, the one it does not expect or the one that may not be assigned to."
             }
           ],
           "diagram": {
@@ -1870,11 +1843,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A **union type** is written with a vertical bar, so `string | number` describes a value that is a string or a number. The checker does not know which, and it takes the careful view: an operation is allowed only if it is valid whichever member the value turns out to be. In `function f(x: string | number)`, the expression `x.length` is rejected with TS2339, `Property 'length' does not exist on type 'string | number'`, and the line beneath explains that the property is missing on type `'number'`."
+              "text": "A **union type** is written with a vertical bar, so `string | number` describes a value that is a string or a number. The checker does not know which, and it takes the careful view: an operation is allowed only if it is valid whichever member the value turns out to be. In `function f(x: string | number)`, the expression `x.length` is rejected with TS2339, `Property 'length' does not exist on type 'string | number'`."
             },
             {
               "kind": "paragraph",
-              "text": "Operations that both members have are fine, such as `x.toString()`, because every string and every number has one. The error does not say that `x` is wrong. It says that the code has not yet found out which type `x` has, and the next screens show how code can find out."
+              "text": "Operations that both members have are fine, such as `x.toString()`, because every string and every number has one. The error does not say that `x` is wrong. It says that the code has not yet found out which type `x` has."
             }
           ],
           "introducesTerms": [
@@ -1896,7 +1869,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The checks that narrow are ordinary run-time tests: typeof, comparison with null or another value, and the in operator, which asks whether an object has a property. The second figure shows three of them. Narrowing works because the test really runs, so a check on the value is trusted, and an annotation or an as cast, which only tells the checker what to believe, does not narrow anything."
+              "text": "The checks that narrow are ordinary run-time tests: typeof, comparison with null or another value, and the in operator, which asks whether an object has a property. Narrowing works because the test really runs, so a check on the value is trusted, and an annotation or an as cast, which only tells the checker what to believe, does not narrow anything."
             }
           ],
           "afterFigure": [
@@ -2065,15 +2038,10 @@
             },
             {
               "kind": "paragraph",
-              "text": "The reasoning is the reverse of what a default branch usually does. A catch-all default returns something for new members and hides them, whereas the never check refuses to compile until someone has decided what each new member should do. Later, when a fourth shape is added to the union, every switch written this way will report it."
+              "text": "The reasoning is the reverse of what a default branch usually does. A catch-all default returns something for new members and hides them, whereas the never check refuses to compile until someone has decided what each new member should do."
             }
           ],
-          "afterFigure": [
-            {
-              "kind": "paragraph",
-              "text": "The check costs one line and has no effect at run time, because the type is erased and the line is never reached when the cases are complete."
-            }
-          ],
+          "afterFigure": [],
           "introducesTerms": [
             "never",
             "exhaustiveness check"
@@ -2124,11 +2092,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A parameter written `name?: string` has the type `string | undefined`, which is a union like the others, and the same rule applies. In `function greet(name?: string) { return name.toUpperCase(); }` the compiler reports TS18048, `'name' is possibly 'undefined'`, and the program really would crash on `greet()`, with a `TypeError` at run time. The first way to deal with it is to narrow, with `if (name !== undefined)` or `if (name)`, and the second is the **optional chaining** operator `?.`, which stops and gives `undefined` when what is on its left is `undefined` or `null`."
+              "text": "A parameter written `name?: string` has the type `string | undefined`, which is a union like the others, and the same rule applies. In `function greet(name?: string) { return name.toUpperCase(); }` the compiler reports TS18048, `'name' is possibly 'undefined'`. The first way to deal with it is to narrow, with `if (name !== undefined)` or `if (name)`, and the second is the **optional chaining** operator `?.`, which stops and gives `undefined` when what is on its left is `undefined` or `null`."
             },
             {
               "kind": "paragraph",
-              "text": "The third apparent way is the non-null assertion `name!.toUpperCase()`, which silences the error by telling the checker to trust you. It compiles to `name.toUpperCase()`, so the crash is still there, as a later lesson explains."
+              "text": "The third apparent way is the non-null assertion `name!.toUpperCase()`, which silences the error by telling the checker to trust you. It compiles to `name.toUpperCase()`, so the crash is still there."
             }
           ],
           "introducesTerms": [
@@ -2192,11 +2160,7 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "Take a function whose parameter `x` has the type `string | number`, and whose body asks for `x.length`. The checker refuses with TS2339, because `x` might be a number and a number has no `length`, and it will go on refusing until the code finds out which type `x` has. A test such as `typeof x === \"string\"` finds out, and inside the test the checker treats `x` as a string, while after a test that returns it treats `x` as the number that is left."
-            },
-            {
-              "kind": "paragraph",
-              "text": "That one mechanism covers most of what you do with unions, such as a function that accepts text or a number, or a result that is either a value or an error. Once the checker can follow your tests, a function can accept all of those forms and still be checked against each one, and a form you forgot becomes an error where you wrote the code instead of a crash for whoever supplies it."
+              "text": "Take a function whose parameter `x` has the type `string | number`, and whose body asks for `x.length`. The checker refuses with TS2339, because `x` might be a number and a number has no `length`, and it will go on refusing until the code finds out which type `x` has. A test such as `typeof x === \"string\"` finds out, and inside the test the checker treats `x` as a string."
             }
           ],
           "diagram": {
@@ -2324,11 +2288,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Nothing in the call `first([1, 2])` says what `T` is, and nothing has to, because the compiler looks at the argument. The list has two numbers, so `T` is `number`, and the signature then gives the result type as `number | undefined`. With `first([\"a\", 1])` the elements are of two kinds, so `T` is the union `string | number`. With an empty list, `first([])`, there is nothing to learn from and the result is just `undefined`."
+              "text": "Nothing in the call `first([1, 2])` says what `T` is, and nothing has to, because the compiler looks at the argument. The list has two numbers, so `T` is `number`, and the signature then gives the result type as `number | undefined`. With `first([\"a\", 1])` the elements are of two kinds, so `T` is the union `string | number`."
             },
             {
               "kind": "paragraph",
-              "text": "A function may have more than one type parameter. In `function pair<A, B>(a: A, b: B): [A, B]` they are filled in independently, so `pair(\"x\", 1)` has the type `[string, number]`, as the figure shows. When inference cannot decide, you can write the type argument yourself, as in `wrap<string>(\"a\")`, and the compiler then checks the argument against it."
+              "text": "A function may have more than one type parameter. In `function pair<A, B>(a: A, b: B): [A, B]` they are filled in independently, so `pair(\"x\", 1)` has the type `[string, number]`. When inference cannot decide, you can write the type argument yourself, as in `wrap<string>(\"a\")`, and the compiler then checks the argument against it."
             }
           ],
           "afterFigure": [
@@ -2484,19 +2448,14 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The generics you write follow the same pattern as types you have already met. `number[]` is shorthand for `Array<number>`, a `Map` that maps strings to numbers is `Map<string, number>`, and a function that will deliver a number later returns a `Promise<number>`. In each, the angle brackets say which type the container holds, so that `m.get(\"a\")` has the type `number | undefined`, because a key may be missing."
+              "text": "`number[]` is shorthand for `Array<number>`, a `Map` that maps strings to numbers is `Map<string, number>`, and a function that will deliver a number later returns a `Promise<number>`. In each, the angle brackets say which type the container holds, so that `m.get(\"a\")` has the type `number | undefined`, because a key may be missing."
             },
             {
               "kind": "paragraph",
-              "text": "The case you meet most is the `Promise`. An async function always returns a `Promise`, so `async function load(): Promise<number>` returns a `Promise<number>` when it is called, and `await load()` unwraps that to the number inside. The compiler tracks the unwrapping for you, which is why writing `await` removes the `Promise` from the type."
+              "text": "An async function always returns a `Promise`, so `async function load(): Promise<number>` returns a `Promise<number>` when it is called, and `await load()` unwraps that to the number inside."
             }
           ],
-          "afterFigure": [
-            {
-              "kind": "paragraph",
-              "text": "Like any type parameter, the one inside `Promise<number>` is erased. At run time there is only a `Promise`, and nothing records that it was meant to hold a number."
-            }
-          ],
+          "afterFigure": [],
           "introducesTerms": [
             "Promise"
           ],
@@ -2597,10 +2556,6 @@
             {
               "kind": "paragraph",
               "text": "Consider a function that returns the first element of a list. If it takes a list of any kind and returns `any`, it works for every list and tells the compiler nothing, so `first([1, 2]).toUpperCase()` passes the check and then crashes. If it is written once for each element type, the checker knows everything and the code is repeated for numbers, strings and every type that comes after."
-            },
-            {
-              "kind": "paragraph",
-              "text": "A **type parameter** gives the function a name for the type it is working with, so that the function is written once and each call fills in the type, which keeps the link between what goes in and what comes out. It is the feature behind the signatures of most libraries, and once you can substitute what a call supplies into a signature such as `<T extends { length: number }>(a: T, b: T)`, you can say what the call produces and which calls the compiler will refuse."
             }
           ],
           "diagram": {
@@ -2681,7 +2636,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A program often needs a type that follows from something already written, and two operators produce one. The operator **keyof** takes a type and gives the union of its property names as string literals, so for `{ id: number; name: string; email?: string }` the result is `\"id\" | \"name\" | \"email\"`. A variable of that type can hold exactly those three strings, and the compiler rejects any other, which makes it a safe type for a function that takes the name of a field."
+              "text": "The operator **keyof** takes a type and gives the union of its property names as string literals, so for `{ id: number; name: string; email?: string }` the result is `\"id\" | \"name\" | \"email\"`. A variable of that type can hold exactly those three strings, and the compiler rejects any other."
             },
             {
               "kind": "paragraph",
@@ -2742,7 +2697,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The same notation works on arrays, where the key type is `number`. If `dirs` is the frozen array from the second lesson, `typeof dirs[number]` reads as the type of any element of the type of `dirs`, which is `\"up\" | \"down\"`. Together with `keyof`, it lets you take a type apart: `U[keyof U]` is the union of every property's type in `U`."
+              "text": "The same notation works on arrays, where the key type is `number`. Together with `keyof`, it lets you take a type apart: `U[keyof U]` is the union of every property's type in `U`."
             }
           ],
           "introducesTerms": [
@@ -2799,19 +2754,14 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Most derived types are needed so often that they are in the language. `Partial<U>` makes every property optional, which suits the body of an update request in which any field may be sent. `Required<U>` does the opposite, so that with `const b: Required<U> = { id: 1, name: \"a\" }` the compiler reports TS2741, `Property 'email' is missing`. `Readonly<U>` makes every property `readonly`. The first figure shows what `Partial`, `Required`, `Pick` and `Omit` do to the same `U`."
+              "text": "Most derived types are needed so often that they are in the language. `Partial<U>` makes every property optional, which suits the body of an update request in which any field may be sent. `Required<U>` does the opposite, so that with `const b: Required<U> = { id: 1, name: \"a\" }` the compiler reports TS2741, `Property 'email' is missing`."
             },
             {
               "kind": "paragraph",
-              "text": "`Pick<U, \"id\" | \"name\">` keeps only the named properties, and `Omit<U, \"id\">` removes them. `Record<\"x\" | \"y\", number>` builds an object type with one property for each key in the union, so an object that gives only `x` is missing `y`. Two limits are worth knowing: these types change only the top-level properties, so `Partial<Nested>` does not make the properties of a nested object optional, and `Omit` does not check that its keys exist, as the second figure shows."
+              "text": "`Pick<U, \"id\" | \"name\">` keeps only the named properties, and `Omit<U, \"id\">` removes them. `Record<\"x\" | \"y\", number>` builds an object type with one property for each key in the union, so an object that gives only `x` is missing `y`. Two limits are worth knowing: these types change only the top-level properties, so `Partial<Nested>` does not make the properties of a nested object optional, and `Omit` does not check that its keys exist."
             }
           ],
-          "afterFigure": [
-            {
-              "kind": "paragraph",
-              "text": "Since `Pick` does check its keys, `Pick<U, Exclude<keyof U, \"id\">>` is a stricter way to write what `Omit` does, though `Omit` is what most code uses."
-            }
-          ],
+          "afterFigure": [],
           "introducesTerms": [
             "utility type",
             "Partial",
@@ -2887,7 +2837,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "This is the point of the whole lesson. The object is the single place where the allowed colors are written, and both the data and the type come from it, so adding a third entry changes the type without a second edit. The same holds when a derived type comes from a base type: whenever the base changes, everything derived from it follows."
+              "text": "This is the point of the whole lesson. The object is the single place where the allowed colors are written, and both the data and the type come from it, so adding a third entry changes the type without a second edit."
             }
           ],
           "afterFigure": [
@@ -3020,7 +2970,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "A derived type avoids this, because it is defined by the type it came from: `Partial<User>` is `User` with every field optional for as long as `User` exists. TypeScript supplies operators for deriving one type from another, and a set of built-in utility types made with them, so that a change to `User` is made in one place and every type derived from it follows."
+              "text": "A derived type avoids this, because it is defined by the type it came from: `Partial<User>` is `User` with every field optional for as long as `User` exists."
             }
           ],
           "diagram": {
@@ -3090,17 +3040,13 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A type is a promise the author makes about a value, and the checker holds the author to it inside the program. Where a value comes from outside, from a file, a request or a form, there is nobody to hold to anything, because the data is whatever it happens to be. The function `JSON.parse` shows the difficulty: the compiler cannot know what the text contains, so its result has the type **any**, which means that every check is switched off for that value."
-            },
-            {
-              "kind": "paragraph",
-              "text": "The figure shows what follows. With `any`, the line `j.anything.at.all` compiles, because the checker has stopped looking, and the program fails when it runs, since `j` has no property called `anything`. The checker was not wrong. It was told to stop, and the failure appears at a distance from the place where the bad data came in."
+              "text": "A type is a promise the author makes about a value, and the checker holds the author to it inside the program. The function `JSON.parse` shows the difficulty: the compiler cannot know what the text contains, so its result has the type **any**, which means that every check is switched off for that value."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "The same applies to a request body, a configuration file and anything else that was written by another program or by a person. The way to stay safe is to treat all of it as untrusted until it has been checked."
+              "text": "The way to stay safe is to treat all of it as untrusted until it has been checked."
             }
           ],
           "introducesTerms": [
@@ -3252,19 +3198,14 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Reading by index is another place where a promise goes unchecked. With `const xs: number[] = []`, the expression `xs[0]` has the type `number` by default, although there is no element, and the program gets `undefined` at run time. The checker cannot know the length of an ordinary array, and by default it assumes that every index is in range."
+              "text": "With `const xs: number[] = []`, the expression `xs[0]` has the type `number` by default, although there is no element, and the program gets `undefined` at run time. The checker cannot know the length of an ordinary array, and by default it assumes that every index is in range."
             },
             {
               "kind": "paragraph",
-              "text": "The compiler option **noUncheckedIndexedAccess** changes that. With it on, `xs[0]` is `number | undefined`, and code has to check before using the result, as it does for any other possibly missing value. The option is not part of the `strict` group, so it has to be turned on in `tsconfig.json` by name. Strict mode checks types, and it does not check bounds."
+              "text": "The compiler option **noUncheckedIndexedAccess** changes that. With it on, `xs[0]` is `number | undefined`, and code has to check before using the result, as it does for any other possibly missing value. The option is not part of the `strict` group, so it has to be turned on in `tsconfig.json` by name."
             }
           ],
-          "afterFigure": [
-            {
-              "kind": "paragraph",
-              "text": "Reading an element of a tuple at a position that exists is unaffected, because its length is part of its type."
-            }
-          ],
+          "afterFigure": [],
           "introducesTerms": [
             "noUncheckedIndexedAccess"
           ],
@@ -3318,7 +3259,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "It is therefore the better choice for a constant such as configuration, which you want to check against a type and then use with the precise types it was written with. It also reports a typo in the same way an annotation does, so `{ prot: 3000 } satisfies { port: number }` is an error."
+              "text": "It is therefore the better choice for a constant such as configuration, which you want to check against a type and then use with the precise types it was written with."
             }
           ],
           "introducesTerms": [
@@ -3453,7 +3394,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "Everything that comes into a program from outside, from a file, a request or a form, has the same problem, so the types you have learned so far reach only as far as the data that was already typed. Some of TypeScript's tools check a value at that boundary and others only change what the compiler believes about it, and knowing which is which lets you place the checking where the data arrives, so that a bad value is reported there and not at some distant line that happens to use it."
+              "text": "Everything that comes into a program from outside, from a file, a request or a form, has the same problem, so the types you have learned so far reach only as far as the data that was already typed. Some of TypeScript's tools check a value at that boundary and others only change what the compiler believes about it."
             }
           ],
           "diagram": {
@@ -3513,11 +3454,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "JavaScript the language is the same in a browser and in Node, and what differs is the layer beneath it, shown in the figure on the previous screen. A browser gives your code a page to work with, through `window`, `document` and the DOM, and a program on a web page cannot read a file on the disk. **Node** is a program that embeds Google's V8 engine, the one in Chrome, and adds the platform for working outside a page: `fs` for files, `http` for servers, `process` for the running program and its environment, and the event loop that makes all of them asynchronous."
+              "text": "JavaScript the language is the same in a browser and in Node, and what differs is the layer beneath it. A browser gives your code a page to work with, through `window`, `document` and the DOM, and a program on a web page cannot read a file on the disk. **Node** is a program that embeds Google's V8 engine, the one in Chrome, and adds the platform for working outside a page: `fs` for files, `http` for servers, `process` for the running program and its environment, and the event loop that makes all of them asynchronous."
             },
             {
               "kind": "paragraph",
-              "text": "Because the layers differ, so do the globals. In Node, typeof window is \"undefined\", and typeof process is \"object\". Some names, such as fetch and the timer functions, exist on both platforms, since both have chosen to provide them. Ryan Dahl presented Node in 2009 as a way to write network programs in JavaScript without blocking on every request, an idea the event loop lesson takes up."
+              "text": "Because the layers differ, so do the globals. In Node, typeof window is \"undefined\", and typeof process is \"object\". Ryan Dahl presented Node in 2009 as a way to write network programs in JavaScript without blocking on every request."
             }
           ],
           "introducesTerms": [
@@ -3619,7 +3560,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The prefix is not strictly required for the older names, because `fs` alone also works, but writing it is the safer habit. It tells a reader at a glance that the import is part of the platform, and it prevents a package of the same name in `node_modules` from standing in for the built-in. The figure shows one specifier of each kind."
+              "text": "The prefix is not strictly required for the older names, because `fs` alone also works, but writing it is the safer habit. It tells a reader at a glance that the import is part of the platform, and it prevents a package of the same name in `node_modules` from standing in for the built-in."
             }
           ],
           "introducesTerms": [
@@ -3716,12 +3657,7 @@
               "text": "The usual form is `Number(process.env.PORT ?? 3000)`, where the operator `??` supplies 3000 when the left side is `undefined` or `null`. The same care applies to flags. Setting `process.env.FLAG = false` stores the string `\"false\"`, which is truthy, so a test for a flag has to compare the text, for example with `=== \"true\"`."
             }
           ],
-          "afterFigure": [
-            {
-              "kind": "paragraph",
-              "text": "A value that is converted once, at startup, is also easier to check. The last lesson of this course shows how to read all configuration in one place and stop early when it is wrong."
-            }
-          ],
+          "afterFigure": [],
           "introducesTerms": [
             "environment variable"
           ],
@@ -3824,10 +3760,6 @@
             {
               "kind": "paragraph",
               "text": "The expression `Math.max(3, 7)` gives 7 in a browser's console and in Node alike, because both run the same language. A line that reads a file from the disk works only in Node, though, and a line that changes the page works only in the browser, since each platform places its own set of objects and functions around the engine that runs the JavaScript. Node's set is built for a program that has no page: it reads files, listens on a network port and can see the environment it was started in."
-            },
-            {
-              "kind": "paragraph",
-              "text": "That is why servers, tools and build scripts are written for Node, and it shows in the first lines of nearly every such program, which load other modules and read settings from the environment. Node has two module systems and passes its settings in as text, so knowing both is what lets you read a Node file and tell which names it may use and what the values it reads will look like."
             }
           ],
           "diagram": {
@@ -3897,7 +3829,7 @@
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "The same arrangement explains the weakness. A callback that does not finish holds up every callback queued behind it, and the last half of this lesson is about that."
+              "text": "The same arrangement explains the weakness. A callback that does not finish holds up every callback queued behind it."
             }
           ],
           "introducesTerms": [
@@ -4012,11 +3944,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The event loop goes round a ring of phases, shown in the figure. The timers phase runs the callbacks of `setTimeout` whose time has come, the poll phase handles I/O callbacks, and the check phase runs the callbacks of `setImmediate`. After the check phase come the close events, and then the loop starts another turn."
+              "text": "The event loop goes round a ring of phases. The timers phase runs the callbacks of `setTimeout` whose time has come, the poll phase handles I/O callbacks, and the check phase runs the callbacks of `setImmediate`."
             },
             {
               "kind": "paragraph",
-              "text": "That ring decides the order of two calls that look alike. If you call `setTimeout(f, 0)` and `setImmediate(g)` from inside an I/O callback, the loop is in the poll phase and the check phase comes next, so `g` always runs before `f`. From the main script, nothing fixes it: it depends on whether the loop reached the timers phase before one millisecond had passed, and a run on a busy machine may differ from another. A test should not depend on the order of the two there."
+              "text": "That ring decides the order of two calls that look alike. If you call `setTimeout(f, 0)` and `setImmediate(g)` from inside an I/O callback, the loop is in the poll phase and the check phase comes next, so `g` always runs before `f`. From the main script, nothing fixes it: it depends on whether the loop reached the timers phase before one millisecond had passed. A test should not depend on the order of the two there."
             }
           ],
           "afterFigure": [
@@ -4108,11 +4040,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Since callbacks take turns, one that takes a long time delays all the others, including timers, incoming requests and promise callbacks. The figure shows a timer set for 10 milliseconds and then a synchronous loop that spins for a full second. The timer is due after 10 milliseconds, but the loop is holding the thread, so the callback runs only when it ends, after about 1000 milliseconds. The delay is a minimum, and here it has been exceeded by a long way."
+              "text": "Since callbacks take turns, one that takes a long time delays all the others, including timers, incoming requests and promise callbacks. The figure shows a timer set for 10 milliseconds and then a synchronous loop that spins for a full second. The timer is due after 10 milliseconds, but the loop is holding the thread, so the callback runs only when it ends, after about 1000 milliseconds."
             },
             {
               "kind": "paragraph",
-              "text": "This is what goes wrong when a server does heavy computation in a request handler. While one request is being processed, no other request is served, and a thread that is busy for 200 milliseconds on each of ten requests that arrive together delays the tenth by 2000 milliseconds. Writing await in front of a CPU-bound function does not help, because await waits for a promise and the loop still runs on the same thread."
+              "text": "While one request is being processed, no other request is served, and a thread that is busy for 200 milliseconds on each of ten requests that arrive together delays the tenth by 2000 milliseconds. Writing await in front of a CPU-bound function does not help, because await waits for a promise and the loop still runs on the same thread."
             }
           ],
           "introducesTerms": [
@@ -4168,15 +4100,10 @@
             },
             {
               "kind": "paragraph",
-              "text": "Node provides two ways to give it another. The `node:worker_threads` module runs a JavaScript file on a separate thread, and the two communicate by messages, so the main thread stays free, as the second view of the earlier figure showed. A separate process, started with `node:child_process`, does the same with more isolation. For modest work it is often enough to split it into small pieces and yield between them."
+              "text": "Node provides two ways to give it another. The `node:worker_threads` module runs a JavaScript file on a separate thread, and the two communicate by messages, so the main thread stays free. A separate process, started with `node:child_process`, does the same with more isolation."
             }
           ],
-          "afterFigure": [
-            {
-              "kind": "paragraph",
-              "text": "Choosing between them comes down to the size of the job: a few milliseconds can stay where it is, and anything that is noticeable to a user belongs elsewhere."
-            }
-          ],
+          "afterFigure": [],
           "introducesTerms": [
             "worker thread"
           ],
@@ -4239,11 +4166,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "Write a Node script that logs from five places, directly in the main code, in a `nextTick` callback, in a promise callback, in a zero-delay timer and in a `setImmediate` callback, and the lines will not appear in the order in which the code is written. Node does not run them at random, though, since every callback waits in a queue and the loop takes the queues in a fixed order, which is why the same calls can print in one order from the main script and in another from inside a file-read callback."
+              "text": "Write a Node script that logs from five places, directly in the main code, in a `nextTick` callback, in a promise callback, in a zero-delay timer and in a `setImmediate` callback, and the lines will not appear in the order in which the code is written. Node does not run them at random, though, since every callback waits in a queue and the loop takes the queues in a fixed order."
             },
             {
               "kind": "paragraph",
-              "text": "All of this follows from the fact that Node runs your JavaScript on one thread, with callbacks taking turns. Knowing the order of the queues tells you which of two pieces of code will run first, and knowing that there is only one thread tells you why a timer can run late and what it costs a server when a long computation is left in a request handler."
+              "text": "All of this follows from the fact that Node runs your JavaScript on one thread, with callbacks taking turns."
             }
           ],
           "diagram": {
@@ -4326,12 +4253,7 @@
               "text": "JavaScript strings count differently. The `length` property of a string counts UTF-16 code units, the 16-bit pieces in which JavaScript stores text, so `'héllo'.length` is 5, and the emoji, which needs two code units, has a length of 2. The size in bytes comes from `Buffer.byteLength`, which for `'héllo'` is 6. The two numbers agree only for plain ASCII text, and a program that uses `length` to size a buffer or to check a limit on bytes is wrong for any other."
             }
           ],
-          "afterFigure": [
-            {
-              "kind": "paragraph",
-              "text": "A character that is outside the first 128 is the first to expose such a bug, and so tests for a size limit should include one."
-            }
-          ],
+          "afterFigure": [],
           "introducesTerms": [
             "Buffer",
             "encoding",
@@ -4383,11 +4305,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Bytes are rarely shown as they are, so there are standard ways to write them as text. **Hex** writes each byte as two hexadecimal digits, so the two bytes of `'hi'`, 68 and 69, become the string `\"6869\"`, which is a form that suits checksums and logs. **Base64** packs the bytes three at a time into four characters from a set of 64 letters, digits and symbols, with `=` padding at the end, and the same two bytes become `\"aGk=\"`. It is made for sending bytes through channels that carry only text, such as JSON."
+              "text": "Bytes are rarely shown as they are, so there are standard ways to write them as text. **Hex** writes each byte as two hexadecimal digits, so the two bytes of `'hi'`, 68 and 69, become the string `\"6869\"`. **Base64** packs the bytes three at a time into four characters from a set of 64 letters, digits and symbols, with `=` padding at the end, and the same two bytes become `\"aGk=\"`."
             },
             {
               "kind": "paragraph",
-              "text": "In Node the conversions are `Buffer.from(\"hi\").toString(\"hex\")` and `Buffer.from(\"hi\").toString(\"base64\")`, and the reverse is `Buffer.from(\"aGk=\", \"base64\").toString()`, which gives back `\"hi\"`. Nothing in a string says which encoding produced it, so a program has to know."
+              "text": "In Node the conversions are `Buffer.from(\"hi\").toString(\"hex\")` and `Buffer.from(\"hi\").toString(\"base64\")`. Nothing in a string says which encoding produced it, so a program has to know."
             }
           ],
           "afterFigure": [
@@ -4451,19 +4373,14 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The function `fs.readFile` returns the contents of a file only when all of it has been read, so the whole file is in memory at once. For a 4 GB file that is more than many machines can spare, and the program fails. A **stream** avoids this by delivering the data in pieces. `fs.createReadStream` gives chunks of 64 KiB, that is 65536 bytes, one after another, and the program handles each as it arrives and releases it."
+              "text": "The function `fs.readFile` returns the contents of a file only when all of it has been read, so the whole file is in memory at once. A **stream** avoids this by delivering the data in pieces. `fs.createReadStream` gives chunks of 64 KiB one after another, and the program handles each as it arrives and releases it."
             },
             {
               "kind": "paragraph",
               "text": "There are four kinds of stream: Readable ones produce data, Writable ones consume it, Duplex ones do both and Transform ones change what passes through. Chaining a Readable through a Transform into a Writable is a pipeline, and it is how Node programs copy, compress and convert files whose size nobody knows in advance."
             }
           ],
-          "afterFigure": [
-            {
-              "kind": "paragraph",
-              "text": "A stream also begins work sooner. The first chunk can be processed while the rest of the file is still being read."
-            }
-          ],
+          "afterFigure": [],
           "introducesTerms": [
             "stream",
             "chunk"
@@ -4682,10 +4599,6 @@
             {
               "kind": "paragraph",
               "text": "The price €5 looks like two characters, and written to a file in UTF-8 it takes four bytes, because the euro sign is stored as three. In Node the first number is the string's length and the second is what `Buffer.byteLength` reports, and a program that treats one as the other goes wrong as soon as someone types a symbol or an accent. Text becomes bytes only through an encoding, and the encoding decides how many."
-            },
-            {
-              "kind": "paragraph",
-              "text": "Those bytes then have to travel from a disk or a network into a program, and the program may be handed a file of several gigabytes. Reading it all at once would need that much memory, so Node offers streams, which carry the data in pieces and ask the sender to wait when the receiver falls behind. Knowing how a string becomes bytes and how bytes move lets you size buffers and limits correctly and handle files that are larger than memory."
             }
           ],
           "diagram": {
@@ -4750,15 +4663,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A web server does one job over and over: it reads a request and writes a response. The figure on the previous screen shows the text of each. The first line of a request carries a **method**, which says what is wanted, and a URL, which says where, and the lines after it are **headers**, such as the one that says which formats the client accepts. A request may also carry a body. The response begins with a **status** line, which says what happened, then headers, then a body."
+              "text": "The first line of a request carries a **method**, which says what is wanted, and a URL, which says where, and the lines after it are **headers**, such as the one that says which formats the client accepts. A request may also carry a body. The response begins with a **status** line, which says what happened, then headers, then a body."
             },
             {
               "kind": "paragraph",
-              "text": "In Node's `http` module, a handler is a function `(req, res) => { ... }` that is called for every request. The object `req` gives the method in `req.method`, the URL in `req.url`, the headers in `req.headers`, and the body as a stream of bytes, as in the last lesson. The object `res` is where the response is built: `res.statusCode` and `res.setHeader` set the status and the headers, and `res.end(body)` sends the body and completes it."
-            },
-            {
-              "kind": "paragraph",
-              "text": "A handler is ordinary JavaScript running on the event loop, so everything said there applies. A handler that blocks for a second blocks every other request."
+              "text": "In Node's `http` module, a handler is a function `(req, res) => { ... }` that is called for every request. The object `req` gives the method in `req.method`, the URL in `req.url`, the headers in `req.headers`, and the body as a stream of bytes. The object `res` is where the response is built: `res.statusCode` and `res.setHeader` set the status and the headers, and `res.end(body)` sends the body and completes it."
             }
           ],
           "introducesTerms": [
@@ -4801,12 +4710,7 @@
               "text": "A **router** is the code that picks a handler. It looks at the method and the pathname together: `GET` on `/users/42` goes to a handler that reads a user, `POST` on `/users` goes to one that creates a user, and a method that the path does not allow gets a 405 response. The base in the URL call is arbitrary, since only the path matters, and it is needed because `req.url` has no host."
             }
           ],
-          "afterFigure": [
-            {
-              "kind": "paragraph",
-              "text": "A router checked by method first is easy to extend, because adding a route adds one row and leaves the others alone."
-            }
-          ],
+          "afterFigure": [],
           "introducesTerms": [
             "router",
             "pathname"
@@ -4869,12 +4773,7 @@
               "text": "Node's default is `res.statusCode = 200`. A handler that finds no user and writes `\"not found\"` in the body, without setting a status, tells the client that the request succeeded. Clients, caches and monitors read the status and not the body, so the status has to say it."
             }
           ],
-          "afterFigure": [
-            {
-              "kind": "paragraph",
-              "text": "Choosing between the classes is a matter of who made the mistake: a 4xx code tells the client to change its request, and a 5xx code says that the request was fine and the server failed."
-            }
-          ],
+          "afterFigure": [],
           "introducesTerms": [
             "status code"
           ],
@@ -5023,19 +4922,14 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The body of a request is a stream, as in the last lesson, so it comes in pieces that can split anywhere, even in the middle of a word, as the figure shows. A handler collects the chunks as they arrive, joins them when the stream ends, decodes the bytes to text, and then parses the text. Reading the first chunk and parsing it would work for small bodies on a fast connection, and fail for others."
+              "text": "The body of a request is a stream, as in the last lesson, so it comes in pieces that can split anywhere, even in the middle of a word. A handler collects the chunks as they arrive, joins them when the stream ends, decodes the bytes to text, and then parses the text. Reading the first chunk and parsing it would work for small bodies on a fast connection, and fail for others."
             },
             {
               "kind": "paragraph",
               "text": "The last step can fail. JSON.parse throws a SyntaxError when the text is not valid JSON, so the handler wraps it in try and catch and answers 400 when it throws. Letting the error escape would make the server answer 500, or crash, and either one blames the server for what the client sent."
             }
           ],
-          "afterFigure": [
-            {
-              "kind": "paragraph",
-              "text": "After parsing, the value is still unknown to the type system, as the earlier lesson on types at the edges explained, and has to be checked before the program relies on its shape."
-            }
-          ],
+          "afterFigure": [],
           "introducesTerms": [
             "request body"
           ],
@@ -5137,11 +5031,11 @@
           "blocks": [
             {
               "kind": "paragraph",
-              "text": "An HTTP request is a few lines of text, the first of which is something like GET /users/42 HTTP/1.1, and the response that comes back is a few more, beginning with a status line such as HTTP/1.1 200 OK and continuing with headers and a body. The whole of an HTTP service in Node is a function that turns one into the other, which is why a handler can be read closely enough to say what a client will receive."
+              "text": "An HTTP request is a few lines of text, the first of which is something like GET /users/42 HTTP/1.1, and the response that comes back is a few more, beginning with a status line such as HTTP/1.1 200 OK and continuing with headers and a body. The whole of an HTTP service in Node is a function that turns one into the other."
             },
             {
               "kind": "paragraph",
-              "text": "Most of the bugs in such a function sit in the details around the edges, in a status that was never set, a response that was never finished or a body that arrived in pieces, and none of them raises an error inside the handler, since it is the client that notices. Knowing what Node does by default at each of those points lets you read a handler and say what the client sees, and whether that is the answer the client should have been given."
+              "text": "Most of the bugs in such a function sit in the details around the edges, in a status that was never set, a response that was never finished or a body that arrived in pieces, and none of them raises an error inside the handler, since it is the client that notices."
             }
           ],
           "diagram": {
@@ -5221,7 +5115,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The other two answer a different question, which is who is first. `Promise.race` settles with the first promise to settle, whether it fulfils or rejects, which suits a timeout. `Promise.any` settles with the first to *fulfil* and ignores rejections until all of them have rejected, when it throws an `AggregateError`. The choice among the four depends on what a failure should mean for the whole group."
+              "text": "The other two answer a different question, which is who is first. `Promise.race` settles with the first promise to settle, whether it fulfils or rejects, which suits a timeout. `Promise.any` settles with the first to *fulfil* and ignores rejections until all of them have rejected, when it throws an `AggregateError`."
             }
           ],
           "afterFigure": [
@@ -5286,13 +5180,13 @@
             },
             {
               "kind": "paragraph",
-              "text": "The figure shows both. Overlap is safe only when the tasks do not depend on each other, and if they do, the loop is correct. The third view shows what a failure does: the call rejects as soon as one task rejects, here at 30 ms, and the slower task, which nobody can cancel, runs on to its end."
+              "text": "Overlap is safe only when the tasks do not depend on each other, and if they do, the loop is correct."
             }
           ],
           "afterFigure": [
             {
               "kind": "paragraph",
-              "text": "The speed-up comes from the waiting overlapping, as in the event loop lesson. It does not make the JavaScript itself run in parallel."
+              "text": "The speed-up comes from the waiting overlapping. It does not make the JavaScript itself run in parallel."
             }
           ],
           "introducesTerms": [
@@ -5357,12 +5251,7 @@
               "text": "The remedy is to keep the promises. `await Promise.all(items.map(async x => ...))` collects them and waits, and a `for ... of` loop with `await` inside is the form to use when the work must happen in order. A related mistake is calling an async function inside `try` without awaiting it. The function returns a rejected promise, the `catch` block never sees it, because no error was thrown in the block, and the rejection escapes."
             }
           ],
-          "afterFigure": [
-            {
-              "kind": "paragraph",
-              "text": "In both cases the code reads as though it waits, and the only sign that it does not is a result that is missing when you look for it."
-            }
-          ],
+          "afterFigure": [],
           "introducesTerms": [
             "unawaited promise"
           ],
@@ -5445,11 +5334,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A promise that rejects needs a consumer: an await inside a try, a .catch, or a second argument to .then. When none is attached by the time the loop moves on, Node treats the rejection as an uncaught error. Since Node 15 the default is to print the error and end the process with exit code 1, as the first view of the figure shows, which turns a forgotten await into a visible crash instead of a silent failure."
+              "text": "A promise that rejects needs a consumer: an await inside a try, a .catch, or a second argument to .then. When none is attached by the time the loop moves on, Node treats the rejection as an uncaught error. Since Node 15 the default is to print the error and end the process with exit code 1 which turns a forgotten await into a visible crash instead of a silent failure."
             },
             {
               "kind": "paragraph",
-              "text": "A handler registered with `process.on(\"unhandledRejection\", ...)` replaces that default. The process then goes on and exits with code 0, so the handler has to log or report the error itself, and a service that adds an empty one has made the failure invisible. The better course is to fix the cause, that is, to handle the promise where it is created."
+              "text": "A handler registered with `process.on(\"unhandledRejection\", ...)` replaces that default. The process then goes on and exits with code 0, so the handler has to log or report the error itself, and a service that adds an empty one has made the failure invisible."
             }
           ],
           "introducesTerms": [
@@ -5505,7 +5394,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "This is how a timeout is built for a request. A timer calls `abort()` after the allowed time, the request is cancelled, and the code that awaited it receives an `AbortError`, which it can tell apart from other failures by its name. Without the signal the request would carry on to its end, and nothing could stop it."
+              "text": "This is how a timeout is built for a request. A timer calls `abort()` after the allowed time, the request is cancelled, and the code that awaited it receives an `AbortError`, which it can tell apart from other failures by its name."
             }
           ],
           "afterFigure": [
@@ -5580,7 +5469,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The same care applies to the mistakes that make asynchronous code fail without a message, because a promise that nobody waits for does not announce itself. A `forEach` with an async callback finishes before its work has, a loop that awaits one task after another is slower than it needs to be, and a rejection that nobody handles ends a Node process. Each of these can be found by reading, once you know what JavaScript does with a promise at the point where the code stops looking at it."
+              "text": "The same care applies to the mistakes that make asynchronous code fail without a message, because a promise that nobody waits for does not announce itself."
             }
           ],
           "diagram": {
@@ -5656,7 +5545,7 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A **semantic version**, or semver, is three whole numbers separated by dots, such as 1.4.2. The **patch** number rises for a bug fix, the **minor** number rises for a new feature that does not break existing use, and the **major** number rises for a change that may break callers of the library. Raising a part sets every part to its right back to 0, so the minor bump of 1.4.2 is 1.5.0, and the major bump is 2.0.0."
+              "text": "A **semantic version**, or semver, is three whole numbers separated by dots, such as 1.4.2. The **patch** number rises for a bug fix, the **minor** number rises for a new feature that does not break existing use, and the **major** number rises for a change that may break callers of the library."
             },
             {
               "kind": "paragraph",
@@ -5826,19 +5715,14 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A range leaves room: `^1.2.3` today installs 1.2.3, and next month it may install 1.9.0. That is useful for taking fixes, and awkward for a build that has to be repeated exactly. The file `package-lock.json` settles it. When npm installs, it writes the exact version it chose for every package, including the dependencies of dependencies, and later installs read the file."
+              "text": "A range leaves room: `^1.2.3` today installs 1.2.3, and next month it may install 1.9.0. The file `package-lock.json` settles it. When npm installs, it writes the exact version it chose for every package, including the dependencies of dependencies, and later installs read the file."
             },
             {
               "kind": "paragraph",
               "text": "The two commands differ in how they treat it. `npm install` may choose a newer version that the range allows, and rewrites the lockfile when it does. `npm ci` installs exactly the versions in the lockfile, and fails if the lockfile and `package.json` disagree, which makes it the command for a build server and for tests. The lockfile belongs in version control. Deleting it to clear an error removes the one thing that makes installs repeatable, and every dependency may then change at once."
             }
           ],
-          "afterFigure": [
-            {
-              "kind": "paragraph",
-              "text": "The range expresses what you are willing to accept, and the lockfile records what you actually got."
-            }
-          ],
+          "afterFigure": [],
           "introducesTerms": [
             "lockfile",
             "npm ci"
@@ -5877,15 +5761,10 @@
             },
             {
               "kind": "paragraph",
-              "text": "The command `node --test` finds the test files, runs them and prints a report with a count of tests passed and failed. For a failure it shows the expected and the actual values, as the figure's report does. The command ends with exit code 1 if any test failed, and that code is what a continuous integration job reads in order to stop."
+              "text": "The command `node --test` finds the test files, runs them and prints a report with a count of tests passed and failed. The command ends with exit code 1 if any test failed, and that code is what a continuous integration job reads in order to stop."
             }
           ],
-          "afterFigure": [
-            {
-              "kind": "paragraph",
-              "text": "A deliberately failing test, written first and then made to pass, is the surest way to know that the test can fail at all."
-            }
-          ],
+          "afterFigure": [],
           "introducesTerms": [
             "node:test",
             "assertion"
@@ -6000,10 +5879,6 @@
             {
               "kind": "paragraph",
               "text": "A dependency listed in `package.json` as `^1.4.2` is a request for 1.4.2 or anything later in the 1.x series, so a library that publishes 1.5.0 a few days after 1.4.2 may arrive on your machine without anyone having chosen it. Whether it does depends on two small pieces of notation, the range and the lockfile, and on a promise from the library's author about what the middle number of a version means."
-            },
-            {
-              "kind": "paragraph",
-              "text": "A program that installs the wrong version fails in a way that its source code does not explain, so being able to read a version, a range and a lockfile tells you which code a program will really run, and it is the first thing to establish when a program works on one machine and fails on another. A test file, which Node can run without extra tools, then shows whether the version you got still does what you relied on."
             }
           ]
         },
@@ -6061,11 +5936,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "Configuration is the first place where outside data meets the program, and the rule from the earlier lessons applies to it unchanged: environment variables are strings or `undefined`, and nothing says they are right. A service that reads `process.env.PORT` in the middle of a request finds out about a missing or misspelt variable on the first request that needs it, perhaps hours after it started. A service that reads all of its configuration once, in one module, and checks it there, finds out before it has served anything."
+              "text": "Configuration is the first place where outside data meets the program, and the rule from the earlier lessons applies to it unchanged: environment variables are strings or `undefined`, and nothing says they are right. A service that reads all of its configuration once, in one module, and checks it there, finds out before it has served anything."
             },
             {
               "kind": "paragraph",
-              "text": "The loader below converts and checks each value, and collects the problems in a list instead of throwing at the first. It reads the port with `Number(process.env.PORT ?? 3000)` and tests it with `Number.isInteger`, and it requires the database URL. If the list is not empty it throws a single error that names every problem, so the person starting the service fixes them all in one go. If it is empty, it returns an object with real types, a number for the port, and the rest of the program never touches `process.env` again."
+              "text": "The loader below converts and checks each value, and collects the problems in a list instead of throwing at the first. If the list is not empty it throws a single error that names every problem, so the person starting the service fixes them all in one go. If it is empty, it returns an object with real types, a number for the port, and the rest of the program never touches `process.env` again."
             }
           ],
           "afterFigure": [
@@ -6170,19 +6045,14 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "The parser needs a return type that cannot be ignored. Returning `CreateUser | null` allows a caller to forget the `null`, and throwing leaves the failure out of the signature entirely. A discriminated union makes the failure a value that the type system can see: `type Result<T> = { ok: true; value: T } | { ok: false; error: string }`. The property `ok` is the discriminant from the lesson on unions."
+              "text": "The parser needs a return type that cannot be ignored. Returning `CreateUser | null` allows a caller to forget the `null`, and throwing leaves the failure out of the signature entirely. A discriminated union makes the failure a value that the type system can see: `type Result<T> = { ok: true; value: T } | { ok: false; error: string }`."
             },
             {
               "kind": "paragraph",
               "text": "A handler has to narrow before it can read the value. In `if (!r.ok) return 400`, the checker removes the failure member for the rest of the function, and after that line `r.value` is a typed `CreateUser`. Reading `r.value` without the check is the compile error in the figure, TS2339, because the failure member has no `value`. The caller is therefore forced to say what happens when the input is bad."
             }
           ],
-          "afterFigure": [
-            {
-              "kind": "paragraph",
-              "text": "The union can hold more than a message. A list of field errors is often returned, so that a client can show each one."
-            }
-          ],
+          "afterFigure": [],
           "introducesTerms": [
             "Result type"
           ],
@@ -6264,11 +6134,11 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A platform stops a service by sending it a signal, usually **SIGTERM**, and then waiting. A service that does nothing is killed after a few seconds, and any request in progress is cut off. A service that calls `process.exit()` in its handler is no better, since it ends at once and drops the same requests. The signal is a chance to finish properly, in a fixed order."
+              "text": "A platform stops a service by sending it a signal, usually **SIGTERM**, and then waiting. A service that does nothing is killed after a few seconds, and any request in progress is cut off. A service that calls `process.exit()` in its handler is no better, since it ends at once and drops the same requests."
             },
             {
               "kind": "paragraph",
-              "text": "First the server stops accepting new connections, with `server.close()`, which lets the connections that are already open complete. Second the service waits until the requests in flight have finished, which `close()` reports through its callback. Third it closes the resources that those requests used, such as the database pool, the set of open database connections that requests share. Finally it exits with code 0, which tells the platform that the stop was clean. Each step depends on the one before it, and the figure moves through them."
+              "text": "First the server stops accepting new connections, with `server.close()`, which lets the connections that are already open complete. Second the service waits until the requests in flight have finished, which `close()` reports through its callback. Third it closes the resources that those requests used, such as the database pool, the set of open database connections that requests share. Finally it exits with code 0, which tells the platform that the stop was clean."
             }
           ],
           "afterFigure": [
@@ -6337,19 +6207,14 @@
           "lead": [
             {
               "kind": "paragraph",
-              "text": "A service that has been deployed can only be understood through what it reports. A **structured log** writes each event as one line of JSON, such as `{\"level\":\"info\",\"requestId\":\"a1\",\"path\":\"/users\",\"status\":201,\"ms\":12}`, so that a tool can filter and count them. Giving each request an id and putting it in every line it produces lets you follow one request through the router, the parser and the database, even when thousands are interleaved."
+              "text": "A **structured log** writes each event as one line of JSON, such as `{\"level\":\"info\",\"requestId\":\"a1\",\"path\":\"/users\",\"status\":201,\"ms\":12}`, so that a tool can filter and count them. Giving each request an id and putting it in every line it produces lets you follow one request through the router, the parser and the database, even when thousands are interleaved."
             },
             {
               "kind": "paragraph",
-              "text": "A **health endpoint** is a route, often `/health`, that answers 200 while the service is able to work, and a platform asks it before sending traffic and again at intervals. During graceful shutdown it is the endpoint that starts answering with an error first, so that the platform stops sending requests before the server stops listening. Tests complete the picture: a `node:test` file that feeds the parser good and bad input and checks the results is how you know the boundary still works after the next change."
+              "text": "A **health endpoint** is a route, often `/health`, that answers 200 while the service is able to work, and a platform asks it before sending traffic and again at intervals. During graceful shutdown it is the endpoint that starts answering with an error first, so that the platform stops sending requests before the server stops listening."
             }
           ],
-          "afterFigure": [
-            {
-              "kind": "paragraph",
-              "text": "Logs and health checks cost little to add at the start of a service and a good deal to add during an incident."
-            }
-          ],
+          "afterFigure": [],
           "introducesTerms": [
             "structured log",
             "health endpoint"
@@ -6451,7 +6316,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "A service that decides this once, at the edge where data enters, can let every line after it rely on its types, and the same holds for its configuration, which is outside data as well and can be checked once at startup. Adding a stop that finishes the requests already begun, instead of cutting them off, gives the shape that most Node services share, which is why it is worth being able to read one and say where each of its guarantees comes from."
+              "text": "A service that decides this once, at the edge where data enters, can let every line after it rely on its types, and the same holds for its configuration, which is outside data as well and can be checked once at startup."
             }
           ],
           "diagram": {
