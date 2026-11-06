@@ -2,6 +2,11 @@
 
 Updated: 2026-11-06
 
+Release 1.11.1 fixes what a spot check of sixteen random lessons found: two passages the trim
+had cut that a recap and a definition relied on, three factual slips (carbon-14, a linked-list
+insert, where the bending moment peaks), two opener figures that showed a later answer, and a few
+unclear sentences.
+
 Release 1.11.0 makes each teaching screen as long as its idea needs. George read two lessons with
 easy screens shortened and hard ones left whole, and found them better to read. Every course now has
 that treatment: easy and moderate screens lost the sentences that restated a point, described the
