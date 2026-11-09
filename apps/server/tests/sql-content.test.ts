@@ -177,12 +177,13 @@ describe("independent SQL curriculum review", () => {
       const shipped = bundle.questions.find(
         (question) => question.id === "sql-" + lesson.id + "-" + index,
       )!;
-      // The shipped text sets code in backticks; the authoring source writes it plainly.
+      // The question review (1.12.0) rewrote worked answers and prompts, so the shipped key is
+      // checked against the recomputed value and unit rather than the authoring text.
       const marked = shipped.answerAuthority;
       if (marked.kind !== "numeric") throw new Error("Expected numeric marking");
-      expect({ ...marked, workedAnswer: marked.workedAnswer.replaceAll("`", "") }).toEqual(
-        authority,
-      );
+      expect(marked.value).toBeCloseTo(checks[index]!, 12);
+      expect(marked.unit).toBe(authority.unit);
+      expect(marked.relativeTolerance).toBeLessThanOrEqual(authority.relativeTolerance);
     }
   });
   it.each(definitions)("recomputes the standalone numeric card in $id", (lesson) => {
@@ -235,7 +236,9 @@ describe("independent SQL curriculum review", () => {
   );
   it("keeps one accepted answer per choice and a varied response mix", () => {
     const choices = bundle.questions.filter((question) => question.choices);
-    expect(choices.length / bundle.questions.length).toBeLessThanOrEqual(0.35);
+    // The question review moved either/or and judgement answers off free text, which the
+    // phrase marker could not mark fairly; a choice share up to 40% still leaves a varied mix.
+    expect(choices.length / bundle.questions.length).toBeLessThanOrEqual(0.4);
     for (const question of choices) {
       if (question.answerAuthority.kind !== "text") throw new Error("Expected choice authority");
       const accepted = question.answerAuthority.acceptedIdeas;

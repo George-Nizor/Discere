@@ -48,6 +48,12 @@ const choiceMarked = (id: string) => {
     .choices!.filter((choice) => assessTextAnswer(choice.label, authority).correct)
     .map((c) => c.id);
 };
+const markedLabels = (id: string) => {
+  const marked = choiceMarked(id);
+  return question(id)
+    .choices!.filter((choice) => marked.includes(choice.id))
+    .map((choice) => choice.label);
+};
 /** Round to a number of decimal places, as the prompt asks. */
 const dp = (x: number, places: number) => Number(x.toFixed(places));
 const nearest = (x: number, step: number) => Math.round(x / step) * step;
@@ -214,7 +220,19 @@ describe("Astronomy: Sky to Cosmos (v2)", () => {
     const p = "astro-turning-sky-";
     // The ported prototype: six practice items and three skill-check items.
     same(p + "7", 360 / 24);
+    // The navigator item (12, retired but still in the bank) and its replacement (12-v2, in the
+    // lesson): the pole's altitude is the latitude, so two readings give the distance sailed north.
     same(p + "12", altitude(41, 90, 0));
+    const kmPerDegree = Math.round(6371 * rad); // the 111 km the prompt gives
+    expect(kmPerDegree).toBe(111);
+    same(p + "12-v2", (altitude(56, 90, 0) - altitude(41, 90, 0)) * kmPerDegree);
+    expect(key(p + "12-v2")).toBe(15 * 111);
+    // The wrong values the item flags are the slips it names: the degrees, and either latitude in km.
+    expect(
+      question(p + "12-v2").misconceptions!.flatMap((m) => m.match.numeric ?? []),
+    ).toEqual([56 - 41, 41 * kmPerDegree, 56 * kmPerDegree]);
+    for (const lesson of bundle.lessons.filter((l) => l.id === "turning-sky"))
+      expect(lesson.steps.map((step) => step.checkQuestionId)).toContain(p + "12-v2");
     same(p + "13", circumpolarLimit(40));
     same(p + "14", 135 / 15);
     same(p + "15", circumpolarLimit(30));
@@ -246,10 +264,34 @@ describe("Astronomy: Sky to Cosmos (v2)", () => {
     same(p + "2", dp(noon(51.5, -tilt), 1));
     same(p + "3", noon(40, 0));
     same(p + "4", dp(noon(51.5, 0), 1));
-    same(p + "5", tilt); // overhead when |φ − δ| = 0
+    // Item 5 is a four-way choice: the Sun is overhead at noon where 90° − |φ − δ| = 90°, so the
+    // latitude of the line equals the June declination, +tilt. Each option is a latitude to try.
+    const lines = [
+      { id: "a", label: "The equator, at 0°", latitude: 0 },
+      { id: "b", label: `The Tropic of Cancer, at ${tilt}° N`, latitude: tilt },
+      { id: "c", label: `The Tropic of Capricorn, at ${tilt}° S`, latitude: -tilt },
+      { id: "d", label: `The line at ${dp(90 - tilt, 1)}° N`, latitude: 90 - tilt },
+    ];
+    expect(question(p + "5").choices!.map(({ id, label }) => ({ id, label }))).toEqual(
+      lines.map(({ id, label }) => ({ id, label })),
+    );
+    const overheadInJune = lines.filter((line) => Math.abs(noon(line.latitude, tilt) - 90) < 1e-9);
+    expect(overheadInJune.map((line) => line.id)).toEqual(["b"]);
+    expect(choiceMarked(p + "5")).toEqual(overheadInJune.map((line) => line.id));
+    expect(markedLabels(p + "5")).toEqual([`The Tropic of Cancer, at ${tilt}° N`]);
+    // The Capricorn option is the December answer, which the item says in its feedback.
+    expect(noon(-tilt, -tilt)).toBe(90);
+    expect(question(p + "5").misconceptions!.flatMap((m) => m.match.choiceIds ?? [])).toEqual([
+      "a",
+      "c",
+      "d",
+    ]);
     same(p + "11", dp(noon(-33.9, tilt), 1));
     expect(choiceMarked(p + "10")).toEqual(["a"]);
-    expect(choiceMarked(p + "6")).toEqual(["1"]);
+    expect(choiceMarked(p + "6")).toEqual(["c"]);
+    expect(markedLabels(p + "6")).toEqual([
+      "The northern hemisphere tilts away from the Sun, so its noon sunlight is low and its days are short",
+    ]);
     // The rule is the spherical altitude of the Sun on the meridian.
     for (const [latitude, declination] of [
       [51.5, tilt],
@@ -362,7 +404,14 @@ describe("Astronomy: Sky to Cosmos (v2)", () => {
     same(p + "11", 1 / 4 ** 2);
     expect(2 ** 2 * 2).toBe(8); // the worked example
     expect(choiceMarked(p + "8")).toEqual(["a"]);
-    expect(choiceMarked(p + "6")).toEqual(["1"]);
+    // Hammer and feather: F = GMm/r² and a = F/m = GM/r², whatever m is.
+    expect(choiceMarked(p + "6")).toEqual(["a"]);
+    expect(markedLabels(p + "6")).toEqual([
+      "The pull on each object is proportional to its mass, so both accelerate at GM ÷ r²",
+    ]);
+    const [GMmoon, rMoon] = [4.9e12, 1.737e6];
+    for (const mass of [0.003, 1, 1000])
+      expect((GMmoon * mass) / rMoon ** 2 / mass).toBeCloseTo(GMmoon / rMoon ** 2, 9);
     expect(choiceMarked(p + "9")).toEqual(["a"]);
     // The apple and the Moon: the Moon's fall in one second against the apple's.
     const g = 3.986e14 / 6.371e6 ** 2;
@@ -392,7 +441,10 @@ describe("Astronomy: Sky to Cosmos (v2)", () => {
     expect(dp(Math.sqrt(GM / 3.844e8) / 1000, 2)).toBe(1.02); // the worked example
     expect(choiceMarked(p + "8")).toEqual(["a"]);
     expect(choiceMarked(p + "10")).toEqual(["a"]);
-    expect(choiceMarked(p + "6")).toEqual(["1"]);
+    expect(choiceMarked(p + "6")).toEqual(["b"]);
+    expect(markedLabels(p + "6")).toEqual([
+      "The Sun, Earth and Moon lie in line, so the Sun’s tidal stretch adds to the Moon’s",
+    ]);
     expect(choiceMarked(p + "9")).toEqual(["a"]);
     // The ball puzzle: the ground drops about 5 m over 8 km, and a ball falls about 5 m in a second.
     expect(dp(8000 ** 2 / (2 * 6.371e6), 0)).toBe(5);
@@ -435,7 +487,12 @@ describe("Astronomy: Sky to Cosmos (v2)", () => {
     same(p + "11", nearest((3e5 * 1.31) / 656.28, 10));
     expect(Math.round((wien / 9000) * 1e9)).toBe(322); // the worked example
     expect(choiceMarked(p + "8")).toEqual(["a"]);
-    expect(choiceMarked(p + "5")).toEqual(["1"]);
+    expect(choiceMarked(p + "5")).toEqual(["b"]);
+    expect(markedLabels(p + "5")).toEqual([
+      "Betelgeuse is cooler, so its spectrum peaks at longer wavelengths",
+    ]);
+    // Wien's law backs that label: the cooler star peaks at the longer wavelength.
+    expect(wien / 3500).toBeGreaterThan(wien / 12000);
     expect(choiceMarked(p + "9")).toEqual(["a"]);
     expect(Math.round((wien / 310) * 1e9 / 10) * 10).toBe(9350); // skin, in nanometres
     expect(nearest((3e5 * 0.5) / 100, 10)).toBe(1500); // a line stretched by 0.5%
@@ -450,8 +507,21 @@ describe("Astronomy: Sky to Cosmos (v2)", () => {
     same(p + "2", nearest(lum(760, 3600 / 5772), 1000));
     same(p + "3", dp(lum(0.01, 4), 4));
     same(p + "5", Math.sqrt(100));
-    // Solve 4 = 2² (T/T☉)⁴ for T.
+    // Item 6 (retired but still in the bank): solve 4 = 2² (T/T☉)⁴ for T.
     same(p + "6", 5772 * (4 / 2 ** 2) ** 0.25);
+    // Item 6-v2 (in the lesson): twice the Sun's radius and 64 L☉, so (T/T☉)⁴ = 64 / 2² = 16.
+    const [radius6, luminosity6] = [2, 64];
+    const tRatio6 = (luminosity6 / radius6 ** 2) ** 0.25;
+    expect(tRatio6).toBeCloseTo(2, 12);
+    expect(lum(radius6, tRatio6)).toBeCloseTo(luminosity6, 9); // the answer puts back the luminosity
+    same(p + "6-v2", 5772 * tRatio6);
+    expect(key(p + "6-v2")).toBe(11544);
+    // The slips the item flags: the fourth root of 64 alone, and a square root where a fourth is needed.
+    const flagged6 = question(p + "6-v2").misconceptions!.flatMap((m) => m.match.numeric ?? []);
+    expect(flagged6).toHaveLength(4);
+    for (const value of flagged6.slice(0, 3))
+      expect(Math.abs(value - 5772 * luminosity6 ** 0.25)).toBeLessThan(1);
+    expect(flagged6[3]).toBe(5772 * Math.sqrt(luminosity6 / radius6 ** 2));
     same(p + "11", lum(0.5, 2));
     expect(lum(2, 1.5)).toBeCloseTo(20.25, 9); // the worked example
     expect(3 ** 2).toBe(9); // a star three times as wide has nine times the surface
@@ -459,7 +529,11 @@ describe("Astronomy: Sky to Cosmos (v2)", () => {
     expect((81 / 1 ** 2) ** 0.25).toBeCloseTo(3, 9); // 81 L☉ at the Sun's radius, taught backwards
     expect(choiceMarked(p + "8")).toEqual(["a"]);
     const hrLesson = bundle.lessons.find((lesson) => lesson.id === "hr-diagram")!;
-    expect(hrLesson.questionIds).toEqual([p + "5", p + "6", p + "11"]);
+    expect(hrLesson.questionIds).toEqual([p + "5", p + "6-v2", p + "11"]);
+    // Item 4 is now a three-way choice: at one temperature L = R² × constant, so the radius is larger.
+    expect(lum(2, 1) / lum(1, 1)).toBeGreaterThan(1);
+    expect(choiceMarked(p + "4")).toEqual(["a"]);
+    expect(markedLabels(p + "4")).toEqual(["Its radius"]);
     expect(hrLesson.steps.filter((step) => step.diagram).length).toBeGreaterThanOrEqual(2);
   });
 
@@ -495,6 +569,17 @@ describe("Astronomy: Sky to Cosmos (v2)", () => {
     expect([5 * 1.2 - 5, 15 * 1.2 - 15]).toEqual([1, 3]); // the 20% stretch of the sheet, 5 cm and 15 cm gaps
     expect(dp(3e5 * ((404 - 400) / 400), 0)).toBe(3000); // the worked chain: line at 404.0 nm
     expect(dp(3000 / 70, 0)).toBe(43); // and the distance it gives, in Mpc
+    // Item 6: on a uniformly stretching sheet (every gap grows by the same factor) each dot sees
+    // the others recede in proportion to distance, so recession from us marks no centre.
+    const gaps = (home: number) => [0, 10, 25, 40].map((x) => Math.abs(x - home));
+    for (const home of [0, 10, 25]) {
+      const stretched = gaps(home).map((gap) => gap * 1.2 - gap);
+      stretched.forEach((gain, i) => expect(gain).toBeCloseTo(0.2 * gaps(home)[i]!, 9));
+    }
+    expect(choiceMarked(p + "6")).toEqual(["c"]);
+    expect(markedLabels(p + "6")).toEqual([
+      "Nothing special, since uniform expansion looks the same from every galaxy",
+    ]);
     expect([70 * 10, 70 * 20]).toEqual([700, 1400]); // Hubble's law examples
     expect(choiceMarked(p + "8")).toEqual(["a"]);
   });
@@ -513,6 +598,16 @@ describe("Astronomy: Sky to Cosmos (v2)", () => {
     expect(dp(977.8 / 90, 1)).toBe(10.9); // H₀ = 90 on the "rough age" screen
     expect(300 / 100).toBe(3); // a 300 K glow stretched 100 times
     expect(dp((2.898e-3 / 3000) * 1e9, 0)).toBe(966); // the glow at release peaks near 1 µm, in nm
+    // Item 5 takes the one-word name of the spectrum, and item 6 is a three-way choice.
+    const spectrum = question(p + "5").answerAuthority;
+    if (spectrum.kind !== "text") throw new Error("big-bang-5 is not text");
+    for (const word of ["blackbody", "black body", "Blackbody"])
+      expect(assessTextAnswer(word, spectrum).correct, word).toBe(true);
+    expect(assessTextAnswer("microwave", spectrum).correct).toBe(false);
+    expect(choiceMarked(p + "6")).toEqual(["a"]);
+    expect(markedLabels(p + "6")).toEqual([
+      "The expansion rate has changed over time, so no galaxy has kept one speed",
+    ]);
     expect(choiceMarked(p + "8")).toEqual(["a"]);
   });
 

@@ -126,8 +126,9 @@ function OpenerScreen({
 
 /**
  * The lines of a worked or faded example. A worked example reveals one line per press, so the
- * learner reads the method in order; a faded example shows every line and leaves blanks for the
- * learner to fill. A self-explanation asks why a line is allowed.
+ * learner reads the method in order; a faded example shows its lines up to the first blank still
+ * to fill, so a later line or its question never shows that blank's answer. A self-explanation
+ * asks why a line is allowed.
  */
 function WorkedLines({
   lines,
@@ -140,22 +141,28 @@ function WorkedLines({
   context: LessonFeedbackRequest | undefined;
   onReadyChange: (ready: boolean, blanksDone: boolean) => void;
 }) {
-  const [shown, setShown] = useState(faded ? lines.length : 1);
+  const [shown, setShown] = useState(1);
   const [done, setDone] = useState<ReadonlySet<string>>(new Set());
+  const firstOpen = lines.findIndex(
+    (line) =>
+      (line.blank && !done.has(line.blank.id)) ||
+      (line.selfExplain && !done.has(line.selfExplain.id)),
+  );
+  const visible = faded ? (firstOpen < 0 ? lines.length : firstOpen + 1) : shown;
   const questionIds = lines
-    .slice(0, shown)
+    .slice(0, visible)
     .flatMap((line) => [line.blank?.id, line.selfExplain?.id])
     .filter((id): id is string => Boolean(id));
   const currentDone = questionIds.every((id) => done.has(id));
   const blanks = lines.flatMap((line) => (line.blank ? [line.blank.id] : []));
   const blanksDone = blanks.every((id) => done.has(id));
-  const ready = shown >= lines.length && currentDone;
+  const ready = visible >= lines.length && currentDone;
   useEffect(() => onReadyChange(ready, blanksDone), [ready, blanksDone, onReadyChange]);
   const markDone = (id: string) => () => setDone((current) => new Set(current).add(id));
   return (
     <div className="worked-lines">
       <ol>
-        {lines.slice(0, shown).map((line, index) => (
+        {lines.slice(0, visible).map((line, index) => (
           // biome-ignore lint/suspicious/noArrayIndexKey: worked lines are fixed and never reorder; text can repeat.
           <li key={`${index}-${line.text}`} className={line.blank ? "is-blank" : undefined}>
             <span className="worked-line-text">
@@ -170,8 +177,8 @@ function WorkedLines({
               <QuestionBlock
                 question={line.blank}
                 context={context}
-                hidePrompt
-                label={line.blank.prompt}
+                heading="h3"
+                promptClassName="self-explain-prompt blank-prompt"
                 inline
                 onReady={markDone(line.blank.id)}
               />
@@ -191,7 +198,7 @@ function WorkedLines({
           </li>
         ))}
       </ol>
-      {shown < lines.length && currentDone ? (
+      {!faded && shown < lines.length && currentDone ? (
         <button
           className="button button-secondary worked-next"
           onClick={() => setShown((count) => count + 1)}

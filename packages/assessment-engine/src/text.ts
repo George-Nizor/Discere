@@ -25,7 +25,11 @@ function normalise(value: string): string {
       .replaceAll("÷", "/")
       // "well-known" and "well known" are one phrase; a minus between numbers stays a minus.
       .replace(/(?<=\p{L})-(?=\p{L})/gu, " ")
-      .replace(/[^\p{L}\p{N}+*/=<>!-]+/gu, " ")
+      // A decimal point stays part of its number, so "0.1" is not read as "0" and "1".
+      .replace(/(?<=\p{N})\.(?=\p{N})/gu, "\u00b7")
+      // Sharps and flats are part of a note's name: "B♭" is not "B". "#" is read as "♯".
+      .replace(/(?<=[a-g])#/gu, "\u266f")
+      .replace(/[^\p{L}\p{N}+*/=<>!\u00b7\u266d\u266f-]+/gu, " ")
       .replace(/\s+/gu, " ")
       .trim()
   );
@@ -56,7 +60,9 @@ export function assessTextAnswer(input: string, authority: TextAuthority): TextA
     // Each word matches its singular or plural ("value" / "values", "box" / "boxes"), so a
     // right answer is not refused for grammatical number (audit M6). Nothing else loosens.
     const phrase = words.map(inflections).join(" ");
-    const pattern = new RegExp(`(?:^|[^\\p{L}\\p{N}])(${phrase})(?=$|[^\\p{L}\\p{N}])`, "gu");
+    // A number is not found inside a longer one: "1" is not in "-1", "0.1" or "1.5".
+    const lead = /^\p{N}/u.test(words[0]!) ? "[^\\p{L}\\p{N}\u00b7-]" : "[^\\p{L}\\p{N}]";
+    const pattern = new RegExp(`(?:^|${lead})(${phrase})(?=$|[^\\p{L}\\p{N}\u00b7\u266d\u266f])`, "gu");
     const claims = [...text.matchAll(pattern)].map((match) => {
       const start = match.index + match[0].length - match[1]!.length;
       return !/\b(?:not|never|isnt)\s+(?:(?:be|been|a|an|the|really|actually|necessarily|always|certainly)\s+)*$/u.test(

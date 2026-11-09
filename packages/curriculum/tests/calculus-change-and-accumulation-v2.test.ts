@@ -43,6 +43,8 @@ const expected: Record<string, number> = {
   "from-secant-to-tangent-4": 2 * 3,
   "from-secant-to-tangent-5": (5 ** 2 - 2 ** 2) / (5 - 2),
   "from-secant-to-tangent-7": (100 - 40) / (2.5 - 1),
+  // 15 km at 4:00 and 90 km at 5:30 (the version the lesson now asks).
+  "from-secant-to-tangent-7-v2": (90 - 15) / (5.5 - 4),
   "from-secant-to-tangent-9": 2 * 5,
   "from-secant-to-tangent-10": 10 / 2,
   "from-secant-to-tangent-11": (2 ** 2 - 1 ** 2) / (2 - 1),
@@ -90,6 +92,8 @@ const expected: Record<string, number> = {
   "when-a-curve-turns-which-minimum": [-1, 1].find((x) => 6 * x > 0)!,
   // 8. undoing-a-derivative
   "undoing-a-derivative-1": 3,
+  // x² + C with F(2) = 7: C = 7 − 2².
+  "undoing-a-derivative-1-v2": 7 - 2 ** 2,
   "undoing-a-derivative-2": 2 ** 3,
   "undoing-a-derivative-4": 2 ** 3 + 2 * 2 + 1,
   "undoing-a-derivative-5": 2 * 3 ** 2 + 3 * 3 + 2,
@@ -273,6 +277,36 @@ describe("Story lessons 1 to 12", () => {
       expect((sq(1 + h) - sq(1)) / h, `h = ${h}`).toBeCloseTo(s, 9);
     for (const x of [-1, 1, 2, 3, 5]) expect(slope(sq, x)).toBeCloseTo(2 * x, 5);
     expect((sq(4) - sq(3)) / (4 - 3)).toBe(7);
+  });
+
+  it("matches the secant items by evaluating their quotients near zero", () => {
+    // Item 9 now gives the quotient itself: ((5 + h)² − 25) ÷ h as h approaches 0.
+    const quotient = (h: number) => ((5 + h) ** 2 - 25) / h;
+    for (const h of [1e-3, -1e-3, 1e-5, -1e-5]) expect(quotient(h)).toBeCloseTo(10 + h, 6);
+    expect(keyOf("from-secant-to-tangent-9")).toBeCloseTo(quotient(1e-6), 4);
+    expect(keyOf("from-secant-to-tangent-9")).toBeCloseTo(quotient(-1e-6), 4);
+    // Item 7-v2 is an average speed: distance between two odometer readings over the time between.
+    const odometer = [
+      { clock: 4, km: 15 },
+      { clock: 5.5, km: 90 },
+    ] as const;
+    expect(keyOf("from-secant-to-tangent-7-v2")).toBeCloseTo(
+      (odometer[1].km - odometer[0].km) / (odometer[1].clock - odometer[0].clock),
+      9,
+    );
+    // The wrong values it flags are the distance and the later reading.
+    const flagged = bundle.questions
+      .find((q) => q.id === "cal-from-secant-to-tangent-7-v2")!
+      .misconceptions!.flatMap((m) => m.match.numeric ?? []);
+    expect(flagged).toEqual([odometer[1].km - odometer[0].km, odometer[1].km]);
+    // The lesson uses the v2 item, not the original.
+    const lesson = bundle.lessons.find((item) => item.id === "from-secant-to-tangent")!;
+    const asked = [
+      ...lesson.questionIds,
+      ...lesson.steps.map((step) => step.checkQuestionId),
+    ];
+    expect(asked).toContain("cal-from-secant-to-tangent-7-v2");
+    expect(asked).not.toContain("cal-from-secant-to-tangent-7");
   });
 
   it("gives the numbers quoted in lesson 4's prose", () => {
@@ -564,6 +598,18 @@ describe("Story lessons 6 to 12", () => {
 
   it("matches lesson 8's keys by integrating numerically", () => {
     expect(keyOf("undoing-a-derivative-1")).toBeCloseTo(3 - 0 ** 2, 9);
+    // 1-v2 pins the constant with F(2) = 7: F(2) = 2² + C. Integrating 2x from 0 to 2 gives the 2².
+    expect(keyOf("undoing-a-derivative-1-v2")).toBeCloseTo(7 - integral((x) => 2 * x, 0, 2), 6);
+    expect(
+      bundle.questions
+        .find((q) => q.id === "cal-undoing-a-derivative-1-v2")!
+        .misconceptions!.flatMap((m) => m.match.numeric ?? []),
+    ).toEqual([7, 7 - 2]);
+    expect(
+      bundle.lessons
+        .find((item) => item.id === "undoing-a-derivative")!
+        .steps.map((step) => step.checkQuestionId),
+    ).toContain("cal-undoing-a-derivative-1-v2");
     expect(keyOf("undoing-a-derivative-2")).toBeCloseTo(
       integral((x) => 3 * x * x, 0, 2),
       6,
@@ -624,6 +670,63 @@ describe("Story lessons 6 to 12", () => {
       rectangleSum((x) => x * x, 0, 6, 3, "left"),
       9,
     );
+  });
+
+  it("matches lesson 9's two new choice items by comparing sums with the true area", () => {
+    const choiceOf = (id: string) => {
+      const item = bundle.questions.find((q) => q.id === id)!;
+      const authority = item.answerAuthority;
+      if (authority.kind !== "text") throw new Error(id);
+      const marked = item.choices!.filter((choice) => authority.acceptedIdeas.includes(choice.label));
+      expect(marked, id).toHaveLength(1);
+      return { item, marked: marked[0]! };
+    };
+    // 8-v2: the line f(x) = x on [0, 3] in three strips. The sum is 3 against a true area of 4.5.
+    const line = (x: number) => x;
+    expect(rectangleSum(line, 0, 3, 3, "left")).toBeCloseTo(3, 9);
+    expect(0.5 * 3 * 3).toBe(4.5);
+    expect(integral(line, 0, 3)).toBeCloseTo(4.5, 9);
+    const eight = choiceOf("cal-rectangles-that-refine-8-v2");
+    expect(eight.item.prompt).toContain("4.5");
+    expect(eight.marked.id).toBe("b");
+    expect(eight.marked.label).toBe(
+      "On a rising graph the left edge of each strip is its lowest point",
+    );
+    // On every strip of a rising graph the left end is the lowest point, so the sum is short.
+    for (const [left, right] of [[0, 1], [1, 2], [2, 3]] as const)
+      expect(line(left)).toBe(Math.min(line(left), line(right)));
+    // "A rectangle sum always comes out below" is false: a falling graph overshoots.
+    const falling = (x: number) => 6 - x;
+    expect(rectangleSum(falling, 0, 3, 3, "left")).toBeGreaterThan(integral(falling, 0, 3));
+    // "The last strip was left out": the left edges 0, 1, 2 are three strips that cover [0, 3].
+    expect([0, 1, 2].map((x) => x + 1)).toEqual([1, 2, 3]);
+    expect(eight.item.misconceptions!.flatMap((m) => m.match.choiceIds ?? [])).toEqual(["a", "c"]);
+    // 3-v2: the rate falls steadily, so the left edge is the highest point and the sum overshoots.
+    const three = choiceOf("cal-rectangles-that-refine-3-v2");
+    expect(three.item.prompt).toContain("falls steadily");
+    for (const rate of [(x: number) => 10 - x, (x: number) => 8 - 0.5 * x, (x: number) => 20 - 3 * x])
+      for (const strips of [2, 4, 8])
+        expect(rectangleSum(rate, 0, 4, strips, "left")).toBeGreaterThan(integral(rate, 0, 4));
+    const verdict =
+      rectangleSum((x) => 10 - x, 0, 4, 4, "left") > integral((x) => 10 - x, 0, 4)
+        ? "It is more than the true amount"
+        : "It is less than the true amount";
+    expect(three.marked.label).toBe(verdict);
+    expect(three.marked.id).toBe("a");
+    expect(three.item.misconceptions!.flatMap((m) => m.match.choiceIds ?? [])).toEqual(["b", "c"]);
+    // Both items are the ones the lesson asks, in place of 8 and 3.
+    const lesson = bundle.lessons.find((item) => item.id === "rectangles-that-refine")!;
+    const asked = [
+      ...lesson.questionIds,
+      ...lesson.steps.flatMap((step) => [
+        step.checkQuestionId,
+        ...(step.workedSteps ?? []).map((line) => line.selfExplain?.questionId),
+      ]),
+    ];
+    expect(asked).toContain("cal-rectangles-that-refine-8-v2");
+    expect(asked).toContain("cal-rectangles-that-refine-3-v2");
+    expect(asked).not.toContain("cal-rectangles-that-refine-8");
+    expect(asked).not.toContain("cal-rectangles-that-refine-3");
   });
 
   it("gives the numbers quoted in lesson 10's prose", () => {

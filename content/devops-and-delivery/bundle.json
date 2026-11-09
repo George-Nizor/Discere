@@ -547,25 +547,25 @@
           "id": "lead-time-by-hand",
           "kind": "worked_example",
           "blocks": [],
-          "headline": "A commit is made on Monday at 09:00 and reaches production on Wednesday at 15:00. What is its lead time?",
+          "headline": "A commit is made on Wednesday at 10:00 and reaches production on Friday at 13:00. What is its lead time?",
           "workedSteps": [
             {
-              "text": "Lead time starts at the commit, so the clock starts on Monday at 09:00 and stops when the change is running in production.",
-              "math": "Monday 09:00 → Wednesday 15:00"
+              "text": "Lead time starts at the commit, so the clock starts on Wednesday at 10:00 and stops when the change is running in production.",
+              "math": "Wednesday 10:00 → Friday 13:00"
             },
             {
-              "text": "Monday 09:00 to Wednesday 09:00 is two whole days, and each day has 24 hours.",
+              "text": "Wednesday 10:00 to Friday 10:00 is two whole days, and each day has 24 hours.",
               "math": "2 × 24 = 48 hours"
             },
             {
-              "text": "Wednesday 09:00 to 15:00 is a further 6 hours. Add it to the 48 to get the lead time in hours.",
+              "text": "Friday 10:00 to 13:00 is a further 3 hours.",
               "blank": {
-                "questionId": "devd-why-delivery-is-hard-lead-time"
+                "questionId": "devd-why-delivery-is-hard-lead-time-v2"
               }
             },
             {
-              "text": "The change spent 54 hours between commit and production, and most of that time is usually waiting rather than work.",
-              "math": "54 hours"
+              "text": "The change spent 51 hours between commit and production, and most of that time is usually waiting rather than work.",
+              "math": "51 hours"
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -575,29 +575,18 @@
         },
         {
           "id": "failure-rate-by-hand",
-          "kind": "faded_example",
+          "kind": "try",
           "blocks": [],
-          "headline": "In one quarter a team made 48 deployments, and 6 of them needed a rollback or a hotfix. What is its change failure rate?",
-          "workedSteps": [
-            {
-              "text": "The rate compares failed deployments with all deployments, not with the successful ones.",
-              "math": "6 out of 48"
-            },
-            {
-              "text": "Divide 6 by 48 to get a fraction of one, then multiply by 100 to express it as a percentage.",
-              "math": "6 ÷ 48 = 0.125"
-            },
-            {
-              "text": "Convert the fraction to a percentage. Give the change failure rate.",
-              "blank": {
-                "questionId": "devd-why-delivery-is-hard-failure-rate"
-              }
-            }
-          ],
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
-          "checkQuestionId": "",
-          "activityId": ""
+          "checkQuestionId": "devd-why-delivery-is-hard-failure-rate-v2",
+          "activityId": "",
+          "reveal": [
+            {
+              "kind": "paragraph",
+              "text": "A rate of 14 per cent means about one deployment in seven needed remediation, which is high enough for a team to look at how large its releases are."
+            }
+          ]
         },
         {
           "id": "forty-changes",
@@ -934,7 +923,7 @@
               "math": "6 × 2 = 12 commits a day"
             },
             {
-              "text": "The branch lives for 15 working days, so multiply the daily total by 15.",
+              "text": "The branch lives for 15 working days.",
               "blank": {
                 "questionId": "devd-trunk-and-branches-drift-180"
               }
@@ -960,7 +949,7 @@
               "math": "4 × 3 = 12"
             },
             {
-              "text": "Multiply by the 5 days the branch is alive. Give the number of commits main has gained.",
+              "text": "The branch stays open for 5 working days.",
               "blank": {
                 "questionId": "devd-trunk-and-branches-drift-60"
               }
@@ -1037,12 +1026,12 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "A flag keeps the code in the trunk and out of users' hands, so each day's piece is integrated while the feature as a whole is still off."
+              "text": "Merging every day is what keeps the branch close to the trunk, and the flag is what makes that possible while the feature is unfinished."
             }
           ],
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
-          "checkQuestionId": "devd-trunk-and-branches-flag-choice",
+          "checkQuestionId": "devd-trunk-and-branches-flag-choice-v2",
           "activityId": ""
         },
         {
@@ -1246,18 +1235,17 @@
           "headline": "A 32-minute test suite is split into 4 equal shards that run in parallel. How long does the stage take, ignoring set-up?",
           "workedSteps": [
             {
-              "text": "Equal shards divide the 32 minutes of work evenly between them.",
-              "math": "32 ÷ 4 = 8 minutes each"
+              "text": "The 32 minutes of tests are shared equally between the 4 shards, and the shards all run at the same time."
             },
             {
-              "text": "The shards run at the same time, so the stage lasts as long as one shard. State the stage's duration in minutes.",
+              "text": "A stage ends when the last of its shards ends.",
               "blank": {
                 "questionId": "devd-continuous-integration-shards"
               }
             },
             {
-              "text": "The suite that took 32 minutes in one piece now delays the pipeline by 8.",
-              "math": "8 minutes"
+              "text": "Each shard holds 8 minutes of tests, so the stage lasts 8 minutes instead of 32.",
+              "math": "32 ÷ 4 = 8 minutes"
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -1269,21 +1257,21 @@
           "id": "a-quicker-pipeline",
           "kind": "faded_example",
           "blocks": [],
-          "headline": "Build takes 4 minutes. Lint (1), unit tests (6) and integration tests (9) then run in parallel, and deploy takes 2. How long does the pipeline take?",
+          "headline": "Build takes 6 minutes. A 42-minute test suite is then split into 6 equal shards that run in parallel, and deploy takes 3. How long does the pipeline take?",
           "workedSteps": [
             {
-              "text": "The build must finish first, because the three checks use its output.",
-              "math": "4 minutes"
+              "text": "The build runs first, because the tests need what it produces.",
+              "math": "6 minutes"
             },
             {
-              "text": "The three checks overlap, so count only the longest, which is the integration tests.",
-              "math": "9 minutes"
-            },
-            {
-              "text": "Deploy waits for the checks, so add its 2 minutes. Give the total pipeline time.",
+              "text": "The 42 minutes of tests are shared equally between the 6 shards, which run at the same time.",
               "blank": {
-                "questionId": "devd-continuous-integration-faded-total"
+                "questionId": "devd-continuous-integration-faded-shards"
               }
+            },
+            {
+              "text": "Deploy waits for the tests to finish and takes 3 minutes.",
+              "math": "6 + 7 + 3 = 16 minutes"
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -1569,7 +1557,7 @@
           "headline": "Find a canary's traffic and errors: 1,500 requests a second in total, 4 per cent to the canary, which fails on 5 per cent.",
           "workedSteps": [
             {
-              "text": "Take 4 per cent of the total traffic. Write 4 per cent as 0.04 and multiply.",
+              "text": "The canary is given 4 per cent of the 1,500 requests a second.",
               "blank": {
                 "questionId": "devd-release-strategies-canary-rps"
               }
@@ -1579,8 +1567,7 @@
               "math": "60 × 0.05 = 3 errors a second"
             },
             {
-              "text": "Compare that 5 per cent with the old version's rate before deciding to widen.",
-              "math": "5% against the old version's rate"
+              "text": "Compare that 5 per cent with the old version's rate before deciding to widen."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -1599,7 +1586,7 @@
               "math": "3,000 × 0.10 = 300"
             },
             {
-              "text": "Take 1 per cent of that traffic. Give the canary's errors a second.",
+              "text": "The canary fails on 1 per cent of its own traffic.",
               "blank": {
                 "questionId": "devd-release-strategies-canary-errors"
               }
@@ -1994,7 +1981,7 @@
               "math": "3 × 6 = 18 MB"
             },
             {
-              "text": "Add the shared image to the writable layers. Give the total in MB.",
+              "text": "The image and the writable layers all sit on the host's disk.",
               "blank": {
                 "questionId": "devd-what-a-container-is-disk-215"
               }
@@ -2020,7 +2007,7 @@
               "math": "4 × 2 = 8 MB"
             },
             {
-              "text": "Add the two parts. Give the total in MB.",
+              "text": "The image and the four writable layers all sit on the host's disk.",
               "blank": {
                 "questionId": "devd-what-a-container-is-disk-88"
               }
@@ -2055,12 +2042,12 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "Memory beyond the limit is not granted: the kernel ends the offending process with an out-of-memory kill, and the limit is what stops one container from starving the others."
+              "text": "The kernel ends the program with an out-of-memory kill. Free memory on the host does not raise the limit, and that is what stops one container from starving the others."
             }
           ],
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
-          "checkQuestionId": "devd-what-a-container-is-oom",
+          "checkQuestionId": "devd-what-a-container-is-oom-v2",
           "activityId": ""
         }
       ],
@@ -2265,11 +2252,11 @@
           "headline": "A build stage is 1,100 MB and the final stage that is shipped is 140 MB. How many MB smaller is the shipped image than the build stage?",
           "workedSteps": [
             {
-              "text": "Only the final stage is shipped, so compare it with the build stage that was left behind.",
+              "text": "Only the final stage is shipped, so the 1,100 MB build stage stays behind.",
               "math": "1,100 MB against 140 MB"
             },
             {
-              "text": "Subtract the shipped size from the build stage's size. Give the saving in MB.",
+              "text": "The tools stay in the build stage, and only the final stage reaches the registry.",
               "blank": {
                 "questionId": "devd-building-images-saving-1020"
               }
@@ -2286,25 +2273,18 @@
         },
         {
           "id": "another-saving",
-          "kind": "faded_example",
+          "kind": "try",
           "blocks": [],
-          "headline": "A build stage is 900 MB and the final stage is 120 MB. How much smaller is the shipped image?",
-          "workedSteps": [
-            {
-              "text": "The shipped image is the final stage, 120 MB.",
-              "math": "120 MB"
-            },
-            {
-              "text": "Subtract it from the build stage. Give the saving in MB.",
-              "blank": {
-                "questionId": "devd-building-images-saving-780"
-              }
-            }
-          ],
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
-          "checkQuestionId": "",
-          "activityId": ""
+          "checkQuestionId": "devd-building-images-saving-780",
+          "activityId": "",
+          "reveal": [
+            {
+              "kind": "paragraph",
+              "text": "The 780 MB is what the final stage leaves out, which is tooling that the running program does not need."
+            }
+          ]
         },
         {
           "id": "stage-keyword",
@@ -2371,12 +2351,12 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "It can, from the layer made by step 2. The only safe fix is never to put the secret in a layer."
+              "text": "It cannot, because the build stage's layers are not part of the shipped image. The secret still sat in the builder's cache, so the safe habit is to keep it out of every layer."
             }
           ],
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
-          "checkQuestionId": "devd-building-images-secret-choice",
+          "checkQuestionId": "devd-building-images-secret-choice-v2",
           "activityId": ""
         }
       ],
@@ -2518,12 +2498,12 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "The container side is second, and it has to match the port the program was written to listen on."
+              "text": "The host port is first and the container port is second, and the container side has to match the port the program was written to listen on."
             }
           ],
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
-          "checkQuestionId": "devd-running-containers-container-port",
+          "checkQuestionId": "devd-running-containers-container-port-v2",
           "activityId": ""
         },
         {
@@ -2587,7 +2567,7 @@
               "math": "-p 5432:5432"
             },
             {
-              "text": "The flag `-v` attaches the volume to the directory where the database writes. Give the name of the volume.",
+              "text": "The flag `-v` attaches storage to the directory where the database writes.",
               "blank": {
                 "questionId": "devd-running-containers-volume-name"
               }
@@ -2614,10 +2594,10 @@
             },
             {
               "text": "The program inside listens on port 5000, which is the second number of the `-p` pair.",
-              "math": "container port 5000"
+              "math": "5000"
             },
             {
-              "text": "The first number is the host's port. Give the host port a browser would use.",
+              "text": "A browser on the host has to know which port to use.",
               "blank": {
                 "questionId": "devd-running-containers-faded-host"
               }
@@ -2715,12 +2695,12 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "The container side can repeat, because each container has its own network. The host side cannot, since one host port can lead to only one place."
+              "text": "The container side stays 80, because that is where the program listens, and the host side has to be a port that no other container holds."
             }
           ],
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
-          "checkQuestionId": "devd-running-containers-three-ports-choice",
+          "checkQuestionId": "devd-running-containers-three-ports-choice-v2",
           "activityId": ""
         }
       ],
@@ -3022,25 +3002,24 @@
           "id": "trace-an-apply",
           "kind": "worked_example",
           "blocks": [],
-          "headline": "Follow kubectl apply for a Deployment with 3 replicas, from the request to running containers.",
+          "headline": "A manifest is edited from 3 replicas to 5 and applied with kubectl apply. Follow the change from the request to running containers.",
           "workedSteps": [
             {
-              "text": "kubectl sends the manifest to the API server, the front door of the cluster.",
-              "math": "kubectl → API server"
+              "text": "kubectl sends the edited manifest to the API server, the front door of the cluster."
             },
             {
-              "text": "The API server stores the desired state in etcd.",
-              "math": "3 replicas recorded"
+              "text": "The API server stores the new desired state in etcd.",
+              "math": "5 replicas recorded"
             },
             {
-              "text": "Controllers create 3 pods that are not yet on any node. Name the component that then chooses a node for each pod.",
+              "text": "The controllers compare the 5 pods wanted with the 3 running and create 2 pods that are not yet on any node.",
               "blank": {
                 "questionId": "devd-the-kubernetes-model-scheduler-term"
               }
             },
             {
-              "text": "The kubelet on each chosen node starts the containers through the runtime.",
-              "math": "pods running"
+              "text": "The kubelet on each chosen node starts the new pods' containers through the runtime.",
+              "math": "5 pods running"
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -3050,29 +3029,18 @@
         },
         {
           "id": "after-a-failure",
-          "kind": "faded_example",
+          "kind": "try",
           "blocks": [],
-          "headline": "A Deployment declares 5 replicas. A node fails and takes 4 pods with it, so 1 pod is left running. How many pods does the controller create?",
-          "workedSteps": [
-            {
-              "text": "The desired state is still 5 replicas, because nothing has changed the manifest.",
-              "math": "desired = 5"
-            },
-            {
-              "text": "The observed state is 1 running pod.",
-              "math": "observed = 1"
-            },
-            {
-              "text": "Compare them. Give the number of pods the controller creates.",
-              "blank": {
-                "questionId": "devd-the-kubernetes-model-create-four"
-              }
-            }
-          ],
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
-          "checkQuestionId": "",
-          "activityId": ""
+          "checkQuestionId": "devd-the-kubernetes-model-create-four",
+          "activityId": "",
+          "reveal": [
+            {
+              "kind": "paragraph",
+              "text": "Nothing changed the manifest, so the desired state still says 5, and the next pass of the loop closes the gap."
+            }
+          ]
         },
         {
           "id": "dead-pod",
@@ -3082,12 +3050,12 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "It is a new pod with a new address. This is why other pods find a group of pods by a stable name and not by a pod's address."
+              "text": "The replacement is a new pod with a new address, so requests aimed at the old address fail. This is why other pods find a group of pods by a stable name and not by a pod's address."
             }
           ],
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
-          "checkQuestionId": "devd-the-kubernetes-model-dead-pod",
+          "checkQuestionId": "devd-the-kubernetes-model-dead-pod-v2",
           "activityId": ""
         }
       ],
@@ -3354,7 +3322,7 @@
               "math": "5"
             },
             {
-              "text": "The most pods that may exist is the desired number plus the surge. Give that total.",
+              "text": "The update is allowed 5 pods above the 18 replicas it wants.",
               "blank": {
                 "questionId": "devd-workloads-and-services-max-13"
               }
@@ -3376,20 +3344,20 @@
           "headline": "A Deployment has 6 replicas, maxSurge 25 per cent and maxUnavailable 25 per cent. Find the limits.",
           "workedSteps": [
             {
-              "text": "25 per cent of 6 is 1.5, and the surge rounds up. Give the surge as a number of pods.",
+              "text": "`maxSurge` is 25 per cent of 6 replicas, which is 1.5 pods, and only whole pods can be added.",
               "blank": {
                 "questionId": "devd-workloads-and-services-surge-two"
               }
             },
             {
-              "text": "The unavailable count also comes to 1.5, and it rounds down to 1.",
-              "math": "6 × 0.25 = 1.5 → 1"
-            },
-            {
-              "text": "The fewest pods that must be available is the desired number minus that 1. Give it.",
+              "text": "`maxUnavailable` is also 25 per cent of 6 replicas, 1.5 pods, and only whole pods can be missing.",
               "blank": {
                 "questionId": "devd-workloads-and-services-min-five"
               }
+            },
+            {
+              "text": "So the update may run at most 8 pods and keeps at least 5 available.",
+              "math": "6 + 2 = 8 and 6 − 1 = 5"
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -3549,12 +3517,12 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "Real protection is added by restricting who can read the Secret and by turning on encryption at rest."
+              "text": "Anyone who can see the manifest can decode the password. Real protection comes from restricting who can read the Secret, from turning on encryption at rest and from keeping the manifest out of public view."
             }
           ],
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
-          "checkQuestionId": "devd-config-and-scaling-secret-choice",
+          "checkQuestionId": "devd-config-and-scaling-secret-choice-v2",
           "activityId": ""
         },
         {
@@ -3698,7 +3666,7 @@
               "math": "210 ÷ 50 = 4.2"
             },
             {
-              "text": "Pods come whole, and the autoscaler rounds up. Give the replica count it asks for.",
+              "text": "The ideal count of 4.2 replicas is not a whole number of pods.",
               "blank": {
                 "questionId": "devd-config-and-scaling-hpa-seven"
               }
@@ -3720,7 +3688,7 @@
               "math": "25 ÷ 50 = 0.5"
             },
             {
-              "text": "Multiply the current replicas by that ratio. Give the replica count it asks for.",
+              "text": "The ratio applies to the 8 replicas that are running now.",
               "blank": {
                 "questionId": "devd-config-and-scaling-hpa-three"
               }
@@ -3980,7 +3948,7 @@
               "math": "1 to change"
             },
             {
-              "text": "The image change forces a replacement, which is one destruction and one more addition. Give the total number of resources to add.",
+              "text": "The image change cannot be made on a running server, so the plan marks that server for replacement, shown as -/+.",
               "blank": {
                 "questionId": "devd-infrastructure-as-code-total-add"
               }
@@ -4002,18 +3970,18 @@
           "headline": "A configuration lowers count from 5 to 3 and edits one tag on a server that remains. Read the plan's totals.",
           "workedSteps": [
             {
-              "text": "The two extra servers are removed.",
-              "math": "2 to destroy"
-            },
-            {
-              "text": "The tag edit on a remaining server is an in-place change.",
-              "math": "1 to change"
-            },
-            {
-              "text": "Nothing new is created. Give the number of resources to destroy.",
+              "text": "The count falls from 5 to 3, so the plan removes servers.",
               "blank": {
                 "questionId": "devd-infrastructure-as-code-destroy-two"
               }
+            },
+            {
+              "text": "The tag edit on a server that remains is an in-place change.",
+              "math": "1 to change"
+            },
+            {
+              "text": "Nothing new is created, so the plan ends with this summary.",
+              "math": "Plan: 0 to add, 1 to change, 2 to destroy."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -4115,12 +4083,12 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "The tool has no record of the servers, so it plans to create them again. The state is how declarations are tied to real resources."
+              "text": "Plan finds two servers where three are declared and proposes to create the missing one. Drift works in both directions, and a deleted server is as much drift as a resized one."
             }
           ],
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
-          "checkQuestionId": "devd-infrastructure-as-code-lost-state",
+          "checkQuestionId": "devd-infrastructure-as-code-lost-state-v2",
           "activityId": ""
         }
       ],
@@ -4263,12 +4231,12 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "The agent's job is to make the cluster match Git, and it does not decide which of the two is better."
+              "text": "The agent will put 3 back unless Git says 6, so the commit is what makes the change last."
             }
           ],
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
-          "checkQuestionId": "devd-gitops-and-observability-revert-choice",
+          "checkQuestionId": "devd-gitops-and-observability-revert-choice-v2",
           "activityId": ""
         },
         {
@@ -4409,7 +4377,7 @@
               "math": "1 − 0.998 = 0.002"
             },
             {
-              "text": "Multiply the minutes by that fraction. Give the budget in minutes.",
+              "text": "The month's 43,200 minutes and the share the objective leaves over are now both known.",
               "blank": {
                 "questionId": "devd-gitops-and-observability-budget-216"
               }
@@ -4431,7 +4399,7 @@
               "math": "1 − 0.9997 = 0.0003"
             },
             {
-              "text": "Multiply the 43,200 minutes by it. Give the budget in minutes.",
+              "text": "The month has 43,200 minutes.",
               "blank": {
                 "questionId": "devd-gitops-and-observability-budget-432b"
               }
@@ -4655,7 +4623,7 @@
               "math": "16 values = 4 bits"
             },
             {
-              "text": "Divide the digest's bits by the bits in each character. Give the number of characters.",
+              "text": "The digest is 256 bits long.",
               "blank": {
                 "questionId": "devd-pipeline-and-supply-chain-security-hex-64"
               }
@@ -4672,25 +4640,18 @@
         },
         {
           "id": "a-longer-digest",
-          "kind": "faded_example",
+          "kind": "try",
           "blocks": [],
-          "headline": "A SHA-512 digest is 512 bits long. How many hexadecimal characters is it?",
-          "workedSteps": [
-            {
-              "text": "Each hexadecimal character stands for 4 bits.",
-              "math": "4 bits per character"
-            },
-            {
-              "text": "Divide 512 by 4. Give the number of characters.",
-              "blank": {
-                "questionId": "devd-pipeline-and-supply-chain-security-hex-128"
-              }
-            }
-          ],
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
-          "checkQuestionId": "",
-          "activityId": ""
+          "checkQuestionId": "devd-pipeline-and-supply-chain-security-hex-128",
+          "activityId": "",
+          "reveal": [
+            {
+              "kind": "paragraph",
+              "text": "A SHA-512 digest is twice as long as a SHA-256 one, which is why tools often show only its first few characters."
+            }
+          ]
         },
         {
           "id": "secrets-and-credentials",
@@ -4770,7 +4731,7 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "It begins with 'software', and the last word is what the list is of."
+              "text": "The full name is software bill of materials. A bill of materials is a manufacturer's parts list, and an SBOM is the same kind of list for software."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -4786,12 +4747,12 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "The image is the same but the knowledge about it has changed, so scans are repeated on what is already running, and the SBOM makes that cheap."
+              "text": "The image is the same but the list of known flaws has grown, so scans are repeated on what is already running, and an SBOM makes that cheap."
             }
           ],
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
-          "checkQuestionId": "devd-pipeline-and-supply-chain-security-scan-choice",
+          "checkQuestionId": "devd-pipeline-and-supply-chain-security-scan-choice-v2",
           "activityId": ""
         }
       ],
@@ -5074,6 +5035,9 @@
         "acceptedAlternatives": [
           "failure rate",
           "change fail rate",
+          "change failure",
+          "deployment failure rate",
+          "failed deployment rate",
           "cfr"
         ],
         "rejectedIdeas": [],
@@ -5381,7 +5345,11 @@
           "ref",
           "reference",
           "label",
-          "name"
+          "name",
+          "link",
+          "marker",
+          "bookmark",
+          "alias"
         ],
         "rejectedIdeas": [],
         "exampleAnswer": "pointer"
@@ -6175,7 +6143,7 @@
         "devd-pipeline",
         "artifact"
       ],
-      "prompt": "Which check belongs first in a pipeline?",
+      "prompt": "Which check should a pipeline run first?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -6183,29 +6151,29 @@
       ],
       "choices": [
         {
-          "id": "d",
-          "label": "A manual approval"
-        },
-        {
           "id": "a",
-          "label": "The slowest end-to-end test"
-        },
-        {
-          "id": "c",
-          "label": "The cheapest check that catches the most common failures"
+          "label": "The slowest end-to-end test, because it is the most thorough"
         },
         {
           "id": "b",
-          "label": "Production deployment"
+          "label": "The integration tests, because they check the parts working together"
+        },
+        {
+          "id": "c",
+          "label": "The quickest check that catches the most common mistakes"
+        },
+        {
+          "id": "d",
+          "label": "A manual approval, so that no effort goes into an unwanted change"
         }
       ],
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "The cheapest check that catches the most common failures"
+          "The quickest check that catches the most common mistakes"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "The cheapest check that catches the most common failures"
+        "exampleAnswer": "The quickest check that catches the most common mistakes"
       },
       "sourceIds": [
         "dora",
@@ -6219,7 +6187,7 @@
               "a"
             ]
           },
-          "feedback": "Running the slowest test first makes every failure wait for it."
+          "feedback": "Running the slowest test first makes every failure wait for it, including the failures a quicker check would have caught."
         },
         {
           "match": {
@@ -6227,7 +6195,7 @@
               "b"
             ]
           },
-          "feedback": "Deploying is the last step, after the checks that decide whether it should happen."
+          "feedback": "Integration tests take longer than lint or unit tests, so running them first delays the news of mistakes the quicker checks would catch."
         },
         {
           "match": {
@@ -6235,7 +6203,7 @@
               "d"
             ]
           },
-          "feedback": "An approval is slow and depends on a person, so it belongs after the automatic checks."
+          "feedback": "An approval depends on a person and is slow, so it belongs after the automatic checks."
         }
       ],
       "skill": "order-stages",
@@ -6404,18 +6372,18 @@
       "choices": [
         {
           "id": "a",
-          "label": "It returns, because the old code recreates the column"
-        },
-        {
-          "id": "c",
-          "label": "It returns once the traffic is switched back"
-        },
-        {
-          "id": "d",
-          "label": "It is restored automatically from the canary"
+          "label": "It returns, because the old code recreates the column when it starts"
         },
         {
           "id": "b",
+          "label": "It returns once the traffic is switched back to the old version"
+        },
+        {
+          "id": "c",
+          "label": "It returns, because the old release's image holds a copy of the table"
+        },
+        {
+          "id": "d",
           "label": "It is still gone, because redeploying code does not undo a database change"
         }
       ],
@@ -6444,7 +6412,7 @@
         {
           "match": {
             "choiceIds": [
-              "c"
+              "b"
             ]
           },
           "feedback": "Traffic moves between versions of code and has no effect on stored data."
@@ -6452,10 +6420,10 @@
         {
           "match": {
             "choiceIds": [
-              "d"
+              "c"
             ]
           },
-          "feedback": "A canary is a share of traffic and keeps no copy of the database."
+          "feedback": "An image holds a program and its files, and a database's rows are not part of it."
         }
       ],
       "skill": "choose-rollout",
@@ -7338,7 +7306,7 @@
       "sourceIds": [
         "docker-docs"
       ],
-      "onCorrect": "The tools stay in the build stage, and the shipped image carries only what the app needs to run.",
+      "onCorrect": "The saving is everything the final stage leaves behind, such as compilers and package caches.",
       "misconceptions": [
         {
           "match": {
@@ -7778,7 +7746,7 @@
         "volume",
         "user-network"
       ],
-      "prompt": "In `docker run -d -p 5432:5432 -v pgdata:/var/lib/postgresql/data postgres`, what is the name of the volume?",
+      "prompt": "In `docker run -d -p 5432:5432 -v pgdata:/var/lib/postgresql/data postgres`, which part is the name of the volume?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -7787,13 +7755,10 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "pgdata"
-        ],
-        "acceptedAlternatives": [
-          "pgdata:"
+          "`pgdata`"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "pgdata"
+        "exampleAnswer": "`pgdata`"
       },
       "sourceIds": [
         "docker-docs",
@@ -7803,15 +7768,49 @@
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "postgres"
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That is the image. The volume name is given with `-v`."
+          "feedback": "That is the image the container starts from, the last word of the command."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "That is a port number, which `-p` sets. The volume comes from `-v`."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "That is the path inside the container where the volume is attached. The volume has a name of its own."
         }
       ],
       "skill": "read-run-command",
-      "calculator": "off"
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "`postgres`"
+        },
+        {
+          "id": "b",
+          "label": "`5432`"
+        },
+        {
+          "id": "c",
+          "label": "`pgdata`"
+        },
+        {
+          "id": "d",
+          "label": "`/var/lib/postgresql/data`"
+        }
+      ]
     },
     {
       "id": "devd-running-containers-faded-host",
@@ -7912,29 +7911,29 @@
       ],
       "choices": [
         {
+          "id": "a",
+          "label": "They are lost with the removed container"
+        },
+        {
           "id": "b",
-          "label": "They are lost with the container"
+          "label": "The new container finds them in the shared image"
         },
         {
           "id": "c",
-          "label": "They move to the registry"
+          "label": "They move to the registry with the image"
         },
         {
           "id": "d",
-          "label": "They are kept on the network"
-        },
-        {
-          "id": "a",
-          "label": "They are kept in the image"
+          "label": "They stay on the host and the new container picks them up"
         }
       ],
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "They are lost with the container"
+          "They are lost with the removed container"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "They are lost with the container"
+        "exampleAnswer": "They are lost with the removed container"
       },
       "sourceIds": [
         "docker-docs",
@@ -7945,7 +7944,7 @@
         {
           "match": {
             "choiceIds": [
-              "a"
+              "b"
             ]
           },
           "feedback": "The image is read-only and never receives a running container's writes."
@@ -7964,7 +7963,7 @@
               "d"
             ]
           },
-          "feedback": "A network carries traffic and stores nothing."
+          "feedback": "A new container gets a writable layer of its own, and nothing hands it the old container's."
         }
       ],
       "skill": "decide-persistence",
@@ -8355,7 +8354,7 @@
         "pod",
         "control-plane"
       ],
-      "prompt": "A Deployment declares 5 replicas, and a node failure leaves 1 pod running. How many pods does the controller create?",
+      "prompt": "A Deployment declares 5 replicas. A node fails and takes 4 of its pods with it, so 1 pod is left running. How many pods does the controller create?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -8781,7 +8780,7 @@
         "selector",
         "devd-service"
       ],
-      "prompt": "A Deployment has 6 replicas and `maxSurge` 25 per cent. How many surge pods are allowed? (A surge rounds up.)",
+      "prompt": "A Deployment has 6 replicas and `maxSurge` 25 per cent, which comes to 1.5 pods. How many surge pods are allowed?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -8821,7 +8820,7 @@
         "selector",
         "devd-service"
       ],
-      "prompt": "A Deployment has 6 replicas and `maxUnavailable` 25 per cent. What is the fewest pods that must be available? (Unavailable rounds down.)",
+      "prompt": "A Deployment has 6 replicas and `maxUnavailable` 25 per cent, which comes to 1.5 pods. What is the fewest number of pods that must be available?",
       "responseType": "numeric",
       "difficulty": 1.3,
       "hints": [
@@ -8968,7 +8967,7 @@
         "selector",
         "devd-service"
       ],
-      "prompt": "A Deployment has 14 replicas, `maxSurge` 25 per cent and `maxUnavailable` 25 per cent. What is the greatest number of pods that may exist during the update? (Surge rounds up.)",
+      "prompt": "A Deployment has 14 replicas, `maxSurge` 25 per cent and `maxUnavailable` 25 per cent. What is the greatest number of pods that may exist during the update?",
       "responseType": "numeric",
       "difficulty": 1.4,
       "hints": [
@@ -9016,7 +9015,7 @@
         "selector",
         "devd-service"
       ],
-      "prompt": "A Deployment has 14 replicas, `maxSurge` 25 per cent and `maxUnavailable` 25 per cent. What is the fewest pods that must be available? (Unavailable rounds down.)",
+      "prompt": "A Deployment has 14 replicas, `maxSurge` 25 per cent and `maxUnavailable` 25 per cent. What is the fewest pods that must be available?",
       "responseType": "numeric",
       "difficulty": 1.4,
       "hints": [
@@ -10747,25 +10746,24 @@
         "digest-pin",
         "sbom"
       ],
-      "prompt": "SBOM is the abbreviation for a machine-readable list of the components in a built artifact. What does it stand for?",
+      "prompt": "What is a machine-readable list of the components inside a built artifact called? Give its name or its abbreviation.",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Each word of the abbreviation is a word of the name."
+        "Its abbreviation is four letters long, and each letter is a word of the name."
       ],
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "software bill of materials"
+          "SBOM"
         ],
         "acceptedAlternatives": [
-          "SBOM",
-          "sbom",
+          "software bill of materials",
           "bill of materials",
-          "a software bill of materials"
+          "software bill of material"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "Software bill of materials"
+        "exampleAnswer": "SBOM"
       },
       "sourceIds": [
         "slsa",
@@ -10781,6 +10779,15 @@
             ]
           },
           "feedback": "The B stands for a word used for a manufacturer's parts list, not for building."
+        },
+        {
+          "match": {
+            "textIdeas": [
+              "lock file",
+              "dependency list"
+            ]
+          },
+          "feedback": "A lock file records what was installed for a build. The list of everything inside the built artifact has a name of its own."
         }
       ],
       "skill": "pin-dependencies",
@@ -10983,16 +10990,16 @@
         },
         {
           "id": "c",
-          "label": "A short-lived credential that can only do what that job needs"
+          "label": "A short-lived credential limited to what that job needs"
         }
       ],
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "A short-lived credential that can only do what that job needs"
+          "A short-lived credential limited to what that job needs"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "A short-lived credential that can only do what that job needs"
+        "exampleAnswer": "A short-lived credential limited to what that job needs"
       },
       "sourceIds": [
         "slsa",
@@ -11308,10 +11315,10 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "It stays on the host unchanged, and the other two containers keep running"
+          "It stays on the host, unchanged"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "It stays on the host unchanged, and the other two containers keep running"
+        "exampleAnswer": "It stays on the host, unchanged"
       },
       "misconceptions": [
         {
@@ -11350,7 +11357,7 @@
         },
         {
           "id": "d",
-          "label": "It stays on the host unchanged, and the other two containers keep running"
+          "label": "It stays on the host, unchanged"
         },
         {
           "id": "a",
@@ -11866,10 +11873,10 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "No changes"
+          "No changes, because three servers already exist"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "No changes"
+        "exampleAnswer": "No changes, because three servers already exist"
       },
       "misconceptions": [
         {
@@ -11892,15 +11899,15 @@
       "choices": [
         {
           "id": "b",
-          "label": "Adding three more servers, since the file asks for three"
+          "label": "Three more servers, because the file asks for three"
         },
         {
           "id": "c",
-          "label": "Replacing the three servers with fresh copies"
+          "label": "Three replacement servers, because the file asks for three"
         },
         {
           "id": "a",
-          "label": "No changes"
+          "label": "No changes, because three servers already exist"
         }
       ]
     },
@@ -11976,6 +11983,884 @@
         {
           "id": "d",
           "label": "About 43 hours"
+        }
+      ]
+    },
+    {
+      "id": "devd-why-delivery-is-hard-lead-time-v2",
+      "conceptIds": [
+        "lead-time",
+        "cfr",
+        "batch-size"
+      ],
+      "prompt": "Wednesday 10:00 to Friday 10:00 is 48 hours, and Friday 10:00 to 13:00 is 3 more. What is the lead time, in hours?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Pick out what the question gives you and what it asks for.",
+        "Add the whole days to the extra hours.",
+        "48 + 3"
+      ],
+      "sourceIds": [
+        "dora",
+        "sre-book"
+      ],
+      "skill": "compute-delivery-metrics",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 51,
+        "unit": "hours",
+        "absoluteTolerance": 1e-9,
+        "relativeTolerance": 0,
+        "workedAnswer": "48 + 3 = 51 hours."
+      },
+      "onCorrect": "Lead time runs from commit to production and counts waiting as well as working time.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              3
+            ]
+          },
+          "feedback": "That is only the last part of the interval. The clock started on Wednesday."
+        },
+        {
+          "match": {
+            "numeric": [
+              48
+            ]
+          },
+          "feedback": "That stops at Friday 10:00. The change reached production at 13:00."
+        }
+      ]
+    },
+    {
+      "id": "devd-why-delivery-is-hard-failure-rate-v2",
+      "conceptIds": [
+        "lead-time",
+        "cfr",
+        "batch-size"
+      ],
+      "prompt": "In one quarter a team made 50 production deployments, and 7 of them needed a rollback or a hotfix. What is its change failure rate, as a percentage?",
+      "responseType": "numeric",
+      "difficulty": 1.2,
+      "hints": [
+        "Failures are divided by all deployments, not by the ones that succeeded.",
+        "Divide 7 by 50, then turn the fraction into a percentage.",
+        "Move the decimal point two places to the right."
+      ],
+      "sourceIds": [
+        "dora",
+        "sre-book"
+      ],
+      "skill": "compute-delivery-metrics",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 14,
+        "unit": "per cent",
+        "absoluteTolerance": 1e-9,
+        "relativeTolerance": 0,
+        "workedAnswer": "7 ÷ 50 = 0.14, and 0.14 × 100 = 14 per cent."
+      },
+      "onCorrect": "The rate counts failed deployments against all deployments, so it stays comparable between teams that deploy at different frequencies.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              0.14
+            ]
+          },
+          "feedback": "That is the fraction. A percentage is out of 100, so multiply it by 100."
+        },
+        {
+          "match": {
+            "numeric": [
+              86
+            ]
+          },
+          "feedback": "That is the share of deployments that did not need a rollback or a hotfix. The rate counts the ones that did."
+        }
+      ]
+    },
+    {
+      "id": "devd-trunk-and-branches-flag-choice-v2",
+      "conceptIds": [
+        "commit-graph",
+        "devd-trunk-based",
+        "merge-conflict"
+      ],
+      "prompt": "A developer merges an unfinished feature into the trunk every day behind a feature flag that is switched off. Why does this avoid the problems of a long-lived branch?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Think about what a long-lived branch costs, and which part of that the flag changes."
+      ],
+      "sourceIds": [
+        "progit",
+        "dora"
+      ],
+      "skill": "pick-branching-model",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "The branch is merged daily so it stays close to the trunk, and users cannot reach the code"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "The branch is merged daily so it stays close to the trunk, and users cannot reach the code"
+      },
+      "onCorrect": "The merge happens every day, and the flag is what lets it happen while the feature is unfinished. That keeps the branch within a day of the trunk.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "The flag keeps other developers' commits out of the trunk until the feature is done"
+        },
+        {
+          "id": "b",
+          "label": "The branch is merged daily so it stays close to the trunk, and users cannot reach the code"
+        },
+        {
+          "id": "c",
+          "label": "The flag makes Git skip any conflict that the unfinished code would cause"
+        },
+        {
+          "id": "d",
+          "label": "The flag keeps the feature's commits out of the trunk's history until it is complete"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "The flag has no say over what other developers merge, and the trunk keeps receiving their commits as before."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Git cannot see a flag, so it treats these commits like any others when two changes touch the same lines."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "The commits are merged and recorded in the trunk's history like any others."
+        }
+      ]
+    },
+    {
+      "id": "devd-continuous-integration-faded-shards",
+      "conceptIds": [
+        "ci",
+        "devd-pipeline",
+        "artifact"
+      ],
+      "prompt": "A 42-minute test suite is split into 6 equal shards that run in parallel. How many minutes does the test stage take, ignoring set-up?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Pick out what the question gives you and what it asks for.",
+        "The shards share the work equally and run at the same time.",
+        "42 ÷ 6"
+      ],
+      "sourceIds": [
+        "dora",
+        "twelve-factor"
+      ],
+      "skill": "compute-pipeline-time",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 7,
+        "unit": "minutes",
+        "absoluteTolerance": 1e-9,
+        "relativeTolerance": 0,
+        "workedAnswer": "42 ÷ 6 = 7 minutes."
+      },
+      "onCorrect": "Equal shards finish together, so the test stage lasts as long as one of them.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              42
+            ]
+          },
+          "feedback": "That is the time without sharding. The shards share the work."
+        },
+        {
+          "match": {
+            "numeric": [
+              252
+            ]
+          },
+          "feedback": "That multiplies instead of dividing."
+        }
+      ]
+    },
+    {
+      "id": "devd-what-a-container-is-oom-v2",
+      "conceptIds": [
+        "devd-container",
+        "image",
+        "namespace-cgroup"
+      ],
+      "prompt": "A container is limited to 256 MiB of memory, and its program needs 300 MiB. The host has 60 GiB of memory unused. What happens?",
+      "responseType": "short_text",
+      "difficulty": 1.2,
+      "hints": [
+        "Think of a cgroup as a limit the kernel enforces."
+      ],
+      "sourceIds": [
+        "docker-docs",
+        "oci"
+      ],
+      "skill": "contrast-vm",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "The kernel stops the program, whatever memory the host has free"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "The kernel stops the program, whatever memory the host has free"
+      },
+      "onCorrect": "The limit applies whatever the host has spare, which is how one container is kept from starving the others.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "The kernel stops the program, whatever memory the host has free"
+        },
+        {
+          "id": "b",
+          "label": "The container borrows the memory it needs from the unused part of the host"
+        },
+        {
+          "id": "c",
+          "label": "The limit is raised to 300 MiB so that the program can finish"
+        },
+        {
+          "id": "d",
+          "label": "The host moves the container to a machine with more memory"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "A memory limit is a ceiling the kernel enforces on that container, so memory that is free elsewhere on the host does not extend it."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "A limit does not move once it is set. It stays what the container was started with until someone changes it."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "Neither the kernel nor the limit moves a container between machines. The kernel acts on the process where it runs."
+        }
+      ]
+    },
+    {
+      "id": "devd-building-images-secret-choice-v2",
+      "conceptIds": [
+        "layer-cache",
+        "multi-stage",
+        "image-secrets"
+      ],
+      "prompt": "A multi-stage Dockerfile copies a `.env` file holding a password into its build stage. The final stage starts from a small base and copies in only the compiled program. Someone pulls the finished image from the registry. Can the password be recovered from it?",
+      "responseType": "short_text",
+      "difficulty": 1.2,
+      "hints": [
+        "Think about which stage's layers end up in the image that is pushed."
+      ],
+      "sourceIds": [
+        "docker-docs"
+      ],
+      "skill": "order-dockerfile",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "No, because the final stage's layers never contained the file"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "No, because the final stage's layers never contained the file"
+      },
+      "onCorrect": "Only the final stage is pushed, so the password never reaches the registry. It can stay in the builder's cache, which is one more reason to supply secrets when the container runs.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "No, because the final stage's layers never contained the file"
+        },
+        {
+          "id": "b",
+          "label": "Yes, because the build stage's layer still holds the file"
+        },
+        {
+          "id": "c",
+          "label": "Yes, because every stage is included in the image that is pushed"
+        },
+        {
+          "id": "d",
+          "label": "No, because the build stage deletes its files when it finishes"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "The file is in a layer of the build stage, and the question is whether that layer is part of the finished image."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Earlier in the lesson the shipped image was 1,020 MB smaller than the build stage, so the build stage cannot be inside it."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "Stages do not delete their files when they finish. What matters is which stage the shipped image is made from."
+        }
+      ]
+    },
+    {
+      "id": "devd-running-containers-container-port-v2",
+      "conceptIds": [
+        "port-publish",
+        "volume",
+        "user-network"
+      ],
+      "prompt": "A program listens on port 3000 inside its container. Which `-p` flag makes it reachable in a browser on the host at `localhost:9090`?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "The pair is written host:container."
+      ],
+      "sourceIds": [
+        "docker-docs",
+        "twelve-factor"
+      ],
+      "skill": "read-run-command",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "`-p 9090:3000`"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "`-p 9090:3000`"
+      },
+      "onCorrect": "The program decides its own port, and the mapping connects a chosen host port to it.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "`-p 3000:9090`"
+        },
+        {
+          "id": "b",
+          "label": "`-p 3000:3000`"
+        },
+        {
+          "id": "c",
+          "label": "`-p 9090:9090`"
+        },
+        {
+          "id": "d",
+          "label": "`-p 9090:3000`"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "That reads the pair backwards. The host side is the one you type into the browser, and it comes first."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "That publishes host port 3000, but the browser is meant to use port 9090."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "The container side has to be the port the program listens on, and the program does not listen on 9090."
+        }
+      ]
+    },
+    {
+      "id": "devd-running-containers-three-ports-choice-v2",
+      "conceptIds": [
+        "port-publish",
+        "volume",
+        "user-network"
+      ],
+      "prompt": "One nginx container is already running with `-p 8080:80`, and its program listens on port 80 inside its container. You start a second nginx container, which also listens on port 80 inside, and want to reach both from a browser. Which `-p` flag does the second need?",
+      "responseType": "short_text",
+      "difficulty": 1.2,
+      "hints": [
+        "A host port can lead to one container."
+      ],
+      "sourceIds": [
+        "docker-docs",
+        "twelve-factor"
+      ],
+      "skill": "read-run-command",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "`-p 8081:80`, a different host port in front of the same port 80"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "`-p 8081:80`, a different host port in front of the same port 80"
+      },
+      "onCorrect": "Container ports may repeat because each container has a network of its own, but host ports must be distinct.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "`-p 8080:80` again, because the program inside still listens on port 80"
+        },
+        {
+          "id": "b",
+          "label": "`-p 8081:80`, a different host port in front of the same port 80"
+        },
+        {
+          "id": "c",
+          "label": "`-p 80:8081`, a different port for the program inside the container"
+        },
+        {
+          "id": "d",
+          "label": "`-p 8081:8081`, the same new port on both sides"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "Host port 8080 already leads to the first container, and a host port can lead to only one."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "The second number is the port the program listens on inside the container, and that has not changed."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "The container side names the port the program listens on, which has not changed."
+        }
+      ]
+    },
+    {
+      "id": "devd-the-kubernetes-model-dead-pod-v2",
+      "conceptIds": [
+        "desired-state",
+        "pod",
+        "control-plane"
+      ],
+      "prompt": "A pod with the IP address 10.1.2.3 crashes, and its controller replaces it. Another pod had been sending requests to 10.1.2.3. After the replacement is running, what happens to those requests?",
+      "responseType": "short_text",
+      "difficulty": 1.2,
+      "hints": [
+        "Recall that pods are replaced and not repaired."
+      ],
+      "sourceIds": [
+        "k8s-docs"
+      ],
+      "skill": "describe-reconciliation",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "They fail, because the replacement has an IP address of its own"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "They fail, because the replacement has an IP address of its own"
+      },
+      "onCorrect": "Requests aimed at a pod's address stop working when the pod is replaced, so a stable address has to come from something other than the pod.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "They fail, because the replacement has an IP address of its own"
+        },
+        {
+          "id": "b",
+          "label": "They reach the replacement, because the controller gives it the old pod's address"
+        },
+        {
+          "id": "c",
+          "label": "They reach the replacement, because Kubernetes forwards the old address to it"
+        },
+        {
+          "id": "d",
+          "label": "They wait until the crashed pod restarts in place with its old address"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "An address belongs to the pod that was given it, and the controller does not hand it on."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Kubernetes keeps no forwarding from a dead pod's address to its replacement."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "A pod is not restarted in place. A controller makes a new one."
+        }
+      ]
+    },
+    {
+      "id": "devd-config-and-scaling-secret-choice-v2",
+      "conceptIds": [
+        "configmap-secret",
+        "requests-limits",
+        "hpa"
+      ],
+      "prompt": "A team commits a Secret manifest to a public repository. The value reads `c2VjcmV0MTIz`, and the team believes this makes the password unreadable. Who can recover the password?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Compare this with the value in the figure, which could be decoded without a key."
+      ],
+      "sourceIds": [
+        "k8s-docs",
+        "twelve-factor"
+      ],
+      "skill": "compute-hpa",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Anyone who sees it, because base64 can be reversed without a key"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Anyone who sees it, because base64 can be reversed without a key"
+      },
+      "onCorrect": "Base64 is an encoding and not encryption, so the password is as readable as the manifest. Access rules and encryption at rest protect it only inside the cluster.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Only someone who holds the cluster's encryption key"
+        },
+        {
+          "id": "b",
+          "label": "Only someone who is allowed to read Secrets in the cluster"
+        },
+        {
+          "id": "c",
+          "label": "Anyone who sees it, because base64 can be reversed without a key"
+        },
+        {
+          "id": "d",
+          "label": "Nobody, because Kubernetes stores a one-way hash of the value"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "Encryption at rest, when it is switched on, protects the copy stored in the cluster. The text committed to the repository is not covered by it."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Access rules control who can read a Secret inside the cluster. They do not apply to a manifest that has been committed to a repository."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "A hash cannot be reversed, but base64 can be, and the pod needs the original password."
+        }
+      ]
+    },
+    {
+      "id": "devd-infrastructure-as-code-lost-state-v2",
+      "conceptIds": [
+        "declarative",
+        "devd-state",
+        "drift"
+      ],
+      "prompt": "A configuration declares `count = 3`, and the state records three servers. Someone deletes one of the servers by hand in the cloud console. The configuration is unchanged. What does the next plan propose?",
+      "responseType": "short_text",
+      "difficulty": 1.3,
+      "hints": [
+        "Plan reads the real resources before it compares."
+      ],
+      "sourceIds": [
+        "opentofu",
+        "opengitops"
+      ],
+      "skill": "explain-drift",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "One server to add, because only two of the three now exist"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "One server to add, because only two of the three now exist"
+      },
+      "onCorrect": "Plan compares the declaration with the real resources, so a server deleted by hand shows up as one to add.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "No changes, because the state still lists three servers"
+        },
+        {
+          "id": "b",
+          "label": "Lowering `count` to 2, so that the file matches what exists"
+        },
+        {
+          "id": "c",
+          "label": "One server to change, because the state and the console disagree"
+        },
+        {
+          "id": "d",
+          "label": "One server to add, because only two of the three now exist"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "Plan checks the real resources as well as the state, and the real resources no longer match."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "The tool never edits the configuration. The file is what you declared, and plan works towards it."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "A change in place is for a resource that exists with a different setting. This server no longer exists."
+        }
+      ]
+    },
+    {
+      "id": "devd-gitops-and-observability-revert-choice-v2",
+      "conceptIds": [
+        "gitops",
+        "signals",
+        "devd-error-budget"
+      ],
+      "prompt": "During an incident an engineer runs a command that raises a Deployment from 3 to 6 replicas directly in the cluster, which a GitOps agent manages. Git still says 3, and the engineer wants 6 to last. What else must be done?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Which of the two, Git or the cluster, is the declared desired state?"
+      ],
+      "sourceIds": [
+        "sre-book",
+        "sre-workbook",
+        "otel",
+        "opengitops"
+      ],
+      "skill": "pick-signal",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Change the count to 6 in Git, because the agent applies what Git says"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Change the count to 6 in Git, because the agent applies what Git says"
+      },
+      "onCorrect": "A change that is meant to stay has to be made in Git, because the agent keeps the cluster equal to Git and removes anything else.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Nothing more, because the agent copies cluster changes back into Git"
+        },
+        {
+          "id": "b",
+          "label": "Restart the agent, because it applies Git only when it starts"
+        },
+        {
+          "id": "c",
+          "label": "Change the count to 6 in Git, because the agent applies what Git says"
+        },
+        {
+          "id": "d",
+          "label": "Nothing more, because the agent ignores changes made after its last sync"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "The agent pulls from Git and does not write back to it."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "The agent keeps reconciling all the time. It does not wait for a restart."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "Reconciliation is continuous, so a later change to the cluster is exactly what the agent looks for."
+        }
+      ]
+    },
+    {
+      "id": "devd-pipeline-and-supply-chain-security-scan-choice-v2",
+      "conceptIds": [
+        "supply-chain",
+        "digest-pin",
+        "sbom"
+      ],
+      "prompt": "The same image, unchanged, is scanned with the same tool on day 1 and again on day 30. The first scan reports nothing, and the second reports a vulnerability in one of its packages. What explains the difference?",
+      "responseType": "short_text",
+      "difficulty": 1.2,
+      "hints": [
+        "The packages are unchanged, so think about what else a scan depends on."
+      ],
+      "sourceIds": [
+        "slsa",
+        "owasp-cicd",
+        "docker-docs"
+      ],
+      "skill": "spot-secret-leak",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "The list of known vulnerabilities gained an entry after day 1"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "The list of known vulnerabilities gained an entry after day 1"
+      },
+      "onCorrect": "The software did not change but what is known about it did, which is why teams rescan images in the registry and in use, and keep an SBOM to make that cheap.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "The first scan was faulty and missed a flaw that was already known"
+        },
+        {
+          "id": "b",
+          "label": "Packages in an image gain vulnerabilities as they get older"
+        },
+        {
+          "id": "c",
+          "label": "The registry changes an image's contents while it is stored"
+        },
+        {
+          "id": "d",
+          "label": "The list of known vulnerabilities gained an entry after day 1"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "The question gives no reason to think the flaw was known on day 1, and the same tool was used both times."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "A package's code does not change by sitting still, so its age adds no flaw to it."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "The registry keeps an image as it was pushed, and its digest would change if its content did."
         }
       ]
     }

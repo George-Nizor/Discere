@@ -70,7 +70,7 @@ describe("v2 lesson routes", () => {
     const predicted = (
       await attempt(
         q("working-backwards"),
-        "Start from 2014 and undo the two steps in the opposite order.",
+        "Subtract 5 from 2014, then divide by 7.",
       )
     ).json();
     const reveal = (await feedback(predicted.attemptId, "working-backwards")).json();

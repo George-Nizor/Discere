@@ -194,7 +194,9 @@ describe("Engineering: Structures and Machines (v2)", () => {
     expect(key("engr-factor-of-safety-1")).toBeCloseTo(250/(40000/400), 1);
     expect(choiceMarked("engr-factor-of-safety-9")).toEqual(["a"]);
     expect(key("engr-factor-of-safety-2")).toBeCloseTo(60000/(250/2), 0);
-    expect(key("engr-factor-of-safety-3")).toBeCloseTo(25, 0);
+    // The smallest square bar whose area (side²) reaches 480 mm²: 20² = 400 falls short, 25² = 625 does not.
+    expect([20, 25, 30].find((side) => side * side >= 480)).toBe(25);
+    expect(choiceMarked("engr-factor-of-safety-3")).toEqual(["b"]);
     expect(key("engr-factor-of-safety-4")).toBeCloseTo((60000/625)/200000*3000, 2);
     expect(key("engr-factor-of-safety-5")).toBeCloseTo(355/2.5, 0);
     expect(key("engr-factor-of-safety-6")).toBeCloseTo(300*250/1.5/1000, 0);
