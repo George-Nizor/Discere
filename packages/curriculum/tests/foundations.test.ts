@@ -3,6 +3,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { runTeachingProgram, traceSearch } from "@discere/activity-engine";
 import { assertEditorialApproval, loadCourseBundle, validateCourseBundle } from "../src/index.js";
+import { correctChoiceId } from "../src/lesson-projection.js";
 import { CourseBundleSchema } from "@discere/contracts";
 import { historicalBundle } from "./helpers/published-history.js";
 const root = path.resolve(import.meta.dirname, "../../../content");
@@ -54,7 +55,8 @@ describe("published foundation curriculum", () => {
         "practice-1": solve(5, 2, 27),
       },
       "undoing-in-the-right-order": {
-        "2": solve(2, 3, 17),
+        // The prompt now starts from 2x = 14 (the + 3 is already undone on the screen).
+        "2": solve(2, 0, 14),
         "3": solve(3, 6, 21),
         "4": solve(0.25, -2, 1.5),
         "practice-1": solve(4, -2, 14),
@@ -62,7 +64,6 @@ describe("published foundation curriculum", () => {
       },
       "a-point-is-a-pair": {
         "1": [3, 2][0]!,
-        "3": [-3, 2][0]!,
         "4": [4, -2][1]!,
         "practice-1": -5,
         "practice-2": 0,
@@ -91,6 +92,37 @@ describe("published foundation curriculum", () => {
         expect(authority?.kind, id).toBe("numeric");
         if (authority?.kind === "numeric") expect(authority.value, id).toBeCloseTo(value, 10);
       }
+    // "a point is a pair" item 3 is now a four-option choice: "3 squares to the left of the origin
+    // and 2 up". Its label is built from the givens, across move first, with the real minus sign.
+    const pointLabel = (across: number, up: number) =>
+      `(${across < 0 ? "−" : ""}${Math.abs(across)}, ${up < 0 ? "−" : ""}${Math.abs(up)})`;
+    const pointQuestion = bundle.questions.find((q) => q.id === "maths-a-point-is-a-pair-3")!;
+    expect(pointQuestion.responseType).toBe("short_text");
+    // Read the givens from the prompt: N squares left of the origin, M up.
+    const given = /(\d+) squares to the left of the origin and (\d+) squares up/.exec(
+      pointQuestion.prompt,
+    )!;
+    expect(given).not.toBeNull();
+    const [left, up] = [Number(given[1]), Number(given[2])];
+    expect([left, up]).toEqual([3, 2]);
+    const expectedPoint = pointLabel(-left, up);
+    expect(pointQuestion.answerAuthority.kind).toBe("text");
+    if (pointQuestion.answerAuthority.kind === "text")
+      expect(pointQuestion.answerAuthority.acceptedIdeas).toEqual([expectedPoint]);
+    const pointChoices = pointQuestion.choices!;
+    expect(pointChoices.map((choice) => choice.label)).toEqual([
+      pointLabel(left, up), // right instead of left
+      pointLabel(-up, left), // the two moves swapped
+      pointLabel(left, -up), // both signs reversed
+      expectedPoint,
+    ]);
+    const markedPoint = pointChoices.find((choice) => choice.id === correctChoiceId(pointQuestion));
+    expect(markedPoint?.label).toBe(expectedPoint);
+    expect(pointChoices.filter((choice) => choice.label === expectedPoint)).toHaveLength(1);
+    // Each wrong choice has its own feedback and the marked one has none.
+    const wrongPoint = pointChoices.filter((choice) => choice.id !== markedPoint!.id);
+    const flagged = pointQuestion.misconceptions!.flatMap((m) => m.match.choiceIds ?? []);
+    expect(flagged.sort()).toEqual(wrongPoint.map((choice) => choice.id).sort());
     // The v2 rewrites added numeric items (hooks, checks, faded blanks); those are recomputed in
     // maths-gold-lesson.test.ts and maths-foundations-v2.test.ts. Every original item stays here.
     const numeric = bundle.questions

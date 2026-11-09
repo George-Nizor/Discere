@@ -170,8 +170,8 @@ function WorkedLines({
               <QuestionBlock
                 question={line.blank}
                 context={context}
-                hidePrompt
-                label={line.blank.prompt}
+                heading="h3"
+                promptClassName="self-explain-prompt blank-prompt"
                 inline
                 onReady={markDone(line.blank.id)}
               />

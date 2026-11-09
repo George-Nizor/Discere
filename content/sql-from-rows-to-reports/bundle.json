@@ -7561,7 +7561,7 @@
           "lead": [],
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
-          "checkQuestionId": "sql-aggregate-known-values-4",
+          "checkQuestionId": "sql-aggregate-known-values-4-v2",
           "activityId": "",
           "diagram": {
             "type": "relational_query",
@@ -12985,7 +12985,7 @@
           "lead": [],
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
-          "checkQuestionId": "sql-preserve-either-side-1",
+          "checkQuestionId": "sql-preserve-either-side-1-v2",
           "activityId": "",
           "diagram": {
             "type": "relational_query",
@@ -20144,7 +20144,7 @@
           "lead": [],
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
-          "checkQuestionId": "sql-partition-the-window-4",
+          "checkQuestionId": "sql-partition-the-window-4-v2",
           "activityId": "",
           "diagram": {
             "type": "relational_query",
@@ -22044,7 +22044,7 @@
       "conceptIds": [
         "sql-rows-and-keys"
       ],
-      "prompt": "Cy, who is already a customer, places another order. Which of the two tables, customers or orders, gains a new row? Type its name.",
+      "prompt": "Cy, who is already a customer, places another order. Which table gains a new row?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -22053,24 +22053,45 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "orders"
+          "`orders`"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "The purchase creates an order, and each row of orders is one order, so orders gains the row."
+        "exampleAnswer": "`orders`"
       },
       "sourceIds": [
         "sqlite-select"
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "`customers`"
+        },
+        {
+          "id": "b",
+          "label": "`orders`"
+        },
+        {
+          "id": "c",
+          "label": "Both tables"
+        }
       ],
       "onCorrect": "A new order is a new thing of the kind that orders records, so orders gains a row, while Cy's row in customers already exists and nothing about it changes.",
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "customers",
-              "customer"
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "Cy already has a row in customers, and nothing about Cy has changed. The thing that has just been created is an order."
+          "feedback": "Cy already has a row in `customers`, and nothing about Cy has changed. Ask what the purchase has just created."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "A table gains a row only when something new of the kind it records appears. Cy is not new, so one of the two tables stays as it was."
         }
       ],
       "skill": "identify-row-unit"
@@ -22129,22 +22150,22 @@
           "`NULL`"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "NULL records a missing or unknown value. It does not mean an amount of zero or the text 'NULL'."
+        "exampleAnswer": "`NULL`"
       },
       "sourceIds": [
         "sqlite-expr"
       ],
       "choices": [
         {
-          "id": "c",
-          "label": "An empty order table"
-        },
-        {
           "id": "a",
           "label": "0"
         },
         {
           "id": "b",
+          "label": "-1"
+        },
+        {
+          "id": "c",
           "label": "`NULL`"
         }
       ],
@@ -22161,10 +22182,10 @@
         {
           "match": {
             "choiceIds": [
-              "c"
+              "b"
             ]
           },
-          "feedback": "Emptying the whole table would remove every order. One cell is missing, and the row should stay."
+          "feedback": "-1 is still a number, so every total and average would count it as a real amount. An unknown value needs something that is not a number."
         }
       ],
       "skill": "tell-missing-from-zero"
@@ -22551,7 +22572,7 @@
       "conceptIds": [
         "sql-select-and-name"
       ],
-      "prompt": "After `SELECT amount AS price`, type the column name that remains in the stored table.",
+      "prompt": "After `SELECT amount AS price FROM orders`, what is the column called in the stored `orders` table?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -22561,23 +22582,45 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "amount"
+          "`amount`"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "The stored column remains amount. The alias price belongs to the query result, so another query can still refer to amount."
+        "exampleAnswer": "`amount`"
       },
       "sourceIds": [
         "sqlite-select"
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "`price`"
+        },
+        {
+          "id": "b",
+          "label": "`amount`"
+        },
+        {
+          "id": "c",
+          "label": "Both names, the old one and the new one"
+        }
       ],
       "onCorrect": "The stored column is still called amount, because price names the result column only.",
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "price"
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "The alias price appears in the result only. The stored table keeps its original column name."
+          "feedback": "The alias `price` appears in the result only. The stored table keeps its original column name."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "An alias names the column in the result only. It does not add a second name to the stored table."
         }
       ],
       "skill": "alias-heading"
@@ -22687,26 +22730,26 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "Values from 20 through 40, including both ends"
+          "Values from 20 to 40, with both ends included"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "BETWEEN includes both endpoints, so 20 and 40 pass as well as values between them. An unknown amount does not pass this comparison."
+        "exampleAnswer": "Values from 20 to 40, with both ends included"
       },
       "sourceIds": [
         "sqlite-expr"
       ],
       "choices": [
         {
-          "id": "c",
-          "label": "Every value greater than 20"
+          "id": "a",
+          "label": "Values from 20 to 40, with both ends excluded"
         },
         {
           "id": "b",
-          "label": "Values from 20 through 40, including both ends"
+          "label": "Values from 20 to 40, with only the lower end included"
         },
         {
-          "id": "a",
-          "label": "Only values strictly between 20 and 40"
+          "id": "c",
+          "label": "Values from 20 to 40, with both ends included"
         }
       ],
       "onCorrect": "`BETWEEN` counts both ends, so every value from 20 up to and including 40 passes.",
@@ -22717,15 +22760,15 @@
               "a"
             ]
           },
-          "feedback": "That is the reading of a pair of strict comparisons, greater than the lower limit and less than the upper. `BETWEEN` uses non-strict ones, so the ends themselves pass."
+          "feedback": "That is the reading of a pair of strict comparisons, greater than 20 and less than 40. `BETWEEN` is not written with strict ones."
         },
         {
           "match": {
             "choiceIds": [
-              "c"
+              "b"
             ]
           },
-          "feedback": "`BETWEEN` also has an upper limit. A value above 40 fails the second comparison."
+          "feedback": "`BETWEEN` has no special rule for one end. Both limits are handled the same way."
         }
       ],
       "skill": "set-boundaries"
@@ -22780,7 +22823,7 @@
       "conceptIds": [
         "sql-filter-the-rows"
       ],
-      "prompt": "How many orders satisfy `amount > 20 AND amount < 80`?",
+      "prompt": "The shop's six orders have the amounts 80, 20, 80, 40, 20 and `NULL`. How many orders satisfy `amount > 20 AND amount < 80`?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -22792,9 +22835,9 @@
         "kind": "numeric",
         "value": 1,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "Only order 104 has amount 40; the 20 and 80 boundaries are excluded."
+        "workedAnswer": "Only the amount 40 lies strictly between 20 and 80. The 20s and 80s sit on the limits, and the `NULL` passes neither comparison."
       },
       "sourceIds": [
         "sqlite-expr"
@@ -23101,34 +23144,55 @@
       "conceptIds": [
         "sql-sort-and-limit"
       ],
-      "prompt": "How many rows can `LIMIT 10` return when only four rows satisfy `WHERE`?",
-      "responseType": "numeric",
+      "prompt": "A query has a `WHERE` clause followed by `LIMIT 10`, and only four rows satisfy the `WHERE` condition. What does the query return?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
         "`WHERE` removes rows before `LIMIT` is applied.",
-        "`LIMIT` sets a maximum.",
-        "Count the rows that are left after the filter."
+        "`LIMIT` sets a maximum and does not add rows."
       ],
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 4,
-        "unit": "",
-        "absoluteTolerance": 0.000001,
-        "relativeTolerance": 0,
-        "workedAnswer": "A limit does not create records; the result contains the four eligible rows."
+        "kind": "text",
+        "acceptedIdeas": [
+          "Four rows"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Four rows"
       },
       "sourceIds": [
         "sqlite-select"
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "Four rows"
+        },
+        {
+          "id": "b",
+          "label": "Ten rows, six of them empty"
+        },
+        {
+          "id": "c",
+          "label": "An error, because fewer than ten rows exist"
+        }
       ],
       "onCorrect": "`LIMIT` is a maximum, so a query with only four rows after the filter returns those four.",
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              10
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "`LIMIT` sets a ceiling and does not create rows. It cannot return more rows than the filter leaves."
+          "feedback": "`LIMIT` sets a ceiling and never makes up rows. Rows that do not exist are not added as blanks."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "`LIMIT` is a maximum, so a result with fewer rows is perfectly valid and the query raises no error."
         }
       ],
       "skill": "limit-after-order"
@@ -23138,7 +23202,7 @@
       "conceptIds": [
         "sql-sort-and-limit"
       ],
-      "prompt": "Two rows tie on amount. How do you make their order deterministic?",
+      "prompt": "Two orders tie on amount, and the query sorts by amount. How do you make sure they always come out in the same order?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -23920,7 +23984,7 @@
       "conceptIds": [
         "sql-group-and-filter-groups"
       ],
-      "prompt": "How many item groups survive `HAVING SUM(amount) >= 40` in the original data?",
+      "prompt": "The shop's orders are Desk 80, Book 20, Desk 80, Lamp 40, Book 20, and a Lamp with no amount. After `GROUP BY item`, how many groups survive `HAVING SUM(amount) >= 40`?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -24077,10 +24141,10 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "She has no matching order"
+          "No order refers to her id"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "An INNER JOIN retains only matching pairs. Dee has no matching order in this dataset, so her customer row contributes no result row."
+        "exampleAnswer": "No order refers to her id"
       },
       "sourceIds": [
         "sqlite-select"
@@ -24088,15 +24152,15 @@
       "choices": [
         {
           "id": "a",
-          "label": "Her name is too short"
+          "label": "No order refers to her id"
         },
         {
           "id": "b",
-          "label": "She has no matching order"
+          "label": "Her region is West, which no order mentions"
         },
         {
           "id": "c",
-          "label": "`INNER JOIN` keeps only the first customer"
+          "label": "`INNER JOIN` leaves out the last row of the first table"
         }
       ],
       "onCorrect": "No order refers to Dee's id, so she forms no matching pair and an `INNER JOIN` drops her.",
@@ -24104,10 +24168,10 @@
         {
           "match": {
             "choiceIds": [
-              "a"
+              "b"
             ]
           },
-          "feedback": "A join compares the reference columns and never looks at how long a name is."
+          "feedback": "The join condition compares the order's `customer_id` with the customer's `id`. A region plays no part in the match."
         },
         {
           "match": {
@@ -24115,7 +24179,7 @@
               "c"
             ]
           },
-          "feedback": "An `INNER JOIN` keeps every pair that matches, for as many customers as have matches."
+          "feedback": "An `INNER JOIN` keeps every pair that matches, wherever the row sits in its table."
         }
       ],
       "skill": "explain-missing-match"
@@ -24170,7 +24234,7 @@
       "conceptIds": [
         "sql-join-matching-rows"
       ],
-      "prompt": "Which condition follows the stored relationship between orders and customers?",
+      "prompt": "Here `c` is `customers` and `o` is `orders`. Which join condition follows the stored relationship between the two tables?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -24281,26 +24345,26 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "A person can match several orders"
+          "A customer with several orders forms several pairs"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "Each matching customer-and-order pair produces a result row. A customer with several orders appears several times without the join being wrong."
+        "exampleAnswer": "A customer with several orders forms several pairs"
       },
       "sourceIds": [
         "sqlite-select"
       ],
       "choices": [
         {
-          "id": "c",
-          "label": "Names cannot be selected in SQL"
+          "id": "a",
+          "label": "Two different customers have the same name"
         },
         {
           "id": "b",
-          "label": "`JOIN` always duplicates every row twice"
+          "label": "The join has matched the same order twice by mistake"
         },
         {
-          "id": "a",
-          "label": "A person can match several orders"
+          "id": "c",
+          "label": "A customer with several orders forms several pairs"
         }
       ],
       "onCorrect": "A customer with several orders forms several pairs, and each pair carries the name.",
@@ -24308,18 +24372,18 @@
         {
           "match": {
             "choiceIds": [
-              "b"
+              "a"
             ]
           },
-          "feedback": "A join duplicates nothing by itself. Each row repeats only as many times as it has matches."
+          "feedback": "Names take no part in the match. A name can repeat even when every customer has a different one."
         },
         {
           "match": {
             "choiceIds": [
-              "c"
+              "b"
             ]
           },
-          "feedback": "Names are ordinary columns and can be selected like any other."
+          "feedback": "A correct join returns each matching pair once. A repeated name comes from several different pairs, and not from one pair counted twice."
         }
       ],
       "skill": "join-unit"
@@ -24411,7 +24475,7 @@
       "conceptIds": [
         "sql-preserve-the-left-table"
       ],
-      "prompt": "In `customers LEFT JOIN orders`, only paid orders should count as matches, and every customer must remain in the result. Where should `o.status = 'paid'` go?",
+      "prompt": "Every customer must stay in the result of `customers LEFT JOIN orders`, but only paid orders should be attached to the customers. Where should `o.status = 'paid'` go?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -24421,26 +24485,26 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "In ON as a matching condition"
+          "In the `ON` condition"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "Put the paid condition in ON to limit which orders match while preserving every left-side customer. A WHERE test on the right-side status would remove unmatched customer rows."
+        "exampleAnswer": "In the `ON` condition"
       },
       "sourceIds": [
         "sqlite-select"
       ],
       "choices": [
         {
-          "id": "c",
-          "label": "In the `SELECT` alias"
-        },
-        {
           "id": "a",
-          "label": "In ON as a matching condition"
+          "label": "In the `WHERE` clause"
         },
         {
           "id": "b",
-          "label": "In `WHERE` as the only row filter"
+          "label": "In the `ON` condition"
+        },
+        {
+          "id": "c",
+          "label": "In a `HAVING` clause"
         }
       ],
       "onCorrect": "In ON the test only narrows which orders count as matches, so a customer without a paid order still stays.",
@@ -24448,7 +24512,7 @@
         {
           "match": {
             "choiceIds": [
-              "b"
+              "a"
             ]
           },
           "feedback": "`WHERE` is applied after the join, and a row whose order columns are `NULL` fails the test, so customers with no paid order would be dropped."
@@ -24459,7 +24523,7 @@
               "c"
             ]
           },
-          "feedback": "An alias only names a column of the result. It cannot test or remove anything."
+          "feedback": "`HAVING` tests finished groups, and this query forms no groups, so it cannot decide which orders are attached."
         }
       ],
       "skill": "filter-after-join"
@@ -24526,7 +24590,7 @@
       "conceptIds": [
         "sql-preserve-the-left-table"
       ],
-      "prompt": "How many rows remain with the paid test in ON for the original data?",
+      "prompt": "Consider `customers AS c LEFT JOIN orders AS o ON c.id = o.customer_id AND o.status = 'paid'`. Ada has two paid orders, Ben and Cy each have one paid and one pending order, and Dee has no orders. How many rows does the query return?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -24538,9 +24602,9 @@
         "kind": "numeric",
         "value": 5,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "Ada has two paid orders, Ben one and Cy one; Dee remains once with no match. Total: five."
+        "workedAnswer": "Ada's two paid orders, Ben's one and Cy's one give four matched rows, and Dee remains once with no match. Total: five."
       },
       "sourceIds": [
         "sqlite-select"
@@ -24571,7 +24635,7 @@
       "conceptIds": [
         "sql-preserve-the-left-table"
       ],
-      "prompt": "How many rows pass `o.amount IS NULL` after the original `LEFT JOIN`?",
+      "prompt": "In the shop's data, order 106 has no amount and Dee has no orders at all. How many rows of `customers LEFT JOIN orders` have `o.amount IS NULL`?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -24583,9 +24647,9 @@
         "kind": "numeric",
         "value": 2,
         "unit": "",
-        "absoluteTolerance": 0.000001,
+        "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "Cy's order 106 and Dee's unmatched customer row both have `NULL` amounts."
+        "workedAnswer": "Order 106 is matched but has no amount, and Dee's unmatched row has `NULL` in every order column."
       },
       "sourceIds": [
         "sqlite-expr"
@@ -24868,26 +24932,26 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "Yes; compare which side is preserved"
+          "Yes, because they can keep different unmatched rows"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "Equal row counts do not establish equivalent joins. Inspect the retained records and the NULL-extended columns to see which side each join preserves."
+        "exampleAnswer": "Yes, because they can keep different unmatched rows"
       },
       "sourceIds": [
         "sqlite-select"
       ],
       "choices": [
         {
-          "id": "c",
-          "label": "Only when every key is duplicated"
+          "id": "a",
+          "label": "No, because equal counts mean the same rows were kept"
         },
         {
           "id": "b",
-          "label": "No; equal counts prove equal results"
+          "label": "Yes, but only when the keys repeat"
         },
         {
-          "id": "a",
-          "label": "Yes; compare which side is preserved"
+          "id": "c",
+          "label": "Yes, because they can keep different unmatched rows"
         }
       ],
       "onCorrect": "A `LEFT JOIN` and a `RIGHT JOIN` can both return the same number of rows while keeping different unmatched rows.",
@@ -24895,7 +24959,7 @@
         {
           "match": {
             "choiceIds": [
-              "b"
+              "a"
             ]
           },
           "feedback": "A count says how many rows there are and nothing about which. Two joins can preserve different unmatched rows and still agree in number."
@@ -24903,10 +24967,10 @@
         {
           "match": {
             "choiceIds": [
-              "c"
+              "b"
             ]
           },
-          "feedback": "Duplicated keys are not needed. One unmatched row on each side is enough to give different records with the same count."
+          "feedback": "Repeated keys are not needed. One unmatched row on each side is enough to give different records with the same count."
         }
       ],
       "skill": "compare-joins"
@@ -25015,26 +25079,26 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "The outer query has one row per customer"
+          "The outer query reads one row for each customer"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "EXISTS asks whether any matching order exists for each outer customer row. It does not create one outer row per match, so Ada appears once."
+        "exampleAnswer": "The outer query reads one row for each customer"
       },
       "sourceIds": [
         "sqlite-expr"
       ],
       "choices": [
         {
-          "id": "c",
-          "label": "`EXISTS` ignores every second row"
-        },
-        {
           "id": "a",
-          "label": "The outer query has one row per customer"
+          "label": "`EXISTS` removes repeated rows, as `DISTINCT` does"
         },
         {
           "id": "b",
-          "label": "`EXISTS` deletes the extra order"
+          "label": "The outer query reads one row for each customer"
+        },
+        {
+          "id": "c",
+          "label": "`EXISTS` returns only the first matching order"
         }
       ],
       "onCorrect": "The outer query reads each customer once, and `EXISTS` only decides whether that row is kept.",
@@ -25042,10 +25106,10 @@
         {
           "match": {
             "choiceIds": [
-              "b"
+              "a"
             ]
           },
-          "feedback": "`EXISTS` removes nothing from any table. It only gives yes or no for the row being examined."
+          "feedback": "`EXISTS` removes nothing. It gives a yes or a no for the row being examined, and Ada's row is examined once."
         },
         {
           "match": {
@@ -25053,7 +25117,7 @@
               "c"
             ]
           },
-          "feedback": "`EXISTS` has no rule about alternate rows. The outer query has a single row for Ada, so she can be returned only once."
+          "feedback": "`EXISTS` does not return orders at all. The rows in the result are customers."
         }
       ],
       "skill": "exists-subquery"
@@ -25165,6 +25229,11 @@
         "acceptedIdeas": [
           "correlated"
         ],
+        "acceptedAlternatives": [
+          "correlated subquery",
+          "a correlated subquery",
+          "correlation"
+        ],
         "rejectedIdeas": [],
         "exampleAnswer": "A correlated subquery uses a value from the current outer row. Its meaning depends on which outer row is being considered."
       },
@@ -25246,7 +25315,7 @@
       "conceptIds": [
         "sql-combine-result-sets"
       ],
-      "prompt": "One query selects the ids of paid orders and another selects the ids of orders worth at least 40. How many rows does the first query `UNION` the second return?",
+      "prompt": "One query selects the ids of the paid orders, and another selects the ids of the orders worth at least 40. How many rows does the `UNION` of the two queries return?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -25725,7 +25794,7 @@
       "conceptIds": [
         "sql-rank-with-ties"
       ],
-      "prompt": "Type the function name that gives every row a separate position in the specified order.",
+      "prompt": "Type the name of the window function that gives every row its own position, even when two rows are equal in the ordering.",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -25737,8 +25806,12 @@
         "acceptedIdeas": [
           "ROW_NUMBER"
         ],
+        "acceptedAlternatives": [
+          "row number",
+          "rownumber"
+        ],
         "rejectedIdeas": [],
-        "exampleAnswer": "ROW_NUMBER assigns a separate consecutive position to every row in the window's specified order. A unique tie-breaker makes that order deterministic."
+        "exampleAnswer": "ROW_NUMBER"
       },
       "sourceIds": [
         "sqlite-window"
@@ -26010,10 +26083,10 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "Which rows belong to each calculation window"
+          "Which rows each calculation looks at together"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "PARTITION BY splits the rows into separate windows for the calculation. It changes which rows are compared or accumulated together without itself collapsing them."
+        "exampleAnswer": "Which rows each calculation looks at together"
       },
       "sourceIds": [
         "sqlite-window"
@@ -26021,18 +26094,18 @@
       "choices": [
         {
           "id": "a",
-          "label": "Which rows belong to each calculation window"
+          "label": "Which rows each calculation looks at together"
         },
         {
           "id": "b",
-          "label": "The stored order ids"
+          "label": "How many rows the result contains"
         },
         {
           "id": "c",
-          "label": "Every input table's primary key"
+          "label": "The order in which the rows are listed"
         }
       ],
-      "onCorrect": "`PARTITION BY` decides which rows belong to each calculation window.",
+      "onCorrect": "`PARTITION BY` decides which rows belong together in each calculation window, while every row stays in the result.",
       "misconceptions": [
         {
           "match": {
@@ -26040,7 +26113,7 @@
               "b"
             ]
           },
-          "feedback": "A query cannot change what is stored. `PARTITION BY` only affects which rows a window function reads together."
+          "feedback": "`PARTITION BY` keeps every row. That is the difference from `GROUP BY`, which returns one row for each group."
         },
         {
           "match": {
@@ -26048,7 +26121,7 @@
               "c"
             ]
           },
-          "feedback": "`PARTITION BY` has nothing to do with a table's key. It groups rows within the result for a window calculation."
+          "feedback": "The order inside each window comes from the `ORDER BY` after `OVER`. `PARTITION BY` only decides which rows belong together."
         }
       ],
       "skill": "restart-per-partition"
@@ -26132,7 +26205,7 @@
         },
         {
           "id": "c",
-          "label": "SQL changed the order ids"
+          "label": "The two orders have the same amount"
         }
       ],
       "onCorrect": "The two orders are peers on the same day, and a `RANGE` frame includes all peers, so each row's frame ends at the same place.",
@@ -26151,7 +26224,7 @@
               "c"
             ]
           },
-          "feedback": "The ids are untouched. The totals match because the frame includes both rows that share the day."
+          "feedback": "The two orders have different amounts. Their totals match because the frame reaches the same last row for both."
         }
       ],
       "skill": "frame-peers"
@@ -26306,10 +26379,10 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "The next amount may be missing, or there may be no next row"
+          "Either there is no next row or its amount is missing"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "With its default, LEAD returns NULL when no next row exists. A next row whose amount is NULL produces the same value, so NULL alone cannot distinguish the cases."
+        "exampleAnswer": "Either there is no next row or its amount is missing"
       },
       "sourceIds": [
         "sqlite-window"
@@ -26317,15 +26390,19 @@
       "choices": [
         {
           "id": "a",
-          "label": "There is definitely no next row"
+          "label": "There is definitely no row after the current one"
         },
         {
           "id": "b",
-          "label": "The next amount may be missing, or there may be no next row"
+          "label": "There is a next row, and its amount is missing"
         },
         {
           "id": "c",
-          "label": "The next amount is zero"
+          "label": "There is a next row, and its amount is zero"
+        },
+        {
+          "id": "d",
+          "label": "Either there is no next row or its amount is missing"
         }
       ],
       "onCorrect": "`LEAD` gives `NULL` when no row follows and also when the next row's amount is itself `NULL`.",
@@ -26341,10 +26418,18 @@
         {
           "match": {
             "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "`LEAD` also gives `NULL` at the last row, where nothing follows, so the value alone cannot show that a next row exists."
+        },
+        {
+          "match": {
+            "choiceIds": [
               "c"
             ]
           },
-          "feedback": "A zero is a stored number, and `LEAD` would return it as 0. `NULL` means no row or a missing value."
+          "feedback": "A zero is a stored number, and `LEAD` would return it as 0. `NULL` is not a number."
         }
       ],
       "skill": "null-cause"
@@ -27146,47 +27231,47 @@
       "conceptIds": [
         "sql-filter-the-rows"
       ],
-      "prompt": "A query keeps the orders where `status = 'paid' OR amount >= 40`. Order 102 is paid and its amount is only 20. Why is it kept?",
+      "prompt": "A query keeps the orders where `status = 'paid' OR amount >= 40`. Order 102 is paid, and its amount is only 20. Does the query keep order 102?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "OR is satisfied when at least one of its conditions is.",
-        "Check which of the two conditions order 102 passes."
+        "Check which of the two conditions order 102 passes.",
+        "Ask whether `OR` needs one of its conditions to be true or both."
       ],
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "OR keeps a row when either condition is true, and it is paid."
+          "Yes, because it passes one of the two conditions"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "Order 102 is paid. With OR, passing one test is enough."
+        "exampleAnswer": "Yes, because it passes one of the two conditions"
       },
       "sourceIds": [
         "sqlite-expr"
       ],
       "choices": [
         {
-          "id": "b",
-          "label": "Because 20 is close enough to 40."
+          "id": "a",
+          "label": "No, because it fails the test on the amount"
         },
         {
-          "id": "a",
-          "label": "OR keeps a row when either condition is true, and it is paid."
+          "id": "b",
+          "label": "Yes, because it passes one of the two conditions"
         },
         {
           "id": "c",
-          "label": "Because `AND` was used instead."
+          "label": "No, because `OR` needs both conditions to hold"
         }
       ],
-      "onCorrect": "OR needs only one true condition, and order 102 is paid.",
+      "onCorrect": "Order 102 passes `status = 'paid'`, and `OR` needs only one true condition, so the low amount does not remove it.",
       "misconceptions": [
         {
           "match": {
             "choiceIds": [
-              "b"
+              "a"
             ]
           },
-          "feedback": "A condition has no partial credit. An amount of 20 fails `amount >= 40` completely, and something else must be keeping the row."
+          "feedback": "A row can fail one condition and still be kept. Check whether order 102 passes the other one."
         },
         {
           "match": {
@@ -27194,7 +27279,7 @@
               "c"
             ]
           },
-          "feedback": "The query uses `OR`. With `AND`, order 102 would be dropped, because it fails the test on the amount."
+          "feedback": "That describes `AND`, which needs both conditions. The query uses `OR`."
         }
       ],
       "skill": "combine-conditions",
@@ -28383,7 +28468,7 @@
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
-        "The notebook has a row for each cup, not for each customer.",
+        "The table has a row for each cup, not for each customer.",
         "Count the cups Mia bought and the cups Sam bought.",
         "Each cup adds one row, so add the two numbers of cups."
       ],
@@ -28393,7 +28478,7 @@
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "One line per cup: 3 cups for Mia and 2 for Sam make 5 lines."
+        "workedAnswer": "One row per cup: 3 cups for Mia and 2 for Sam make 5 rows."
       },
       "sourceIds": [
         "sqlite-tables"
@@ -28406,7 +28491,7 @@
               2
             ]
           },
-          "feedback": "That counts the customers. In this notebook a row stands for a cup, so every cup adds its own row."
+          "feedback": "That counts the customers. In this table a row stands for a cup, so every cup adds its own row."
         },
         {
           "match": {
@@ -28710,34 +28795,55 @@
       "conceptIds": [
         "sql-select-and-name"
       ],
-      "prompt": "You hide every column of a six-column spreadsheet except three, then send that view to a colleague. How many columns does your original sheet still have?",
-      "responseType": "numeric",
+      "prompt": "You hide every column of a six-column spreadsheet except three, then send that view to a colleague. What does your original sheet look like afterwards?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
         "Hiding a column is a choice about what to show.",
-        "Think about what the original sheet looks like after you have sent the view.",
-        "Compare the sheet with the view, which is built from it."
+        "Ask whether the view you sent and the original sheet are the same thing."
       ],
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 6,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "Hiding changes only what is shown. The original sheet keeps all six columns."
+        "kind": "text",
+        "acceptedIdeas": [
+          "It still has all six columns"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "It still has all six columns"
       },
       "sourceIds": [
         "sqlite-select"
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "It still has all six columns"
+        },
+        {
+          "id": "b",
+          "label": "It has only the three columns you showed"
+        },
+        {
+          "id": "c",
+          "label": "It has six columns, but the hidden three are now empty"
+        }
       ],
       "onCorrect": "Hiding columns changes the view and not the sheet, just as a query's columns do not change the table.",
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              3
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That is the number of columns in the view you sent. The original sheet is a separate thing and keeps all of its columns."
+          "feedback": "That describes the view you sent. Hiding columns changes only the view, and the original sheet is a separate thing."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "A hidden column is still full in the sheet it came from. The view only chooses what to show."
         }
       ],
       "skill": "choose-columns",
@@ -29054,6 +29160,154 @@
       ],
       "skill": "order-rows",
       "calculator": "off"
+    },
+    {
+      "id": "sql-aggregate-known-values-4-v2",
+      "conceptIds": [
+        "sql-aggregate-known-values"
+      ],
+      "prompt": "No order has an amount over 100. What does `SELECT MIN(amount) FROM orders WHERE amount > 100` return?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "`MIN` picks the smallest of the values it is given. Ask what it has when no row is left.",
+        "`COUNT(*)` gives 0 for no rows because it counts rows. `MIN` does not count anything."
+      ],
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "`NULL`"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "`NULL`"
+      },
+      "sourceIds": [
+        "sqlite-aggregate"
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "`NULL`"
+        },
+        {
+          "id": "b",
+          "label": "`0`"
+        },
+        {
+          "id": "c",
+          "label": "No row at all"
+        }
+      ],
+      "onCorrect": "`MIN` has no value to pick when `WHERE` removes every row, so the query returns one row that holds `NULL`, and not a zero.",
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Zero is what `COUNT(*)` gives when no rows match. `MIN` has no value to pick, which is not the same as a smallest value of 0."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "An aggregate query without `GROUP BY` always returns one row, even when `WHERE` has removed every row."
+        }
+      ],
+      "skill": "empty-aggregate"
+    },
+    {
+      "id": "sql-preserve-either-side-1-v2",
+      "conceptIds": [
+        "sql-preserve-either-side"
+      ],
+      "prompt": "The shop has added guest order 107, whose `customer_id` is `NULL`. How many rows does `customers RIGHT JOIN orders` return?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "`RIGHT JOIN` keeps every row of the table on its right.",
+        "Each order matches at most one customer, so ask how many rows each order gives.",
+        "Count every order, including the guest order with no customer."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 7,
+        "unit": "",
+        "absoluteTolerance": 1e-9,
+        "relativeTolerance": 0,
+        "workedAnswer": "A `RIGHT JOIN` keeps every order once: six orders with a customer and the guest order. Dee, who has no order, adds nothing."
+      },
+      "sourceIds": [
+        "sqlite-select"
+      ],
+      "onCorrect": "Every order keeps one row, with a `NULL` customer for order 107, and Dee, who has no order, adds no row.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              6
+            ]
+          },
+          "feedback": "That is the count for an `INNER JOIN`. A `RIGHT JOIN` also keeps the order that matched nobody."
+        },
+        {
+          "match": {
+            "numeric": [
+              8
+            ]
+          },
+          "feedback": "That also counts Dee, which a `FULL OUTER JOIN` does. A `RIGHT JOIN` keeps the unmatched rows of its right table only."
+        },
+        {
+          "match": {
+            "numeric": [
+              4
+            ]
+          },
+          "feedback": "That is the number of customers. A `RIGHT JOIN` is about the orders, and each one keeps a row of its own."
+        }
+      ],
+      "skill": "preserve-right"
+    },
+    {
+      "id": "sql-partition-the-window-4-v2",
+      "conceptIds": [
+        "sql-partition-the-window"
+      ],
+      "prompt": "To find each customer's smallest order, the numbering is changed to `ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY amount ASC)`, and the outer query still keeps `position = 1`. Which order id does the query return for customer 2?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "The numbering restarts for each customer, and it follows the `ORDER BY` inside `OVER`.",
+        "Find which of customer 2's two orders has the smaller amount.",
+        "Ordering by amount from smallest up puts the smaller order in position 1."
+      ],
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 104,
+        "unit": "",
+        "absoluteTolerance": 1e-9,
+        "relativeTolerance": 0,
+        "workedAnswer": "Customer 2 has order 103 for 80 and order 104 for 40. In ascending order of amount 104 comes first, so it is numbered 1."
+      },
+      "sourceIds": [
+        "sqlite-window"
+      ],
+      "onCorrect": "Order 104 has the smaller amount of customer 2's two orders, so it is numbered 1 and the outer query keeps it.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              103
+            ]
+          },
+          "feedback": "That is the customer's first order by id. The numbering now follows the amount, and `ASC` puts the smallest amount first."
+        }
+      ],
+      "skill": "filter-window"
     }
   ],
   "flashcards": [
@@ -30530,13 +30784,6 @@
           "targetId": "sql-aggregate-known-values-3"
         },
         {
-          "claim": "sum() over no rows returns NULL in SQLite.",
-          "sourceId": "sqlite-aggregate",
-          "section": "Descriptions of avg(X), count(X), count(*), min(X), max(X) and sum(X)",
-          "targetKind": "question",
-          "targetId": "sql-aggregate-known-values-4"
-        },
-        {
           "claim": "The known values 10 and 30 have average 20.",
           "sourceId": "sqlite-aggregate",
           "section": "Descriptions of avg(X), count(X), count(*), min(X), max(X) and sum(X)",
@@ -30612,6 +30859,13 @@
           "section": "Descriptions of avg(X), count(X), count(*), min(X), max(X) and sum(X)",
           "targetKind": "step",
           "targetId": "nothing-to-add"
+        },
+        {
+          "claim": "sum() over no rows returns NULL in SQLite.",
+          "sourceId": "sqlite-aggregate",
+          "section": "Descriptions of avg(X), count(X), count(*), min(X), max(X) and sum(X)",
+          "targetKind": "question",
+          "targetId": "sql-aggregate-known-values-4-v2"
         }
       ],
       "uncertainty": [
@@ -31116,13 +31370,6 @@
           "targetId": "a-test-in-the-on-condition"
         },
         {
-          "claim": "RIGHT JOIN preserves the guest order 107, which has no customer reference.",
-          "sourceId": "sqlite-select",
-          "section": "2: Simple Select Processing; 2.1 FROM and joins; 2.3 WHERE; 2.4 grouping; 2.6 DISTINCT; 3 compound queries; 4 ORDER BY; 5 LIMIT",
-          "targetKind": "question",
-          "targetId": "sql-preserve-either-side-1"
-        },
-        {
           "claim": "Six pairs plus Dee plus order 107 make eight full-join rows.",
           "sourceId": "sqlite-select",
           "section": "2: Simple Select Processing; 2.1 FROM and joins; 2.3 WHERE; 2.4 grouping; 2.6 DISTINCT; 3 compound queries; 4 ORDER BY; 5 LIMIT",
@@ -31219,6 +31466,13 @@
           "section": "2: Simple Select Processing; 2.1 FROM and joins; 2.3 WHERE; 2.4 grouping; 2.6 DISTINCT; 3 compound queries; 4 ORDER BY; 5 LIMIT",
           "targetKind": "step",
           "targetId": "failed-on-test"
+        },
+        {
+          "claim": "RIGHT JOIN preserves the guest order 107, which has no customer reference.",
+          "sourceId": "sqlite-select",
+          "section": "2: Simple Select Processing; 2.1 FROM and joins; 2.3 WHERE; 2.4 grouping; 2.6 DISTINCT; 3 compound queries; 4 ORDER BY; 5 LIMIT",
+          "targetKind": "question",
+          "targetId": "sql-preserve-either-side-1-v2"
         }
       ],
       "uncertainty": [
@@ -31703,13 +31957,6 @@
           "targetId": "sql-partition-the-window-3"
         },
         {
-          "claim": "The numbered inner query is filtered by an outer query.",
-          "sourceId": "sqlite-window",
-          "section": "2: Aggregate Window Functions; 2.1 PARTITION BY; 2.2 Frame Specifications; 3 Built-in Window Functions",
-          "targetKind": "question",
-          "targetId": "sql-partition-the-window-4"
-        },
-        {
           "claim": "Seven rows under NTILE(3) give 3, 2 and 2.",
           "sourceId": "sqlite-window",
           "section": "2: Aggregate Window Functions; 2.1 PARTITION BY; 2.2 Frame Specifications; 3 Built-in Window Functions",
@@ -31785,6 +32032,13 @@
           "section": "2: Aggregate Window Functions; 2.1 PARTITION BY; 2.2 Frame Specifications; 3 Built-in Window Functions",
           "targetKind": "step",
           "targetId": "first-per-customer"
+        },
+        {
+          "claim": "The numbered inner query is filtered by an outer query.",
+          "sourceId": "sqlite-window",
+          "section": "2: Aggregate Window Functions; 2.1 PARTITION BY; 2.2 Frame Specifications; 3 Built-in Window Functions",
+          "targetKind": "question",
+          "targetId": "sql-partition-the-window-4-v2"
         }
       ],
       "uncertainty": [

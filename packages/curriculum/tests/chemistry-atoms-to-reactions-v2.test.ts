@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import type { CourseBundle, Question } from "@discere/contracts";
 import { describe, expect, it } from "vitest";
+import { assessTextAnswer } from "@discere/assessment-engine";
 import { validateCourseBundle } from "../src/index.js";
 
 /**
@@ -22,6 +23,18 @@ const key = (id: string): number => {
   if (question.answerAuthority.kind !== "numeric") throw new Error(`${id} is not numeric`);
   return question.answerAuthority.value;
 };
+/** The choices a choice item marks as correct, as {id, label}. */
+const markedChoices = (id: string) => {
+  const question = bundle.questions.find((item: Question) => item.id === `chem-${id}`);
+  if (!question) throw new Error(`no question ${id}`);
+  const authority = question.answerAuthority;
+  if (authority.kind !== "text" || !question.choices) throw new Error(`${id} is not a choice item`);
+  return question.choices.filter((choice) => assessTextAnswer(choice.label, authority).correct);
+};
+const misconceptionChoiceIds = (id: string) =>
+  bundle.questions
+    .find((item: Question) => item.id === `chem-${id}`)!
+    .misconceptions!.flatMap((item) => item.match.choiceIds ?? []);
 
 const FIRST_FIVE = [
   "what-makes-an-element",
@@ -72,7 +85,15 @@ describe("Chemistry v2 lessons", () => {
     expect(key("what-makes-an-element-1")).toBe(8);
     expect(key("what-makes-an-element-3")).toBe(7); // neutral: electrons = protons
     expect(key("what-makes-an-element-t1")).toBe(9);
-    expect(key("what-makes-an-element-4")).toBe(13);
+    // A neutral aluminium atom has 13 electrons, so 13 protons; it loses 3 electrons to become an
+    // ion, which leaves the protons alone. The flagged slips are the 10 electrons left and 13 + 3.
+    const [neutralElectrons, lost] = [13, 3];
+    expect(key("what-makes-an-element-4")).toBe(neutralElectrons);
+    expect(
+      bundle.questions
+        .find((item) => item.id === "chem-what-makes-an-element-4")!
+        .misconceptions!.flatMap((item) => item.match.numeric ?? []),
+    ).toEqual([neutralElectrons - lost, neutralElectrons + lost]);
     expect(key("what-makes-an-element-6")).toBe(9 + 10);
     expect(key("what-makes-an-element-c3")).toBe(14 + 16);
     // Arithmetic quoted in the teaching screens: neutral sodium 11 − 11, with one electron gone 11 − 10.
@@ -128,7 +149,30 @@ describe("Chemistry v2 lessons", () => {
     expect(key("outer-electrons-1")).toBe(outer(8));
     expect(key("outer-electrons-f1")).toBe(shells(12)[2]);
     expect(key("outer-electrons-2")).toBe(outer(10));
-    expect(key("outer-electrons-4")).toBe(shells(2)[0]);
+    // Item 4 is now a three-way choice: helium has atomic number 2, so 2 electrons, all in the
+    // first shell, and the first shell holds 2. Each label is built from those numbers.
+    const capacities = [2, 8, 8];
+    const heliumElectrons = 2;
+    const heliumShells = shells(heliumElectrons);
+    expect(heliumShells).toEqual([2]);
+    const outerHolds = heliumShells.at(-1)!;
+    const room = capacities[heliumShells.length - 1]! - outerHolds;
+    expect(room).toBe(0); // the shell is full
+    const heliumChoices = [
+      { id: "a", label: `${outer(10)} electrons, as in neon and argon` },
+      { id: "b", label: `${outerHolds} electrons, which is as many as the shell can hold` },
+      // 6 more would make 8, the size of the second shell, not the first.
+      { id: "c", label: `${outerHolds} electrons, and the shell has room for ${8 - outerHolds} more` },
+    ];
+    expect(
+      bundle.questions
+        .find((item) => item.id === "chem-outer-electrons-4")!
+        .choices!.map(({ id, label }) => ({ id, label })),
+    ).toEqual(heliumChoices);
+    expect(markedChoices("outer-electrons-4")).toEqual([
+      expect.objectContaining({ id: "b", label: heliumChoices[1]!.label }),
+    ]);
+    expect(misconceptionChoiceIds("outer-electrons-4")).toEqual(["a", "c"]);
     expect(key("outer-electrons-5")).toBe(outer(13));
     expect(key("outer-electrons-c3")).toBe(outer(4));
     // Shell counts quoted in the teaching screens.
@@ -177,6 +221,14 @@ describe("Chemistry v2 lessons", () => {
     expect(key("sharing-electron-pairs-2")).toBe(2 * 2);
     expect(key("sharing-electron-pairs-4")).toBe(3 * 2);
     expect(key("sharing-electron-pairs-5")).toBe(1 * 2);
+    // Ammonia as the prompt now describes it: 3 N–H single bonds and one lone pair. Nitrogen has 5
+    // outer electrons, 3 of them in bonds, so 5 − 3 = 2 are nonbonding, which is the one lone pair.
+    expect(key("sharing-electron-pairs-5")).toBe(5 - 3 * 1);
+    expect(
+      bundle.questions
+        .find((item) => item.id === "chem-sharing-electron-pairs-5")!
+        .misconceptions!.flatMap((item) => item.match.numeric ?? []),
+    ).toEqual([1, 3 * 2]); // one electron for the pair, and the six electrons in the three bonds
     expect(key("sharing-electron-pairs-t1")).toBe((2 + 4 * 1) * 2); // C=C plus four C–H
     expect(key("sharing-electron-pairs-c3")).toBe(2 * 2);
     // Worked CO₂: two double bonds of 2 pairs each.
@@ -229,6 +281,13 @@ describe("Chemistry v2 lessons", () => {
   it("from-moles-to-mass: m = nM and n = m/M", () => {
     expect(key("from-moles-to-mass-hook")).toBe(4 * 150);
     expect(key("from-moles-to-mass-f1")).toBe(2 * 28);
+    // Item 1 is a number now (it was a three-way choice): 2 mol of water at M = 18 g/mol.
+    expect(key("from-moles-to-mass-1")).toBe(2 * 18);
+    expect(
+      bundle.questions
+        .find((item) => item.id === "chem-from-moles-to-mass-1")!
+        .misconceptions!.flatMap((item) => item.match.numeric ?? []),
+    ).toEqual([18 / 2, 18]); // the amount divided in, and one mole's mass
     expect(key("from-moles-to-mass-3")).toBe(22 / 44);
     expect(key("from-moles-to-mass-t1")).toBe(90 / 18);
     expect(key("from-moles-to-mass-4")).toBe(2 * 3);
@@ -382,7 +441,10 @@ describe("Chemistry v2 lessons", () => {
         "one double bond between its two carbon atoms",
       );
       expect(prompt("chem-reading-chemical-formulas-t1")).toContain("2 molecules of sulfuric acid");
-      expect(prompt("chem-reaction-mole-ratios-3")).toContain("ratio between which quantities");
+      // The reworded prompt still names the whole equation and its three coefficients.
+      expect(prompt("chem-reaction-mole-ratios-3")).toContain(
+        "In N₂ + 3 H₂ → 2 NH₃, the coefficients 1, 3 and 2 are in the ratio of which quantities",
+      );
       expect(prompt("chem-the-reactant-that-runs-out-6")).toContain("exactly the ratio");
     });
 

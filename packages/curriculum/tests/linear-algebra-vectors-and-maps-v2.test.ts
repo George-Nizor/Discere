@@ -47,7 +47,11 @@ const choiceLabel = (id: string) => {
   const q = find(id);
   return q.choices!.find((c) => c.id === choiceIds(id)[0])!.label;
 };
-const k = (lesson: string, n: number) => `lin-${lesson}-${n}`;
+/** "Yes" or "No" for a fact the test has just computed. */
+const yesNo = (fact: boolean) => (fact ? "Yes" : "No");
+/** A vector as the course writes it: (−3, −2), with the real minus sign. */
+const show = (v: number[]) => `(${v.map((x) => String(x).replace("-", "−")).join(", ")})`;
+const k = (lesson: string, n: number | string) => `lin-${lesson}-${n}`;
 const eq = (id: string, expected: number) => expect(key(id)).toBeCloseTo(expected, 9);
 
 describe("linear algebra v2: numeric keys follow from the arithmetic", () => {
@@ -57,6 +61,16 @@ describe("linear algebra v2: numeric keys follow from the arithmetic", () => {
     eq(k(L1, 3), len([0, 0]));
     eq(k(L1, 1), [3, -2][0]!);
     eq(k(L1, 4), [0, 1][1]!);
+    // Item 4-v2 (in the lesson): 3 units left and 2 units down. Across first, then up; left and
+    // down are negative, so the vector is (−3, −2).
+    const move = [-3, -2];
+    expect(choiceLabel(k(L1, "4-v2"))).toBe(show(move));
+    expect(find(k(L1, "4-v2")).choices!.map((c) => c.label)).toEqual([
+      show([move[1]!, move[0]!]), // the two parts swapped
+      show([move[0]!, -move[1]!]), // the sign of the down part dropped
+      show(move),
+    ]);
+    expect(choiceIds(k(L1, "4-v2"))).toEqual(["c"]);
     eq(k(L1, 5), [-5, 3][0]!);
     eq(k(L1, 6), [6, -4][1]!);
     eq(k(L1, 10), [9, 4][0]!);
@@ -78,6 +92,14 @@ describe("linear algebra v2: numeric keys follow from the arithmetic", () => {
     eq(k(L3, 5), dot([1, -3], [2, 4]));
     eq(k(L3, 6), len([5, 12]));
     eq(k(L3, 10), dot([-2, 5], [3, 4]));
+    // Item 8 is a number now (it was a three-way choice): (1, 2) · (3, 4).
+    eq(k(L3, 8), dot([1, 2], [3, 4]));
+    expect(key(k(L3, 8))).toBe(1 * 3 + 2 * 4);
+    // The slips it flags: all four entries added, and all four multiplied.
+    expect((find(k(L3, 8)).misconceptions ?? []).flatMap((m) => m.match.numeric ?? [])).toEqual([
+      1 + 2 + 3 + 4,
+      1 * 2 * 3 * 4,
+    ]);
     expect(len([-7, 24])).toBe(25);
     const L4 = "orthogonal-and-unit-vectors";
     eq(k(L4, 7), 1 / len([6, 8]));
@@ -93,7 +115,8 @@ describe("linear algebra v2: numeric keys follow from the arithmetic", () => {
     // (2, 0) and (0, 3) are orthogonal, with lengths 2 and 3.
     expect(dot([2, 0], [0, 3])).toBe(0);
     expect(len([2, 0])).not.toBe(1);
-    expect(choiceLabel(k(L4, 3))).toBe("Orthogonal, but not orthonormal");
+    expect(choiceLabel(k(L4, 3))).toBe("Orthogonal but not orthonormal");
+    expect(choiceIds(k(L4, 3))).toEqual(["a"]);
     expect(len([0, 0])).toBe(0);
     expect(choiceLabel(k(L4, 4))).toBe("No");
   });
@@ -118,7 +141,15 @@ describe("linear algebra v2: numeric keys follow from the arithmetic", () => {
     eq(k(L6, 6), apply([[3, 0], [0, -2]], [-1, 4])[1]!);
     eq(k(L6, 10), 3 * 2 + 2 * 1);
     // S(0) = (1, 0) is not zero, so the shift is not linear.
-    expect(choiceLabel(k(L6, 4))).toBe("No");
+    const shift = (v: number[]) => [v[0]! + 1, v[1]!];
+    const zeroToZero = shift([0, 0]).every((x) => x === 0);
+    expect(zeroToZero).toBe(false);
+    expect(choiceLabel(k(L6, 4))).toBe(`${yesNo(zeroToZero)}, because it does not send the zero vector to zero.`);
+    expect(choiceIds(k(L6, 4))).toEqual(["b"]);
+    // The other reasons fail: the shift moves every vector by the same (1, 0), so "further than
+    // others" is false, and adding the same vector to every input does not make S linear.
+    for (const v of [[0, 0], [2, 3], [-4, 1]]) expect(sub(shift(v), v)).toEqual([1, 0]);
+    expect(shift([3, 4])).not.toEqual(shift([1, 2]).map((x, i) => x + shift([2, 2])[i]!));
     expect(choiceLabel(k(L6, 3))).toBe("T(u) + T(v)");
     const L7 = "compose-matrix-maps";
     const A7 = [[1, 2], [0, 1]], B7 = [[2, 0], [0, 3]];
@@ -173,7 +204,13 @@ describe("linear algebra v2: numeric keys follow from the arithmetic", () => {
     expect(choiceLabel(k(L10, 1))).toBe("One solution");
     expect(choiceLabel(k(L10, 2))).toBe("No solution");
     expect(choiceLabel(k(L10, 3))).toBe("Infinitely many solutions");
-    expect(choiceLabel(k(L10, 5))).toBe("Yes");
+    // A times the zero vector is the zero vector, whatever A is, so A x = 0 always has x = 0.
+    const zeroSolutions = [[[1, 1], [2, 2]], [[1, 2], [3, 4]], [[0, 0], [0, 0]], [[5, -1], [10, -2]]];
+    for (const A of zeroSolutions) expect(apply(A, [0, 0])).toEqual([0, 0]);
+    expect(choiceLabel(k(L10, 5))).toBe(
+      `${yesNo(zeroSolutions.every((A) => apply(A, [0, 0]).every((x) => x === 0)))}, because A times the zero vector is always the zero vector.`,
+    );
+    expect(choiceIds(k(L10, 5))).toEqual(["a"]);
     const L11 = "spans-and-subspaces";
     const rank2 = (u: number[], v: number[]) => (det2([u, v]) === 0 ? 1 : 2);
     eq(k(L11, 7), 3 * 2);
@@ -200,7 +237,28 @@ describe("linear algebra v2: numeric keys follow from the arithmetic", () => {
     eq(k(L12, 10), (8 - 2) / 2);
     expect(rank2([1, 0], [0, 0])).toBe(1);
     expect(choiceLabel(k(L12, 2))).toBe("No");
-    expect(choiceLabel(k(L12, 4))).toBe("No");
+    // (1, 0) and (0, 0): the determinant is 0, so the pair spans only a line (rank 1).
+    expect(det2([[1, 0], [0, 0]])).toBe(0);
+    expect(choiceLabel(k(L12, 4))).toBe(
+      `${yesNo(rank2([1, 0], [0, 0]) === 2)}, because the pair spans only a line.`,
+    );
+    expect(choiceIds(k(L12, 4))).toEqual(["b"]);
+    // A zero entry does not rule out a basis: (1, 0) and (0, 1) each hold a zero.
+    expect(det2([[1, 0], [0, 1]])).not.toBe(0);
+    // 12-2-v2 (in the lesson): (2, 1) and (4, 2). (4, 2) = 2 (2, 1), so the determinant is 0.
+    expect(find(k(L12, "2-v2")).prompt).toContain("(2, 1) and (4, 2)");
+    expect([4, 2]).toEqual([2, 1].map((x) => 2 * x));
+    expect(det2([[2, 1], [4, 2]])).toBe(0);
+    expect(choiceLabel(k(L12, "2-v2"))).toBe(
+      `${yesNo(det2([[2, 1], [4, 2]]) !== 0)}, because (4, 2) is twice (2, 1), so the pair spans only a line.`,
+    );
+    expect(choiceIds(k(L12, "2-v2"))).toEqual(["c"]);
+    // The wrong reasons: two vectors in the plane are not enough, a nonzero vector pair can still
+    // lie on one line, and different lengths do not matter ((2, 1) and (0, 3) differ and span).
+    expect(det2([[2, 1], [4, 2]])).toBe(0);
+    expect(len([2, 1])).not.toBe(len([4, 2]));
+    expect(det2([[2, 1], [0, 3]])).not.toBe(0);
+    expect(len([2, 1])).not.toBe(len([0, 3]));
   });
 
   it("lessons 13 to 16: rank, determinants, projection, least squares", () => {
@@ -300,7 +358,14 @@ describe("linear algebra v2: numeric keys follow from the arithmetic", () => {
     expect(unit(r)[0]).toBeCloseTo(0.8, 9);
     expect(unit(r)[1]).toBeCloseTo(-0.6, 9);
     expect(sub([2, 2], proj([2, 2], [1, 1]))).toEqual([0, 0]);
-    expect(choiceLabel(k(L17, 4))).toBe("No");
+    // The residual of v = (2, 2) off u = (1, 1) is the zero vector, which has no unit version.
+    expect(choiceLabel(k(L17, 4))).toBe(
+      `${yesNo(len(sub([2, 2], proj([2, 2], [1, 1]))) > 0)}, because v is a multiple of u, so nothing is left.`,
+    );
+    expect(choiceIds(k(L17, 4))).toEqual(["b"]);
+    // A longer vector not along u still leaves a residual, so "longer" is not the reason.
+    expect(len([1, 3])).toBeGreaterThan(len([1, 1]));
+    expect(len(sub([1, 3], proj([1, 3], [1, 1])))).toBeGreaterThan(0);
     const L18 = "eigenvectors-and-eigenvalues";
     const lam = (m: number[][], v: number[]) => {
       const out = apply(m, v);
@@ -323,7 +388,11 @@ describe("linear algebra v2: numeric keys follow from the arithmetic", () => {
     expect(apply(S, [1, 0])).toEqual([2, 1]);
     expect(det2([apply(S, [1, 0]), [1, 0]])).not.toBe(0);
     expect(choiceLabel(k(L18, 4))).toBe("No");
-    expect(choiceLabel(k(L18, 6))).toBe("Yes, with eigenvalue 0");
+    // A v = 0 with v nonzero is A v = 0 v: an eigenvector, with eigenvalue 0.
+    expect(apply([[1, 1], [1, 1]], [1, -1])).toEqual([0, 0]);
+    expect(lam([[1, 1], [1, 1]], [1, -1])).toBe(0);
+    expect(choiceLabel(k(L18, 6))).toBe("Yes, because A v = 0v, so the eigenvalue is 0.");
+    expect(choiceIds(k(L18, 6))).toEqual(["1"]);
     const L19 = "diagonalise-a-map";
     // Hook: 3 (1, 1) + (1, -1) = (4, 2).
     eq(k(L19, 7), 3 * 1 + 1);
@@ -612,7 +681,11 @@ describe("linear algebra story lessons 6 to 10", () => {
     // Skill check items.
     eq(k("one-none-or-many-solutions", 10), 5 - 2);
     eq(k("one-none-or-many-solutions", 6), 3 - 1);
-    expect(choiceLabel(k("one-none-or-many-solutions", 5))).toBe("Yes");
+    expect(apply([[1, 2], [3, 4]], [0, 0])).toEqual([0, 0]);
+    expect(choiceLabel(k("one-none-or-many-solutions", 5))).toBe(
+      "Yes, because A times the zero vector is always the zero vector.",
+    );
+    expect(choiceIds(k("one-none-or-many-solutions", 5))).toEqual(["a"]);
   });
 });
 
@@ -711,8 +784,17 @@ describe("linear algebra story lessons 11 to 15", () => {
     expect(det2([[3, 1], [0, 0]])).toBe(0);
     expect(det2([[1, 0], [0, 0]])).toBe(0);
     eq(k(L, 1), 2);
-    expect(choiceLabel(k(L, 4))).toBe("No");
+    expect(choiceLabel(k(L, 4))).toBe("No, because the pair spans only a line.");
+    expect(choiceIds(k(L, 4))).toEqual(["b"]);
     expect(choiceLabel(k(L, 2))).toBe("No");
+    // Item 2-v2 is the one the lesson asks: (2, 1) and (4, 2) with (4, 2) = 2 (2, 1).
+    expect(det2([[2, 1], [4, 2]])).toBe(0);
+    expect(choiceLabel(k(L, "2-v2"))).toBe(
+      "No, because (4, 2) is twice (2, 1), so the pair spans only a line.",
+    );
+    const lesson = bundle.lessons.find((item) => item.id === L)!;
+    expect(lesson.questionIds).toContain(k(L, "2-v2"));
+    expect(lesson.questionIds).not.toContain(k(L, 2));
   });
 
   it("lesson 13: recomputes the numbers the teaching screens and items quote", () => {
@@ -927,7 +1009,14 @@ describe("linear algebra story lessons 16 to 20", () => {
     eq(k(L, 4), squares([2, 4, 9], 5));
     eq(k(L, 2), [2, 4, 9].reduce((s, x) => s + (x - 5), 0));
     expect(mean([2, 4, 9])).toBe(5);
-    expect(choiceLabel(k(L, 9))).toBe("The residuals are perpendicular to (1, 1, 1), so their entries add up to zero.");
+    // The residuals off the mean are perpendicular to (1, 1, 1), so they sum to zero. The other
+    // reasons fail: the misses differ in size, and squaring makes them all positive.
+    const misses = [2, 4, 9].map((x) => x - 5);
+    expect(dot(misses, [1, 1, 1])).toBe(0);
+    expect(new Set(misses.map(Math.abs)).size).toBeGreaterThan(1);
+    expect(misses.map((x) => x * x).reduce((a, b) => a + b, 0)).toBeGreaterThan(0);
+    expect(choiceLabel(k(L, 9))).toBe("They are perpendicular to (1, 1, 1), so their entries sum to zero.");
+    expect(choiceIds(k(L, 9))).toEqual(["c"]);
     // The seedling: 3, 3, 6 at weeks 0, 1, 2.
     const seed = line([3, 3, 6]);
     expect(seed.c).toBeCloseTo(2.5, 9);
@@ -1001,7 +1090,8 @@ describe("linear algebra story lessons 16 to 20", () => {
     expect(sub([3, 6], proj([3, 6], [1, 2]))).toEqual([0, 0]);
     expect(sub([3, 5], proj([3, 5], [1, 2])).some((x) => Math.abs(x) > 0.1)).toBe(true);
     expect(sub([2, 2], proj([2, 2], [1, 1]))).toEqual([0, 0]);
-    expect(choiceLabel(k(L, 4))).toBe("No");
+    expect(choiceLabel(k(L, 4))).toBe("No, because v is a multiple of u, so nothing is left.");
+    expect(choiceIds(k(L, 4))).toEqual(["b"]);
     // Skill check.
     eq(k(L, 1), sub([1, 0], proj([1, 0], [1, 1]))[1]!);
     eq(k(L, 3), dot([1, 1], [1, -1]));
@@ -1034,7 +1124,9 @@ describe("linear algebra story lessons 16 to 20", () => {
     // Skill check.
     eq(k(L, 5), lamOf([[4, 0], [0, 2]], [0, 1]));
     eq(k(L, 10), lamOf([[1, 2], [2, 1]], [1, -1]));
-    expect(choiceLabel(k(L, 6))).toBe("Yes, with eigenvalue 0");
+    expect(lamOf([[1, 1], [1, 1]], [1, -1])).toBe(0);
+    expect(choiceLabel(k(L, 6))).toBe("Yes, because A v = 0v, so the eigenvalue is 0.");
+    expect(choiceIds(k(L, 6))).toEqual(["1"]);
     // The recap lists these factors.
     expect([lamOf(T, [1, 0]), lamOf(T, [1, -1]), 5, lamOf(S, [1, -1]), lamOf([[-2, 0], [0, 3]], [1, 0])]).toEqual([3, 2, 5, 1, -2]);
   });

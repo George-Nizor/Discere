@@ -27,8 +27,10 @@ const question = (id: string): Question => {
 type Row = {
   id: string;
   kind: "n" | "c";
-  expect: number | string | boolean | null;
+  expect: number | string | boolean | null | unknown[];
   choice?: string;
+  /** For a choice row: the label of the marked option. Rows added or changed in the question review carry one. */
+  label?: string;
   code: string | null;
 };
 const ROWS: Row[] = [
@@ -105,7 +107,7 @@ const ROWS: Row[] = [
   "id": "python-arrays-and-shape-2",
   "kind": "n",
   "expect": 12,
-  "code": "3 * 4"
+  "code": "import numpy as np\nanswer = np.zeros((3, 4)).size"
  },
  {
   "id": "python-arrays-and-shape-3",
@@ -991,7 +993,8 @@ const ROWS: Row[] = [
  {
   "id": "python-numbers-and-types-3",
   "kind": "c",
-  "choice": "a",
+  "choice": "b",
+  "label": "`False`",
   "code": "0.1 + 0.2 == 0.3",
   "expect": false
  },
@@ -1412,7 +1415,7 @@ const ROWS: Row[] = [
   "id": "python-strings-and-slices-faded-count",
   "kind": "n",
   "expect": 4,
-  "code": "len('LANTERN'[1:5])"
+  "code": "len('BANTER'[1:5])"
  },
  {
   "id": "python-summaries-and-groups-1",
@@ -1563,6 +1566,133 @@ const ROWS: Row[] = [
   "kind": "n",
   "expect": 6,
   "code": "import pandas as pd\nanswer = int((pd.Series(['a,b', 'c', 'd,e,f']).str.count(',') + 1).sum())"
+ },
+ {
+  "id": "python-strings-and-slices-6-v2",
+  "kind": "n",
+  "expect": 5,
+  "code": "len('NOTEBOOK'[:-3])"
+ },
+ {
+  "id": "python-keys-and-sets-get-both",
+  "kind": "n",
+  "expect": 8,
+  "code": "prices = {'tea': 3, 'jam': 2}\nanswer = prices.get('tea', 0) + prices.get('milk', 5)"
+ },
+ {
+  "id": "python-errors-and-resources-1-v2",
+  "kind": "n",
+  "expect": 35,
+  "code": "def parse(text, fallback):\n    try:\n        return int(text)\n    except ValueError:\n        return fallback\nanswer = parse('30', 5) + parse('n/a', 5)"
+ },
+ {
+  "id": "python-read-and-inspect-4-v2",
+  "kind": "n",
+  "expect": 1,
+  "code": "import io\nimport pandas as pd\ntext = 'a|b|c|d|e\\n1|2|3|4|5\\n6|7|8|9|10\\n'\nanswer = pd.read_csv(io.StringIO(text), sep=';').shape[1]"
+ },
+ {
+  "id": "python-read-and-inspect-7-v2",
+  "kind": "n",
+  "expect": 4,
+  "code": "import io\nimport pandas as pd\ntext = 'shop;units;price;date\\nBay;5;2.5;2026-01-01\\n'\nanswer = pd.read_csv(io.StringIO(text), sep=';').shape[1]"
+ },
+ {
+  "id": "python-labels-and-positions-diff",
+  "kind": "n",
+  "expect": 1,
+  "code": "import pandas as pd\ndf = pd.DataFrame({'v': [1, 2, 3, 4]}, index=[10, 20, 30, 40])\nanswer = len(df.loc[20:40]) - len(df.iloc[1:3])"
+ },
+ {
+  "id": "python-summaries-and-groups-pull-check-v2",
+  "kind": "n",
+  "expect": 5.5,
+  "code": "import statistics\ncolumn = [1, 5, 6, 9]\ncolumn[3] = 90\nanswer = statistics.median(column)"
+ },
+ {
+  "id": "python-reshape-a-report-missing-cells-v2",
+  "kind": "n",
+  "expect": 5,
+  "code": "import pandas as pd\ndf = pd.DataFrame({'shop': ['Bay', 'Bay', 'Hill', 'Lake'], 'month': ['Jan', 'Feb', 'Jan', 'Mar'], 'n': [1, 1, 1, 1]})\ntable = df.pivot_table(index='shop', columns='month', values='n', aggfunc='sum')\nanswer = int(table.isna().sum().sum())"
+ },
+ {
+  "id": "python-keys-and-sets-2-v2",
+  "kind": "c",
+  "choice": "a",
+  "label": "`in` checks the keys, and 3 is stored as a value",
+  "code": "stock = {'tea': 3}\nanswer = [3 in stock, 3 in stock.values()]",
+  "expect": [
+   false,
+   true
+  ]
+ },
+ {
+  "id": "python-conditions-and-loops-4-v2",
+  "kind": "c",
+  "choice": "c",
+  "label": "`x > 4 and x < 7`",
+  "code": "x = 6\nanswer = [not x > 5, x > 6 and x < 9, x > 4 and x < 7, x < 3 or x > 8]",
+  "expect": [
+   false,
+   false,
+   true,
+   false
+  ]
+ },
+ {
+  "id": "python-errors-and-resources-4-v2",
+  "kind": "c",
+  "choice": "b",
+  "label": "The file in `/home/ana/projects`, where it was launched",
+  "code": "import os, subprocess, sys, tempfile\nbase = tempfile.mkdtemp()\nfor folder in ('scripts', 'projects'):\n    os.makedirs(os.path.join(base, folder))\n    with open(os.path.join(base, folder, 'data.csv'), 'w') as handle:\n        handle.write(folder)\nwith open(os.path.join(base, 'scripts', 'load.py'), 'w') as handle:\n    handle.write(\"print(open('data.csv').read())\")\nrun = subprocess.run([sys.executable, os.path.join(base, 'scripts', 'load.py')], cwd=os.path.join(base, 'projects'), capture_output=True, text=True)\nanswer = run.stdout.strip()",
+  "expect": "projects"
+ },
+ {
+  "id": "python-read-and-inspect-faded-cols-v2",
+  "kind": "c",
+  "choice": "a",
+  "label": "`(7, 1)`",
+  "code": "import pandas as pd\ndf = pd.DataFrame({'shop': list('abcdefg'), 'units': range(7), 'price': range(7)})\nanswer = [list(df[['units']].shape), list(df['units'].shape), list(df.shape)]",
+  "expect": [
+   [
+    7,
+    1
+   ],
+   [
+    7
+   ],
+   [
+    7,
+    3
+   ]
+  ]
+ },
+ {
+  "id": "python-read-and-inspect-id-length-v2",
+  "kind": "c",
+  "choice": "a",
+  "label": "The number 450",
+  "code": "import io\nimport pandas as pd\ndf = pd.read_csv(io.StringIO('code\\n0450\\n0012\\n'))\nfirst = df['code'].iloc[0]\nanswer = [type(first.item()).__name__, int(first)]",
+  "expect": [
+   "int",
+   450
+  ]
+ },
+ {
+  "id": "python-filters-and-columns-3-v2",
+  "kind": "c",
+  "choice": "a",
+  "label": "`and` asks whether a whole column is true, which has no single answer",
+  "code": "import pandas as pd\ndf = pd.DataFrame({'x': [1, 3, 5], 'y': [9, 4, 6]})\ndef raises(call):\n    try:\n        call()\n    except ValueError:\n        return True\n    return False\nanswer = [raises(lambda: df['x'] > 2 and df['y'] < 8), raises(lambda: (df['x'] > 2) and (df['y'] < 8)), ((df['x'] > 2) & (df['y'] < 8)).tolist()]",
+  "expect": [
+   true,
+   true,
+   [
+    false,
+    true,
+    true
+   ]
+  ]
  }
 ];
 
@@ -1776,8 +1906,58 @@ describe("Python for Data Analysis (v2 lessons)", () => {
         .choices!.filter((choice) => assessTextAnswer(choice.label, authority).correct)
         .map((choice) => choice.id);
       expect(marked, row.id).toEqual([row.choice]);
+      // Rows added or changed in the question review also pin the option's wording.
+      if (row.label !== undefined)
+        expect(item.choices!.find((choice) => choice.id === marked[0])!.label, row.id).toBe(row.label);
     }
   });
+
+  it("asks the replacement questions the review added, and names the error their code raises", () => {
+    const asked = new Set(
+      candidate.lessons.flatMap((lesson) => [
+        ...lesson.questionIds,
+        lesson.intro?.hook.questionId,
+        ...lesson.steps.flatMap((step) => [
+          step.checkQuestionId,
+          ...(step.workedSteps ?? []).flatMap((line) => [line.blank?.questionId, line.selfExplain?.questionId]),
+        ]),
+      ]),
+    );
+    // Every question that carries a code snippet in ROWS and was added by the review is asked.
+    for (const id of [
+      "python-strings-and-slices-6-v2",
+      "python-strings-and-slices-index-error-name-v2",
+      "python-keys-and-sets-2-v2",
+      "python-keys-and-sets-get-both",
+      "python-conditions-and-loops-4-v2",
+      "python-errors-and-resources-1-v2",
+      "python-errors-and-resources-4-v2",
+      "python-read-and-inspect-4-v2",
+      "python-read-and-inspect-7-v2",
+      "python-read-and-inspect-faded-cols-v2",
+      "python-read-and-inspect-id-length-v2",
+      "python-labels-and-positions-diff",
+      "python-filters-and-columns-3-v2",
+      "python-summaries-and-groups-pull-check-v2",
+      "python-reshape-a-report-missing-cells-v2",
+    ])
+      expect(asked.has(id), id).toBe(true);
+    if (!hasPython) return;
+    // `'DATA'[4]` has four characters, so position 4 is past the end: Python raises IndexError,
+    // and the item accepts that name (and the spaced spelling) but not the neighbouring errors.
+    const raised = (code: string) =>
+      evaluate(`try:\n    ${code}\nexcept Exception as error:\n    answer = type(error).__name__`);
+    expect(evaluate("'DATA'[3]")).toBe("A");
+    const named = raised("'DATA'[4]");
+    expect(named).toBe("IndexError");
+    const authority = question("python-strings-and-slices-index-error-name-v2").answerAuthority;
+    if (authority.kind !== "text") throw new Error("index-error-name-v2 is not text");
+    expect(authority.acceptedIdeas).toEqual([named]);
+    for (const answer of ["IndexError", "indexerror", "index error"])
+      expect(assessTextAnswer(answer, authority).correct, answer).toBe(true);
+    for (const answer of ["KeyError", "ValueError", "TypeError"])
+      expect(assessTextAnswer(answer, authority).correct, answer).toBe(false);
+  }, 30_000);
 
   it("gives every misconception a distinct wrong value, never the key", () => {
     for (const row of ROWS.filter((item) => item.kind === "n")) {

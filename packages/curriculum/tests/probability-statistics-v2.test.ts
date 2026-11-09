@@ -32,6 +32,25 @@ const acceptedChoice = (id: string): string[] => {
   return (item.choices ?? []).filter((c) => accepted.includes(c.label)).map((c) => c.id);
 };
 
+/** The label of the one choice an item marks as correct. */
+const acceptedLabel = (id: string): string => {
+  const ids = acceptedChoice(id);
+  expect(ids, id).toHaveLength(1);
+  return question(id).choices!.find((c) => c.id === ids[0])!.label;
+};
+/** The id of every question a lesson asks: its skill check, its steps and its worked steps. */
+const askedIn = (lessonId: string): string[] => {
+  const lesson = bundle.lessons.find((l) => l.id === lessonId)!;
+  return [
+    ...lesson.questionIds,
+    lesson.intro?.hook.questionId,
+    ...lesson.steps.flatMap((s) => [
+      s.checkQuestionId,
+      ...(s.workedSteps ?? []).flatMap((w) => [w.blank?.questionId, w.selfExplain?.questionId]),
+    ]),
+  ].filter((id): id is string => Boolean(id));
+};
+
 const range = (n: number) => Array.from({ length: n }, (_, i) => i + 1);
 const grid = (sides: number) => range(sides).flatMap((a) => range(sides).map((b) => [a, b] as const));
 const six = grid(6);
@@ -72,7 +91,25 @@ describe("Probability and Statistics v2", () => {
     near(key(p + "9"), total(six, (s) => s === 8) / 36);
     near(key(p + "10"), ["HH", "HT", "TH", "TT"].filter((r) => r.split("H").length === 2).length / 4);
     expect(acceptedChoice(p + "2")).toEqual(["b"]);
-    expect(acceptedChoice(p + "6")).toEqual(["a"]);
+    // 2-v2 (in the lesson): which comes up more often, a total of 4 or of 6? Count the ordered pairs.
+    const ways = (t: number) => total(six, (s) => s === t);
+    expect([ways(4), ways(6)]).toEqual([3, 5]);
+    const moreOften = ways(6) > ways(4) ? "A total of 6" : ways(6) < ways(4) ? "A total of 4" : "Both come up equally often";
+    expect(question(p + "2-v2").choices!.map((c) => c.label)).toEqual([
+      "A total of 4",
+      "A total of 6",
+      "Both come up equally often",
+    ]);
+    expect(acceptedLabel(p + "2-v2")).toBe(moreOften);
+    expect(acceptedChoice(p + "2-v2")).toEqual(["b"]);
+    expect(askedIn("counting-outcomes")).toContain(p + "2-v2");
+    expect(askedIn("counting-outcomes")).not.toContain(p + "2");
+    // Item 6: favourable ÷ all works when the outcomes are equally likely. The 36 ordered pairs
+    // are, but the 11 totals (2 to 12) are not: 7 has six ways and 2 has one.
+    expect(acceptedLabel(p + "6")).toBe("Whenever the outcomes are equally likely");
+    expect(acceptedChoice(p + "6")).toEqual(["c"]);
+    expect(new Set(range(11).map((i) => ways(i + 1))).size).toBeGreaterThan(1);
+    expect(new Set(six.map(() => 1 / 36)).size).toBe(1);
   });
 
   it("when-the-condition-changes: keys count inside the restricted grid", () => {
@@ -118,6 +155,21 @@ describe("Probability and Statistics v2", () => {
     expect(both(4)).toBeCloseTo(4 / 9, 9);
     expect(acceptedChoice(p + "3")).toEqual(["b"]);
     expect(acceptedChoice(p + "6")).toEqual(["b"]);
+    // 6-v2 (in the lesson): A is "even" and B is "the roll is 5" on one die. They cannot both
+    // happen, and P(A and B) = 0 is not P(A) × P(B), so they are exclusive and not independent.
+    const faces = range(6);
+    const pA = faces.filter((f) => f % 2 === 0).length / 6;
+    const pB = faces.filter((f) => f === 5).length / 6;
+    const pBoth = faces.filter((f) => f % 2 === 0 && f === 5).length / 6;
+    const exclusive = pBoth === 0;
+    const independent = Math.abs(pBoth - pA * pB) < 1e-12;
+    expect([exclusive, independent]).toEqual([true, false]);
+    expect(acceptedLabel(p + "6-v2")).toBe(
+      `A and B are ${exclusive && independent ? "both mutually exclusive and independent" : exclusive ? "mutually exclusive" : "independent"}`,
+    );
+    expect(acceptedChoice(p + "6-v2")).toEqual(["a"]);
+    expect(askedIn("independent-repetitions")).toContain(p + "6-v2");
+    expect(askedIn("independent-repetitions")).not.toContain(p + "6");
     expect(acceptedChoice(p + "11")).toEqual(["a"]);
   });
 
@@ -128,6 +180,9 @@ describe("Probability and Statistics v2", () => {
     expect(key(p + "4")).toBe(median([10, 2, 6, 4]));
     expect(key(p + "5")).toBe(mean([1, 3, 3, 5, 18]));
     expect(key(p + "8")).toBe(4 + 6);
+    // Item 8 now gives the ordered list 2, 4, 6, 10: its two middle values are 4 and 6.
+    const ordered = [2, 4, 6, 10];
+    expect(key(p + "8")).toBe(ordered[ordered.length / 2 - 1]! + ordered[ordered.length / 2]!);
     expect(key(p + "9")).toBe(median([180, 190, 200, 210, 720]));
     expect(key(p + "10")).toBe(median([1, 3, 3, 5, 18]));
     expect(key(p + "11")).toBe(median([1, 2, 9]));
@@ -139,13 +194,44 @@ describe("Probability and Statistics v2", () => {
     expect(mean([2, 4, 4, 5, 25])).toBe(8);
     expect(median([2, 4, 4, 5, 25])).toBe(median([2, 4, 4, 5, 5]));
     expect(acceptedChoice(p + "1")).toEqual(["b"]);
-    expect(acceptedChoice(p + "6")).toEqual(["c"]);
+    // Item 6: with an even count the median is halfway between the two middle values. It need not be
+    // in the list (median of 2, 4, 6, 10 is 5) and need not equal the mean (2, 4, 6, 10 has mean 5.5).
+    expect(acceptedLabel(p + "6")).toBe("It is halfway between the two middle values");
+    expect(acceptedChoice(p + "6")).toEqual(["a"]);
+    expect(median([2, 4, 6, 10])).toBe((4 + 6) / 2);
+    expect([2, 4, 6, 10]).not.toContain(median([2, 4, 6, 10]));
+    expect(median([1, 2, 3, 10])).not.toBe(mean([1, 2, 3, 10]));
     expect(acceptedChoice(p + "7")).toEqual(["a"]);
+    // typical-price-v2 (in the lesson): journeys of 22, 25, 25, 28 and 95 minutes. The median is 25
+    // and the mean is 39, so "either one" is wrong and the 95 pulls only the mean up.
+    const journeys = [22, 25, 25, 28, 95];
+    expect(median(journeys)).toBe(25);
+    expect(mean(journeys)).toBe(39);
+    expect(median(journeys)).not.toBe(mean(journeys));
+    expect(question(p + "typical-price-v2").choices!.map((c) => c.label)).toContain(
+      `The mean, ${mean(journeys)} minutes, because it uses every journey`,
+    );
+    expect(acceptedLabel(p + "typical-price-v2")).toBe(
+      `The median, ${median(journeys)} minutes, because the 95 does not pull it up`,
+    );
+    expect(acceptedChoice(p + "typical-price-v2")).toEqual(["c"]);
+    expect(askedIn("centre-and-outliers")).toContain(p + "typical-price-v2");
+    expect(askedIn("centre-and-outliers")).not.toContain(p + "typical-price");
   });
 
   it("same-centre-different-spread: range, variance and standard deviation", () => {
     const p = "stats-same-centre-different-spread-";
     expect(key(p + "hook")).toBe(spread([0, 0, 20, 20]));
+    // hook-v2 (in the lesson): Bus C is late by 3, 11, 8 and 15 minutes, so its range is 15 − 3.
+    const busC = [3, 11, 8, 15];
+    expect(key(p + "hook-v2")).toBe(spread(busC));
+    expect(key(p + "hook-v2")).toBe(Math.max(...busC) - Math.min(...busC));
+    expect(question(p + "hook-v2").misconceptions!.flatMap((m) => m.match.numeric ?? [])).toEqual([
+      Math.max(...busC), // the largest delay
+      Math.min(...busC) + Math.max(...busC), // the two extremes added
+      mean(busC), // the mean
+    ]);
+    expect(askedIn("same-centre-different-spread")).toContain(p + "hook-v2");
     expect(key(p + "2")).toBe(spread([2, 2, 6, 6]));
     expect(key(p + "4")).toBe(variance([0, 0, 8, 8]));
     expect(key(p + "5")).toBe(spread([3, 4, 4, 7, 13]));
@@ -156,7 +242,15 @@ describe("Probability and Statistics v2", () => {
     expect(variance([1, 1, 1, 9])).toBe(12);
     expect(mean([4, 4, 4, 4])).toBe(mean([2, 2, 6, 6]));
     expect(acceptedChoice(p + "1")).toEqual(["a"]);
-    expect(acceptedChoice(p + "6")).toEqual(["b"]);
+    // Item 6: the population variance divides the squared deviations by the count and the sample
+    // variance by one less. For 1, 1, 1, 9 that is 48 / 4 = 12 and 48 / 3 = 16, so the two differ.
+    const deviations = [1, 1, 1, 9].map((x) => (x - mean([1, 1, 1, 9])) ** 2);
+    const squares = deviations.reduce((a, b) => a + b, 0);
+    expect([squares / 4, squares / 3]).toEqual([12, 16]);
+    expect(acceptedLabel(p + "6")).toBe(
+      "The population divides by its count, the sample by one less than its count",
+    );
+    expect(acceptedChoice(p + "6")).toEqual(["c"]);
     expect(acceptedChoice(p + "7")).toEqual(["a"]);
   });
 
@@ -182,9 +276,23 @@ describe("Probability and Statistics v2", () => {
     expect(mean(pop(2, 2))).toBe(2);
     expect(mean(pop(2, 8))).toBe(5);
     expect(acceptedChoice(p + "3")).toEqual(["b"]);
-    expect(acceptedChoice(p + "5")).toEqual(["b"]);
+    expect(acceptedLabel(p + "5")).toBe("Residents who never visit that gym have no chance of being asked");
+    expect(acceptedChoice(p + "5")).toEqual(["c"]);
+    expect(acceptedLabel(p + "6")).toBe("Members are chosen by chance, and each has a known chance above zero");
     expect(acceptedChoice(p + "6")).toEqual(["b"]);
     expect(acceptedChoice(p + "8")).toEqual(["a"]);
+    // Item 4: six morning customers at £4 and six evening customers at £10, all twelve counted.
+    expect(mean([...Array(6).fill(4), ...Array(6).fill(10)])).toBe(key(p + "4"));
+    // 7-v2 (in the lesson): the teacher asks her own 30 pupils out of 900. The 30 are the sample, a
+    // part of the whole group; the 900 are the population the question is about.
+    const school = { everyone: 900, asked: 30 };
+    expect(school.asked).toBeLessThan(school.everyone);
+    expect(acceptedLabel(p + "7-v2")).toBe(
+      `The ${school.asked} pupils are the sample and the ${school.everyone} pupils are the population`,
+    );
+    expect(acceptedChoice(p + "7-v2")).toEqual(["a"]);
+    expect(askedIn("samples-and-populations")).toContain(p + "7-v2");
+    expect(askedIn("samples-and-populations")).not.toContain(p + "7");
   });
 
   it("samples-and-populations: story shape, and the opener follows the previous lesson's hook", () => {
