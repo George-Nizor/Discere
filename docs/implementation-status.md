@@ -1,6 +1,16 @@
 # Implementation status
 
-Updated: 2026-11-06
+Updated: 2026-11-10
+
+Release 1.12.0 checks every question against what its format is for. Each of the roughly 7,800
+questions in the 65 courses was kept, fixed or converted, with the reason recorded. Faded examples
+now leave out a real step of a method the lesson has just shown; the ones that only asked for a
+conclusion became ordinary questions. Free text is kept for recalling a single named term, because
+the marker matches phrases, and everything else is multiple choice or a number. Questions that
+repeated the teaching's own example or printed their answer got new cases, and correct options no
+longer stand out by length. The marker no longer finds a number inside a longer one and keeps
+sharps and flats, a faded example's question reads as the question, and short answers get a
+one-line box.
 
 Release 1.11.2 is a full read of every lesson. Sixteen reviewers read each screen, question,
 hint, reveal, worked answer, feedback line and card in all 65 courses as a learner would, and made
