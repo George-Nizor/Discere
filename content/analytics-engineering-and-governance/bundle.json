@@ -842,18 +842,14 @@
           "id": "faded-overstate",
           "kind": "faded_example",
           "blocks": [],
-          "headline": "Now find the sum for orders of 50, 70 and 90 with 2, 4 and 1 lines.",
+          "headline": "Now find `SUM(order_total)` over the line table for orders of 50, 70 and 90 with 2, 4 and 1 lines.",
           "workedSteps": [
             {
-              "text": "Each total is added once for every line it has.",
+              "text": "Each order's total is repeated on every line the order has, so each total is added once for every line.",
               "math": "50 × 2, 70 × 4, 90 × 1"
             },
             {
-              "text": "The three products are 100, 280 and 90, and the table sums them.",
-              "math": "100 + 280 + 90"
-            },
-            {
-              "text": "Work out what `SUM(order_total)` returns over the line table.",
+              "text": "`SUM` adds the order total held on every row of the line table.",
               "blank": {
                 "questionId": "anaeg-from-questions-to-grain-faded-sum"
               }
@@ -949,7 +945,7 @@
       "visualKind": "none",
       "activityId": "",
       "questionIds": [
-        "anaeg-from-questions-to-grain-check-grain",
+        "anaeg-from-questions-to-grain-check-grain-v2",
         "anaeg-from-questions-to-grain-check-mixed",
         "anaeg-from-questions-to-grain-check-process"
       ],
@@ -1191,7 +1187,7 @@
               "math": "300 + 100 = 400 and 10 + 5 = 15"
             },
             {
-              "text": "Divide revenue by quantity last, as the price the whole set achieved.",
+              "text": "The price that the whole set of sales achieved is the revenue earned for each unit sold.",
               "blank": {
                 "questionId": "anaeg-facts-and-dimensions-avg-price"
               }
@@ -1349,7 +1345,7 @@
       "activityId": "",
       "questionIds": [
         "anaeg-facts-and-dimensions-check-semi",
-        "anaeg-facts-and-dimensions-check-balance",
+        "anaeg-facts-and-dimensions-check-balance-v2",
         "anaeg-facts-and-dimensions-check-accum"
       ],
       "flashcardIds": [
@@ -1791,18 +1787,18 @@
           "id": "faded-asof",
           "kind": "faded_example",
           "blocks": [],
-          "headline": "Now do the same for R3 and R4 with the sales given below, where R3 moves from West to East on 2026-02-01.",
+          "headline": "Now work out East's total with an as-of join for R3, who moves from West to East on 2026-02-01, and R4, who is always in East.",
           "workedSteps": [
             {
-              "text": "The sale of 10 on 2026-01-05 is before 2026-02-01, so it belongs to West.",
+              "text": "R3's sale of 10 on 2026-01-05 is before 2026-02-01, so it falls in R3's West row.",
               "math": "10 -> West"
             },
             {
-              "text": "The sale of 20 on 2026-02-01 is on the day the East row starts, and that row includes its first day, so it belongs to East. The sale of 35 is also East.",
-              "math": "20 -> East, 35 -> East"
+              "text": "R3's sale of 35 on 2026-03-15 is after the change date, so it falls in the East row. R4 sold 5 on 2026-03-20 and is always in East.",
+              "math": "35 -> East, 5 -> East"
             },
             {
-              "text": "R4 is always in East. Work out the East total.",
+              "text": "R3 also sold 20 on 2026-02-01 itself, the day the West row ends and the East row starts, with `valid_to` excluded.",
               "blank": {
                 "questionId": "anaeg-history-in-dimensions-east-total"
               }
@@ -1864,7 +1860,7 @@
           ],
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
-          "checkQuestionId": "anaeg-history-in-dimensions-typo-type",
+          "checkQuestionId": "anaeg-history-in-dimensions-typo-type-v2",
           "activityId": ""
         }
       ],
@@ -2239,7 +2235,7 @@
               "math": "3 joined rows"
             },
             {
-              "text": "Work out `SUM(total)` over the three joined rows.",
+              "text": "`SUM(total)` adds the total held on each of the joined rows.",
               "blank": {
                 "questionId": "anaeg-choosing-a-model-shape-payments-sum"
               }
@@ -2722,11 +2718,7 @@
               "math": "5"
             },
             {
-              "text": "`int_refunds` reads `stg_payments`, which is already among the five, so the only new model is `int_refunds` itself.",
-              "math": "5 + 1"
-            },
-            {
-              "text": "Work out how many models must now run before `fct_orders`.",
+              "text": "The new model `int_refunds` reads `stg_payments` and feeds `fct_orders`.",
               "blank": {
                 "questionId": "anaeg-layers-of-models-after-refunds"
               }
@@ -3251,7 +3243,7 @@
           "id": "faded-lookback",
           "kind": "faded_example",
           "blocks": [],
-          "headline": "Repeat the run on the same rows with a lookback of only 2 days, and see whether id 5 is read.",
+          "headline": "Repeat the run on the same rows with a lookback of only 2 days, and count the rows it reads.",
           "workedSteps": [
             {
               "text": "The cut-off is two days before the latest timestamp.",
@@ -3262,7 +3254,7 @@
               "math": "09-18 > 09-18 is false"
             },
             {
-              "text": "Count the source rows stamped later than 09-18.",
+              "text": "The filter keeps a row only when its `updated_at` is later than the cut-off.",
               "blank": {
                 "questionId": "anaeg-incremental-builds-lookback-one"
               }
@@ -3303,7 +3295,7 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "Because old rows are not rewritten, the table is now half in dollars and half in cents, which is worse than either, since no query can tell which is which."
+              "text": "Because the other five rows are not rewritten, the column now mixes codes and full names, which is worse than either form, since a query that filters on one form misses the rows that hold the other."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -3893,7 +3885,7 @@
           "id": "faded-values",
           "kind": "faded_example",
           "blocks": [],
-          "headline": "Write the accepted_values test for the order statuses paid, refunded, shipped, void, paid, refunded and paid, with only paid and shipped allowed.",
+          "headline": "Find the rows an accepted_values test returns for the statuses paid, refunded, shipped, void, paid, refunded and paid, when only paid and shipped are allowed.",
           "workedSteps": [
             {
               "text": "Select the rows whose status is not in the list of allowed values.",
@@ -3904,7 +3896,7 @@
               "math": "refunded, void"
             },
             {
-              "text": "Count the rows the test returns.",
+              "text": "The test runs over all seven orders.",
               "blank": {
                 "questionId": "anaeg-testing-data-count-status"
               }
@@ -4223,7 +4215,7 @@
           ],
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
-          "checkQuestionId": "anaeg-semantic-layers-and-metrics-aov-two",
+          "checkQuestionId": "anaeg-semantic-layers-and-metrics-aov-two-v2",
           "activityId": ""
         },
         {
@@ -4296,29 +4288,18 @@
         },
         {
           "id": "faded-cumulative",
-          "kind": "faded_example",
+          "kind": "try",
           "blocks": [],
-          "headline": "Find the cumulative revenue at the end of March, when monthly revenue is 100, 150 and 120.",
-          "workedSteps": [
-            {
-              "text": "A cumulative metric starts from the first month and adds each month to the running total.",
-              "math": "Jan 100"
-            },
-            {
-              "text": "February adds 150 to the 100 already there.",
-              "math": "100 + 150 = 250"
-            },
-            {
-              "text": "Work out the cumulative revenue after adding March.",
-              "blank": {
-                "questionId": "anaeg-semantic-layers-and-metrics-cumulative"
-              }
-            }
-          ],
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
-          "checkQuestionId": "",
-          "activityId": ""
+          "checkQuestionId": "anaeg-semantic-layers-and-metrics-cumulative",
+          "activityId": "",
+          "reveal": [
+            {
+              "kind": "paragraph",
+              "text": "The running total is 100 after January, 250 after February and 370 after March, and each month adds to the one before it."
+            }
+          ]
         },
         {
           "id": "non-additive",
@@ -4666,7 +4647,7 @@
               "math": "mart_revenue, mart_marketing"
             },
             {
-              "text": "Keep walking forward from the marts until nothing reads the node you reach, then count every node found.",
+              "text": "A node that is reached by two routes is counted only once.",
               "blank": {
                 "questionId": "anaeg-lineage-count-ads-down"
               }
@@ -4787,7 +4768,7 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "The table-level warning covered all five columns, and the column-level one covers two, which is a smaller review for the same change."
+              "text": "Table-level lineage flags everything downstream of `crm`, while column-level lineage flags only the columns derived from `region_code`, so the same change gives a smaller review."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -5003,7 +4984,7 @@
           ],
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
-          "checkQuestionId": "anaeg-measuring-quality-uniqueness",
+          "checkQuestionId": "anaeg-measuring-quality-uniqueness-v2",
           "activityId": ""
         },
         {
@@ -5114,7 +5095,7 @@
               "math": "380 − 320 = 60"
             },
             {
-              "text": "Divide by the standard deviation to get the z-score.",
+              "text": "The z-score is that distance measured in standard deviations.",
               "blank": {
                 "questionId": "anaeg-measuring-quality-z-faded"
               }
@@ -5504,7 +5485,7 @@
               "math": "0.02 × 720"
             },
             {
-              "text": "Work out the budget in hours.",
+              "text": "The period is a 30-day month of 720 hours.",
               "blank": {
                 "questionId": "anaeg-contracts-ownership-and-slos-budget-98"
               }
@@ -5590,7 +5571,7 @@
       "activityId": "",
       "questionIds": [
         "anaeg-contracts-ownership-and-slos-check-breaking",
-        "anaeg-contracts-ownership-and-slos-check-budget",
+        "anaeg-contracts-ownership-and-slos-check-budget-v2",
         "anaeg-contracts-ownership-and-slos-check-owner"
       ],
       "flashcardIds": [
@@ -5886,18 +5867,16 @@
           "id": "faded-k",
           "kind": "faded_example",
           "blocks": [],
-          "headline": "Widen the age band to 20-39 and find k again.",
+          "headline": "Widen the age band to 20-39 and find k again for the same six rows.",
           "workedSteps": [
             {
-              "text": "The rows (20-29, N1) and (30-39, N1) now share a band and a postcode.",
-              "math": "(20-39, N1): 2 + 1 = 3"
+              "text": "With the band widened to 20-39, the rows (20-29, N1) and (30-39, N1) share a band and a postcode, so they fall into one group."
             },
             {
-              "text": "The rows (30-39, N2) become (20-39, N2).",
-              "math": "(20-39, N2): 3"
+              "text": "The rows (30-39, N2) become (20-39, N2) and stay a group of their own."
             },
             {
-              "text": "Find k from the two group sizes.",
+              "text": "k is the size of the smallest group.",
               "blank": {
                 "questionId": "anaeg-classifying-and-protecting-data-k-wider"
               }
@@ -6290,11 +6269,10 @@
               "math": "day 2"
             },
             {
-              "text": "The old files are kept for the retention period after the commit.",
-              "math": "2 + 14"
+              "text": "The old files are kept for the retention period after the commit."
             },
             {
-              "text": "Work out the earliest day a vacuum can remove them.",
+              "text": "A vacuum may remove them only after that period has passed.",
               "blank": {
                 "questionId": "anaeg-privacy-law-in-practice-vacuum-day"
               }
@@ -6560,7 +6538,7 @@
           ],
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
-          "checkQuestionId": "anaeg-governance-in-practice-which-kind",
+          "checkQuestionId": "anaeg-governance-in-practice-which-kind-v2",
           "activityId": ""
         },
         {
@@ -6677,11 +6655,10 @@
               "math": "older than 18 months"
             },
             {
-              "text": "The job deletes every row older than that, and the check counts what is left over, which must be zero.",
-              "math": "delete, then check"
+              "text": "The job deletes every row older than that, and the check counts what is left over, which must be zero."
             },
             {
-              "text": "Work out how many rows the first run deletes.",
+              "text": "The first run meets a table with one row for each of the last 26 months.",
               "blank": {
                 "questionId": "anaeg-governance-in-practice-rows-18"
               }
@@ -7022,15 +6999,15 @@
       "choices": [
         {
           "id": "d",
-          "label": "The orders were joined to the wrong table"
+          "label": "The orders were joined to the wrong table, so some rows were matched twice"
         },
         {
           "id": "b",
-          "label": "`SUM` adds every order twice by default"
+          "label": "`SUM` adds every order twice by default, so each total is doubled"
         },
         {
           "id": "c",
-          "label": "The order total is a different data type"
+          "label": "The order total is a different data type, so `SUM` handles it differently"
         },
         {
           "id": "a",
@@ -7434,7 +7411,7 @@
       "choices": [
         {
           "id": "a",
-          "label": "It is about the same as the stock on any one day"
+          "label": "It is about the same as the stock the warehouse held on any one day"
         },
         {
           "id": "b",
@@ -7562,15 +7539,15 @@
         },
         {
           "id": "b",
-          "label": "Percentages cannot be averaged in SQL"
+          "label": "SQL cannot average percentages, so the figure would be an error"
         },
         {
           "id": "d",
-          "label": "50% is too large to average"
+          "label": "A margin of 50% is too large to be averaged with a smaller one"
         },
         {
           "id": "c",
-          "label": "The two lines have different costs"
+          "label": "The two lines have different costs, so their margins cannot be combined"
         }
       ]
     },
@@ -7582,7 +7559,7 @@
         "surrogate-key",
         "degenerate-dimension"
       ],
-      "prompt": "Two sales lines sold 10 units for 300 in revenue and 5 units for 100 in revenue. What is the overall average unit price, as total revenue divided by total quantity, to two decimal places?",
+      "prompt": "Two sales lines sold 10 units for 300 in revenue and 5 units for 100 in revenue. What is the overall average unit price, to two decimal places?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -8197,15 +8174,15 @@
       "choices": [
         {
           "id": "c",
-          "label": "East is the current region of R5"
+          "label": "East is the current region of R5, so the join uses the current row"
         },
         {
           "id": "b",
-          "label": "The East row has the highest key"
+          "label": "The East row has the highest key, so the join takes the latest version"
         },
         {
           "id": "d",
-          "label": "July sales always go to the newest row"
+          "label": "July sales always go to the newest row, whichever dates it covers"
         },
         {
           "id": "a",
@@ -8483,19 +8460,19 @@
         "as-of-join",
         "conformed"
       ],
-      "prompt": "Finance must report each past sale under the sales region the account manager belonged to at the time. Which approach?",
+      "prompt": "Finance must report each past sale under the sales region the account manager belonged to at the time, and managers move between regions several times. Which approach fits?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "The past must stay readable."
+        "The past must stay readable, and there is more than one move to keep."
       ],
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "Type 2: keep a row per version with validity dates"
+          "Type 2: keep a row for each version, with dates"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "Type 2: keep a row per version with validity dates"
+        "exampleAnswer": "Type 2: keep a row for each version, with dates"
       },
       "sourceIds": [
         "kimball-techniques",
@@ -8510,15 +8487,15 @@
               "a"
             ]
           },
-          "feedback": "Overwriting loses the region each sale was made under."
+          "feedback": "Type 0 never changes an attribute after loading, so every sale would stay under the first region and miss each later move."
         },
         {
           "match": {
             "choiceIds": [
-              "c"
+              "b"
             ]
           },
-          "feedback": "Deleting the old rows loses the past regions entirely."
+          "feedback": "Overwriting loses the region each sale was made under."
         },
         {
           "match": {
@@ -8526,27 +8503,27 @@
               "d"
             ]
           },
-          "feedback": "A region held only in the report cannot be tied to the date of each sale."
+          "feedback": "A column for the previous region keeps only one step of history, so a manager who moves several times loses the earlier regions."
         }
       ],
       "skill": "choose-scd-type",
       "calculator": "off",
       "choices": [
         {
-          "id": "c",
-          "label": "Delete the old rows"
-        },
-        {
           "id": "a",
-          "label": "Type 1: overwrite the region"
+          "label": "Type 0: never change the region once it is loaded"
         },
         {
           "id": "b",
-          "label": "Type 2: keep a row per version with validity dates"
+          "label": "Type 1: overwrite the region when a manager moves"
+        },
+        {
+          "id": "c",
+          "label": "Type 2: keep a row for each version, with dates"
         },
         {
           "id": "d",
-          "label": "Store the region only in the report"
+          "label": "Type 3: add a column for the previous region"
         }
       ]
     },
@@ -8721,7 +8698,7 @@
       "choices": [
         {
           "id": "c",
-          "label": "`SUM` ignores repeated rows"
+          "label": "`SUM` ignores repeated rows, so the repeats do no harm"
         },
         {
           "id": "a",
@@ -8729,11 +8706,11 @@
         },
         {
           "id": "d",
-          "label": "The invoice total is recalculated from the lines"
+          "label": "The invoice total is recalculated from the lines, so it always matches"
         },
         {
           "id": "b",
-          "label": "The join is skipped"
+          "label": "The join is skipped, so no rows can be repeated"
         }
       ]
     },
@@ -8811,8 +8788,12 @@
           "one big table",
           "denormalised table",
           "denormalized table",
+          "denormalised",
+          "denormalized",
           "big table",
-          "flat table"
+          "flat table",
+          "flat",
+          "wide"
         ],
         "rejectedIdeas": [],
         "exampleAnswer": "wide table"
@@ -9126,10 +9107,10 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "Data vault feeding dimensional marts"
+          "A data vault feeding dimensional marts"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "Data vault feeding dimensional marts"
+        "exampleAnswer": "A data vault feeding dimensional marts"
       },
       "sourceIds": [
         "kimball-techniques",
@@ -9148,10 +9129,10 @@
         {
           "match": {
             "choiceIds": [
-              "c"
+              "b"
             ]
           },
-          "feedback": "A spreadsheet cannot integrate ten systems with history."
+          "feedback": "Marts built straight from each source repeat the integration in every mart, and nothing keeps what each source said at the time."
         },
         {
           "match": {
@@ -9166,20 +9147,20 @@
       "calculator": "off",
       "choices": [
         {
-          "id": "d",
-          "label": "Normalised tables only, no marts"
-        },
-        {
-          "id": "c",
-          "label": "A single spreadsheet"
+          "id": "a",
+          "label": "One big table that combines every source system"
         },
         {
           "id": "b",
-          "label": "Data vault feeding dimensional marts"
+          "label": "Dimensional marts built straight from each source"
         },
         {
-          "id": "a",
-          "label": "One big table"
+          "id": "c",
+          "label": "A data vault feeding dimensional marts"
+        },
+        {
+          "id": "d",
+          "label": "Normalised tables only, with reports chaining the joins"
         }
       ]
     },
@@ -9745,19 +9726,19 @@
         "full-refresh",
         "snapshot-model"
       ],
-      "prompt": "A target holds three invoices, and the latest `updated_at` in it is 2026-06-10. The source holds six: id 1 on 06-08, id 2 on 06-11, id 3 on 06-10, id 4 on 06-09, id 5 on 06-11 and id 6 on 06-12. A run reads only rows with `updated_at` later than the latest in the target. How much of the source does it read?",
-      "responseType": "short_text",
+      "prompt": "A target holds three invoices, and the latest `updated_at` in it is 2026-06-10. The source holds six: id 1 on 06-08, id 2 on 06-11, id 3 on 06-10, id 4 on 06-09, id 5 on 06-11 and id 6 on 06-12. A run reads only rows with `updated_at` later than the latest in the target. How many of the six source rows does it read?",
+      "responseType": "numeric",
       "difficulty": 1,
       "hints": [
         "Compare each row's date with 06-10."
       ],
       "answerAuthority": {
-        "kind": "text",
-        "acceptedIdeas": [
-          "About half of the source"
-        ],
-        "rejectedIdeas": [],
-        "exampleAnswer": "About half of the source"
+        "kind": "numeric",
+        "value": 3,
+        "unit": "rows",
+        "absoluteTolerance": 1e-9,
+        "relativeTolerance": 0,
+        "workedAnswer": "Ids 2, 5 and 6 are stamped after 06-10, so the run reads 3 of the 6 rows."
       },
       "sourceIds": [
         "dbt-incremental",
@@ -9767,37 +9748,31 @@
       "misconceptions": [
         {
           "match": {
-            "choiceIds": [
-              "a"
+            "numeric": [
+              6
             ]
           },
-          "feedback": "The filter keeps only rows stamped after 06-10, and ids 1, 3 and 4 are stamped on or before that date, so they are skipped."
+          "feedback": "That reads the whole source. The filter keeps only rows stamped after 06-10, and ids 1, 3 and 4 are stamped on or before that date, so they are skipped."
         },
         {
           "match": {
-            "choiceIds": [
-              "c"
+            "numeric": [
+              4
+            ]
+          },
+          "feedback": "That counts id 3 as well, but id 3 is stamped 06-10, which is the cut-off itself and not later than it."
+        },
+        {
+          "match": {
+            "numeric": [
+              0
             ]
           },
           "feedback": "Ids 2, 5 and 6 are stamped 06-11 and 06-12, after the target's latest timestamp, so the filter reads them."
         }
       ],
       "skill": "predict-incremental-rows",
-      "calculator": "off",
-      "choices": [
-        {
-          "id": "a",
-          "label": "All six rows, since the source has changed"
-        },
-        {
-          "id": "c",
-          "label": "None, since the target already holds invoices up to 06-10"
-        },
-        {
-          "id": "b",
-          "label": "About half of the source"
-        }
-      ]
+      "calculator": "off"
     },
     {
       "id": "anaeg-incremental-builds-rows-after",
@@ -9969,11 +9944,11 @@
       "choices": [
         {
           "id": "b",
-          "label": "The target removes old rows first"
+          "label": "The target deletes the old rows before the new ones are written"
         },
         {
           "id": "d",
-          "label": "The filter removes rows that are already loaded"
+          "label": "The filter drops rows that are already loaded before the merge"
         },
         {
           "id": "a",
@@ -9981,7 +9956,7 @@
         },
         {
           "id": "c",
-          "label": "Id 3 is ignored because it is unchanged"
+          "label": "Id 3 is ignored because its values have not changed"
         }
       ]
     },
@@ -10085,7 +10060,7 @@
       "choices": [
         {
           "id": "c",
-          "label": "Only the three rewritten rows"
+          "label": "Three rows, because the run keeps only the rows it rewrote"
         },
         {
           "id": "b",
@@ -10093,7 +10068,7 @@
         },
         {
           "id": "a",
-          "label": "All eight rows with codes"
+          "label": "All eight rows now hold codes, because the whole table is rebuilt"
         }
       ]
     },
@@ -10518,7 +10493,7 @@
               "d"
             ]
           },
-          "feedback": "The test checks every row."
+          "feedback": "The `unique` test skips missing values too. A missing key is reported by a `not_null` test."
         }
       ],
       "skill": "write-failing-rows-query",
@@ -10526,7 +10501,7 @@
       "choices": [
         {
           "id": "c",
-          "label": "The join cannot read `NULL`"
+          "label": "The join cannot read `NULL`, so those rows would make the query fail"
         },
         {
           "id": "a",
@@ -10534,11 +10509,11 @@
         },
         {
           "id": "d",
-          "label": "The test only checks the first row"
+          "label": "Rows with a missing key are already reported by the `unique` test"
         },
         {
           "id": "b",
-          "label": "`NULL` equals every invoice"
+          "label": "`NULL` equals every invoice id, so those rows always find a parent"
         }
       ]
     },
@@ -10797,29 +10772,43 @@
         "unit-vs-data"
       ],
       "prompt": "With the same `orders` table, which order id fails an `accepted_values` test for `status in ('paid', 'shipped', 'refunded')`? Give the id.",
-      "responseType": "short_text",
+      "responseType": "numeric",
       "difficulty": 1,
       "hints": [
         "Find the status that is not on the list.",
         "Only one order has it."
       ],
       "answerAuthority": {
-        "kind": "text",
-        "acceptedIdeas": [
-          "15"
-        ],
-        "acceptedAlternatives": [
-          "order 15"
-        ],
-        "rejectedIdeas": [],
-        "exampleAnswer": "15"
+        "kind": "numeric",
+        "value": 15,
+        "unit": "",
+        "absoluteTolerance": 1e-9,
+        "relativeTolerance": 0,
+        "workedAnswer": "Order 15 has the status void, which is not on the list, and every other order has an allowed status."
       },
       "sourceIds": [
         "dbt-tests",
         "great-expectations"
       ],
       "onCorrect": "Order 15 has the status void, which is not allowed, so it is the only row returned.",
-      "misconceptions": [],
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              13
+            ]
+          },
+          "feedback": "Order 13 is refunded, and refunded is on the allowed list in this test."
+        },
+        {
+          "match": {
+            "numeric": [
+              12
+            ]
+          },
+          "feedback": "Order 12 is shipped, which is on the allowed list."
+        }
+      ],
       "skill": "write-failing-rows-query",
       "calculator": "off"
     },
@@ -11047,15 +11036,15 @@
         },
         {
           "id": "d",
-          "label": "Division is not allowed on revenue"
+          "label": "Division is not allowed on revenue, so no average of revenue can be trusted"
         },
         {
           "id": "c",
-          "label": "The regions use different currencies"
+          "label": "The regions use different currencies, so their averages are on different scales"
         },
         {
           "id": "b",
-          "label": "Averages cannot be added"
+          "label": "Averages cannot be added, so two of them cannot be combined"
         }
       ]
     },
@@ -11373,10 +11362,10 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "Everything built from it at any distance, down to both dashboards"
+          "`int_customer_orders`, the two marts and both dashboards"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "Everything built from it at any distance, down to both dashboards"
+        "exampleAnswer": "`int_customer_orders`, the two marts and both dashboards"
       },
       "sourceIds": [
         "openlineage",
@@ -11410,7 +11399,7 @@
         },
         {
           "id": "c",
-          "label": "Everything built from it at any distance, down to both dashboards"
+          "label": "`int_customer_orders`, the two marts and both dashboards"
         },
         {
           "id": "a",
@@ -11600,7 +11589,7 @@
         "impact-analysis",
         "lineage-events"
       ],
-      "prompt": "Walk downstream from `stg_shop`. Its only consumer is `int_customer_orders`, which feeds both marts. How many nodes are downstream of `stg_shop`?",
+      "prompt": "In the lineage graph, how many nodes are downstream of `stg_shop`?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -11795,7 +11784,7 @@
       "choices": [
         {
           "id": "b",
-          "label": "It shows when each job last ran"
+          "label": "It shows when each job last ran, so stale columns can be found"
         },
         {
           "id": "d",
@@ -11803,11 +11792,11 @@
         },
         {
           "id": "a",
-          "label": "It finds dashboards that table-level lineage missed"
+          "label": "It finds dashboards that the table-level graph did not reach"
         },
         {
           "id": "c",
-          "label": "It removes the need for an impact analysis"
+          "label": "It removes the need for an impact analysis, since the graph is exact"
         }
       ]
     },
@@ -12243,15 +12232,15 @@
         },
         {
           "id": "d",
-          "label": "Standard deviations cannot be negative"
+          "label": "Standard deviations are never negative, so a fixed limit cannot show a drop"
         },
         {
           "id": "b",
-          "label": "A fixed limit cannot be written in SQL"
+          "label": "A fixed limit cannot be written in SQL, so history is used instead"
         },
         {
           "id": "c",
-          "label": "Recent history is always larger"
+          "label": "Recent history is always larger, so it sets a safer limit"
         }
       ]
     },
@@ -12692,10 +12681,10 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "Changing a weight column from kilograms to pounds"
+          "Storing weight in pounds instead of kilograms"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "Changing a weight column from kilograms to pounds"
+        "exampleAnswer": "Storing weight in pounds instead of kilograms"
       },
       "sourceIds": [
         "odcs",
@@ -12715,7 +12704,7 @@
         {
           "match": {
             "choiceIds": [
-              "b"
+              "c"
             ]
           },
           "feedback": "An optional column leaves every existing column as it was, so a consumer that names its columns sees no difference. It is a compatible change."
@@ -12733,20 +12722,20 @@
       "calculator": "off",
       "choices": [
         {
-          "id": "d",
-          "label": "Adding a new table"
+          "id": "a",
+          "label": "Removing the weight column from the table"
         },
         {
           "id": "b",
-          "label": "Adding an optional column"
+          "label": "Storing weight in pounds instead of kilograms"
         },
         {
           "id": "c",
-          "label": "Changing a weight column from kilograms to pounds"
+          "label": "Adding an optional notes column to the table"
         },
         {
-          "id": "a",
-          "label": "Removing a column"
+          "id": "d",
+          "label": "Adding a new table of returns to the warehouse"
         }
       ]
     },
@@ -12860,11 +12849,11 @@
       "choices": [
         {
           "id": "b",
-          "label": "The budget is always 1% of the period"
+          "label": "The budget is always 1% of the period, whatever the objective is"
         },
         {
           "id": "c",
-          "label": "The objective is the time that may fail"
+          "label": "The objective is the share of time that may fail, so the budget equals it"
         },
         {
           "id": "a",
@@ -12872,7 +12861,7 @@
         },
         {
           "id": "d",
-          "label": "The period is shortened by the objective"
+          "label": "The period is shortened by the objective, and what is left is the budget"
         }
       ]
     },
@@ -12959,7 +12948,7 @@
         {
           "match": {
             "choiceIds": [
-              "b"
+              "a"
             ]
           },
           "feedback": "The platform team runs the tooling and does not decide what the field means."
@@ -12971,14 +12960,6 @@
             ]
           },
           "feedback": "Consumers rely on the producer to say so, and should not have to discover it."
-        },
-        {
-          "match": {
-            "choiceIds": [
-              "d"
-            ]
-          },
-          "feedback": "That leaves nobody accountable, which is how a break goes unnoticed."
         }
       ],
       "skill": "assign-ownership",
@@ -12986,15 +12967,11 @@
       "choices": [
         {
           "id": "a",
-          "label": "The sales team, as the producer"
-        },
-        {
-          "id": "d",
-          "label": "Whoever opens the dashboard next"
+          "label": "The platform team, as it runs the pipeline"
         },
         {
           "id": "b",
-          "label": "The platform team, as it runs the pipeline"
+          "label": "The sales team, as the producer"
         },
         {
           "id": "c",
@@ -13163,7 +13140,7 @@
         "anaeg-slo",
         "anaeg-error-budget"
       ],
-      "prompt": "Which party owns the meaning of a dataset and should tell consumers when it changes: the producer, the consumer or the platform team? Answer with one word.",
+      "prompt": "Which party owns the meaning of a dataset and should tell consumers when it changes?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -13173,16 +13150,10 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "producer"
-        ],
-        "acceptedAlternatives": [
-          "the producer",
-          "producing team",
-          "producer team",
-          "producers"
+          "The producer team"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "producer"
+        "exampleAnswer": "The producer team"
       },
       "sourceIds": [
         "odcs",
@@ -13193,23 +13164,37 @@
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "platform"
+            "choiceIds": [
+              "b"
             ]
           },
           "feedback": "The platform team owns the tools and the scheduler. It does not decide what a field means."
         },
         {
           "match": {
-            "textIdeas": [
-              "consumer"
+            "choiceIds": [
+              "c"
             ]
           },
           "feedback": "A consumer relies on the meaning but does not set it."
         }
       ],
       "skill": "assign-ownership",
-      "calculator": "off"
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "The producer team"
+        },
+        {
+          "id": "b",
+          "label": "The platform team"
+        },
+        {
+          "id": "c",
+          "label": "The consumer teams"
+        }
+      ]
     },
     {
       "id": "anaeg-classifying-and-protecting-data-predict-hash",
@@ -13499,7 +13484,7 @@
               "c"
             ]
           },
-          "feedback": "The smallest group is not larger than the others."
+          "feedback": "An attacker gains most from the smallest group, where one person can be picked out. A large group hides each person among many."
         },
         {
           "match": {
@@ -13515,11 +13500,11 @@
       "choices": [
         {
           "id": "d",
-          "label": "The smallest group is the most common"
+          "label": "A small group is the most common, so it sets the typical risk"
         },
         {
           "id": "c",
-          "label": "Small groups are always larger"
+          "label": "The largest group is the one an attacker would target first"
         },
         {
           "id": "a",
@@ -13527,7 +13512,7 @@
         },
         {
           "id": "b",
-          "label": "The average cannot be computed for groups"
+          "label": "An average cannot be computed over groups of different sizes"
         }
       ]
     },
@@ -13539,13 +13524,13 @@
         "pseudonymisation",
         "k-anonymity"
       ],
-      "prompt": "After widening the age band to 20-39, the six rows fall into groups (20-39, N1) with 3 rows and (20-39, N2) with 3 rows. What is k?",
+      "prompt": "The six rows are (20-29, N1) twice, (30-39, N1) once and (30-39, N2) three times. After the age band is widened to 20-39, what is k?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
+        "Group the rows that now share a band and a postcode.",
         "k is the smallest group size.",
-        "Both groups have the same size.",
-        "Read the size off either group."
+        "Add up the rows in each group."
       ],
       "answerAuthority": {
         "kind": "numeric",
@@ -13553,7 +13538,7 @@
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "The smallest group has 3 rows, so k = 3."
+        "workedAnswer": "The groups are (20-39, N1) with 2 + 1 = 3 rows and (20-39, N2) with 3 rows. The smallest group has 3 rows, so k = 3."
       },
       "sourceIds": [
         "nist-deid",
@@ -13569,7 +13554,7 @@
               6
             ]
           },
-          "feedback": "That is the number of rows in all."
+          "feedback": "That is the number of rows in all, not the size of the smallest group."
         },
         {
           "match": {
@@ -13578,6 +13563,14 @@
             ]
           },
           "feedback": "Every group now has at least three rows."
+        },
+        {
+          "match": {
+            "numeric": [
+              1
+            ]
+          },
+          "feedback": "That is k before the band was widened. Widening merges the single row into a larger group."
         }
       ],
       "skill": "compute-k",
@@ -13747,7 +13740,7 @@
         "pseudonymisation",
         "k-anonymity"
       ],
-      "prompt": "Replacing an email with an unsalted hash of the email is an example of which technique, which still leaves personal data? Give the one word.",
+      "prompt": "Replacing an email with an unsalted hash of the email is an example of which technique?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -13757,14 +13750,10 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "pseudonymisation"
-        ],
-        "acceptedAlternatives": [
-          "pseudonymization",
-          "pseudonymisation technique"
+          "Pseudonymisation"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "pseudonymisation"
+        "exampleAnswer": "Pseudonymisation"
       },
       "sourceIds": [
         "nist-deid",
@@ -13776,23 +13765,49 @@
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "anonymisation"
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "Anonymisation cannot be linked back to a person. A hash of a guessable email can."
+          "feedback": "Anonymised data cannot be linked back to a person by any reasonably likely means. A hash of a guessable email can be linked back, by hashing guesses."
         },
         {
           "match": {
-            "textIdeas": [
-              "encryption"
+            "choiceIds": [
+              "b"
             ]
           },
           "feedback": "Encryption can be reversed with a key. A hash cannot, but it can be guessed."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Aggregation combines many rows into totals. Here every row stays and only the email is replaced."
         }
       ],
       "skill": "tell-pseudo-from-anon",
-      "calculator": "off"
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Anonymisation"
+        },
+        {
+          "id": "b",
+          "label": "Encryption"
+        },
+        {
+          "id": "c",
+          "label": "Aggregation"
+        },
+        {
+          "id": "d",
+          "label": "Pseudonymisation"
+        }
+      ]
     },
     {
       "id": "anaeg-privacy-law-in-practice-predict-copies",
@@ -13844,11 +13859,11 @@
       "choices": [
         {
           "id": "a",
-          "label": "None of them"
+          "label": "None of them, since the DELETE removes the rows everywhere"
         },
         {
           "id": "b",
-          "label": "Only the backups"
+          "label": "Only the backups, which are separate copies"
         },
         {
           "id": "c",
@@ -14000,7 +14015,7 @@
         "rights",
         "erasure-in-lake"
       ],
-      "prompt": "A DELETE is committed on day 2. The table keeps old files for a retention of 14 days. On what day is the earliest a vacuum can remove the old files?",
+      "prompt": "A DELETE is committed on day 2, and the table keeps old files for a retention of 14 days. What is the earliest day a vacuum can remove the old files?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -14104,15 +14119,15 @@
         },
         {
           "id": "d",
-          "label": "The DELETE is cancelled by the vacuum"
+          "label": "The DELETE is cancelled by the vacuum, which restores the old rows"
         },
         {
           "id": "c",
-          "label": "Deleted rows are archived automatically"
+          "label": "Deleted rows are archived automatically, so the table can bring them back"
         },
         {
           "id": "b",
-          "label": "The DELETE only runs at night"
+          "label": "The DELETE only runs at night, so the rows are still there during the day"
         }
       ]
     },
@@ -14230,7 +14245,7 @@
       "hints": [
         "Consent is one of them.",
         "Contract and legal obligation are others.",
-        "There are consent, contract, legal obligation, vital interests, public task and legitimate interests."
+        "Count the entries in the list of lawful bases."
       ],
       "answerAuthority": {
         "kind": "numeric",
@@ -14252,7 +14267,7 @@
               7
             ]
           },
-          "feedback": "That counts the seven principles. The lawful bases are six."
+          "feedback": "Seven is the number of principles. The lawful bases are a different list."
         },
         {
           "match": {
@@ -14260,7 +14275,7 @@
               5
             ]
           },
-          "feedback": "There are six bases."
+          "feedback": "Count again, taking consent, contract and legal obligation as the first three."
         }
       ],
       "skill": "count-lawful-bases",
@@ -14279,13 +14294,13 @@
       "difficulty": 1,
       "hints": [
         "It is a number of hours stated in Article 33.",
-        "It equals three days.",
-        "Seventy-two."
+        "It is a whole number of days, counted in hours.",
+        "The clock starts when the controller becomes aware."
       ],
       "answerAuthority": {
         "kind": "numeric",
         "value": 72,
-        "unit": "",
+        "unit": "hours",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
         "workedAnswer": "Article 33 sets 72 hours from becoming aware, where feasible."
@@ -14302,7 +14317,7 @@
               24
             ]
           },
-          "feedback": "The limit is three days."
+          "feedback": "The limit is longer than a single day."
         },
         {
           "match": {
@@ -14627,7 +14642,7 @@
               "b"
             ]
           },
-          "feedback": "Policies can be written. Without a control they depend on people remembering them."
+          "feedback": "A policy can name the HR role. The weakness is that nothing makes anyone follow it."
         },
         {
           "match": {
@@ -14643,7 +14658,7 @@
               "d"
             ]
           },
-          "feedback": "A policy can be current. The weakness is that nothing enforces it."
+          "feedback": "A policy can be kept current. The weakness is that nothing enforces it."
         }
       ],
       "skill": "turn-policy-into-control",
@@ -14655,15 +14670,15 @@
         },
         {
           "id": "b",
-          "label": "Policies are not legally allowed"
+          "label": "A written policy cannot name roles, so it cannot say who counts as HR"
         },
         {
           "id": "c",
-          "label": "Salary is not personal data"
+          "label": "Salary is not personal data, so the policy has nothing to protect"
         },
         {
           "id": "d",
-          "label": "Written policies are always out of date"
+          "label": "Written policies go out of date, and a masking rule never does"
         }
       ]
     },
@@ -14735,10 +14750,10 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "Freshness within its objective and a classification of its columns"
+          "Freshness within its objective, and classified columns"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "Freshness within its objective and a classification of its columns"
+        "exampleAnswer": "Freshness within its objective, and classified columns"
       },
       "sourceIds": [
         "dama-dmbok",
@@ -14753,7 +14768,7 @@
               "a"
             ]
           },
-          "feedback": "Certification is a checklist of six conditions, and an owner and passing tests are two of them. Freshness and classification are still missing."
+          "feedback": "Certification is a checklist of six conditions, and an owner and passing tests are only two of them. This dataset has not met every condition on the list."
         },
         {
           "match": {
@@ -14761,7 +14776,7 @@
               "b"
             ]
           },
-          "feedback": "Certification is a checklist the dataset passes, not an approval of each query. Freshness and classification are still missing."
+          "feedback": "Certification is a checklist the dataset passes, not an approval of each query."
         },
         {
           "match": {
@@ -14769,7 +14784,7 @@
               "d"
             ]
           },
-          "feedback": "A backup is a matter for the custodian and is not on the certification checklist. Freshness and classification are still missing."
+          "feedback": "A backup is a matter for the custodian and is not on the certification checklist."
         }
       ],
       "skill": "sort-metadata",
@@ -14777,19 +14792,19 @@
       "choices": [
         {
           "id": "a",
-          "label": "Nothing, since an owner and passing tests are enough"
+          "label": "Nothing, since an owner and passing tests are enough for the badge"
         },
         {
           "id": "d",
-          "label": "A second copy kept as a backup"
+          "label": "A second copy of the data kept as a backup in another region"
         },
         {
           "id": "b",
-          "label": "Approval of each query by a governance committee"
+          "label": "Approval of each query by a governance committee before it runs"
         },
         {
           "id": "c",
-          "label": "Freshness within its objective and a classification of its columns"
+          "label": "Freshness within its objective, and classified columns"
         }
       ]
     },
@@ -14861,10 +14876,10 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "Nobody is accountable when they are late or wrong, and none of them can be certified"
+          "Nobody is accountable for them, and none can be certified"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "Nobody is accountable when they are late or wrong, and none of them can be certified"
+        "exampleAnswer": "Nobody is accountable for them, and none can be certified"
       },
       "sourceIds": [
         "dama-dmbok",
@@ -14895,15 +14910,15 @@
       "choices": [
         {
           "id": "b",
-          "label": "Nobody is accountable when they are late or wrong, and none of them can be certified"
+          "label": "Nobody is accountable for them, and none can be certified"
         },
         {
           "id": "c",
-          "label": "They need no owner as long as their tests pass"
+          "label": "They need no owner as long as their tests pass and their lineage is visible"
         },
         {
           "id": "a",
-          "label": "The custodian owns them by default, since the platform holds them"
+          "label": "The custodian owns them by default, since the platform holds the data"
         }
       ]
     },
@@ -15084,6 +15099,418 @@
       ],
       "skill": "turn-policy-into-control",
       "calculator": "off"
+    },
+    {
+      "id": "anaeg-from-questions-to-grain-check-grain-v2",
+      "conceptIds": [
+        "business-process",
+        "grain",
+        "four-steps",
+        "star-schema"
+      ],
+      "prompt": "A hotel group wants a fact table of room bookings. Which grain statement says exactly what one row stands for?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "A grain statement says what one row stands for.",
+        "Look for the one that you could use to count the rows."
+      ],
+      "sourceIds": [
+        "kimball-techniques",
+        "kimball-book"
+      ],
+      "skill": "declare-grain",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "One row per room on each booking"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "One row per room on each booking"
+      },
+      "onCorrect": "Only this one says what one row is, which tells you what a count of rows would mean.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Hotel bookings"
+        },
+        {
+          "id": "b",
+          "label": "Bookings by month and region"
+        },
+        {
+          "id": "c",
+          "label": "One row per room on each booking"
+        },
+        {
+          "id": "d",
+          "label": "Everything about guests and stays"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "A name for the subject does not say what one row is. A row could be a booking, a guest or a night."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "This names two groupings but not the row itself, which could be one booking or one month in one region."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "A subject like this is wide enough to hold several different kinds of row, so it does not define one."
+        }
+      ]
+    },
+    {
+      "id": "anaeg-facts-and-dimensions-check-balance-v2",
+      "conceptIds": [
+        "additivity",
+        "fact-types",
+        "surrogate-key",
+        "degenerate-dimension"
+      ],
+      "prompt": "Two accounts have balances of 100 and 40 on Monday, 120 and 30 on Tuesday, and 90 and 70 on Wednesday. Taking the end-of-period value, what is their combined balance for the period?",
+      "responseType": "numeric",
+      "difficulty": 1.1,
+      "hints": [
+        "End of period means the last day.",
+        "A balance can be added across accounts on one day.",
+        "Do not add the balances across the three days."
+      ],
+      "sourceIds": [
+        "kimball-techniques",
+        "kimball-book"
+      ],
+      "skill": "aggregate-balance",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 160,
+        "unit": "",
+        "absoluteTolerance": 1e-9,
+        "relativeTolerance": 0,
+        "workedAnswer": "The end-of-period value is Wednesday's, and adding the two accounts on that day is allowed: 90 + 70 = 160."
+      },
+      "onCorrect": "A balance adds across accounts on one day but not across days, so the period's figure is the last day's balances added together: 90 + 70 = 160.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              450
+            ]
+          },
+          "feedback": "That adds every figure, across the days as well as the accounts. A balance cannot be added across days."
+        },
+        {
+          "match": {
+            "numeric": [
+              150
+            ]
+          },
+          "feedback": "That is the average of the three daily totals. The question asks for the end-of-period value, which is the last day's."
+        },
+        {
+          "match": {
+            "numeric": [
+              90,
+              70
+            ]
+          },
+          "feedback": "That is one account's balance on the last day. A balance can be added across accounts on one day, so include the other account as well."
+        }
+      ]
+    },
+    {
+      "id": "anaeg-history-in-dimensions-typo-type-v2",
+      "conceptIds": [
+        "scd",
+        "type1-type2",
+        "as-of-join",
+        "conformed"
+      ],
+      "prompt": "A product's weight was keyed as 5 kg when the true weight is 0.5 kg, and the source system has corrected it. Nobody needs the wrong weight, so history is not wanted. Which slowly changing dimension type fits?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Ask whether the old value was ever true."
+      ],
+      "sourceIds": [
+        "kimball-techniques",
+        "kimball-book",
+        "dbt-snapshots"
+      ],
+      "skill": "choose-scd-type",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Type 1: overwrite the weight"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Type 1: overwrite the weight"
+      },
+      "onCorrect": "Overwriting suits a correction, since the old value was never true and no past fact should remember it.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Type 3: add a column for the previous weight"
+        },
+        {
+          "id": "b",
+          "label": "Type 1: overwrite the weight"
+        },
+        {
+          "id": "c",
+          "label": "Type 2: add a new row with validity dates"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "A column for the previous value keeps one step of history, and here the previous value is a mistake with no use to any report."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "A new row would keep the wrong weight as a version that past facts point at, which is history nobody wants for a typing error."
+        }
+      ]
+    },
+    {
+      "id": "anaeg-semantic-layers-and-metrics-aov-two-v2",
+      "conceptIds": [
+        "metric",
+        "semantic-layer",
+        "metric-types",
+        "non-additive-metrics"
+      ],
+      "prompt": "North has revenue 150 from 10 orders and South has revenue 750 from 15 orders. What is the overall average order value?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Add the revenues and the orders first.",
+        "Total revenue is 900 and total orders are 25.",
+        "Divide the first by the second."
+      ],
+      "sourceIds": [
+        "dbt-metrics",
+        "kimball-book"
+      ],
+      "skill": "compute-ratio-metric",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 36,
+        "unit": "",
+        "absoluteTolerance": 1e-9,
+        "relativeTolerance": 0,
+        "workedAnswer": "(150 + 750) / (10 + 15) = 900 / 25 = 36."
+      },
+      "onCorrect": "The ratio is formed after the parts are added, so each region weighs in by its number of orders.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              32.5
+            ]
+          },
+          "feedback": "That averages the two regional values, 15 and 50."
+        },
+        {
+          "match": {
+            "numeric": [
+              900
+            ]
+          },
+          "feedback": "That is total revenue, not revenue per order."
+        }
+      ]
+    },
+    {
+      "id": "anaeg-measuring-quality-uniqueness-v2",
+      "conceptIds": [
+        "quality-dimensions",
+        "quality-metrics",
+        "anomaly-z",
+        "freshness-sla"
+      ],
+      "prompt": "A table has 800 rows and 744 distinct order ids. What is the uniqueness of `order_id`, as a percentage?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Uniqueness is distinct values over all rows.",
+        "Divide 744 by 800.",
+        "Multiply by 100."
+      ],
+      "sourceIds": [
+        "great-expectations",
+        "dbt-tests",
+        "dama-dmbok"
+      ],
+      "skill": "compute-completeness",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 93,
+        "unit": "%",
+        "absoluteTolerance": 1e-9,
+        "relativeTolerance": 0,
+        "workedAnswer": "744 / 800 = 0.93, which is 93%."
+      },
+      "onCorrect": "Uniqueness is the rate of distinct values, and a rate below 100% means some ids appear more than once.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              7
+            ]
+          },
+          "feedback": "That is the share of rows that repeat an id, not the share that is distinct."
+        },
+        {
+          "match": {
+            "numeric": [
+              744
+            ]
+          },
+          "feedback": "That is the count of distinct ids. The question asks for a percentage."
+        }
+      ]
+    },
+    {
+      "id": "anaeg-contracts-ownership-and-slos-check-budget-v2",
+      "conceptIds": [
+        "data-contract",
+        "anaeg-breaking-change",
+        "anaeg-slo",
+        "anaeg-error-budget"
+      ],
+      "prompt": "A freshness objective is 96% of the time over a 30-day month (720 hours). How many hours of breach does the error budget allow, to one decimal place?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "The allowed failure is 100% minus 96%.",
+        "4% of 720 hours.",
+        "Multiply 720 by 0.04."
+      ],
+      "sourceIds": [
+        "odcs",
+        "dbt-contracts",
+        "great-expectations"
+      ],
+      "skill": "compute-error-budget",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 28.8,
+        "unit": "hours",
+        "absoluteTolerance": 1e-9,
+        "relativeTolerance": 0,
+        "workedAnswer": "4% of 720 hours is 0.04 × 720 = 28.8 hours."
+      },
+      "onCorrect": "The budget is the failure the objective allows, 4% of 720 hours, and once it is spent the objective is missed.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              691.2
+            ]
+          },
+          "feedback": "That is the time the objective requires to work, 96% of the month. The budget is the remainder."
+        },
+        {
+          "match": {
+            "numeric": [
+              2.88
+            ]
+          },
+          "feedback": "That is 0.4% of the month. The allowed failure is 4%."
+        }
+      ]
+    },
+    {
+      "id": "anaeg-governance-in-practice-which-kind-v2",
+      "conceptIds": [
+        "roles",
+        "catalogue",
+        "policy-to-control",
+        "certified-data"
+      ],
+      "prompt": "A catalogue entry records what 'active customer' means: a customer who has ordered in the last 90 days. Which kind of metadata is that?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Ask whether a scan could collect the field, or whether a person has to write it."
+      ],
+      "sourceIds": [
+        "dama-dmbok",
+        "odcs",
+        "openlineage"
+      ],
+      "skill": "sort-metadata",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Business"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Business"
+      },
+      "onCorrect": "Business metadata is the kind that needs a person to write it, which is why the steward matters.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Business"
+        },
+        {
+          "id": "b",
+          "label": "Technical"
+        },
+        {
+          "id": "c",
+          "label": "Operational"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Technical metadata describes structure, such as the schema and the data types, and a scan can collect it."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Operational metadata describes behaviour, such as the last refresh time and the row count, and a scan can collect it."
+        }
+      ]
     }
   ],
   "flashcards": [

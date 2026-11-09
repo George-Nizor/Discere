@@ -76,6 +76,19 @@ describe("Philosophy: Knowledge, Mind and Ethics (v2 lessons)", () => {
       rows3.filter(({ p, q, r }) => imp(p, q) && imp(r, q) && !imp(p, r)),
     ).toHaveLength(key("validity-and-soundness-4"));
     expect(2 ** 4).toBe(key("validity-and-soundness-6"));
+    // 6-v2 (in the lesson) asks for five atomic sentences: enumerate the rows rather than use 2 ** 5.
+    const tableRows = (letters: number) =>
+      Array.from({ length: letters }).reduce<boolean[][]>(
+        (acc) => acc.flatMap((row) => [true, false].map((value) => [...row, value])),
+        [[]],
+      );
+    expect(question("validity-and-soundness-6-v2").prompt).toContain("five different atomic sentences");
+    expect(tableRows(4)).toHaveLength(key("validity-and-soundness-6"));
+    expect(tableRows(5)).toHaveLength(key("validity-and-soundness-6-v2"));
+    // The slips it flags: two rows added per sentence, the previous table, and five squared.
+    expect(
+      question("validity-and-soundness-6-v2").misconceptions!.flatMap((m) => m.match.numeric ?? []),
+    ).toEqual([5 * 2, tableRows(4).length, 5 ** 2]);
     // Scepticism: p → q, ¬q: rows where both premises hold.
     expect(rows2.filter(({ p, q }) => imp(p, q) && !q)).toHaveLength(key("scepticism-and-closure-3"));
     // Mind and body: p → q, q → r, ¬r.
@@ -445,18 +458,53 @@ describe("Philosophy: Knowledge, Mind and Ethics (v2 lessons)", () => {
     expect(clauses.filter((c) => c.role === "reason")).toHaveLength(2);
     const playing = question("reconstructing-arguments-2");
     for (const wrong of ["2", "3"]) expect(correctNumber(playing, wrong), wrong).toBe(false);
-    // Validity: the pavement form is invalid; "not valid" says the same.
+    // Validity: the pavement form (p → q; q; therefore p) is invalid. Item 1 is now a choice whose
+    // right option names the reason: the pavement could be wet without any rain.
+    const pavementRows = [true, false].flatMap((rained) => [true, false].map((wet) => ({ rained, wet })));
+    const wetWithoutRain = pavementRows.filter(
+      ({ rained, wet }) => (!rained || wet) && wet && !rained,
+    );
+    expect(wetWithoutRain).toHaveLength(1);
     expect(accepts("validity-and-soundness-1", "valid")).toBe(false);
+    const pavement = question("validity-and-soundness-1");
+    expect(correctChoices(pavement)).toEqual(["c"]);
+    expect(pavement.choices!.find((c) => c.id === "c")!.label).toBe(
+      `${wetWithoutRain.length > 0 ? "No" : "Yes"}, because the pavement could be wet without any rain`,
+    );
+    for (const wrong of ["a", "b"]) expect(correctChoices(pavement)).not.toContain(wrong);
     // The badge item is now a two-option choice: no gap is possible, and the late-arrival option is wrong.
     const badge = question("validity-and-soundness-7");
     expect(badge.choices!.map((c) => c.id).sort()).toEqual(["a", "b"]);
     expect(correctChoices(badge)).toEqual(["a"]);
     expect(accepts("validity-and-soundness-7", "No: the two claims leave no room for it.")).toBe(true);
     expect(accepts("validity-and-soundness-7", "Yes: she might have arrived late.")).toBe(false);
-    // Sound or unsound: the penguin argument is valid with a false first premise.
-    for (const right of ["unsound", "Unsound: the first premise is false", "not sound"])
-      expect(accepts("validity-and-soundness-10", right), right).toBe(true);
-    expect(accepts("validity-and-soundness-10", "sound")).toBe(false);
+    // Sound or unsound: "All birds can fly. Penguins are birds. So penguins can fly." Valid in
+    // every assignment of flight to a penguin and a sparrow, but in fact penguins cannot fly, so
+    // the first premise is false and the argument is unsound. Item 10 is now a three-way choice.
+    const flying = [true, false].flatMap((penguin) => [true, false].map((sparrow) => ({ penguin, sparrow })));
+    const penguinsArgumentIsValid = flying.every(
+      ({ penguin, sparrow }) => !(penguin && sparrow) || penguin,
+    );
+    expect(penguinsArgumentIsValid).toBe(true);
+    const actual = { penguin: false, sparrow: true };
+    const firstPremiseTrue = actual.penguin && actual.sparrow;
+    expect(firstPremiseTrue).toBe(false);
+    const penguins = question("validity-and-soundness-10");
+    const soundLabel = penguinsArgumentIsValid && firstPremiseTrue ? "Sound" : "Unsound";
+    expect(correctChoices(penguins)).toEqual(["c"]);
+    expect(penguins.choices!.find((c) => c.id === "c")!.label).toBe(
+      `${soundLabel}, because the first premise is false`,
+    );
+    expect(penguins.choices!.map((c) => c.label).sort()).toEqual(
+      [
+        "Sound, because the conclusion follows from the premises",
+        "Unsound, because the conclusion does not follow from the premises",
+        "Unsound, because the first premise is false",
+      ].sort(),
+    );
+    // "Unsound, because the conclusion does not follow" is wrong because the form is valid.
+    expect(accepts("validity-and-soundness-10", "Unsound, because the conclusion does not follow from the premises")).toBe(false);
+    expect(accepts("validity-and-soundness-10", "Sound, because the conclusion follows from the premises")).toBe(false);
   });
 
   it("recomputes the Bayesian counts from natural frequencies", () => {
@@ -472,13 +520,40 @@ describe("Philosophy: Knowledge, Mind and Ethics (v2 lessons)", () => {
     const b = positives(1000, 0.01, 0.9, 0.1);
     expect(b.ill + b.well).toBeCloseTo(key("bayesian-evidence-2"), 9);
     expect(100 * (1 / 100)).toBeCloseTo(key("bayesian-evidence-8"), 9); // prior of 1 in 100, as a percentage
+    // 8-v2 (in the lesson): 100 of 2,000 people have it, so the prior is 100 / 2000 as a percentage.
+    expect((100 * 100) / 2000).toBeCloseTo(key("bayesian-evidence-8-v2"), 9);
+    expect(
+      question("bayesian-evidence-8-v2").misconceptions!.flatMap((m) => m.match.numeric ?? []),
+    ).toEqual([90, 8, 100 - 100 * (100 / 2000)]); // hit rate, false alarm rate, and 95%
+    // 2-v2 (in the lesson): the false alarms among the 990 people without the condition.
+    expect(positives(1000, 0.01, 0.9, 0.1).well).toBeCloseTo(key("bayesian-evidence-2-v2"), 9);
+    expect(
+      question("bayesian-evidence-2-v2").misconceptions!.flatMap((m) => m.match.numeric ?? []),
+    ).toEqual([positives(1000, 0.01, 0.9, 0.1).ill, 1000 * 0.1, 990 - positives(1000, 0.01, 0.9, 0.1).well]);
     const c = positives(1000, 0.1, 0.8, 0.05);
     expect((100 * c.ill) / (c.ill + c.well)).toBeCloseTo(key("bayesian-evidence-4"), 9);
     // P(H | E) with P(H) = 0.2, P(E | H) = 0.5, P(E | not-H) = 0.25.
     const joint = 0.2 * 0.5;
-    expect(joint / (joint + 0.8 * 0.25)).toBeCloseTo(key("bayesian-evidence-5"), 9);
+    // The item asks for a decimal to three places, so the stored key is the posterior rounded to
+    // three places, and the exact 1/3 stays inside the item's own tolerance.
+    const posterior = joint / (joint + 0.8 * 0.25);
+    expect(posterior).toBeCloseTo(1 / 3, 12);
+    expect(Number(posterior.toFixed(3))).toBeCloseTo(key("bayesian-evidence-5"), 9);
+    const five = question("bayesian-evidence-5");
+    expect(five.prompt).toContain("to three places");
+    for (const answer of [String(posterior), "0.333", "0.3333", "1/3"])
+      expect(correctNumber(five, answer), answer).toBe(true);
+    for (const answer of ["0.3", "0.34", "0.5", "0.1"])
+      expect(correctNumber(five, answer), answer).toBe(false);
     const d = positives(1000, 0.5, 0.9, 0.1);
     expect((100 * d.ill) / (d.ill + d.well)).toBeCloseTo(key("bayesian-evidence-10"), 9);
+    // 10-v2 (in the lesson): the false alarm rate is now 30%, so 450 of the 600 positives are ill.
+    const e = positives(1000, 0.5, 0.9, 0.3);
+    expect([e.ill, e.well]).toEqual([expect.closeTo(450, 9), expect.closeTo(150, 9)]);
+    expect((100 * e.ill) / (e.ill + e.well)).toBeCloseTo(key("bayesian-evidence-10-v2"), 9);
+    expect(
+      question("bayesian-evidence-10-v2").misconceptions!.flatMap((m) => m.match.numeric ?? []),
+    ).toEqual([90, 50, 30]); // the hit rate, the prior and the false alarm rate
     // Worked example: 200 ill, 160 caught, 40 false alarms, 80%.
     const w = positives(1000, 0.2, 0.8, 0.05);
     expect([w.ill, w.well, (100 * w.ill) / (w.ill + w.well)]).toEqual([160, 40, 80]);
@@ -511,6 +586,11 @@ describe("Philosophy: Knowledge, Mind and Ethics (v2 lessons)", () => {
     expect(expectedUtility([[0.5, 100], [0.5, 0]])).toBe(key("consequentialism-7"));
     expect(expectedUtility([[0.6, 100], [0.4, 0]])).toBeCloseTo(key("consequentialism-1"), 9);
     expect(expectedUtility([[0.9, 20], [0.1, -30]])).toBeCloseTo(key("consequentialism-2"), 9);
+    // 2-v2 is the harm term alone: probability 0.1 of a harm counted as −30.
+    expect(expectedUtility([[0.1, -30]])).toBeCloseTo(key("consequentialism-2-v2"), 9);
+    expect(
+      question("consequentialism-2-v2").misconceptions!.flatMap((m) => m.match.numeric ?? []),
+    ).toEqual([3, -30]);
     expect(expectedUtility([[0.7, 10], [0.3, -20]])).toBeCloseTo(1, 9); // worked example
     expect(expectedUtility([[0.8, 50], [0.2, -10]])).toBeCloseTo(key("consequentialism-10"), 9);
     expect(4 + 4 - 5).toBe(3); // policy X total
@@ -763,21 +843,78 @@ describe("Philosophy: Knowledge, Mind and Ethics (v2 lessons)", () => {
     const yes = ["scepticism-and-closure-7", "personal-identity-7", "personal-identity-11", "functionalism-and-the-chinese-room-7"];
     const no = ["fallacies-and-charity-7", "justified-true-belief-7", "mind-and-body-7", "virtue-and-the-mean-7", "kant-and-the-footbridge-10"];
     // Questions the fix pass turned into choices are marked by label elsewhere.
+    // A yes/no item that became a choice has one marked option, and it opens with the verdict.
+    const verdictOf = (id: string) => {
+      const q = question(id);
+      const marked = correctChoices(q).map((cid) => q.choices!.find((c) => c.id === cid)!.label);
+      expect(marked, id).toHaveLength(1);
+      return marked[0]!;
+    };
     for (const id of yes) {
-      if (question(id).choices?.length) continue;
+      if (question(id).choices?.length) {
+        expect(verdictOf(id), id).toMatch(/^Yes\b/u);
+        continue;
+      }
       expect(correct(question(id), "yes"), id).toBe(true);
       expect(correct(question(id), "no"), id).toBe(false);
     }
     for (const id of no) {
-      if (question(id).choices?.length) continue;
+      if (question(id).choices?.length) {
+        expect(verdictOf(id), id).toMatch(/^No\b/u);
+        continue;
+      }
       expect(correct(question(id), "no"), id).toBe(true);
       expect(correct(question(id), "yes"), id).toBe(false);
     }
-    expect(correct(question("scepticism-and-closure-10"), "valid")).toBe(true);
-    expect(correct(question("scepticism-and-closure-10"), "invalid")).toBe(false);
-    expect(correct(question("mind-and-body-10"), "invalid")).toBe(true);
-    expect(correct(question("mind-and-body-10"), "valid")).toBe(false);
-    // The footbridge item is answered by name (lever or footbridge) rather than by case letter.
-    expect(correct(question("justified-true-belief-10"), "justification")).toBe(true);
+    // Scepticism 10 is modus ponens (p → q; p; so q): no row makes both premises true and the
+    // conclusion false, so it is valid. Both items are now choices whose right option gives the reason.
+    const ponensRows = [true, false].flatMap((p) => [true, false].map((q) => ({ p, q })));
+    const ponensIsValid = ponensRows.every(({ p, q }) => !((!p || q) && p) || q);
+    expect(ponensIsValid).toBe(true);
+    expect(verdictOf("scepticism-and-closure-10")).toBe(
+      `${ponensIsValid ? "Valid" : "Invalid"}, because both premises being true would force the conclusion`,
+    );
+    expect(correctChoices(question("scepticism-and-closure-10"))).toEqual(["a"]);
+    // Mind and body 10: Ben's beliefs do not depend on whether Twain is Clemens. Take the case
+    // where they are one man: both premises (about Ben's beliefs) hold and "Twain is not Clemens"
+    // is false, so the argument is invalid.
+    const oneMan = { identical: true, believesTwain: true, believesClemens: false };
+    const premisesHold = oneMan.believesTwain && !oneMan.believesClemens;
+    const conclusion = !oneMan.identical;
+    expect(premisesHold && !conclusion).toBe(true);
+    expect(verdictOf("mind-and-body-10")).toBe(
+      `${premisesHold && !conclusion ? "Invalid" : "Valid"}, because both premises can be true while the conclusion is false`,
+    );
+    expect(correctChoices(question("mind-and-body-10"))).toEqual(["c"]);
+    // The lottery man believes it and it comes true; nothing supports the belief. The missing
+    // condition is the one that is false.
+    const lottery = { Truth: true, Belief: true, Justification: false };
+    const missing = Object.entries(lottery).filter(([, held]) => !held).map(([name]) => name);
+    expect(missing).toEqual(["Justification"]);
+    expect(verdictOf("justified-true-belief-10")).toBe(missing[0]);
+    expect(correctChoices(question("justified-true-belief-10"))).toEqual(["b"]);
+    // Aristotle's mean for an athlete whose right amount is 8 to 9 minae: the arithmetic mean of 2
+    // and 10 is 6, below the band, so six is too little.
+    const band = [8, 9] as const;
+    const arithmeticMean = (2 + 10) / 2;
+    expect(arithmeticMean).toBe(6);
+    const sixIs = arithmeticMean < band[0] ? "Too little" : arithmeticMean > band[1] ? "Too much" : "Exactly right";
+    expect(verdictOf("virtue-and-the-mean-5-v2")).toBe(sixIs);
+    expect(correctChoices(question("virtue-and-the-mean-5-v2"))).toEqual(["b"]);
+    expect(lessonOf("virtue-and-the-mean").questionIds.concat(
+      lessonOf("virtue-and-the-mean").steps.map((step) => step.checkQuestionId ?? ""),
+    )).toContain("phil-virtue-and-the-mean-5-v2");
+    // Free-text name items (a one-word answer) accept the term and its spellings, not the neighbours.
+    expect(correct(question("justified-true-belief-6-v2"), "safe")).toBe(true);
+    expect(correct(question("justified-true-belief-6-v2"), "safety")).toBe(true);
+    expect(correct(question("justified-true-belief-6-v2"), "justified")).toBe(false);
+    expect(correct(question("fallacies-and-charity-1"), "ad hominem")).toBe(true);
+    expect(correct(question("fallacies-and-charity-1"), "straw man")).toBe(false);
+    expect(correct(question("fallacies-and-charity-6"), "false dilemma")).toBe(true);
+    expect(correct(question("fallacies-and-charity-6"), "begging the question")).toBe(false);
+    expect(correct(question("bayesian-evidence-6"), "base-rate neglect")).toBe(true);
+    expect(correct(question("bayesian-evidence-6"), "hit rate")).toBe(false);
+    expect(correct(question("virtue-and-the-mean-6"), "eudaimonia")).toBe(true);
+    expect(correct(question("virtue-and-the-mean-6"), "virtue")).toBe(false);
   });
 });

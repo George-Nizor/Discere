@@ -125,3 +125,34 @@ describe("grammatical number and hyphens (audit M6)", () => {
     expect(assessTextAnswer("the sameness", same).correct).toBe(false);
   });
 });
+
+describe("numbers inside longer numbers", () => {
+  const one = { acceptedIdeas: ["1"], rejectedIdeas: [] };
+  it("does not find 1 inside -1, 0.1 or 1.5", () => {
+    expect(assessTextAnswer("1", one).correct).toBe(true);
+    expect(assessTextAnswer("it is 1", one).correct).toBe(true);
+    expect(assessTextAnswer("-1", one).correct).toBe(false);
+    expect(assessTextAnswer("0.1", one).correct).toBe(false);
+    expect(assessTextAnswer("1.5", one).correct).toBe(false);
+  });
+  it("matches a decimal answer only as the whole number", () => {
+    const half = { acceptedIdeas: ["0.5"], rejectedIdeas: [] };
+    expect(assessTextAnswer("0.5", half).correct).toBe(true);
+    expect(assessTextAnswer("about 0.5.", half).correct).toBe(true);
+    expect(assessTextAnswer("0.55", half).correct).toBe(false);
+    expect(assessTextAnswer("10.5", half).correct).toBe(false);
+  });
+});
+
+describe("sharps and flats", () => {
+  it("keeps the accidental as part of the note", () => {
+    const bflat = { acceptedIdeas: ["B♭ major"], rejectedIdeas: [] };
+    expect(assessTextAnswer("B♭ major", bflat).correct).toBe(true);
+    expect(assessTextAnswer("b♭ major", bflat).correct).toBe(true);
+    expect(assessTextAnswer("B major", bflat).correct).toBe(false);
+    const fsharp = { acceptedIdeas: ["F♯"], rejectedIdeas: [] };
+    expect(assessTextAnswer("F#", fsharp).correct).toBe(true);
+    expect(assessTextAnswer("F", fsharp).correct).toBe(false);
+    expect(assessTextAnswer("F#", { acceptedIdeas: ["F"], rejectedIdeas: [] }).correct).toBe(false);
+  });
+});

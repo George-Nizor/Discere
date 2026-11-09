@@ -175,13 +175,26 @@ export function AnswerInput({
         <label className="field-label" htmlFor={`${idPrefix}-text`}>
           {label ?? "Your answer"}
         </label>
-        <textarea
-          readOnly={correct || readOnly}
-          className="textarea textarea-short"
-          id={`${idPrefix}-text`}
-          onChange={(event) => onChange({ kind: "text", text: event.currentTarget.value })}
-          value={draft.text}
-        />
+        {question.responseType === "short_text" ? (
+          // A short answer is a word or a phrase, so it gets one line, and Enter checks it.
+          <input
+            autoComplete="off"
+            readOnly={correct || readOnly}
+            className="text-input text-answer"
+            id={`${idPrefix}-text`}
+            onChange={(event) => onChange({ kind: "text", text: event.currentTarget.value })}
+            type="text"
+            value={draft.text}
+          />
+        ) : (
+          <textarea
+            readOnly={correct || readOnly}
+            className="textarea textarea-short"
+            id={`${idPrefix}-text`}
+            onChange={(event) => onChange({ kind: "text", text: event.currentTarget.value })}
+            value={draft.text}
+          />
+        )}
       </div>
     );
   }

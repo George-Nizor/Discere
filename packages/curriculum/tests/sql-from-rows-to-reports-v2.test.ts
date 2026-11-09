@@ -38,6 +38,21 @@ const storyLessons = [
   "partition-the-window",
   "running-totals-and-neighbours",
 ];
+/** The label of the one choice an item marks as correct (ignoring the backticks that format code). */
+const markedLabel = (id: string) => {
+  const item = question(id);
+  const authority = item.answerAuthority;
+  if (authority.kind !== "text") throw new Error(`${id} is not a choice item`);
+  const plain = (text: string) => text.replaceAll("`", "").trim().toLowerCase();
+  const accepted = authority.acceptedIdeas.map(plain);
+  const marked = (item.choices ?? []).filter((choice) => accepted.includes(plain(choice.label)));
+  expect(marked, id).toHaveLength(1);
+  return marked[0]!;
+};
+const asksOnAScreen = (lesson: string, id: string) =>
+  expect(lessonOf(lesson).steps.map((step) => step.checkQuestionId)).toContain(id);
+const numberWord = (n: number) =>
+  ["no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"][n]!;
 const storyOpener = (lesson: string) => {
   const id = `sql-${lesson}-7`;
   expect(lessonOf(lesson).steps.map((step) => step.checkQuestionId)).toContain(id);
@@ -76,7 +91,20 @@ describe("SQL from rows to reports (v2)", () => {
 
   it("recomputes the numeric keys of the hooks", () => {
     expect(storyOpener("rows-and-keys")).toBe(3 + 2); // one line per cup
-    expect(storyOpener("select-and-name")).toBe(6); // hiding columns deletes none
+    // Hiding columns deletes none: the opener is a choice now. A six-column sheet with three
+    // shown still has six columns, and the item words that as "It still has all six columns".
+    const sheet = { columns: 6, shown: 3 };
+    const columnsAfterSharing = sheet.columns; // a view hides columns; it does not remove them
+    asksOnAScreen("select-and-name", "sql-select-and-name-7");
+    expect(markedLabel("sql-select-and-name-7").label).toBe(
+      `It still has all ${numberWord(columnsAfterSharing)} columns`,
+    );
+    expect(markedLabel("sql-select-and-name-7").id).toBe("a");
+    expect(question("sql-select-and-name-7").choices!.map((c) => c.label)).toEqual([
+      `It still has all ${numberWord(sheet.columns)} columns`,
+      `It has only the ${numberWord(sheet.shown)} columns you showed`,
+      `It has ${numberWord(sheet.columns)} columns, but the hidden ${numberWord(sheet.columns - sheet.shown)} are now empty`,
+    ]);
     expect(storyOpener("filter-the-rows")).toBe([5, 12, 20, 25, 30].filter((p) => p >= 20).length);
     expect([...[31, 28, 35, 30, 29]].sort((a, b) => a - b)[2]).toBe(storyOpener("sort-and-limit"));
     expect(storyOpener("distinct-results")).toBe(
@@ -158,7 +186,18 @@ describe("SQL from rows to reports (v2)", () => {
     // sort-and-limit
     const byAmountThenId = [...known].sort((a, b) => b.amount - a.amount || a.id - b.id);
     expect(stepKey("sort-and-limit", "2")).toBe(byAmountThenId[0]!.id);
-    expect(keyOf("sql-sort-and-limit-5")).toBe(Math.min(4, 10));
+    // LIMIT 10 over a WHERE that keeps four rows returns four rows (the item is a choice now).
+    const survivors = 4;
+    const limit = 10;
+    const returned = Math.min(survivors, limit);
+    expect(lessonOf("sort-and-limit").questionIds).toContain("sql-sort-and-limit-5");
+    expect(markedLabel("sql-sort-and-limit-5").label).toBe(`${numberWord(returned)[0]!.toUpperCase()}${numberWord(returned).slice(1)} rows`);
+    expect(markedLabel("sql-sort-and-limit-5").id).toBe("a");
+    expect(question("sql-sort-and-limit-5").choices!.map((c) => c.label)).toEqual([
+      "Four rows",
+      `Ten rows, ${numberWord(limit - survivors)} of them empty`,
+      "An error, because fewer than ten rows exist",
+    ]);
     // distinct-results
     expect(stepKey("distinct-results", "1")).toBe(distinct(orders.map((o) => o.customer)));
     expect(stepKey("distinct-results", "3")).toBe(distinct(known.map((o) => o.amount)));
@@ -174,10 +213,24 @@ describe("SQL from rows to reports (v2)", () => {
     const pendingKnown = known.filter((o) => o.status === "pending").map((o) => o.amount);
     expect(stepKey("aggregate-known-values", "3")).toBe(Math.min(...pendingKnown));
     expect(mean([4, 6, 8, 0])).toBe(4.5); // the survey with the blank filled by COALESCE
+    // 4-v2: no order has an amount over 100, so MIN(amount) over no rows is NULL, not 0 and not "no row".
+    const overHundred = known.filter((o) => o.amount > 100).map((o) => o.amount);
+    expect(overHundred).toEqual([]);
+    const minOfNone = overHundred.length ? Math.min(...overHundred) : null; // an aggregate over no rows gives one row holding NULL
+    asksOnAScreen("aggregate-known-values", "sql-aggregate-known-values-4-v2");
+    expect(markedLabel("sql-aggregate-known-values-4-v2").label).toBe(`\`${minOfNone === null ? "NULL" : minOfNone}\``);
+    expect(markedLabel("sql-aggregate-known-values-4-v2").id).toBe("a");
     expect(mean(known.filter((o) => o.customer === 3).map((o) => o.amount))).toBe(20);
     // group-and-filter-groups
     expect(stepKey("group-and-filter-groups", "1")).toBe(distinct(orders.map((o) => o.item)));
     expect(stepKey("group-and-filter-groups", "2")).toBe(known.filter((o) => o.item === "Lamp").length);
+    // Item 5: Desk 80 + 80, Book 20 + 20, Lamp 40 + NULL (NULL is left out of the sum). Every group's
+    // sum is at least 40, so all three survive HAVING SUM(amount) >= 40.
+    const groupSums = ["Desk", "Book", "Lamp"].map((item) =>
+      sum(known.filter((o) => o.item === item).map((o) => o.amount)),
+    );
+    expect(groupSums).toEqual([160, 40, 40]);
+    expect(keyOf("sql-group-and-filter-groups-5")).toBe(groupSums.filter((total) => total >= 40).length);
     expect(stepKey("group-and-filter-groups", "4")).toBe(
       sum(known.filter((o) => o.status === "paid" && o.item === "Desk").map((o) => o.amount)),
     );
@@ -194,6 +247,22 @@ describe("SQL from rows to reports (v2)", () => {
     const withoutOrders = customerIds.filter((c) => !orders.some((o) => o.customer === c));
     expect(stepKey("preserve-the-left-table", "1")).toBe(orders.length + withoutOrders.length);
     expect(stepKey("preserve-the-left-table", "2")).toBe(orders.filter((o) => o.customer === 4).length);
+    // Item 5: customers LEFT JOIN orders with the paid test in ON. Ada has two paid orders, Ben and Cy
+    // one paid and one pending, Dee none: each customer gives one row per paid order, or one row if none.
+    const leftJoinPaid = customerIds.flatMap((c) => {
+      const paidOrders = orders.filter((o) => o.customer === c && o.status === "paid");
+      return paidOrders.length ? paidOrders : [null];
+    });
+    expect(orders.filter((o) => o.customer === 2).map((o) => o.status).sort()).toEqual(["paid", "pending"]);
+    expect(keyOf("sql-preserve-the-left-table-5")).toBe(leftJoinPaid.length);
+    // Item 6: after the plain LEFT JOIN, the rows with a missing amount are order 106 and Dee's row.
+    const leftJoin = customerIds.flatMap((c) => {
+      const theirs = orders.filter((o) => o.customer === c);
+      return theirs.length ? theirs : [null];
+    });
+    expect(keyOf("sql-preserve-the-left-table-6")).toBe(
+      leftJoin.filter((row) => row === null || row.amount === null).length,
+    );
     // preserve-either-side
     const matched = allOrders.filter((o) => o.customer !== null && customerIds.includes(o.customer)).length;
     const unmatchedCustomers = customerIds.filter((c) => !allOrders.some((o) => o.customer === c)).length;
@@ -202,6 +271,20 @@ describe("SQL from rows to reports (v2)", () => {
     expect(stepKey("preserve-either-side", "4")).toBe(
       allOrders.filter((o) => !(o.customer !== null && o.status === "paid")).length,
     );
+    // 1-v2: customers RIGHT JOIN orders keeps every order once, since each order has at most one
+    // customer: six matched orders and guest order 107 whose customer_id is NULL.
+    const rightJoinRows = allOrders.flatMap((o) => {
+      const customersForOrder = customerIds.filter((c) => c === o.customer);
+      return customersForOrder.length ? customersForOrder : [null];
+    });
+    expect(stepKey("preserve-either-side", "1-v2")).toBe(rightJoinRows.length);
+    expect(rightJoinRows.length).toBe(allOrders.length);
+    // The slips it flags: the inner join (six), the full join (eight, with Dee) and the customers (four).
+    expect(question("sql-preserve-either-side-1-v2").misconceptions!.flatMap((m) => m.match.numeric ?? [])).toEqual([
+      matched,
+      matched + unmatchedCustomers + unmatchedOrders,
+      customerIds.length,
+    ]);
     const guests = ["Ana", "Ben", "Cy"];
     const badges = ["Ben", "Cy", "Dot"];
     expect(guests.filter((g) => badges.includes(g)).length + 1 + 1).toBe(4); // two matches, Ana and Dot
@@ -254,6 +337,14 @@ describe("SQL from rows to reports (v2)", () => {
     );
     const bucketSizes = (rows: number, buckets: number) =>
       Array.from({ length: buckets }, (_, i) => Math.floor(rows / buckets) + (i < rows % buckets ? 1 : 0));
+    // 4-v2: ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY amount ASC), keep position 1. Customer 2
+    // has order 103 (80) and order 104 (40); ascending, 104 is first.
+    const customerTwo = known.filter((o) => o.customer === 2).sort((a, b) => a.amount - b.amount);
+    expect(customerTwo.map((o) => [o.id, o.amount])).toEqual([[104, 40], [103, 80]]);
+    expect(stepKey("partition-the-window", "4-v2")).toBe(customerTwo[0]!.id);
+    expect(question("sql-partition-the-window-4-v2").misconceptions!.flatMap((m) => m.match.numeric ?? [])).toEqual([
+      customerTwo.at(-1)!.id, // the largest order, from ordering the other way
+    ]);
     expect(stepKey("partition-the-window", "3")).toBe(bucketSizes(known.length, 3)[0]);
     expect(bucketSizes(10, 4)).toEqual([3, 3, 2, 2]); // the teaching screen's ten rows
     expect(bucketSizes(10, 3)).toEqual([4, 3, 3]);

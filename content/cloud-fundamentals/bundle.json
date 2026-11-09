@@ -625,22 +625,19 @@
           "headline": "Four tasks, placed on an EC2 instance, an IaaS service.",
           "workedSteps": [
             {
-              "text": "A disk in the server fails. Disks belong to the hardware layer, which the provider runs, so the provider replaces it.",
-              "math": "provider"
+              "text": "A disk in the server fails. Disks belong to the hardware layer, which the provider runs, so the provider replaces it."
             },
             {
-              "text": "You must set a firewall rule so that only port 443 is open to the internet. The rule is a setting on your instance, so it belongs to the customer.",
-              "math": "customer"
+              "text": "You must set a firewall rule so that only port 443 is open to the internet. The rule is a setting on your instance, so it belongs to the customer."
             },
             {
-              "text": "The guest operating system needs a security patch. It is the layer you took on by choosing a virtual machine. Say who applies it.",
+              "text": "Next, a task that involves the software running on the instance.",
               "blank": {
-                "questionId": "clof-what-the-cloud-is-ec2-os"
+                "questionId": "clof-what-the-cloud-is-ec2-webserver"
               }
             },
             {
-              "text": "The data you store on the instance's disk must be encrypted. You choose whether to turn it on and keep the keys, so the work is the customer's.",
-              "math": "customer"
+              "text": "The data you store on the instance's disk must be encrypted. You choose whether to turn it on and keep the keys, so the work is the customer's."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -650,30 +647,11 @@
         },
         {
           "id": "rds-tasks",
-          "kind": "faded_example",
+          "kind": "try",
           "blocks": [],
-          "headline": "The same patch and access tasks, placed on RDS, a managed database.",
-          "workedSteps": [
-            {
-              "text": "The server needs an operating system patch. This is the first place the line has moved compared with EC2.",
-              "blank": {
-                "questionId": "clof-what-the-cloud-is-rds-os"
-              }
-            },
-            {
-              "text": "A new application wants to connect, so someone must decide which networks may reach the database. Say who decides.",
-              "blank": {
-                "questionId": "clof-what-the-cloud-is-rds-access"
-              }
-            },
-            {
-              "text": "The database holds customer records, and the settings that encrypt and protect them are yours to choose, so that duty stays with the customer.",
-              "math": "customer"
-            }
-          ],
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
-          "checkQuestionId": "",
+          "checkQuestionId": "clof-what-the-cloud-is-rds-duty",
           "activityId": ""
         },
         {
@@ -721,11 +699,11 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "This is why a SaaS customer still has security work to do: sharing settings, sign-in and who can read stored mail are all choices of the customer."
+              "text": "Nothing about who uses the application or what data it holds moves with the platform, which is why a PaaS customer still has security work to do."
             }
           ],
           "answerVisibility": "hidden-until-response",
-          "checkQuestionId": "clof-what-the-cloud-is-saas-layers",
+          "checkQuestionId": "clof-what-the-cloud-is-iaas-to-paas",
           "visualStateId": "",
           "activityId": ""
         }
@@ -737,7 +715,7 @@
       "questionIds": [
         "clof-what-the-cloud-is-practice-1",
         "clof-what-the-cloud-is-practice-2",
-        "clof-what-the-cloud-is-practice-3"
+        "clof-what-the-cloud-is-practice-3-v2"
       ],
       "flashcardIds": [
         "clof-what-the-cloud-is-card-1",
@@ -1000,18 +978,17 @@
           "headline": "A web tier at 99.95% and a database at 99.9%, both required.",
           "workedSteps": [
             {
-              "text": "Both are needed, so the availabilities multiply. Write them as decimals.",
+              "text": "Both parts are needed, and the web tier and the database are available 99.95% and 99.9% of the time. Write each as a decimal.",
               "math": "0.9995 and 0.999"
             },
             {
-              "text": "Multiply them.",
-              "math": "0.9995 × 0.999 = 0.9985005"
-            },
-            {
-              "text": "Give the product as a percentage. Work out the figure.",
+              "text": "A request succeeds only at moments when both are up, which for independent parts is the product of the two decimals.",
               "blank": {
                 "questionId": "clof-regions-zones-and-availability-worked-series"
               }
+            },
+            {
+              "text": "A chain of required parts is never better than its weakest part."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -1071,11 +1048,13 @@
               "math": "1 − 0.995 = 0.005"
             },
             {
-              "text": "The pair fails only when both fail together, so multiply the failure chances.",
-              "math": "0.005 × 0.005 = 0.000025"
+              "text": "Either component can serve, so the pair is down only at moments when both are down at once.",
+              "blank": {
+                "questionId": "clof-regions-zones-and-availability-faded-both-down"
+              }
             },
             {
-              "text": "Subtract that from 1 and give the answer as a percentage. Work it out.",
+              "text": "The pair is available at every moment when it is not down.",
               "blank": {
                 "questionId": "clof-regions-zones-and-availability-faded-pair"
               }
@@ -1130,8 +1109,8 @@
       "visualKind": "none",
       "activityId": "",
       "questionIds": [
-        "clof-regions-zones-and-availability-practice-1",
-        "clof-regions-zones-and-availability-practice-2",
+        "clof-regions-zones-and-availability-practice-1-v2",
+        "clof-regions-zones-and-availability-practice-2-v2",
         "clof-regions-zones-and-availability-practice-3"
       ],
       "flashcardIds": [
@@ -1366,18 +1345,16 @@
           "headline": "Evaluate a request against a policy that allows only s3:GetObject on arn:aws:s3:::reports/*.",
           "workedSteps": [
             {
-              "text": "The request is `s3:PutObject` on `reports/q1.csv`. First look for an explicit deny; the policy contains none.",
-              "math": "no explicit deny"
+              "text": "The request is `s3:PutObject` on `reports/q1.csv`. First look for an explicit deny; the policy contains none."
             },
             {
-              "text": "Next look for an allow that names this action. The only allow names `s3:GetObject`, which is a different action, so no allow matches.",
-              "math": "no matching allow"
-            },
-            {
-              "text": "With neither a deny nor an allow, the default applies. Say what the decision is.",
+              "text": "Next look for an allow. The policy has one statement, and it allows `s3:GetObject` on `arn:aws:s3:::reports/*`.",
               "blank": {
-                "questionId": "clof-identity-and-access-worked-result"
+                "questionId": "clof-identity-and-access-worked-match"
               }
+            },
+            {
+              "text": "With no deny and no matching allow, only the default is left. The default is to deny, so the request is refused."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -1410,28 +1387,11 @@
         },
         {
           "id": "delete-denied",
-          "kind": "faded_example",
+          "kind": "try",
           "blocks": [],
-          "headline": "Evaluate a delete request when one policy allows all S3 actions on reports/* and another denies s3:DeleteObject on reports/*.",
-          "workedSteps": [
-            {
-              "text": "The request is `s3:DeleteObject` on `reports/q1.csv`. The evaluation looks for an explicit deny first.",
-              "math": "check denies"
-            },
-            {
-              "text": "The second policy denies exactly this action on exactly this resource, so an explicit deny matches.",
-              "math": "deny found"
-            },
-            {
-              "text": "The first policy's allow would have matched, but it is never reached. Give the decision.",
-              "blank": {
-                "questionId": "clof-identity-and-access-worked-delete"
-              }
-            }
-          ],
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
-          "checkQuestionId": "",
+          "checkQuestionId": "clof-identity-and-access-condition",
           "activityId": ""
         },
         {
@@ -1464,11 +1424,11 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "Reading the job's requirements first is the habit to take away, since the policy then follows from them."
+              "text": "Listing what the tool does first is the habit to take away, since the policy then follows from the list."
             }
           ],
           "answerVisibility": "hidden-until-response",
-          "checkQuestionId": "clof-identity-and-access-narrowest",
+          "checkQuestionId": "clof-identity-and-access-narrowest-v2",
           "visualStateId": "",
           "activityId": ""
         },
@@ -1496,7 +1456,7 @@
       "questionIds": [
         "clof-identity-and-access-practice-1",
         "clof-identity-and-access-practice-2",
-        "clof-identity-and-access-practice-3"
+        "clof-identity-and-access-practice-3-v2"
       ],
       "flashcardIds": [
         "clof-identity-and-access-card-1",
@@ -1638,18 +1598,17 @@
           "headline": "Is 10.0.2.5 inside the block 10.0.1.0/24?",
           "workedSteps": [
             {
-              "text": "A /24 fixes the first 24 bits, which are the first three numbers of the address.",
-              "math": "10.0.1"
+              "text": "A /24 fixes the first 24 bits of the address, and each of the four numbers takes 8 bits.",
+              "blank": {
+                "questionId": "clof-virtual-networks-inside-prefix"
+              }
             },
             {
-              "text": "The address 10.0.2.5 begins 10.0.2, and the block requires 10.0.1. Compare the two.",
+              "text": "The address 10.0.2.5 begins with 10.0.2, while the block's addresses begin with 10.0.1.",
               "math": "10.0.2 ≠ 10.0.1"
             },
             {
-              "text": "The third number differs, so the address is in a different block. Say whether it is inside.",
-              "blank": {
-                "questionId": "clof-virtual-networks-inside"
-              }
+              "text": "The fixed parts differ, so the address is not inside the block."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -1760,28 +1719,11 @@
         },
         {
           "id": "make-public",
-          "kind": "faded_example",
+          "kind": "try",
           "blocks": [],
-          "headline": "Make a subnet public, in the order a console walks you through it.",
-          "workedSteps": [
-            {
-              "text": "Attach an internet gateway to the VPC. The gateway is the door; nothing uses it yet.",
-              "math": "gateway attached"
-            },
-            {
-              "text": "Give the subnet's route table a route that sends all other traffic to the gateway. Name the destination of that default route.",
-              "blank": {
-                "questionId": "clof-virtual-networks-default-route"
-              }
-            },
-            {
-              "text": "Give the servers public addresses, and open the ports they serve in their security group, the filter attached to each server that the last part of this lesson explains. Without these, the route exists but nothing answers.",
-              "math": "public IP and rules"
-            }
-          ],
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
-          "checkQuestionId": "",
+          "checkQuestionId": "clof-virtual-networks-most-specific",
           "activityId": ""
         },
         {
@@ -1848,7 +1790,7 @@
       "visualKind": "none",
       "activityId": "",
       "questionIds": [
-        "clof-virtual-networks-practice-1",
+        "clof-virtual-networks-practice-1-v2",
         "clof-virtual-networks-practice-2",
         "clof-virtual-networks-practice-3"
       ],
@@ -2018,7 +1960,7 @@
               "math": "0.10 × 730 = 73.00"
             },
             {
-              "text": "The group has three, so multiply by three. Work out the monthly cost.",
+              "text": "The group has three instances, all running for the whole month.",
               "blank": {
                 "questionId": "clof-compute-options-monthly"
               }
@@ -2040,7 +1982,7 @@
               "math": "100% − 40% = 60%"
             },
             {
-              "text": "The discounted price is 60% of $219.00, which is 0.6 × 219. Work it out.",
+              "text": "The group cost $219.00 a month before the discount.",
               "blank": {
                 "questionId": "clof-compute-options-discount"
               }
@@ -2104,11 +2046,11 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "The next screen describes how a function is run and billed."
+              "text": "The next screen describes how a function is run and billed, and names the delay you have just guessed at."
             }
           ],
           "answerVisibility": "hidden-until-response",
-          "checkQuestionId": "clof-compute-options-serverless",
+          "checkQuestionId": "clof-compute-options-cold-guess",
           "visualStateId": "",
           "activityId": ""
         },
@@ -2174,7 +2116,7 @@
               "math": "500,000 GB-seconds"
             },
             {
-              "text": "Price that running time at $0.0000167 per GB-second. Work out the duration charge.",
+              "text": "Running time is charged at $0.0000167 per GB-second.",
               "blank": {
                 "questionId": "clof-compute-options-duration"
               }
@@ -2331,11 +2273,11 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "Mounting a shared folder is the signature of file storage, and the reason it costs more per gigabyte than an object store."
+              "text": "Block storage is the one kind that behaves like a local disk, so anything that must change small parts in place sits on it."
             }
           ],
           "answerVisibility": "hidden-until-response",
-          "checkQuestionId": "clof-storage-types-shared",
+          "checkQuestionId": "clof-storage-types-boot-disk",
           "visualStateId": "",
           "activityId": ""
         },
@@ -2432,18 +2374,18 @@
           "headline": "Expected loss for 10,000,000 objects at an annual chance of 10^-11 each.",
           "workedSteps": [
             {
-              "text": "The expected number of losses is the number of objects times the chance for each. Write 10,000,000 as a power of ten.",
+              "text": "The expected number of losses is the number of objects times the chance of losing each one. Write 10,000,000 as a power of ten.",
               "math": "10,000,000 = 10^7"
             },
             {
-              "text": "Multiply, adding the exponents.",
-              "math": "10^7 × 10^−11 = 10^−4"
-            },
-            {
-              "text": "Write the answer as a decimal number of objects a year.",
+              "text": "The chance for each object is 10^-11, so the expected loss is the product of two powers of ten.",
               "blank": {
                 "questionId": "clof-storage-types-worked"
               }
+            },
+            {
+              "text": "That is one object every 10,000 years.",
+              "math": "1 ÷ 0.0001 = 10,000"
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -2462,7 +2404,7 @@
               "math": "10^9"
             },
             {
-              "text": "Multiply by the same chance of 10^-11, adding the exponents. Work out the expected loss per year as a decimal.",
+              "text": "The expected loss is the number of objects times the same chance of 10^-11 each.",
               "blank": {
                 "questionId": "clof-storage-types-faded"
               }
@@ -2529,11 +2471,7 @@
               "math": "= 125.00"
             },
             {
-              "text": "Reading 2,000 GB back costs 2,000 × $0.01.",
-              "math": "= 20.00"
-            },
-            {
-              "text": "Add the two to find the total. Work it out.",
+              "text": "Reading data back is charged $0.01 for each gigabyte read.",
               "blank": {
                 "questionId": "clof-storage-types-cost"
               }
@@ -2732,11 +2670,11 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "The same cart in a relational database would work at small scale, and the choice becomes one of cost and growth."
+              "text": "The model follows from the questions the application asks: a question that links records of different kinds points to relational, and a plain lookup by key to key-value."
             }
           ],
           "answerVisibility": "hidden-until-response",
-          "checkQuestionId": "clof-managed-databases-cart",
+          "checkQuestionId": "clof-managed-databases-school",
           "visualStateId": "",
           "activityId": ""
         },
@@ -2815,11 +2753,11 @@
           "headline": "Backups at 00:00, 06:00, 12:00 and 18:00; a failure at 14:20.",
           "workedSteps": [
             {
-              "text": "Restoring means going back to the most recent backup before the failure. Find it.",
+              "text": "Restoring goes back to the most recent backup before the failure.",
               "math": "12:00"
             },
             {
-              "text": "The changes made after that backup are not in it. Count the minutes from 12:00 to 14:20.",
+              "text": "The changes made after that backup are in no copy.",
               "blank": {
                 "questionId": "clof-managed-databases-lost"
               }
@@ -2841,7 +2779,7 @@
               "math": "14:10 to 15:05 = 55 minutes"
             },
             {
-              "text": "Compare it with the RTO of 45 minutes. Work out by how many minutes it was missed.",
+              "text": "The RTO allows the outage to last 45 minutes.",
               "blank": {
                 "questionId": "clof-managed-databases-missed"
               }
@@ -2902,11 +2840,11 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "Adding a standby would have cost the same and fixed nothing, which is the usual result of mixing the two up."
+              "text": "The delay between a write and its appearance on a replica is why replicas suit reports and pages that can tolerate slightly old data."
             }
           ],
           "answerVisibility": "hidden-until-response",
-          "checkQuestionId": "clof-managed-databases-replica",
+          "checkQuestionId": "clof-managed-databases-replica-lag",
           "visualStateId": "",
           "activityId": ""
         },
@@ -2954,8 +2892,8 @@
       "visualKind": "none",
       "activityId": "",
       "questionIds": [
-        "clof-managed-databases-practice-1",
-        "clof-managed-databases-practice-2",
+        "clof-managed-databases-practice-1-v2",
+        "clof-managed-databases-practice-2-v2",
         "clof-managed-databases-practice-3"
       ],
       "flashcardIds": [
@@ -3072,11 +3010,11 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "Replacing a machine by a larger one usually needs a restart, a further reason to prefer adding machines."
+              "text": "A fleet can keep growing where a single machine cannot, provided the machines are alike enough to share the work, which is the subject of the next screen."
             }
           ],
           "answerVisibility": "hidden-until-response",
-          "checkQuestionId": "clof-scaling-and-decoupling-ceiling",
+          "checkQuestionId": "clof-scaling-and-decoupling-largest",
           "visualStateId": "",
           "activityId": ""
         },
@@ -3236,14 +3174,17 @@
           "headline": "Size a pool for 260 messages a second when one worker handles 60 a second.",
           "workedSteps": [
             {
-              "text": "Arrivals must not exceed total capacity, so the pool needs at least arrivals divided by one worker's rate.",
-              "math": "260 ÷ 60 ≈ 4.33"
+              "text": "Each worker handles 60 a second, and together they must handle at least the 260 a second that arrive."
             },
             {
-              "text": "Workers are whole, so round up. Say how many are needed.",
+              "text": "A worker cannot be split, so the pool is a whole number of workers.",
               "blank": {
                 "questionId": "clof-scaling-and-decoupling-worked"
               }
+            },
+            {
+              "text": "Four workers would handle only 240 a second, 20 short, so the backlog would keep growing.",
+              "math": "4 × 60 = 240"
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -3278,7 +3219,7 @@
               "math": "240 a second"
             },
             {
-              "text": "Arrivals exceed capacity, so the backlog gains the difference every second. Work out the gain over 5 minutes, which is 300 seconds.",
+              "text": "Arrivals are 270 a second, so the backlog gains the difference every second, and 5 minutes is 300 seconds.",
               "blank": {
                 "questionId": "clof-scaling-and-decoupling-faded"
               }
@@ -3454,13 +3395,13 @@
           "headline": "Price the data leaving and add it to storage.",
           "workedSteps": [
             {
-              "text": "Data leaving the provider network is charged per gigabyte, and data coming in is usually free. Price 1,500 GB at $0.09 per GB.",
+              "text": "Data leaving the provider network is charged per gigabyte, and data coming in is usually free.",
               "blank": {
                 "questionId": "clof-cost-and-pricing-egress"
               }
             },
             {
-              "text": "Add the transfer to the storage line of $14.95. Work out the total.",
+              "text": "The bill also has a storage line of $14.95.",
               "blank": {
                 "questionId": "clof-cost-and-pricing-total"
               }
@@ -3598,11 +3539,10 @@
           "headline": "Find the break-even use for a commitment with a 45% discount.",
           "workedSteps": [
             {
-              "text": "The commitment costs the full price less the discount, and it is paid for the whole month, whether the machine runs or not.",
-              "math": "(100% − 45%) of the full price"
+              "text": "The commitment costs a fixed share of the full price, and it is paid for the whole month, whether the machine runs or not."
             },
             {
-              "text": "On demand costs the full price times the share of the month used, so the two cost the same when the share used equals the share paid. Work out that percentage.",
+              "text": "On demand costs the full price times the share of the month the machine is used.",
               "blank": {
                 "questionId": "clof-cost-and-pricing-breakeven"
               }
@@ -3777,11 +3717,11 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "Several earlier lessons were largely about this pillar, which is why it can feel the most familiar."
+              "text": "A choice rarely names its pillar, so the habit is to ask what the choice is for."
             }
           ],
           "answerVisibility": "hidden-until-response",
-          "checkQuestionId": "clof-well-architected-thinking-security-pillar",
+          "checkQuestionId": "clof-well-architected-thinking-renewable",
           "visualStateId": "",
           "activityId": ""
         },
@@ -3859,15 +3799,13 @@
           "headline": "Review a web app: two zones behind a load balancer, a managed database with a standby, and an automated release pipeline.",
           "workedSteps": [
             {
-              "text": "Start with the pipeline. Releasing by script makes operations repeatable and testable, which is the first pillar.",
-              "math": "operational excellence"
+              "text": "Start with the pipeline. Releasing by script makes operations repeatable and testable, which is the first pillar."
             },
             {
-              "text": "The managed database with a standby takes patching and failover off the team, and survives a zone loss. That serves reliability, at some cost in control over tuning.",
-              "math": "reliability, less control"
+              "text": "The managed database with a standby takes patching and failover off the team, and survives a zone loss. That serves reliability, at some cost in control over tuning."
             },
             {
-              "text": "Now the servers in two zones. Ask which pillar the choice mainly serves.",
+              "text": "Now the web servers, which run in two zones behind a load balancer.",
               "blank": {
                 "questionId": "clof-well-architected-thinking-zones-pillar"
               }
@@ -3880,24 +3818,11 @@
         },
         {
           "id": "review-schedule",
-          "kind": "faded_example",
+          "kind": "try",
           "blocks": [],
-          "headline": "Continue the review: the team also encrypts all data and switches test servers off at night.",
-          "workedSteps": [
-            {
-              "text": "Encrypting data with managed keys protects it on disk and in transit, which is the second pillar.",
-              "math": "security"
-            },
-            {
-              "text": "Switching test servers off outside working hours removes idle charges. Name the pillar this mainly serves.",
-              "blank": {
-                "questionId": "clof-well-architected-thinking-night-pillar"
-              }
-            }
-          ],
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
-          "checkQuestionId": "",
+          "checkQuestionId": "clof-well-architected-thinking-outage-notes",
           "activityId": ""
         },
         {
@@ -3944,7 +3869,7 @@
       "visualKind": "none",
       "activityId": "",
       "questionIds": [
-        "clof-well-architected-thinking-practice-1",
+        "clof-well-architected-thinking-practice-1-v2",
         "clof-well-architected-thinking-practice-2",
         "clof-well-architected-thinking-practice-3"
       ],
@@ -4175,14 +4100,14 @@
           "workedSteps": [
             {
               "text": "The principal is the IAM user dana, so the answer to *who* is the `userIdentity` field.",
-              "math": "userIdentity"
+              "math": "`userIdentity`"
             },
             {
               "text": "The action is `PutBucketPolicy` on the S3 service, which is an attempt to change who may use a bucket.",
-              "math": "eventName, eventSource"
+              "math": "`eventName`, `eventSource`"
             },
             {
-              "text": "The record carries an error code, which appears when a call fails. Did the policy change take effect?",
+              "text": "The last field of the event is `errorCode`, and it holds `AccessDenied`.",
               "blank": {
                 "questionId": "clof-cloud-security-and-governance-result"
               }
@@ -4195,24 +4120,11 @@
         },
         {
           "id": "count-events",
-          "kind": "faded_example",
+          "kind": "try",
           "blocks": [],
-          "headline": "Read a short excerpt: 8 events, of which 3 show the error code AccessDenied.",
-          "workedSteps": [
-            {
-              "text": "Each event with an error code was refused and changed nothing.",
-              "math": "3 refused"
-            },
-            {
-              "text": "The remaining events succeeded, and those are the ones to examine. Work out how many succeeded.",
-              "blank": {
-                "questionId": "clof-cloud-security-and-governance-succeeded"
-              }
-            }
-          ],
           "answerVisibility": "hidden-until-response",
           "visualStateId": "",
-          "checkQuestionId": "",
+          "checkQuestionId": "clof-cloud-security-and-governance-which-changed",
           "activityId": ""
         },
         {
@@ -4483,15 +4395,13 @@
           "headline": "Pick a strategy for an RTO of 10 minutes and an RPO of 1 minute, where one region serving traffic at a time is acceptable.",
           "workedSteps": [
             {
-              "text": "An RTO of 10 minutes rules out backup and restore, which takes hours, and pilot light, which usually takes tens of minutes.",
-              "math": "not the two cheapest"
+              "text": "An RTO of 10 minutes is far shorter than the hours that rebuilding from backups takes, so backup and restore is out."
             },
             {
-              "text": "Active/active would meet it, but it pays for a second fully loaded region to reach a target that is not near zero.",
-              "math": "more than needed"
+              "text": "Pilot light starts its servers from cold, which usually takes tens of minutes, so it is out as well."
             },
             {
-              "text": "The cheapest strategy left runs a scaled-down full copy that is scaled up at disaster time. Name it.",
+              "text": "Two strategies are left, and the rule is to take the cheapest one that meets the targets.",
               "blank": {
                 "questionId": "clof-designing-for-failure-warm"
               }
@@ -4509,11 +4419,10 @@
           "headline": "Pick a strategy for an RTO of 24 hours and an RPO of 12 hours, on a very small budget.",
           "workedSteps": [
             {
-              "text": "Both targets are measured in hours, so there is time to rebuild the system after a disaster.",
-              "math": "hours, not minutes"
+              "text": "Both targets are measured in hours, so there is time to rebuild the system after a disaster."
             },
             {
-              "text": "Name the cheapest strategy, which keeps only copies of data in another region.",
+              "text": "The budget is very small, so the choice is the cheapest strategy whose recovery time fits.",
               "blank": {
                 "questionId": "clof-designing-for-failure-backup"
               }
@@ -4667,7 +4576,7 @@
       "questionIds": [
         "clof-designing-for-failure-practice-1",
         "clof-designing-for-failure-practice-2",
-        "clof-designing-for-failure-practice-3"
+        "clof-designing-for-failure-practice-3-v2"
       ],
       "flashcardIds": [
         "clof-designing-for-failure-card-1",
@@ -4749,7 +4658,12 @@
           "measured",
           "metered service",
           "metering",
-          "measured service."
+          "metered",
+          "measured service.",
+          "pay per use",
+          "pay-per-use",
+          "metered use",
+          "measured use"
         ],
         "rejectedIdeas": [],
         "exampleAnswer": "measured service"
@@ -5200,7 +5114,7 @@
         "service-models",
         "shared-resp"
       ],
-      "prompt": "In EC2, who patches the guest operating system, the provider or the customer?",
+      "prompt": "In EC2, who patches the guest operating system?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -5210,15 +5124,10 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "customer"
-        ],
-        "acceptedAlternatives": [
-          "the customer",
-          "you",
-          "customer."
+          "The customer"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "customer"
+        "exampleAnswer": "The customer"
       },
       "sourceIds": [
         "nist-145",
@@ -5228,17 +5137,37 @@
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "provider",
-              "aws",
-              "amazon"
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "Whoever you rent from patches what runs beneath the instance, not the operating system inside it."
+          "feedback": "The provider runs the layers beneath the instance. The guest operating system is the first layer above them."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "The two sides divide the layers between them, so each task has one owner."
         }
       ],
       "skill": "place-responsibility",
-      "calculator": "off"
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "The provider"
+        },
+        {
+          "id": "b",
+          "label": "Both sides, in equal parts"
+        },
+        {
+          "id": "c",
+          "label": "The customer"
+        }
+      ]
     },
     {
       "id": "clof-what-the-cloud-is-practice-3",
@@ -5332,7 +5261,7 @@
         },
         {
           "id": "c",
-          "label": "Three stop, since half the region's power is lost"
+          "label": "The two in that zone move to another zone and keep running"
         }
       ],
       "misconceptions": [
@@ -5342,7 +5271,7 @@
               "a"
             ]
           },
-          "feedback": "The zones share a region but not a building or a power supply, so a failure in one leaves the others running."
+          "feedback": "The zones share a region but not a building or a power supply, so a failure in one does not reach the others."
         },
         {
           "match": {
@@ -5350,7 +5279,7 @@
               "c"
             ]
           },
-          "feedback": "A zone's failure reaches only the servers inside it, and each zone here holds a third of the servers."
+          "feedback": "A running server stays in the building it was started in. Nothing moves it elsewhere when that building loses power, so the design's protection has to be in place beforehand."
         },
         {
           "match": {
@@ -5358,7 +5287,7 @@
               "d"
             ]
           },
-          "feedback": "Each zone has its own power, so the servers inside the failed zone go down with it, and the design survives because the other zones carry on."
+          "feedback": "Each zone has its own power supply, so no zone can borrow another's. That separation is the reason a zone is the unit that fails together."
         }
       ],
       "skill": "choose-placement",
@@ -5371,7 +5300,7 @@
         "clof-availability",
         "redundancy"
       ],
-      "prompt": "Two components are both needed for a request to succeed, and each one is available 99.9% of the time. Compared with 99.9%, the availability of the pair is",
+      "prompt": "Two components are both needed for a request to succeed, and each one is available 99.9% of the time. How does the availability of the pair compare with 99.9%?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -5446,7 +5375,7 @@
         "clof-availability",
         "redundancy"
       ],
-      "prompt": "Finish the working: what is the availability of the web tier and database in series, as a percentage?",
+      "prompt": "Finish the working: the web tier is available 0.9995 of the time, the database 0.999 of the time, and both are required. What is the availability of the pair, as a percentage? Give the exact value.",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -5457,8 +5386,8 @@
       "answerAuthority": {
         "kind": "numeric",
         "value": 99.85005,
-        "unit": "",
-        "absoluteTolerance": 0.00005,
+        "unit": "percent",
+        "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
         "workedAnswer": "0.9995 × 0.999 = 0.9985005, which is 99.85005%."
       },
@@ -5467,7 +5396,7 @@
         "aws-wa",
         "sre-book"
       ],
-      "onCorrect": "The result is lower than either component, as it must be when both are required.",
+      "onCorrect": "The product is 0.9985005, a little below the weaker part's 0.999.",
       "misconceptions": [
         {
           "match": {
@@ -5496,28 +5425,28 @@
         "clof-availability",
         "redundancy"
       ],
-      "prompt": "Finish the working: what is the availability of the redundant pair, as a percentage?",
+      "prompt": "Finish the working: two components are each available 99.5% of the time, either one can serve, and they fail independently. What is the availability of the pair, as a percentage? Give the exact value.",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
-        "The pair fails only when both copies fail at once.",
-        "Each copy fails 0.5% of the time, which is 0.005 as a decimal.",
-        "Square 0.005 and subtract it from 1, then convert to a percentage."
+        "The pair is available whenever it is not down.",
+        "Work out the fraction of time both are down, as in the line above, and subtract it from 1.",
+        "Multiply the result by 100 to give a percentage."
       ],
       "answerAuthority": {
         "kind": "numeric",
         "value": 99.9975,
-        "unit": "",
-        "absoluteTolerance": 0.00005,
+        "unit": "percent",
+        "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "0.005 × 0.005 = 0.000025; 1 − 0.000025 = 0.999975, which is 99.9975%."
+        "workedAnswer": "1 − 0.000025 = 0.999975, which is 99.9975%."
       },
       "sourceIds": [
         "aws-docs",
         "aws-wa",
         "sre-book"
       ],
-      "onCorrect": "Redundancy turns two modest components into one that fails once in 40,000 periods, if failures are independent.",
+      "onCorrect": "Redundancy turns two modest components into a pair that fails once in 40,000 periods, if failures are independent.",
       "misconceptions": [
         {
           "match": {
@@ -5525,15 +5454,15 @@
               99.5
             ]
           },
-          "feedback": "That is a single copy. The second copy is what raises it."
+          "feedback": "That is a single component. The second one is what raises the figure."
         },
         {
           "match": {
             "numeric": [
-              99
+              99.999975
             ]
           },
-          "feedback": "That subtracts the two failure rates, which overstates the failure chance. Multiply them instead."
+          "feedback": "0.000025 is a fraction of the time, not a percentage. Take it from 1 first, then write the result as a percentage."
         }
       ],
       "skill": "compute-availability",
@@ -5546,7 +5475,7 @@
         "clof-availability",
         "redundancy"
       ],
-      "prompt": "A load balancer with 99.99% availability sits in series with a redundant pair of web servers, each 99.9% available and failing independently. The load balancer must work, and either server will do. What is the availability of the whole, as a percentage?",
+      "prompt": "A load balancer with 99.99% availability sits in series with a redundant pair of web servers, each 99.9% available and failing independently. The load balancer must work, and either server will do. What is the availability of the whole, as a percentage to four decimal places?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -5557,10 +5486,10 @@
       "answerAuthority": {
         "kind": "numeric",
         "value": 99.9899,
-        "unit": "",
-        "absoluteTolerance": 0.0005,
-        "relativeTolerance": 0,
-        "workedAnswer": "Pair: 1 − 0.000001 = 0.999999. In series: 0.9999 × 0.999999 = 0.9998990001, which is 99.9899%."
+        "unit": "percent",
+        "absoluteTolerance": 1e-9,
+        "relativeTolerance": 6e-7,
+        "workedAnswer": "Pair: 1 − 0.000001 = 0.999999. In series: 0.9999 × 0.999999 = 0.9998990001, which is 99.9899% to four decimal places."
       },
       "sourceIds": [
         "aws-docs",
@@ -5696,7 +5625,7 @@
         "clof-availability",
         "redundancy"
       ],
-      "prompt": "Where should two web servers be placed so that the service survives the loss of one data centre?",
+      "prompt": "A service must survive the loss of one data centre. Where should its web servers be placed?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -5720,7 +5649,7 @@
       "choices": [
         {
           "id": "b",
-          "label": "On one larger server in one zone"
+          "label": "As one larger server in one zone"
         },
         {
           "id": "c",
@@ -6121,7 +6050,7 @@
         "clof-policy",
         "eval-logic"
       ],
-      "prompt": "One policy allows `s3:GetObject` on a bucket and another explicitly denies it. The request is",
+      "prompt": "One policy allows `s3:GetObject` on a bucket and another explicitly denies it. What is the decision for a request to read an object in that bucket?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -6439,10 +6368,10 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "No, because nothing routes traffic between the subnet and the internet"
+          "No, because there is no route to the internet"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "No, because nothing routes traffic between the subnet and the internet"
+        "exampleAnswer": "No, because there is no route to the internet"
       },
       "sourceIds": [
         "rfc4632",
@@ -6460,7 +6389,7 @@
         },
         {
           "id": "b",
-          "label": "No, because nothing routes traffic between the subnet and the internet"
+          "label": "No, because there is no route to the internet"
         }
       ],
       "misconceptions": [
@@ -6683,10 +6612,10 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "Its route table sends internet traffic to an internet gateway"
+          "A route to an internet gateway in its route table"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "Its route table sends internet traffic to an internet gateway"
+        "exampleAnswer": "A route to an internet gateway in its route table"
       },
       "sourceIds": [
         "rfc4632",
@@ -6696,11 +6625,11 @@
       "choices": [
         {
           "id": "a",
-          "label": "Its name"
+          "label": "A name that includes the word public"
         },
         {
           "id": "b",
-          "label": "A larger CIDR block"
+          "label": "A CIDR block larger than a /24"
         },
         {
           "id": "d",
@@ -6708,7 +6637,7 @@
         },
         {
           "id": "c",
-          "label": "Its route table sends internet traffic to an internet gateway"
+          "label": "A route to an internet gateway in its route table"
         }
       ],
       "misconceptions": [
@@ -6757,18 +6686,10 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "function"
-        ],
-        "acceptedAlternatives": [
-          "functions",
-          "a function",
-          "function as a service",
-          "faas",
-          "lambda",
-          "aws lambda"
+          "A function"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "function"
+        "exampleAnswer": "A function"
       },
       "sourceIds": [
         "aws-docs",
@@ -6779,26 +6700,37 @@
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "virtual machine",
-              "vm",
-              "machine"
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "A virtual machine runs for as long as you keep it on. The limit belongs to the pay-per-run option."
+          "feedback": "A virtual machine is billed by the time it exists and runs until it is stopped, so no cap on a single run applies to it."
         },
         {
           "match": {
-            "textIdeas": [
-              "container",
-              "containers"
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "A container runs until its process ends, with no fixed cap on duration."
+          "feedback": "A container runs until its process ends, and a container service sets no cap of this kind on one run."
         }
       ],
       "skill": "choose-compute",
-      "calculator": "off"
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "A virtual machine"
+        },
+        {
+          "id": "b",
+          "label": "A container"
+        },
+        {
+          "id": "c",
+          "label": "A function"
+        }
+      ]
     },
     {
       "id": "clof-compute-options-monthly",
@@ -7402,15 +7334,15 @@
       "answerAuthority": {
         "kind": "numeric",
         "value": 0.0001,
-        "unit": "",
-        "absoluteTolerance": 1e-7,
+        "unit": "objects a year",
+        "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
         "workedAnswer": "10^7 × 10^−11 = 10^−4 = 0.0001 objects a year."
       },
       "sourceIds": [
         "aws-docs"
       ],
-      "onCorrect": "That is about one object every 10,000 years, which is what eleven nines of durability means in practice.",
+      "onCorrect": "Adding the exponents turns 10^7 × 10^-11 into 10^-4, which is 0.0001.",
       "misconceptions": [
         {
           "match": {
@@ -7540,25 +7472,15 @@
       "difficulty": 1,
       "hints": [
         "Replication copies what the source does, including mistakes.",
-        "Which feature keeps earlier versions of an object?"
+        "Look for the option that keeps an earlier state that the later change cannot reach."
       ],
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "versioning"
-        ],
-        "acceptedAlternatives": [
-          "object versioning",
-          "versioned backups",
-          "versioned backup",
-          "backups",
-          "a backup",
-          "backup",
-          "bucket versioning",
-          "versioned"
+          "Turning on versioning for the bucket"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "versioning"
+        "exampleAnswer": "Turning on versioning for the bucket"
       },
       "sourceIds": [
         "aws-docs"
@@ -7567,17 +7489,49 @@
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "replication",
-              "more replication",
-              "replicas"
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "Replication is the thing that spread the deletion. A separate protection keeps earlier states."
+          "feedback": "Replication is what copied the deletion. More copies made the same way would carry the same mistake."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "A storage class changes what holding and reading the objects costs. It does not keep earlier versions of them."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Encryption controls who can read the objects. It does not bring them back after a deletion."
         }
       ],
       "skill": "interpret-durability",
-      "calculator": "off"
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Replicating the bucket to a third region"
+        },
+        {
+          "id": "b",
+          "label": "Moving the objects to the infrequent-access class"
+        },
+        {
+          "id": "c",
+          "label": "Encrypting the objects with a managed key"
+        },
+        {
+          "id": "d",
+          "label": "Turning on versioning for the bucket"
+        }
+      ]
     },
     {
       "id": "clof-storage-types-practice-1",
@@ -8327,10 +8281,10 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "It grows for as long as the load lasts"
+          "It grows while the load lasts"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "It grows for as long as the load lasts"
+        "exampleAnswer": "It grows while the load lasts"
       },
       "sourceIds": [
         "aws-docs",
@@ -8340,15 +8294,15 @@
       "choices": [
         {
           "id": "c",
-          "label": "It shrinks slowly"
+          "label": "It shrinks, but only slowly"
         },
         {
           "id": "b",
-          "label": "It stays about the same"
+          "label": "It stays about the same size"
         },
         {
           "id": "a",
-          "label": "It grows for as long as the load lasts"
+          "label": "It grows while the load lasts"
         }
       ],
       "misconceptions": [
@@ -8399,7 +8353,7 @@
         "aws-docs",
         "aws-wa"
       ],
-      "onCorrect": "Rounding up is not a courtesy: four workers would fall behind by 20 a second.",
+      "onCorrect": "The quotient is 4.33, and a fraction of a worker still leaves the pool short, so it rounds up.",
       "misconceptions": [
         {
           "match": {
@@ -8748,7 +8702,7 @@
         "egress",
         "commitment"
       ],
-      "prompt": "Finish the working: 650 GB is stored at $0.023 per GB-month. What is the monthly cost in dollars?",
+      "prompt": "650 GB is stored at $0.023 per GB-month. What does it cost in a month, in dollars?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -8846,7 +8800,7 @@
         "egress",
         "commitment"
       ],
-      "prompt": "Finish the working: the storage costs $14.95 and the data leaving costs $135.00. What is the total in dollars?",
+      "prompt": "Finish the working: a bill has a storage line of $14.95 and a line for 1,500 GB leaving the provider network at $0.09 per GB. What is the total in dollars?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -8921,7 +8875,7 @@
         },
         {
           "id": "b",
-          "label": "Neither, since a stopped machine costs nothing"
+          "label": "None, since a stopped machine costs nothing"
         },
         {
           "id": "c",
@@ -8956,7 +8910,7 @@
         "egress",
         "commitment"
       ],
-      "prompt": "Finish the estimate: a virtual machine at $0.10 an hour runs 12 hours a day on 21 working days a month. What does it cost in a month, in dollars?",
+      "prompt": "A virtual machine at $0.10 an hour runs 12 hours a day on 21 working days a month. What does it cost in a month, in dollars?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -9501,10 +9455,10 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "Question it: the reliability gained is small against the cost and complexity added"
+          "Question it, because the report needs far less reliability than that"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "Question it: the reliability gained is small against the cost and complexity added"
+        "exampleAnswer": "Question it, because the report needs far less reliability than that"
       },
       "sourceIds": [
         "aws-wa",
@@ -9515,19 +9469,19 @@
       "choices": [
         {
           "id": "a",
-          "label": "Approve it: reliability should always be at its maximum"
+          "label": "Approve it, because reliability should be as high as possible"
         },
         {
           "id": "d",
-          "label": "Approve it: more regions always improve every pillar"
+          "label": "Approve it, because a second region improves every pillar"
         },
         {
           "id": "b",
-          "label": "Reject it: a second region is never worth the price"
+          "label": "Reject it, because extra regions are only for large companies"
         },
         {
           "id": "c",
-          "label": "Question it: the reliability gained is small against the cost and complexity added"
+          "label": "Question it, because the report needs far less reliability than that"
         }
       ],
       "misconceptions": [
@@ -9616,7 +9570,7 @@
         "tradeoff",
         "review"
       ],
-      "prompt": "Adding a second region mainly raises which pillar, and costs which?",
+      "prompt": "What does adding a second region mainly improve, and at what price?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
@@ -9706,7 +9660,8 @@
         "acceptedAlternatives": [
           "the operational excellence pillar",
           "operations",
-          "operational excellence pillar"
+          "operational excellence pillar",
+          "operational"
         ],
         "rejectedIdeas": [],
         "exampleAnswer": "operational excellence"
@@ -9755,7 +9710,9 @@
           "block public access setting",
           "bucket policy",
           "access policy",
-          "restrict access"
+          "restrict access",
+          "block all public access",
+          "blocking public access"
         ],
         "rejectedIdeas": [],
         "exampleAnswer": "block public access"
@@ -9850,25 +9807,20 @@
         "clof-audit-log",
         "account-structure"
       ],
-      "prompt": "Finish the reading: the event has the error code `AccessDenied`. Did the policy change take effect? Answer yes or no.",
+      "prompt": "An audit log event shows that dana called `PutBucketPolicy` on S3 and ends with the error code `AccessDenied`. Did the policy change take effect?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "An error code appears only when something went wrong.",
-        "The call was refused."
+        "Look at the last field of the event.",
+        "A refused call changes nothing."
       ],
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "no"
-        ],
-        "acceptedAlternatives": [
-          "no.",
-          "it did not",
-          "not"
+          "No, since the error code shows the call was refused"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "no"
+        "exampleAnswer": "No, since the error code shows the call was refused"
       },
       "sourceIds": [
         "aws-docs",
@@ -9879,15 +9831,37 @@
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "yes"
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "An `AccessDenied` code means the call was refused, and the setting stayed as it was."
+          "feedback": "The log records calls whether they succeeded or failed, so an entry shows that a call was made, not that it worked. One field says how it ended."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "The event does say: one of its fields records how the call ended."
         }
       ],
       "skill": "read-audit-event",
-      "calculator": "off"
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Yes, since every call in the log took effect"
+        },
+        {
+          "id": "b",
+          "label": "It cannot be told from one event"
+        },
+        {
+          "id": "c",
+          "label": "No, since the error code shows the call was refused"
+        }
+      ]
     },
     {
       "id": "clof-cloud-security-and-governance-succeeded",
@@ -9970,7 +9944,7 @@
       "choices": [
         {
           "id": "c",
-          "label": "Half of them, the workloads that share its region"
+          "label": "None of them, since every account is isolated from the others"
         },
         {
           "id": "a",
@@ -9996,7 +9970,7 @@
               "c"
             ]
           },
-          "feedback": "Regions do not decide the exposure here, because the account is the boundary and only the workloads inside it are reachable."
+          "feedback": "Isolation keeps one account out of another's reach. It cannot protect the account that was compromised, where the attacker holds the keys."
         }
       ],
       "skill": "pick-control",
@@ -10067,10 +10041,10 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "Block public access, or a tighter access policy"
+          "Blocking public access"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "Block public access, or a tighter access policy"
+        "exampleAnswer": "Blocking public access"
       },
       "sourceIds": [
         "aws-docs",
@@ -10085,11 +10059,11 @@
         },
         {
           "id": "c",
-          "label": "Block public access, or a tighter access policy"
+          "label": "Blocking public access"
         },
         {
           "id": "a",
-          "label": "More encryption"
+          "label": "Stronger encryption"
         },
         {
           "id": "d",
@@ -10151,7 +10125,9 @@
           "the audit log",
           "api log",
           "activity log",
-          "cloud trail"
+          "cloud trail",
+          "audit logging",
+          "activity logs"
         ],
         "rejectedIdeas": [],
         "exampleAnswer": "audit log"
@@ -10195,10 +10171,10 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "To limit the blast radius of mistakes and compromise"
+          "It limits the damage one mistake can do"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "To limit the blast radius of mistakes and compromise"
+        "exampleAnswer": "It limits the damage one mistake can do"
       },
       "sourceIds": [
         "aws-docs",
@@ -10209,19 +10185,19 @@
       "choices": [
         {
           "id": "b",
-          "label": "It makes networks faster"
+          "label": "It makes the networks faster"
         },
         {
           "id": "d",
-          "label": "To limit the blast radius of mistakes and compromise"
+          "label": "It limits the damage one mistake can do"
         },
         {
           "id": "a",
-          "label": "It is cheaper"
+          "label": "It lowers the monthly bill"
         },
         {
           "id": "c",
-          "label": "It removes the need for IAM"
+          "label": "It removes the need for IAM policies"
         }
       ],
       "misconceptions": [
@@ -10377,24 +10353,20 @@
         "three-tier",
         "game-day"
       ],
-      "prompt": "Finish the choice: the requirement is an RTO of 10 minutes and an RPO of 1 minute, and traffic need not be served from two regions at once. Which strategy fits: backup and restore, pilot light, warm standby or active/active?",
+      "prompt": "The requirement is an RTO of 10 minutes and an RPO of 1 minute, and traffic need not be served from two regions at once. Warm standby and active/active both meet the targets. Which should the design use?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "The recovery must happen in minutes, which rules out the two cheapest strategies.",
-        "Running both regions at full load is more than the target needs."
+        "Both strategies meet the targets, so something else has to decide.",
+        "Compare what each one keeps running."
       ],
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "warm standby"
-        ],
-        "acceptedAlternatives": [
-          "warm-standby",
-          "a warm standby"
+          "Warm standby, because it meets the targets at the lower cost"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "warm standby"
+        "exampleAnswer": "Warm standby, because it meets the targets at the lower cost"
       },
       "sourceIds": [
         "aws-whitepapers",
@@ -10405,26 +10377,37 @@
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "active/active",
-              "multi-site active/active",
-              "multi-site",
-              "active active"
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "Active/active would meet the target, but it costs the most and the target does not require near-zero recovery."
+          "feedback": "It does recover fastest, but the rule is to take the cheapest strategy that meets the targets, not the fastest."
         },
         {
           "match": {
-            "textIdeas": [
-              "pilot light"
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "Starting servers from cold takes longer than the tens of minutes this strategy usually needs."
+          "feedback": "Both strategies keep the data replicated, so the RPO does not separate them. What separates them is the cost of meeting the same targets."
         }
       ],
       "skill": "choose-dr",
-      "calculator": "off"
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Active/active, because it recovers the fastest"
+        },
+        {
+          "id": "b",
+          "label": "Active/active, because an RPO of 1 minute needs two live regions"
+        },
+        {
+          "id": "c",
+          "label": "Warm standby, because it meets the targets at the lower cost"
+        }
+      ]
     },
     {
       "id": "clof-designing-for-failure-backup",
@@ -10443,16 +10426,10 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "backup and restore"
-        ],
-        "acceptedAlternatives": [
-          "backup & restore",
-          "backups",
-          "backup and recovery",
-          "backup restore"
+          "Backup and restore"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "backup and restore"
+        "exampleAnswer": "Backup and restore"
       },
       "sourceIds": [
         "aws-whitepapers",
@@ -10463,17 +10440,49 @@
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "pilot light",
-              "warm standby",
-              "active/active"
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That would work but costs more than the targets need. The cheapest strategy keeps only copies of the data."
+          "feedback": "Keeping core data services running is more than targets measured in hours need."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "A scaled-down copy running all the time costs more than targets measured in hours justify."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "Two full regions serving users is the dearest option, and targets measured in hours do not call for it."
         }
       ],
       "skill": "choose-dr",
-      "calculator": "off"
+      "calculator": "off",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Pilot light"
+        },
+        {
+          "id": "b",
+          "label": "Backup and restore"
+        },
+        {
+          "id": "c",
+          "label": "Warm standby"
+        },
+        {
+          "id": "d",
+          "label": "Active/active"
+        }
+      ]
     },
     {
       "id": "clof-designing-for-failure-three-zones",
@@ -10848,6 +10857,1649 @@
       ],
       "skill": "apply-least-privilege",
       "calculator": "off"
+    },
+    {
+      "id": "clof-what-the-cloud-is-ec2-webserver",
+      "conceptIds": [
+        "essentials",
+        "service-models",
+        "shared-resp"
+      ],
+      "prompt": "A security flaw is found in the web server software that runs on an EC2 instance. Who has to apply the fix?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Think about which layer the web server software belongs to.",
+        "Under IaaS the provider's layers end at the hypervisor."
+      ],
+      "sourceIds": [
+        "nist-145",
+        "aws-shared"
+      ],
+      "skill": "place-responsibility",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "The customer, since the software runs inside the instance"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "The customer, since the software runs inside the instance"
+      },
+      "onCorrect": "Everything above the hypervisor is the customer's on EC2, and that includes software the customer installs.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "The provider, since security is its side of the line"
+        },
+        {
+          "id": "b",
+          "label": "The customer, since the software runs inside the instance"
+        },
+        {
+          "id": "c",
+          "label": "Both, since responsibility is shared"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "The provider secures the cloud itself: the buildings, the hardware and the hypervisor. Software installed on the instance sits above all of those layers."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "The two sides divide the layers between them, so each task has one owner. Shared responsibility does not mean that both do every task."
+        }
+      ]
+    },
+    {
+      "id": "clof-what-the-cloud-is-rds-duty",
+      "conceptIds": [
+        "essentials",
+        "service-models",
+        "shared-resp"
+      ],
+      "prompt": "A company runs its customer database on RDS, a managed database service. Which of these is still the company's own job?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Three of these tasks belong to layers that the provider runs.",
+        "Look for the task that depends on a choice the company makes about its own people."
+      ],
+      "sourceIds": [
+        "nist-145",
+        "aws-shared"
+      ],
+      "skill": "place-responsibility",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Removing the login of an employee who has left"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Removing the login of an employee who has left"
+      },
+      "onCorrect": "A managed database takes server work off the company's list, but who may connect depends on its own people, so that decision stays with it.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Replacing a disk that has failed in the database server"
+        },
+        {
+          "id": "b",
+          "label": "Applying security patches to the database engine"
+        },
+        {
+          "id": "c",
+          "label": "Removing the login of an employee who has left"
+        },
+        {
+          "id": "d",
+          "label": "Keeping power and cooling running in the data centre"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "Disks belong to the hardware layer, which the provider runs under every service model."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "On RDS the provider takes over the operating system and the engine, so patching them is no longer the company's work."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "Power and cooling belong to the facility layer, which the provider runs under every service model."
+        }
+      ]
+    },
+    {
+      "id": "clof-what-the-cloud-is-iaas-to-paas",
+      "conceptIds": [
+        "essentials",
+        "service-models",
+        "shared-resp"
+      ],
+      "prompt": "A team moves its application from virtual machines it rents (IaaS) to a platform service (PaaS). Which of these duties does the move take off the team?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Compare which layers the team runs under each model.",
+        "Under PaaS the provider takes over the layers beneath the application."
+      ],
+      "sourceIds": [
+        "nist-145",
+        "aws-shared"
+      ],
+      "skill": "classify-service-model",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Patching the operating system"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Patching the operating system"
+      },
+      "onCorrect": "The operating system and the runtime pass to the provider, while the application, its data and the access settings stay with the team.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Patching the operating system"
+        },
+        {
+          "id": "b",
+          "label": "Deciding who may sign in to the application"
+        },
+        {
+          "id": "c",
+          "label": "Keeping the application's own code up to date"
+        },
+        {
+          "id": "d",
+          "label": "Choosing which data the application stores"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Who may use the application is a decision about the team's own users, so it stays with the team under every service model."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Under PaaS the team supplies the application, so writing and updating its code remains the team's work."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "The data is the layer that stays with the customer under every service model."
+        }
+      ]
+    },
+    {
+      "id": "clof-what-the-cloud-is-practice-3-v2",
+      "conceptIds": [
+        "essentials",
+        "service-models",
+        "shared-resp"
+      ],
+      "prompt": "A shop's website receives ten times its usual traffic for two days during a sale. The cloud adds servers as the load rises and takes them away as it falls. Which of the five characteristics is this?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Look at what changes: the amount of capacity, and how quickly it changes."
+      ],
+      "sourceIds": [
+        "nist-145",
+        "aws-shared"
+      ],
+      "skill": "classify-service-model",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Rapid elasticity"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Rapid elasticity"
+      },
+      "onCorrect": "Elasticity is why a two-day rush does not need a fleet that sits idle for the rest of the year.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "On-demand self-service"
+        },
+        {
+          "id": "b",
+          "label": "Broad network access"
+        },
+        {
+          "id": "c",
+          "label": "Resource pooling"
+        },
+        {
+          "id": "d",
+          "label": "Rapid elasticity"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "Self-service is about getting a resource yourself, without a person at the provider. Here the capacity follows the load without anyone asking for it."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Broad network access means the resources can be reached over the network from ordinary devices. It says nothing about capacity changing."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Pooling means the provider serves many customers from one shared set of machines. It does not describe capacity growing and shrinking."
+        }
+      ]
+    },
+    {
+      "id": "clof-regions-zones-and-availability-faded-both-down",
+      "conceptIds": [
+        "region-az",
+        "clof-availability",
+        "redundancy"
+      ],
+      "prompt": "Finish the working: each component is down 0.005 of the time, and they fail independently. What fraction of the time are both down together? Give a decimal.",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "The pair is down only when both components are down at once.",
+        "For independent components the chance of both is the product of the two chances."
+      ],
+      "sourceIds": [
+        "aws-docs",
+        "aws-wa",
+        "sre-book"
+      ],
+      "skill": "compute-availability",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 0.000025,
+        "unit": "fraction of the time",
+        "absoluteTolerance": 1e-9,
+        "relativeTolerance": 0.001,
+        "workedAnswer": "0.005 × 0.005 = 0.000025."
+      },
+      "onCorrect": "Two components that each fail once in 200 periods are both down together once in 40,000.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              0.01
+            ]
+          },
+          "feedback": "That adds the two failure chances. The pair is down only when both are down together, so they multiply."
+        },
+        {
+          "match": {
+            "numeric": [
+              0.005
+            ]
+          },
+          "feedback": "That is one component alone. Both have to be down at once for the pair to fail."
+        }
+      ]
+    },
+    {
+      "id": "clof-regions-zones-and-availability-practice-1-v2",
+      "conceptIds": [
+        "region-az",
+        "clof-availability",
+        "redundancy"
+      ],
+      "prompt": "Two required components are available 99.5% and 99.9% of the time, and they fail independently. What is the availability of the pair in series, as a percentage? Give the exact value.",
+      "responseType": "numeric",
+      "difficulty": 1.2,
+      "hints": [
+        "Both components must work, so the availabilities multiply.",
+        "Write 99.5% as 0.995 and 99.9% as 0.999, then multiply.",
+        "Convert the product back to a percentage."
+      ],
+      "sourceIds": [
+        "aws-docs",
+        "aws-wa",
+        "sre-book"
+      ],
+      "skill": "compute-availability",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 99.4005,
+        "unit": "percent",
+        "absoluteTolerance": 1e-9,
+        "relativeTolerance": 0,
+        "workedAnswer": "0.995 × 0.999 = 0.994005, which is 99.4005%."
+      },
+      "onCorrect": "Every extra required component multiplies in another factor below one, so the whole is lower than any part.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              99.5
+            ]
+          },
+          "feedback": "That is the weaker component alone. Both are required, so the pair is lower still."
+        },
+        {
+          "match": {
+            "numeric": [
+              99.4
+            ]
+          },
+          "feedback": "Taking the two shortfalls off 100 drops a small term. Multiply 0.995 × 0.999 for the exact figure."
+        }
+      ]
+    },
+    {
+      "id": "clof-regions-zones-and-availability-practice-2-v2",
+      "conceptIds": [
+        "region-az",
+        "clof-availability",
+        "redundancy"
+      ],
+      "prompt": "A service must be available 99.95% of the time over a year of 525,600 minutes. How many minutes of downtime does that allow?",
+      "responseType": "numeric",
+      "difficulty": 1.2,
+      "hints": [
+        "99.95% leaves 0.05% unavailable.",
+        "As a decimal 0.05% is 0.0005.",
+        "Multiply 525,600 by 0.0005."
+      ],
+      "sourceIds": [
+        "aws-docs",
+        "aws-wa",
+        "sre-book"
+      ],
+      "skill": "compute-availability",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 262.8,
+        "unit": "minutes",
+        "absoluteTolerance": 1e-9,
+        "relativeTolerance": 0,
+        "workedAnswer": "99.95% leaves 0.05% unavailable, which is 0.0005 as a decimal, and 525,600 × 0.0005 = 262.8 minutes."
+      },
+      "onCorrect": "That falls between 525.6 minutes at three nines and 52.56 minutes at four nines, as 99.95% should.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              2628
+            ]
+          },
+          "feedback": "That treats the unavailable share as 0.5%. At 99.95% it is 0.05%, which is 0.0005 as a decimal."
+        },
+        {
+          "match": {
+            "numeric": [
+              26.28
+            ]
+          },
+          "feedback": "That treats the unavailable share as 0.005%. At 99.95% it is 0.05%."
+        }
+      ]
+    },
+    {
+      "id": "clof-identity-and-access-worked-match",
+      "conceptIds": [
+        "principal",
+        "clof-policy",
+        "eval-logic"
+      ],
+      "prompt": "The only statement in the policy allows `s3:GetObject` on `arn:aws:s3:::reports/*`. Does it allow a request for `s3:PutObject` on `reports/q1.csv`?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Compare the action in the statement with the action in the request.",
+        "Then compare the resources."
+      ],
+      "sourceIds": [
+        "aws-docs",
+        "aws-wa"
+      ],
+      "skill": "evaluate-policy",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "No, because the statement allows a different action"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "No, because the statement allows a different action"
+      },
+      "onCorrect": "A statement that allows reading says nothing about writing, so this request finds no allow.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "No, because the statement allows a different action"
+        },
+        {
+          "id": "b",
+          "label": "Yes, because the object is in the bucket the statement names"
+        },
+        {
+          "id": "c",
+          "label": "No, because the statement names a different bucket"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "A statement allows a request only when its action and its resource both match. The resource matches here, so the difference is in the other half."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "The statement names `reports/*`, and `reports/q1.csv` lies inside it, so the resource is a match."
+        }
+      ]
+    },
+    {
+      "id": "clof-identity-and-access-condition",
+      "conceptIds": [
+        "principal",
+        "clof-policy",
+        "eval-logic"
+      ],
+      "prompt": "A policy has one statement. It allows `s3:GetObject` on `arn:aws:s3:::reports/*`, but only when `aws:MultiFactorAuthPresent` is true. A user who signed in without multi-factor authentication asks to read `reports/q1.csv`. What is the decision?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "A condition decides whether a statement applies at all.",
+        "Then ask whether any other statement allows the request."
+      ],
+      "sourceIds": [
+        "aws-docs",
+        "aws-wa"
+      ],
+      "skill": "evaluate-policy",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Denied by default, since no statement that applies allows it"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Denied by default, since no statement that applies allows it"
+      },
+      "onCorrect": "A condition narrows when an allow applies. Where it fails, the request is judged as if that allow were not there.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Allowed, since the action and the resource both match"
+        },
+        {
+          "id": "b",
+          "label": "Denied by default, since no statement that applies allows it"
+        },
+        {
+          "id": "c",
+          "label": "Denied by an explicit deny, since the condition failed"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "A condition is part of the statement. When it does not hold, the statement does not apply, however well the action and resource match."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "A failed condition does not turn an allow into a deny. The statement stops applying, and an explicit deny needs a statement with `Deny` of its own."
+        }
+      ]
+    },
+    {
+      "id": "clof-identity-and-access-narrowest-v2",
+      "conceptIds": [
+        "principal",
+        "clof-policy",
+        "eval-logic"
+      ],
+      "prompt": "A small tool uploads a file each day to the `invoices/` prefix of the `billing` bucket and reads it back to check it. It does nothing else. Which policy follows least privilege?",
+      "responseType": "short_text",
+      "difficulty": 1.1,
+      "hints": [
+        "List what the tool does: which actions, on which resources.",
+        "Least privilege grants all of that and nothing beyond it."
+      ],
+      "sourceIds": [
+        "aws-docs",
+        "aws-wa"
+      ],
+      "skill": "apply-least-privilege",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Allow `s3:GetObject` and `s3:PutObject` on `arn:aws:s3:::billing/invoices/*`"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Allow `s3:GetObject` and `s3:PutObject` on `arn:aws:s3:::billing/invoices/*`"
+      },
+      "onCorrect": "Two actions on one prefix cover exactly what the tool does, so a leaked credential could reach very little else.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Allow `s3:*` on `arn:aws:s3:::billing/invoices/*`"
+        },
+        {
+          "id": "b",
+          "label": "Allow `s3:GetObject` and `s3:PutObject` on `arn:aws:s3:::billing/*`"
+        },
+        {
+          "id": "c",
+          "label": "Allow `s3:GetObject` on `arn:aws:s3:::billing/invoices/*`"
+        },
+        {
+          "id": "d",
+          "label": "Allow `s3:GetObject` and `s3:PutObject` on `arn:aws:s3:::billing/invoices/*`"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "The place is right, but `s3:*` grants every S3 action, including ones that delete objects and change settings. The tool needs two."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "The actions fit, but the resource covers the whole bucket where the tool works in one prefix."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "That is narrower than the tool needs. Least privilege grants what the task requires, and this tool also uploads, so it would fail."
+        }
+      ]
+    },
+    {
+      "id": "clof-identity-and-access-practice-3-v2",
+      "conceptIds": [
+        "principal",
+        "clof-policy",
+        "eval-logic"
+      ],
+      "prompt": "What is the name of the rule that refuses a request when no policy mentions its action?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "The rule applies when no statement allows or denies the request.",
+        "Its name says what happens when nothing is said."
+      ],
+      "sourceIds": [
+        "aws-docs",
+        "aws-wa"
+      ],
+      "skill": "evaluate-policy",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "default deny"
+        ],
+        "acceptedAlternatives": [
+          "deny by default",
+          "denied by default",
+          "implicit deny",
+          "default denial",
+          "default denied",
+          "default deny rule",
+          "the default deny"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "default deny"
+      },
+      "onCorrect": "Default deny is why a new user with no policies can do nothing at all.",
+      "misconceptions": [
+        {
+          "match": {
+            "textIdeas": [
+              "explicit deny",
+              "explicit"
+            ]
+          },
+          "feedback": "An explicit deny is a statement that names the action with `Deny`. This rule applies when no statement mentions the action at all."
+        }
+      ]
+    },
+    {
+      "id": "clof-virtual-networks-inside-prefix",
+      "conceptIds": [
+        "clof-cidr",
+        "subnet-route",
+        "sg-nacl"
+      ],
+      "prompt": "Every address inside the block `10.0.1.0/24` begins with which numbers?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Each of the four numbers in an address takes 8 bits.",
+        "Divide the 24 fixed bits by 8."
+      ],
+      "sourceIds": [
+        "rfc4632",
+        "aws-docs"
+      ],
+      "skill": "size-cidr",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "10.0.1"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "10.0.1"
+      },
+      "onCorrect": "The numbers a prefix fixes are the ones every address in the block shares, so a block's addresses differ only after them.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "10.0"
+        },
+        {
+          "id": "b",
+          "label": "10.0.1.0"
+        },
+        {
+          "id": "c",
+          "label": "10"
+        },
+        {
+          "id": "d",
+          "label": "10.0.1"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "Those are the two numbers that a /16 fixes. A /24 fixes more of the address."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "That is the block's first address. Only a block that fixes all 32 bits is a single address."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "One number is 8 bits, which a /8 fixes. A /24 fixes more of the address."
+        }
+      ]
+    },
+    {
+      "id": "clof-virtual-networks-most-specific",
+      "conceptIds": [
+        "clof-cidr",
+        "subnet-route",
+        "sg-nacl"
+      ],
+      "prompt": "A subnet's route table has two routes: `10.0.0.0/16` to the local network and `0.0.0.0/0` to an internet gateway. A server in the subnet sends a packet to `10.0.4.9`. Which route carries it?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Both routes match this address, so something else must decide.",
+        "A /0 prefix fixes no bits, and a /16 fixes sixteen."
+      ],
+      "sourceIds": [
+        "rfc4632",
+        "aws-docs"
+      ],
+      "skill": "make-subnet-public",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "The `10.0.0.0/16` route, because it is the more specific match"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "The `10.0.0.0/16` route, because it is the more specific match"
+      },
+      "onCorrect": "The route that fixes more of the address wins, which is why `0.0.0.0/0` works as a catch-all without capturing traffic that has a closer route.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "The `0.0.0.0/0` route, because it matches every address"
+        },
+        {
+          "id": "b",
+          "label": "The `10.0.0.0/16` route, because it is listed first"
+        },
+        {
+          "id": "c",
+          "label": "The `10.0.0.0/16` route, because it is the more specific match"
+        },
+        {
+          "id": "d",
+          "label": "Both routes, because the address matches both"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "That route does match, but matching is not what decides. Several routes can match one address, and the table has a way of choosing between them."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "The order of the table is not what decides. A route table does not work down a list."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "A packet leaves by one route. When several match, the table picks a single one."
+        }
+      ]
+    },
+    {
+      "id": "clof-virtual-networks-practice-1-v2",
+      "conceptIds": [
+        "clof-cidr",
+        "subnet-route",
+        "sg-nacl"
+      ],
+      "prompt": "How many addresses are in a /18 block?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "A /18 fixes 18 of the 32 bits.",
+        "14 bits remain free.",
+        "Work out 2 raised to the power 14."
+      ],
+      "sourceIds": [
+        "rfc4632",
+        "aws-docs"
+      ],
+      "skill": "size-cidr",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 16384,
+        "unit": "addresses",
+        "absoluteTolerance": 1e-9,
+        "relativeTolerance": 0,
+        "workedAnswer": "32 − 18 = 14 free bits, and 2^14 = 16,384."
+      },
+      "onCorrect": "Each bit freed doubles the count, so a /18 holds 4 times as many addresses as a /20.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              14
+            ]
+          },
+          "feedback": "That is the number of free bits. The count is 2 raised to that power."
+        },
+        {
+          "match": {
+            "numeric": [
+              18
+            ]
+          },
+          "feedback": "That is the prefix length, not the count."
+        }
+      ]
+    },
+    {
+      "id": "clof-compute-options-cold-guess",
+      "conceptIds": [
+        "vm",
+        "function",
+        "autoscaling"
+      ],
+      "prompt": "A function is code that the provider runs when an event arrives, and it uses none of your servers while it waits. What do you expect to happen to the first request after a long quiet period?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Think about what is running while the function waits for an event."
+      ],
+      "sourceIds": [
+        "aws-docs",
+        "aws-wa",
+        "finops"
+      ],
+      "skill": "choose-compute",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "It may wait while the provider prepares the code to run"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "It may wait while the provider prepares the code to run"
+      },
+      "onCorrect": "The provider has to prepare an environment first, and that delay is called a cold start.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "It is answered as quickly as any other request"
+        },
+        {
+          "id": "b",
+          "label": "It may wait while the provider prepares the code to run"
+        },
+        {
+          "id": "c",
+          "label": "It is refused until someone starts a server by hand"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "That assumes something is already running. Between requests a function holds no server of yours, so nothing is waiting for the next event."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Nobody starts anything by hand. The provider starts the code itself when an event arrives."
+        }
+      ]
+    },
+    {
+      "id": "clof-storage-types-boot-disk",
+      "conceptIds": [
+        "object",
+        "clof-block",
+        "clof-durability"
+      ],
+      "prompt": "A virtual machine needs a disk for its operating system, one that only this machine will use and change in place. Which kind of storage fits: object, block or file?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Think about what the machine does with its disk: it changes small pieces in place."
+      ],
+      "sourceIds": [
+        "aws-docs"
+      ],
+      "skill": "match-storage",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Block storage"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Block storage"
+      },
+      "onCorrect": "A block volume behaves like a local disk, which is why it holds operating systems and database files.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Block storage"
+        },
+        {
+          "id": "b",
+          "label": "Object storage"
+        },
+        {
+          "id": "c",
+          "label": "File storage"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "An object is replaced whole, never edited in place, so it cannot serve as a machine's own disk."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "File storage is a shared folder that many machines mount. This machine needs a disk of its own, not a folder it shares."
+        }
+      ]
+    },
+    {
+      "id": "clof-managed-databases-school",
+      "conceptIds": [
+        "clof-rpo-rto",
+        "multi-az",
+        "db-models"
+      ],
+      "prompt": "A school keeps records of students, courses and enrolments. A report must list every student enrolled in any course taught by a given teacher, which means linking records of three kinds. Which database model fits: relational, key-value or document?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Look at what the report has to do with records of different kinds."
+      ],
+      "sourceIds": [
+        "aws-docs",
+        "aws-whitepapers",
+        "aws-wa"
+      ],
+      "skill": "choose-database",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Relational"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Relational"
+      },
+      "onCorrect": "Linking records of different kinds in one query is what a relational database is built for.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Key-value"
+        },
+        {
+          "id": "b",
+          "label": "Document"
+        },
+        {
+          "id": "c",
+          "label": "Relational"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "A key-value store fetches an item by its key and nothing else. It has no way to link records of different kinds in one query."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "A document store keeps each record whole, with its own shape. This report depends on linking separate records, not on records that vary."
+        }
+      ]
+    },
+    {
+      "id": "clof-managed-databases-replica-lag",
+      "conceptIds": [
+        "clof-rpo-rto",
+        "multi-az",
+        "db-models"
+      ],
+      "prompt": "A dashboard reads its figures from a copy of the database. It sometimes shows an order a few seconds after the main database recorded it. Which feature is the dashboard reading from?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Ask which copy can be queried while the primary is healthy."
+      ],
+      "sourceIds": [
+        "aws-docs",
+        "aws-whitepapers",
+        "aws-wa"
+      ],
+      "skill": "choose-database",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "A read replica"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "A read replica"
+      },
+      "onCorrect": "A read replica serves queries from its own copy, and the delay before a change reaches it is the replication lag.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "A multi-AZ standby"
+        },
+        {
+          "id": "b",
+          "label": "A read replica"
+        },
+        {
+          "id": "c",
+          "label": "An automated backup"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "A standby is not queried while the primary is healthy, so a dashboard cannot read from it."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "A backup is a stored copy that has to be restored into a new database before anyone can query it."
+        }
+      ]
+    },
+    {
+      "id": "clof-managed-databases-practice-1-v2",
+      "conceptIds": [
+        "clof-rpo-rto",
+        "multi-az",
+        "db-models"
+      ],
+      "prompt": "Backups run every 9 hours and nothing else copies the data. In the worst case, how much recent data can a failure lose?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Ask when, within the interval, a failure would cost the most."
+      ],
+      "sourceIds": [
+        "aws-docs",
+        "aws-whitepapers",
+        "aws-wa"
+      ],
+      "skill": "apply-rpo",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Up to 9 hours of changes"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Up to 9 hours of changes"
+      },
+      "onCorrect": "Shipping transaction logs between backups is how recovery gets below the backup interval.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Up to 9 hours of changes"
+        },
+        {
+          "id": "b",
+          "label": "About 4.5 hours of changes, the average"
+        },
+        {
+          "id": "c",
+          "label": "None, because the last backup is complete"
+        },
+        {
+          "id": "d",
+          "label": "Up to 18 hours of changes, because two backups may be needed"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Half the interval is the average over failures at random times. The question asks for the worst case, which is the largest gap."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "A backup holds the data as it was when the backup ran. Changes made after it are in no copy."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "Only the most recent backup is restored, so the loss is measured back to that one and no further."
+        }
+      ]
+    },
+    {
+      "id": "clof-managed-databases-practice-2-v2",
+      "conceptIds": [
+        "clof-rpo-rto",
+        "multi-az",
+        "db-models"
+      ],
+      "prompt": "A failure happens at 16:15 and service returns at 17:00. The RTO is 20 minutes. By how many minutes was it missed?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "Work out the length of the outage in minutes.",
+        "From 16:15 to 17:00 is 45 minutes.",
+        "Subtract the allowed time."
+      ],
+      "sourceIds": [
+        "aws-docs",
+        "aws-whitepapers",
+        "aws-wa"
+      ],
+      "skill": "apply-rpo",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 25,
+        "unit": "minutes",
+        "absoluteTolerance": 1e-9,
+        "relativeTolerance": 0,
+        "workedAnswer": "The outage lasted 45 minutes against 20 allowed, so it was missed by 25 minutes."
+      },
+      "onCorrect": "Missing an RTO has a cost; the point of stating it in advance is to design the recovery to fit.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              45
+            ]
+          },
+          "feedback": "That is the outage length. The question asks for the excess."
+        },
+        {
+          "match": {
+            "numeric": [
+              20
+            ]
+          },
+          "feedback": "That is the objective, not the excess."
+        }
+      ]
+    },
+    {
+      "id": "clof-scaling-and-decoupling-largest",
+      "conceptIds": [
+        "clof-load-balancer",
+        "clof-queue",
+        "clof-stateless"
+      ],
+      "prompt": "A team runs its service on the largest machine the provider offers, and demand keeps growing. Which kind of scaling can it use next?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "One kind of scaling keeps a single machine, so the size of that machine limits it."
+      ],
+      "sourceIds": [
+        "aws-docs",
+        "aws-wa"
+      ],
+      "skill": "size-workers",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Scaling out, by adding more machines"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Scaling out, by adding more machines"
+      },
+      "onCorrect": "Adding machines has no ceiling of this kind, and a failure then costs only the share of work that one machine carried.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Scaling up, to a still larger machine"
+        },
+        {
+          "id": "b",
+          "label": "Neither, since the service has reached its limit"
+        },
+        {
+          "id": "c",
+          "label": "Scaling out, by adding more machines"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "There is no larger machine to move to, since the service already runs on the largest one."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "A single machine has a size limit, but a fleet of machines does not have one."
+        }
+      ]
+    },
+    {
+      "id": "clof-well-architected-thinking-renewable",
+      "conceptIds": [
+        "pillars",
+        "tradeoff",
+        "review"
+      ],
+      "prompt": "A company chooses to run its workloads in a region powered mostly by renewable energy. Which pillar is that choice mainly about?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Ask what the choice changes about the workload's effect on the world outside the system."
+      ],
+      "sourceIds": [
+        "aws-wa",
+        "azure-docs",
+        "gcp-docs"
+      ],
+      "skill": "name-pillars",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Sustainability"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Sustainability"
+      },
+      "onCorrect": "Sustainability covers the environmental impact of running workloads, which includes where and how they run.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Sustainability"
+        },
+        {
+          "id": "b",
+          "label": "Cost optimisation"
+        },
+        {
+          "id": "c",
+          "label": "Performance efficiency"
+        },
+        {
+          "id": "d",
+          "label": "Reliability"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "A region's energy source says nothing about what the workload costs."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "A region's energy source does not change how fast the workload runs or how well it matches demand."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "A region's energy source does not change how the workload recovers from failure."
+        }
+      ]
+    },
+    {
+      "id": "clof-well-architected-thinking-outage-notes",
+      "conceptIds": [
+        "pillars",
+        "tradeoff",
+        "review"
+      ],
+      "prompt": "After each outage a team writes up what happened and what it will change, and keeps the notes where everyone can read them. Which pillar is that practice mainly about?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "The practice is about how the team works, not about the system's design."
+      ],
+      "sourceIds": [
+        "aws-wa",
+        "azure-docs",
+        "gcp-docs"
+      ],
+      "skill": "spot-tradeoff",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Operational excellence"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Operational excellence"
+      },
+      "onCorrect": "Learning from every failure is part of running systems well, which is what the first pillar covers.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Reliability"
+        },
+        {
+          "id": "b",
+          "label": "Security"
+        },
+        {
+          "id": "c",
+          "label": "Cost optimisation"
+        },
+        {
+          "id": "d",
+          "label": "Operational excellence"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "Reliability is about the workload itself recovering from failure and meeting demand. This practice is something the team does after the failure."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Security is about protecting information and systems. Writing up an outage does not change who can reach the data."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Cost optimisation is about delivering the value the business needs at the lowest price. Nothing in this practice changes what the system costs to run."
+        }
+      ]
+    },
+    {
+      "id": "clof-well-architected-thinking-practice-1-v2",
+      "conceptIds": [
+        "pillars",
+        "tradeoff",
+        "review"
+      ],
+      "prompt": "Which of these is not one of the six pillars of the Well-Architected Framework?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "Think of the six: operations, security, reliability, performance, cost and one added in 2021."
+      ],
+      "sourceIds": [
+        "aws-wa",
+        "azure-docs",
+        "gcp-docs"
+      ],
+      "skill": "name-pillars",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Scalability"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Scalability"
+      },
+      "onCorrect": "Scaling is a technique that serves several pillars, but it is not a pillar of its own.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Operational excellence"
+        },
+        {
+          "id": "b",
+          "label": "Scalability"
+        },
+        {
+          "id": "c",
+          "label": "Performance efficiency"
+        },
+        {
+          "id": "d",
+          "label": "Sustainability"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "Operational excellence is a pillar. It covers running systems and improving how they are run."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Performance efficiency is a pillar. It covers using computing resources well for the workload as demand changes."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "Sustainability is a pillar. It is the newest one, added in 2021."
+        }
+      ]
+    },
+    {
+      "id": "clof-cloud-security-and-governance-which-changed",
+      "conceptIds": [
+        "encryption",
+        "clof-audit-log",
+        "account-structure"
+      ],
+      "prompt": "An audit log excerpt holds three events. Event 1 is `DeleteBucket` with no `errorCode`. Event 2 is `PutBucketPolicy` with the `errorCode` `AccessDenied`. Event 3 is `StopLogging` with no `errorCode`. Which events changed something in the account?",
+      "responseType": "short_text",
+      "difficulty": 1,
+      "hints": [
+        "A refused call changes nothing.",
+        "Look at which events carry an error code."
+      ],
+      "sourceIds": [
+        "aws-docs",
+        "aws-shared",
+        "aws-wa"
+      ],
+      "skill": "read-audit-event",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "text",
+        "acceptedIdeas": [
+          "Events 1 and 3, since neither carries an error code"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Events 1 and 3, since neither carries an error code"
+      },
+      "onCorrect": "Events without an error code succeeded, and the one that stops logging is the kind a reviewer would examine first.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "All three, since each was recorded in the log"
+        },
+        {
+          "id": "b",
+          "label": "Events 1 and 3, since neither carries an error code"
+        },
+        {
+          "id": "c",
+          "label": "Event 1 only, since deleting is the only kind of change"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "The log records every call, including the ones that failed. A recorded call has not necessarily taken effect."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Any call that succeeds changes something, whatever its name. Stopping logging changes the account as much as deleting a bucket does."
+        }
+      ]
+    },
+    {
+      "id": "clof-designing-for-failure-practice-3-v2",
+      "conceptIds": [
+        "dr-strategies",
+        "three-tier",
+        "game-day"
+      ],
+      "prompt": "A web tier needs 12 servers at peak and must survive the loss of any one of 5 zones, with the servers spread evenly. How many servers run in total?",
+      "responseType": "numeric",
+      "difficulty": 1,
+      "hints": [
+        "After one zone is lost, four zones remain.",
+        "Each remaining zone carries a quarter of the peak.",
+        "Every one of the 5 zones needs that many."
+      ],
+      "sourceIds": [
+        "aws-whitepapers",
+        "aws-wa",
+        "sre-book"
+      ],
+      "skill": "trace-failure",
+      "calculator": "off",
+      "answerAuthority": {
+        "kind": "numeric",
+        "value": 15,
+        "unit": "servers",
+        "absoluteTolerance": 1e-9,
+        "relativeTolerance": 0,
+        "workedAnswer": "Four zones must carry 12 servers, so each runs 3, and 5 × 3 = 15 servers run in total."
+      },
+      "onCorrect": "With five zones the total is only 25% above the peak, where two zones would need twice as many.",
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              12
+            ]
+          },
+          "feedback": "That is the peak itself. Spare capacity for a lost zone is extra."
+        },
+        {
+          "match": {
+            "numeric": [
+              60
+            ]
+          },
+          "feedback": "That gives every zone enough servers for the full peak, which is far more than four zones sharing it need."
+        }
+      ]
     }
   ],
   "flashcards": [
