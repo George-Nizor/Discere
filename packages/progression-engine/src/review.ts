@@ -91,10 +91,26 @@ function answerText(question: Question): string {
     : question.answerAuthority.exampleAnswer;
 }
 
+/** The id of the review card that stands for a lesson question the learner missed. */
+export function questionCardId(questionId: string): string {
+  return `flashcard:${questionId}`;
+}
+
 /**
- * Create a flashcard only after the question has passed curriculum review.
- * The back of a card is answer-bearing and must stay behind a server-authorized
- * review flow; it is deliberately not part of learner-safe lesson payloads.
+ * The front of a question's card. A choice question makes no sense without its options, so they
+ * follow the prompt.
+ */
+function questionFront(question: Question): string {
+  const options = (question.choices ?? []).map((choice) => choice.label.trim()).filter(Boolean);
+  return options.length ? `${question.prompt}\nOptions: ${options.join("; ")}` : question.prompt;
+}
+
+/**
+ * Turns a reviewed lesson question into a review card: the prompt on the front and the worked
+ * answer on the back. The server registers one when a learner misses a question or has its
+ * answer shown, so the question comes back in review. The back is answer-bearing and must stay
+ * behind a server-authorized review flow; it is deliberately not part of learner-safe lesson
+ * payloads.
  */
 export function createFlashcardFromReviewedQuestion(input: ReviewedQuestion): Flashcard {
   if (!input.reviewedAt || !Number.isFinite(parseTimestamp(input.reviewedAt))) {
@@ -104,10 +120,10 @@ export function createFlashcardFromReviewedQuestion(input: ReviewedQuestion): Fl
     throw new Error("A reviewed flashcard needs at least one source ID.");
   }
   return {
-    id: `flashcard:${input.question.id}`,
+    id: questionCardId(input.question.id),
     questionId: input.question.id,
     conceptIds: [...input.question.conceptIds],
-    front: input.question.prompt,
+    front: questionFront(input.question),
     back: answerText(input.question),
     sourceIds: [...input.question.sourceIds],
     reviewedAt: input.reviewedAt,
@@ -139,15 +155,22 @@ export function createReviewState(cardId: string, now: string): ReviewState {
 }
 
 /**
- * The grade FSRS receives. Incorrect work is always Again. Assisted recall is never allowed
- * past Hard, because the learner did not retrieve the card unaided and the schedule should not
- * behave as though they had.
+ * The grade FSRS receives. Incorrect work is always Again, and a learner may always rate lower
+ * than the ceiling.
+ *
+ * Assisted recall (the card was revealed without a marked answer, or answered in Direct mode)
+ * has a ceiling that depends on the card's phase. In the review phase it is Hard, so the
+ * interval grows more slowly than for unaided recall. In the new, learning and relearning
+ * phases it is Good, because there Hard repeats the current step: a card that is always
+ * revealed would stay due every few minutes and never reach a real interval. The evidence
+ * counters still record the recall as assisted.
  */
-export function gradeForResult(result: ReviewResult): Grade {
+export function gradeForResult(result: ReviewResult, phase: ReviewPhase = "review"): Grade {
   if (result.outcome === "incorrect") return Rating.Again;
   const requested = result.rating ? GRADE_BY_RATING[result.rating] : undefined;
   if (result.evidence === "assisted") {
-    return requested !== undefined && requested < Rating.Hard ? requested : Rating.Hard;
+    const ceiling = phase === "review" ? Rating.Hard : Rating.Good;
+    return requested !== undefined && requested < ceiling ? requested : ceiling;
   }
   return requested ?? Rating.Good;
 }
@@ -183,7 +206,11 @@ export function scheduleReview(state: ReviewState, result: ReviewResult): Review
   const reviewedAt = parseTimestamp(result.reviewedAt);
   const independentReviews = state.independentReviews + (result.evidence === "independent" ? 1 : 0);
   const assistedReviews = state.assistedReviews + (result.evidence === "assisted" ? 1 : 0);
-  const next = scheduler.next(toCard(state), new Date(reviewedAt), gradeForResult(result)).card;
+  const next = scheduler.next(
+    toCard(state),
+    new Date(reviewedAt),
+    gradeForResult(result, state.phase),
+  ).card;
   const dueAt = next.due.toISOString();
   return {
     cardId: state.cardId,
