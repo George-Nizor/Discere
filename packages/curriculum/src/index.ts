@@ -35,3 +35,5 @@ export type {
 } from "@discere/contracts";
 export * from "./python-exercises.js";
 export * from "./sql-exercises.js";
+export * from "./typescript-runner.js";
+export * from "./typescript-exercises.js";

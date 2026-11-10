@@ -48,7 +48,7 @@ A reusable test is: **Does the screen say something the interface already makes 
 ## Repository map
 
 - `apps/web`: React learning workspace.
-- `apps/server`: Fastify API and SQLite persistence. `src/rust` is the sandboxed Rust playground and projects (ADR 0006).
+- `apps/server`: Fastify API and SQLite persistence. `src/rust` is the sandboxed Rust playground and projects (ADR 0006). `src/typescript` runs the TypeScript exercises (ADR 0008).
 - `mcp`: MCP server over stdio that forwards to the local API.
 - `packages/contracts`: shared runtime schemas and types.
 - `packages/writing-engine`: generated-prose quality gate.

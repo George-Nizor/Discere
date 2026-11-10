@@ -7,6 +7,8 @@ import { WindowsPythonRuntime } from "../python-projects/windows.js";
 import { IsolatedRustRuntime, type RustRuntime } from "../rust/runtime.js";
 import { WindowsRustRuntime } from "../rust/windows.js";
 import { IsolatedSqlRuntime, type SqlRuntime } from "../sql-projects/runtime.js";
+import { IsolatedTypeScriptRuntime, type TypeScriptRuntime } from "../typescript/runtime.js";
+import { WindowsTypeScriptRuntime } from "../typescript/windows.js";
 import { sandboxExecutable } from "./sandbox.js";
 import { WindowsCodeRuntimes } from "./windows.js";
 
@@ -21,6 +23,7 @@ export interface CodeRunners {
   rust: RustRuntime;
   python: PythonRuntime;
   sql: SqlRuntime;
+  typescript: TypeScriptRuntime;
 }
 
 const LINUX_SETUP: Record<CodeRuntimeId, string> = {
@@ -69,6 +72,7 @@ export function createCodeRunners(platform: NodeJS.Platform = process.platform):
       sql: new IsolatedSqlRuntime(
         configuredSql || (async () => (await windows.python())?.executable),
       ),
+      typescript: new WindowsTypeScriptRuntime(sandboxExecutable()),
     };
   }
   const rust = new IsolatedRustRuntime();
@@ -78,6 +82,7 @@ export function createCodeRunners(platform: NodeJS.Platform = process.platform):
     rust,
     python,
     sql: new IsolatedSqlRuntime(),
+    typescript: new IsolatedTypeScriptRuntime(),
   };
 }
 

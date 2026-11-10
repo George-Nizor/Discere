@@ -21,7 +21,7 @@ export function RustEditor({
   language = "rust",
 }: {
   /** Python indents after a colon and has no braces to open. SQL only keeps the indentation. */
-  language?: "rust" | "python" | "sql";
+  language?: "rust" | "python" | "sql" | "typescript";
   id: string;
   value: string;
   onChange: (value: string) => void;
@@ -142,12 +142,19 @@ export function RustConsole({
   children,
   language = "rust",
 }: {
-  language?: "rust" | "python" | "sql";
+  language?: "rust" | "python" | "sql" | "typescript";
   result?: Shown | undefined;
   busy?: string;
   idle: string;
   children?: ReactNode;
 }) {
+  // A TypeScript type test has no values to show, so it fails with a message and a count only.
+  const missed =
+    result?.failed !== undefined ||
+    (language === "typescript" &&
+      result?.passed !== undefined &&
+      result.total !== undefined &&
+      result.passed < result.total);
   return (
     <section className="rust-console" aria-label="Console" aria-live="polite">
       {busy ? (
@@ -159,14 +166,16 @@ export function RustConsole({
           <p
             className={
               "rust-console-status rust-console-status--" +
-              (result.failed && result.status === "ok" ? "limit" : result.status)
+              (missed && result.status === "ok" ? "limit" : result.status)
             }
           >
             {result.status === "unavailable" && language !== "rust"
               ? language === "sql"
                 ? "SQL is unavailable"
-                : "Python is unavailable"
-              : result.failed && result.status === "ok"
+                : language === "typescript"
+                  ? "TypeScript is unavailable"
+                  : "Python is unavailable"
+              : missed && result.status === "ok"
                 ? "A test failed"
                 : language === "sql" && result.status === "runtime_error"
                   ? "SQLite could not run the query"
@@ -175,7 +184,17 @@ export function RustConsole({
               ? ": " + result.passed + " of " + result.total + " tests passed"
               : null}
           </p>
-          {result.message ? <p className="rust-console-message">{result.message}</p> : null}
+          {result.message ? (
+            <p className="rust-console-message">
+              {pieces(result.message, /(`[^`]+`)/).map(({ at, text: part }) =>
+                part.startsWith("`") && part.endsWith("`") && part.length > 2 ? (
+                  <code key={at}>{part.slice(1, -1)}</code>
+                ) : (
+                  <Fragment key={at}>{part}</Fragment>
+                ),
+              )}
+            </p>
+          ) : null}
           {result.diagnostics ? <Diagnostics text={result.diagnostics} /> : null}
           {result.stdout ? (
             <pre className="rust-console-stdout" aria-label="Printed output">

@@ -8,6 +8,7 @@ import {
   CODE_ANSWER_IDEA,
   pythonExerciseIssues,
   sqlExerciseIssues,
+  typescriptExerciseIssues,
   type CourseBundle,
   CourseBundleSchema,
   REDISTRIBUTABLE_LICENCE_PATTERN,
@@ -229,10 +230,16 @@ function codeQuestionIssues(question: CourseBundle["questions"][number]): Conten
   });
   const isCode = question.responseType === "code";
   if (!isCode)
-    return question.code || question.codeCases || question.pythonCases || question.sqlCases
-      ? [issue("Only a code question has code, codeCases, pythonCases or sqlCases.")]
+    return question.code ||
+      question.codeCases ||
+      question.pythonCases ||
+      question.sqlCases ||
+      question.typescriptCases ||
+      question.typescriptTypeTests
+      ? [issue("Only a code question has code or cases.")]
       : [];
   const { code, codeCases, pythonCases, sqlCases, answerAuthority } = question;
+  const { typescriptCases, typescriptTypeTests } = question;
   if (!code) return [issue("A code question needs code.")];
   const issues: ContentIssue[] = [];
   if (question.choices?.length) issues.push(issue("A code question has no choices."));
@@ -242,6 +249,21 @@ function codeQuestionIssues(question: CourseBundle["questions"][number]): Conten
     answerAuthority.acceptedIdeas[0] !== CODE_ANSWER_IDEA
   )
     issues.push(issue(`Its answer authority is text accepting only "${CODE_ANSWER_IDEA}".`));
+  if (code.language === "typescript") {
+    // Whether the worked program compiles and passes its tests is checked by running it: see
+    // typescript-exercises.ts and its test.
+    if (codeCases || pythonCases || sqlCases || !typescriptCases)
+      return [...issues, issue("A TypeScript exercise carries typescriptCases and no other cases.")];
+    if (answerAuthority.kind === "text" && !answerAuthority.exampleAnswer.trim())
+      issues.push(issue("A TypeScript exercise's exampleAnswer is its worked program."));
+    if (question.hints.length === 0) issues.push(issue("A TypeScript exercise offers a hint."));
+    return [
+      ...issues,
+      ...typescriptExerciseIssues(code, typescriptCases, typescriptTypeTests).map(issue),
+    ];
+  }
+  if (typescriptCases || typescriptTypeTests)
+    return [...issues, issue("Only a TypeScript exercise carries typescriptCases or type tests.")];
   if (code.language === "python") {
     // Whether the worked program passes its tests is checked by running it: see
     // python-exercises.ts and its test.

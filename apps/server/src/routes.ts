@@ -68,6 +68,8 @@ import { assessCode, codeTask } from "./rust/questions.js";
 import type { RustRuntime } from "./rust/runtime.js";
 import { assessSql, sqlReady, sqlTask } from "./sql-projects/questions.js";
 import type { SqlRuntime } from "./sql-projects/runtime.js";
+import { assessTypeScript, typescriptReady, typescriptTask } from "./typescript/questions.js";
+import type { TypeScriptRuntime } from "./typescript/runtime.js";
 import type { TopicMapRepository } from "./topic-maps.js";
 
 /** The product version Instrumenta shows, from the root package.json of a checkout or a bundle. */
@@ -97,6 +99,8 @@ export interface RouteDependencies {
   pythonRuntime?: PythonRuntime;
   /** Marks lesson questions answered with an SQL query by comparing the rows it returns. */
   sqlRuntime?: SqlRuntime;
+  /** Marks lesson questions answered with TypeScript by compiling and running them. */
+  typescriptRuntime?: TypeScriptRuntime;
 }
 const IllustrationParamsSchema = z.object({ key: z.string().regex(/^[0-9a-f]{32}$/) }).strict();
 const AttemptBodySchema = AttemptRequestSchema.extend({ attemptId: z.string().uuid().optional() });
@@ -172,7 +176,7 @@ export async function registerRoutes(
   app: FastifyInstance,
   dependencies: RouteDependencies,
 ): Promise<void> {
-  const { content, store, topicMaps, revealDelayMs, rustRuntime, pythonRuntime, sqlRuntime } =
+  const { content, store, topicMaps, revealDelayMs, rustRuntime, pythonRuntime, sqlRuntime, typescriptRuntime } =
     dependencies;
 
   /** Concept mastery, named the way the course names each concept. */
@@ -587,12 +591,13 @@ export async function registerRoutes(
           );
         if (stage.type === "explainer") {
           for (const step of stage.steps) {
-            // A Python or SQL exercise cannot be answered where its runner cannot run, and the
+            // A Python, SQL or TypeScript exercise cannot be answered where its runner cannot run, and the
             // lesson must still be finishable there, so it is not required on such a computer.
             const language = step.question?.code?.language;
             const cannotRun =
               (language === "python" && !(await pythonReady(pythonRuntime))) ||
-              (language === "sql" && !(await sqlReady(sqlRuntime)));
+              (language === "sql" && !(await sqlReady(sqlRuntime))) ||
+              (language === "typescript" && !(await typescriptReady(typescriptRuntime)));
             if (
               step.question &&
               !cannotRun &&
@@ -1240,13 +1245,22 @@ export async function registerRoutes(
         "SQL cannot run on this computer yet, so this answer was not checked.",
         "SQL_UNAVAILABLE",
       );
+    const typed = typescriptTask(question);
+    if (typed && !(await typescriptReady(typescriptRuntime)))
+      throw new HttpError(
+        503,
+        "TypeScript cannot run on this computer yet, so this answer was not checked.",
+        "TYPESCRIPT_UNAVAILABLE",
+      );
     const coded = task
       ? await assessCode(rustRuntime!, task, body.response)
       : written
         ? await assessPython(pythonRuntime!, written, body.response)
         : queried
           ? await assessSql(sqlRuntime!, queried, body.response)
-          : undefined;
+          : typed
+            ? await assessTypeScript(typescriptRuntime!, typed, body.response)
+            : undefined;
     const assessment = coded ?? assessResponse(question, body.response);
     // A program that stopped with an error was not marked against any test, so it costs no try.
     const qualifying = coded?.qualifying ?? isMarkable(question, body.response);

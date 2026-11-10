@@ -3,8 +3,8 @@
 // The bundle keeps the repository's layout for every file the server reads (content/, prompts/,
 // apps/web/dist, apps/server/drizzle and the Python runner scripts), so the same path code works
 // in a checkout and in an install. `discere-bundle.json` at the root marks it. Beside those it
-// carries a pinned node.exe, the server bundled into one file, better-sqlite3's Windows build and
-// the sandbox helper. Run `pnpm build` first. The sandbox helper is built on Windows
+// carries a pinned node.exe, the server bundled into one file, better-sqlite3's Windows build,
+// the sandbox helper and the TypeScript compiler. Run `pnpm build` first. The sandbox helper is built on Windows
 // (tools/windows-sandbox); pass --sandbox <exe> or leave it at tools/windows-sandbox/dist.
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
@@ -17,6 +17,13 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const NODE = {
   version: "22.22.2",
   sha256: "7c93e9d92bf68c07182b471aa187e35ee6cd08ef0f24ab060dfff605fcc1c57c",
+};
+// The native TypeScript compiler for Windows, which type-checks the TypeScript exercises. It is
+// the npm package the workspace's own `typescript` installs on Windows, fetched here because a
+// Linux build machine has only the Linux one.
+const TYPESCRIPT = {
+  version: "7.0.2",
+  sha256: "61fc4e141d2bc687db580e71bbfa63b9c209f0310645d82ca1b457eb3a24fd19",
 };
 const args = process.argv.slice(2);
 const option = (name) => {
@@ -65,6 +72,41 @@ async function nodeExecutable() {
     else run("unzip", ["-q", "-o", zip, `${name}/node.exe`, `${name}/LICENSE`, "-d", cache]);
   }
   return extracted;
+}
+
+async function typescriptCompiler() {
+  const installed = JSON.parse(
+    readFileSync(path.join(root, "node_modules/typescript/package.json"), "utf8"),
+  ).version;
+  if (installed !== TYPESCRIPT.version)
+    throw new Error(
+      `The workspace uses TypeScript ${installed}; pin that version and its SHA-256 in TYPESCRIPT.`,
+    );
+  const name = `typescript-win32-x64-${TYPESCRIPT.version}`;
+  const archive = path.join(cache, `${name}.tgz`);
+  mkdirSync(cache, { recursive: true });
+  if (!existsSync(archive) || sha256(archive) !== TYPESCRIPT.sha256) {
+    const response = await fetch(
+      `https://registry.npmjs.org/@typescript/typescript-win32-x64/-/${name}.tgz`,
+    );
+    if (!response.ok)
+      throw new Error(`TypeScript ${TYPESCRIPT.version} could not be downloaded (${response.status}).`);
+    writeFileSync(archive, Buffer.from(await response.arrayBuffer()));
+  }
+  if (sha256(archive) !== TYPESCRIPT.sha256)
+    throw new Error("The TypeScript download does not match its pinned SHA-256.");
+  const extracted = path.join(cache, name);
+  if (!existsSync(path.join(extracted, "package/lib/tsc.exe"))) {
+    rmSync(extracted, { recursive: true, force: true });
+    mkdirSync(extracted, { recursive: true });
+    run(
+      process.platform === "win32"
+        ? path.join(process.env.SystemRoot ?? "C:\\Windows", "System32", "tar.exe")
+        : "tar",
+      ["-xzf", archive, "-C", extracted],
+    );
+  }
+  return path.join(extracted, "package");
 }
 
 const copy = (from, to = from, filter) =>
@@ -131,6 +173,11 @@ const nodeDirectory = await nodeExecutable();
 cpSync(path.join(nodeDirectory, "node.exe"), path.join(stage, "runtime/node.exe"));
 cpSync(path.join(nodeDirectory, "LICENSE"), path.join(stage, "runtime/NODE-LICENSE"));
 cpSync(sandbox, path.join(stage, "runtime/discere-sandbox.exe"));
+// tsc.exe looks for its lib.*.d.ts files beside itself, so the folder is copied whole.
+const typescript = await typescriptCompiler();
+cpSync(path.join(typescript, "lib"), path.join(stage, "runtime/typescript/lib"), { recursive: true });
+for (const notice of ["LICENSE", "NOTICE.txt"])
+  cpSync(path.join(typescript, notice), path.join(stage, "runtime/typescript", notice));
 
 const product = JSON.parse(readFileSync(path.join(root, "instrumenta/product.json"), "utf8"));
 const { launch } = product;

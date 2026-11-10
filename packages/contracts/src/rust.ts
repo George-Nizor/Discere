@@ -3,6 +3,7 @@ import { TutoringModeSchema } from "./modes.js";
 import { PythonExerciseSchema } from "./python-exercise.js";
 import { SqlExerciseSchema } from "./sql-exercise.js";
 import { SqlCellSchema } from "./sql-project.js";
+import { TypeScriptExerciseSchema } from "./typescript-exercise.js";
 
 /**
  * Rust practice: the playground, lesson programs and graded projects. Learner code is compiled
@@ -131,6 +132,7 @@ export const CodeExerciseSchema = z.discriminatedUnion("language", [
   RustExerciseSchema,
   PythonExerciseSchema,
   SqlExerciseSchema,
+  TypeScriptExerciseSchema,
 ]);
 export type CodeExercise = z.infer<typeof CodeExerciseSchema>;
 

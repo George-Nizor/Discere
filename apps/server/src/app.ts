@@ -23,6 +23,7 @@ import type { RustRuntime } from "./rust/runtime.js";
 import { registerSearchRoutes } from "./search.js";
 import { SqlProjectRepository } from "./sql-projects/repository.js";
 import type { SqlRuntime } from "./sql-projects/runtime.js";
+import type { TypeScriptRuntime } from "./typescript/runtime.js";
 import { registerSqlProjectRoutes, SqlProjectService } from "./sql-projects/service.js";
 import { TopicMapRepository } from "./topic-maps.js";
 import { registerTransferRoutes } from "./transfer-routes.js";
@@ -39,6 +40,7 @@ export interface AppOptions {
   /** Optional isolated query runner; tests can control execution without touching user data. */
   sqlRuntime?: SqlRuntime;
   pythonRuntime?: PythonRuntime;
+  typescriptRuntime?: TypeScriptRuntime;
   rustRuntime?: RustRuntime;
   logger?: boolean;
   /** Applies pending migrations before serving. Tests and disposable databases use this;
@@ -126,6 +128,7 @@ export async function createApp(options: AppOptions = {}): Promise<DiscereApp> {
   const rustRuntime = options.rustRuntime ?? runners.rust;
   const pythonRuntime = options.pythonRuntime ?? runners.python;
   const sqlRuntime = options.sqlRuntime ?? runners.sql;
+  const typescriptRuntime = options.typescriptRuntime ?? runners.typescript;
   await registerCodeRuntimeRoutes(app, runners.runtimes);
   await registerRoutes(app, {
     content,
@@ -135,12 +138,14 @@ export async function createApp(options: AppOptions = {}): Promise<DiscereApp> {
     rustRuntime,
     pythonRuntime,
     sqlRuntime,
+    typescriptRuntime,
   });
   await registerCodeQuestionRoutes(app, {
     content,
     runtime: rustRuntime,
     python: pythonRuntime,
     sql: sqlRuntime,
+    typescript: typescriptRuntime,
   });
   await registerCourseCheckRoutes(app, { content, store });
   await registerSearchRoutes(app, { content });

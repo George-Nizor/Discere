@@ -4,8 +4,11 @@ import {
   type PythonValue,
   type RustTaskRun,
   type SqlExercise,
+  type TypeScriptExercise,
   pythonGiven,
   pythonLiteral,
+  typescriptGiven,
+  typescriptLiteral,
 } from "@discere/contracts";
 import { Play, RotateCcw } from "lucide-react";
 import { useState } from "react";
@@ -42,6 +45,41 @@ function PythonExample({ exercise }: { exercise: PythonExercise }) {
   );
 }
 
+/** A TypeScript exercise's one visible test, written the way TypeScript writes values. */
+function TypeScriptExample({ exercise }: { exercise: TypeScriptExercise }) {
+  const { example, names } = exercise;
+  const given = typescriptGiven(exercise, example.inputs);
+  const expected = example.expected as Record<string, PythonValue>;
+  return (
+    <dl className="code-answer-example">
+      {given ? (
+        <>
+          <dt>{exercise.call ? "Example call" : "Already declared"}</dt>
+          <dd>
+            <code>{given}</code>
+          </dd>
+        </>
+      ) : null}
+      <dt>{exercise.call ? "Returns" : "Should end with"}</dt>
+      <dd>
+        <code>
+          {names
+            ? names
+                .map((name) => name + " = " + typescriptLiteral(expected[name] ?? null))
+                .join(", ")
+            : typescriptLiteral(example.expected)}
+        </code>
+      </dd>
+      {exercise.typeCheck ? (
+        <>
+          <dt>Types</dt>
+          <dd>Checked by the compiler before anything runs, with no <code>any</code>.</dd>
+        </>
+      ) : null}
+    </dl>
+  );
+}
+
 /**
  * The tables an SQL exercise reads: each table's name, its columns with their types, and the
  * rows Run uses, so nothing about the data has to be guessed.
@@ -70,6 +108,7 @@ function SqlRuntimeSetup() {
 function Example({ exercise }: { exercise: CodeExercise }) {
   if (exercise.language === "sql") return <SqlTables exercise={exercise} />;
   if (exercise.language === "python") return <PythonExample exercise={exercise} />;
+  if (exercise.language === "typescript") return <TypeScriptExample exercise={exercise} />;
   const { example, call } = exercise;
   if (exercise.kind === "function" && call)
     return (
@@ -108,7 +147,7 @@ function Example({ exercise }: { exercise: CodeExercise }) {
 }
 
 /**
- * A lesson question answered by writing Rust, Python or an SQL query. Run shows what the program does with
+ * A lesson question answered by writing Rust, Python, TypeScript or an SQL query. Run shows what the program does with
  * the example; the lesson's Check answer marks it against every test on the server.
  */
 export function CodeAnswer({
@@ -134,6 +173,7 @@ export function CodeAnswer({
   const [failure, setFailure] = useState("");
   const python = exercise.language === "python";
   const sql = exercise.language === "sql";
+  const typescript = exercise.language === "typescript";
   async function run() {
     if (busy || !code.trim()) return;
     setBusy(true);
@@ -154,13 +194,21 @@ export function CodeAnswer({
     <div className="code-answer">
       {exercise.language === "sql" ? (
         <SqlRuntimeSetup />
-      ) : (
+      ) : exercise.language === "typescript" ? null : (
         <RuntimeSetup runtime={exercise.language} />
       )}
       <Example exercise={exercise} />
       <RustEditor
         id={`${idPrefix}-code`}
-        label={sql ? "Your SQL query" : python ? "Your Python code" : "Your Rust code"}
+        label={
+          sql
+            ? "Your SQL query"
+            : python
+              ? "Your Python code"
+              : typescript
+                ? "Your TypeScript code"
+                : "Your Rust code"
+        }
         language={exercise.language}
         fitLines
         value={code}
@@ -187,11 +235,11 @@ export function CodeAnswer({
       <RustConsole
         result={shown}
         language={exercise.language}
-        {...(busy ? { busy: python || sql ? "Running…" : "Compiling and running…" } : {})}
+        {...(busy ? { busy: python || sql ? "Running…" : typescript && !exercise.typeCheck ? "Running…" : "Compiling and running…" } : {})}
         idle={
           exercise.language === "sql"
             ? "Run shows the rows your query returns from the tables above. Check answer also runs it against other rows."
-            : exercise.language === "python"
+            : exercise.language === "python" || exercise.language === "typescript"
             ? "Run shows what your code prints and produces for the example. Check answer runs every test."
             : exercise.kind === "function"
             ? "Run shows what your function returns for the example. Check answer also tries other inputs."

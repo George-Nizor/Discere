@@ -204,6 +204,30 @@ function SqlUnavailable({ left, onLeave }: { left: boolean; onLeave: () => void 
   );
 }
 
+/** The same for a TypeScript exercise, which runs on the Node the app already has. */
+function TypeScriptUnavailable({ left, onLeave }: { left: boolean; onLeave: () => void }) {
+  const runtime = useQuery({
+    queryKey: ["typescript-runtime"],
+    queryFn: async () => (await requestJson("/api/typescript-runtime")) as { ready: boolean },
+  });
+  if (!runtime.data || runtime.data.ready) return null;
+  return (
+    <Notice tone="warning" title="TypeScript can't run on this computer yet">
+      <p>
+        Your code can't be run or checked here, so this exercise is optional for now. The rest of
+        the lesson works without it, and you can come back to the exercise later.
+      </p>
+      {left ? (
+        <p>This exercise is set aside. Continue when you're ready.</p>
+      ) : (
+        <button className="button button-secondary" type="button" onClick={onLeave}>
+          Continue without this exercise
+        </button>
+      )}
+    </Notice>
+  );
+}
+
 export function QuestionBlock({
   question,
   context,
@@ -335,6 +359,9 @@ export function QuestionBlock({
       ) : null}
       {question.code?.language === "sql" && !attempt.ready ? (
         <SqlUnavailable left={left} onLeave={() => setLeft(true)} />
+      ) : null}
+      {question.code?.language === "typescript" && !attempt.ready ? (
+        <TypeScriptUnavailable left={left} onLeave={() => setLeft(true)} />
       ) : null}
       <QuestionFeedback
         attempt={attempt}

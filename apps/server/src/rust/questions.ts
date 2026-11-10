@@ -8,6 +8,12 @@ import type { PythonRuntime } from "../python-projects/runtime.js";
 import { type GradedTask, mark, present, runCases } from "./grading.js";
 import { runSqlExample, sqlReady, sqlTask } from "../sql-projects/questions.js";
 import type { SqlRuntime } from "../sql-projects/runtime.js";
+import {
+  runTypeScriptExample,
+  typescriptReady,
+  typescriptTask,
+} from "../typescript/questions.js";
+import type { TypeScriptRuntime } from "../typescript/runtime.js";
 import type { RustRuntime } from "./runtime.js";
 
 /** The task behind a lesson question answered by writing code, or undefined for any other. */
@@ -71,16 +77,20 @@ export async function registerCodeQuestionRoutes(
     runtime,
     python,
     sql,
+    typescript,
   }: {
     content: ContentRepository;
     runtime: RustRuntime;
     python?: PythonRuntime;
     sql?: SqlRuntime;
+    typescript?: TypeScriptRuntime;
   },
 ) {
   // Whether a query written in a lesson can run here now. SQL has no toolchain of its own to
   // download: it runs on the SQLite inside Python, so the lesson asks this instead.
   app.get("/api/sql-runtime", async () => ({ ready: await sqlReady(sql) }));
+  // TypeScript runs on the Node the app already has, so there is nothing to download either.
+  app.get("/api/typescript-runtime", async () => ({ ready: await typescriptReady(typescript) }));
   app.post("/api/questions/:questionId/run", async (request) => {
     const { questionId } = z.object({ questionId: z.string().min(1) }).parse(request.params);
     const { code } = z.object({ code: z.string().min(1).max(16000) }).strict().parse(request.body);
@@ -95,6 +105,16 @@ export async function registerCodeQuestionRoutes(
     if (queried) {
       if (!sql) throw new HttpError(503, "SQL answers need the SQL runtime.", "SQL_UNAVAILABLE");
       return runSqlExample(sql, queried, code);
+    }
+    const typed = question ? typescriptTask(question) : undefined;
+    if (typed) {
+      if (!typescript || !(await typescriptReady(typescript)))
+        throw new HttpError(
+          503,
+          "TypeScript cannot run on this computer yet.",
+          "TYPESCRIPT_UNAVAILABLE",
+        );
+      return runTypeScriptExample(typescript, typed, code);
     }
     const task = question ? codeTask(question) : undefined;
     if (!task)
