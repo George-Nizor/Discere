@@ -892,7 +892,7 @@ export async function registerRoutes(
       throw new HttpError(400, "Choose a lesson with the card.", "REVIEW_LESSON_REQUIRED");
     const visible = visibleReviewCards();
     const ids = new Set(visible.map((item) => item.card.id));
-    const next = store.dueReviewQueue(store.now()).find((item) => ids.has(item.cardId));
+    const next = store.dueReviewQueue(store.now(), ids)[0];
     const due = next
       ? store.getReviewCard(next.cardId)
       : visible.sort((a, b) => a.state.dueAt.localeCompare(b.state.dueAt))[0];

@@ -147,6 +147,53 @@ describe("review scheduling across courses", () => {
     expect(seen[1]).not.toBe(seen[2]);
   });
 
+  it("takes turns when the lessons met are not the first in their courses", async () => {
+    const clock = testClock("2026-08-19T08:00:00.000Z");
+    const { content } = await createApp({
+      dbPath: ":memory:",
+      migrate: true,
+      revealDelayMs: 0,
+      clock: clock.now,
+    }).then((created) => {
+      ({ app, store } = created);
+      return created;
+    });
+    // Each course has earlier lessons whose cards are registered and not yet shown. The queue
+    // used to take its turns among those too, which put one course's cards ahead of the other's.
+    for (const [courseId, lessonId] of [
+      ["maths-foundations", "keeping-the-balance"],
+      ["logic-and-reasoning", "what-logic-operates-on"],
+    ] as const) {
+      const lesson = content.bundle(courseId)?.lessons.find((item) => item.id === lessonId);
+      expect(lesson?.flashcardIds.length).toBeGreaterThanOrEqual(2);
+      const questionId = lesson?.steps.find((step) => step.checkQuestionId)?.checkQuestionId;
+      const question = content.getQuestion(questionId ?? "");
+      if (!question) throw new Error(`${lessonId} has no question.`);
+      const authority = question.answerAuthority;
+      const attempt = await app.inject({
+        method: "POST",
+        url: "/api/attempts",
+        payload: {
+          questionId: question.id,
+          response:
+            authority.kind === "numeric" ? String(authority.value) : authority.acceptedIdeas[0],
+          mode: "coach",
+        },
+      });
+      expect(attempt.statusCode).toBe(200);
+    }
+    const seen: Array<string | undefined> = [];
+    for (let index = 0; index < 4; index += 1) {
+      const { cardId } = await reviewOneCard("good", false, false);
+      seen.push(store.getReviewCard(cardId)?.courseId);
+      clock.advanceMinutes(1);
+    }
+    expect(seen[0]).not.toBe(seen[1]);
+    expect(seen[1]).not.toBe(seen[2]);
+    expect(seen[2]).not.toBe(seen[3]);
+    expect(new Set(seen)).toEqual(new Set(["maths-foundations", "logic-and-reasoning"]));
+  });
+
   it("persists FSRS memory state and lengthens the interval as recall succeeds", async () => {
     const clock = testClock("2026-08-19T08:00:00.000Z");
     await start({ clock: clock.now });

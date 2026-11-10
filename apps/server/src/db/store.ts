@@ -970,13 +970,20 @@ export class DiscereStore {
   }
 
   /** Every due card, in the order the learner should meet them: courses take turns. */
-  dueReviewQueue(nowTimestamp: string): CourseQueueEntry[] {
+  dueReviewQueue(nowTimestamp: string, only?: ReadonlySet<string>): CourseQueueEntry[] {
     const rows = this.database
       .prepare(
         "SELECT card_id AS cardId, course_id AS courseId, due_at AS dueAt, repetition, rowid AS sequence FROM review_cards WHERE user_id = ? AND due_at <= ?",
       )
       .all(LOCAL_USER_ID, nowTimestamp) as CourseQueueEntry[];
-    return interleaveByCourse(rows, this.courseReviewRecency());
+    // Every authored card is registered, and most belong to lessons the learner has not met.
+    // With `only`, the turns are taken among the cards that can be shown. Taking turns among
+    // all of them and then dropping the hidden ones leaves one course's cards ahead of
+    // another's, so one course was cleared before the next began.
+    return interleaveByCourse(
+      only ? rows.filter((row) => only.has(row.cardId)) : rows,
+      this.courseReviewRecency(),
+    );
   }
 
   getDueReviewCard(nowTimestamp: string): ReviewCardRow | null {
