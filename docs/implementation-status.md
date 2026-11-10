@@ -392,6 +392,12 @@ CPython boundary. Project grading checks the authored task's independently speci
 
 All new prose, datasets, exercises, code, SVG covers and companion artwork are original.
 Source records retain exact sections, access dates, licences and intended reuse.
+Each source record also says whether its address was checked (`checked`, set on 2026-11-11):
+`verified` when the page was opened and is what the record names, `unreachable` when the address
+no longer leads to it, `unchecked` when the site refuses automated requests or the link opens
+something more general. `node scripts/check-sources.mjs --out <file>` requests every address
+again; it needs the network, so it is run by hand and is not part of `pnpm check`. A lesson's
+finish screen and the course page list the sources under "Sources".
 OpenStax is reference-only; no source prose or media was copied into these courses.
 [Foundation notes](foundations/README.md) and [expansion records](library-expansion/README.md)
 retain source and assessment evidence. The archived prototypes do not meet every new publication

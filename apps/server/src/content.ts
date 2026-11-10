@@ -271,6 +271,7 @@ export class ContentRepository {
         completed: completedLessonIds.has(lesson.id),
       })),
       exerciseCount: bundle.questions.length,
+      sources: bundle.sources,
       ...(bundle.course.introduction ? { introduction: bundle.course.introduction } : {}),
       modules: bundle.course.moduleIds.flatMap((id) => {
         const module = bundle.modules.find((item) => item.id === id);
@@ -390,10 +391,16 @@ export class ContentRepository {
     if (lesson.essayId !== undefined && !essay) {
       throw new Error(`Lesson '${lessonId}' references missing essay '${lesson.essayId}'.`);
     }
-    const sources = lesson.sourceIds.flatMap((sourceId) => {
-      const source = bundle.sources.find((item) => item.id === sourceId);
-      return source ? [source] : [];
-    });
+    // Everything the lesson, its questions and its essay cite, once each, in the bundle's order.
+    const cited = new Set([
+      ...lesson.sourceIds,
+      ...[
+        ...lesson.questionIds,
+        ...lesson.steps.flatMap((step) => (step.checkQuestionId ? [step.checkQuestionId] : [])),
+      ].flatMap((id) => bundle.questions.find((item) => item.id === id)?.sourceIds ?? []),
+      ...(essay?.sourceIds ?? []),
+    ]);
+    const sources = bundle.sources.filter((source) => cited.has(source.id));
 
     const intro = lesson.intro;
     const hookQuestion = intro?.hook.questionId

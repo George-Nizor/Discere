@@ -134,6 +134,8 @@ export const CourseDetailResponseSchema = z
     introduction: CourseIntroductionSchema.optional(),
     /** The saved unfinished lesson, or the next authored lesson after a completion. */
     resumeLessonId: z.string().min(1).optional(),
+    /** Every source the course cites, in the order the bundle lists them. */
+    sources: z.array(SourceSchema).optional(),
   })
   .strict();
 export type CourseDetailResponse = z.infer<typeof CourseDetailResponseSchema>;

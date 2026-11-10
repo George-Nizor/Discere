@@ -1,6 +1,6 @@
 import { defaultAccent } from "../lib/tokens.js";
 import { useDocumentTitle } from "../lib/document-title.js";
-import type { CalculatorPolicy, LearnerStage } from "@discere/contracts";
+import type { CalculatorPolicy, LearnerStage, Source } from "@discere/contracts";
 import { useAmbientAccent } from "../fx/ambient-accent.js";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useRef, useState } from "react";
@@ -418,6 +418,7 @@ function LessonJourney({
             courseId={courseId}
             lessonId={lessonId}
             questionLed={questionLed}
+            sources={journey.data.sources}
             nextLesson={upcoming ? { id: upcoming.id, title: upcoming.title } : null}
             onComplete={() => void complete(current, following?.stage.id ?? null)}
             onSkip={() => void complete(current, following?.stage.id ?? null, "skipped_optional")}
@@ -478,6 +479,7 @@ function StageCanvas({
   courseId,
   lessonId,
   questionLed,
+  sources,
   nextLesson,
   onComplete,
   onSkip,
@@ -489,6 +491,7 @@ function StageCanvas({
   courseId: string;
   lessonId: string;
   questionLed: boolean;
+  sources: Source[];
   nextLesson: { id: string; title: string } | null;
   onComplete: () => void;
   onSkip: () => void;
@@ -537,6 +540,7 @@ function StageCanvas({
           courseId={courseId}
           lessonId={lessonId}
           nextLesson={nextLesson}
+          sources={sources}
           stage={stage}
         />
       );

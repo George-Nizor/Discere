@@ -1,5 +1,6 @@
 import { Bonehead } from "../../mascot/Bonehead.js";
-import type { CompletionStage } from "@discere/contracts";
+import type { CompletionStage, Source } from "@discere/contracts";
+import { SourceList } from "../../ui/SourceList.js";
 import { levelProgress, levelTitle } from "@discere/progression-engine";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight } from "lucide-react";
@@ -133,11 +134,14 @@ export function CompletionStageView({
   courseId,
   lessonId,
   nextLesson,
+  sources,
 }: {
   stage: CompletionStage;
   courseId: string;
   lessonId: string;
   nextLesson: { id: string; title: string } | null;
+  /** What the lesson, its questions and its essay cite. */
+  sources?: Source[];
 }) {
   const checks = useQuery({
     queryKey: checksKey(courseId),
@@ -307,6 +311,8 @@ export function CompletionStageView({
           See your progress
         </Link>
       </div>
+      {/* After the next step, so the list never stands between the learner and going on. */}
+      <SourceList className="finish-sources" sources={sources ?? []} />
     </div>
   );
 }
