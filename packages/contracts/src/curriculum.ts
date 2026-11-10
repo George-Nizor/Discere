@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { PythonCaseSchema } from "./python-exercise.js";
+import { SqlCaseSchema } from "./sql-exercise.js";
 import { CodeExerciseSchema, RustCaseSchema } from "./rust.js";
 import { CourseCheckVisualSchema } from "./course-check-visual.js";
 import { LessonAuthoringMetadataSchema } from "./curation.js";
@@ -511,6 +512,13 @@ export const QuestionSchema = z
      * them all and the starter must not, which packages/curriculum checks by running both.
      */
     pythonCases: z.array(PythonCaseSchema).min(2).max(6).optional(),
+    /**
+     * The tests of an SQL exercise (`code.language: "sql"`): the visible tables first, then the
+     * same tables holding other rows, each with the rows the query must return. Answer-bearing.
+     * The reference query in `exampleAnswer` must match them all and the starter must not, which
+     * packages/curriculum checks by running both in SQLite.
+     */
+    sqlCases: z.array(SqlCaseSchema).min(2).max(5).optional(),
     /** Present when the question is answered by selection rather than free response. */
     choices: z.array(QuestionChoiceSchema).min(2).max(8).optional(),
     /**
@@ -591,6 +599,7 @@ export const LearnerQuestionSchema = QuestionSchema.omit({
   answerAuthority: true,
   codeCases: true,
   pythonCases: true,
+  sqlCases: true,
   transfer: true,
   hints: true,
   onCorrect: true,
@@ -606,6 +615,7 @@ export function learnerQuestion(question: Question): LearnerQuestion {
     answerAuthority,
     codeCases: _codeCases,
     pythonCases: _pythonCases,
+    sqlCases: _sqlCases,
     transfer: _transfer,
     hints,
     onCorrect: _onCorrect,

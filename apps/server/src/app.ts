@@ -125,6 +125,7 @@ export async function createApp(options: AppOptions = {}): Promise<DiscereApp> {
   const runners = createCodeRunners();
   const rustRuntime = options.rustRuntime ?? runners.rust;
   const pythonRuntime = options.pythonRuntime ?? runners.python;
+  const sqlRuntime = options.sqlRuntime ?? runners.sql;
   await registerCodeRuntimeRoutes(app, runners.runtimes);
   await registerRoutes(app, {
     content,
@@ -133,8 +134,14 @@ export async function createApp(options: AppOptions = {}): Promise<DiscereApp> {
     revealDelayMs: options.revealDelayMs ?? 5000,
     rustRuntime,
     pythonRuntime,
+    sqlRuntime,
   });
-  await registerCodeQuestionRoutes(app, { content, runtime: rustRuntime, python: pythonRuntime });
+  await registerCodeQuestionRoutes(app, {
+    content,
+    runtime: rustRuntime,
+    python: pythonRuntime,
+    sql: sqlRuntime,
+  });
   await registerCourseCheckRoutes(app, { content, store });
   await registerSearchRoutes(app, { content });
   const pythonProjects = await PythonProjectRepository.load(contentRoot, content);
@@ -163,7 +170,7 @@ export async function createApp(options: AppOptions = {}): Promise<DiscereApp> {
     new SqlProjectService(
       store,
       sqlProjects,
-      options.sqlRuntime ?? runners.sql,
+      sqlRuntime,
       options.revealDelayMs ?? 5000,
     ),
   );

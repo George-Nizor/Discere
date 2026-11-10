@@ -1,6 +1,7 @@
 import type { RustRunResult, RustTaskRun } from "@discere/contracts";
 import { Fragment, type KeyboardEvent, type ReactNode, useRef } from "react";
 import { CodeEditor } from "../sql-projects/CodeEditor.js";
+import { SqlResultTable } from "../sql-projects/SqlTable.js";
 
 /**
  * The pieces of the Rust workspace: an editor that indents like one, a console that shows what
@@ -19,8 +20,8 @@ export function RustEditor({
   fitLines,
   language = "rust",
 }: {
-  /** Python indents after a colon and has no braces to open. */
-  language?: "rust" | "python";
+  /** Python indents after a colon and has no braces to open. SQL only keeps the indentation. */
+  language?: "rust" | "python" | "sql";
   id: string;
   value: string;
   onChange: (value: string) => void;
@@ -79,7 +80,7 @@ export function RustEditor({
         language={language}
         value={value}
         disabled={disabled ?? false}
-        placeholder={language === "python" ? "" : "fn main() {\n    \n}"}
+        placeholder={language === "rust" ? "fn main() {\n    \n}" : ""}
         onChange={onChange}
         onKeyDown={keyDown}
       />
@@ -88,7 +89,7 @@ export function RustEditor({
 }
 
 type Shown = Pick<RustRunResult, "status" | "diagnostics" | "stdout" | "stderr" | "message"> &
-  Pick<RustTaskRun, "returned" | "passed" | "total" | "values" | "failed">;
+  Pick<RustTaskRun, "returned" | "passed" | "total" | "values" | "failed" | "table">;
 
 const HEADLINES: Record<Shown["status"], string> = {
   ok: "Ran successfully",
@@ -141,7 +142,7 @@ export function RustConsole({
   children,
   language = "rust",
 }: {
-  language?: "rust" | "python";
+  language?: "rust" | "python" | "sql";
   result?: Shown | undefined;
   busy?: string;
   idle: string;
@@ -161,11 +162,15 @@ export function RustConsole({
               (result.failed && result.status === "ok" ? "limit" : result.status)
             }
           >
-            {result.status === "unavailable" && language === "python"
-              ? "Python is unavailable"
+            {result.status === "unavailable" && language !== "rust"
+              ? language === "sql"
+                ? "SQL is unavailable"
+                : "Python is unavailable"
               : result.failed && result.status === "ok"
                 ? "A test failed"
-                : HEADLINES[result.status]}
+                : language === "sql" && result.status === "runtime_error"
+                  ? "SQLite could not run the query"
+                  : HEADLINES[result.status]}
             {result.passed !== undefined && result.total !== undefined && result.total > 1
               ? ": " + result.passed + " of " + result.total + " tests passed"
               : null}
@@ -176,8 +181,22 @@ export function RustConsole({
             <pre className="rust-console-stdout" aria-label="Printed output">
               {result.stdout}
             </pre>
-          ) : result.status === "ok" && result.returned === undefined && !result.values ? (
+          ) : result.status === "ok" &&
+            result.returned === undefined &&
+            !result.values &&
+            !result.table ? (
             <p className="rust-console-idle">The program printed nothing.</p>
+          ) : null}
+          {result.table ? (
+            <>
+              <SqlResultTable result={result.table} />
+              {result.table.more ? (
+                <p className="rust-console-idle">
+                  The first {result.table.rows.length} rows are shown, and {result.table.more} more
+                  {result.table.more === 1 ? " row was" : " rows were"} returned.
+                </p>
+              ) : null}
+            </>
           ) : null}
           {result.returned !== undefined ? (
             <p className="rust-console-returned">
@@ -199,7 +218,11 @@ export function RustConsole({
             <dl className="rust-console-failed">
               <dt>Test {result.failed.test}</dt>
               <dd>
-                <code>{result.failed.given || "no inputs"}</code>
+                {language === "sql" ? (
+                  result.failed.given
+                ) : (
+                  <code>{result.failed.given || "no inputs"}</code>
+                )}
               </dd>
               <dt>Expected</dt>
               <dd>

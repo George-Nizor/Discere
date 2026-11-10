@@ -31,3 +31,4 @@ export type {
   Question,
 } from "@discere/contracts";
 export * from "./python-exercises.js";
+export * from "./sql-exercises.js";

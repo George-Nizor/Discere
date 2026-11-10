@@ -50,7 +50,10 @@ export function QuestionFeedback({
   attempt,
   hints = true,
   placement = "footer",
+  query = false,
 }: {
+  /** True for an SQL exercise, whose answer the screen calls a query and not a program. */
+  query?: boolean;
   attempt: Attempt;
   /** False on a skill check: the verdict stands without a ladder. */
   hints?: boolean;
@@ -105,14 +108,18 @@ export function QuestionFeedback({
                 {result.codeRun?.status === "compile_error"
                   ? "The program does not compile yet"
                   : result.codeRun
-                    ? "The program did not finish"
+                    ? query
+                      ? "The query did not run"
+                      : "The program did not finish"
                     : "That answer could not be read"}
               </>
             ) : phase === "revealed" ? (
               <>
                 <Eye aria-hidden="true" size={18} />
                 {program
-                  ? "Here is the worked program"
+                  ? query
+                    ? "Here is the worked query"
+                    : "Here is the worked program"
                   : attempt.misses > 0
                     ? "Not quite. Here is the answer"
                     : "Here is the answer"}
@@ -179,7 +186,7 @@ export function QuestionFeedback({
               onClick={() => void attempt.reveal()}
               type="button"
             >
-              {program ? "Show the worked program" : "Show the answer"}
+              {program ? (query ? "Show the worked query" : "Show the worked program") : "Show the answer"}
             </button>
           ) : null}
         </div>

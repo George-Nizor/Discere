@@ -7,6 +7,7 @@ import {
 import {
   CODE_ANSWER_IDEA,
   pythonExerciseIssues,
+  sqlExerciseIssues,
   type CourseBundle,
   CourseBundleSchema,
   REDISTRIBUTABLE_LICENCE_PATTERN,
@@ -228,10 +229,10 @@ function codeQuestionIssues(question: CourseBundle["questions"][number]): Conten
   });
   const isCode = question.responseType === "code";
   if (!isCode)
-    return question.code || question.codeCases || question.pythonCases
-      ? [issue("Only a code question has code, codeCases or pythonCases.")]
+    return question.code || question.codeCases || question.pythonCases || question.sqlCases
+      ? [issue("Only a code question has code, codeCases, pythonCases or sqlCases.")]
       : [];
-  const { code, codeCases, pythonCases, answerAuthority } = question;
+  const { code, codeCases, pythonCases, sqlCases, answerAuthority } = question;
   if (!code) return [issue("A code question needs code.")];
   const issues: ContentIssue[] = [];
   if (question.choices?.length) issues.push(issue("A code question has no choices."));
@@ -244,15 +245,25 @@ function codeQuestionIssues(question: CourseBundle["questions"][number]): Conten
   if (code.language === "python") {
     // Whether the worked program passes its tests is checked by running it: see
     // python-exercises.ts and its test.
-    if (codeCases || !pythonCases)
-      return [...issues, issue("A Python exercise carries pythonCases and no codeCases.")];
+    if (codeCases || sqlCases || !pythonCases)
+      return [...issues, issue("A Python exercise carries pythonCases and no other cases.")];
     if (answerAuthority.kind === "text" && !answerAuthority.exampleAnswer.trim())
       issues.push(issue("A Python exercise's exampleAnswer is its worked program."));
     if (question.hints.length === 0) issues.push(issue("A Python exercise offers a hint."));
     return [...issues, ...pythonExerciseIssues(code, pythonCases).map(issue)];
   }
-  if (pythonCases || !codeCases)
-    return [...issues, issue("A Rust code question carries codeCases and no pythonCases.")];
+  if (code.language === "sql") {
+    // Whether the reference query returns the expected rows is checked by running it: see
+    // sql-exercises.ts and its test.
+    if (codeCases || pythonCases || !sqlCases)
+      return [...issues, issue("An SQL exercise carries sqlCases and no other cases.")];
+    if (answerAuthority.kind === "text" && !answerAuthority.exampleAnswer.trim())
+      issues.push(issue("An SQL exercise's exampleAnswer is its reference query."));
+    if (question.hints.length === 0) issues.push(issue("An SQL exercise offers a hint."));
+    return [...issues, ...sqlExerciseIssues(code, sqlCases).map(issue)];
+  }
+  if (pythonCases || sqlCases || !codeCases)
+    return [...issues, issue("A Rust code question carries codeCases and no other cases.")];
   if (JSON.stringify(code.example) !== JSON.stringify(codeCases[0]))
     issues.push(issue("The visible example must be the first case."));
   if (

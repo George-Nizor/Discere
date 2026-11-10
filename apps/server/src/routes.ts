@@ -66,6 +66,8 @@ import { assessPython, pythonReady, pythonTask } from "./python-projects/questio
 import type { PythonRuntime } from "./python-projects/runtime.js";
 import { assessCode, codeTask } from "./rust/questions.js";
 import type { RustRuntime } from "./rust/runtime.js";
+import { assessSql, sqlReady, sqlTask } from "./sql-projects/questions.js";
+import type { SqlRuntime } from "./sql-projects/runtime.js";
 import type { TopicMapRepository } from "./topic-maps.js";
 
 /** The product version Instrumenta shows, from the root package.json of a checkout or a bundle. */
@@ -93,6 +95,8 @@ export interface RouteDependencies {
   rustRuntime?: RustRuntime;
   /** Marks lesson questions answered with Python by running their tests. */
   pythonRuntime?: PythonRuntime;
+  /** Marks lesson questions answered with an SQL query by comparing the rows it returns. */
+  sqlRuntime?: SqlRuntime;
 }
 const IllustrationParamsSchema = z.object({ key: z.string().regex(/^[0-9a-f]{32}$/) }).strict();
 const AttemptBodySchema = AttemptRequestSchema.extend({ attemptId: z.string().uuid().optional() });
@@ -168,7 +172,8 @@ export async function registerRoutes(
   app: FastifyInstance,
   dependencies: RouteDependencies,
 ): Promise<void> {
-  const { content, store, topicMaps, revealDelayMs, rustRuntime, pythonRuntime } = dependencies;
+  const { content, store, topicMaps, revealDelayMs, rustRuntime, pythonRuntime, sqlRuntime } =
+    dependencies;
 
   /** Concept mastery, named the way the course names each concept. */
   function conceptProgressWithTitles() {
@@ -582,10 +587,12 @@ export async function registerRoutes(
           );
         if (stage.type === "explainer") {
           for (const step of stage.steps) {
-            // A Python exercise cannot be answered where Python cannot run, and the lesson must
-            // still be finishable there, so it is not required on such a computer.
+            // A Python or SQL exercise cannot be answered where its runner cannot run, and the
+            // lesson must still be finishable there, so it is not required on such a computer.
+            const language = step.question?.code?.language;
             const cannotRun =
-              step.question?.code?.language === "python" && !(await pythonReady(pythonRuntime));
+              (language === "python" && !(await pythonReady(pythonRuntime))) ||
+              (language === "sql" && !(await sqlReady(sqlRuntime)));
             if (
               step.question &&
               !cannotRun &&
@@ -1226,11 +1233,20 @@ export async function registerRoutes(
         "Python cannot run on this computer yet, so this answer was not checked.",
         "PYTHON_UNAVAILABLE",
       );
+    const queried = sqlTask(question);
+    if (queried && !(await sqlReady(sqlRuntime)))
+      throw new HttpError(
+        503,
+        "SQL cannot run on this computer yet, so this answer was not checked.",
+        "SQL_UNAVAILABLE",
+      );
     const coded = task
       ? await assessCode(rustRuntime!, task, body.response)
       : written
         ? await assessPython(pythonRuntime!, written, body.response)
-        : undefined;
+        : queried
+          ? await assessSql(sqlRuntime!, queried, body.response)
+          : undefined;
     const assessment = coded ?? assessResponse(question, body.response);
     // A program that stopped with an error was not marked against any test, so it costs no try.
     const qualifying = coded?.qualifying ?? isMarkable(question, body.response);

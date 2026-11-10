@@ -3,13 +3,15 @@ import {
   type PythonExercise,
   type PythonValue,
   type RustTaskRun,
+  type SqlExercise,
   pythonGiven,
   pythonLiteral,
 } from "@discere/contracts";
 import { Play, RotateCcw } from "lucide-react";
 import { useState } from "react";
 import { errorMessage } from "../api/client.js";
-import { RuntimeSetup } from "../code-runtimes/RuntimeSetup.js";
+import { RuntimeSetup, useCodeRuntime } from "../code-runtimes/RuntimeSetup.js";
+import { SqlDataTable } from "../sql-projects/SqlTable.js";
 import { runQuestionCode } from "./api.js";
 import { RustConsole, RustEditor } from "./RustIde.js";
 
@@ -40,8 +42,33 @@ function PythonExample({ exercise }: { exercise: PythonExercise }) {
   );
 }
 
+/**
+ * The tables an SQL exercise reads: each table's name, its columns with their types, and the
+ * rows Run uses, so nothing about the data has to be guessed.
+ */
+function SqlTables({ exercise }: { exercise: SqlExercise }) {
+  return (
+    <section className="code-answer-tables" aria-label="Tables">
+      {exercise.tables.map((table) => (
+        <SqlDataTable key={table.name} table={table} />
+      ))}
+    </section>
+  );
+}
+
+/**
+ * SQL runs on the SQLite inside Python. An installed Windows app downloads that Python once, so
+ * the offer to download it belongs here; a checkout uses the system's Python and is offered
+ * nothing, because the sandbox the Python lessons need is not what SQL runs on.
+ */
+function SqlRuntimeSetup() {
+  const python = useCodeRuntime("python");
+  return python && python.state !== "manual" ? <RuntimeSetup runtime="python" /> : null;
+}
+
 /** What the program has to do, from the one example the learner can see. */
 function Example({ exercise }: { exercise: CodeExercise }) {
+  if (exercise.language === "sql") return <SqlTables exercise={exercise} />;
   if (exercise.language === "python") return <PythonExample exercise={exercise} />;
   const { example, call } = exercise;
   if (exercise.kind === "function" && call)
@@ -81,7 +108,7 @@ function Example({ exercise }: { exercise: CodeExercise }) {
 }
 
 /**
- * A lesson question answered by writing Rust or Python. Run shows what the program does with
+ * A lesson question answered by writing Rust, Python or an SQL query. Run shows what the program does with
  * the example; the lesson's Check answer marks it against every test on the server.
  */
 export function CodeAnswer({
@@ -105,6 +132,8 @@ export function CodeAnswer({
   const [ran, setRan] = useState<{ code: string; run: RustTaskRun }>();
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState("");
+  const python = exercise.language === "python";
+  const sql = exercise.language === "sql";
   async function run() {
     if (busy || !code.trim()) return;
     setBusy(true);
@@ -112,21 +141,26 @@ export function CodeAnswer({
     try {
       setRan({ code, run: await runQuestionCode(questionId, code) });
     } catch (e) {
-      setFailure(errorMessage(e, "The program could not run."));
+      setFailure(
+        errorMessage(e, sql ? "The query could not run." : "The program could not run."),
+      );
     } finally {
       setBusy(false);
     }
   }
   // A check is newer than a run of the same code; an edit since either clears the console.
   const shown = checked ?? (ran?.code === code ? ran.run : undefined);
-  const python = exercise.language === "python";
   return (
     <div className="code-answer">
-      <RuntimeSetup runtime={exercise.language} />
+      {exercise.language === "sql" ? (
+        <SqlRuntimeSetup />
+      ) : (
+        <RuntimeSetup runtime={exercise.language} />
+      )}
       <Example exercise={exercise} />
       <RustEditor
         id={`${idPrefix}-code`}
-        label={python ? "Your Python code" : "Your Rust code"}
+        label={sql ? "Your SQL query" : python ? "Your Python code" : "Your Rust code"}
         language={exercise.language}
         fitLines
         value={code}
@@ -153,9 +187,11 @@ export function CodeAnswer({
       <RustConsole
         result={shown}
         language={exercise.language}
-        {...(busy ? { busy: python ? "Running…" : "Compiling and running…" } : {})}
+        {...(busy ? { busy: python || sql ? "Running…" : "Compiling and running…" } : {})}
         idle={
-          exercise.language === "python"
+          exercise.language === "sql"
+            ? "Run shows the rows your query returns from the tables above. Check answer also runs it against other rows."
+            : exercise.language === "python"
             ? "Run shows what your code prints and produces for the example. Check answer runs every test."
             : exercise.kind === "function"
             ? "Run shows what your function returns for the example. Check answer also tries other inputs."

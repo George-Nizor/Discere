@@ -1,6 +1,8 @@
 import { z } from "zod";
 import { TutoringModeSchema } from "./modes.js";
 import { PythonExerciseSchema } from "./python-exercise.js";
+import { SqlExerciseSchema } from "./sql-exercise.js";
+import { SqlCellSchema } from "./sql-project.js";
 
 /**
  * Rust practice: the playground, lesson programs and graded projects. Learner code is compiled
@@ -124,10 +126,11 @@ export const RustExerciseSchema = z
   })
   .strict();
 export type RustExercise = z.infer<typeof RustExerciseSchema>;
-/** A lesson's code exercise in either language; `language` says which runner marks it. */
+/** A lesson's code exercise in any of the languages; `language` says which runner marks it. */
 export const CodeExerciseSchema = z.discriminatedUnion("language", [
   RustExerciseSchema,
   PythonExerciseSchema,
+  SqlExerciseSchema,
 ]);
 export type CodeExercise = z.infer<typeof CodeExerciseSchema>;
 
@@ -211,7 +214,19 @@ export const RustTaskRunSchema = z
       .array(z.object({ name: z.string().max(40), value: z.string().max(2200) }).strict())
       .max(6)
       .optional(),
-    /** Python, Check only: the first test that failed, with what it expected and what it got. */
+    /**
+     * SQL: the rows the query returned from the visible tables, at most fifty of them, with
+     * `more` counting the rows left out.
+     */
+    table: z
+      .object({
+        columns: z.array(z.string().max(200)).min(1).max(16),
+        rows: z.array(z.array(SqlCellSchema)).max(50),
+        more: z.number().int().positive().optional(),
+      })
+      .strict()
+      .optional(),
+    /** Python and SQL, Check only: the first test that failed, with what it expected and what it got. */
     failed: z
       .object({
         test: z.number().int().positive(),

@@ -6,6 +6,8 @@ import { HttpError } from "../errors.js";
 import { pythonTask, runPythonExample } from "../python-projects/questions.js";
 import type { PythonRuntime } from "../python-projects/runtime.js";
 import { type GradedTask, mark, present, runCases } from "./grading.js";
+import { runSqlExample, sqlReady, sqlTask } from "../sql-projects/questions.js";
+import type { SqlRuntime } from "../sql-projects/runtime.js";
 import type { RustRuntime } from "./runtime.js";
 
 /** The task behind a lesson question answered by writing code, or undefined for any other. */
@@ -68,8 +70,17 @@ export async function registerCodeQuestionRoutes(
     content,
     runtime,
     python,
-  }: { content: ContentRepository; runtime: RustRuntime; python?: PythonRuntime },
+    sql,
+  }: {
+    content: ContentRepository;
+    runtime: RustRuntime;
+    python?: PythonRuntime;
+    sql?: SqlRuntime;
+  },
 ) {
+  // Whether a query written in a lesson can run here now. SQL has no toolchain of its own to
+  // download: it runs on the SQLite inside Python, so the lesson asks this instead.
+  app.get("/api/sql-runtime", async () => ({ ready: await sqlReady(sql) }));
   app.post("/api/questions/:questionId/run", async (request) => {
     const { questionId } = z.object({ questionId: z.string().min(1) }).parse(request.params);
     const { code } = z.object({ code: z.string().min(1).max(16000) }).strict().parse(request.body);
@@ -79,6 +90,11 @@ export async function registerCodeQuestionRoutes(
       if (!python)
         throw new HttpError(503, "Python answers need the Python runtime.", "PYTHON_UNAVAILABLE");
       return runPythonExample(python, written, code);
+    }
+    const queried = question ? sqlTask(question) : undefined;
+    if (queried) {
+      if (!sql) throw new HttpError(503, "SQL answers need the SQL runtime.", "SQL_UNAVAILABLE");
+      return runSqlExample(sql, queried, code);
     }
     const task = question ? codeTask(question) : undefined;
     if (!task)

@@ -1,6 +1,8 @@
 import type { LearnerQuestion, LessonFeedbackRequest } from "@discere/contracts";
 import { Loader2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { Fragment, type ReactNode, useEffect, useRef, useState } from "react";
+import { requestJson } from "../../api/client.js";
 import { useCodeRuntime } from "../../code-runtimes/RuntimeSetup.js";
 import { Notice } from "../../ui/Feedback.js";
 import { InlineRichText } from "../../ui/RichText.js";
@@ -107,6 +109,34 @@ function PythonUnavailable({ left, onLeave }: { left: boolean; onLeave: () => vo
   );
 }
 
+/**
+ * The same for an SQL exercise. SQL runs on the SQLite inside Python, which a checkout takes
+ * from the system and an installed app downloads once, so the server is asked directly.
+ */
+function SqlUnavailable({ left, onLeave }: { left: boolean; onLeave: () => void }) {
+  const runtime = useQuery({
+    queryKey: ["sql-runtime"],
+    queryFn: async () => (await requestJson("/api/sql-runtime")) as { ready: boolean },
+  });
+  if (!runtime.data || runtime.data.ready) return null;
+  return (
+    <Notice tone="warning" title="SQL can't run on this computer yet">
+      <p>
+        Your query can't be run or checked until SQL practice is set up, so this exercise is
+        optional for now. The rest of the lesson works without it, and you can come back to the
+        exercise later.
+      </p>
+      {left ? (
+        <p>This exercise is set aside. Continue when you're ready.</p>
+      ) : (
+        <button className="button button-secondary" type="button" onClick={onLeave}>
+          Continue without this exercise
+        </button>
+      )}
+    </Notice>
+  );
+}
+
 export function QuestionBlock({
   question,
   context,
@@ -142,7 +172,7 @@ export function QuestionBlock({
 }) {
   const attempt = useAttempt(question, context, policy);
   const announced = useRef(false);
-  // A Python exercise on a computer where Python cannot run may be left, so the lesson goes on.
+  // A Python or SQL exercise on a computer where it cannot run may be left, so the lesson goes on.
   const [left, setLeft] = useState(false);
   useEffect(() => {
     if ((attempt.ready || left) && !announced.current) {
@@ -257,8 +287,12 @@ export function QuestionBlock({
       {question.code?.language === "python" && !attempt.ready ? (
         <PythonUnavailable left={left} onLeave={() => setLeft(true)} />
       ) : null}
+      {question.code?.language === "sql" && !attempt.ready ? (
+        <SqlUnavailable left={left} onLeave={() => setLeft(true)} />
+      ) : null}
       <QuestionFeedback
         attempt={attempt}
+        query={question.code?.language === "sql"}
         hints={policy?.hints !== false}
         placement={inline ? "inline" : "footer"}
       />
