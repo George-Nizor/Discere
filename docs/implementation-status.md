@@ -732,6 +732,39 @@ development; there is no Playwright scenario for Rust yet.
 Not built yet: more lessons (ownership and borrowing are the obvious next ones), GDScript, and a
 seccomp filter on compiled programs.
 
+## TypeScript exercises
+
+The first five lessons of TypeScript and Node.js each hold three exercises the learner answers by
+writing or repairing TypeScript in the lesson, fifteen in all (`responseType: "code"` with
+`code.language: "typescript"`). Each is placed after the idea it practises, they get harder within
+a lesson, and most start from code the compiler rejects. The 160 earlier questions are unchanged.
+
+Run compiles the program where the exercise is type-checked and then runs the visible example,
+showing what it printed and what it returned or left in each judged name. Check answer runs every
+case and every type test, and names the first case that fails with the expected and actual values.
+A type error, `any` in a type-checked exercise, a syntax error and a thrown error are shown with
+their line and are not counted as a wrong answer. A type test that fails is counted, with the
+author's message. Where TypeScript cannot run, the exercise says so and the lesson finishes without
+it ([ADR 0008](adr/0008-typescript-exercises.md)).
+
+The program is type-checked by the native `tsc` and run by the Node the server runs on, both
+inside Bubblewrap with a seccomp filter on Linux and inside `discere-sandbox.exe` on Windows. A
+release carries `tsc.exe` under `runtime/typescript`, so the learner downloads nothing.
+
+`packages/curriculum/tests/typescript-exercises.test.ts` compiles and runs every worked program
+and every starter. `apps/server/tests/typescript-questions.test.ts` does the same in the sandbox,
+checks the limits, and runs code that climbs out of Node's `vm` context to show it still has no
+files, network or child process. `apps/web/e2e/typescript-exercises.spec.ts` plays two exercises
+in Chromium.
+
+Checked on Windows 11 on 2026-11-11, from a bundle packaged on Linux with the sandbox helper of
+release 1.11.2: a type error came back by line, a correct function ran and printed, an endless
+loop stopped at the limit, a failed type test was counted and the worked program passed 6 of 6.
+The release workflow itself has not run with this change.
+
+Not built yet: exercises for lessons 6 to 14, programs of more than one file, and anything that
+needs Node's own modules (files, streams, HTTP, timers).
+
 ## Windows release
 
 From 1.1.0 Discere ships as a Windows release that Instrumenta 0.15.0 installs and updates as a
