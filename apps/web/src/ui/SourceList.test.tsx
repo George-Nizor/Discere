@@ -1,5 +1,5 @@
 import type { Source } from "@discere/contracts";
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { expect, it } from "vitest";
 import { SourceList } from "./SourceList.js";
 
@@ -43,6 +43,18 @@ it("starts a long list closed behind a summary that says how many there are", ()
   expect(details).not.toHaveAttribute("open");
   expect(screen.getByText("Show all 7 sources")).toBeVisible();
   expect(details.querySelectorAll("li")).toHaveLength(7);
+});
+
+it("offers to hide the sources once the long list is open", () => {
+  render(<SourceList sources={Array.from({ length: 7 }, (_, index) => source(`s${index}`))} />);
+  const details = screen.getByRole("group") as HTMLDetailsElement;
+  details.open = true;
+  fireEvent(details, new Event("toggle"));
+  expect(screen.getByText("Hide sources")).toBeVisible();
+  expect(screen.queryByText("Show all 7 sources")).toBeNull();
+  details.open = false;
+  fireEvent(details, new Event("toggle"));
+  expect(screen.getByText("Show all 7 sources")).toBeVisible();
 });
 
 it("renders nothing when there are no sources", () => {

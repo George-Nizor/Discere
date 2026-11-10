@@ -1,5 +1,5 @@
 import type { Source } from "@discere/contracts";
-import { useId } from "react";
+import { useId, useState } from "react";
 
 /** A list longer than this starts closed, so it never pushes the screen's own content away. */
 const OPEN_LIMIT = 6;
@@ -12,6 +12,7 @@ const OPEN_LIMIT = 6;
  */
 export function SourceList({ sources, className }: { sources: Source[]; className?: string }) {
   const titleId = useId();
+  const [open, setOpen] = useState(false);
   if (!sources.length) return null;
   const list = (
     <ul className="source-list">
@@ -39,8 +40,8 @@ export function SourceList({ sources, className }: { sources: Source[]; classNam
     <section className={`sources${className ? ` ${className}` : ""}`} aria-labelledby={titleId}>
       <h2 id={titleId}>Sources</h2>
       {sources.length > OPEN_LIMIT ? (
-        <details>
-          <summary>Show all {sources.length} sources</summary>
+        <details onToggle={(event) => setOpen(event.currentTarget.open)}>
+          <summary>{open ? "Hide sources" : `Show all ${sources.length} sources`}</summary>
           {list}
         </details>
       ) : (
