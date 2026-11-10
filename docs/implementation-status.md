@@ -526,6 +526,51 @@ implemented, while random sampling, larger datasets, environment setup, advanced
 inference and machine learning remain. Geometry
 now records partial introductory coverage, with the rest of the subject explicitly outstanding.
 
+## Writing tasks
+
+A lesson can end with a writing task. Writing Longer Pieces has one in each of its twelve lessons,
+and the archived Electronics prototype has three. The task is optional: the page says so, and
+"Skip this task" leaves it and carries on to the review cards. The server refuses to skip a stage
+that is not optional. The first paragraph of the prompt is the task, and any later paragraphs are
+set under it as the material it supplies, such as a question, figures or a draft to revise. The
+draft saves by itself while the learner types, and it can be submitted once it reaches the task's
+minimum length. Style notes on a submission are advice and never block it.
+
+Submitting records the task as done in the lesson, including a task that was skipped on an
+earlier visit. Before November 2026 a skipped task stayed recorded as skipped after it was
+submitted.
+
+The tutor assesses a submitted version against the task's success criteria. The assessment has a
+summary, the first thing to fix, a next step, and a result for each criterion: met, partly met or
+not met, with a short quote from the writing or a one-sentence reason. The server lines the
+results up with the task's own list by text, or by position when there is exactly one result for
+each. A reply with missing, malformed or unmatched results is kept with its overall verdict and a
+note, and is not treated as a failure. Assessments stored before the per-criterion results existed
+have no list and still render. An assessment is not checked against the answer to the lesson's
+first question, because a writing task has no answer to withhold.
+
+After an assessment, or after submitting with no tutor, "Revise" opens the text for editing again.
+The submitted version and its assessment are first appended to `essay_versions` (migration
+`0016_essay_versions.sql`, one added table, rollback-safe) and are never rewritten.
+`essay_drafts` and `essay_assessments` keep holding the current version, so a build from before
+the migration still runs on the database. The page names the version being written, lists the
+earlier ones under "Earlier versions", and opens any of them read-only with the feedback it
+received. While a revision is being written the latest earlier version starts open. A version has
+one assessment: asking again returns the one it has, and a new assessment comes from revising.
+Revise is refused while the tutor is still reading. When a revision is assessed, the tutor is given
+the previous version and its feedback and is asked whether the problem named there is fixed.
+
+When the tutor is unavailable the page says so before the learner writes, still accepts the
+submission, and asks them to check the writing against the criteria. A CLI can report a stored
+login whose session has expired, and only a model call finds that out, so the capability check
+does not make one. The server remembers the last request a provider refused for sign-in. The tutor
+then reads as unavailable until a request succeeds, the stored login file changes, or five minutes
+pass. A failed assessment whose provider error points at sign-in says so in its message.
+
+The mock provider returns a result for each of the task's criteria, and the fake Codex fixture can
+write to stderr before exiting, which is how the sign-in case is tested. No real tutor reply to
+the per-criterion or revision prompts has been checked yet.
+
 ## Subscription tutoring
 
 The configured Codex CLI subscription provider passed a live readiness probe and an actual
