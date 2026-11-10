@@ -35,6 +35,20 @@ export const attempts = sqliteTable("attempts", {
   mastery: real("mastery").notNull().default(0),
   createdAt: text("created_at").notNull(),
   updatedAt: text("updated_at").notNull(),
+  /** Set once the last allowed miss in a lesson has closed the attempt. */
+  closed: integer("closed", { mode: "boolean" }).notNull().default(false),
+});
+/** Every response submitted to an attempt, in order. Rows are appended and never rewritten. */
+export const attemptResponses = sqliteTable("attempt_responses", {
+  id: text("id").primaryKey(),
+  attemptId: text("attempt_id").notNull(),
+  userId: text("user_id").notNull(),
+  questionId: text("question_id").notNull(),
+  response: text("response").notNull(),
+  correct: integer("correct", { mode: "boolean" }).notNull(),
+  qualifying: integer("qualifying", { mode: "boolean" }).notNull(),
+  mode: text("mode").notNull(),
+  createdAt: text("created_at").notNull(),
 });
 export const assistanceEvents = sqliteTable("assistance_events", {
   id: text("id").primaryKey(),
@@ -153,6 +167,8 @@ export const reviewCards = sqliteTable(
     learningStep: integer("learning_step").notNull().default(0),
     elapsedDays: real("elapsed_days").notNull().default(0),
     scheduledDays: real("scheduled_days").notNull().default(0),
+    /** `authored` with the course, or `question` for a lesson question the learner missed. */
+    origin: text("origin").notNull().default("authored"),
   },
   (table) => [primaryKey({ columns: [table.userId, table.cardId] })],
 );

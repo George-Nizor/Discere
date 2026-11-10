@@ -96,13 +96,15 @@ export function useAttempt(
   const [markedResponse, setMarkedResponse] = useState<string | null>(null);
   const [hints, setHints] = useState<HintResponse[]>([]);
   const [misses, setMisses] = useState(0);
+  const [serverLimit, setServerLimit] = useState<number | null>(null);
   const [revealed, setRevealed] = useState(false);
   const [lessonFeedback, setLessonFeedback] = useState<LessonFeedbackResponse | null>(null);
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState<string | null>(null);
 
   const response = answerResponse(question, draft);
-  const allowedMisses = Math.max(1, policy.misses ?? defaultMisses(question));
+  // Once the server has named the lesson's limit, that is the limit: it is the one enforced.
+  const allowedMisses = serverLimit ?? Math.max(1, policy.misses ?? defaultMisses(question));
   const explains = lessonContext !== undefined && mode !== "exam";
   const solved = result?.correct === true;
   const phase: AttemptPhase = solved
@@ -136,6 +138,8 @@ export function useAttempt(
         response,
         mode,
         ...(attemptId === null ? {} : { attemptId }),
+        // With the lesson named, the server counts misses against the lesson's limit itself.
+        ...(lessonContext ? { lesson: lessonContext } : {}),
       });
       setAttemptId(attempt.attemptId);
       setResult(attempt);
@@ -151,12 +155,17 @@ export function useAttempt(
           play,
         });
       }
-      const nextMisses = !attempt.correct && counted ? misses + 1 : misses;
+      // The server's count wins: it remembers misses made before a reload, and it says when the
+      // last allowed miss has closed the question.
+      const countedMisses = attempt.misses ?? (!attempt.correct && counted ? misses + 1 : misses);
+      const limit = attempt.allowedMisses ?? allowedMisses;
+      const nextMisses = attempt.closed ? Math.max(countedMisses, limit) : countedMisses;
       setMisses(nextMisses);
+      if (attempt.allowedMisses !== undefined) setServerLimit(attempt.allowedMisses);
       if (explains && attempt.correct) {
         // Being right never skips the idea: the explanation comes with the verdict.
         await fetchExplanation(attempt.attemptId, false);
-      } else if (explains && nextMisses >= allowedMisses) {
+      } else if (explains && nextMisses >= limit) {
         await fetchExplanation(attempt.attemptId, true);
       }
       void queryClient.invalidateQueries({ queryKey: queryKeys.home });

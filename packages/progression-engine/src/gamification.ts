@@ -151,11 +151,28 @@ interface DayCounts {
   lessons: number;
 }
 
+/**
+ * The answer event that first solved each question. A later correct answer to the same question
+ * is a replay, and a replay is practice that earns no quest progress.
+ */
+function firstSolves(events: readonly StudyEvent[]): Set<string> {
+  const solved = new Map<string, StudyEvent>();
+  for (const event of events) {
+    if (event.kind !== "answer" || !event.qualifying || !event.correct) continue;
+    const earliest = solved.get(event.referenceId);
+    if (!earliest || event.occurredAt < earliest.occurredAt) solved.set(event.referenceId, event);
+  }
+  return new Set([...solved.values()].map((event) => event.key));
+}
+
 function dayCounts(events: readonly StudyEvent[], today: string, timeZone: string): DayCounts {
   const todays = events.filter((event) => localStudyDay(event.occurredAt, timeZone) === today);
   const answers = todays.filter((event) => event.kind === "answer" && event.qualifying);
+  const firstTime = firstSolves(events);
   return {
-    correct: new Set(answers.filter((e) => e.correct).map((e) => e.referenceId)).size,
+    correct: new Set(
+      answers.filter((e) => e.correct && firstTime.has(e.key)).map((e) => e.referenceId),
+    ).size,
     independent: new Set(
       answers.filter((e) => e.correct && e.independent).map((e) => e.referenceId),
     ).size,
@@ -201,7 +218,7 @@ function questPool(counts: DayCounts, context: QuestContext): Record<string, () 
         "correct",
         "target",
         "Sharp mind",
-        `Answer ${correctTarget} different questions correctly.`,
+        `Answer ${correctTarget} new questions correctly.`,
         counts.correct,
         correctTarget,
       ),

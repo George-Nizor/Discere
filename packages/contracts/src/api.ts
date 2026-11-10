@@ -288,11 +288,26 @@ export const ReviewHomeResponseSchema = z
   .strict();
 export type ReviewHomeResponse = z.infer<typeof ReviewHomeResponseSchema>;
 
+/** Where in a lesson a question is being asked: the lesson, and the step when it has one. */
+export const LessonQuestionContextSchema = z
+  .object({
+    courseId: z.string().min(1).max(200),
+    lessonId: z.string().min(1).max(200),
+    stepId: z.string().min(1).max(240).optional(),
+  })
+  .strict();
+export type LessonQuestionContext = z.infer<typeof LessonQuestionContextSchema>;
+
 export const AttemptRequestSchema = z
   .object({
     questionId: z.string().min(1),
     response: z.string().min(1).max(20_000),
     mode: TutoringModeSchema,
+    /**
+     * Present when the question is asked inside a lesson. The server then counts misses against
+     * the lesson's limit, so a reload cannot reset them.
+     */
+    lesson: LessonQuestionContextSchema.optional(),
   })
   .strict();
 export type AttemptRequest = z.infer<typeof AttemptRequestSchema>;
@@ -305,9 +320,22 @@ export const AttemptResponseSchema = z
     xpAwarded: z.number().int().nonnegative(),
     xpGained: z.number().int().nonnegative().optional(),
     mastery: z.number().min(0).max(1),
+    /** True only when the first marked response to the question was right, with no help. */
     independent: z.boolean(),
+    /** How a correct answer was earned. `none` for a wrong answer. */
+    credit: z
+      .enum(["independent", "recovered", "assisted", "revealed", "practice", "none"])
+      .optional(),
     /** False when the response was not in a form that could be marked (no miss is counted). */
     qualifying: z.boolean().optional(),
+    /** Marked responses to this question so far, across every attempt, this one included. */
+    tries: z.number().int().nonnegative().optional(),
+    /** Marked misses on this attempt, as the server counts them. */
+    misses: z.number().int().nonnegative().optional(),
+    /** The lesson's miss limit for this question, when the question was asked in a lesson. */
+    allowedMisses: z.number().int().positive().optional(),
+    /** True when the last allowed miss has closed this attempt. */
+    closed: z.boolean().optional(),
     /** True when `feedback` is an authored misconception message rather than the generic one. */
     specific: z.boolean().optional(),
     /** A code answer's run on the visible example, with how many of the tests it passed. */
@@ -411,13 +439,7 @@ export const WritingLintResponseSchema = z
 export type WritingLintResponse = z.infer<typeof WritingLintResponseSchema>;
 
 /** An authored lesson explanation is earned by answering its question. Exam attempts cannot open it. */
-export const LessonFeedbackRequestSchema = z
-  .object({
-    courseId: z.string().min(1).max(200),
-    lessonId: z.string().min(1).max(200),
-    stepId: z.string().min(1).max(240).optional(),
-  })
-  .strict();
+export const LessonFeedbackRequestSchema = LessonQuestionContextSchema;
 export type LessonFeedbackRequest = z.infer<typeof LessonFeedbackRequestSchema>;
 export const LessonFeedbackResponseSchema = z
   .object({
