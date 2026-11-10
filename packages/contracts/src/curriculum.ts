@@ -94,6 +94,19 @@ export const SourceSchema = z
     section: z.string().min(1).optional(),
     edition: z.string().min(1).optional(),
     reuse: z.enum(["adaptable", "reference_only"]).optional(),
+    /**
+     * Whether someone compared this record with the real thing, and when. `verified`: the page
+     * was opened and is what the record says. `unreachable`: the address no longer leads to it,
+     * so the app lists the source without a link. `unchecked`: nobody could confirm it either
+     * way, for example because the site refuses automated requests. Absent means never checked.
+     */
+    checked: z
+      .object({
+        status: z.enum(["verified", "unreachable", "unchecked"]),
+        at: z.string().date(),
+      })
+      .strict()
+      .optional(),
   })
   .strict();
 export type Source = z.infer<typeof SourceSchema>;
