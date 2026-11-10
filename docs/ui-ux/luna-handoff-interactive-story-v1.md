@@ -7,7 +7,7 @@ Implement the approved redesign defined in:
 Also read:
 
 - `AGENTS.md`
-- `docs/learning-experience-redesign-draft.md`
+- `docs/archive/learning-experience-redesign-draft.md`
 - `docs/architecture.md`
 - `docs/implementation-status.md`
 - `docs/agent-fleet/STATUS.md`

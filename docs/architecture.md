@@ -1,8 +1,14 @@
 # Discere Architecture
 
+> **Partly out of date.** This file was written in August 2026 for the first scaffold. The rules below still
+> hold, and the package table, the application sections and the journey boundary were corrected in November 2026.
+> Not described here: a lesson is now an opener, steps and a recap (see [content/README.md](../content/README.md)),
+> and the web routes are listed in `apps/web/src/routes.tsx`. [implementation-status.md](implementation-status.md)
+> is the current record.
+
 ## Purpose
 
-This document describes the scaffold currently present in the repository. The product specification remains authoritative where later phases are concerned.
+This document described the scaffold present in the repository in August 2026. The product specification remains authoritative where later phases are concerned.
 
 ## Architectural rules
 
@@ -25,14 +31,16 @@ This document describes the scaffold currently present in the repository. The pr
 | `@discere/activity-engine` | Safe state transitions for interactive activities |
 | `@discere/assessment-engine` | Deterministic grading and unit conversion |
 | `@discere/progression-engine` | XP and mastery evidence calculation |
-| `@discere/tutor-providers` | Provider-neutral requests, responses, and companion packets |
-| `@discere/curriculum` | Content bundle validation and referential-integrity checks |
+| `@discere/tutor-providers` | Provider-neutral requests and responses; the Claude Code, OpenAI-compatible, Codex, companion and mock providers |
+| `@discere/curriculum` | Content bundle loading, validation and referential-integrity checks |
+| `@discere/paths` | Repository root, data directory, prompts directory and CLI path resolution, for a checkout and for a release bundle |
+| `@discere/prompts` | Loader for the prompt files in `prompts/` |
 
 ## Applications
 
 ### `apps/web`
 
-The React interface renders the routed Interactive Story v1 journey. The course home and each stage are separate screens; the app deliberately avoids turning the approved comparison reference into one dashboard or long page. The first functional journey is explainer → interactive visual → quiz → essay → review → completion. The previous long-form circuit/notebook/tutor experience remains temporarily available at `/legacy`.
+The React interface renders the routed lesson journey. The course home and each stage are separate screens; the app deliberately avoids turning the approved comparison reference into one dashboard or long page. The server assembles a lesson's stages from its bundle: the steps, an interactive visual and an essay only when the lesson names them, one stage per skill-check question, review, the recap and completion. The long-form circuit/notebook/tutor experience that once lived at `/legacy` is gone; `legacy/courses/:courseId` now only redirects to the course.
 
 ### `apps/server`
 
@@ -40,11 +48,11 @@ Fastify exposes the standalone REST API, owns SQLite state, reruns the writing g
 
 ### Journey boundary
 
-`packages/contracts/src/journey.ts` defines the stage union and completion policy. `apps/server/src/content.ts` assembles learner-safe lesson journeys from curriculum and question data. `apps/web/src/JourneyApp.tsx` owns route selection, progress restoration, and stage navigation; `JourneyStage.tsx` delegates presentation to stage-specific components. Domain answers remain outside learner-safe stage payloads.
+`packages/contracts/src/journey.ts` defines the stage union and completion policy. `apps/server/src/content.ts` assembles learner-safe lesson journeys from curriculum and question data. `apps/web/src/journey/LessonJourneyScreen.tsx` owns progress restoration and stage navigation, and renders each stage with the matching component in `apps/web/src/journey/stages/`. `stage-machine.ts` works out each stage's state, and routes are declared in `apps/web/src/routes.tsx`. Domain answers remain outside learner-safe stage payloads.
 
-### `apps/mcp`
+### `mcp`
 
-This package contains the host-neutral MCP tool catalogue and service adapter boundary. A transport dependency is deliberately absent until the target ChatGPT account passes the compatibility checklist. This prevents an unstable SDK or unavailable host surface from becoming a core dependency.
+This package (`@discere/mcp`, in `mcp/`, not `apps/mcp`) is an MCP server that speaks stdio through `@modelcontextprotocol/sdk` and forwards calls to the local HTTP API. It keeps no state and reads no files. See [mcp/README.md](../mcp/README.md).
 
 ## Content lifecycle
 

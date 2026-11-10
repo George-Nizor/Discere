@@ -413,7 +413,10 @@ A mistake opens its correction and permits continuation while retaining failed c
 assisted evidence. A reserved footer keeps controls and explanations clear of answers; long
 questions scroll inside their pane. Two labelled skills checks lead into two fresh recall cards.
 
-Course, lesson, notebook, tutor, sources, reading, review, and progress routes remain available.
+Routes exist for home, the course list and each course, a lesson and its stages, the notebook, review
+and review sessions, course checks, SQL, Python and Rust projects, the progress page at `/you`
+(`/progress` redirects to it) and settings. The tutor, a calculator and the working page open in the
+lesson's workbench rather than on routes of their own.
 Lesson recall is scoped to its authored cards and visits every card. Teaching-step position,
 answers, notebook work, tutor history, and review sessions survive refresh.
 
