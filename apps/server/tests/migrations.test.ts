@@ -1,11 +1,35 @@
-import { mkdtempSync, rmSync, readFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import Database from "better-sqlite3";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createApp } from "../src/app.js";
-import { listMigrations } from "../src/db/migrations.js";
+import {
+  backupsDirectory,
+  listMigrations,
+  SNAPSHOTS_KEPT,
+  snapshotBeforeMigration,
+} from "../src/db/migrations.js";
 import { DiscereStore } from "../src/db/store.js";
+
+/** A database as a build that stopped at `lastPrefix` would have left it, with one learner. */
+function createDatabaseUpTo(file: string, lastPrefix: string): void {
+  const legacy = new Database(file);
+  legacy.pragma("journal_mode = WAL");
+  legacy.exec("CREATE TABLE schema_migrations (name TEXT PRIMARY KEY, applied_at TEXT NOT NULL)");
+  for (const name of listMigrations().filter((name) => name.slice(0, 4) <= lastPrefix)) {
+    legacy.exec(readFileSync(new URL(`../drizzle/${name}`, import.meta.url), "utf8"));
+    legacy
+      .prepare("INSERT INTO schema_migrations VALUES (?, ?)")
+      .run(name, "2026-09-29T00:00:00.000Z");
+  }
+  legacy
+    .prepare(
+      "INSERT INTO user_profiles (id, learner_name, xp, created_at, updated_at) VALUES ('local-user', 'Owner', 120, ?, ?)",
+    )
+    .run("2026-09-30T08:00:00.000Z", "2026-09-30T08:00:00.000Z");
+  legacy.close();
+}
 
 let directory: string;
 let databasePath: string;
@@ -110,5 +134,107 @@ describe("database migrations", () => {
       second.database.prepare("SELECT COUNT(*) AS count FROM schema_migrations").get(),
     ).toEqual({ count: listMigrations().length });
     second.close();
+  });
+});
+
+describe("snapshot before a migration", () => {
+  it("copies an existing database before changing it", () => {
+    createDatabaseUpTo(databasePath, "0004");
+    const store = new DiscereStore(databasePath, { migrate: true });
+    store.close();
+
+    const backups = backupsDirectory(databasePath);
+    expect(backups).toBe(path.join(directory, "backups"));
+    const files = readdirSync(backups);
+    expect(files).toHaveLength(1);
+    expect(files[0]).toMatch(
+      /^discere-\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z-after-0004_review_recall\.sqlite$/,
+    );
+    const snapshot = new Database(path.join(backups, files[0] as string), { readonly: true });
+    try {
+      expect(snapshot.pragma("integrity_check", { simple: true })).toBe("ok");
+      expect(snapshot.prepare("SELECT xp FROM user_profiles").get()).toEqual({ xp: 120 });
+      const applied = snapshot
+        .prepare("SELECT name FROM schema_migrations ORDER BY name")
+        .all() as Array<{ name: string }>;
+      expect(applied.at(-1)?.name).toBe("0004_review_recall.sql");
+    } finally {
+      snapshot.close();
+    }
+  });
+
+  it("takes no snapshot of a new database or of one that is already current", () => {
+    new DiscereStore(databasePath, { migrate: true }).close();
+    new DiscereStore(databasePath, { migrate: true }).close();
+    expect(existsSync(backupsDirectory(databasePath))).toBe(false);
+  });
+
+  it("keeps the five newest snapshots and leaves other backups alone", () => {
+    createDatabaseUpTo(databasePath, "0004");
+    const database = new Database(databasePath);
+    const manual = path.join(backupsDirectory(databasePath), "discere-2020-01-01.sqlite");
+    try {
+      for (let day = 1; day <= SNAPSHOTS_KEPT + 2; day += 1) {
+        snapshotBeforeMigration(database, new Date(Date.UTC(2026, 10, day)));
+        if (day === 1) writeFileSync(manual, "a backup made by hand");
+      }
+    } finally {
+      database.close();
+    }
+    const files = readdirSync(backupsDirectory(databasePath)).sort();
+    expect(files).toEqual([
+      "discere-2020-01-01.sqlite",
+      ...[3, 4, 5, 6, 7].map(
+        (day) => `discere-2026-11-0${day}T00-00-00-000Z-after-0004_review_recall.sqlite`,
+      ),
+    ]);
+  });
+
+  it("leaves the database unchanged when the snapshot cannot be written", () => {
+    createDatabaseUpTo(databasePath, "0004");
+    // A file where the folder should be makes the copy fail.
+    writeFileSync(backupsDirectory(databasePath), "");
+    expect(() => new DiscereStore(databasePath, { migrate: true })).toThrow(/has not been changed/);
+    const database = new Database(databasePath, { readonly: true });
+    try {
+      expect(database.prepare("SELECT COUNT(*) AS count FROM schema_migrations").get()).toEqual({
+        count: listMigrations().filter((name) => name.slice(0, 4) <= "0004").length,
+      });
+    } finally {
+      database.close();
+    }
+  });
+});
+
+describe("a database from a newer version", () => {
+  function recordFutureMigration(): void {
+    new DiscereStore(databasePath, { migrate: true }).close();
+    const database = new Database(databasePath);
+    database
+      .prepare("INSERT INTO schema_migrations VALUES (?, ?)")
+      .run("9999_from_the_future.sql", "2027-01-01T00:00:00.000Z");
+    database.close();
+  }
+
+  it("is refused with the unknown migrations and the backups folder named", () => {
+    recordFutureMigration();
+    for (const migrate of [true, false]) {
+      let message = "";
+      try {
+        new DiscereStore(databasePath, { migrate }).close();
+      } catch (error) {
+        message = (error as Error).message;
+      }
+      expect(message).toContain("9999_from_the_future.sql");
+      expect(message).toContain("newer version");
+      expect(message).toContain(backupsDirectory(databasePath));
+    }
+  });
+
+  it("stops the server from starting", async () => {
+    recordFutureMigration();
+    await expect(createApp({ dbPath: databasePath, migrate: true })).rejects.toThrow(
+      /9999_from_the_future\.sql/,
+    );
   });
 });

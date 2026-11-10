@@ -54,8 +54,40 @@ it cannot honour. Both routes can lean on that to hide the tutor and runners whe
 Install Tailscale, a free private network, on the Windows PC and the phone. Tailscale Serve then
 publishes Discere's local port as a private HTTPS address, such as
 `https://<pc-name>.<tailnet>.ts.net`, that only devices signed in to the same Tailscale account can
-open. Discere keeps listening only on 127.0.0.1, which it insists on (`apps/server/src/web-server.ts`
-refuses any other host), and Tailscale forwards to it, so no change to that safety rule is needed.
+open. Discere keeps listening only on 127.0.0.1 and Tailscale forwards to it.
+
+Two checks in `apps/server/src/host-guard.ts` guard that arrangement, and the Tailscale route has to
+be let through one of them:
+
+- **The bind check.** `apps/server/src/index.ts`, the entrypoint the launcher and the release run,
+  refuses to start on any address but 127.0.0.1, localhost or ::1 unless `DISCERE_ALLOW_REMOTE=1` is
+  set. Tailscale Serve connects to 127.0.0.1, so this route does not need the opt-in and should not
+  set it. (`web-server.ts`, the two-process web gateway, has no opt-in at all.)
+- **The request check.** Every request must be addressed to a name Discere knows: a loopback name
+  on any port, or a name listed in `DISCERE_ALLOWED_HOSTS` (comma separated). A request that changes
+  anything is also refused when its `Origin` is another site. This is what stops a web page from
+  reaching the API by pointing its own domain at 127.0.0.1. Tailscale Serve passes the phone's
+  request on with the `.ts.net` name in `Host` (confirm this on the first try; it has not been
+  tested here), so that name has to be in the list:
+  `DISCERE_ALLOWED_HOSTS=<pc-name>.<tailnet>.ts.net`. Without it the phone gets a 403 with the code
+  `HOST_NOT_ALLOWED`.
+
+### What this route still needs: a pairing token
+
+Discere has no sign-in. On the PC that is acceptable, because only programs on the PC can connect.
+Once the Tailscale name is allowed, every device on the tailnet can use the whole API, which
+includes running code, spending tutor budget and drawing illustrations. Requests forwarded by
+Tailscale arrive from 127.0.0.1 like any local one, so the server cannot tell them apart by
+address. Before this route is used for more than a trial, add a pairing token:
+
+- The server creates a long random token on first start and keeps it beside the database.
+- The PC window shows it once, as a code or a QR code, on a "Use on your phone" screen.
+- A request addressed to a name from `DISCERE_ALLOWED_HOSTS` must carry the token (a cookie set
+  after pairing, or an `Authorization` header). Loopback requests stay as they are.
+- The token can be withdrawn from the PC, which signs every paired phone out.
+
+None of this is built. `DISCERE_ALLOWED_HOSTS` on its own is for a tailnet where every device is
+George's.
 
 ### Steps
 
@@ -65,7 +97,11 @@ refuses any other host), and Tailscale forwards to it, so no change to that safe
 2. Open Discere in Instrumenta and note its port: 49323, or 45023 if that was taken
    (`instrumenta/product.json`, `launch.port`).
 3. On the PC run `tailscale serve --bg 49323` and note the address it prints.
-4. Open that address on the phone, check a lesson, a question and a review, then add it to the
+4. Put that name in `DISCERE_ALLOWED_HOSTS` where the service will read it, then restart Discere.
+   A checkout reads `.env`. How an installed release gets the variable is not settled: the
+   launcher starts it with the environment in `launch.env`, so this needs either a launcher
+   setting or a Windows user environment variable, and the second has not been tried.
+5. Open that address on the phone, check a lesson, a question and a review, then add it to the
    home screen.
 
 ### The one real problem: the service stops when the window closes
@@ -86,7 +122,9 @@ while its window is open on the PC. Three ways round it, in order of preference:
 ### Also check
 
 - The PC must not sleep while away, or the phone gets nothing. Windows power settings.
-- The Content-Security-Policy and any host check accept the Tailscale hostname.
+- The host check accepts the Tailscale name (`DISCERE_ALLOWED_HOSTS`, above). The server sends no
+  Content-Security-Policy of its own, so in the phone's browser there is none to adjust; the policy
+  in the Instrumenta window is the launcher's.
 - Two clients at once (PC window and phone) share one SQLite database; check that a review answered
   on one shows correctly on the other after a refresh.
 

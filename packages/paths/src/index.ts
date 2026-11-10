@@ -97,10 +97,15 @@ export function resolvePromptsDirectory(configured?: string | undefined): string
  * the CLI reads whatever `AGENTS.md` it finds above its working root, and a scratch directory
  * under the checkout meant every tutor turn shipped this repo's instructions as ~20k input
  * tokens of context nobody asked for.
+ *
+ * A leading `~` means the home directory. A shell expands it, but a value read from `.env`
+ * arrives as written, and without this it would name a folder called `~` inside the checkout.
  */
 export function resolveCodexScratchDirectory(configured?: string | undefined): string {
   const raw = configured?.trim();
   if (!raw) return path.join(os.homedir(), ...CODEX_SCRATCH_SEGMENTS);
+  if (raw === "~") return os.homedir();
+  if (raw.startsWith("~/") || raw.startsWith("~\\")) return path.join(os.homedir(), raw.slice(2));
   return path.isAbsolute(raw) ? raw : resolveFromRepoRoot(raw);
 }
 
