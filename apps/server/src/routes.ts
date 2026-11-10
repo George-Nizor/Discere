@@ -7,11 +7,7 @@ import {
   evaluateGraphPlot,
   evaluateOrderSequence,
 } from "@discere/activity-engine";
-import {
-  assessNumericAnswer,
-  assessTextAnswer,
-  parseNumericAnswer,
-} from "@discere/assessment-engine";
+import { assessNumericAnswer, assessTextAnswer } from "@discere/assessment-engine";
 import {
   ActivityAttemptRequestSchema,
   AttemptRequestSchema,
@@ -20,7 +16,9 @@ import {
   type IllustrationResponse,
   LessonDraftSchema,
   LessonFeedbackRequestSchema,
+  type LessonQuestionContext,
   NotebookSaveRequestSchema,
+  type Question,
   RevealConfirmRequestSchema,
   RevealStartRequestSchema,
   ReviewRateRequestSchema,
@@ -36,7 +34,12 @@ import {
   WritingLintRequestSchema,
 } from "@discere/contracts";
 import { resolveFromRepoRoot } from "@discere/paths";
-import { createReviewState, scoreAttempt, updateMastery } from "@discere/progression-engine";
+import {
+  createFlashcardFromReviewedQuestion,
+  createReviewState,
+  raiseMastery,
+  scoreAttempt,
+} from "@discere/progression-engine";
 import { buildCompanionPacket } from "@discere/tutor-providers";
 import {
   createImageGenerationPrompt,
@@ -51,7 +54,7 @@ import { assessResponse } from "./assessment.js";
 import { illustrationsCapability } from "./capabilities.js";
 import { acceptTutorReply, buildTutorReplyPayload } from "./companion.js";
 import type { ContentRepository } from "./content.js";
-import type { DiscereStore } from "./db/store.js";
+import type { DiscereStore, ReviewCardRow } from "./db/store.js";
 import { HttpError } from "./errors.js";
 import { genericTutorContext } from "./generic-tutor-context.js";
 import { illustrationImagePath, readIllustration, requestIllustration } from "./illustrations.js";
@@ -127,6 +130,23 @@ const GraphQuerySchema = z.object({
   resistance: z.coerce.number().positive().max(1_000_000).default(100),
 });
 
+const MILLISECONDS_PER_DAY = 24 * 60 * 60 * 1000;
+
+/**
+ * Whether a response is in a form that can be marked. One that is not (words where a number is
+ * wanted, a number in the wrong unit, text that is not one of the choices) is answered with what
+ * to fix and costs the learner no try.
+ */
+export function isMarkable(question: Question, response: string): boolean {
+  if (question.answerAuthority.kind === "numeric") {
+    const error = assessNumericAnswer(response, question.answerAuthority).error;
+    return error !== "unreadable" && error !== "unit_mismatch";
+  }
+  return question.choices?.length
+    ? question.choices.some((choice) => choice.label === response.trim())
+    : Boolean(response.trim());
+}
+
 const ASSET_MEDIA_TYPES: Record<string, string> = {
   ".jpg": "image/jpeg",
   ".jpeg": "image/jpeg",
@@ -161,6 +181,55 @@ export async function registerRoutes(
   function currentLessonPacketPayload(): { lesson: unknown; sourceIds: string[] } {
     const lesson = content.currentLesson(store.courseActivity());
     return { lesson, sourceIds: lesson.lesson.sourceIds };
+  }
+
+  /** The course each question belongs to, and the questions an authored card already rehearses. */
+  const questionCourse = new Map<string, string>();
+  for (const bundle of content.bundles)
+    for (const question of bundle.questions) questionCourse.set(question.id, bundle.course.id);
+  const authoredCardQuestions = new Set(
+    content.flashcards.flatMap(({ card }) => (card.questionId ? [card.questionId] : [])),
+  );
+
+  /**
+   * How many marked misses a lesson allows on a question before it closes: one for a prediction,
+   * the end-of-lesson check and a two-option choice, where a second try would be a guess, and
+   * two everywhere else. The web client applies the same rule to decide what to show.
+   */
+  function lessonMissLimit(question: Question, context: LessonQuestionContext): number {
+    const lesson = content
+      .bundle(context.courseId)
+      ?.lessons.find((item) => item.id === context.lessonId);
+    if (!lesson) throw new HttpError(404, "Lesson not found.", "LESSON_NOT_FOUND");
+    const belongs = context.stepId
+      ? content.stepQuestionIds(lesson, context.stepId).includes(question.id)
+      : lesson.questionIds.includes(question.id);
+    if (!belongs)
+      throw new HttpError(
+        409,
+        "The question does not belong to this part of the lesson.",
+        "ATTEMPT_MISMATCH",
+      );
+    const usual = question.choices && question.choices.length <= 2 ? 1 : 2;
+    if (!context.stepId) return lesson.intro ? 1 : usual;
+    const step = lesson.steps.find((item) => item.id === context.stepId);
+    return step?.kind === "predict" && step.checkQuestionId === question.id ? 1 : usual;
+  }
+
+  /**
+   * A question the learner missed, or had the answer shown for, comes back in review the next
+   * day. A question that an authored card already rehearses is left to that card.
+   */
+  function queueMissedQuestion(question: Question): void {
+    const courseId = questionCourse.get(question.id);
+    if (!courseId || authoredCardQuestions.has(question.id) || question.sourceIds.length === 0)
+      return;
+    const now = store.now();
+    store.queueQuestionCard(
+      courseId,
+      createFlashcardFromReviewedQuestion({ question, reviewedAt: now }),
+      new Date(Date.parse(now) + MILLISECONDS_PER_DAY).toISOString(),
+    );
   }
 
   function assertLessonExists(lessonId: string): void {
@@ -632,14 +701,49 @@ export async function registerRoutes(
           for (const id of lesson.flashcardIds) introduced.add(id);
       }
     }
-    return content.flashcards
-      .filter((item) => content.isListed(item.courseId))
-      .flatMap((item) => {
-        const saved = store.getReviewCard(item.card.id);
-        return saved && (introduced.has(item.card.id) || saved.state.lastReviewedAt !== null)
-          ? [saved]
-          : [];
-      });
+    return [
+      ...content.flashcards
+        .filter((item) => content.isListed(item.courseId))
+        .flatMap((item) => {
+          const saved = store.getReviewCard(item.card.id);
+          return saved && (introduced.has(item.card.id) || saved.state.lastReviewedAt !== null)
+            ? [saved]
+            : [];
+        }),
+      ...missedQuestionCards(),
+    ];
+  }
+  /** The question a missed-question card stands for, while the content still has it. */
+  function missedQuestion(cardId: string): Question | undefined {
+    if (content.getFlashcard(cardId)) return undefined;
+    const saved = store.getReviewCard(cardId);
+    return saved?.origin === "question" ? content.getQuestion(saved.card.questionId) : undefined;
+  }
+  /**
+   * Cards made from missed lesson questions. Each is rebuilt from the question as it reads now,
+   * so a corrected prompt or worked answer reaches the card. A card is retired, kept in the
+   * database but never shown or counted, when its question has left the content, its course is
+   * archived, or an authored card has since taken the question over.
+   */
+  function missedQuestionCards(): ReviewCardRow[] {
+    const now = store.now();
+    return store.questionCards().flatMap(({ cardId, questionId }) => {
+      const question = content.getQuestion(questionId);
+      const courseId = questionCourse.get(questionId);
+      if (
+        !question ||
+        !courseId ||
+        !content.isListed(courseId) ||
+        authoredCardQuestions.has(questionId) ||
+        content.getFlashcard(cardId) ||
+        question.sourceIds.length === 0
+      )
+        return [];
+      const card = createFlashcardFromReviewedQuestion({ question, reviewedAt: now });
+      return card.id === cardId
+        ? [store.ensureReviewCard(courseId, card, createReviewState(cardId, now), "question")]
+        : [];
+    });
   }
   /**
    * A numeric card and a naming card are typed and marked. A card with no authority, or one
@@ -648,6 +752,10 @@ export async function registerRoutes(
    */
   function recallKind(cardId: string): "typed" | "self" {
     const card = content.flashcards.find((item) => item.card.id === cardId)?.card;
+    // A missed question is typed and marked the way the lesson marked it. A choice question has
+    // no options to pick from here, and code cannot be run here, so those are self-rated.
+    const missed = card ? undefined : missedQuestion(cardId);
+    if (missed) return missed.choices?.length || codeTask(missed) ? "self" : "typed";
     if (!card?.answerAuthority) return "self";
     if (card.answerAuthority.kind === "numeric") return "typed";
     return card.recall === "self" ? "self" : "typed";
@@ -742,17 +850,20 @@ export async function registerRoutes(
       );
     const authority = content.flashcards.find((item) => item.card.id === session.cardId)?.card
       .answerAuthority;
-    if (!authority || recallKind(session.cardId) === "self")
+    const missed = missedQuestion(session.cardId);
+    if ((!authority && !missed) || recallKind(session.cardId) === "self")
       throw new HttpError(
         409,
         "This card is recalled in your head and rated after you reveal it.",
         "REVIEW_RECALL_SELF_RATED",
       );
-    const correct =
-      authority.kind === "numeric"
-        ? assessNumericAnswer(body.response, authority).correct
+    const correct = missed
+      ? // The lesson question's own authority marks its card, exactly as it marked the lesson.
+        assessResponse(missed, body.response).correct
+      : authority!.kind === "numeric"
+        ? assessNumericAnswer(body.response, authority!).correct
         : (() => {
-            const result = assessTextAnswer(body.response, authority);
+            const result = assessTextAnswer(body.response, authority!);
             return result.coverage === 1 && result.rejectedIdeasFound.length === 0;
           })();
     if (!store.recordReviewRecall(sessionId, body.response, correct))
@@ -970,18 +1081,23 @@ export async function registerRoutes(
         "INVALID_ACTIVITY_RESPONSE",
       );
     }
+    // An activity is credited like a question: on the first response, across every attempt.
+    const history = store.questionHistory(questionId);
     const evidence = scoreAttempt({
       correct: outcome.correct,
       mode: body.mode,
-      hintsUsed: 0,
-      answerRevealed: false,
+      hintsUsed: history.hints + (history.tutorHelp ? 1 : 0),
+      answerRevealed: history.revealed,
       difficulty: 1,
+      priorTries: history.tries,
+      usedDirect: history.usedDirect,
+      alreadySolved: history.solved,
     });
     const conceptMastery = Object.fromEntries(
       activity.conceptIds.map((id) => [
         id,
         outcome.correct
-          ? updateMastery(store.getMastery(id), evidence.masteryEvidence)
+          ? raiseMastery(store.getMastery(id), evidence.masteryEvidence)
           : store.getMastery(id),
       ]),
     );
@@ -997,6 +1113,7 @@ export async function registerRoutes(
       conceptIds: activity.conceptIds,
       conceptMastery,
       independent: evidence.independent,
+      credit: evidence.credit,
     });
     // The result becomes public only after a valid response has been recorded.
     return {
@@ -1012,6 +1129,7 @@ export async function registerRoutes(
     const body = AttemptBodySchema.parse(request.body);
     const question = content.getQuestion(body.questionId);
     if (!question) throw new HttpError(404, "Question not found.", "QUESTION_NOT_FOUND");
+    const allowedMisses = body.lesson ? lessonMissLimit(question, body.lesson) : undefined;
     const previous = body.attemptId
       ? store.getAttempt(body.attemptId)
       : store.getOpenAttempt(question.id, body.mode);
@@ -1040,33 +1158,37 @@ export async function registerRoutes(
         "ANSWER_ALREADY_REVEALED",
       );
     }
+    if (previous?.closed) {
+      throw new HttpError(
+        409,
+        "This question is closed for now. It will come back in review.",
+        "ATTEMPT_CLOSED",
+      );
+    }
     // A code answer is marked by running it; everything else by the authored authority.
     const task = codeTask(question);
     if (task && !rustRuntime)
       throw new HttpError(503, "Code answers need the Rust runtime.", "RUST_UNAVAILABLE");
     const coded = task ? await assessCode(rustRuntime!, task, body.response) : undefined;
     const assessment = coded ?? assessResponse(question, body.response);
-    const qualifying =
-      question.answerAuthority.kind === "numeric"
-        ? parseNumericAnswer(body.response) !== null
-        : question.choices?.length
-          ? question.choices.some((choice) => choice.label === body.response.trim())
-          : Boolean(body.response.trim());
+    const qualifying = isMarkable(question, body.response);
+    // Credit is decided for the question, not for this attempt row: every earlier response,
+    // hint, tutor reply and reveal counts, whichever attempt or mode it happened in.
+    const history = store.questionHistory(question.id);
     const evidence = scoreAttempt({
       correct: assessment.correct,
       mode: body.mode,
-      hintsUsed:
-        (previous?.hintCount ?? 0) + (previous && store.hasTutorAssistance(previous.id) ? 1 : 0),
-      answerRevealed: previous?.answerRevealed ?? false,
+      hintsUsed: history.hints + (history.tutorHelp ? 1 : 0),
+      answerRevealed: history.revealed,
       difficulty: question.difficulty,
+      priorTries: history.tries,
+      usedDirect: history.usedDirect,
+      alreadySolved: history.solved,
     });
     const conceptMastery = Object.fromEntries(
       question.conceptIds.map((id) => {
         const current = store.getMastery(id);
-        return [
-          id,
-          assessment.correct ? updateMastery(current, evidence.masteryEvidence) : current,
-        ];
+        return [id, assessment.correct ? raiseMastery(current, evidence.masteryEvidence) : current];
       }),
     );
     const masteryValues = Object.values(conceptMastery);
@@ -1083,8 +1205,16 @@ export async function registerRoutes(
       conceptIds: question.conceptIds,
       conceptMastery,
       independent: evidence.independent,
+      credit: evidence.credit,
       qualifying,
+      ...(allowedMisses === undefined ? {} : { allowedMisses }),
     });
+    if (saved.closed) {
+      // The last allowed miss opens the worked answer, except in Exam mode, where the question
+      // closes as wrong. Either way it comes back in review.
+      if (body.mode !== "exam") store.recordLessonExplanation(saved.id);
+      queueMissedQuestion(question);
+    }
     return {
       attemptId: saved.id,
       correct: saved.correct,
@@ -1093,7 +1223,12 @@ export async function registerRoutes(
       xpGained: saved.xpGained ?? 0,
       mastery: saved.mastery,
       independent: evidence.independent,
+      credit: evidence.credit,
       qualifying,
+      tries: history.tries + (qualifying ? 1 : 0),
+      misses: saved.misses,
+      ...(allowedMisses === undefined ? {} : { allowedMisses }),
+      closed: saved.closed,
       ...("specific" in assessment && assessment.specific ? { specific: true } : {}),
       ...(coded ? { codeRun: coded.run } : {}),
     };
@@ -1124,13 +1259,8 @@ export async function registerRoutes(
       );
     const question = content.getQuestion(attempt.questionId);
     if (!question) throw new HttpError(404, "Question not found.", "QUESTION_NOT_FOUND");
-    const meaningful =
-      question.answerAuthority.kind === "numeric"
-        ? parseNumericAnswer(attempt.response) !== null
-        : question.choices?.length
-          ? question.choices.some((choice) => choice.label === attempt.response.trim())
-          : Boolean(attempt.response.trim());
-    if (!meaningful)
+    // The explanation opens once a response has been marked, not for a format slip alone.
+    if (attempt.tries === 0 && !attempt.correct)
       throw new HttpError(
         409,
         "Enter an answer in the requested form before continuing.",
@@ -1139,6 +1269,7 @@ export async function registerRoutes(
     // Opening the explanation after a wrong answer is the worked answer, recorded as
     // assistance; after a correct one it is only the idea, and records nothing.
     store.recordLessonExplanation(attemptId);
+    if (!attempt.correct) queueMissedQuestion(question);
     const choiceId = question.choices?.find(
       (choice) => assessResponse(question, choice.label).correct,
     )?.id;
@@ -1167,6 +1298,12 @@ export async function registerRoutes(
         409,
         "The worked answer has already closed this attempt.",
         "ANSWER_ALREADY_REVEALED",
+      );
+    if (attempt.closed)
+      throw new HttpError(
+        409,
+        "This question is closed for now. It will come back in review.",
+        "ATTEMPT_CLOSED",
       );
     if (attempt.mode === "exam")
       throw new HttpError(403, "Hints are unavailable in exam mode.", "EXAM_GUARDRAIL");
@@ -1229,6 +1366,7 @@ export async function registerRoutes(
     if (!question) throw new HttpError(404, "Question not found.", "QUESTION_NOT_FOUND");
     if (!store.consumeReveal(body.token))
       throw new HttpError(409, "Reveal token has already been used.", "REVEAL_USED");
+    queueMissedQuestion(question);
     const answer =
       question.answerAuthority.kind === "numeric"
         ? question.answerAuthority.workedAnswer

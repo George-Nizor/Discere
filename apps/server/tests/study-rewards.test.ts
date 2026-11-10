@@ -109,7 +109,8 @@ describe("earned learning rewards", () => {
     expect(study.achievements?.find((item) => item.id === "second-wind")?.earned).toEqual([
       { rank: 1, at: instant },
     ]);
-    expect(study.totals.independent).toBe(1);
+    // A corrected answer is a recovery. Only a right first response is independent.
+    expect(study.totals.independent).toBe(0);
     expect(study.daily.current).toBe(1);
   });
   it("preserves terminal progress and never pays for reopening a completed screen", () => {

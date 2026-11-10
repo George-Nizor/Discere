@@ -53,7 +53,8 @@ describe("v2 lesson routes", () => {
     // A miss does not close the attempt: the learner may try again on the same attempt.
     const retry = (await attempt(q("order"), "14", first.attemptId)).json();
     expect(retry.correct).toBe(true);
-    expect(retry.independent).toBe(true);
+    // Right on the second try is progress, recorded as recovered. It is not independent credit.
+    expect(retry).toMatchObject({ independent: false, credit: "recovered", tries: 2 });
   });
 
   it("does not count an unreadable answer as a qualifying response", async () => {
