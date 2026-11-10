@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url";
 const RULES = {
   "misconception-in-band": "A numeric misconception value lies inside the accepted tolerance band.",
   "places-tolerance":
-    "The prompt asks for n decimal places or significant figures, and the tolerance is not about half a unit in that place.",
+    "The prompt asks for n decimal places or significant figures, and the tolerance is below half a unit or above one unit in that place.",
   "tight-decimal":
     "A non-integer answer is marked with a tolerance below half a unit in its last printed digit.",
   "weak-idea":
@@ -174,7 +174,7 @@ for (const course of courses) {
             : authority.value === 0
               ? null
               : 10 ** (Math.floor(Math.log10(Math.abs(authority.value))) - asked.n + 1);
-        if (unit !== null && (band < 0.3 * unit || band > 1.0 * unit))
+        if (unit !== null && (band < 0.3 * unit || band > 1.0 * unit * (1 + 1e-9)))
           report(
             course,
             question.id,
