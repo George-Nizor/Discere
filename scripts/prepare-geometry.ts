@@ -5,6 +5,7 @@ import { TopicMapSchema } from "../packages/contracts/src/index.js";
 import { geometryLessons as definitions } from "../content/geometry-shape-and-space/authoring/lessons.js";
 import { sources } from "../content/geometry-shape-and-space/authoring/definition.js";
 import { geometryChecks } from "../content/geometry-shape-and-space/authoring/course-checks.js";
+import { keepPublishedContent } from "./lib/keep-published-content.js";
 const root = path.resolve(import.meta.dirname, ".."),
   courseId = "geometry-shape-and-space";
 const stepIds = ["predict", "work", "check", "transfer"],
@@ -153,6 +154,7 @@ if (!validation.passed || !validation.bundle) {
 } else {
   const directory = path.join(root, "content", courseId, ".authoring");
   await mkdir(directory, { recursive: true });
+  await keepPublishedContent(courseId, validation.bundle);
   await writeFile(
     path.join(directory, "candidate.json"),
     JSON.stringify(validation.bundle, null, 2) + "\n",

@@ -2,8 +2,11 @@ export { courseAssetDirectory, courseDirectories, loadCourseBundle } from "./loa
 export { type ContentIssue, type ContentValidation, validateCourseBundle } from "./validate.js";
 export {
   assertEditorialApproval,
+  assertNoContentLoss,
   assertLessonsPublishable,
   bundleDigest,
+  type ContentLoss,
+  contentLoss,
   scaffoldTopicMap,
 } from "./curation.js";
 export {

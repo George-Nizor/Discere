@@ -11,6 +11,7 @@ import { numpyLessons } from "../content/python-for-data-analysis/authoring/nump
 import { frameLessons } from "../content/python-for-data-analysis/authoring/frame-lessons.js";
 import { cleaningLessons } from "../content/python-for-data-analysis/authoring/cleaning-lessons.js";
 import { reportingLessons } from "../content/python-for-data-analysis/authoring/reporting-lessons.js";
+import { keepPublishedContent } from "./lib/keep-published-content.js";
 const root = path.resolve(import.meta.dirname, "..");
 const courseId = "python-for-data-analysis";
 const definitions = [
@@ -239,6 +240,7 @@ if (process.argv[2] === "manifest") {
     console.error(JSON.stringify(validation.issues, null, 2));
     process.exitCode = 1;
   } else {
+    await keepPublishedContent(courseId, validation.bundle);
     await writeFile(
       path.join(directory, "candidate.json"),
       JSON.stringify(validation.bundle, null, 2) + "\n",

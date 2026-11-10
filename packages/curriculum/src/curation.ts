@@ -179,3 +179,55 @@ export function assertEditorialApproval(
   }
   return approval;
 }
+
+/** The parts of a bundle that a regenerated candidate must not silently drop. */
+type KeptContent = {
+  lessons?: readonly { id: string; steps?: readonly { id: string }[] }[];
+  questions?: readonly { id: string }[];
+  essays?: readonly { id: string }[];
+};
+
+export type ContentLoss = { questions: string[]; steps: string[]; essays: string[] };
+
+/**
+ * Lists the questions, lesson steps and essays that the published bundle has and the candidate
+ * lacks. Work is sometimes added straight to bundle.json (code exercises, writing tasks), and a
+ * script that rebuilds a candidate from authoring files knows nothing about it.
+ */
+export function contentLoss(published: KeptContent, candidate: KeptContent): ContentLoss {
+  const missing = (before: readonly string[], after: readonly string[]): string[] => {
+    const kept = new Set(after);
+    return before.filter((id) => !kept.has(id));
+  };
+  const ids = (items: readonly { id: string }[] | undefined): string[] =>
+    (items ?? []).map((item) => item.id);
+  const stepIds = (bundle: KeptContent): string[] =>
+    (bundle.lessons ?? []).flatMap((lesson) =>
+      (lesson.steps ?? []).map((step) => `${lesson.id}/${step.id}`),
+    );
+  return {
+    questions: missing(ids(published.questions), ids(candidate.questions)),
+    steps: missing(stepIds(published), stepIds(candidate)),
+    essays: missing(ids(published.essays), ids(candidate.essays)),
+  };
+}
+
+/** Throws when the candidate would drop published content, unless the caller forces it. */
+export function assertNoContentLoss(
+  courseId: string,
+  published: KeptContent,
+  candidate: KeptContent,
+  options: { force?: boolean } = {},
+): ContentLoss {
+  const loss = contentLoss(published, candidate);
+  const total = loss.questions.length + loss.steps.length + loss.essays.length;
+  if (!total || options.force) return loss;
+  const sample = [...loss.questions, ...loss.essays, ...loss.steps].slice(0, 5).join(", ");
+  throw new Error(
+    `Refusing to replace ${courseId}: the published bundle.json has ${loss.questions.length} ` +
+      `question(s), ${loss.steps.length} lesson step(s) and ${loss.essays.length} writing task(s) ` +
+      `that this candidate does not (for example ${sample}). They were probably added to ` +
+      "bundle.json directly and are not in the authoring files. Carry them into the candidate, " +
+      "or pass --force (or set DISCERE_ALLOW_CONTENT_LOSS=1) to drop them on purpose.",
+  );
+}

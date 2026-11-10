@@ -12,6 +12,7 @@ import { readingLessons } from "../content/sql-from-rows-to-reports/authoring/re
 import { summaryLessons } from "../content/sql-from-rows-to-reports/authoring/summary-lessons.js";
 import { combiningLessons } from "../content/sql-from-rows-to-reports/authoring/combining-lessons.js";
 import { windowLessons } from "../content/sql-from-rows-to-reports/authoring/window-lessons.js";
+import { keepPublishedContent } from "./lib/keep-published-content.js";
 
 const root = path.resolve(import.meta.dirname, "..");
 const Database = createRequire(path.join(root, "apps/server/package.json"))("better-sqlite3");
@@ -275,6 +276,7 @@ if (!validation.passed) {
 } else {
   const directory = path.join(root, "content", courseId, ".authoring");
   await mkdir(directory, { recursive: true });
+  await keepPublishedContent(courseId, candidate);
   await writeFile(
     path.join(directory, "candidate.json"),
     JSON.stringify(candidate, null, 2) + "\n",

@@ -67,6 +67,12 @@ an interactive stage and an `essayId` adds an essay stage, and a lesson without 
 (`EditorialApprovalSchema` in `packages/contracts/src/curation.ts`). `pnpm curate publish` refuses a
 record that is not accepted, has unresolved issues, or names a different hash from the candidate.
 
+Some content is written straight into `bundle.json` and is in no authoring file: the SQL and Python
+code exercises and the writing tasks. A `scripts/prepare-*.ts` script that rebuilds a candidate from
+`authoring/*.ts`, and `pnpm curate publish`, therefore stop when the candidate lacks questions,
+lesson steps or writing tasks that the published bundle has, and say how many would go. Pass
+`--force`, or set `DISCERE_ALLOW_CONTENT_LOSS=1`, to drop them on purpose.
+
 `review/history/` keeps earlier published bundles and their records, named by hash
 (`<sha256>-bundle.json`, `<sha256>-publication.json`). The history tests check a past release
 against the bundle it shipped, so a course can move on without losing that evidence. Files such as
