@@ -12,6 +12,7 @@ const COURSES = [
   "technical-writing",
   "english-reading-writing-and-rhetoric",
   "creative-and-game-writing",
+  "speaking-argument-and-debate",
 ] as const;
 
 /**
@@ -162,5 +163,42 @@ describe("the figures in Creative and Game Writing's tasks", () => {
   it("gives the premise in the same words in every task", () => {
     const premise = "Marit Dahl has been the only locksmith in a harbour town for twenty years";
     for (const found of bundle.essays) expect(found.prompt, found.id).toContain(premise);
+  });
+});
+
+describe("the figures in Speaking, Argument and Debate's tasks", () => {
+  const bundle = load("speaking-argument-and-debate");
+  const all = bundle.essays.map((essay) => essay.prompt).join(" ");
+
+  it("says in every task that the answer is read and not heard", () => {
+    for (const found of bundle.essays)
+      expect(paragraphs(found.prompt)[0], found.id).toMatch(/will be read here,? (?:and )?not heard/u);
+  });
+
+  it("keeps the Alderby trial's counts consistent", () => {
+    expect(36 + 15 + 9).toBe(60);
+    expect(all).toContain("Of the street's 60 shops, 36 took more money on the trial Saturdays, 15 took about the same and 9 took less");
+    expect(all).toContain("rose from 4,000 people to 5,000");
+    expect(all).toContain("1,000 extra visitors");
+    expect(all).toContain("rose from 300 vehicles an hour to 420");
+    expect(all).not.toMatch(/thirty-five|37 of|8 took less/u);
+  });
+
+  it("sets a rehearsal whose pace, filler rate and cut come out whole", () => {
+    const rehearsal = task(bundle, "spead-task-rehearsal").prompt;
+    expect(rehearsal).toContain("390 words");
+    expect(rehearsal).toContain("exactly 2 minutes");
+    expect(rehearsal).toContain("14 fillers");
+    expect(390 / 2).toBe(195);
+    expect(14 / 2).toBe(7);
+    expect(390 - 150 * 2).toBe(90);
+  });
+
+  it("asks for a one-minute answer of a length that fits a minute", () => {
+    const found = task(bundle, "spead-task-one-minute");
+    expect(found.expectedScope).toContain("135 to 165 words");
+    expect(found.minWords).toBeLessThanOrEqual(135);
+    expect(135 / 150).toBeCloseTo(0.9);
+    expect(165 / 150).toBeCloseTo(1.1);
   });
 });
