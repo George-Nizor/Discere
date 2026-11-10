@@ -98,11 +98,12 @@ export function questionCardId(questionId: string): string {
 
 /**
  * The front of a question's card. A choice question makes no sense without its options, so they
- * follow the prompt.
+ * follow the prompt under a line that reads "Options:", one to a line. The review screen draws
+ * those lines as a list (`cardFrontParts` in the web app).
  */
 function questionFront(question: Question): string {
   const options = (question.choices ?? []).map((choice) => choice.label.trim()).filter(Boolean);
-  return options.length ? `${question.prompt}\nOptions: ${options.join("; ")}` : question.prompt;
+  return options.length ? `${question.prompt}\nOptions:\n${options.join("\n")}` : question.prompt;
 }
 
 /**

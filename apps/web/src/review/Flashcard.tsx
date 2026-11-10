@@ -22,6 +22,38 @@ const RATINGS: Array<{ id: ReviewRating; label: string; meaning: string }> = [
 ];
 
 /**
+ * A missed choice question comes back as a card whose front is the prompt, a line reading
+ * "Options:" and then one option to a line. This separates the two so the options can be a list.
+ */
+export function cardFrontParts(front: string): { prompt: string; options: string[] } {
+  const lines = front.split("\n");
+  const at = lines.findIndex((line) => line.trim() === "Options:");
+  const options = at < 0 ? [] : lines.slice(at + 1).filter((line) => line.trim());
+  if (options.length === 0) return { prompt: front, options: [] };
+  return { prompt: lines.slice(0, at).join("\n").trim(), options };
+}
+
+function CardFront({ text }: { text: string }) {
+  const { prompt, options } = cardFrontParts(text);
+  return (
+    <>
+      <p>
+        <InlineRichText text={prompt} />
+      </p>
+      {options.length > 0 ? (
+        <ul className="flashcard-options" aria-label="Options">
+          {options.map((option) => (
+            <li key={option}>
+              <InlineRichText text={option} />
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </>
+  );
+}
+
+/**
  * The back stays server-side until a response is committed or the learner chooses a reveal.
  * A numeric card is typed and marked; a worded card is recalled in the head, revealed and
  * rated by the learner, since no keyword match can fairly mark free wording.
@@ -179,16 +211,19 @@ export function Flashcard({
         className={`flashcard${back ? " is-revealed" : ""}${correct === true ? " is-correct" : correct === false ? " is-incorrect" : ""}`}
       >
         {back ? (
-          <p className="flashcard-question-context">
-            <InlineRichText text={front} />
-          </p>
+          <div className="flashcard-question-context">
+            <CardFront text={front} />
+          </div>
         ) : null}
-        <p
-          className={`flashcard-prompt${back ? " recall-reveal" : ""}`}
-          key={back ? "back" : "front"}
-        >
-          <InlineRichText text={back ?? front} />
-        </p>
+        {back ? (
+          <p className="flashcard-prompt recall-reveal" key="back">
+            <InlineRichText text={back} />
+          </p>
+        ) : (
+          <div className="flashcard-prompt" key="front">
+            <CardFront text={front} />
+          </div>
+        )}
         {recall === "self" ? null : !back && response === null ? (
           <div className="flashcard-response">
             <label htmlFor="recall-response">Your answer</label>

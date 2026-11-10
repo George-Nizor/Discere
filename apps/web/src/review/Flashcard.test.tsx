@@ -2,7 +2,7 @@ import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { renderWithProviders, stubFetch } from "../test/harness.js";
-import { Flashcard } from "./Flashcard.js";
+import { cardFrontParts, Flashcard } from "./Flashcard.js";
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -23,6 +23,27 @@ function renderCard(onRated = vi.fn()) {
 }
 
 describe("flashcard", () => {
+  it("lists the options of a missed choice question under its prompt", () => {
+    stubFetch({});
+    renderWithProviders(
+      <Flashcard
+        conceptTitles={[]}
+        front={"Which unit measures current?\nOptions:\nAmpere\nVolt; the unit of potential"}
+        onRated={vi.fn()}
+        position={1}
+        sessionId={sessionId}
+        total={1}
+      />,
+    );
+    expect(screen.getByText("Which unit measures current?")).toBeInTheDocument();
+    const options = screen.getByRole("list", { name: "Options" });
+    expect([...options.querySelectorAll("li")].map((item) => item.textContent)).toEqual([
+      "Ampere",
+      "Volt; the unit of potential",
+    ]);
+    expect(cardFrontParts("A plain front")).toEqual({ prompt: "A plain front", options: [] });
+  });
+
   it("keeps the answer hidden until the learner reveals it", () => {
     stubFetch({});
     renderCard();

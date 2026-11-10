@@ -171,7 +171,7 @@ describe("FSRS review scheduling", () => {
       },
       reviewedAt,
     });
-    expect(card.front).toBe("Which unit measures current?\nOptions: Ampere; Volt");
+    expect(card.front).toBe("Which unit measures current?\nOptions:\nAmpere\nVolt");
     expect(card.id).toBe(questionCardId(question.id));
   });
 

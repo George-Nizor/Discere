@@ -349,7 +349,7 @@ describe("missed questions in review", () => {
       context("which-number-solves-it"),
     );
     const saved = store.getReviewCard(`flashcard:${id}`)!;
-    expect(saved.card.front).toContain("Options: x = 3; x = 4; x = 5");
+    expect(saved.card.front).toContain("Options:\nx = 3\nx = 4\nx = 5");
     const session = store.createReviewSession(saved.card.id);
     expect(
       (await app.inject({ method: "GET", url: `/api/review/sessions/${session.id}` })).json().card
