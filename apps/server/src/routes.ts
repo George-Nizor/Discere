@@ -33,6 +33,8 @@ import {
   TutorOperationSchema,
   TutorReplyRequestSchema,
   WritingLintRequestSchema,
+  learnerQuestion,
+  questionAnswerText,
 } from "@discere/contracts";
 import { resolveFromRepoRoot } from "@discere/paths";
 import {
@@ -51,7 +53,7 @@ import {
 import { lintText, type WritingContext } from "@discere/writing-engine";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
-import { assessResponse } from "./assessment.js";
+import { assessResponse, markStructured, structuredSolution } from "./assessment.js";
 import { illustrationsCapability } from "./capabilities.js";
 import { acceptTutorReply, buildTutorReplyPayload } from "./companion.js";
 import type { ContentRepository } from "./content.js";
@@ -151,6 +153,8 @@ const MILLISECONDS_PER_DAY = 24 * 60 * 60 * 1000;
  * to fix and costs the learner no try.
  */
 export function isMarkable(question: Question, response: string): boolean {
+  const structured = markStructured(question, response);
+  if (structured) return structured.whole;
   if (question.answerAuthority.kind === "numeric") {
     const error = assessNumericAnswer(response, question.answerAuthority).error;
     return error !== "unreadable" && error !== "unit_mismatch";
@@ -827,6 +831,10 @@ export async function registerRoutes(
     if (!session) throw new HttpError(404, "Review session not found.", "REVIEW_SESSION_NOT_FOUND");
     const card = store.getReviewCard(session.cardId);
     if (!card) throw new HttpError(404, "Review card not found.", "REVIEW_CARD_NOT_FOUND");
+    // A missed question with extracts, or with items to order or sort, is asked as the lesson
+    // asked it. The learner's form of the question holds no answer.
+    const missed = missedQuestion(card.card.id);
+    const asked = missed && (missed.order || missed.sort || missed.extracts) ? missed : undefined;
     return {
       sessionId: session.id,
       card: {
@@ -839,6 +847,7 @@ export async function registerRoutes(
           return concept ? [concept.title] : [];
         }),
         recall: recallKind(card.card.id),
+        ...(asked ? { question: learnerQuestion(asked) } : {}),
         revealed: false as const,
       },
       rated: session.rated,
@@ -953,11 +962,18 @@ export async function registerRoutes(
         "This review session cannot reveal another answer.",
         "REVIEW_REVEAL_UNAVAILABLE",
       );
+    const missed = missedQuestion(card.card.id);
+    const solution = missed ? structuredSolution(missed) : undefined;
     return {
       sessionId,
       cardId: card.card.id,
-      back: card.card.back,
+      // An order or sort card shows the arrangement itself, so its back is the explanation alone.
+      back:
+        solution && missed?.answerAuthority.kind === "text"
+          ? missed.answerAuthority.exampleAnswer
+          : card.card.back,
       sourceIds: card.card.sourceIds,
+      ...(solution ? { solution } : {}),
     };
   });
   app.post("/api/review/sessions/:sessionId/rate", async (request) => {
@@ -1362,6 +1378,7 @@ export async function registerRoutes(
     // assistance; after a correct one it is only the idea, and records nothing.
     store.recordLessonExplanation(attemptId);
     if (!attempt.correct) queueMissedQuestion(question);
+    const solution = structuredSolution(question);
     const choiceId = question.choices?.find(
       (choice) => assessResponse(question, choice.label).correct,
     )?.id;
@@ -1376,6 +1393,7 @@ export async function registerRoutes(
       reviewRequired: !attempt.correct,
       ...(question.onCorrect ? { onCorrect: question.onCorrect } : {}),
       ...(choiceId ? { correctChoiceId: choiceId } : {}),
+      ...(solution ? { solution } : {}),
     };
   });
 
@@ -1459,10 +1477,7 @@ export async function registerRoutes(
     if (!store.consumeReveal(body.token))
       throw new HttpError(409, "Reveal token has already been used.", "REVEAL_USED");
     queueMissedQuestion(question);
-    const answer =
-      question.answerAuthority.kind === "numeric"
-        ? question.answerAuthority.workedAnswer
-        : question.answerAuthority.exampleAnswer;
+    const answer = questionAnswerText(question);
     return { answer, transferPrompt: question.transfer?.prompt ?? null };
   });
 

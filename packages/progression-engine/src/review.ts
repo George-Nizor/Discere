@@ -1,4 +1,4 @@
-import type { Question } from "@discere/contracts";
+import { learnerQuestion, type Question, questionAnswerText, questionPlainText } from "@discere/contracts";
 import { createEmptyCard, fsrs, generatorParameters, Rating, State } from "ts-fsrs";
 import type { Card, FSRS, Grade } from "ts-fsrs";
 
@@ -86,9 +86,7 @@ function parseTimestamp(value: string): number {
 }
 
 function answerText(question: Question): string {
-  return question.answerAuthority.kind === "numeric"
-    ? question.answerAuthority.workedAnswer
-    : question.answerAuthority.exampleAnswer;
+  return questionAnswerText(question);
 }
 
 /** The id of the review card that stands for a lesson question the learner missed. */
@@ -103,7 +101,12 @@ export function questionCardId(questionId: string): string {
  */
 function questionFront(question: Question): string {
   const options = (question.choices ?? []).map((choice) => choice.label.trim()).filter(Boolean);
-  return options.length ? `${question.prompt}\nOptions:\n${options.join("\n")}` : question.prompt;
+  // Extracts and the items to order or sort are written out, so the card reads whole as text.
+  const prompt =
+    question.extracts || question.order || question.sort
+      ? questionPlainText(learnerQuestion(question))
+      : question.prompt;
+  return options.length ? `${prompt}\nOptions:\n${options.join("\n")}` : prompt;
 }
 
 /**

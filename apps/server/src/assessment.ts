@@ -1,5 +1,12 @@
 import { assessNumericAnswer, assessTextAnswer } from "@discere/assessment-engine";
-import type { Question } from "@discere/contracts";
+import {
+  decodeOrderResponse,
+  decodeSortResponse,
+  orderAnswerIds,
+  type Question,
+  type StructuredSolution,
+  sortAnswerItems,
+} from "@discere/contracts";
 
 export interface AssessmentResult {
   correct: boolean;
@@ -44,7 +51,86 @@ export function matchMisconception(question: Question, response: string): string
   return undefined;
 }
 
+/**
+ * How an order or sort answer stands against the question: whether it is a whole answer (every
+ * item, each once, each in a bin that exists), and how many items are where they belong.
+ * Undefined for any other kind of question.
+ */
+export function markStructured(
+  question: Question,
+  response: string,
+): { whole: boolean; placed: number; total: number } | undefined {
+  if (question.order) {
+    const right = orderAnswerIds(question);
+    const given = decodeOrderResponse(response);
+    const whole =
+      given.length === right.length &&
+      new Set(given).size === given.length &&
+      given.every((id) => right.includes(id));
+    return {
+      whole,
+      placed: whole ? right.filter((id, index) => given[index] === id).length : 0,
+      total: right.length,
+    };
+  }
+  if (question.sort) {
+    const items = sortAnswerItems(question);
+    const bins = new Set(question.sort.bins.map((bin) => bin.id));
+    const given = decodeSortResponse(response);
+    const whole =
+      Object.keys(given).length === items.length &&
+      items.every((item) => bins.has(given[item.id] ?? ""));
+    return {
+      whole,
+      placed: whole ? items.filter((item) => given[item.id] === item.bin).length : 0,
+      total: items.length,
+    };
+  }
+  return undefined;
+}
+
+/** The right arrangement of an order or sort question, sent only once the question has closed. */
+export function structuredSolution(question: Question): StructuredSolution | undefined {
+  if (question.order) return { order: orderAnswerIds(question) };
+  if (question.sort)
+    return {
+      sort: sortAnswerItems(question).map(({ id, bin, explanation }) => ({
+        id,
+        bin,
+        ...(explanation ? { explanation } : {}),
+      })),
+    };
+  return undefined;
+}
+
+/**
+ * Marks an order or sort answer by comparing places. A wrong answer is told how many items are
+ * where they belong and never which ones, so a retry is still the learner's own work.
+ */
+function assessStructured(question: Question, response: string): AssessmentResult | undefined {
+  const marked = markStructured(question, response);
+  if (!marked || question.answerAuthority.kind !== "text") return undefined;
+  const ordering = Boolean(question.order);
+  if (!marked.whole)
+    return {
+      correct: false,
+      feedback: ordering
+        ? "Put every item in the list before you check."
+        : "Put every item in a group before you check.",
+    };
+  if (marked.placed === marked.total)
+    return { correct: true, feedback: question.answerAuthority.exampleAnswer };
+  const count = marked.placed === 0 ? "None" : `${marked.placed} of ${marked.total}`;
+  const verb = marked.placed === 1 ? "is" : "are";
+  return {
+    correct: false,
+    feedback: `${count} ${verb} in the right ${ordering ? "place" : "group"}.`,
+  };
+}
+
 export function assessResponse(question: Question, response: string): AssessmentResult {
+  const structured = assessStructured(question, response);
+  if (structured) return structured;
   const result = assessAgainstAuthority(question, response);
   if (result.correct) return result;
   const specific = matchMisconception(question, response);
