@@ -46,6 +46,52 @@ describe("course validation", () => {
     expect(result.issues.some((item) => item.code === "CHOICE_NOT_MARKABLE")).toBe(true);
   });
 
+  it("rejects a selectable question that two options can answer", async () => {
+    const bundle = (await seedBundle()) as {
+      questions: Array<{
+        id: string;
+        choices?: Array<{ label: string }>;
+        answerAuthority: { acceptedIdeas?: string[] };
+      }>;
+    };
+    const question = bundle.questions.find(
+      (item) => item.id === "choose-change-that-raises-current",
+    );
+    if (!question?.choices || !question.answerAuthority.acceptedIdeas)
+      throw new Error("Seed question is missing.");
+    question.answerAuthority.acceptedIdeas = question.choices.slice(0, 2).map((c) => c.label);
+    const result = validateCourseBundle(bundle);
+    expect(result.passed).toBe(false);
+    expect(result.issues).toContainEqual(
+      expect.objectContaining({ code: "CHOICE_NOT_MARKABLE", severity: "error" }),
+    );
+  });
+
+  it("holds a course-check question to exactly one accepted option", async () => {
+    const file = path.resolve(import.meta.dirname, "../../../content/cs-basics/bundle.json");
+    const bundle = JSON.parse(await readFile(file, "utf8")) as {
+      courseChecks: Array<{
+        items: Array<{
+          question: { id: string; answerAuthority: { acceptedIdeas: string[] } };
+        }>;
+      }>;
+    };
+    expect(
+      validateCourseBundle(bundle).issues.filter((i) => i.code === "CHOICE_NOT_MARKABLE"),
+    ).toEqual([]);
+    const question = bundle.courseChecks
+      .flatMap((check) => check.items.map((item) => item.question))
+      .find((item) => item.id === "cs-basics-check-checkpoint-3");
+    if (!question) throw new Error("Check question is missing.");
+    question.answerAuthority.acceptedIdeas = ["an option that is not offered"];
+    expect(validateCourseBundle(bundle).issues).toContainEqual(
+      expect.objectContaining({
+        code: "CHOICE_NOT_MARKABLE",
+        path: "questions.cs-basics-check-checkpoint-3.choices",
+      }),
+    );
+  });
+
   it("rejects an accepted idea written as a sentence, which no answer could contain", async () => {
     const bundle = (await seedBundle()) as {
       questions: Array<{
