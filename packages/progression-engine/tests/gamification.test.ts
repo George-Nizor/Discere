@@ -296,3 +296,33 @@ describe("chest contents", () => {
     expect(full.chest.items.map((item) => item.id)).not.toContain("streak-freeze");
   });
 });
+
+describe("Sharp mind", () => {
+  const sharpMind = (events: StudyEvent[]) =>
+    dailyQuests(events, { ...context, fixedIds: ["correct", "combo", "lesson"] }).quests[0]!;
+  it("counts a question the day it is first solved and never again", () => {
+    const yesterday = "2026-10-05T09:00:00.000Z";
+    const events = [
+      event({ key: "answer:old", referenceId: "solved-before", occurredAt: yesterday }),
+      // Today: one replay of yesterday's question, two new ones, one of them answered twice.
+      event({ key: "answer:replay", referenceId: "solved-before", independent: false }),
+      event({ key: "answer:new-1", referenceId: "new-1" }),
+      event({ key: "answer:new-2", referenceId: "new-2", independent: false }),
+      event({ key: "answer:new-2-again", referenceId: "new-2", independent: false }),
+      event({ key: "answer:missed", referenceId: "missed", correct: false }),
+    ];
+    expect(sharpMind(events)).toMatchObject({ id: "correct", current: 2 });
+  });
+  it("counts a question missed on an earlier day and solved today", () => {
+    const events = [
+      event({
+        key: "answer:first-row",
+        referenceId: "q",
+        correct: false,
+        occurredAt: "2026-10-05T09:00:00.000Z",
+      }),
+      event({ key: "answer:second-row", referenceId: "q", independent: false }),
+    ];
+    expect(sharpMind(events).current).toBe(1);
+  });
+});
