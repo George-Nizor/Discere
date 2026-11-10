@@ -2,7 +2,7 @@
 
 > **For the executing session:** you are a single session executing this plan alone, in order, phase by phase. Do not parallelize with subagents. Do not skip gates. Every instruction here was derived from verified exploration of the actual code — file paths and line references were correct as of 2026-08-19. If a line number has drifted, search for the quoted identifier instead. When this playbook says "verify X", actually run the command and read the output; do not assume.
 >
-> On approval, the orchestrating session will save this document to `Discere/docs/rebuild-execution-playbook.md` — read it from there.
+> On approval, the orchestrating session will save this document to `Discere/docs/archive/rebuild-execution-playbook.md` — read it from there.
 
 ---
 
@@ -21,7 +21,7 @@ Discere (`/workspace/dev_projects_master/_PersonalProjects/Instrumenta/Discere`,
 7. **Writing gate bypass hazard.** `bundleFields`/`draftFields` in `scripts/author.ts` (~lines 108, 216) enumerate every learner-facing string for the lint/answer-leak gate. Any new prose field NOT added there silently bypasses the gate.
 8. **Progress-id stability.** `journey_progress` rows are keyed `(user_id, journey_id, stage_id)`; `saveStageProgress` (`apps/server/src/db/store.ts:~304`) rejects stage ids not in the current `stageOrder`. Stage ids are derived strings (`${lesson.id}:explainer`, `:quiz-1`, …) — changing the derivation orphans existing progress. Keep ids stable; store per-step position in the schemaless `interaction_state` JSON blob.
 9. **CSP.** The hub enforces `script-src 'self'`; `scripts/check-csp.mjs` runs inside `pnpm build` and fails on CDN/remote anything. Bundled npm packages are fine. Web fonts must be vendored same-origin (KaTeX woff2 files in `dist/assets` are the working example — Inter is named in tokens but never actually shipped today).
-10. **Design seed documents exist and were never implemented.** `docs/learning-experience-redesign-draft.md` defines the evidence-based **Beats A–G** lesson architecture, product principles, and required surfaces. `docs/ui-ux/interactive-story-v1-spec.md` §11 sketches step/RichLearningText contracts. Treat these as the product spec; do not invent a competing one.
+10. **Design seed documents exist and were never implemented.** `docs/archive/learning-experience-redesign-draft.md` defines the evidence-based **Beats A–G** lesson architecture, product principles, and required surfaces. `docs/ui-ux/interactive-story-v1-spec.md` §11 sketches step/RichLearningText contracts. Treat these as the product spec; do not invent a competing one.
 
 ---
 
@@ -410,5 +410,5 @@ Full dark theme; sound; Lottie; 3D/canvas; SRS algorithm overhaul; essay-grading
 - Hub contract: port 49323 (fallback 45023), health `/api/health`, env `DISCERE_WEB_ROOT=apps/web/dist`, `DISCERE_AUTO_MIGRATE=1`, `DISCERE_TUTOR_PROVIDER=codex`; hub spawns `pnpm --filter @discere/server start` inside WSL (`Instrumenta/electron/wsl-bridge.cjs`); closing the window kills the process group.
 - Codex CLI: `~/.local/bin/codex` v0.147.0; auth `~/.codex/auth.json`; sessions/rollouts `~/.codex/sessions/`; `exec resume` accepts NO `-C`/`--color`/`-s`.
 - Key files: provider `packages/tutor-providers/src/codex.ts`; journey derivation `apps/server/src/content.ts::getJourney`; contracts `packages/contracts/src/{curriculum,journey,tutor,authoring,visuals}.ts`; stage machine `apps/web/src/journey/stage-machine.ts`; validation `packages/curriculum/src/validate.ts`; authoring `scripts/author.ts`; CSP guard `scripts/check-csp.mjs`; screenshots `apps/web/e2e/screenshots.spec.ts` → `docs/ui-ux/screenshots/`.
-- Design specs to follow: `docs/learning-experience-redesign-draft.md` (Beats A–G, principles, surfaces, Roman mockup); `docs/ui-ux/interactive-story-v1-spec.md` §5.7 motion + §11 contracts.
+- Design specs to follow: `docs/archive/learning-experience-redesign-draft.md` (Beats A–G, principles, surfaces, Roman mockup); `docs/ui-ux/interactive-story-v1-spec.md` §5.7 motion + §11 contracts.
 - Error mapping table: provider errors → HTTP → UI sentences live in `packages/tutor-providers/src/errors.ts`, `apps/server/src/tutor-provider.ts`, `apps/web/src/tutor/tutor-messages.ts`.

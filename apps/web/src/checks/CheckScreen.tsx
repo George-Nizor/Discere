@@ -314,7 +314,7 @@ function CheckResults({ session }: { session: CourseCheckSession }) {
         {placement
           ? verdict.heading
           : session.kind === "transfer"
-            ? "What stayed with you"
+            ? "Your later course check"
             : "Your course check"}
       </h1>
       <p className={"check-result-score" + (strong ? "" : " is-neutral")}>
@@ -378,7 +378,7 @@ function CheckResults({ session }: { session: CourseCheckSession }) {
         <ArrowRight aria-hidden="true" size={18} />
       </Link>
       <section className="check-explanations" aria-label="Answers and explanations">
-        <h2>Look through your answers</h2>
+        <h2>Your answers</h2>
         <p className="check-explanations-hint">Open any answer to see its worked explanation.</p>
         {result.items.map((item, index) => (
           <details key={item.question.id} className={item.correct ? "is-correct" : "is-incorrect"}>

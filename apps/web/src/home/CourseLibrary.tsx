@@ -227,7 +227,7 @@ export function CourseLibrary({ courses }: { courses: CourseSummary[] }) {
   return (
     <main className="page library-page" id="stage">
       <header className="library-head">
-        <h1>Learning paths</h1>
+        <h1>Courses</h1>
         <p>Step by step, from curiosity to understanding.</p>
       </header>
       <div className="library-tools">

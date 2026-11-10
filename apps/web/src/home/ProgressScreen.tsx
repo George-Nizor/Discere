@@ -57,7 +57,7 @@ export function ProgressScreen() {
   return (
     <main className="page you-page" id="stage">
       <header className="you-heading">
-        <h1>Your learning activity</h1>
+        <h1>Your progress</h1>
       </header>
       <section className="you-weekly" aria-labelledby="weekly-heading">
         <div className="you-weekly-title">
@@ -159,7 +159,7 @@ export function ProgressScreen() {
               </dt>
               <dd>
                 {statistics.data.accuracy === null
-                  ? "—"
+                  ? "None yet"
                   : new Intl.NumberFormat("en", {
                       style: "percent",
                       maximumFractionDigits: 1,

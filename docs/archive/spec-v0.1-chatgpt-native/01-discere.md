@@ -27,7 +27,7 @@ Build a functioning personal learning application that runs as a ChatGPT-native 
 
 Do not replace this architecture with a standalone chatbot. The purpose of the plugin is to use the user’s existing ChatGPT Pro access while adding a purpose-built interface, durable state, deterministic checks, and structured learning workflows.
 
-Do not silently omit a requested feature. When an exact capability cannot be completed because the ChatGPT host does not expose it, implement the fallback described in this specification and document the result in `docs/compatibility-report.md`.
+Do not silently omit a requested feature. When an exact capability cannot be completed because the ChatGPT host does not expose it, implement the fallback described in this specification and document the result in `docs/archive/compatibility-report.md`.
 
 Do not include placeholder buttons, fake analytics, fake content generation, or controls that do nothing.
 
@@ -160,7 +160,7 @@ Before implementing the full product, create a minimal server and widget that ve
 - [ ] speech synthesis availability is known
 - [ ] the selected tunnel or endpoint works reliably
 
-Record every result in `docs/compatibility-report.md`.
+Record every result in `docs/archive/compatibility-report.md`.
 
 Do not progress beyond the spike until the first ten items work. Speech synthesis may use the specified fallback.
 

@@ -110,7 +110,7 @@ export function DueCourseChecks() {
   if (!query.data?.checks.length) return null;
   return (
     <section className="due-course-checks" aria-label="Later course checks">
-      <h2>Use it again</h2>
+      <h2>Later course checks</h2>
       <p>Fresh problems from courses you finished earlier.</p>
       <ul>
         {query.data.checks.map((c) => (

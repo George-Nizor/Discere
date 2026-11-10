@@ -2,7 +2,7 @@
 
 Build the application described in `docs/spec-v0.2.md`.
 
-Treat `docs/spec-v0.2.md` as authoritative. Use `docs/writing-system.md` and `docs/visual-system.md` as normative supporting specifications. The older `docs/spec-v0.1-chatgpt-native.md` is retained for useful detail, but it must not override v0.2.
+Treat `docs/spec-v0.2.md` as authoritative. Use `docs/writing-system.md` and `docs/visual-system.md` as normative supporting specifications. The older `docs/archive/spec-v0.1-chatgpt-native.md` is retained for useful detail, but it must not override v0.2.
 
 ## Product intent
 

@@ -70,7 +70,7 @@ async function respond(page: Page, question: Question) {
   await expect(page.locator(".question-beat[data-result=correct]")).toBeVisible();
   await expect(page.getByRole("button", { name: "Why?", exact: true })).toBeVisible();
 }
-test("the catalogue contains eighteen real courses in illustrated learning paths", async ({
+test("the course list shows the named courses in illustrated groups, without Electronics", async ({
   page,
   request,
 }) => {
@@ -92,7 +92,7 @@ test("the catalogue contains eighteen real courses in illustrated learning paths
   ])
     expect(list.map((course: { id: string }) => course.id)).toContain(id);
   await page.goto("/courses");
-  await expect(page.getByRole("heading", { name: "Learning paths", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Courses", exact: true })).toBeVisible();
   await expect(page.getByRole("link", { name: /Electronics/ })).toHaveCount(0);
   for (const viewport of viewports) await capture(page, "catalogue", viewport);
   await page.setViewportSize({ width: 1024, height: 768 });

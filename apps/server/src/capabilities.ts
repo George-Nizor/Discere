@@ -5,12 +5,14 @@ import { claudeSignedIn, codexAuthPresent, probeCodexBinary } from "./tutor-stat
 /**
  * Which generative features this installation can actually perform.
  *
- * Every one of them runs on the owner's own Codex CLI subscription. That is a deliberate boundary
- * — ADR: no vendor API keys live in this repository — but it means the features can disappear for
- * reasons outside the code: the CLI is not installed, nobody is signed in, or the subscription has
- * lapsed. When that happens the honest thing is to say so once, in the interface, and stop
- * offering the control. Letting the learner press a button that spends two minutes failing is the
- * worse outcome, and it is the one you get by default.
+ * Drawn illustrations and authoring run on the owner's own Codex CLI subscription. The tutor runs
+ * on whichever provider is configured. With `auto` that is Claude Code when it is installed (ADR
+ * 0007 runs the release on it), then an OpenAI-compatible endpoint, the Codex CLI, or the companion
+ * packet. A key, where a provider uses one, comes from the environment. Features that need a CLI can
+ * disappear for reasons outside the code: the CLI is not installed, nobody is signed in, or the
+ * subscription has lapsed. When that happens the honest thing is to say so once, in the interface,
+ * and stop offering the control. Letting the learner press a button that spends two minutes failing
+ * is the worse outcome, and it is the one you get by default.
  *
  * The learning core does not depend on any of this. Lessons, questions, assessment, review
  * scheduling, and the notebook are local and deterministic; only generation is gated.

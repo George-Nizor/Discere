@@ -1,6 +1,6 @@
 # Discere v0.1 ChatGPT-Native Specification (Archived)
 
-Version 0.1 captured the original ChatGPT-native architecture before Discere moved to the host-independent v0.2 design. It is retained for historical context and must not override [`spec-v0.2.md`](spec-v0.2.md).
+Version 0.1 captured the original ChatGPT-native architecture before Discere moved to the host-independent v0.2 design. It is retained for historical context and must not override [`spec-v0.2.md`](../spec-v0.2.md).
 
 The opening chapter is preserved here:
 

@@ -4,7 +4,7 @@ Status: **Approved direction; implementation-ready**
 Approved: 17 August 2026  
 Primary visual direction: **Interactive Story**  
 Palette: **white, black, and green**  
-Supersedes the visual-direction section of `docs/learning-experience-redesign-draft.md`.
+Supersedes the visual-direction section of `docs/archive/learning-experience-redesign-draft.md`.
 
 ## 1. Authoritative interpretation of the approved mockup
 
@@ -51,7 +51,7 @@ Explain or write in the learner's own words
 Return later through spaced review
 ```
 
-The research basis and learning rationale remain in `docs/learning-experience-redesign-draft.md`. This document defines the approved product behaviour and presentation.
+The research basis and learning rationale remain in `docs/archive/learning-experience-redesign-draft.md`. This document defines the approved product behaviour and presentation.
 
 ## 3. Design goals
 

@@ -281,7 +281,7 @@ test("English placement keeps answers private until twelve responses and preserv
     }
     if (i === 8) await capture(page, "placement-sonnet");
     await expect(page.locator(".lang-measures, .lang-part-tag, .lang-volta")).toHaveCount(0);
-    await expect(page.getByText("Look through your answers", { exact: true })).toHaveCount(0);
+    await expect(page.getByText("Your answers", { exact: true })).toHaveCount(0);
     await checkAnswer(page, item, i === 0);
     if (i === 4) await page.reload();
   }

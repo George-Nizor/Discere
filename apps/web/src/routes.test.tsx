@@ -228,7 +228,7 @@ describe("routed application", () => {
     });
     renderApp("/progress");
     expect(
-      await screen.findByRole("heading", { level: 1, name: "Your learning activity" }),
+      await screen.findByRole("heading", { level: 1, name: "Your progress" }),
     ).toBeInTheDocument();
     await userEvent.click(screen.getByText("Ideas you have practised"));
     expect(await screen.findByText("Ohm's law")).toBeInTheDocument();
