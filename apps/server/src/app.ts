@@ -7,6 +7,7 @@ import { ContentRepository } from "./content.js";
 import { registerCourseCheckRoutes } from "./course-checks.js";
 import { DiscereStore } from "./db/store.js";
 import { HttpError } from "./errors.js";
+import { registerHostGuard } from "./host-guard.js";
 import { PythonProjectRepository } from "./python-projects/repository.js";
 import type { PythonRuntime } from "./python-projects/runtime.js";
 import { PythonProjectService, registerPythonProjectRoutes } from "./python-projects/service.js";
@@ -52,6 +53,8 @@ export interface AppOptions {
    * API's own origin. Defaults to `DISCERE_WEB_ROOT`, relative to the repository root.
    */
   webRoot?: string;
+  /** Host names accepted besides the loopback ones. Defaults to `DISCERE_ALLOWED_HOSTS`. */
+  allowedHosts?: string[];
 }
 
 export interface DiscereApp {
@@ -67,6 +70,12 @@ function parsePort(value: string | undefined, fallback: number): number {
 
 export async function createApp(options: AppOptions = {}): Promise<DiscereApp> {
   const app = Fastify({ logger: options.logger ?? false });
+  // Registered before CORS and every route, so a request addressed to an unknown name is
+  // refused before anything else looks at it, preflights included.
+  registerHostGuard(
+    app,
+    options.allowedHosts === undefined ? {} : { allowedHosts: options.allowedHosts },
+  );
   const webPort = parsePort(process.env["DISCERE_WEB_PORT"], 4318);
   await app.register(cors, {
     origin: [

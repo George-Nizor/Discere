@@ -1,10 +1,16 @@
 import { request as httpRequest } from "node:http";
 import Fastify from "fastify";
+import { registerHostGuard } from "./host-guard.js";
 import { registerWebRoot, resolveWebRoot } from "./web-root.js";
 
 /** The release web origin serves the bundle and forwards API bytes to the local service.
  * Keeping this origin stable preserves browser drafts, preferences, and saved links. */
-export async function createWebApp(options: { webRoot: string; apiUrl: string }) {
+export async function createWebApp(options: {
+  webRoot: string;
+  apiUrl: string;
+  /** Extra host names to accept. Defaults to `DISCERE_ALLOWED_HOSTS`. */
+  allowedHosts?: string[];
+}) {
   const target = new URL(options.apiUrl);
   if (
     target.protocol !== "http:" ||
@@ -15,6 +21,12 @@ export async function createWebApp(options: { webRoot: string; apiUrl: string })
   const root = resolveWebRoot(options.webRoot);
   if (!root) throw new Error("A built web root is required.");
   const app = Fastify({ bodyLimit: 16 * 1024 * 1024 });
+  // The proxy below rewrites `Host` to the API's own address, so the API cannot see the name
+  // the browser used. The check has to happen here first.
+  registerHostGuard(
+    app,
+    options.allowedHosts === undefined ? {} : { allowedHosts: options.allowedHosts },
+  );
   app.removeAllContentTypeParsers();
   app.addContentTypeParser("*", { parseAs: "buffer" }, (_request, body, done) => done(null, body));
   const proxy = async (
