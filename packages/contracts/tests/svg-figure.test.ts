@@ -41,4 +41,26 @@ describe("authored svg figures", () => {
   ])("refuses %s", (_name, svg) => {
     expect(svgFigureProblems(svg).length).toBeGreaterThan(0);
   });
+
+  it.each([
+    ["an unquoted handler on the root", '<svg viewBox="0 0 1 1" onload=alert(1)></svg>'],
+    [
+      "an unquoted handler on a shape",
+      '<svg viewBox="0 0 1 1"><rect onclick=x() width="1"/></svg>',
+    ],
+    ["an unquoted value", '<svg viewBox="0 0 1 1"><rect width=1 height="1"/></svg>'],
+    ["a bare attribute", '<svg viewBox="0 0 1 1"><rect hidden width="1"/></svg>'],
+    ["a stray token", '<svg viewBox="0 0 1 1"><rect width="1" "x"/></svg>'],
+    ["text after a closing tag name", '<svg viewBox="0 0 1 1"><g></g onclick="x()"></svg>'],
+  ])("refuses %s", (_name, svg) => {
+    expect(svgFigureProblems(svg)).toContainEqual(expect.stringMatching(/not name="value"/u));
+  });
+
+  it("accepts single-quoted values and spacing around the equals sign", () => {
+    expect(
+      svgFigureProblems(
+        "<svg viewBox='0 0 1 1'>\n  <rect width = \"1\" height='1' class=\"f-accent\" />\n</svg>",
+      ),
+    ).toEqual([]);
+  });
 });

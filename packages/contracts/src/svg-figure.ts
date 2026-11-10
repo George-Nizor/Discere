@@ -122,6 +122,8 @@ export const SVG_FIGURE_CLASSES = [
 ] as const;
 const CLASS_SET = new Set<string>(SVG_FIGURE_CLASSES);
 
+const WELL_FORMED_ATTRIBUTES = /^(?:\s+[A-Za-z][\w:.-]*\s*=\s*(?:"[^"]*"|'[^']*'))*\s*$/u;
+
 /** Everything wrong with a drawing, as short sentences. Empty means it is safe to render. */
 export function svgFigureProblems(svg: string): string[] {
   const problems: string[] = [];
@@ -143,6 +145,11 @@ export function svgFigureProblems(svg: string): string[] {
     if (!ELEMENTS.has(name!)) problems.push(`<${name}> is not allowed.`);
     if (lowered === "svg" && !closing && !/\bviewBox\s*=/u.test(rest!))
       problems.push("The <svg> needs a viewBox.");
+    // Every attribute is name="value" or name='value'. An unquoted value or a stray token
+    // (onload=alert(1), a bare word) is refused outright: the checks below read only quoted
+    // attributes, so anything else would pass them unseen.
+    if (closing ? rest!.trim() !== "" : !WELL_FORMED_ATTRIBUTES.test(rest!))
+      problems.push(`<${closing}${name}> has an attribute that is not name="value".`);
     if (closing) {
       if (stack.pop() !== name) problems.push(`</${name}> closes the wrong element.`);
     } else {
