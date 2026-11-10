@@ -68,7 +68,41 @@ answer and after Continue, the verdict being read by a screen reader (the live r
 review the next day, and how a choice question's card front renders ("Options: a; b; c" is
 joined with a newline and was never seen in a browser).
 
+What a later session found, the same day. The suite ran: 52 of 139 tests pass and 87 fail.
+The role changes, the course count and the self-rated card helper are fixed in the specs.
+The other failures are older than this review. The specs were written for the lessons and
+screens from before release 1.2.0, and they look for things that have since gone:
+
+- The fourteen `*-course.spec.ts` files, `brilliant-experience`, `sql-course` and
+  `python-course` read `lesson.steps[0].diagram`, `blocks[0]` and question ids that the story
+  lessons do not have.
+- `foundations`, `momentum`, `home-redesign`, `library-expansion` and `quality-pass` look for
+  sentences that the lesson rewrites of 6 November changed.
+- `journey`, `notebook` and `screenshots` walk the archived Electronics stages ("Step 1 of 7",
+  the "Lesson stages" navigation). Electronics Foundations is a listed course again, so
+  `reliability` no longer finds its "Archived course" notice.
+- `sql-projects` and `python-projects` wait for "Project complete" and other wording removed
+  on 1 November.
+- `data-checks` for Python passed once in three runs. It finishes every lesson through the API
+  and runs close to its 240 second limit.
+
+Rewriting them means driving each lesson from its bundle instead of from fixed text. Until
+then the 52 passing tests are the ones to keep green.
+
+Playwright's Chromium needs `libnspr4`, `libnss3` and `libasound2t64` on this machine
+(`sudo apt-get install libnspr4 libnss3 libasound2t64`, or
+`sudo pnpm --filter @discere/web exec playwright install-deps chromium`).
+
+Checked in the running app: after an answer, focus rests on the primary button (Check again,
+Show the next line, then Continue) and moves to the next screen's heading. A question missed
+at the limit is a review card the next day. A miss followed by a right answer on the second
+try is not queued. The card for a choice question now lists its options under the prompt.
+
 ### 2. Bring in the other session's lesson-player commits
+
+Done before this document was written: `fix/teaching-quality` came in with release 1.12.0
+(`bc70f82`), so `69d2729` is already an ancestor of `review/integration` and there was nothing
+to merge.
 
 Merge or rebase so `review/integration` and `fix/teaching-quality` agree, resolving
 `StoryStageView.tsx`. Ask George which branch should receive the other.
