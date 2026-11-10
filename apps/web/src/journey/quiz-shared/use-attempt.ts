@@ -89,6 +89,22 @@ export interface AttemptSnapshot {
  */
 export const AttemptMemoryContext = createContext<Map<string, AttemptSnapshot> | null>(null);
 
+/**
+ * One seed for each visit to a lesson, so the items of an order or sort question are dealt the
+ * same way each time the learner comes back to the screen, and differently on another visit.
+ */
+const visitSeeds = new WeakMap<object, number>();
+function visitSeed(memory: object | null): number {
+  const fresh = () => Math.floor(Math.random() * 0xffffffff);
+  if (!memory) return fresh();
+  let seed = visitSeeds.get(memory);
+  if (seed === undefined) {
+    seed = fresh();
+    visitSeeds.set(memory, seed);
+  }
+  return seed;
+}
+
 /** Two options cannot sustain a second try: the retry would be the other option. */
 export function defaultMisses(question: LearnerQuestion): number {
   return question.choices && question.choices.length <= 2 ? 1 : 2;
@@ -130,7 +146,7 @@ export function useAttempt(
   // Read once, when the question is drawn: an attempt made earlier in this visit is carried on.
   const [earlier] = useState(() => memory?.get(question.id));
   const [draft, setDraft] = useState<AnswerDraft>(
-    () => earlier?.draft ?? initialAnswerDraft(question),
+    () => earlier?.draft ?? initialAnswerDraft(question, visitSeed(memory)),
   );
   const [attemptId, setAttemptId] = useState<string | null>(earlier?.attemptId ?? null);
   const [result, setResult] = useState<AttemptResponse | null>(earlier?.result ?? null);

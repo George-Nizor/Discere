@@ -1,4 +1,10 @@
-import type { LearnerQuestion, LessonFeedbackRequest } from "@discere/contracts";
+import {
+  extractAttribution,
+  type LearnerQuestion,
+  type LessonFeedbackRequest,
+  type QuestionExtract,
+  questionPlainText,
+} from "@discere/contracts";
 import { Loader2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Fragment, type ReactNode, useEffect, useRef, useState } from "react";
@@ -104,13 +110,49 @@ export function promptHasQuote(prompt: string): boolean {
 }
 
 /**
+ * One or two source extracts, each above its attribution line. They are spans, so they can sit
+ * inside the heading that holds the prompt. A pair is set side by side where there is room.
+ */
+function Extracts({ extracts }: { extracts: QuestionExtract[] }) {
+  const pair = extracts.length > 1;
+  return (
+    <span className={"prompt-sources" + (pair ? " is-pair" : "")}>
+      {extracts.map((extract, index) => (
+        <span className="prompt-source" key={`${extract.who}:${extract.text}`}>
+          {pair ? <span className="prompt-source-name">Source {index === 0 ? "A" : "B"}</span> : null}
+          <span className="prompt-quote">
+            <InlineRichText text={extract.text} />
+          </span>
+          <span className="prompt-attribution">{extractAttribution(extract)}</span>
+        </span>
+      ))}
+    </span>
+  );
+}
+
+/**
  * The parts of a prompt as phrasing content, so they can sit inside a heading: code and quoted
  * extracts are spans set as blocks, the setup is body text and the question itself is bold.
+ * A question's own `extracts` are shown after the setup and before the question.
  */
-export function PromptText({ prompt }: { prompt: string }) {
+export function PromptText({
+  prompt,
+  extracts,
+}: {
+  prompt: string;
+  extracts?: QuestionExtract[] | undefined;
+}) {
+  const parts = promptParts(prompt);
+  // The extracts go just before the part that asks, which is the last one that has a question.
+  const askAt = extracts?.length
+    ? Math.max(
+        0,
+        parts.findLastIndex((part) => part.kind === "text" && part.ask),
+      )
+    : -1;
   return (
     <>
-      {promptParts(prompt).map((part) =>
+      {parts.map((part, index) =>
         part.kind === "code" ? (
           <span className="prompt-code" key={`code:${part.code}`}>
             <code>{part.code}</code>
@@ -126,6 +168,7 @@ export function PromptText({ prompt }: { prompt: string }) {
                 <InlineRichText text={part.setup} />
               </span>
             ) : null}
+            {index === askAt && extracts ? <Extracts extracts={extracts} /> : null}
             {part.ask ? (
               <span className="prompt-ask">
                 <InlineRichText text={part.ask} />
@@ -136,6 +179,11 @@ export function PromptText({ prompt }: { prompt: string }) {
       )}
     </>
   );
+}
+
+/** A question as it is read aloud: its prompt, its extracts and the items it asks about. */
+export function questionSpokenText(question: LearnerQuestion): string {
+  return questionPlainText(question);
 }
 
 /** Whether the last marked response is still the one on screen. */
@@ -320,7 +368,7 @@ export function QuestionBlock({
     >
       {hidePrompt ? null : (
         <Heading className={promptClassName}>
-          <PromptText prompt={question.prompt} />
+          <PromptText prompt={question.prompt} extracts={question.extracts} />
         </Heading>
       )}
       {figure ? figure(attempt) : null}
@@ -349,6 +397,11 @@ export function QuestionBlock({
             {...(label ? { label } : {})}
             correctChoiceId={
               attempt.phase === "revealed" ? attempt.lessonFeedback?.correctChoiceId : undefined
+            }
+            solution={
+              attempt.phase === "revealed" || attempt.phase === "correct"
+                ? attempt.lessonFeedback?.solution
+                : undefined
             }
           />
         )}

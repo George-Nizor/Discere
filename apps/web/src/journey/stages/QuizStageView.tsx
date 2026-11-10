@@ -12,7 +12,7 @@ import { TransferChallenge } from "../quiz/TransferChallenge.js";
 import { AttemptResult, HintLadder } from "../quiz-shared/AttemptFeedback.js";
 import { useAttempt } from "../quiz-shared/use-attempt.js";
 import { LessonQuestion } from "./LessonQuestion.js";
-import { PromptText, promptHasQuote, promptPlainText } from "./QuestionBlock.js";
+import { PromptText, promptHasQuote, questionSpokenText } from "./QuestionBlock.js";
 
 function LegacyQuizStageView({
   stage,
@@ -40,7 +40,7 @@ function LegacyQuizStageView({
     send,
     askForHint,
   } = useAttempt(question);
-  const hasQuote = promptHasQuote(question.prompt);
+  const hasQuote = promptHasQuote(question.prompt) || Boolean(question.extracts?.length);
 
   return (
     <div className="quiz">
@@ -50,7 +50,7 @@ function LegacyQuizStageView({
         </p>
         <div className="quiz-heading-actions">
           {/* The question is read on its own. A hint or the answer is never spoken here. */}
-          <ReadAloudButton label="Read the question" text={promptPlainText(question.prompt)} />
+          <ReadAloudButton label="Read the question" text={questionSpokenText(question)} />
           {returnLink ? (
             <button className="button button-quiet" onClick={returnLink.onSelect} type="button">
               {returnLink.label}
@@ -62,7 +62,7 @@ function LegacyQuizStageView({
       <h1 className={"quiz-question" + (hasQuote ? " has-quote" : "")}>
         {/* A prompt with an extract sets it apart; any other prompt reads as one line. */}
         {hasQuote ? (
-          <PromptText prompt={question.prompt} />
+          <PromptText prompt={question.prompt} extracts={question.extracts} />
         ) : (
           <InlineRichText text={question.prompt} />
         )}

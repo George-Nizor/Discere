@@ -1,4 +1,12 @@
-import type { ReviewRateResponse, ReviewRating, TutoringMode } from "@discere/contracts";
+import {
+  decodeOrderResponse,
+  decodeSortResponse,
+  type LearnerQuestion,
+  type ReviewRateResponse,
+  type ReviewRating,
+  type StructuredSolution,
+  type TutoringMode,
+} from "@discere/contracts";
 import { useQueryClient } from "@tanstack/react-query";
 import { Check, Loader2, RotateCcw, Sparkles } from "lucide-react";
 import { useRef, useState } from "react";
@@ -7,6 +15,13 @@ import { rateReviewSession, revealReviewSession, submitReviewRecall } from "../a
 import { queryKeys } from "../api/queries.js";
 import { celebrateAnswer } from "../fx/celebrate.js";
 import { centre, floatText } from "../fx/engine.js";
+import { AnswerInput } from "../journey/quiz/AnswerInput.js";
+import {
+  type AnswerDraft,
+  answerResponse,
+  initialAnswerDraft,
+} from "../journey/quiz/answer-draft.js";
+import { PromptText } from "../journey/stages/QuestionBlock.js";
 import { formatReturn } from "../lib/format.js";
 import { useExperience } from "../study/experience.js";
 import { Notice } from "../ui/Feedback.js";
@@ -33,13 +48,30 @@ export function cardFrontParts(front: string): { prompt: string; options: string
   return { prompt: lines.slice(0, at).join("\n").trim(), options };
 }
 
-function CardFront({ text }: { text: string }) {
+/** The arrangement a card's order or sort question starts from, or the one already checked. */
+function structuredDraft(question: LearnerQuestion, response: string | null): AnswerDraft {
+  const dealt = initialAnswerDraft(question, Math.floor(Math.random() * 0xffffffff));
+  if (response === null) return dealt;
+  if (dealt.kind === "order") return { kind: "order", ids: decodeOrderResponse(response) };
+  if (dealt.kind === "sort") return { ...dealt, placed: decodeSortResponse(response) };
+  return dealt;
+}
+
+function CardFront({ text, question }: { text: string; question?: LearnerQuestion | undefined }) {
   const { prompt, options } = cardFrontParts(text);
   return (
     <>
-      <p>
-        <InlineRichText text={prompt} />
-      </p>
+      {question ? (
+        // A question with extracts is set out as the lesson set it out. Its items to order or
+        // sort are in the answer below, so they are not written out here as well.
+        <p className="flashcard-question">
+          <PromptText prompt={question.prompt} extracts={question.extracts} />
+        </p>
+      ) : (
+        <p>
+          <InlineRichText text={prompt} />
+        </p>
+      )}
       {options.length > 0 ? (
         <ul className="flashcard-options" aria-label="Options">
           {options.map((option) => (
@@ -62,6 +94,7 @@ export function Flashcard({
   sessionId,
   front,
   recall = "typed",
+  question,
   position,
   total,
   onRated,
@@ -74,6 +107,11 @@ export function Flashcard({
   /** Kept for callers that still pass it; the card itself shows only its question. */
   conceptTitles?: string[] | undefined;
   recall?: "typed" | "self";
+  /**
+   * The lesson question this card stands for, when it has extracts or is an order or sort
+   * question. An order or sort card is answered by arranging its items and marked by the server.
+   */
+  question?: LearnerQuestion | undefined;
   position: number;
   total: number;
   /** `recalled` is the server's verdict on the typed recall: true, false, or null when unmarked. */
@@ -93,16 +131,24 @@ export function Flashcard({
   const [response, setResponse] = useState(initialResponse);
   const [correct, setCorrect] = useState(initialCorrect);
   const [feedback, setFeedback] = useState<string | null>(null);
+  const structured = Boolean(question?.order || question?.sort) && recall === "typed";
+  const [arranged, setArranged] = useState<AnswerDraft | null>(() =>
+    question && structured ? structuredDraft(question, initialResponse) : null,
+  );
+  const [solution, setSolution] = useState<StructuredSolution | undefined>(undefined);
+  /** What Check would send: the typed words, or the arrangement once it is a whole answer. */
+  const entered =
+    structured && question && arranged ? answerResponse(question, arranged) : draft.trim();
 
   async function check(): Promise<void> {
-    if (inFlight.current || !draft.trim()) return;
+    if (inFlight.current || !entered) return;
     inFlight.current = true;
     prepare();
     setBusy(true);
     setFailure(null);
     try {
       const origin = document.activeElement;
-      const assessed = await submitReviewRecall(sessionId, draft.trim());
+      const assessed = await submitReviewRecall(sessionId, entered);
       setResponse(assessed.response);
       setCorrect(assessed.correct);
       setFeedback(assessed.feedback);
@@ -110,6 +156,7 @@ export function Flashcard({
         celebrateAnswer({ correct: assessed.correct, firstTry: true, xp: 0, origin, play });
       try {
         const revealed = await revealReviewSession(sessionId);
+        setSolution(revealed.solution);
         setBack(revealed.back);
       } catch {
         setFailure(
@@ -128,7 +175,9 @@ export function Flashcard({
     if (back || inFlight.current) return;
     // A typed answer is never thrown away: revealing records it as the recall, exactly as
     // Check does, so it earns the same credit and the same honest verdict.
-    if (response === null && draft.trim()) {
+    // An arrangement is checked only when the learner asks: the items start out arranged, so
+    // there is always something that could be sent.
+    if (response === null && !structured && draft.trim()) {
       await check();
       return;
     }
@@ -137,6 +186,7 @@ export function Flashcard({
     setFailure(null);
     try {
       const revealed = await revealReviewSession(sessionId);
+      setSolution(revealed.solution);
       setBack(revealed.back);
     } catch (error) {
       setFailure(errorMessage(error, "The answer could not be shown."));
@@ -212,7 +262,7 @@ export function Flashcard({
       >
         {back ? (
           <div className="flashcard-question-context">
-            <CardFront text={front} />
+            <CardFront text={front} question={question} />
           </div>
         ) : null}
         {back ? (
@@ -221,10 +271,23 @@ export function Flashcard({
           </p>
         ) : (
           <div className="flashcard-prompt" key="front">
-            <CardFront text={front} />
+            <CardFront text={front} question={question} />
           </div>
         )}
-        {recall === "self" ? null : !back && response === null ? (
+        {structured && question && arranged ? (
+          <div className="flashcard-response flashcard-arrange">
+            <AnswerInput
+              answered={response !== null}
+              correct={correct === true}
+              draft={arranged}
+              idPrefix="recall"
+              onChange={setArranged}
+              question={question}
+              readOnly={busy || response !== null || back !== null}
+              solution={back ? solution : undefined}
+            />
+          </div>
+        ) : recall === "self" ? null : !back && response === null ? (
           <div className="flashcard-response">
             <label htmlFor="recall-response">Your answer</label>
             <textarea
@@ -266,7 +329,7 @@ export function Flashcard({
           {recall === "typed" && response === null ? (
             <button
               className="button button-primary"
-              disabled={busy || !draft.trim()}
+              disabled={busy || !entered}
               onClick={() => void check()}
               type="button"
             >
@@ -285,7 +348,7 @@ export function Flashcard({
               Reveal answer
             </button>
           ) : null}
-          {recall === "typed" && response === null && draft.trim() ? (
+          {recall === "typed" && response === null && !structured && draft.trim() ? (
             <p className="flashcard-reveal-note">Revealing checks what you typed first.</p>
           ) : null}
           {/* Only the front is ever spoken; the back is not in the browser until it is revealed. */}

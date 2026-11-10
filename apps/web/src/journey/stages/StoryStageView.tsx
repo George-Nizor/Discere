@@ -28,7 +28,7 @@ import {
   visualStateAt,
 } from "../stage-machine.js";
 import { resolveStageVisual } from "../visual-source.js";
-import { promptPlainText, QuestionBlock } from "./QuestionBlock.js";
+import { QuestionBlock, questionSpokenText } from "./QuestionBlock.js";
 import { StoryVisual } from "./StoryVisual.js";
 
 /**
@@ -74,7 +74,7 @@ export function stepReadAloudText(step: LearnerStep | undefined): string {
   for (const line of step.workedSteps ?? [])
     parts.push(line.math ? `${line.text} ${line.math}` : line.text);
   if (step.question) {
-    parts.push(promptPlainText(step.question.prompt));
+    parts.push(questionSpokenText(step.question));
     step.question.choices?.forEach((choice, index) =>
       parts.push(`Option ${String.fromCharCode(65 + index)}: ${choice.label}.`),
     );

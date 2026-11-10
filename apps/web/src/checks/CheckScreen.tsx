@@ -11,6 +11,11 @@ import { Link, useNavigate, useParams } from "react-router";
 import { ApiError, errorMessage } from "../api/client.js";
 import { AnswerInput } from "../journey/quiz/AnswerInput.js";
 import {
+  PromptText,
+  promptHasQuote,
+  promptPlainText,
+} from "../journey/stages/QuestionBlock.js";
+import {
   answerResponse,
   initialAnswerDraft,
   type AnswerDraft,
@@ -226,9 +231,16 @@ function CheckQuestion({
           <p className="check-position">
             Question {session.answered + 1} of {session.total}
           </p>
-          <h1 ref={title} tabIndex={-1}>
-            <InlineRichText text={item.question.prompt} />
-          </h1>
+          {/* A prompt with an extract sets it apart, as a lesson does; any other reads as one line. */}
+          {promptHasQuote(item.question.prompt) || item.question.extracts?.length ? (
+            <h1 className="has-quote" ref={title} tabIndex={-1}>
+              <PromptText prompt={item.question.prompt} extracts={item.question.extracts} />
+            </h1>
+          ) : (
+            <h1 ref={title} tabIndex={-1}>
+              <InlineRichText text={item.question.prompt} />
+            </h1>
+          )}
           <CheckVisual visual={item.visual} />
           <AnswerInput
             question={item.question}
@@ -395,7 +407,7 @@ function CheckResults({ session }: { session: CourseCheckSession }) {
                 )}
               </span>
               <span>
-                {index + 1}. <InlineRichText text={item.question.prompt} />
+                {index + 1}. <InlineRichText text={promptPlainText(item.question.prompt)} />
               </span>
               <span className="sr-only">{item.correct ? "Correct" : "Incorrect"}</span>
             </summary>

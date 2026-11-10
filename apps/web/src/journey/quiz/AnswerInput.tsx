@@ -1,10 +1,12 @@
-import type { LearnerQuestion, RustTaskRun } from "@discere/contracts";
+import type { LearnerQuestion, RustTaskRun, StructuredSolution } from "@discere/contracts";
 import { Check, X } from "lucide-react";
 import type { KeyboardEvent } from "react";
 import { CodeAnswer } from "../../rust/CodeAnswer.js";
 import { Notice } from "../../ui/Feedback.js";
 import { InlineRichText } from "../../ui/RichText.js";
 import { type AnswerDraft, answerSurface, choiceLetter } from "./answer-draft.js";
+import { OrderAnswer } from "./OrderAnswer.js";
+import { SortAnswer } from "./SortAnswer.js";
 
 /**
  * Moves between choice cards with the arrow keys, as a radio group would. Locked cards are
@@ -48,6 +50,7 @@ export function AnswerInput({
   idPrefix = "answer",
   label,
   codeRun,
+  solution,
 }: {
   question: LearnerQuestion;
   draft: AnswerDraft;
@@ -64,8 +67,42 @@ export function AnswerInput({
   label?: string;
   /** A code answer's last check, shown in its console while that code is still on screen. */
   codeRun?: RustTaskRun | undefined;
+  /** The right order or sorting, once the question has closed and the answer may be shown. */
+  solution?: StructuredSolution | undefined;
 }) {
   const surface = answerSurface(question);
+
+  if (surface === "order" && draft.kind === "order" && question.order) {
+    return (
+      <OrderAnswer
+        order={question.order}
+        ids={draft.ids}
+        onChange={(ids) => onChange({ kind: "order", ids })}
+        locked={correct || readOnly}
+        // A right answer is its own solution, so the list settles with every item marked.
+        solution={solution?.order ?? (correct && answered ? draft.ids : undefined)}
+        marked={answered}
+        idPrefix={idPrefix}
+        label={label}
+      />
+    );
+  }
+
+  if (surface === "sort" && draft.kind === "sort" && question.sort) {
+    return (
+      <SortAnswer
+        sort={question.sort}
+        ids={draft.ids}
+        placed={draft.placed}
+        onChange={(placed) => onChange({ ...draft, placed })}
+        locked={correct || readOnly}
+        solution={solution?.sort}
+        marked={answered}
+        idPrefix={idPrefix}
+        label={label}
+      />
+    );
+  }
 
   if (surface === "code" && draft.kind === "code" && question.code) {
     return (

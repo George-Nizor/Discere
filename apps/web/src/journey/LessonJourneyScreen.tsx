@@ -33,7 +33,7 @@ import {
 import { CompletionStageView } from "./stages/CompletionStageView.js";
 import { EssayStageView } from "./stages/EssayStageView.js";
 import { InteractiveVisualStageView } from "./stages/InteractiveVisualStageView.js";
-import { promptPlainText } from "./stages/QuestionBlock.js";
+import { questionSpokenText } from "./stages/QuestionBlock.js";
 import { QuizStageView } from "./stages/QuizStageView.js";
 import { RecapStageView } from "./stages/RecapStageView.js";
 import { ReviewStageView } from "./stages/ReviewStageView.js";
@@ -264,7 +264,7 @@ function LessonJourney({
   const readAloudText =
     current.stage.type === "quiz"
       ? [
-          promptPlainText(current.stage.question.prompt),
+          questionSpokenText(current.stage.question),
           ...(current.stage.question.choices ?? []).map(
             (choice, index) => `Option ${String.fromCharCode(65 + index)}: ${choice.label}.`,
           ),
@@ -282,7 +282,9 @@ function LessonJourney({
                       ? block.text
                       : block.text,
                 ),
-                current.stage.intro.hook.question?.prompt ?? "",
+                current.stage.intro.hook.question
+                  ? questionSpokenText(current.stage.intro.hook.question)
+                  : "",
                 current.stage.intro.promise,
               ].join(" ")
             : current.stage.title

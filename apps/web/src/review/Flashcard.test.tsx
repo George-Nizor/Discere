@@ -221,4 +221,131 @@ describe("revealing with a typed answer", () => {
     ]);
     expect(calls[0]?.body).toEqual({ response: "0.05 A" });
   });
+  describe("a card that asks an order or sort question", () => {
+    const base = { conceptIds: ["c"], difficulty: 1, hintCount: 0, sourceIds: ["s"] };
+    const order = {
+      ...base,
+      id: "q-order",
+      prompt: "In what order did these happen?",
+      responseType: "order" as const,
+      order: {
+        items: [
+          { id: "ia", label: "Alpha" },
+          { id: "ib", label: "Beta" },
+          { id: "ic", label: "Gamma" },
+        ],
+      },
+    };
+    const shown = () =>
+      [...document.querySelectorAll(".order-item-label")].map((item) => item.textContent);
+
+    it("is answered by arranging the items, marked, and then shows the right order", async () => {
+      const { calls } = stubFetch({
+        [`POST /api/review/sessions/${sessionId}/respond`]: ({ body }) => ({
+          body: { response: (body as { response: string }).response, correct: false, feedback: "Compare your response with the answer." },
+        }),
+        [`POST /api/review/sessions/${sessionId}/reveal`]: {
+          body: {
+            sessionId,
+            cardId: "flashcard:q-order",
+            back: "Alpha led to Beta, and Beta to Gamma.",
+            sourceIds: [],
+            solution: { order: ["ia", "ib", "ic"] },
+          },
+        },
+      });
+      renderWithProviders(
+        <Flashcard
+          front={"In what order did these happen?\n\nItems to put in order:\nAlpha\nBeta\nGamma"}
+          onRated={vi.fn()}
+          position={1}
+          question={order}
+          recall="typed"
+          sessionId={sessionId}
+          total={1}
+        />,
+      );
+      // The items are in the list to arrange, so the card has no box to type in.
+      expect(screen.queryByLabelText("Your answer")).not.toBeInTheDocument();
+      expect(screen.getByText("In what order did these happen?")).toBeInTheDocument();
+      expect([...shown()].sort()).toEqual(["Alpha", "Beta", "Gamma"]);
+      const first = shown()[0] as string;
+      await userEvent.click(screen.getByRole("button", { name: `Move down: ${first}` }));
+      expect(shown()[1]).toBe(first);
+      const sent = shown();
+      await userEvent.click(screen.getByRole("button", { name: "Check" }));
+      expect(await screen.findByRole("list", { name: "The right order" })).toBeInTheDocument();
+      expect(shown()).toEqual(["Alpha", "Beta", "Gamma"]);
+      expect(screen.getByText("Alpha led to Beta, and Beta to Gamma.")).toBeInTheDocument();
+      const labels: Record<string, string> = { ia: "Alpha", ib: "Beta", ic: "Gamma" };
+      expect(
+        (calls[0]!.body as { response: string }).response.split(",").map((id) => labels[id]),
+      ).toEqual(sent);
+      expect(screen.getByRole("button", { name: /Again/ })).toBeInTheDocument();
+    });
+
+    it("reveals without marking the arrangement the items happened to start in", async () => {
+      const { calls } = stubFetch({
+        [`POST /api/review/sessions/${sessionId}/reveal`]: {
+          body: {
+            sessionId,
+            cardId: "flashcard:q-order",
+            back: "Alpha led to Beta.",
+            sourceIds: [],
+            solution: { order: ["ia", "ib", "ic"] },
+          },
+        },
+      });
+      renderWithProviders(
+        <Flashcard
+          front="In what order did these happen?"
+          onRated={vi.fn()}
+          position={1}
+          question={order}
+          recall="typed"
+          sessionId={sessionId}
+          total={1}
+        />,
+      );
+      expect(screen.queryByText("Revealing checks what you typed first.")).not.toBeInTheDocument();
+      await userEvent.click(screen.getByRole("button", { name: /Reveal answer/ }));
+      expect(await screen.findByRole("list", { name: "The right order" })).toBeInTheDocument();
+      expect(calls.map((call) => call.key)).toEqual([
+        `POST /api/review/sessions/${sessionId}/reveal`,
+      ]);
+      // Nothing was checked, so no item is marked as one the learner had in place.
+      expect(screen.queryByLabelText("You had this in the right place")).not.toBeInTheDocument();
+    });
+
+    it("sets out a missed source question with its extract and attribution", () => {
+      stubFetch({});
+      renderWithProviders(
+        <Flashcard
+          front={"What is this evidence of?\nOptions:\nHis image\nThe facts"}
+          onRated={vi.fn()}
+          position={1}
+          question={{
+            ...base,
+            id: "q-source",
+            prompt: "The text opens with this sentence. What is this evidence of?",
+            responseType: "short_text",
+            extracts: [
+              { text: "I restored liberty.", who: "Augustus, Res Gestae", when: "14 CE", kind: "His own record" },
+            ],
+            choices: [
+              { id: "a", label: "His image" },
+              { id: "b", label: "The facts" },
+            ],
+          }}
+          recall="self"
+          sessionId={sessionId}
+          total={1}
+        />,
+      );
+      expect(screen.getByText("I restored liberty.")).toBeInTheDocument();
+      expect(screen.getByText("Augustus, Res Gestae, 14 CE. His own record.")).toBeInTheDocument();
+      expect(screen.getByRole("list", { name: "Options" })).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Check" })).not.toBeInTheDocument();
+    });
+  });
 });

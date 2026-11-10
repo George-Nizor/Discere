@@ -64,6 +64,7 @@ export function ReviewStageView({
           key={session.sessionId}
           front={session.card.front}
           recall={session.card.recall}
+          question={session.card.question}
           onRated={() => setRated(true)}
           position={index + 1}
           sessionId={session.sessionId}
