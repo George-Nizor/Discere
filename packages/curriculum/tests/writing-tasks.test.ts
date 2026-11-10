@@ -8,7 +8,11 @@ import { validateCourseBundle } from "../src/index.js";
  * through its tasks, so the figures a task quotes are recomputed below and have to agree with
  * the material the task supplies.
  */
-const COURSES = ["technical-writing", "english-reading-writing-and-rhetoric"] as const;
+const COURSES = [
+  "technical-writing",
+  "english-reading-writing-and-rhetoric",
+  "creative-and-game-writing",
+] as const;
 
 /**
  * Paragraphs that quote a published passage word for word keep the passage's own dashes. They
@@ -140,5 +144,23 @@ describe("the figures in the English course's tasks", () => {
     const scanned = paragraphs(task(bundle, "lang-task-scansion").prompt);
     expect(scanned[2]).toBe(lines("lang-task-images")[0]);
     expect(scanned[3]).toBe(lines("lang-task-images")[3]);
+  });
+});
+
+describe("the figures in Creative and Game Writing's tasks", () => {
+  const bundle = load("creative-and-game-writing");
+
+  it("asks for a cut of a quarter from a paragraph of the stated length", () => {
+    const found = task(bundle, "cregw-task-revision");
+    const stated = Number(/It has (\d+) words, and/u.exec(found.prompt)?.[1]);
+    const target = Number(/should have (\d+) or fewer/u.exec(found.prompt)?.[1]);
+    expect(words(paragraphs(found.prompt)[3] ?? "")).toBe(stated);
+    expect(target).toBe(Math.floor((stated * 3) / 4));
+    expect(found.successCriteria[0]).toBe(`The revised paragraph is ${target} words or fewer.`);
+  });
+
+  it("gives the premise in the same words in every task", () => {
+    const premise = "Marit Dahl has been the only locksmith in a harbour town for twenty years";
+    for (const found of bundle.essays) expect(found.prompt, found.id).toContain(premise);
   });
 });
