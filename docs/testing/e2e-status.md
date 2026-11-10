@@ -6,7 +6,7 @@ the main screens at phone width. Run them before a release to catch something th
 
 ## Where it stands
 
-The last full run on 11 November passed 97 tests and skipped 1, in 17.9 minutes. Nothing failed.
+The last full run on 11 November passed 106 tests and skipped 1, in 20.3 minutes. Nothing failed.
 The skipped test plays a Rust lesson, and Rust is not installed on this machine.
 
 The run before the repair, on 10 November, passed 52 of 139 and failed 87 in 34 minutes. Almost
