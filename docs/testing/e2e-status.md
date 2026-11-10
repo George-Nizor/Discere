@@ -26,6 +26,7 @@ every failure came from a spec written for lessons and screens that have since c
 | `home-redesign.spec.ts` | Home at three sizes, the course chooser, resuming a lesson from Home, and the Progress page's filters. |
 | `course-checks.spec.ts`, `foundation-checks.spec.ts`, `data-checks.spec.ts` | Placement, the mixed check and the check a week later, for Maths, Logic, Computer Science, Probability, Astronomy, Psychology, SQL and Python. |
 | `python-exercises.spec.ts`, `sql-exercises.spec.ts`, `typescript-exercises.spec.ts` | A code exercise run, failed, corrected and passed in each language. |
+| `order-questions.spec.ts`, `sort-questions.spec.ts`, `source-pairs.spec.ts` | History's order, sort and source-pair questions at 1440 and 390 pixels wide: arranged with the keyboard and the buttons, a miss that says how many are right, the answer shown at the second miss, the same arrangement after Back, and the missed question answered again on its review card. `DISCERE_SHOTS` names a folder for screenshots. |
 | `python-projects.spec.ts`, `sql-projects.spec.ts` | Each project in Coach, Direct and Exam mode, and an exam ended early. |
 | `library-expansion.spec.ts`, `quality-pass.spec.ts`, `reliability.spec.ts`, `navigation-motion.spec.ts` | Library filters, Settings recovering from a failed request, a stopped engine, search, old addresses, and route transitions. |
 | `screenshots.spec.ts` | The welcome, and every screen of one lesson at three sizes. |

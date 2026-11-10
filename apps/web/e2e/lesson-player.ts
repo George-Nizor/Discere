@@ -7,6 +7,9 @@ import {
   type ExplainerStage,
   type LearnerQuestion,
   type LearnerStage,
+  orderAnswerIds,
+  sortAnswerItems,
+  structuredAnswerResponse,
 } from "@discere/contracts";
 import { expect } from "./fixtures.js";
 
@@ -217,6 +220,83 @@ export function questionOnScreen(page: Page, questionId: string) {
   };
 }
 
+/**
+ * The parts of an order or sort answer inside `scope`: a lesson question's form, or a review
+ * card that asks the question again.
+ */
+export function arrangement(scope: Locator) {
+  return {
+    /** The rows of an order question, in the sequence they are in now. */
+    orderItems: scope.locator(".order-list > li"),
+    move: (itemId: string, direction: "up" | "down") =>
+      scope.locator(`[data-move=${attr(`${itemId}:${direction}`)}]`),
+    /** The live region that says where an item moved to, or which group it went in. */
+    announcement: scope.locator("p.sr-only[aria-live=polite]"),
+    /** One item of a sort question, wherever it is: waiting in the list or placed in a group. */
+    sortItem: (itemId: string) => scope.locator(`[data-focus=${attr(`item:${itemId}`)}]`),
+    /** The button that places the chosen item in a group. */
+    sortTarget: (binId: string) => scope.locator(`[data-focus=${attr(`bin:${binId}`)}]`),
+    /** A group of a sort question, with whatever has been placed in it. */
+    sortBin: (binId: string) =>
+      scope
+        .locator(".sort-bin")
+        .filter({ has: scope.page().locator(`[data-focus=${attr(`bin:${binId}`)}]`) }),
+  };
+}
+
+/** The ids of an order question's items in the sequence they are on screen. */
+export async function orderOnScreen(scope: Locator): Promise<string[]> {
+  return arrangement(scope).orderItems.evaluateAll((items) =>
+    items.map((item) => item.getAttribute("data-item") ?? ""),
+  );
+}
+
+/**
+ * Arranges an order question into a given sequence the way a learner does, with the move
+ * buttons: each item in turn is moved up until it is in its place.
+ */
+export async function arrangeOrder(scope: Locator, ids: string[]): Promise<void> {
+  const on = arrangement(scope);
+  await expect(on.orderItems).toHaveCount(ids.length);
+  for (const [place, id] of ids.entries()) {
+    let at = (await orderOnScreen(scope)).indexOf(id);
+    if (at < 0) throw new Error(`No item ${id} is on screen.`);
+    for (; at > place; at -= 1) {
+      await on.move(id, "up").click();
+      await expect(on.orderItems.nth(at - 1)).toHaveAttribute("data-item", id);
+    }
+  }
+  expect(await orderOnScreen(scope)).toEqual(ids);
+}
+
+/** Places every item of a sort question: each is chosen, and then its group is chosen. */
+export async function placeSort(scope: Locator, placed: Record<string, string>): Promise<void> {
+  const on = arrangement(scope);
+  for (const [itemId, binId] of Object.entries(placed)) {
+    await on.sortItem(itemId).click();
+    await expect(on.sortItem(itemId)).toHaveAttribute("aria-pressed", "true");
+    await on.sortTarget(binId).click();
+    await expect(on.sortBin(binId).locator(`[data-focus=${attr(`item:${itemId}`)}]`)).toBeVisible();
+  }
+}
+
+/** A wrong arrangement of an order question: the right one with its first two items changed over. */
+export function wrongOrder(authored: Question): string[] {
+  const [first, second, ...rest] = orderAnswerIds(authored);
+  return [second!, first!, ...rest];
+}
+
+/** The right sorting of a sort question: each item's id with the id of its group. */
+export function rightSort(authored: Question): Record<string, string> {
+  return Object.fromEntries(sortAnswerItems(authored).map((item) => [item.id, item.bin]));
+}
+
+/** A wrong sorting: every item in the first group. */
+export function wrongSort(authored: Question): Record<string, string> {
+  const first = authored.sort?.bins[0]?.id ?? "";
+  return Object.fromEntries(sortAnswerItems(authored).map((item) => [item.id, first]));
+}
+
 function rightChoiceIndex(authored: Question, shown: LearnerQuestion): number {
   const authority = authored.answerAuthority;
   if (authority.kind !== "text") throw new Error(`${authored.id} is numeric and has choices.`);
@@ -228,7 +308,8 @@ function rightChoiceIndex(authored: Question, shown: LearnerQuestion): number {
 
 /**
  * Fills in an answer without checking it. `wrong` gives an answer the question rejects: another
- * choice, a number far from the value, a sentence that says nothing, or the unchanged starter.
+ * choice, a number far from the value, a sentence that says nothing, the unchanged starter, an
+ * order with its first two items changed over, or a sorting with every item in the first group.
  */
 export async function fillAnswer(
   page: Page,
@@ -241,6 +322,19 @@ export async function fillAnswer(
   if (authored.code) {
     if (authority.kind !== "text") throw new Error(`${authored.id}: a code answer is text.`);
     await on.code.fill(wrong ? authored.code.starter : authority.exampleAnswer);
+    return;
+  }
+  if (authored.order) {
+    await arrangeOrder(on.form, wrong ? wrongOrder(authored) : orderAnswerIds(authored));
+    return;
+  }
+  if (authored.sort) {
+    await placeSort(
+      on.form,
+      wrong
+        ? wrongSort(authored)
+        : rightSort(authored),
+    );
     return;
   }
   if (shown.choices?.length) {
@@ -574,7 +668,8 @@ export async function completeLessonsThroughApi(
               ? String(authority.value)
               : question.code
                 ? authority.exampleAnswer
-                : authority.acceptedIdeas[0],
+                : // An order or a sorting is sent as the arrangement of its items.
+                  (structuredAnswerResponse(question) ?? authority.acceptedIdeas[0]),
           mode: "coach",
         });
       const result = await (question.code ? inTurn(answer) : answer());
