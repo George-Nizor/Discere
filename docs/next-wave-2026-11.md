@@ -69,25 +69,20 @@ review the next day, and how a choice question's card front renders ("Options: a
 joined with a newline and was never seen in a browser).
 
 What a later session found, the same day. The suite ran: 52 of 139 tests pass and 87 fail.
-The role changes, the course count and the self-rated card helper are fixed in the specs.
-The other failures are older than this review. The specs were written for the lessons and
-screens from before release 1.2.0, and they look for things that have since gone:
+The role changes, the course count and the self-rated card helper were fixed in the specs. The
+other failures were older than this review: the specs were written for the lessons and screens
+from before release 1.2.0.
 
-- The fourteen `*-course.spec.ts` files, `brilliant-experience`, `sql-course` and
-  `python-course` read `lesson.steps[0].diagram`, `blocks[0]` and question ids that the story
-  lessons do not have.
-- `foundations`, `momentum`, `home-redesign`, `library-expansion` and `quality-pass` look for
-  sentences that the lesson rewrites of 6 November changed.
-- `journey`, `notebook` and `screenshots` walk the archived Electronics stages ("Step 1 of 7",
-  the "Lesson stages" navigation). Electronics Foundations is a listed course again, so
-  `reliability` no longer finds its "Archived course" notice.
-- `sql-projects` and `python-projects` wait for "Project complete" and other wording removed
-  on 1 November.
-- `data-checks` for Python passed once in three runs. It finishes every lesson through the API
-  and runs close to its 240 second limit.
+Done on 11 November. The suite passes: 97 tests, 1 skipped (Rust is not installed here), in
+about 18 minutes. The specs now play lessons from their content through one helper, the
+fourteen per-course specs are replaced by a sampled one, and a run no longer rewrites the
+images under `docs/`. `docs/testing/e2e-status.md` lists what each spec covers, what was
+rewritten or removed, and how to run it. The work found four bugs in the app, all fixed:
 
-Rewriting them means driving each lesson from its bundle instead of from fixed text. Until
-then the 52 passing tests are the ones to keep green.
+- Back in a lesson drew the earlier question blank with Check answer on top of Continue.
+- Focus skipped the heading of a screen that asks nothing.
+- A review session cleared one course before starting the next.
+- Home's lesson button was cut off on a short window.
 
 Playwright's Chromium needs `libnspr4`, `libnss3` and `libasound2t64` on this machine
 (`sudo apt-get install libnspr4 libnss3 libasound2t64`, or
@@ -114,9 +109,9 @@ separately (`journey/stages/QuestionBlock.tsx`, `journey/stages/QuizStageView.ts
 `review/Flashcard.tsx`, `checks/CheckScreen.tsx`). Build one component with policy props
 (tries, hints, deferred verdict, confidence) and use it in all four. With it:
 
-- Lift per-step attempt results into `StoryStageView` so going Back shows the answered
-  screen read-only. Today it shows a blank question, and by reading, the Check and Continue
-  rows are drawn in the same grid cell.
+- Done on 11 November without the shared component: `StoryStageView` keeps the attempts made
+  during a visit (`AttemptMemoryContext` in `quiz-shared/use-attempt.ts`), so going Back shows
+  the answered screen read-only.
 - Send choice ids to the server and mark by id. The server marks the label through the text
   matcher today (`apps/server/src/assessment.ts`, `routes.ts`).
 - Shuffle options at display. They are shown in authored order.
@@ -125,7 +120,7 @@ separately (`journey/stages/QuestionBlock.tsx`, `journey/stages/QuizStageView.ts
 - Delete `LegacyQuizStageView`, `AttemptResult`, `RevealFlow` and `TransferChallenge` if no
   live course reaches them.
 
-Add a Playwright test that goes Back and then Continue.
+The Playwright test that goes Back and then Continue is in `lesson-flow.spec.ts`.
 
 ### 4. Slow home and review requests
 
@@ -173,7 +168,7 @@ needs `scripts/rebind-review.ts` afterwards.
 
 CSS consolidation (40 stylesheets, tokens redefined in five layers), lazy-loading each
 subject's diagrams, the release zip allow-list (`.authoring/` and `review/history` ship
-today), Playwright in CI, the server-sent Content-Security-Policy, a pairing token for the
+today), the server-sent Content-Security-Policy, a pairing token for the
 phone route, and the Atlas items in `docs/atlas-comparison-2026-11.md`.
 
 ## Corrections to the review

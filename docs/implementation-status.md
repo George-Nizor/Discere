@@ -845,6 +845,11 @@ concealed marking authority, enabled requested sound and unchanged prior study r
 Twenty unstarted concept rows and forty unintroduced recall-card rows were added; attempts, course checks and project histories
 remain empty. Package/browser/smoke tests use disposable databases.
 
+On 11 November 2026 the browser suite was rewritten to play lessons from their content. Its
+last full run passed 97 tests and skipped one, in about 18 minutes.
+[The browser test status](testing/e2e-status.md) lists what each spec covers and the four bugs
+the rewrite found. The counts in the paragraphs above are from earlier suites.
+
 Use `pnpm run doctor`: plain `pnpm doctor` resolves to pnpm's builtin. Chromium uses libraries
 unpacked beneath `/tmp/discere-browser-libs`, without a system installation. The existing large
 main-chunk warning remains a performance task. Physical devices and learning outcomes were not
