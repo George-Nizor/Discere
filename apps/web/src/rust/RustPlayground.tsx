@@ -1,3 +1,4 @@
+import { useDocumentTitle } from "../lib/document-title.js";
 import type { RustRunResult } from "@discere/contracts";
 import { useQuery } from "@tanstack/react-query";
 import { RuntimeSetup } from "../code-runtimes/RuntimeSetup.js";
@@ -35,6 +36,7 @@ export function RustPlaygroundScreen() {
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState("");
   const guard = useRef(false);
+  useDocumentTitle("Rust playground");
   useEffect(() => {
     try {
       localStorage.setItem(DRAFT_KEY, code);

@@ -1,3 +1,4 @@
+import { useDocumentTitle } from "../lib/document-title.js";
 import type { PythonProjectAction, PythonProjectSession, TutoringMode } from "@discere/contracts";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, ArrowRight, Check, Code2, Lightbulb, Play, Send, X } from "lucide-react";
@@ -53,6 +54,7 @@ export function PythonProjectStartScreen() {
     [busy, setBusy] = useState(false),
     [failure, setFailure] = useState("");
   const guard = useRef(false);
+  useDocumentTitle(code.data?.projects.find((p) => p.id === projectId)?.title);
   if (code.isPending) return <LoadingScreen message="Loading the project…" />;
   if (code.error)
     return (
@@ -580,6 +582,7 @@ export function PythonProjectSessionScreen() {
     },
     [client],
   );
+  useDocumentTitle(code.data?.title);
   if (code.isPending) return <LoadingScreen message="Opening your saved programs…" />;
   if (code.error || !code.data)
     return (

@@ -5,11 +5,13 @@ import {
   useNavigationType,
   useViewTransitionState,
 } from "react-router";
-import { useLayoutEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import { AmbientBackdrop } from "../fx/AmbientBackdrop.js";
 import { FxLayer } from "../fx/FxLayer.js";
 import { GameWatcher } from "../game/GameWatcher.js";
 import { MascotPet } from "../mascot/MascotPet.js";
+import { documentTitle } from "../lib/document-title.js";
+import { focusIsInsideStage, focusStageHeading } from "../lib/focus.js";
 import { useExperience } from "../study/experience.js";
 import { ArchivedNotice } from "./ArchivedNotice.js";
 import { EngineBanner } from "./EngineBanner.js";
@@ -44,6 +46,37 @@ export function AppShell() {
     previous.current = location.pathname;
     return () => entrance?.cancel();
   }, [location.pathname, location.key, navigationType, reduced]);
+  // Every route starts from the plain name; a screen that knows its own name sets it after.
+  useLayoutEffect(() => {
+    document.title = documentTitle(null);
+  }, [location.pathname]);
+  // A new screen takes keyboard focus at its heading, as a page load would. A screen still
+  // loading has no heading yet, so the shell waits for it to arrive, unless the learner has
+  // moved focus somewhere themselves in the meantime.
+  const focusedPath = useRef(location.pathname);
+  useEffect(() => {
+    if (focusedPath.current === location.pathname) return;
+    focusedPath.current = location.pathname;
+    if (focusIsInsideStage() || focusStageHeading()) return;
+    const host = body.current;
+    if (!host || typeof MutationObserver === "undefined") return;
+    const origin = document.activeElement;
+    const observer = new MutationObserver(() => {
+      const active = document.activeElement;
+      const untouched =
+        !active ||
+        active === document.body ||
+        active === origin ||
+        Boolean(active.closest('[data-loading="true"]'));
+      if (!untouched || focusIsInsideStage() || focusStageHeading()) observer.disconnect();
+    });
+    observer.observe(host, { childList: true, subtree: true });
+    const stop = window.setTimeout(() => observer.disconnect(), 10_000);
+    return () => {
+      observer.disconnect();
+      window.clearTimeout(stop);
+    };
+  }, [location.pathname]);
   const lessonPath = location.pathname.match(/^(\/courses\/[^/]+\/lessons\/[^/]+)/)?.[1];
   const focusedLesson =
     (Boolean(lessonPath) && !location.pathname.endsWith("/notebook")) ||

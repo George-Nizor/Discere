@@ -6,6 +6,7 @@ import {
 } from "@discere/activity-engine";
 import type { LearningDiagram as Diagram } from "@discere/contracts";
 import { useId, useState } from "react";
+import { FigureBoundary } from "../../ui/ErrorBoundary.js";
 import { BiologyDiagram } from "./BiologyDiagram.js";
 import { CalculusDiagram } from "./CalculusDiagram.js";
 import { ChemistryDiagram } from "./ChemistryDiagram.js";
@@ -380,7 +381,24 @@ function CoordinatePlane({
   );
 }
 
-export function LearningDiagram({
+/**
+ * Draws a diagram spec. A spec that makes its figure throw is caught here and replaced by a
+ * one-line notice, so the question beside the figure can still be answered.
+ */
+export function LearningDiagram(
+  props: {
+    spec: Diagram;
+    showResults?: boolean;
+  } & CandidateProps,
+) {
+  return (
+    <FigureBoundary resetKey={props.spec}>
+      <DiagramForSpec {...props} />
+    </FigureBoundary>
+  );
+}
+
+function DiagramForSpec({
   spec,
   showResults = true,
   answerText,

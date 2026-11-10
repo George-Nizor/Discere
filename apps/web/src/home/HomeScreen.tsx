@@ -1,3 +1,4 @@
+import { useDocumentTitle } from "../lib/document-title.js";
 import type { CourseDetailResponse, CourseSummary, HomeResponse } from "@discere/contracts";
 import { ArrowRight, BookOpen, Check, Layers } from "lucide-react";
 import { Link, useSearchParams } from "react-router";
@@ -20,6 +21,7 @@ export function HomeScreen() {
   const catalogue = useCourses();
   const study = useStudy();
   const [params, setParams] = useSearchParams();
+  useDocumentTitle("Home");
   if (home.isPending || catalogue.isPending) return <LoadingScreen message="Opening Discere…" />;
   if (home.error || catalogue.error || !home.data || !catalogue.data) {
     return (
@@ -328,7 +330,7 @@ function HomeCourseSelector({
     const changed = lastSelection.current !== selectedId;
     lastSelection.current = selectedId;
     const reveal = (smooth = false) => {
-      const selected = container.querySelector<HTMLButtonElement>('button[aria-pressed="true"]');
+      const selected = container.querySelector<HTMLButtonElement>('button[aria-checked="true"]');
       if (!selected) return;
       const offset =
         selected.getBoundingClientRect().left -
@@ -382,7 +384,6 @@ function HomeCourseSelector({
             type="button"
             role="radio"
             aria-checked={course.id === selectedId}
-            aria-pressed={course.id === selectedId}
             aria-label={course.title}
             data-course={course.id}
             tabIndex={course.id === selectedId ? 0 : -1}

@@ -1,3 +1,4 @@
+import { useDocumentTitle } from "../lib/document-title.js";
 import type { RustProjectAction, RustProjectSession, TutoringMode } from "@discere/contracts";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, ArrowRight, Check, Lightbulb, Play, Send, SquareTerminal, X } from "lucide-react";
@@ -46,6 +47,7 @@ export function RustProjectStartScreen() {
     [busy, setBusy] = useState(false),
     [failure, setFailure] = useState("");
   const guard = useRef(false);
+  useDocumentTitle(query.data?.projects.find((p) => p.id === projectId)?.title);
   if (query.isPending) return <LoadingScreen message="Loading the project…" />;
   if (query.error)
     return (
@@ -566,6 +568,7 @@ export function RustProjectSessionScreen() {
     },
     [client],
   );
+  useDocumentTitle(query.data?.title);
   if (query.isPending) return <LoadingScreen message="Opening your saved programs…" />;
   if (query.error || !query.data)
     return (

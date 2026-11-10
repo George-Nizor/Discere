@@ -51,12 +51,29 @@ export function Notice({
   );
 }
 
-export function LoadingScreen({ message }: { message: string }) {
-  return (
+/**
+ * A whole screen still loading. It is the page's `main#stage`, so the skip link and route focus
+ * land on it; `embedded` draws it inside a screen that already has one (a stage in a lesson).
+ */
+export function LoadingScreen({
+  message,
+  embedded = false,
+}: {
+  message: string;
+  embedded?: boolean;
+}) {
+  const content = (
     <div className="loading-screen" role="status">
       <Bonehead className="loading-mascot" expression="curious" live size={72} quiet />
       <p>{message}</p>
     </div>
+  );
+  return embedded ? (
+    content
+  ) : (
+    <main id="stage" aria-busy="true" data-loading="true">
+      {content}
+    </main>
   );
 }
 
@@ -71,12 +88,15 @@ export function ErrorScreen({
   error,
   onRetry,
   back,
+  embedded = false,
 }: {
   title: string;
   message: string;
   error?: unknown;
   onRetry?: (() => unknown) | undefined;
   back?: { to: string; label: string } | undefined;
+  /** Drawn inside a screen that already has its `main#stage`. */
+  embedded?: boolean;
 }) {
   const engineDown = error !== undefined && isEngineUnavailable(error);
   const [retrying, setRetrying] = useState(false);
@@ -93,7 +113,7 @@ export function ErrorScreen({
       setRetrying(false);
     }
   }
-  return (
+  const content = (
     <div className={`error-screen${engineDown ? " error-screen--engine" : ""}`} role="alert">
       <Bonehead
         className="error-mascot"
@@ -136,4 +156,5 @@ export function ErrorScreen({
       ) : null}
     </div>
   );
+  return embedded ? content : <main id="stage">{content}</main>;
 }

@@ -32,6 +32,15 @@ describe("flashcard", () => {
     expect(screen.queryByRole("button", { name: /Good/ })).not.toBeInTheDocument();
   });
 
+  it("says in words how far through the session the learner is", () => {
+    stubFetch({});
+    renderCard();
+    expect(screen.getByRole("progressbar", { name: "Review progress" })).toHaveAttribute(
+      "aria-valuetext",
+      "Card 1 of 3",
+    );
+  });
+
   it("reveals, announces the answer, then records a rating and its schedule", async () => {
     const { calls } = stubFetch({
       [`POST /api/review/sessions/${sessionId}/respond`]: {

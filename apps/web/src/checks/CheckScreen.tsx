@@ -1,3 +1,4 @@
+import { useDocumentTitle } from "../lib/document-title.js";
 import {
   CheckConfidenceSchema,
   type CourseCheckSession,
@@ -16,6 +17,7 @@ import {
 } from "../journey/quiz/answer-draft.js";
 import { useExperience } from "../study/experience.js";
 import { ErrorScreen, LoadingScreen } from "../ui/Feedback.js";
+import { InlineRichText } from "../ui/RichText.js";
 import { CheckVisual } from "./CheckVisual.js";
 import { CHECK_NAMES, placedOutLessons, placementVerdict } from "./check-model.js";
 import { checkDate } from "./CourseChecks.js";
@@ -40,6 +42,8 @@ export function CheckStartScreen() {
   const [busy, setBusy] = useState(false),
     [failure, setFailure] = useState<string | null>(null);
   const guard = useRef(false);
+  const found = query.data?.checks.find((c) => c.id === checkId);
+  useDocumentTitle(found ? CHECK_NAMES[found.kind] : undefined);
   if (query.isPending) return <LoadingScreen message="Loading the course check…" />;
   if (query.error)
     return (
@@ -223,7 +227,7 @@ function CheckQuestion({
             Question {session.answered + 1} of {session.total}
           </p>
           <h1 ref={title} tabIndex={-1}>
-            {item.question.prompt}
+            <InlineRichText text={item.question.prompt} />
           </h1>
           <CheckVisual visual={item.visual} />
           <AnswerInput
@@ -391,7 +395,7 @@ function CheckResults({ session }: { session: CourseCheckSession }) {
                 )}
               </span>
               <span>
-                {index + 1}. {item.question.prompt}
+                {index + 1}. <InlineRichText text={item.question.prompt} />
               </span>
               <span className="sr-only">{item.correct ? "Correct" : "Incorrect"}</span>
             </summary>
@@ -423,6 +427,7 @@ export function CheckSessionScreen() {
     queryFn: () => getCheckSession(sessionId),
     staleTime: 0,
   });
+  useDocumentTitle(query.data ? CHECK_NAMES[query.data.kind] : undefined);
   if (query.isPending) return <LoadingScreen message="Restoring your check…" />;
   // A malformed or unknown session id is a bad link, not a fault worth retrying.
   const unknownSession =

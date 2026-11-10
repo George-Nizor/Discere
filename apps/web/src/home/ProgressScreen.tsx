@@ -1,3 +1,4 @@
+import { useDocumentTitle } from "../lib/document-title.js";
 import type { StudyStatistics } from "@discere/contracts";
 import { ArrowRight, Info } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -31,6 +32,7 @@ export function ProgressScreen() {
   const statistics = useStudyStatistics(period);
   const { hash } = useLocation();
   const studyLoaded = Boolean(study.data);
+  useDocumentTitle("Your progress");
   // Links from the navigation land on the league or the achievements once they have rendered.
   useEffect(() => {
     if (!hash || !studyLoaded) return;

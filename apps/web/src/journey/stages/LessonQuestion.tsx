@@ -1,6 +1,6 @@
 import type { QuizStage } from "@discere/contracts";
 import { ArrowRight } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ModeSelector } from "../ModeSelector.js";
 import { useTutoringMode } from "../mode-context.js";
 import { PlayerFooterSlot } from "../player-footer.js";
@@ -27,6 +27,11 @@ export function LessonQuestion({
   const { mode, setMode } = useTutoringMode();
   const [ready, setReady] = useState(false);
   const [started, setStarted] = useState(false);
+  // Once the question is settled, focus waits on Continue, so the keyboard needs no search.
+  const forward = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (ready) forward.current?.focus();
+  }, [ready]);
   return (
     <div className="quiz lesson-question">
       <QuestionBlock
@@ -40,7 +45,12 @@ export function LessonQuestion({
       {ready ? (
         <PlayerFooterSlot kind="actions">
           <div className="button-row story-actions">
-            <button className="button button-primary" type="button" onClick={onContinue}>
+            <button
+              className="button button-primary"
+              type="button"
+              onClick={onContinue}
+              ref={forward}
+            >
               Continue
               <ArrowRight aria-hidden="true" size={16} />
             </button>

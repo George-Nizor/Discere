@@ -1,3 +1,4 @@
+import { useDocumentTitle } from "../lib/document-title.js";
 import { useParams } from "react-router";
 import { useAmbientAccent } from "../fx/ambient-accent.js";
 import { ApiError, errorMessage } from "../api/client.js";
@@ -14,6 +15,7 @@ import { CourseOverview, CourseRoadmap } from "./CourseRoadmap.js";
 
 export function CourseListScreen() {
   const courses = useCourses();
+  useDocumentTitle("Courses");
   if (courses.isPending) return <LoadingScreen message="Loading courses…" />;
   if (courses.error || !courses.data) {
     return (
@@ -32,6 +34,7 @@ export function CourseScreen() {
   const { courseId } = useParams();
   const course = useCourse(courseId ?? "");
   useAmbientAccent(course.data?.course.accent);
+  useDocumentTitle(course.data?.course.title);
   if (!courseId) {
     return (
       <ErrorScreen

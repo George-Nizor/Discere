@@ -1,3 +1,4 @@
+import { useDocumentTitle } from "../lib/document-title.js";
 import type { CapabilityId, TutorStatus } from "@discere/contracts";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, Info, Loader2, XCircle } from "lucide-react";
@@ -359,6 +360,7 @@ function TutorSettings() {
   );
 }
 export function SettingsScreen() {
+  useDocumentTitle("Settings");
   return (
     <main className="page" id="stage">
       <h1>Settings</h1>
