@@ -79,12 +79,36 @@ function assessmentResponse(
   };
 }
 
+export const ASSESSMENT_INTERRUPTED_CODE = "ASSESSMENT_INTERRUPTED";
+
+/**
+ * An assessment runs inside the server process, so a row still marked `pending` when the
+ * server starts belongs to a run that died with the previous process. Nothing will ever
+ * finish it, and the assess route answers a pending row with itself, so the learner could
+ * never ask again. Marking it failed lets the next request start a new run.
+ */
+export function resetInterruptedAssessments(store: DiscereStore): number {
+  return store.database
+    .prepare(
+      "UPDATE essay_assessments SET status = 'failed', accepted = 0, error_code = ?, error_message = ?, updated_at = ? WHERE status = 'pending'",
+    )
+    .run(
+      ASSESSMENT_INTERRUPTED_CODE,
+      "Discere stopped before this assessment finished. Ask for it again.",
+      new Date().toISOString(),
+    ).changes;
+}
+
 export async function registerTutorRoutes(
   app: FastifyInstance,
   dependencies: TutorRouteDependencies,
 ): Promise<void> {
   const { content, store } = dependencies;
   const runtime = dependencies.runtime ?? createTutorRuntime();
+  const interrupted = resetInterruptedAssessments(store);
+  if (interrupted > 0) {
+    app.log.warn(`Marked ${interrupted} interrupted essay assessment(s) as failed.`);
+  }
   // A generation outlives its request. The server tracks the work so shutdown waits for it
   // instead of writing to a closed database.
   const running = new Map<string, Promise<void>>();
