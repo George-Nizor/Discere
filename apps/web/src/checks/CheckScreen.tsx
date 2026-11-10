@@ -17,6 +17,7 @@ import {
 } from "../journey/quiz/answer-draft.js";
 import { useExperience } from "../study/experience.js";
 import { ErrorScreen, LoadingScreen } from "../ui/Feedback.js";
+import { InlineRichText } from "../ui/RichText.js";
 import { CheckVisual } from "./CheckVisual.js";
 import { CHECK_NAMES, placedOutLessons, placementVerdict } from "./check-model.js";
 import { checkDate } from "./CourseChecks.js";
@@ -226,7 +227,7 @@ function CheckQuestion({
             Question {session.answered + 1} of {session.total}
           </p>
           <h1 ref={title} tabIndex={-1}>
-            {item.question.prompt}
+            <InlineRichText text={item.question.prompt} />
           </h1>
           <CheckVisual visual={item.visual} />
           <AnswerInput
@@ -394,7 +395,7 @@ function CheckResults({ session }: { session: CourseCheckSession }) {
                 )}
               </span>
               <span>
-                {index + 1}. {item.question.prompt}
+                {index + 1}. <InlineRichText text={item.question.prompt} />
               </span>
               <span className="sr-only">{item.correct ? "Correct" : "Incorrect"}</span>
             </summary>

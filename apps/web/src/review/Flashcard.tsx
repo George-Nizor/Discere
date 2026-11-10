@@ -158,10 +158,19 @@ export function Flashcard({
   return (
     <div className="flashcard-screen">
       <div className="flashcard-progress">
-        <span aria-hidden="true" className="flashcard-progress-track">
+        <span
+          className="flashcard-progress-track"
+          role="progressbar"
+          aria-label="Review progress"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={percent}
+          aria-valuetext={`Card ${position} of ${total}`}
+        >
           <span className="flashcard-progress-fill" style={{ width: `${percent}%` }} />
         </span>
-        <span className="flashcard-progress-count">
+        {/* The progress bar already says this in words. */}
+        <span className="flashcard-progress-count" aria-hidden="true">
           {position} / {total}
         </span>
       </div>
