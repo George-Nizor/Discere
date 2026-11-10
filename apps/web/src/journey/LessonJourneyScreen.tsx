@@ -1,3 +1,4 @@
+import { defaultAccent } from "../lib/tokens.js";
 import { useDocumentTitle } from "../lib/document-title.js";
 import type { CalculatorPolicy, LearnerStage } from "@discere/contracts";
 import { useAmbientAccent } from "../fx/ambient-accent.js";
@@ -111,9 +112,14 @@ function LessonJourney({
         state: "active",
         // The id is what resumes the learner; the index stays for older builds reading the row.
         interactionState: { stepId, stepIndex },
-      }).catch((error: unknown) =>
-        setSaveFailure(errorMessage(error, "Your place could not be saved. Try continuing again.")),
-      );
+      })
+        // A later save that succeeds means the place is kept, so the old warning goes.
+        .then(() => setSaveFailure(null))
+        .catch((error: unknown) =>
+          setSaveFailure(
+            errorMessage(error, "Your place could not be saved. Try continuing again."),
+          ),
+        );
     },
     [courseId, lessonId],
   );
@@ -442,7 +448,7 @@ function LessonJourney({
             tab={bench}
             onTab={(tab) => openBench(tab)}
             onClose={() => openBench(null)}
-            accent={course.data?.course.accent ?? "#16a34a"}
+            accent={course.data?.course.accent ?? defaultAccent()}
             conceptIds={current.stage.conceptIds}
             lessonId={lessonId}
             {...(tutorQuestionId ? { questionId: tutorQuestionId } : {})}

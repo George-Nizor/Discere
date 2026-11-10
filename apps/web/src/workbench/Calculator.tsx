@@ -78,6 +78,15 @@ export function Calculator() {
   const [copied, setCopied] = useState(false);
   const [inserted, setInserted] = useState(false);
   const field = useRef<HTMLInputElement>(null);
+  // The "Copied" and "Inserted" confirmations clear themselves; their timers go with the panel.
+  const confirmations = useRef<{ copied?: number; inserted?: number }>({});
+  useEffect(
+    () => () => {
+      window.clearTimeout(confirmations.current.copied);
+      window.clearTimeout(confirmations.current.inserted);
+    },
+    [],
+  );
 
   const preview = useMemo(() => {
     if (!input.trim()) return null;
@@ -142,7 +151,8 @@ export function Calculator() {
     try {
       await navigator.clipboard.writeText(resultToUse);
       setCopied(true);
-      window.setTimeout(() => setCopied(false), 1400);
+      window.clearTimeout(confirmations.current.copied);
+      confirmations.current.copied = window.setTimeout(() => setCopied(false), 1400);
     } catch {
       /* Clipboard can be refused; the value is still on screen. */
     }
@@ -151,7 +161,8 @@ export function Calculator() {
     if (!resultToUse) return;
     if (insertIntoAnswer(resultToUse)) {
       setInserted(true);
-      window.setTimeout(() => setInserted(false), 1400);
+      window.clearTimeout(confirmations.current.inserted);
+      confirmations.current.inserted = window.setTimeout(() => setInserted(false), 1400);
     } else setError("Click the lesson's answer box once, then press Use in answer again.");
   }
 

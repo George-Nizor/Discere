@@ -83,6 +83,9 @@ export function GameWatcher() {
   const phase = useRef(lessonPhase(location.pathname));
   const [toasts, setToasts] = useState<Announcement[]>([]);
   const [levelUp, setLevelUp] = useState<{ level: number; title: string } | null>(null);
+  // The burst that follows a new toast is cancelled if the shell goes before it fires.
+  const toastBurst = useRef<number | undefined>(undefined);
+  useEffect(() => () => window.clearTimeout(toastBurst.current), []);
 
   const announce = (items: Announcement[], overlay = true) => {
     if (!items.length) return;
@@ -94,7 +97,8 @@ export function GameWatcher() {
       play("levelup");
       if (celebrations) celebrateLevelUp();
     }
-    window.setTimeout(() => {
+    window.clearTimeout(toastBurst.current);
+    toastBurst.current = window.setTimeout(() => {
       const node = document.querySelector(".game-toast:last-child");
       if (node && celebrations) {
         const rect = node.getBoundingClientRect();

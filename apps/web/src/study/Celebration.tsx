@@ -73,7 +73,7 @@ export function Celebration({
           fill="#10131c"
         />
         <circle cx="90" cy="78" r="60" fill="#dcfce7" />
-        <circle cx="90" cy="78" r="48" fill="#16a34a" />
+        <circle cx="90" cy="78" r="48" style={{ fill: "var(--correct)" }} />
         <path
           className="award-check"
           d="m68 78 16 16 30-33"
