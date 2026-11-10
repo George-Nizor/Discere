@@ -29,7 +29,8 @@ function questionsOf(bundle: CourseBundle): Question[] {
   ];
 }
 
-describe("marking against every bundle", () => {
+// Each check walks every bundle, which takes seconds when the whole suite runs at once.
+describe("marking against every bundle", { timeout: 60_000 }, () => {
   it("reads the content", () => {
     expect(bundles.length).toBeGreaterThan(60);
   });
