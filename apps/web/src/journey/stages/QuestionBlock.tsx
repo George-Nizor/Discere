@@ -34,39 +34,107 @@ export function splitPrompt(prompt: string): { setup: string; ask: string } {
 
 export type PromptPart =
   | { kind: "text"; setup: string; ask: string }
-  | { kind: "code"; code: string };
+  | { kind: "code"; code: string }
+  | { kind: "quote"; text: string };
 
 /**
  * A prompt can hold lines of code, each written as one code span on a line of its own:
  * "A file contains these lines. Where does tsc stop?\n\n`let n = 5;`\n`n = \"five\";`".
  * Those lines become one code block, kept in place, and the prose around them is split as
  * {@link splitPrompt} does, so the question still stands apart in bold.
+ *
+ * A prompt can also hold a quoted extract, written as a paragraph whose lines begin with "> ":
+ * "A chronicler describes the survey.\n\n> So very narrowly did he commission them…\n\nWhat
+ * does the chronicler think of it?". The extract becomes a quotation set apart from the prose,
+ * so a source of a hundred words is read as a source and the question after it stays short.
  */
 export function promptParts(prompt: string): PromptPart[] {
   const isCodeLine = (line: string) => /^`[^`]+`$/.test(line);
+  const isQuoteLine = (line: string) => /^>\s/.test(line);
   const raw = prompt.trim().split("\n");
-  if (!raw.some((line) => isCodeLine(line.trim())))
+  if (!raw.some((line) => isCodeLine(line.trim()) || isQuoteLine(line.trim())))
     return [{ kind: "text", ...splitPrompt(prompt) }];
-  const blocks: ({ kind: "text"; text: string } | { kind: "code"; lines: string[] })[] = [];
+  const blocks: (
+    | { kind: "text"; text: string }
+    | { kind: "code"; lines: string[] }
+    | { kind: "quote"; text: string }
+  )[] = [];
+  // A blank line ends a quotation, so two extracts set one after the other stay two.
+  let afterBlank = false;
   for (const rawLine of raw) {
     const line = rawLine.trim();
-    if (!line) continue;
+    if (!line) {
+      afterBlank = true;
+      continue;
+    }
     const last = blocks.at(-1);
     if (isCodeLine(line)) {
       // Indentation is written outside the backticks, and Python needs it kept.
       const code = `${/^\s*/.exec(rawLine)?.[0] ?? ""}${line.slice(1, -1)}`;
       if (last?.kind === "code") last.lines.push(code);
       else blocks.push({ kind: "code", lines: [code] });
+    } else if (isQuoteLine(line)) {
+      const text = line.replace(/^>\s+/, "");
+      if (last?.kind === "quote" && !afterBlank) last.text = `${last.text} ${text}`;
+      else blocks.push({ kind: "quote", text });
     } else if (last?.kind === "text") last.text = `${last.text} ${line}`;
     else blocks.push({ kind: "text", text: line });
+    afterBlank = false;
   }
   const askAt = blocks.findLastIndex((block) => block.kind === "text" && block.text.includes("?"));
   return blocks.map((block, index) =>
     block.kind === "code"
       ? { kind: "code", code: block.lines.join("\n") }
-      : index === askAt
-        ? { kind: "text", ...splitPrompt(block.text) }
-        : { kind: "text", setup: block.text, ask: "" },
+      : block.kind === "quote"
+        ? { kind: "quote", text: block.text }
+        : index === askAt
+          ? { kind: "text", ...splitPrompt(block.text) }
+          : { kind: "text", setup: block.text, ask: "" },
+  );
+}
+
+/** A prompt as it is read aloud or shown on one line: the extract's "> " marks removed. */
+export function promptPlainText(prompt: string): string {
+  return prompt.replace(/^>\s+/gm, "");
+}
+
+/** Whether a prompt holds a quoted extract, which a heading sets apart from its question. */
+export function promptHasQuote(prompt: string): boolean {
+  return /^>\s/m.test(prompt);
+}
+
+/**
+ * The parts of a prompt as phrasing content, so they can sit inside a heading: code and quoted
+ * extracts are spans set as blocks, the setup is body text and the question itself is bold.
+ */
+export function PromptText({ prompt }: { prompt: string }) {
+  return (
+    <>
+      {promptParts(prompt).map((part) =>
+        part.kind === "code" ? (
+          <span className="prompt-code" key={`code:${part.code}`}>
+            <code>{part.code}</code>
+          </span>
+        ) : part.kind === "quote" ? (
+          <span className="prompt-quote" key={`quote:${part.text}`}>
+            <InlineRichText text={part.text} />
+          </span>
+        ) : (
+          <Fragment key={`text:${part.setup}|${part.ask}`}>
+            {part.setup ? (
+              <span className="prompt-setup">
+                <InlineRichText text={part.setup} />
+              </span>
+            ) : null}
+            {part.ask ? (
+              <span className="prompt-ask">
+                <InlineRichText text={part.ask} />
+              </span>
+            ) : null}
+          </Fragment>
+        ),
+      )}
+    </>
   );
 }
 
@@ -94,9 +162,8 @@ function PythonUnavailable({ left, onLeave }: { left: boolean; onLeave: () => vo
   return (
     <Notice tone="warning" title="Python can't run on this computer yet">
       <p>
-        Your code can't be run or checked until Python is set up, so this exercise is optional
-        for now. The rest of the lesson works without it, and you can come back to the exercise
-        later.
+        Your code can't be run or checked until Python is set up, so this exercise is optional for
+        now. The rest of the lesson works without it, and you can come back to the exercise later.
       </p>
       {left ? (
         <p>This exercise is set aside. Continue when you're ready.</p>
@@ -185,7 +252,6 @@ export function QuestionBlock({
     if (started) onStarted?.();
   }, [started, onStarted]);
   const Heading = heading;
-  const prompt = promptParts(question.prompt);
   const formId = `check-${question.id}`;
   const marks = attemptMarksDraft(attempt);
   // Checking the same marked answer again would only spend the retry. The button stays
@@ -230,27 +296,7 @@ export function QuestionBlock({
     >
       {hidePrompt ? null : (
         <Heading className={promptClassName}>
-          {prompt.map((part) =>
-            part.kind === "code" ? (
-              // A heading holds phrasing content only, so the code block is a span set as a block.
-              <span className="prompt-code" key={`code:${part.code}`}>
-                <code>{part.code}</code>
-              </span>
-            ) : (
-              <Fragment key={`text:${part.setup}|${part.ask}`}>
-                {part.setup ? (
-                  <span className="prompt-setup">
-                    <InlineRichText text={part.setup} />
-                  </span>
-                ) : null}
-                {part.ask ? (
-                  <span className="prompt-ask">
-                    <InlineRichText text={part.ask} />
-                  </span>
-                ) : null}
-              </Fragment>
-            ),
-          )}
+          <PromptText prompt={question.prompt} />
         </Heading>
       )}
       {figure ? figure(attempt) : null}

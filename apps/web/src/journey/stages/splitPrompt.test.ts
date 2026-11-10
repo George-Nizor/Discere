@@ -70,4 +70,49 @@ describe("promptParts", () => {
       { kind: "text", setup: "Run `ls -l` in the folder.", ask: "How many lines print?" },
     ]);
   });
+
+  it("sets a quoted extract apart from the setup before it and the question after it", async () => {
+    const { promptParts } = await import("./QuestionBlock.js");
+    expect(
+      promptParts(
+        "A chronicler describes the survey of 1085. He was not one of the king's officials.\n\n> So very narrowly did he commission them to trace it out,\n> that there was not one single hide left out.\n\nThe chronicler writes of shame. What does that word tell you about him?",
+      ),
+    ).toEqual([
+      {
+        kind: "text",
+        setup: "A chronicler describes the survey of 1085. He was not one of the king's officials.",
+        ask: "",
+      },
+      {
+        kind: "quote",
+        text: "So very narrowly did he commission them to trace it out, that there was not one single hide left out.",
+      },
+      {
+        kind: "text",
+        setup: "The chronicler writes of shame.",
+        ask: "What does that word tell you about him?",
+      },
+    ]);
+  });
+
+  it("keeps two extracts apart when a blank line or a sentence stands between them", async () => {
+    const { promptParts } = await import("./QuestionBlock.js");
+    expect(
+      promptParts("> First account.\n\n> Second account.\n\nWhich of the two is a claim?"),
+    ).toEqual([
+      { kind: "quote", text: "First account." },
+      { kind: "quote", text: "Second account." },
+      { kind: "text", setup: "", ask: "Which of the two is a claim?" },
+    ]);
+  });
+
+  it("reads a prompt aloud without the marks of its extract", async () => {
+    const { promptHasQuote, promptPlainText } = await import("./QuestionBlock.js");
+    const prompt = "He wrote this.\n\n> I shall tell the truth.\n\nWho is speaking?";
+    expect(promptHasQuote(prompt)).toBe(true);
+    expect(promptHasQuote("Is 3 > 2 true?")).toBe(false);
+    expect(promptPlainText(prompt)).toBe(
+      "He wrote this.\n\nI shall tell the truth.\n\nWho is speaking?",
+    );
+  });
 });
