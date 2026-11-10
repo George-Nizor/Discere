@@ -462,6 +462,25 @@ finish. Reopening stages earns nothing. Per-question rewards are bounded across 
 self-correction can earn the remaining difference. Duplicate review tabs cannot advance the card's
 schedule twice. Answer evidence and mastery remain separate from XP.
 
+From November 2026 credit is decided per question. Every response is appended to
+`attempt_responses` and none is rewritten, so the first response and the number of marked tries
+can always be read back. An answer is independent only when the first marked response to the
+question is right, with no hint, tutor reply, reveal or Direct mode before it on any attempt. Right
+after a miss is recorded as recovered and earns less XP on each try (60%, 40%, then 25%). Right
+after the worked answer was shown earns at most a quarter. A correct answer never lowers mastery.
+A number in the wrong unit is answered with what to fix and costs no try.
+
+The server counts lesson misses when the client names the lesson with the attempt: one for a
+prediction, the end-of-lesson check and a two-option choice, two elsewhere. The last allowed miss
+closes the attempt and opens the worked answer. In Exam mode it closes without one, is recorded as
+wrong, and still lets the stage finish. A question that closes this way, or whose answer is shown,
+becomes a review card due the next day, unless an authored card already names that question. A
+numeric or short-text card is typed and marked by the question's own answer authority. A choice or
+code question's card is self-rated. Review card text follows the content on every read, and the
+schedule is kept. Assisted recall counts as Good while a card is new, learning or relearning, so
+it can graduate, and stays capped at Hard once the card is in review. The Sharp mind quest counts
+a question only on the day it is first solved.
+
 The home goal and weekly rhythm, connected course path, seven earned milestones, and lesson result
 use server records. Completion shows actual lesson XP, responses without help, recall, level
 progress, and the next lesson. Home also advances to the next unfinished lesson.
