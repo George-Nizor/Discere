@@ -619,31 +619,43 @@ export async function registerRoutes(
       throw error;
     }
   });
+  function wordsIn(text: string): number {
+    const trimmed = text.trim();
+    return trimmed ? trimmed.split(/\s+/).length : 0;
+  }
+  function essayDraft(essayId: string) {
+    const draft = store.getEssayDraft(essayId);
+    const earlier = store.listEssayVersions(essayId);
+    return {
+      ...draft,
+      wordCount: wordsIn(draft.content),
+      version: earlier.length + 1,
+      earlierVersions: earlier.map((entry) => ({
+        version: entry.version,
+        wordCount: wordsIn(entry.content),
+        submittedAt: entry.submittedAt,
+        assessed: entry.assessment?.status === "ready",
+      })),
+    };
+  }
   app.get("/api/essays/:essayId", async (request) => {
     const { essayId } = EssayParamsSchema.parse(request.params);
     if (!content.getEssay(essayId)) throw new HttpError(404, "Essay not found.", "ESSAY_NOT_FOUND");
-    const draft = store.getEssayDraft(essayId);
-    return {
-      ...draft,
-      wordCount: draft.content.trim() ? draft.content.trim().split(/\s+/).length : 0,
-    };
+    return essayDraft(essayId);
   });
   app.put("/api/essays/:essayId", async (request) => {
     const { essayId } = EssayParamsSchema.parse(request.params);
     const body = EssaySaveRequestSchema.parse(request.body);
     if (!content.getEssay(essayId)) throw new HttpError(404, "Essay not found.", "ESSAY_NOT_FOUND");
-    const draft = store.saveEssayDraft(essayId, body.content);
-    return {
-      ...draft,
-      wordCount: draft.content.trim() ? draft.content.trim().split(/\s+/).length : 0,
-    };
+    store.saveEssayDraft(essayId, body.content);
+    return essayDraft(essayId);
   });
   app.post("/api/essays/:essayId/submit", async (request) => {
     const { essayId } = EssayParamsSchema.parse(request.params);
     const body = EssaySaveRequestSchema.parse(request.body);
     const topic = content.getEssay(essayId);
     if (!topic) throw new HttpError(404, "Essay not found.", "ESSAY_NOT_FOUND");
-    const wordCount = body.content.trim() ? body.content.trim().split(/\s+/).length : 0;
+    const wordCount = wordsIn(body.content);
     if (wordCount < topic.essay.minWords)
       throw new HttpError(
         400,
@@ -655,6 +667,20 @@ export async function registerRoutes(
     const lint = lintText(body.content, { context: "assessment" });
     store.recordWritingGate("assessment", body.content, lint);
     const saved = store.submitEssay(essayId, body.content);
+    // Submitting is what finishes a writing task, so the lesson records it as done here, also
+    // when the task was skipped on an earlier visit.
+    const lessonId = content
+      .bundle(topic.courseId)
+      ?.lessons.find((item) => item.essayId === essayId)?.id;
+    const journey = lessonId ? content.getJourney(topic.courseId, lessonId) : undefined;
+    const stage = journey?.stages.find((item) => item.type === "essay" && item.essayId === essayId);
+    if (journey && stage)
+      store.saveStageProgress(
+        journey.id,
+        journey.stageOrder,
+        { stageId: stage.id, state: "completed", interactionState: {} },
+        stage.type,
+      );
     return {
       essayId: saved.essayId,
       submitted: true as const,

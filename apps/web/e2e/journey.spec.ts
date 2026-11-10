@@ -88,7 +88,7 @@ test.describe("the lesson journey", () => {
     await page.getByLabel("Your writing").fill(TEACH_BACK);
     await expect(page.getByText("Saved just now")).toBeVisible({ timeout: 10_000 });
     await page.getByRole("button", { name: "Submit", exact: true }).click();
-    await expect(page.getByText("Submitted. The draft is now read-only.")).toBeVisible();
+    await expect(page.getByText("Submitted. Choose Revise to change it.")).toBeVisible();
     await page.getByRole("button", { name: /^Continue/ }).click();
 
     // Review

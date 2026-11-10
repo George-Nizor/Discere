@@ -119,6 +119,14 @@ export interface EssayAssessmentRow {
   updatedAt: string;
 }
 export type EssayAssessmentWrite = Omit<EssayAssessmentRow, "updatedAt">;
+export interface EssayVersionRow {
+  essayId: string;
+  version: number;
+  content: string;
+  submittedAt: string | null;
+  /** The assessment this version received, or null when none was requested. */
+  assessment: EssayAssessmentRow | null;
+}
 export interface ReviewCardRow {
   card: Flashcard;
   state: ReviewState;
@@ -582,6 +590,7 @@ export class DiscereStore {
       )?.state ?? "";
     const transaction = this.database.transaction(() => {
       const terminal = alreadyComplete === "completed" || alreadyComplete === "skipped_optional";
+      const upgraded = alreadyComplete === "skipped_optional" && input.state === "completed";
       this.database
         .prepare(
           "INSERT INTO journey_progress (user_id, journey_id, stage_id, state, interaction_state, updated_at) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT(user_id, journey_id, stage_id) DO UPDATE SET state = excluded.state, interaction_state = excluded.interaction_state, updated_at = excluded.updated_at",
@@ -590,13 +599,15 @@ export class DiscereStore {
           LOCAL_USER_ID,
           journeyId,
           input.stageId,
-          terminal ? alreadyComplete : input.state,
+          // A finished stage stays finished. The one change allowed is an optional stage that
+          // was skipped and is now done.
+          terminal && !upgraded ? alreadyComplete : input.state,
           JSON.stringify(input.interactionState),
           timestamp,
         );
       if (input.state === "completed" || input.state === "skipped_optional") {
         const eventKey = `stage:${journeyId}:${input.stageId}`;
-        const freshlyDone = !terminal && !this.study.has(eventKey);
+        const freshlyDone = (!terminal || upgraded) && !this.study.has(eventKey);
         const award = stageType && input.state === "completed" ? stageCompletionXp(stageType) : 0;
         if (freshlyDone && award > 0) {
           this.study.reward(award, eventKey);
@@ -693,6 +704,103 @@ export class DiscereStore {
         timestamp,
       );
     return this.getEssayAssessment(row.essayId) ?? { ...row, updatedAt: timestamp };
+  }
+
+  /** The number of the version being written or last submitted. The first is 1. */
+  essayVersionNumber(essayId: string): number {
+    const row = this.database
+      .prepare(
+        "SELECT COALESCE(MAX(version), 0) AS latest FROM essay_versions WHERE user_id = ? AND essay_id = ?",
+      )
+      .get(LOCAL_USER_ID, essayId) as { latest: number };
+    return row.latest + 1;
+  }
+
+  /** Earlier submitted versions, oldest first. */
+  listEssayVersions(essayId: string): EssayVersionRow[] {
+    const rows = this.database
+      .prepare(
+        "SELECT version, content, submitted_at AS submittedAt, request_id AS requestId, status, provider, accepted, assessment_json AS assessmentJson, issues_json AS issuesJson, error_code AS errorCode, error_message AS errorMessage, assessed_at AS assessedAt FROM essay_versions WHERE user_id = ? AND essay_id = ? ORDER BY version",
+      )
+      .all(LOCAL_USER_ID, essayId) as Array<{
+      version: number;
+      content: string;
+      submittedAt: string | null;
+      requestId: string | null;
+      status: string | null;
+      provider: string | null;
+      accepted: number;
+      assessmentJson: string | null;
+      issuesJson: string;
+      errorCode: string | null;
+      errorMessage: string | null;
+      assessedAt: string | null;
+    }>;
+    return rows.map((row) => ({
+      essayId,
+      version: row.version,
+      content: row.content,
+      submittedAt: row.submittedAt,
+      assessment:
+        row.requestId && row.status && row.provider && row.assessedAt
+          ? {
+              essayId,
+              requestId: row.requestId,
+              status: row.status,
+              provider: row.provider,
+              accepted: bool(row.accepted),
+              assessmentJson: row.assessmentJson,
+              issuesJson: row.issuesJson,
+              errorCode: row.errorCode,
+              errorMessage: row.errorMessage,
+              updatedAt: row.assessedAt,
+            }
+          : null,
+    }));
+  }
+
+  /**
+   * Opens submitted writing for another version. The submitted text and its assessment are
+   * appended to essay_versions first, in the same transaction, so nothing the learner submitted
+   * or was told is lost. The draft keeps its text as the starting point for the revision.
+   * Returns null when there is nothing submitted to revise.
+   */
+  reviseEssay(essayId: string): EssayDraftRow | null {
+    const transaction = this.database.transaction((): EssayDraftRow | null => {
+      const draft = this.getEssayDraft(essayId);
+      if (!draft.submitted) return null;
+      const assessment = this.getEssayAssessment(essayId);
+      this.database
+        .prepare(
+          "INSERT INTO essay_versions (user_id, essay_id, version, content, submitted_at, request_id, status, provider, accepted, assessment_json, issues_json, error_code, error_message, assessed_at, archived_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        )
+        .run(
+          LOCAL_USER_ID,
+          essayId,
+          this.essayVersionNumber(essayId),
+          draft.content,
+          draft.updatedAt,
+          assessment?.requestId ?? null,
+          assessment?.status ?? null,
+          assessment?.provider ?? null,
+          assessment?.accepted ? 1 : 0,
+          assessment?.assessmentJson ?? null,
+          assessment?.issuesJson ?? "[]",
+          assessment?.errorCode ?? null,
+          assessment?.errorMessage ?? null,
+          assessment?.updatedAt ?? null,
+          this.now(),
+        );
+      // The live rows now describe the new version, which has no assessment yet.
+      this.database
+        .prepare("DELETE FROM essay_assessments WHERE user_id = ? AND essay_id = ?")
+        .run(LOCAL_USER_ID, essayId);
+      this.database
+        .prepare("UPDATE essay_drafts SET submitted = 0 WHERE user_id = ? AND essay_id = ?")
+        .run(LOCAL_USER_ID, essayId);
+      return this.getEssayDraft(essayId);
+    });
+    return transaction();
   }
 
   /** Records that a tutor answered inside an open attempt, alongside hints and reveals. */

@@ -114,6 +114,7 @@ describe("database migrations", () => {
       "journey_progress",
       "essay_drafts",
       "essay_assessments",
+      "essay_versions",
       "review_cards",
       "review_sessions",
       "notebook_pages",
@@ -230,7 +231,10 @@ describe("a database from a newer version", () => {
       .prepare("SELECT name FROM schema_migrations WHERE rollback_safe = 1")
       .all() as Array<{ name: string }>;
     database.close();
-    expect(safe.map((row) => row.name)).toEqual(["0015_attempt_history.sql"]);
+    expect(safe.map((row) => row.name)).toEqual([
+      "0015_attempt_history.sql",
+      "0016_essay_versions.sql",
+    ]);
   });
 
   it("is refused with the unknown migrations and the backups folder named", () => {

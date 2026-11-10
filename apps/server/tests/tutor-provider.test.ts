@@ -28,6 +28,20 @@ const CLEAN_ASSESSMENT = {
     "Your teach-back states the relationship between voltage and current, and it stops before describing how resistance limits the flow.",
   firstMeaningfulError: "The explanation treats resistance as a source of current.",
   nextStep: "Add one sentence describing what happens to current when the resistance doubles.",
+  // One result for each of the task's success criteria, as the assessor is asked to return.
+  criteria: [
+    {
+      criterion: "Names how voltage and resistance together set the current.",
+      result: "partly_met",
+      evidence: "“resistance limits current” is stated, and the push from voltage is not tied to it.",
+    },
+    { criterion: "Uses I = V / R accurately.", result: "not_met", evidence: "The equation is never written." },
+    {
+      criterion: "Includes a concrete circuit example with its values.",
+      result: "met",
+      evidence: "“With five volts and one hundred ohms, the current is fifty milliamps.”",
+    },
+  ],
   sourceIds: [],
   uncertainty: [],
 };

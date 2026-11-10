@@ -1,5 +1,6 @@
 import type {
   EssayAssessmentDraft,
+  EssayCriterionResult,
   EssayStage,
   LessonResponse,
   NotebookPage,
@@ -59,15 +60,32 @@ export function buildTutorReplyPayload(
   };
 }
 
+/** What the tutor is told about the version a revision replaces. */
+export interface PreviousEssayVersion {
+  version: number;
+  submission: string;
+  /** The feedback that version received, or null when it was never assessed. */
+  feedback: Pick<
+    EssayAssessmentDraft,
+    "assessment" | "summary" | "firstMeaningfulError" | "nextStep" | "criteria"
+  > | null;
+}
+
+const ASSESS_TASK =
+  "Assess the learner's submitted writing against each of the successCriteria. Return one entry in criteria for every item in successCriteria, in the same order. Copy the item's text into criterion exactly, set result to met, partly_met or not_met, and put in evidence a short quote from the learner's writing that shows it. When there is nothing to quote, give the reason in one sentence. In the summary, say in two to five plain sentences what the writing does and where it falls short, referring to the learner's own words and without praise. Put the unmet criterion that matters most in firstMeaningfulError, and make nextStep one change the learner can make to this piece. Use correct only when every criterion is met.";
+
+const REVISION_TASK =
+  " This is a revision. previousVersion holds the text the learner submitted before and the feedback it received. Assess the new learnerSubmission, and say in the summary whether the problem named in previousVersion.feedback.firstMeaningfulError is now fixed, quoting the words that changed. If it is not fixed, keep it as firstMeaningfulError.";
+
 export function buildEssayAssessmentPayload(
   lesson: LessonResponse,
   stage: EssayStage,
   essay: { content: string; wordCount: number },
   mode: Exclude<TutoringMode, "exam">,
+  previousVersion?: PreviousEssayVersion,
 ) {
   return {
-    task:
-      "Assess the learner's submitted writing against each of the successCriteria. In the summary, say which criteria the writing meets and which it does not, and quote the learner's own words as the evidence for each. Put the unmet criterion that matters most in firstMeaningfulError, and make nextStep one change the learner can make to this piece. Use correct only when every criterion is met.",
+    task: previousVersion ? ASSESS_TASK + REVISION_TASK : ASSESS_TASK,
     tutoringMode: mode,
     responsePolicy: modePolicy(mode),
     essayPrompt: stage.prompt,
@@ -75,11 +93,37 @@ export function buildEssayAssessmentPayload(
     successCriteria: stage.successCriteria,
     learnerSubmission: essay.content,
     wordCount: essay.wordCount,
+    ...(previousVersion ? { previousVersion } : {}),
     lessonContext: lesson,
     allowedSourceIds: lesson.sources.map((source) => source.id),
     sourceRule:
       "Use only allowedSourceIds in payload.sourceIds. Leave sourceIds empty when the assessment does not rely on a listed source.",
   };
+}
+
+function criterionKey(text: string): string {
+  return text.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "");
+}
+
+/**
+ * Lines a reply's per-criterion results up with the task's own list. Each result is matched to a
+ * criterion by its text, ignoring case and punctuation. A reply that reworded the criteria but
+ * gave one result for each is read in order. Anything else returns null, and the assessment is
+ * kept with its overall verdict alone. The returned results carry the task's wording.
+ */
+export function matchCriteria(
+  results: readonly EssayCriterionResult[] | undefined,
+  successCriteria: readonly string[],
+): EssayCriterionResult[] | null {
+  if (!results || results.length === 0 || results.length !== successCriteria.length) return null;
+  const byKey = new Map(results.map((entry) => [criterionKey(entry.criterion), entry]));
+  const exact = byKey.size === results.length && successCriteria.every((c) => byKey.has(criterionKey(c)));
+  return successCriteria.map((criterion, index) => {
+    const entry = exact ? byKey.get(criterionKey(criterion)) : results[index];
+    // Both lookups are guarded by the length and key checks above.
+    const found = entry as EssayCriterionResult;
+    return { criterion, result: found.result, evidence: found.evidence };
+  });
 }
 
 export function buildWorkingsReviewPayload(

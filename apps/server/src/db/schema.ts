@@ -138,6 +138,29 @@ export const essayAssessments = sqliteTable(
   },
   (table) => [primaryKey({ columns: [table.userId, table.essayId] })],
 );
+/** A submitted version the learner has since revised, with the assessment it received. Rows are
+ * appended when a revision starts and never rewritten. */
+export const essayVersions = sqliteTable(
+  "essay_versions",
+  {
+    userId: text("user_id").notNull(),
+    essayId: text("essay_id").notNull(),
+    version: integer("version").notNull(),
+    content: text("content").notNull(),
+    submittedAt: text("submitted_at"),
+    requestId: text("request_id"),
+    status: text("status"),
+    provider: text("provider"),
+    accepted: integer("accepted", { mode: "boolean" }).notNull().default(false),
+    assessmentJson: text("assessment_json"),
+    issuesJson: text("issues_json").notNull().default("[]"),
+    errorCode: text("error_code"),
+    errorMessage: text("error_message"),
+    assessedAt: text("assessed_at"),
+    archivedAt: text("archived_at").notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.essayId, table.version] })],
+);
 /** One flashcard's FSRS memory state. `stability`, `difficulty`, `lapses`, `phase`, and
  * `learning_step` are the scheduler's own state; the review counters stay separate so the
  * interface can still say whether a card was earned independently. */

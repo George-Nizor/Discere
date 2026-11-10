@@ -1,4 +1,4 @@
-import { screen, waitFor } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { essayStage } from "../../test/fixtures.js";
@@ -138,7 +138,7 @@ describe("essay studio", () => {
     expect(
       screen.getByText("A negative parallelism appears in this sentence."),
     ).toBeInTheDocument();
-    expect(screen.getByText("Submitted. The draft is now read-only.")).toBeInTheDocument();
+    expect(screen.getByText("Submitted. Choose Revise to change it.")).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: /^Continue/ }));
     expect(onContinue).toHaveBeenCalledOnce();
   });
@@ -213,5 +213,242 @@ describe("essay studio", () => {
     expect(await screen.findByText(/Your writing is saved\. Read it against each line/)).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Ask for an assessment" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /^Continue/ })).toBeInTheDocument();
+  });
+});
+
+const submittedDraft = {
+  essayId: essayStage.essayId,
+  content: "Current is voltage divided by resistance.",
+  wordCount: 6,
+  submitted: true,
+  updatedAt: "2026-11-09T12:00:00.000Z",
+};
+const readyAssessment = {
+  essayId: essayStage.essayId,
+  status: "ready",
+  provider: "mock",
+  requestId: "5b0f5f0e-2f0c-4c0e-9d57-0d6c1f6f7a11",
+  accepted: true,
+  assessment: {
+    assessment: "partly_correct",
+    summary: "The relationship is named and the equation is missing.",
+    firstMeaningfulError: "The equation is never written.",
+    nextStep: "Write I = V / R after the first sentence.",
+    criteria: [
+      {
+        criterion: "Names the relationship.",
+        result: "met",
+        evidence: "“voltage divided by resistance”",
+      },
+      {
+        criterion: "Uses the equation.",
+        result: "not_met",
+        evidence: "The equation is never written.",
+      },
+    ],
+    sourceIds: [],
+    uncertainty: [],
+  },
+  issues: [],
+  error: null,
+  packet: null,
+  updatedAt: "2026-11-09T12:01:00.000Z",
+};
+
+describe("assessment of a writing task", () => {
+  it("shows the result for each criterion beside it", async () => {
+    stubFetch({
+      [`GET ${essayPath}`]: { body: submittedDraft },
+      [`GET ${essayPath}/assessment`]: { body: readyAssessment },
+    });
+    renderEssay();
+    const heading = await screen.findByRole("heading", { name: "Result for each criterion" });
+    const rows = within(heading.parentElement as HTMLElement).getAllByRole("listitem");
+    expect(rows).toHaveLength(2);
+    expect(rows[0]).toHaveTextContent("Names the relationship.");
+    expect(rows[0]).toHaveTextContent("Met");
+    expect(rows[0]).toHaveTextContent("“voltage divided by resistance”");
+    expect(rows[1]).toHaveTextContent("Uses the equation.");
+    expect(rows[1]).toHaveTextContent("Not met");
+    // The overall verdict is still there.
+    expect(screen.getByText("The relationship is named and the equation is missing.")).toBeInTheDocument();
+    expect(screen.getByText("Write I = V / R after the first sentence.")).toBeInTheDocument();
+  });
+
+  it("still shows an assessment stored before per-criterion results existed", async () => {
+    const { criteria: _criteria, ...older } = readyAssessment.assessment;
+    stubFetch({
+      [`GET ${essayPath}`]: { body: submittedDraft },
+      [`GET ${essayPath}/assessment`]: { body: { ...readyAssessment, assessment: older } },
+    });
+    renderEssay();
+    expect(
+      await screen.findByText("The relationship is named and the equation is missing."),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("heading", { name: "Result for each criterion" }),
+    ).not.toBeInTheDocument();
+  });
+});
+
+describe("an assessment that failed on sign-in", () => {
+  it("shows the cause and then the notice that the tutor is unavailable", async () => {
+    let capabilityReads = 0;
+    stubFetch({
+      [`GET ${essayPath}`]: { body: submittedDraft },
+      [`GET ${essayPath}/assessment`]: {
+        body: {
+          ...readyAssessment,
+          status: "failed",
+          accepted: false,
+          assessment: null,
+          error: {
+            code: "PROVIDER_EXITED",
+            message:
+              "The local model exited with code 1. The tutor's sign-in has probably expired. Sign in to it again, then ask for the assessment.",
+          },
+        },
+      },
+      // Available on the first read; unavailable once the server has seen the refusal.
+      "GET /api/capabilities": () => {
+        capabilityReads += 1;
+        return capabilityReads === 1
+          ? {
+              body: {
+                capabilities: [
+                  { id: "tutor_generation", state: "available", reason: "", fallback: "" },
+                ],
+              },
+            }
+          : {
+              body: {
+                capabilities: [
+                  {
+                    id: "tutor_generation",
+                    state: "unavailable",
+                    reason:
+                      "Claude Code refused the tutor's last request because its sign-in has expired. Run `claude` and log in again.",
+                    fallback: "",
+                  },
+                ],
+              },
+            };
+      },
+    });
+    renderWithProviders(
+      <CapabilityProvider>
+        <ModeProvider lessonId="lesson">
+          <EssayStageView onContinue={vi.fn()} stage={essayStage} />
+        </ModeProvider>
+      </CapabilityProvider>,
+    );
+    expect(await screen.findByText(/sign-in has probably expired/)).toBeInTheDocument();
+    expect(await screen.findByText(/its sign-in has expired\. Run `claude`/)).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Try the assessment again" }),
+    ).not.toBeInTheDocument();
+  });
+});
+
+describe("revising a writing task", () => {
+  it("opens the submitted text for editing and keeps the earlier version with its feedback", async () => {
+    const earlierVersions = [
+      { version: 1, wordCount: 6, submittedAt: "2026-11-09T12:00:00.000Z", assessed: true },
+    ];
+    const { calls } = stubFetch({
+      [`GET ${essayPath}`]: { body: submittedDraft },
+      [`GET ${essayPath}/assessment`]: { body: readyAssessment },
+      [`POST ${essayPath}/revise`]: {
+        body: { ...submittedDraft, submitted: false, version: 2, earlierVersions },
+      },
+      [`GET ${essayPath}/versions/1`]: {
+        body: {
+          essayId: essayStage.essayId,
+          version: 1,
+          content: submittedDraft.content,
+          wordCount: 6,
+          submittedAt: submittedDraft.updatedAt,
+          assessment: readyAssessment,
+        },
+      },
+      [`PUT ${essayPath}`]: ({ body }) => ({
+        body: {
+          ...submittedDraft,
+          content: (body as { content: string }).content,
+          submitted: false,
+          version: 2,
+          earlierVersions,
+        },
+      }),
+      [`POST ${essayPath}/submit`]: {
+        body: {
+          essayId: essayStage.essayId,
+          submitted: true,
+          wordCount: 9,
+          feedback: "Your writing has been saved as submitted.",
+          styleNotes: [],
+        },
+      },
+    });
+    renderEssay();
+    const editor = await screen.findByLabelText("Your writing");
+    expect(editor).toHaveAttribute("readonly");
+    await userEvent.click(await screen.findByRole("button", { name: "Revise" }));
+
+    await waitFor(() => expect(editor).not.toHaveAttribute("readonly"));
+    expect(editor).toHaveValue(submittedDraft.content);
+    // The assessment panel belongs to a submitted version, so it goes while version 2 is written.
+    expect(screen.queryByRole("region", { name: "Assessment" })).not.toBeInTheDocument();
+    // Version 1 and what the tutor said about it stay on the page, read-only.
+    const earlier = await screen.findByRole("region", { name: "Earlier versions" });
+    expect(
+      within(earlier).getByText(/Version 1, submitted .+\. 6 words, assessed\./),
+    ).toBeInTheDocument();
+    expect(await within(earlier).findByText("Feedback on version 1")).toBeInTheDocument();
+    expect(within(earlier).getByText("First thing to fix.")).toBeInTheDocument();
+    expect(within(earlier).getAllByText("Not met")).toHaveLength(1);
+    expect(screen.queryByRole("button", { name: "Skip this task" })).not.toBeInTheDocument();
+
+    await userEvent.type(editor, " I = V / R.");
+    await userEvent.click(screen.getByRole("button", { name: "Submit version 2" }));
+    await waitFor(() =>
+      expect(
+        screen.getByText("Version 2, submitted. Choose Revise to change it."),
+      ).toBeInTheDocument(),
+    );
+    expect(calls.find((call) => call.key === `POST ${essayPath}/submit`)?.body).toEqual({
+      content: `${submittedDraft.content} I = V / R.`,
+    });
+  });
+
+  it("lists earlier versions closed until one is opened", async () => {
+    stubFetch({
+      [`GET ${essayPath}`]: {
+        body: {
+          ...submittedDraft,
+          version: 2,
+          earlierVersions: [
+            { version: 1, wordCount: 6, submittedAt: "2026-11-08T12:00:00.000Z", assessed: false },
+          ],
+        },
+      },
+      [`GET ${essayPath}/assessment`]: { body: { ...readyAssessment, version: 2 } },
+      [`GET ${essayPath}/versions/1`]: {
+        body: {
+          essayId: essayStage.essayId,
+          version: 1,
+          content: "An earlier attempt at the same idea.",
+          wordCount: 7,
+          submittedAt: "2026-11-08T12:00:00.000Z",
+          assessment: null,
+        },
+      },
+    });
+    renderEssay();
+    expect(await screen.findByRole("heading", { name: "Assessment of version 2" })).toBeInTheDocument();
+    expect(screen.queryByText("An earlier attempt at the same idea.")).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Open version 1" }));
+    expect(await screen.findByText("An earlier attempt at the same idea.")).toBeInTheDocument();
+    expect(screen.getByText("This version was not assessed.")).toBeInTheDocument();
   });
 });

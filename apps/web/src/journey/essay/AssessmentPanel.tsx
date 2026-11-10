@@ -1,7 +1,11 @@
-import type { EssayAssessmentResponse, TutoringMode } from "@discere/contracts";
-import { useQuery } from "@tanstack/react-query";
+import type {
+  EssayAssessmentResponse,
+  EssayCriterionVerdict,
+  TutoringMode,
+} from "@discere/contracts";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ApiError, errorMessage } from "../../api/client.js";
 import { getEssayAssessment, requestEssayAssessment } from "../../api/endpoints.js";
 import { queryKeys } from "../../api/queries.js";
@@ -17,12 +21,36 @@ async function loadAssessment(essayId: string): Promise<EssayAssessmentResponse 
   }
 }
 
-function AssessmentBody({ assessment }: { assessment: EssayAssessmentResponse }) {
+const RESULT_LABELS: Record<EssayCriterionVerdict, string> = {
+  met: "Met",
+  partly_met: "Partly met",
+  not_met: "Not met",
+};
+
+/**
+ * What the tutor said about one version. The per-criterion list is absent on assessments stored
+ * before it existed, and the summary stands alone then.
+ */
+export function AssessmentBody({ assessment }: { assessment: EssayAssessmentResponse }) {
   const detail = assessment.assessment;
   if (!detail) return null;
   return (
     <div className="assessment-body">
       <p>{detail.summary}</p>
+      {detail.criteria && detail.criteria.length > 0 ? (
+        <div>
+          <h3 className="panel-subhead">Result for each criterion</h3>
+          <ul className="criteria-results">
+            {detail.criteria.map((entry) => (
+              <li data-result={entry.result} key={entry.criterion}>
+                <span className="criterion-text">{entry.criterion}</span>
+                <span className="criterion-result">{RESULT_LABELS[entry.result]}</span>
+                <span className="criterion-evidence">{entry.evidence}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
       {detail.firstMeaningfulError ? (
         <p>
           <strong>First thing to fix.</strong> {detail.firstMeaningfulError}
@@ -65,11 +93,15 @@ export function AssessmentPanel({
   essayId,
   mode,
   unavailableReason,
+  onPendingChange,
 }: {
   essayId: string;
   mode: TutoringMode;
   unavailableReason?: string;
+  /** Told while the tutor is reading, so the page can hold back Revise until it has answered. */
+  onPendingChange?: (pending: boolean) => void;
 }) {
+  const queryClient = useQueryClient();
   const [requested, setRequested] = useState(false);
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState<string | null>(null);
@@ -96,10 +128,19 @@ export function AssessmentPanel({
   }
 
   const current = assessment.data ?? null;
+  const status = current?.status;
+  useEffect(() => {
+    onPendingChange?.(status === "pending");
+    // A failure may mean the tutor's sign-in has expired, which the server now reports up front.
+    if (status === "failed")
+      void queryClient.invalidateQueries({ queryKey: queryKeys.capabilities });
+  }, [status, onPendingChange, queryClient]);
 
   return (
     <section aria-label="Assessment" className="assessment">
-      <h2>Assessment</h2>
+      <h2>
+        {current && current.version > 1 ? `Assessment of version ${current.version}` : "Assessment"}
+      </h2>
       {unavailableReason !== undefined && current?.status !== "ready" ? (
         <Notice tone="info" title="The tutor is not available">
           <p>
@@ -149,8 +190,10 @@ export function AssessmentPanel({
       {current?.status === "failed" ? (
         <Notice tone="error" title="The assessment did not complete">
           <p>
-            {current.error?.message ?? "The provider gave no reason."} Your writing is saved. You
-            can try again, or check it yourself against the list under “What a strong answer does”.
+            {current.error?.message ?? "The provider gave no reason."} Your writing is saved.{" "}
+            {unavailableReason === undefined
+              ? "You can try again, or check it yourself against the list under “What a strong answer does”."
+              : "Check it yourself against the list under “What a strong answer does”."}
           </p>
         </Notice>
       ) : null}

@@ -6,7 +6,8 @@
  *
  * Behaviour comes from the environment:
  *   FAKE_CODEX_RESPONSES  JSON array of steps, one per invocation. The last step repeats.
- *                         Step fields: output, sleepMs, exitCode, rawOutput, skipOutputFile.
+ *                         Step fields: output, sleepMs, exitCode, rawOutput, skipOutputFile,
+ *                         stderr (written before exit, as the CLI does when it refuses).
  *   FAKE_CODEX_STATE      File holding the invocation counter.
  *   FAKE_CODEX_LOG        File receiving one JSON line per invocation.
  *   FAKE_CODEX_SESSION_ID Session id reported in the event stream.
@@ -113,5 +114,6 @@ if (logPath) {
   appendFileSync(logPath, `${JSON.stringify({ call, finishedAt: Date.now() })}\n`, "utf8");
 }
 
+if (step.stderr) process.stderr.write(`${step.stderr}\n`);
 process.stdout.write(`${JSON.stringify({ type: "turn.completed" })}\n`);
 process.exit(step.exitCode ?? 0);

@@ -57,6 +57,42 @@ function workingsReviewFixture(imageAttached: boolean): unknown {
   };
 }
 
+/**
+ * The offline assessment, with one result for each of the task's own criteria so the
+ * per-criterion list can be exercised. The first is met, the second partly met and the rest are
+ * not met, which matches the fixed "partly correct" verdict. A revision is acknowledged.
+ */
+function assessmentFixture(payload: unknown): unknown {
+  const request = (payload ?? {}) as {
+    successCriteria?: unknown;
+    previousVersion?: unknown;
+  };
+  const list = Array.isArray(request.successCriteria)
+    ? request.successCriteria.filter((item): item is string => typeof item === "string")
+    : [];
+  const results = ["met", "partly_met", "not_met"] as const;
+  const evidence = [
+    "“voltage divided by resistance” states it in the opening sentence.",
+    "The writing starts on this and stops after one clause.",
+    "Nothing in the writing addresses this yet.",
+  ] as const;
+  const base = FIXTURES.assess_response as Record<string, unknown>;
+  return {
+    ...base,
+    ...(request.previousVersion === undefined
+      ? {}
+      : {
+          summary:
+            "This version still names the relationship between voltage and current. The problem named last time is still there: resistance is described as a source of current.",
+        }),
+    criteria: list.map((criterion, index) => ({
+      criterion,
+      result: results[Math.min(index, 2)],
+      evidence: evidence[Math.min(index, 2)],
+    })),
+  };
+}
+
 const DEFAULT_FIXTURE = {
   title: "Current in a simple circuit",
   orientation:
@@ -78,7 +114,9 @@ export class MockTutorProvider implements TutorProvider {
     const fixture =
       request.operation === "workings_review"
         ? workingsReviewFixture((options.images?.length ?? 0) > 0)
-        : (FIXTURES[request.operation] ?? DEFAULT_FIXTURE);
+        : request.operation === "assess_response"
+          ? assessmentFixture(request.payload)
+          : (FIXTURES[request.operation] ?? DEFAULT_FIXTURE);
     const payload = (options.parsePayload ? options.parsePayload(fixture) : fixture) as TResponse;
     return {
       protocolVersion: "0.2",

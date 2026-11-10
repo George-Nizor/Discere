@@ -154,6 +154,21 @@ export const EssayDraftResponseSchema = z
     wordCount: z.number().int().nonnegative(),
     submitted: z.boolean(),
     updatedAt: z.string().datetime().nullable(),
+    /** The version being written or last submitted. Version 1 is the first submission. */
+    version: z.number().int().positive().default(1),
+    /** Earlier submitted versions, oldest first. Each can be opened read-only. */
+    earlierVersions: z
+      .array(
+        z
+          .object({
+            version: z.number().int().positive(),
+            wordCount: z.number().int().nonnegative(),
+            submittedAt: z.string().datetime().nullable(),
+            assessed: z.boolean(),
+          })
+          .strict(),
+      )
+      .default([]),
   })
   .strict();
 export type EssayDraftResponse = z.infer<typeof EssayDraftResponseSchema>;
