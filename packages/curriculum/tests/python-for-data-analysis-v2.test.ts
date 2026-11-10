@@ -1801,8 +1801,15 @@ describe("Python for Data Analysis (v2 lessons)", () => {
       expect(lesson.recap, lesson.id).toBeDefined();
       expect(lesson.questionIds, lesson.id).toHaveLength(3);
       const story = STORY_LESSONS.includes(lesson.id);
-      expect(lesson.steps.length, lesson.id).toBeGreaterThanOrEqual(story ? 8 : 5);
-      expect(lesson.steps.length, lesson.id).toBeLessThanOrEqual(story ? 14 : 7);
+      // A code exercise is practice added to a lesson, so it does not count towards its length.
+      const exerciseIds = new Set(
+        candidate.questions.filter((question) => question.code).map((question) => question.id),
+      );
+      const exercises = lesson.steps.filter((step) => exerciseIds.has(step.checkQuestionId ?? ""));
+      const screens = lesson.steps.length - exercises.length;
+      expect(exercises.length, lesson.id).toBeLessThanOrEqual(3);
+      expect(screens, lesson.id).toBeGreaterThanOrEqual(story ? 8 : 5);
+      expect(screens, lesson.id).toBeLessThanOrEqual(story ? 14 : 7);
       expect(lesson.steps.some((step) => step.kind === "transfer"), lesson.id).toBe(true);
     }
   });

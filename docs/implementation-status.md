@@ -358,6 +358,14 @@ executed with CPython 3.12.14, NumPy 2.3.5 and pandas 3.0.1; 105 separate progra
 question and recall keys. The browser replays reviewed steps, variables, tables and output, with
 case selection, pause/reset and reduced motion. Three separate construction projects now add
 22 learner-written programs and 66 reviewed dataset cases through isolated CPython execution.
+The first five lessons also hold fifteen Python exercises (two or three a lesson, `responseType:
+"code"` with `code.language: "python"`), which the learner answers by writing a few lines in the
+lesson itself. Run executes the visible example; Check answer runs every test in the same isolated
+runtime as the projects and names the first test that fails with the expected and actual values.
+Nothing but the tests decides the mark. `packages/curriculum/tests/python-exercises.test.ts` runs
+every worked program and starter with the machine's Python 3, and
+`apps/server/tests/python-questions.test.ts` does the same in the sandbox where it is installed.
+Where Python cannot run, the exercise says so and the lesson finishes without it.
 [Python records](library-expansion/python-course.md) map the source sequence;
 [project records](python-projects/README.md) retain the executable work and its limits.
 
