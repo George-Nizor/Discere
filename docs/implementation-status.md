@@ -494,6 +494,63 @@ without marking authority remain reviewable but cannot claim verified independen
 FSRS scheduling, interleaved queues, streaks, XP, independent/assisted evidence, transfer records,
 essay autosave, and workings notebooks remain separate records.
 
+## Order, sort and source-pair questions
+
+Added on 11 November 2026. A lesson question can now be answered by putting three to seven
+items in order (`responseType: "order"`) or by placing four to ten items in two to four named
+groups (`responseType: "sort"`). Any question except a code question can carry one or two
+source extracts in `extracts`, each with an attribution in three parts (who, when, what kind of
+document). Two extracts are a pair, labelled Source A and Source B, set side by side from 760
+pixels and one above the other below that.
+
+- Contracts: `OrderQuestionSchema`, `SortQuestionSchema` and `QuestionExtractSchema` in
+  `packages/contracts/src/curriculum.ts`. An order question lists its items in the right
+  sequence and a sort item names its bin. The learner's form of the question
+  (`learnerQuestion`) gives each item an id made from the question id and the item's words,
+  sorts the items by that id, and leaves out the bins and explanations, so nothing sent before
+  the question closes holds the answer. Older bundles parse unchanged.
+- Validation (`structuredQuestionIssues` in `packages/curriculum/src/validate.ts`): distinct
+  items, every sort item in a bin that exists, every bin used, the fixed text authority, no
+  choices or code, every part of an attribution present, and no extract written into the
+  prompt as well.
+- Marking (`apps/server/src/assessment.ts`): the server compares places. A wrong answer gets
+  "3 of 5 are in the right place." or "2 of 5 are in the right group." and never which. An
+  answer that is not whole (an item missing or repeated, an unknown bin) is not a try. No
+  model is involved.
+- Attempts, credit, hints and the miss limit are the ones every question uses: two misses in a
+  lesson step, one in a prediction and in the end check. The lesson-feedback route returns the
+  right arrangement (`solution`) only for an attempt that is right, revealed or closed, and
+  Exam mode never returns it.
+- Display: the browser deals the items with a seed kept for the visit to the lesson, so going
+  Back shows the same arrangement. An order item has Move up and Move down buttons, and the
+  arrow keys move the item whose button has focus. A sort item is a button: choosing it and
+  then a group places it, and a placed item can be chosen again and moved or put back. Each
+  move is announced in a live region. There is no dragging. Controls are at least 44 pixels.
+- Closed: the order list shows the right order and marks the items the learner had in place.
+  The sort shows each group with its items, a mark, where the learner had put a misplaced
+  item, and each item's line of explanation.
+- Review: a missed order or sort question becomes a card the same way as any missed question.
+  The card is interactive: it shows the same list or groups, Check sends the arrangement to
+  the server, which marks it with the lesson's own rule, and the reveal then shows the right
+  arrangement. Reveal answer without Check shows the answer and counts as assisted. A missed
+  question with extracts shows them on its card with their attributions.
+- Course checks show extracts, both the structured form and an older quoted paragraph. They
+  did not before. Course checks still take only numeric and choice questions.
+- Read aloud and a card's text use `questionPlainText`: setup, each extract under its
+  attribution, the question, then the items or the groups and items. The tutor receives the
+  learner's form of the question, which has the same parts and no answer.
+- No migration was needed. An answer is stored as text in `attempt_responses` like any other:
+  item ids in sequence, or `item:bin` pairs.
+
+History is the only course that uses them: three order questions, three sort questions, two
+source pairs and three single extracts with attribution. `docs/question-writing-guide.md` says
+when to use each and gives an example.
+
+Limits. An order of three items is right by chance one time in six, so the guide asks for four
+or more. Choice options are still shown in authored order. The legacy quiz screen shows the
+new types through the same answer input, and its typed "show answer" reveal gives the answer as
+text. Nothing was tried with a screen reader.
+
 ## Practice, rewards, and motion
 
 Daily goals support three, five, or ten meaningful responses, or a finished lesson. Streaks use
