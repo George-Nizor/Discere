@@ -23,6 +23,7 @@ export interface Lab {
 const START = "2026-10-02T02:00:00.000Z";
 
 export const test = base.extend<{ lab: Lab }>({
+  // biome-ignore lint/correctness/noEmptyPattern: Playwright reads what a fixture needs from this pattern.
   lab: async ({}, use) => {
     const directory = mkdtempSync(join(tmpdir(), "discere-e2e-lab-"));
     let now = new Date(START);

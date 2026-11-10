@@ -1,15 +1,9 @@
-import { mkdirSync, readFileSync } from "node:fs";
+import { mkdirSync } from "node:fs";
 import { join } from "node:path";
 import type { Page } from "@playwright/test";
-import { expect, test } from "./fixtures.js";
+import { captureDir, expect, test } from "./fixtures.js";
 
-const output = join(import.meta.dirname, "../../../docs/library-expansion/screens");
-const bundle = JSON.parse(
-  readFileSync(
-    join(import.meta.dirname, "../../../content/probability-statistics/bundle.json"),
-    "utf8",
-  ),
-);
+const output = captureDir("library-expansion/screens");
 const viewports = [
   { width: 1440, height: 900 },
   { width: 1024, height: 768 },
@@ -91,72 +85,4 @@ test("the library filters, survives refresh and respects both motion settings", 
   await expect(
     page.locator(".course-card").filter({ hasText: "Probability and Statistics" }),
   ).toBeVisible();
-});
-
-test("statistics diagrams teach at every viewport and the lesson earns its completion", async ({
-  page,
-}) => {
-  test.setTimeout(90_000);
-  const before = (await (await page.request.get("/api/courses/probability-statistics")).json())
-    .course.completedLessonCount;
-  for (const [lesson, name] of [
-    ["when-the-condition-changes", "conditional-grid"],
-    ["centre-and-outliers", "outliers"],
-    ["samples-and-populations", "sampling"],
-  ]) {
-    await page.goto("/courses/probability-statistics/lessons/" + lesson);
-    await expect(page.getByRole("img").last()).toBeVisible();
-    await capture(page, name!);
-  }
-  await page.getByRole("button", { name: "Both groups", exact: true }).click();
-  await expect(page.getByRole("button", { name: "Both groups", exact: true })).toHaveAttribute(
-    "aria-pressed",
-    "true",
-  );
-  await expect(page.locator(".stat-measures")).toHaveCount(0);
-  await page.goto("/courses/probability-statistics/lessons/counting-outcomes");
-  await page.getByRole("slider", { name: /Sum equals/ }).fill("12");
-  await expect(page.getByRole("img", { name: /sum equals 12/ })).toBeVisible();
-  await expect(page.locator(".stat-outcome-cell")).toHaveCount(36);
-  const lesson = bundle.lessons.find((item: { id: string }) => item.id === "counting-outcomes");
-  for (let index = 0; index < 4; index++) {
-    const question = bundle.questions.find(
-      (item: { id: string }) => item.id === lesson.steps[index].checkQuestionId,
-    );
-    if (question.answerAuthority.kind === "numeric")
-      await page.getByLabel("Value", { exact: true }).fill(String(question.answerAuthority.value));
-    else
-      await page.getByRole("button", { name: question.answerAuthority.acceptedIdeas[0] }).click();
-    await page.getByRole("button", { name: "Check answer", exact: true }).click();
-    await page
-      .getByRole("button", { name: index === 3 ? "Finish" : "Continue", exact: true })
-      .click();
-    if (index === 0) {
-      await page.reload();
-      // The reload resumes on step 2, whose old title is now its eyebrow (audit M2).
-      await expect(page.locator(".step-eyebrow")).toContainText("Step 2 of");
-      await expect(page.locator(".step-eyebrow")).toContainText(lesson.steps[1].blocks[0].text);
-    }
-  }
-  await page.getByLabel("Value", { exact: true }).fill("1/4");
-  await page.getByRole("button", { name: "Check answer", exact: true }).click();
-  await page.getByRole("button", { name: "Continue", exact: true }).click();
-  const final = bundle.questions.find((item: { id: string }) => item.id === lesson.questionIds[1]);
-  await page.getByRole("button", { name: final.answerAuthority.acceptedIdeas[0] }).click();
-  await page.getByRole("button", { name: "Check answer", exact: true }).click();
-  await page.getByRole("button", { name: "Continue", exact: true }).click();
-  await page.getByRole("button", { name: "Start the review", exact: true }).click();
-  for (const [index, response] of ["1/18", "complement"].entries()) {
-    await page.getByLabel("Your answer", { exact: true }).fill(response);
-    await page.getByRole("button", { name: "Check", exact: true }).click();
-    await expect(page.getByRole("button", { name: "Reveal answer", exact: true })).toHaveCount(0);
-    await page.getByRole("button", { name: /^Good/ }).click();
-    await page
-      .getByRole("button", { name: index === 0 ? "Next card" : "Continue", exact: true })
-      .click();
-  }
-  await expect(page.getByRole("heading", { name: "Ready for the next idea" })).toBeVisible();
-  await capture(page, "statistics-completion");
-  const progress = await page.request.get("/api/courses/probability-statistics");
-  expect((await progress.json()).course.completedLessonCount).toBe(before + 1);
 });

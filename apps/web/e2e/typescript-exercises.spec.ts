@@ -2,7 +2,8 @@ import { mkdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { Page } from "@playwright/test";
 import { CourseBundleSchema } from "@discere/contracts";
-import { expect, test } from "./fixtures.js";
+import { expect, test } from "./isolated-app.js";
+import { playScreens, readLessonJourney, screenIds } from "./lesson-player.js";
 
 /**
  * Two TypeScript exercises played in the browser. The first is run, refused by the compiler,
@@ -20,7 +21,6 @@ const bundle = CourseBundleSchema.parse(
   ),
 );
 const lesson = bundle.lessons.find((item) => item.id === "what-types-are-for")!;
-const questions = new Map(bundle.questions.map((question) => [question.id, question]));
 const shots = process.env["DISCERE_SHOTS"];
 
 async function capture(page: Page, name: string) {
@@ -58,29 +58,12 @@ test("a TypeScript exercise shows a type error, fails a test, then passes", asyn
   const beat = page.locator(".question-beat");
 
   /** Plays the lesson up to a step, answering each question on the way. */
+  const journey = await readLessonJourney(request, bundle.course.id, lesson.id);
+  const screens = screenIds(journey);
   async function playTo(stepId: string, from: number) {
-    const end = lesson.steps.findIndex((step) => step.id === stepId);
-    const earlier = lesson.steps
-      .slice(from, end)
-      .flatMap((step) => (step.checkQuestionId ? [questions.get(step.checkQuestionId)!] : []));
-    for (let turn = 0; turn < 40; turn += 1) {
-      if (earlier.length === 0 && (await editor.isVisible())) break;
-      if (await check.isVisible()) {
-        const question = earlier.shift()!;
-        if (question.answerAuthority.kind === "numeric")
-          await page.getByLabel("Value", { exact: true }).fill(String(question.answerAuthority.value));
-        else
-          await page
-            .getByRole("radio", { name: question.answerAuthority.exampleAnswer, exact: false })
-            .click();
-        await check.click();
-        await expect(beat).toHaveAttribute("data-result", "correct");
-      }
-      await forward.first().click();
-      await page.waitForTimeout(150);
-    }
+    await playScreens(page, bundle, journey, { stopAtStep: stepId }, from);
     await expect(editor).toBeVisible();
-    return end;
+    return screens.indexOf(stepId);
   }
 
   const first = await playTo("fix-the-values", 0);

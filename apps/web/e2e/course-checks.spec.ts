@@ -1,10 +1,11 @@
 import { mkdtempSync, readFileSync, mkdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import type { APIRequestContext, Page } from "@playwright/test";
+import type { Page } from "@playwright/test";
 import { CourseBundleSchema, type CourseCheckDefinition } from "@discere/contracts";
 import { createApp, type DiscereApp } from "../../server/src/app.js";
-import { test, expect } from "./fixtures.js";
+import { captureDir, test, expect } from "./fixtures.js";
+import { completeLessonsThroughApi } from "./lesson-player.js";
 const bundle = CourseBundleSchema.parse(
   JSON.parse(
     readFileSync(
@@ -19,7 +20,7 @@ const sizes = [
   { width: 1024, height: 768 },
   { width: 390, height: 844 },
 ];
-const output = resolve(import.meta.dirname, "../../../docs/course-checks/screens");
+const output = captureDir("course-checks/screens");
 let server: DiscereApp,
   address: string,
   directory: string,
@@ -70,59 +71,6 @@ async function answer(page: Page, item: CourseCheckDefinition["items"][number], 
   else await page.getByLabel("Value", { exact: true }).fill(wrong ? "999" : solution(item));
   await page.getByRole("radio", { name: "Very sure", exact: true }).check();
   await page.getByRole("button", { name: /^(Save and continue|Finish check)$/ }).click();
-}
-async function completeLessons(request: APIRequestContext) {
-  async function post(url: string, data: unknown = {}) {
-    const response = await request.post(address + url, { data });
-    expect(response.ok(), await response.text()).toBe(true);
-    return response.json();
-  }
-  for (const lesson of bundle.lessons) {
-    for (const id of [...lesson.steps.map((s) => s.checkQuestionId), ...lesson.questionIds].filter(
-      Boolean,
-    )) {
-      const q = bundle.questions.find((q) => q.id === id)!,
-        a = q.answerAuthority;
-      const result = await post("/api/attempts", {
-        questionId: q.id,
-        response:
-          a.kind === "numeric" ? String(a.value) : q.choices ? a.acceptedIdeas[0] : a.exampleAnswer,
-        mode: "coach",
-      });
-      expect(result.correct).toBe(true);
-    }
-    for (const cardId of lesson.flashcardIds) {
-      const card = bundle.flashcards.find((c) => c.id === cardId)!,
-        a = card.answerAuthority!;
-      const session = await post("/api/review/sessions", {
-        lessonId: lesson.id,
-        cardId,
-        mode: "coach",
-      });
-      // A card that asks for an explanation is recalled and rated, with no typed response.
-      if (card.recall !== "self")
-        await post("/api/review/sessions/" + session.sessionId + "/respond", {
-          response: a.kind === "numeric" ? String(a.value) : a.acceptedIdeas[0],
-        });
-      await post("/api/review/sessions/" + session.sessionId + "/reveal");
-      await post("/api/review/sessions/" + session.sessionId + "/rate", {
-        rating: "easy",
-        recalled: true,
-      });
-    }
-    const journey = await (
-      await request.get(
-        address + "/api/courses/maths-foundations/lessons/" + lesson.id + "/journey",
-      )
-    ).json();
-    for (const stage of journey.stages) {
-      const saved = await request.put(
-        address + "/api/courses/maths-foundations/lessons/" + lesson.id + "/progress",
-        { data: { stageId: stage.id, state: "completed", interactionState: {} } },
-      );
-      expect(saved.ok(), await saved.text()).toBe(true);
-    }
-  }
 }
 test("placement preserves drafts and first responses, hides feedback, and shows targeted results at three sizes", async ({
   page,
@@ -196,7 +144,7 @@ test("the mixed challenge earns saved results and fresh delayed problems appear 
   await page.goto(address + "/courses/maths-foundations/checks/mixed-challenge");
   await expect(page.getByText(/Finish the 6 remaining lessons/)).toBeVisible();
   await expect(page.getByRole("button", { name: "Start check", exact: true })).toHaveCount(0);
-  await completeLessons(request);
+  await completeLessonsThroughApi(request, address, bundle);
   await page.reload();
   await page.getByRole("button", { name: "Start check", exact: true }).click();
   for (const item of checks[1]!.items) {

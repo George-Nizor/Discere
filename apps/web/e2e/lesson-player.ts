@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { APIRequestContext, Locator, Page } from "@playwright/test";
 import {
@@ -31,6 +31,72 @@ export function loadBundle(courseId: string): CourseBundle {
     bundles.set(courseId, bundle);
   }
   return bundle;
+}
+
+/** The ids of every course the content holds, with whether the catalogue lists it. */
+export function contentCourses(): Array<{ id: string; listed: boolean }> {
+  const content = join(root, "content");
+  return readdirSync(content)
+    .sort()
+    .flatMap((id) => {
+      const file = join(content, id, "bundle.json");
+      if (!existsSync(file)) return [];
+      const course = JSON.parse(readFileSync(file, "utf8")).course as {
+        catalogueVisibility?: string;
+      };
+      return [{ id, listed: course.catalogueVisibility !== "archived" }];
+    });
+}
+
+export interface FigureStep {
+  courseId: string;
+  lessonId: string;
+  stepId: string;
+  /** Whether the step asks a question of its own, so the figure opens once it is answered. */
+  asks: boolean;
+}
+
+/**
+ * One step for every kind of figure a lesson can hold, found by reading the bundles. A new kind
+ * is covered as soon as a lesson uses it. A step that asks a question is preferred, because its
+ * figure has two states: before the answer and after it.
+ */
+export function figureSteps(): Map<string, FigureStep> {
+  const found = new Map<string, FigureStep>();
+  for (const course of contentCourses()) {
+    if (!course.listed) continue;
+    const bundle = JSON.parse(
+      readFileSync(join(root, "content", course.id, "bundle.json"), "utf8"),
+    ) as {
+      lessons: Array<{
+        id: string;
+        steps: Array<{
+          id: string;
+          checkQuestionId?: string;
+          workedSteps?: unknown[];
+          diagram?: { type: string };
+        }>;
+      }>;
+      questions: Array<{ id: string; code?: unknown }>;
+    };
+    const code = new Set(bundle.questions.filter((item) => item.code).map((item) => item.id));
+    for (const lesson of bundle.lessons)
+      for (const step of lesson.steps) {
+        if (!step.diagram) continue;
+        // A program needs a runtime to be marked, so a step that asks for one is not used here.
+        const asks =
+          Boolean(step.checkQuestionId) && !step.workedSteps && !code.has(step.checkQuestionId!);
+        const had = found.get(step.diagram.type);
+        if (!had || (asks && !had.asks))
+          found.set(step.diagram.type, {
+            courseId: course.id,
+            lessonId: lesson.id,
+            stepId: step.id,
+            asks,
+          });
+      }
+  }
+  return found;
 }
 
 type Question = CourseBundle["questions"][number];
@@ -200,6 +266,8 @@ export async function answerCorrectly(
 ): Promise<void> {
   const on = questionOnScreen(page, authored.id);
   await expect(on.form).toBeVisible();
+  // A test may have settled the question its own way first (a miss and the shown answer, say).
+  if ((await on.beat.getAttribute("data-result")) && (await on.check.count()) === 0) return;
   await fillAnswer(page, authored, shown);
   await on.check.click();
   // A program is compiled and run on the server before it is marked.
@@ -258,6 +326,10 @@ export interface PlayOptions {
   onScreen?: (screen: { id: string; index: number; kind: string }) => Promise<void>;
   /** Stop before this step's screen is answered, leaving the lesson there. */
   stopAtStep?: string;
+  /** Stop when the first stage of this type is on screen, before doing anything on it. */
+  stopAtStage?: LearnerStage["type"];
+  /** Called when a stage is on screen, before anything is done on it. */
+  onStage?: (stage: LearnerStage) => Promise<void>;
 }
 
 /** Answers everything on the opener or on one step, then leaves the way forward ready. */
@@ -392,6 +464,12 @@ export async function playLesson(
   const journey = await readLessonJourney(request, courseId, lessonId, base);
   await page.goto(base + lessonPath(courseId, lessonId));
   for (const stage of journey.stages) {
+    if (options.stopAtStage === stage.type || options.onStage) {
+      await expect(page).toHaveURL(new RegExp(`/stages/${encodeURIComponent(stage.id)}$`));
+      await expect(page.locator("main#stage")).toBeVisible();
+      if (options.stopAtStage === stage.type) return journey;
+      await options.onStage?.(stage);
+    }
     if (stage.type === "explainer") {
       await playScreens(page, bundle, journey, options);
       if (options.stopAtStep) return journey;
@@ -399,6 +477,12 @@ export async function playLesson(
       // A question after the lesson's screens, asked on a screen of its own.
       await answerCorrectly(page, questionIn(bundle, stage.questionId), stage.question);
       await forwardButton(page).click();
+    } else if (stage.type === "interactive_visual") {
+      // An explorer with a prediction. Any prediction can be checked against what it shows.
+      await page.locator(".prediction-choices button").first().click();
+      await page.getByRole("button", { name: "Check prediction", exact: true }).click();
+      await expect(page.locator(".prediction .notice, .prediction [role=status]").first()).toBeVisible();
+      await page.locator(".prediction").getByRole("button", { name: "Continue" }).click();
     } else if (stage.type === "essay") {
       await expect(page.getByLabel("Your writing")).toBeVisible();
       const skip = page.getByRole("button", { name: "Skip this task", exact: true });
@@ -417,17 +501,119 @@ export async function playLesson(
     } else if (stage.type === "completion") {
       await expect(page.locator(".lesson-finish")).toBeVisible();
       await expect(page.locator(".finish-stats")).toBeVisible();
-    } else {
-      throw new Error(
-        `${courseId}/${lessonId} has a ${stage.type} stage, which the lesson player cannot play.`,
-      );
     }
   }
   return journey;
+}
+
+/**
+ * Opens a lesson at one of its steps. The player opens where the learner left off, so the saved
+ * place is the way in: nothing before the step has to be answered first.
+ */
+export async function openAtStep(
+  page: Page,
+  request: APIRequestContext,
+  journey: LessonJourney,
+  stepId: string,
+): Promise<void> {
+  const route = `/api/courses/${encodeURIComponent(journey.courseId)}/lessons/${encodeURIComponent(journey.lessonId)}`;
+  const saved = await request.put(`${route}/progress`, {
+    data: { stageId: journey.explainer.id, state: "active", interactionState: { stepId } },
+  });
+  expect(saved.ok(), await saved.text()).toBe(true);
+  await page.goto(lessonPath(journey.courseId, journey.lessonId));
+  await expect(page.locator(".step-screen")).toBeVisible();
 }
 
 /** Whether the sandboxed Python the code lessons need is installed for this run. */
 export function pythonRuntimeInstalled(): boolean {
   const runtime = process.env["DISCERE_PYTHON_RUNTIME_DIR"] ?? join(root, "data/python-runtime");
   return existsSync(join(runtime, "lib/python3.12/site-packages/pandas"));
+}
+
+/**
+ * Finishes every lesson of a course through the API, for a test that is about what opens once
+ * the lessons are done (a course check) and not about the lessons themselves.
+ *
+ * Lessons do not depend on each other, so four are done at a time. A program is run in the
+ * sandbox each time it is marked, and the sandbox takes one at a time, so those answers wait
+ * their turn. On a computer where a language cannot run, the server does not ask for its
+ * exercises, and they are left out here too.
+ */
+export async function completeLessonsThroughApi(
+  request: APIRequestContext,
+  base: string,
+  bundle: CourseBundle,
+): Promise<void> {
+  const runnable = await runnableLanguages(request, base);
+  const post = async (url: string, data: unknown = {}) => {
+    const response = await request.post(base + url, { data });
+    expect(response.ok(), `${url}: ${await response.text()}`).toBe(true);
+    return response.json();
+  };
+  let sandbox: Promise<unknown> = Promise.resolve();
+  const inTurn = <T>(run: () => Promise<T>): Promise<T> => {
+    const result = sandbox.then(run);
+    sandbox = result.catch(() => undefined);
+    return result;
+  };
+  const completeLesson = async (lesson: CourseBundle["lessons"][number]) => {
+    const questionIds = [
+      ...lesson.steps.map((step) => step.checkQuestionId),
+      ...lesson.questionIds,
+    ].filter(Boolean);
+    for (const id of questionIds) {
+      const question = questionIn(bundle, id);
+      const authority = question.answerAuthority;
+      if (question.code && !runnable.has(question.code.language)) continue;
+      const answer = () =>
+        post("/api/attempts", {
+          questionId: question.id,
+          response:
+            authority.kind === "numeric"
+              ? String(authority.value)
+              : question.code
+                ? authority.exampleAnswer
+                : authority.acceptedIdeas[0],
+          mode: "coach",
+        });
+      const result = await (question.code ? inTurn(answer) : answer());
+      expect(result.correct, question.id).toBe(true);
+    }
+    for (const cardId of lesson.flashcardIds) {
+      const card = bundle.flashcards.find((item) => item.id === cardId);
+      const session = await post("/api/review/sessions", {
+        lessonId: lesson.id,
+        cardId,
+        mode: "coach",
+      });
+      // A card that asks for an explanation is recalled and rated, with no typed response.
+      if (card && card.recall !== "self" && card.answerAuthority)
+        await post(`/api/review/sessions/${session.sessionId}/respond`, {
+          response: cardAnswer(card),
+        });
+      await post(`/api/review/sessions/${session.sessionId}/reveal`);
+      await post(`/api/review/sessions/${session.sessionId}/rate`, {
+        rating: "easy",
+        recalled: true,
+      });
+    }
+    const route = `/api/courses/${bundle.course.id}/lessons/${lesson.id}`;
+    const journey = (await (await request.get(`${base}${route}/journey`)).json()) as {
+      stages: Array<{ id: string }>;
+    };
+    for (const stage of journey.stages) {
+      const saved = await request.put(`${base}${route}/progress`, {
+        data: { stageId: stage.id, state: "completed", interactionState: {} },
+      });
+      expect(saved.ok(), `${stage.id}: ${await saved.text()}`).toBe(true);
+    }
+  };
+  const waiting = [...bundle.lessons];
+  await Promise.all(
+    Array.from({ length: 4 }, async () => {
+      for (let lesson = waiting.shift(); lesson; lesson = waiting.shift())
+        await completeLesson(lesson);
+    }),
+  );
 }

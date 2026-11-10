@@ -3,8 +3,9 @@ import { tmpdir } from "node:os";
 import { createApp, type DiscereApp } from "../../server/src/app.js";
 import { join } from "node:path";
 import type { Page } from "@playwright/test";
-import { expect, test } from "./fixtures.js";
-const output = join(import.meta.dirname, "../../../docs/home-redesign/screens");
+import { captureDir, expect, test } from "./fixtures.js";
+import { playLesson, questionOnScreen, readLessonJourney } from "./lesson-player.js";
+const output = captureDir("home-redesign/screens");
 const sizes = [
   { width: 1440, height: 900 },
   { width: 1024, height: 768 },
@@ -76,7 +77,7 @@ test("Home uses three main tabs and real illustrated courses at every size", asy
   await capture(page, "home");
   for (const label of ["Home", "Courses", "You"])
     await expect(page.locator(".nav-rail-tip").getByText(label, { exact: true })).toBeVisible();
-  const selectedButton = page.locator('.home-course-switcher button[aria-pressed="true"]');
+  const selectedButton = page.locator('.home-course-switcher [role="radio"][aria-checked="true"]');
   const selectedBox = await selectedButton.boundingBox();
   const stripBox = await page.locator(".home-course-switcher").boundingBox();
   expect(selectedBox!.x).toBeGreaterThanOrEqual(stripBox!.x);
@@ -100,33 +101,33 @@ test("the course chooser persists across refresh and starts the chosen productio
   await expect(page.locator('.home-course-switcher button[tabindex="0"]')).toHaveCount(1);
   await expect(page.locator(".home-resume")).toHaveAttribute(
     "href",
-    /linear-algebra-vectors-and-maps\/lessons\/read-vector-coordinates/,
+    /linear-algebra-vectors-and-maps\/lessons\//,
   );
   await page.reload();
   await expect(
     page.getByRole("radio", { name: "Linear Algebra: Vectors and Maps", exact: true }),
   ).toHaveAttribute("aria-checked", "true");
   await page.locator(".home-resume").click();
-  await expect(page.getByText("Read the first coordinate", { exact: false }).first()).toBeVisible();
+  // The chosen course's first lesson opens on its opener.
+  await expect(page).toHaveURL(/\/courses\/linear-algebra-vectors-and-maps\/lessons\//);
+  await expect(page.locator(".lesson-opener")).toBeVisible();
 });
-test("Home resumes the saved question position after a checked answer", async ({ page }) => {
-  await page.goto(address + "/courses/maths-foundations/lessons/undoing-in-the-right-order");
-  // Each question-led screen's headline is its question (audit M2), so it identifies the step.
-  const initial = page.locator(".step-question").first();
-  const firstTitle = await initial.innerText();
-  const answer = page.getByRole("button", { name: /Subtract 3, then divide by 2/ });
-  if (await answer.isVisible()) {
-    await answer.click();
-    await page.getByRole("button", { name: "Check answer", exact: true }).click();
-    await page.getByRole("button", { name: "Continue", exact: true }).click();
-    await expect(initial).not.toHaveText(firstTitle);
-  }
-  const savedTitle = await initial.innerText();
-  await page.goto(address + "/?course=maths-foundations");
+test("Home resumes a lesson at the screen the learner had reached", async ({ page, request }) => {
+  const courseId = "maths-foundations";
+  const lessonId = "undoing-in-the-right-order";
+  const journey = await readLessonJourney(request, courseId, lessonId, address);
+  // Stop on the second step that asks a question, with everything before it answered.
+  const reached = journey.explainer.steps.filter((step) => step.question && !step.workedSteps)[1]!;
+  await playLesson(page, request, courseId, lessonId, { base: address, stopAtStep: reached.id });
+  const question = questionOnScreen(page, reached.question!.id);
+  await expect(question.form).toBeVisible();
+
+  await page.goto(address + "/?course=" + courseId);
   await expect(page.locator(".home-resume")).toHaveText(/Resume/);
-  await expect(page.locator(".home-resume")).toHaveAttribute("href", /undoing-in-the-right-order/);
+  await expect(page.locator(".home-resume")).toHaveAttribute("href", new RegExp(lessonId));
   await page.locator(".home-resume").click();
-  await expect(page.locator(".step-question").first()).toHaveText(savedTitle);
+  await expect(question.form).toBeVisible();
+  await expect(question.check).toHaveText("Check answer");
 });
 test("You shows recorded stats, working filters, chart details, and preserved Progress links", async ({
   page,

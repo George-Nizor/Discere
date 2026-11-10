@@ -3,9 +3,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { Page } from "@playwright/test";
 import { createApp, type DiscereApp } from "../../server/src/app.js";
-import { expect, test } from "./fixtures.js";
+import { captureDir, expect, test } from "./fixtures.js";
 
-const output = join(import.meta.dirname, "../../../docs/motion-polish");
+const output = captureDir("motion-polish");
 let server: DiscereApp, address: string, directory: string;
 
 test.beforeAll(async () => {

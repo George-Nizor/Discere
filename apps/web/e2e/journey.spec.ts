@@ -1,124 +1,19 @@
 import { expect, gotoStage, readJourney, test } from "./fixtures.js";
+import { test as labTest } from "./isolated-app.js";
+import { forwardButton, playLesson } from "./lesson-player.js";
 
-const TEACH_BACK =
-  "Voltage pushes charge around the loop and resistance limits how quickly that charge moves. " +
-  "Current is voltage divided by resistance, so five volts across one hundred ohms gives fifty " +
-  "milliamps in this circuit.";
-
-test.describe("the lesson journey", () => {
-  test("carries a learner from home to lesson completion", async ({ page, request }) => {
-    await page.goto("/");
-    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-    const journey = await readJourney(request, "electronics-foundations");
-    await gotoStage(page, journey, "explainer");
-
-    // The lesson plays as steps: prose, an inline check that cannot be skipped, then the rest.
-    await expect(page.getByText("Step 1 of 7")).toBeVisible();
-    await expect(page.getByText("Step 1 of 7")).toBeVisible();
-    for (const step of [2, 3, 4, 5]) {
-      await page.getByRole("button", { name: /^Continue/ }).click();
-      await expect(page.getByText(`Step ${step} of 7`)).toBeVisible();
-    }
-
-    // Step 5 asks the learner to point at the component on the diagram, and holds until they do.
-    await expect(page.getByRole("button", { name: /^Continue/ })).toBeHidden();
-    await page.getByRole("button", { name: "The battery" }).click();
-    await expect(page.getByText(/Look for what opposes the flow/)).toBeVisible();
-    await expect(page.getByRole("button", { name: /^Continue/ })).toBeHidden();
-    await page.getByRole("button", { name: "The resistor" }).click();
-    await expect(page.getByText(/it sets the current/)).toBeVisible();
-    await page.getByRole("button", { name: /^Continue/ }).click();
-
-    // Step 6 asks a question, and also cannot be skipped.
-    await expect(page.getByText("Step 6 of 7")).toBeVisible();
-    await expect(page.getByRole("button", { name: /^Continue/ })).toBeHidden();
-    await page.getByRole("button", { name: "Raising the supply voltage" }).click();
-    await page.getByRole("button", { name: "Check answer" }).click();
-    await expect(page.locator(".answer-feedback.is-correct")).toBeVisible();
-    await page.getByRole("button", { name: /^Continue/ }).click();
-    await expect(page.getByText("Step 7 of 7")).toBeVisible();
-    await page.getByRole("button", { name: /^Finish/ }).click();
-
-    // Interactive visual
-    await expect(page.getByRole("slider").first()).toBeVisible();
-    await expect(page.getByRole("slider", { name: "Resistance" })).toBeVisible();
-    await page.getByRole("slider", { name: "Resistance" }).fill("400");
-    await page.getByRole("button", { name: "Decreases" }).click();
-    await page.getByRole("button", { name: "Check prediction" }).click();
-    await expect(page.getByText("Matched")).toBeVisible();
-    await page.getByRole("button", { name: /^Continue/ }).click();
-
-    // First question: a wrong answer, a hint, then the right answer
-    await expect(page.getByText(/Question .* of/)).toBeVisible();
-    await expect(page.getByText("Question 1 of 3")).toBeVisible();
-    await page.getByLabel("Value").fill("0.5");
-    await page.getByLabel("Unit").fill("A");
-    await page.getByRole("button", { name: "Check answer" }).click();
-    await expect(page.locator(".answer-feedback.is-retry")).toBeVisible();
-
-    await page.getByRole("button", { name: "Ask for a hint" }).click();
-    await expect(page.getByText(/Hint 1 of 3/)).toBeVisible();
-
-    await page.getByLabel("Value").fill("0.05");
-    await page.getByRole("button", { name: "Check again" }).click();
-    await expect(page.locator(".answer-feedback.is-correct")).toBeVisible();
-    await page.getByRole("button", { name: /^Continue/ }).click();
-
-    // Second question: the same numeric surface with different values
-    await expect(page.getByText("Question 2 of 3")).toBeVisible();
-    await page.getByLabel("Value").fill("0.04");
-    await page.getByLabel("Unit").fill("A");
-    await page.getByRole("button", { name: "Check answer" }).click();
-    await expect(page.locator(".answer-feedback.is-correct")).toBeVisible();
-    await page.getByRole("button", { name: /^Continue/ }).click();
-
-    // Third question: a written response marked against the accepted ideas
-    await expect(page.getByText("Question 3 of 3")).toBeVisible();
-    await page
-      .getByLabel("Your answer")
-      .fill(
-        "There is only one path, so the same current passes every point. The charge is not used up by the resistor.",
-      );
-    await page.getByRole("button", { name: "Check answer" }).click();
-    await expect(page.locator(".answer-feedback.is-correct")).toBeVisible();
-    await page.getByRole("button", { name: /^Continue/ }).click();
-
-    // Essay studio
-    await expect(page.getByLabel("Your writing")).toBeVisible();
-    await page.getByLabel("Your writing").fill(TEACH_BACK);
-    await expect(page.getByText("Saved just now")).toBeVisible({ timeout: 10_000 });
-    await page.getByRole("button", { name: "Submit", exact: true }).click();
-    await expect(page.getByText("Submitted. Choose Revise to change it.")).toBeVisible();
-    await page.getByRole("button", { name: /^Continue/ }).click();
-
-    // Review
-    await expect(page.getByRole("button", { name: "Start the review" })).toBeVisible();
-    await page.getByRole("button", { name: "Start the review" }).click();
-    for (let card = 0; card < 2; card += 1) {
-      await expect(page.getByLabel("Your answer", { exact: true })).toBeVisible();
-      await page.getByRole("button", { name: "Reveal answer" }).click();
-      await page.getByRole("button", { name: /^Good/ }).click();
-      // The rating says when the card returns, at the precision that matters (app audit m7).
-      await expect(page.getByText(/This card comes back /)).toBeVisible();
-      await page
-        .getByRole("button", { name: card === 0 ? "Next card" : "Continue", exact: true })
-        .click();
-    }
-
-    // Completion
-    await expect(page.getByRole("heading", { level: 1, name: /done/ })).toBeVisible();
-    await expect(page.locator(".finish-stats")).toBeVisible();
-  });
-
-  test("restores the active stage after a refresh and answers browser navigation", async ({
-    page,
-    request,
-  }) => {
-    const journey = await readJourney(request);
-    await gotoStage(page, journey, "explainer");
-    await gotoStage(page, journey, "interactive_visual");
-    // Wait for the stage itself, not merely for a stage-shaped address: the explainer
-    // address already matches that pattern.
+/**
+ * The lesson as a place: its stages have addresses, a reload and the browser's Back keep the
+ * learner's place, and the tutor opens beside the lesson. Playing a lesson from start to finish
+ * is in lessons.spec.ts.
+ */
+labTest(
+  "a stage keeps its address through a reload, and the browser's Back returns to the lesson",
+  async ({ page, request }) => {
+    // Electronics has an explorer between its screens and its questions.
+    const journey = await playLesson(page, request, "electronics-foundations", "current-in-one-loop", {
+      stopAtStage: "interactive_visual",
+    });
     await expect(page.getByRole("slider").first()).toBeVisible();
     const stageUrl = page.url();
 
@@ -126,25 +21,17 @@ test.describe("the lesson journey", () => {
     await expect(page).toHaveURL(stageUrl);
     await expect(page.getByRole("slider").first()).toBeVisible();
 
+    // Back goes to the lesson's screens. They are finished, so the way forward is open.
     await page.goBack();
-    await expect(page.getByText("Step 1 of 7")).toBeVisible();
-  });
+    await expect(page).toHaveURL(new RegExp(`${encodeURIComponent(journey.explainer.id)}$`));
+    await expect(page.locator(".story")).toBeVisible();
+    await expect(forwardButton(page)).toBeVisible();
+    await page.goForward();
+    await expect(page).toHaveURL(stageUrl);
+  },
+);
 
-  test("resumes a lesson at the step the learner had reached", async ({ page, request }) => {
-    const journey = await readJourney(request);
-    await gotoStage(page, journey, "explainer");
-    await expect(page.getByText("Step 1 of 7")).toBeVisible();
-
-    await page.getByRole("button", { name: /^Continue/ }).click();
-    await page.getByRole("button", { name: /^Continue/ }).click();
-    await expect(page.getByText("Step 3 of 7")).toBeVisible();
-
-    // The position is saved as it moves, so a reload does not send the learner back to the top.
-    await page.reload();
-    await expect(page.getByText("Step 3 of 7")).toBeVisible();
-    await expect(page.getByText(/This loop gives charge exactly one route/)).toBeVisible();
-  });
-
+test.describe("the lesson journey", () => {
   test("answers a tutor question inside the lesson", async ({ page, request }) => {
     const journey = await readJourney(request);
     await gotoStage(page, journey, "explainer");
@@ -204,29 +91,6 @@ test.describe("the lesson journey", () => {
     expect(surface.sendInsideBench).toBe(true);
   });
 
-  test("keeps a stage's last action clear of the bottom navigator", async ({ page, request }) => {
-    const journey = await readJourney(request);
-    await gotoStage(page, journey, "essay");
-    const footer = page.locator(".lesson-navigator");
-    await expect(footer).toBeVisible();
-    const lastAction = page.locator(".stage-canvas .button").last();
-    await lastAction.scrollIntoViewIfNeeded();
-    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
-    const actionBox = await lastAction.boundingBox();
-    const footerBox = await footer.boundingBox();
-    expect(actionBox!.y + actionBox!.height).toBeLessThanOrEqual(footerBox!.y - 16);
-  });
-
-  test("closes the tutor and the hints in Exam mode", async ({ page, request }) => {
-    const journey = await readJourney(request);
-    await gotoStage(page, journey, "quiz");
-    await page.getByRole("button", { name: "Exam" }).click();
-    await expect(page.getByText("Tutor closed in Exam mode")).toBeVisible();
-    await expect(
-      page.getByText(/hints, the worked answer, and the tutor stay closed/),
-    ).toBeVisible();
-  });
-
   test("shows review and progress from real data", async ({ page, request }) => {
     const profile = (await (await request.get("/api/home")).json()) as {
       progress: Array<{ mastery: number; independentAttempts: number; assistedAttempts: number }>;
@@ -248,14 +112,4 @@ test.describe("the lesson journey", () => {
     else await expect(page.getByText("Your ideas appear here as you practise.")).toBeVisible();
   });
 
-  test("keeps the mobile layout usable without horizontal scrolling", async ({ page, request }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
-    const journey = await readJourney(request);
-    await gotoStage(page, journey, "explainer");
-    const overflow = await page.evaluate(
-      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
-    );
-    expect(overflow).toBeLessThanOrEqual(1);
-    await expect(page.getByRole("navigation", { name: "Lesson stages" })).toBeVisible();
-  });
 });

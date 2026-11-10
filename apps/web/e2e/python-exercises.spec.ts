@@ -2,7 +2,8 @@ import { existsSync, mkdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { Page } from "@playwright/test";
 import { CourseBundleSchema } from "@discere/contracts";
-import { expect, test } from "./fixtures.js";
+import { expect, test } from "./isolated-app.js";
+import { playScreens, readLessonJourney } from "./lesson-player.js";
 
 /**
  * Two Python exercises played in the browser: one in plain Python (Run, wrong programs, an error,
@@ -45,33 +46,17 @@ async function capture(page: Page, name: string) {
 
 test("a Python exercise runs, fails a test with both values shown, then passes", async ({
   page,
+  request,
 }) => {
   test.skip(!existsSync(join(runtime, "lib/python3.12/site-packages/pandas")), "No Python runtime");
   test.setTimeout(180_000);
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto(`/courses/${bundle.course.id}/lessons/${lesson.id}`);
   const editor = page.getByLabel("Your Python code");
-  // Play the lesson up to its first exercise, answering each question on the way.
-  const earlier = lesson.steps
-    .slice(0, lesson.steps.findIndex((step) => step.id === "write-the-total"))
-    .flatMap((step) => (step.checkQuestionId ? [questions.get(step.checkQuestionId)!] : []));
-  const forward = page.getByRole("button", { name: /^(Continue|Start|Begin|Next)/ });
+  // Play the lesson up to the exercise, answering each question on the way.
+  const journey = await readLessonJourney(request, bundle.course.id, lesson.id);
+  await playScreens(page, bundle, journey, { stopAtStep: "write-the-total" });
   const check = page.getByRole("button", { name: "Check answer", exact: true });
-  for (let turn = 0; turn < 40 && !(await editor.isVisible()); turn += 1) {
-    if (await check.isVisible()) {
-      const question = earlier.shift()!;
-      if (question.answerAuthority.kind === "numeric")
-        await page.getByLabel("Value", { exact: true }).fill(String(question.answerAuthority.value));
-      else
-        await page
-          .getByRole("radio", { name: question.answerAuthority.acceptedIdeas[0]!, exact: false })
-          .click();
-      await check.click();
-      await expect(page.locator(".question-beat")).toHaveAttribute("data-result", "correct");
-    }
-    await forward.first().click();
-    await page.waitForTimeout(150);
-  }
   await expect(editor).toBeVisible();
   await expect(editor).toHaveValue(/# price and quantity are already set\./);
   await expect(page.getByText("price = 4, quantity = 3")).toBeVisible();
@@ -120,6 +105,7 @@ test("a Python exercise runs, fails a test with both values shown, then passes",
 
 test("a pandas exercise fails on its starter and passes once the filter is repaired", async ({
   page,
+  request,
 }) => {
   test.skip(!existsSync(join(runtime, "lib/python3.12/site-packages/pandas")), "No Python runtime");
   test.setTimeout(180_000);
@@ -128,22 +114,10 @@ test("a pandas exercise fails on its starter and passes once the filter is repai
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto(`/courses/${bundle.course.id}/lessons/${filters.id}`);
   const editor = page.getByLabel("Your Python code");
-  const earlier = filters.steps
-    .slice(0, filters.steps.findIndex((step) => step.id === "keep-the-busy-rows"))
-    .flatMap((step) => (step.checkQuestionId ? [questions.get(step.checkQuestionId)!] : []));
-  const forward = page.getByRole("button", { name: /^(Continue|Start|Begin|Next)/ });
+  // Play the lesson up to the exercise, answering each question on the way.
+  const journey = await readLessonJourney(request, bundle.course.id, filters.id);
+  await playScreens(page, bundle, journey, { stopAtStep: "keep-the-busy-rows" });
   const check = page.getByRole("button", { name: "Check answer", exact: true });
-  for (let turn = 0; turn < 40 && !(await editor.isVisible()); turn += 1) {
-    if (await check.isVisible()) {
-      const question = earlier.shift()!;
-      if (question.answerAuthority.kind !== "numeric") throw new Error("Expected a number");
-      await page.getByLabel("Value", { exact: true }).fill(String(question.answerAuthority.value));
-      await check.click();
-      await expect(page.locator(".question-beat")).toHaveAttribute("data-result", "correct");
-    }
-    await forward.first().click();
-    await page.waitForTimeout(150);
-  }
   await expect(editor).toBeVisible();
   await expect(editor).toHaveValue(/import pandas as pd/);
   await expect(editor).toHaveValue(/mask = df\['units'\] > minimum/);

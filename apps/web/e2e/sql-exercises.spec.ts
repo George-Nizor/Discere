@@ -2,7 +2,8 @@ import { mkdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { Page } from "@playwright/test";
 import { CourseBundleSchema } from "@discere/contracts";
-import { expect, test } from "./fixtures.js";
+import { expect, test } from "./isolated-app.js";
+import { playScreens, readLessonJourney, runnableLanguages } from "./lesson-player.js";
 
 /**
  * One SQL exercise played in the browser: Run, a wrong result, a query written to the visible
@@ -19,7 +20,6 @@ const bundle = CourseBundleSchema.parse(
   ),
 );
 const lesson = bundle.lessons.find((item) => item.id === "filter-the-rows")!;
-const questions = new Map(bundle.questions.map((question) => [question.id, question]));
 const shots = process.env["DISCERE_SHOTS"];
 
 async function capture(page: Page, name: string) {
@@ -43,32 +43,17 @@ async function capture(page: Page, name: string) {
 
 test("an SQL exercise runs, returns the wrong rows, meets an error, then passes", async ({
   page,
+  request,
 }) => {
+  test.skip(!(await runnableLanguages(request)).has("sql"), "SQL cannot run here");
   test.setTimeout(180_000);
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto(`/courses/${bundle.course.id}/lessons/${lesson.id}`);
   const editor = page.getByLabel("Your SQL query");
-  // Play the lesson up to its first exercise, answering each question on the way.
-  const earlier = lesson.steps
-    .slice(0, lesson.steps.findIndex((step) => step.id === "write-more-than-twenty"))
-    .flatMap((step) => (step.checkQuestionId ? [questions.get(step.checkQuestionId)!] : []));
-  const forward = page.getByRole("button", { name: /^(Continue|Start|Begin|Next)/ });
+  // Play the lesson up to the exercise, answering each question on the way.
+  const journey = await readLessonJourney(request, bundle.course.id, lesson.id);
+  await playScreens(page, bundle, journey, { stopAtStep: "write-more-than-twenty" });
   const check = page.getByRole("button", { name: "Check answer", exact: true });
-  for (let turn = 0; turn < 40 && !(await editor.isVisible()); turn += 1) {
-    if (await check.isVisible()) {
-      const question = earlier.shift()!;
-      if (question.answerAuthority.kind === "numeric")
-        await page.getByLabel("Value", { exact: true }).fill(String(question.answerAuthority.value));
-      else
-        await page
-          .getByRole("radio", { name: question.answerAuthority.acceptedIdeas[0]!, exact: false })
-          .click();
-      await check.click();
-      await expect(page.locator(".question-beat")).toHaveAttribute("data-result", "correct");
-    }
-    await forward.first().click();
-    await page.waitForTimeout(150);
-  }
   await expect(editor).toBeVisible();
   await expect(editor).toHaveValue(/WHERE amount >= 20;/);
   // The table is shown with its column types and rows, so nothing has to be guessed.

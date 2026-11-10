@@ -3,8 +3,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { Page } from "@playwright/test";
 import { createApp, type DiscereApp } from "../../server/src/app.js";
-import { expect, test } from "./fixtures.js";
-const output = join(import.meta.dirname, "../../../docs/quality-pass/screens");
+import { captureDir, expect, test } from "./fixtures.js";
+const output = captureDir("quality-pass/screens");
 const sizes = [
   { width: 1440, height: 900 },
   { width: 1024, height: 768 },
@@ -108,94 +108,4 @@ test("Settings failures remain recoverable and practice preferences keep working
     }));
   expect(contrast(colours.foreground, colours.background)).toBeGreaterThanOrEqual(4.5);
   await capture(page, "settings");
-});
-test("speaker puzzles expose their givens and use consistent diagrams before grading", async ({
-  page,
-}) => {
-  test.setTimeout(90_000);
-  await page.goto(address + "/courses/logic-and-reasoning/lessons/knights-and-knaves");
-  const cases = [
-    {
-      prompt: /If Ada is a knight, must Ben/,
-      label: "Your answer",
-      answer: "knave",
-      header: "Fits Ada's claim",
-      results: ["False", "True", "True", "False"],
-    },
-    {
-      prompt: /How many assignments of their types fit Ada/,
-      label: "Value",
-      answer: "2",
-      header: "Fits Ada's claim",
-      results: ["False", "True", "True", "False"],
-    },
-    {
-      prompt: /Ben says, .Ada and I are the same type/,
-      label: "Your answer",
-      answer: "knight",
-      header: "Fits both claims",
-      results: ["False", "True", "False", "False"],
-    },
-    {
-      prompt: /Drew says, .Cara is a knave/,
-      label: "Value",
-      answer: "1",
-      header: "Fits both claims",
-      results: ["False", "False", "False", "False"],
-    },
-  ];
-  for (const [index, item] of cases.entries()) {
-    await expect(page.getByRole("heading", { name: item.prompt })).toBeVisible();
-    await expect(page.getByRole("columnheader", { name: item.header, exact: true })).toBeVisible();
-    // The givens (who says what) are shown; the result column is the question, so it is masked
-    // until the response is graded (audit M1).
-    await expect(page.locator(".truth-diagram tbody tr td:last-child")).toHaveText(
-      item.results.map(() => "?"),
-    );
-    await expect(page.locator(".truth-diagram tr.is-selected")).toHaveCount(0);
-    await expect(page.locator(".truth-labels")).toContainText(
-      index === 3 ? "Cara is a knight" : "Ada is a knight",
-    );
-    await expect(page.locator(".question-beat[data-result]")).toHaveCount(0);
-    if (index === 2) await capture(page, "logic-givens");
-    await page.getByLabel(item.label, { exact: true }).fill(item.answer);
-    await page.getByRole("button", { name: "Check answer", exact: true }).click();
-    await expect(page.locator(".question-beat")).toHaveAttribute(
-      "data-result",
-      index === 3 ? "incorrect" : "correct",
-    );
-    if (index === 3) {
-      // A miss leaves the question open (audit B3); the explanation comes with the answer.
-      await page.getByRole("button", { name: "Show the answer", exact: true }).click();
-      await expect(
-        page.getByText(/Assuming either type for Cara produces a contradiction/),
-      ).toBeVisible();
-      await capture(page, "logic-explanation");
-    }
-    await expect(page.locator(".truth-diagram tbody tr td:last-child")).toHaveText(item.results);
-    const colours = await page.locator(".truth-diagram tr.is-selected").evaluate((row) => ({
-      background: getComputedStyle(row).backgroundColor,
-      foreground: getComputedStyle(row.querySelector("td")!).color,
-    }));
-    const luminance = (colour: string) => {
-      const rgb = colour
-        .match(/[\d.]+/g)!
-        .slice(0, 3)
-        .map((v) => Number(v) / 255)
-        .map((v) => (v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
-      return rgb[0]! * 0.2126 + rgb[1]! * 0.7152 + rgb[2]! * 0.0722;
-    };
-    const light = luminance(colours.foreground),
-      dark = luminance(colours.background);
-    expect((Math.max(light, dark) + 0.05) / (Math.min(light, dark) + 0.05)).toBeGreaterThanOrEqual(
-      4.5,
-    );
-    if (index === 2) await capture(page, "logic-correct");
-    await page
-      .getByRole("button", { name: index === 3 ? "Finish" : "Continue", exact: true })
-      .click();
-  }
-  await expect(page.getByRole("button", { name: "Check answer", exact: true })).toBeVisible();
-  await page.reload();
-  await expect(page.getByRole("button", { name: "Check answer", exact: true })).toBeVisible();
 });

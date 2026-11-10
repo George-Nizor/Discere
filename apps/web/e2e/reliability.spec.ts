@@ -1,4 +1,18 @@
+import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import { expect, test } from "./fixtures.js";
+
+/** A course kept for old links and left out of the catalogue, if the content has one. */
+function archivedCourseId(): string | undefined {
+  const content = join(import.meta.dirname, "../../../content");
+  return readdirSync(content).find((id) => {
+    const file = join(content, id, "bundle.json");
+    return (
+      existsSync(file) &&
+      JSON.parse(readFileSync(file, "utf8")).course?.catalogueVisibility === "archived"
+    );
+  });
+}
 
 /**
  * The platform audit's reliability findings (docs/platform-audit/app): a stopped engine, the
@@ -64,8 +78,18 @@ test("old and unknown addresses lead somewhere honest", async ({ page }) => {
   expect(errors).toEqual([]);
   await page.goto("/legacy/courses/maths-foundations");
   await expect(page).toHaveURL(/\/courses\/maths-foundations$/);
-  await page.goto("/courses/electronics-foundations");
-  await expect(page.getByRole("complementary", { name: "Archived course" })).toBeVisible();
+  // An archived course still opens from an old link, and says what it is.
+  const archived = archivedCourseId();
+  if (archived) {
+    await page.goto("/courses/" + archived);
+    await expect(page.getByRole("complementary", { name: "Archived course" })).toBeVisible();
+    const listed = (await (await page.request.get("/api/courses")).json()).courses;
+    expect(listed.map((course: { id: string }) => course.id)).not.toContain(archived);
+  }
+  // A listed course carries no such notice.
+  await page.goto("/courses/maths-foundations");
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  await expect(page.getByRole("complementary", { name: "Archived course" })).toHaveCount(0);
   await page.goto("/somewhere/else");
   await expect(page.getByRole("heading", { name: "This page doesn’t exist" })).toBeVisible();
   await expect(page.getByRole("searchbox")).toBeVisible();

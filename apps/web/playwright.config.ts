@@ -34,9 +34,19 @@ export default defineConfig({
   testDir: "./e2e",
   outputDir: "./test-results",
   fullyParallel: false,
+  // One worker: most specs share the server above, and the code sandbox takes one program at a
+  // time. A spec that needs an empty database starts its own server (e2e/isolated-app.ts).
   workers: 1,
-  retries: 0,
-  reporter: [["list"], ["html", { open: "never", outputFolder: "./playwright-report" }]],
+  // A hosted runner is slower and noisier than a desk, so it gets longer and one more try. A
+  // test that only passes on its second try is reported as flaky, not hidden.
+  retries: CI ? 1 : 0,
+  forbidOnly: CI,
+  timeout: CI ? 60_000 : 30_000,
+  expect: { timeout: CI ? 10_000 : 5_000 },
+  reporter: [
+    [CI ? "github" : "list"],
+    ["html", { open: "never", outputFolder: "./playwright-report" }],
+  ],
   use: {
     baseURL: `http://${HOST}:${WEB_PORT}`,
     trace: "retain-on-failure",
