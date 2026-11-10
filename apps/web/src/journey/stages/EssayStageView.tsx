@@ -22,10 +22,11 @@ export function EssayStageView({
   onContinue: () => void;
 }) {
   const draft = useEssayDraft(stage.essayId);
-  if (draft.isPending) return <LoadingScreen message="Opening your draft…" />;
+  if (draft.isPending) return <LoadingScreen embedded message="Opening your draft…" />;
   if (draft.error || !draft.data) {
     return (
       <ErrorScreen
+        embedded
         message={errorMessage(draft.error, "The draft could not be loaded.")}
         title="This essay is unavailable"
       />

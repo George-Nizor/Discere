@@ -1,3 +1,4 @@
+import { useDocumentTitle } from "../lib/document-title.js";
 import type { CourseDetailResponse, CourseSummary, HomeResponse } from "@discere/contracts";
 import { ArrowRight, BookOpen, Check, Layers } from "lucide-react";
 import { Link, useSearchParams } from "react-router";
@@ -20,6 +21,7 @@ export function HomeScreen() {
   const catalogue = useCourses();
   const study = useStudy();
   const [params, setParams] = useSearchParams();
+  useDocumentTitle("Home");
   if (home.isPending || catalogue.isPending) return <LoadingScreen message="Opening Discere…" />;
   if (home.error || catalogue.error || !home.data || !catalogue.data) {
     return (

@@ -1,3 +1,4 @@
+import { useDocumentTitle } from "../lib/document-title.js";
 import {
   CheckConfidenceSchema,
   type CourseCheckSession,
@@ -40,6 +41,8 @@ export function CheckStartScreen() {
   const [busy, setBusy] = useState(false),
     [failure, setFailure] = useState<string | null>(null);
   const guard = useRef(false);
+  const found = query.data?.checks.find((c) => c.id === checkId);
+  useDocumentTitle(found ? CHECK_NAMES[found.kind] : undefined);
   if (query.isPending) return <LoadingScreen message="Loading the course check…" />;
   if (query.error)
     return (
@@ -423,6 +426,7 @@ export function CheckSessionScreen() {
     queryFn: () => getCheckSession(sessionId),
     staleTime: 0,
   });
+  useDocumentTitle(query.data ? CHECK_NAMES[query.data.kind] : undefined);
   if (query.isPending) return <LoadingScreen message="Restoring your check…" />;
   // A malformed or unknown session id is a bad link, not a fault worth retrying.
   const unknownSession =

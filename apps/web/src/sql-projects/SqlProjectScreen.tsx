@@ -1,3 +1,4 @@
+import { useDocumentTitle } from "../lib/document-title.js";
 import type { SqlProjectAction, SqlProjectSession, TutoringMode } from "@discere/contracts";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, ArrowRight, Check, Database, Lightbulb, Play, Send, X } from "lucide-react";
@@ -53,6 +54,7 @@ export function SqlProjectStartScreen() {
     [busy, setBusy] = useState(false),
     [failure, setFailure] = useState("");
   const guard = useRef(false);
+  useDocumentTitle(query.data?.projects.find((p) => p.id === projectId)?.title);
   if (query.isPending) return <LoadingScreen message="Loading the project…" />;
   if (query.error)
     return (
@@ -561,6 +563,7 @@ export function SqlProjectSessionScreen() {
     },
     [client],
   );
+  useDocumentTitle(query.data?.title);
   if (query.isPending) return <LoadingScreen message="Opening your saved queries…" />;
   if (query.error || !query.data)
     return (
