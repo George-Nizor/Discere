@@ -74,6 +74,8 @@ export function QuestionFeedback({
   const unreadable = isUnreadable(attempt);
   // A program that stopped with an error cost no try, but its hints are still worth offering.
   const stopped = unreadable && result.codeRun !== undefined;
+  // A code question's answer is a whole program, and the screen calls it that.
+  const program = result.codeRun !== undefined;
   // The idea that comes with a right answer: authored, or else the worked answer itself.
   const idea = feedback?.onCorrect ?? result.feedback;
   // The worked answer and the held-back teaching are one tap away whenever there is any.
@@ -99,11 +101,21 @@ export function QuestionFeedback({
                 Correct
               </>
             ) : unreadable ? (
-              <>{result.codeRun ? "The program did not finish" : "That answer could not be read"}</>
+              <>
+                {result.codeRun?.status === "compile_error"
+                  ? "The program does not compile yet"
+                  : result.codeRun
+                    ? "The program did not finish"
+                    : "That answer could not be read"}
+              </>
             ) : phase === "revealed" ? (
               <>
                 <Eye aria-hidden="true" size={18} />
-                {attempt.misses > 0 ? "Not quite. Here is the answer" : "Here is the answer"}
+                {program
+                  ? "Here is the worked program"
+                  : attempt.misses > 0
+                    ? "Not quite. Here is the answer"
+                    : "Here is the answer"}
               </>
             ) : (
               <>
@@ -167,7 +179,7 @@ export function QuestionFeedback({
               onClick={() => void attempt.reveal()}
               type="button"
             >
-              Show the answer
+              {program ? "Show the worked program" : "Show the answer"}
             </button>
           ) : null}
         </div>

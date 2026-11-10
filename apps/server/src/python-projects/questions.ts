@@ -136,7 +136,7 @@ export async function assessPython(
                 ? "Test " + (index + 1) + " of " + total + " stopped with an error" +
                   (given ? ", with `" + given + "`. " : ". ")
                 : "It stopped with an error, so no test could finish. ") +
-              "The console shows what Python said. Fixing it does not use up a try.",
+              "The console shows what Python said. An error is not counted as a wrong answer.",
       };
     }
     if (verdict.passed) passed += 1;

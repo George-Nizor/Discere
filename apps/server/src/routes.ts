@@ -28,6 +28,7 @@ import {
   StudyPreferencesUpdateSchema,
   StudyStatisticsPeriodSchema,
   TutorEnvelopeBaseSchema,
+  type TutoringMode,
   TutoringModeSchema,
   TutorOperationSchema,
   TutorReplyRequestSchema,
@@ -198,9 +199,17 @@ export async function registerRoutes(
   /**
    * How many marked misses a lesson allows on a question before it closes: one for a prediction,
    * the end-of-lesson check and a two-option choice, where a second try would be a guess, and
-   * two everywhere else. The web client applies the same rule to decide what to show.
+   * two everywhere else. A question answered by writing a program has no limit where the limit
+   * would be two: the learner checks as often as they like, and the question closes only when
+   * they solve it or ask for the worked program. Exam mode keeps its two misses for a program
+   * too, because it never shows the answer and the question could otherwise not be left.
+   * The web client applies the same rule to decide what to show.
    */
-  function lessonMissLimit(question: Question, context: LessonQuestionContext): number {
+  function lessonMissLimit(
+    question: Question,
+    context: LessonQuestionContext,
+    mode: TutoringMode,
+  ): number | undefined {
     const lesson = content
       .bundle(context.courseId)
       ?.lessons.find((item) => item.id === context.lessonId);
@@ -214,7 +223,8 @@ export async function registerRoutes(
         "The question does not belong to this part of the lesson.",
         "ATTEMPT_MISMATCH",
       );
-    const usual = question.choices && question.choices.length <= 2 ? 1 : 2;
+    const openEnded = question.responseType === "code" && mode !== "exam";
+    const usual = openEnded ? undefined : question.choices && question.choices.length <= 2 ? 1 : 2;
     if (!context.stepId) return lesson.intro ? 1 : usual;
     const step = lesson.steps.find((item) => item.id === context.stepId);
     return step?.kind === "predict" && step.checkQuestionId === question.id ? 1 : usual;
@@ -1169,7 +1179,7 @@ export async function registerRoutes(
     const body = AttemptBodySchema.parse(request.body);
     const question = content.getQuestion(body.questionId);
     if (!question) throw new HttpError(404, "Question not found.", "QUESTION_NOT_FOUND");
-    const allowedMisses = body.lesson ? lessonMissLimit(question, body.lesson) : undefined;
+    const allowedMisses = body.lesson ? lessonMissLimit(question, body.lesson, body.mode) : undefined;
     const previous = body.attemptId
       ? store.getAttempt(body.attemptId)
       : store.getOpenAttempt(question.id, body.mode);

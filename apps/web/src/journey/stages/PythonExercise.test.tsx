@@ -44,13 +44,48 @@ const marked = (extra: object) => ({
   body: { attemptId, xpAwarded: 0, xpGained: 0, mastery: 0, independent: false, ...extra },
 });
 
-function renderExercise(onReady = vi.fn()) {
+function renderExercise(
+  onReady = vi.fn(),
+  props: Partial<Parameters<typeof QuestionBlock>[0]> = {},
+) {
   renderWithProviders(
     <ModeProvider lessonId="lesson">
-      <QuestionBlock inline context={undefined} question={question} onReady={onReady} />
+      <QuestionBlock inline context={undefined} question={question} onReady={onReady} {...props} />
     </ModeProvider>,
   );
   return onReady;
+}
+const inLesson = { courseId: "python", lessonId: "lesson", stepId: "write-the-total" };
+const failedRun = { status: "ok", diagnostics: "", stdout: "", stderr: "", passed: 0, total: 3 };
+/** Every check comes back wrong, counted by the server, with no limit named. */
+function alwaysWrong(extra: (misses: number) => object = () => ({})) {
+  let misses = 0;
+  return () => {
+    misses += 1;
+    return marked({
+      correct: false,
+      qualifying: true,
+      misses,
+      closed: false,
+      feedback: "Test 1 of 3 failed.",
+      codeRun: failedRun,
+      ...extra(misses),
+    });
+  };
+}
+const worked = {
+  body: {
+    attemptId,
+    correct: false,
+    answer: "total = price * quantity\nprint(total)\n",
+    blocks: [],
+    reviewRequired: true,
+  },
+};
+async function checkWrong(turn: number) {
+  fireEvent.change(editor(), { target: { value: `total = ${turn}\n` } });
+  await userEvent.click(screen.getByRole("button", { name: turn === 1 ? "Check answer" : "Check again" }));
+  await waitFor(() => expect(document.querySelector('[aria-busy="true"]')).toBeNull());
 }
 const editor = () => screen.getByLabelText("Your Python code") as HTMLTextAreaElement;
 
@@ -166,7 +201,7 @@ describe("a Python exercise in a lesson", () => {
         correct: false,
         qualifying: false,
         misses: 0,
-        feedback: "It stopped with an error, so no test could finish. The console shows what Python said. Fixing it does not use up a try.",
+        feedback: "It stopped with an error, so no test could finish. The console shows what Python said. An error is not counted as a wrong answer.",
         codeRun: {
           status: "runtime_error",
           diagnostics: "",
@@ -188,6 +223,92 @@ describe("a Python exercise in a lesson", () => {
     expect(screen.queryByText("Not quite")).toBeNull();
     await userEvent.click(screen.getByRole("button", { name: "Get a hint" }));
     expect(await screen.findByText("Use the names that are already set.")).toBeInTheDocument();
+  });
+
+  it("stays open after any number of wrong results and shows the worked program only when asked", async () => {
+    const { calls } = stubFetch({
+      "GET /api/code-runtimes": ready,
+      "POST /api/attempts": alwaysWrong(),
+      [`POST /api/attempts/${attemptId}/lesson-feedback`]: worked,
+    });
+    const onReady = renderExercise(vi.fn(), { context: inLesson });
+    // Nothing has been checked yet, so there is no worked program to ask for.
+    expect(screen.queryByRole("button", { name: "Show the worked program" })).toBeNull();
+    for (let turn = 1; turn <= 4; turn += 1) {
+      await checkWrong(turn);
+      expect(await screen.findByText("Not quite")).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Check again" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Show the worked program" })).toBeInTheDocument();
+    }
+    expect(calls.filter((call) => call.key.endsWith("/lesson-feedback"))).toHaveLength(0);
+    expect(onReady).not.toHaveBeenCalled();
+
+    await userEvent.click(screen.getByRole("button", { name: "Show the worked program" }));
+    expect(await screen.findByText("Here is the worked program")).toBeInTheDocument();
+    expect(screen.getByText(/total = price \* quantity/)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Check a/ })).toBeNull();
+    await waitFor(() => expect(onReady).toHaveBeenCalledTimes(1));
+  });
+
+  it("keeps the one try of a skill check, which shows the worked program at the first miss", async () => {
+    stubFetch({
+      "GET /api/code-runtimes": ready,
+      "POST /api/attempts": alwaysWrong(() => ({ allowedMisses: 1, closed: true })),
+      [`POST /api/attempts/${attemptId}/lesson-feedback`]: worked,
+    });
+    const onReady = renderExercise(vi.fn(), {
+      context: { courseId: "python", lessonId: "lesson" },
+      policy: { misses: 1, hints: false },
+    });
+    await checkWrong(1);
+    expect(await screen.findByText("Here is the worked program")).toBeInTheDocument();
+    await waitFor(() => expect(onReady).toHaveBeenCalledTimes(1));
+  });
+
+  it("closes after two misses in Exam mode without showing the program", async () => {
+    window.localStorage.setItem("discere:tutoring-mode:lesson", "exam");
+    const { calls } = stubFetch({
+      "GET /api/code-runtimes": ready,
+      "POST /api/attempts": alwaysWrong((misses) => ({ allowedMisses: 2, closed: misses >= 2 })),
+    });
+    const onReady = renderExercise(vi.fn(), { context: inLesson });
+    await checkWrong(1);
+    expect(screen.queryByRole("button", { name: "Show the worked program" })).toBeNull();
+    expect(onReady).not.toHaveBeenCalled();
+    await checkWrong(2);
+    expect(await screen.findByText(/Exam mode keeps the answer closed/)).toBeInTheDocument();
+    expect(calls.filter((call) => call.key.endsWith("/lesson-feedback"))).toHaveLength(0);
+    await waitFor(() => expect(onReady).toHaveBeenCalledTimes(1));
+  });
+
+  it("says a Rust program does not compile yet without counting a miss", async () => {
+    stubFetch({
+      "POST /api/attempts": marked({
+        correct: false,
+        qualifying: false,
+        misses: 0,
+        feedback: "It doesn't compile yet. rustc's message is in the console.",
+        codeRun: { status: "compile_error", diagnostics: "error[E0308]", stdout: "", stderr: "", passed: 0, total: 3 },
+      }),
+    });
+    const rust: LearnerQuestion = {
+      ...question,
+      id: "rust-triple",
+      code: {
+        language: "rust",
+        kind: "function",
+        starter: "fn triple(n: i32) -> i32 {\n    0\n}\n",
+        call: { name: "triple", parameters: [{ name: "n", type: "i32" }], returns: "i32" },
+        example: { arguments: ["4"], expected: "12" },
+      },
+    } as LearnerQuestion;
+    renderExercise(vi.fn(), { context: inLesson, question: rust });
+    const box = screen.getByRole("textbox") as HTMLTextAreaElement;
+    fireEvent.change(box, { target: { value: "fn triple(n: i32) -> i32 {\n    n * 3;\n}\n" } });
+    await userEvent.click(screen.getByRole("button", { name: "Check answer" }));
+    expect(await screen.findByText("The program does not compile yet")).toBeInTheDocument();
+    expect(screen.queryByText("Not quite")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Show the worked program" })).toBeNull();
   });
 
   it("says so when Python cannot run, and lets the learner carry on without the exercise", async () => {

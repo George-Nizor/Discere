@@ -23,7 +23,7 @@ import { type AnswerDraft, answerResponse, initialAnswerDraft } from "../quiz/an
  *   hint ladder is offered, and the worked answer is one request away.
  * - `correct`: right, with or without help.
  * - `revealed`: the worked answer is showing, after the last allowed miss or on request. That is
- *   recorded as assistance by the server.
+ *   recorded as assistance by the server. A program has no last miss: only a request reveals it.
  * - `closed`: Exam mode after the last allowed miss. Nothing is revealed; the learner moves on.
  */
 export type AttemptPhase = "answering" | "retry" | "correct" | "revealed" | "closed";
@@ -75,6 +75,22 @@ export function defaultMisses(question: LearnerQuestion): number {
 }
 
 /**
+ * A program written inside a lesson can be checked any number of times: no wrong result closes
+ * it, and the worked program is shown only when the learner asks. Exam mode never shows the
+ * answer, so it keeps a limit, and a screen that names its own limit (a skill check) keeps that.
+ */
+export function hasUnlimitedTries(
+  question: LearnerQuestion,
+  inLesson: boolean,
+  mode: string,
+  policy: AttemptPolicy = {},
+): boolean {
+  return (
+    question.responseType === "code" && inLesson && mode !== "exam" && policy.misses === undefined
+  );
+}
+
+/**
  * One grading path for every place a learner answers a question. A quiz stage and an inline
  * check inside a lesson step ask differently and look different, but they submit the same
  * attempt, earn the same evidence, spend hints against the same ladder, and follow one attempt
@@ -104,7 +120,11 @@ export function useAttempt(
 
   const response = answerResponse(question, draft);
   // Once the server has named the lesson's limit, that is the limit: it is the one enforced.
-  const allowedMisses = serverLimit ?? Math.max(1, policy.misses ?? defaultMisses(question));
+  const allowedMisses =
+    serverLimit ??
+    (hasUnlimitedTries(question, lessonContext !== undefined, mode, policy)
+      ? Number.POSITIVE_INFINITY
+      : Math.max(1, policy.misses ?? defaultMisses(question)));
   const explains = lessonContext !== undefined && mode !== "exam";
   const solved = result?.correct === true;
   const phase: AttemptPhase = solved

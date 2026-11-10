@@ -44,12 +44,14 @@ function scripted(available = true): PythonRuntime & { programs: string[] } {
 const start = (pythonRuntime: PythonRuntime) =>
   createApp({ dbPath: ":memory:", migrate: true, revealDelayMs: 0, pythonRuntime });
 type App = Awaited<ReturnType<typeof createApp>>["app"];
-const check = (app: App, response: string, questionId = exercise) =>
+const step = { courseId: course, lessonId: lesson, stepId: "write-the-total" };
+const check = (app: App, response: string, questionId = exercise, mode = "coach") =>
   app.inject({
     method: "POST",
     url: "/api/attempts",
-    payload: { questionId, response, mode: "coach", lesson: { courseId: course, lessonId: lesson, stepId: "write-the-total" } },
+    payload: { questionId, response, mode, lesson: step },
   });
+const WRONG = SOLUTION.replace("*", "+");
 
 describe("lesson questions answered with Python", () => {
   it("sends the starter and one example, and never the tests or the worked program", async () => {
@@ -141,11 +143,72 @@ describe("lesson questions answered with Python", () => {
         misses: 0,
         codeRun: { status: "runtime_error", message: expect.stringContaining("NameError") },
       });
-      expect(stopped.feedback).toContain("does not use up a try");
+      expect(stopped.feedback).toContain("An error is not counted as a wrong answer.");
       const right = (await check(app, SOLUTION)).json();
       expect(right).toMatchObject({ correct: true, codeRun: { passed: 4, total: 4 } });
       expect(right.codeRun.failed).toBeUndefined();
       expect(right.feedback).toBe("It passes all 4 tests.");
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("never closes a program for wrong results, and pays the lowest step once it is right", async () => {
+    const { app, store } = await start(scripted());
+    try {
+      for (let turn = 1; turn <= 5; turn += 1) {
+        const wrong = (await check(app, WRONG + "# try " + turn + "\n")).json();
+        expect(wrong).toMatchObject({ correct: false, closed: false, misses: turn });
+        expect(wrong.allowedMisses).toBeUndefined();
+      }
+      expect(store.questionCards()).toEqual([]);
+      const right = (await check(app, SOLUTION)).json();
+      // Five misses and no help: recovered, at the quarter every late try is paid.
+      expect(right).toMatchObject({ correct: true, credit: "recovered", independent: false, xpAwarded: 5 });
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("shows the worked program only on request after a wrong result, and closes the question as revealed", async () => {
+    const { app, store } = await start(scripted());
+    try {
+      const reveal = (attemptId: string) =>
+        app.inject({ method: "POST", url: `/api/attempts/${attemptId}/lesson-feedback`, payload: step });
+      // An error alone is not a wrong result, so there is nothing to reveal yet.
+      const stopped = (await check(app, "boom")).json();
+      const early = await reveal(stopped.attemptId);
+      expect(early.statusCode).toBe(409);
+      expect(early.json()).toMatchObject({ code: "LESSON_NEEDS_RESPONSE" });
+      const wrong = (await check(app, WRONG)).json();
+      expect(wrong).toMatchObject({ correct: false, closed: false, misses: 1 });
+      const shown = await reveal(wrong.attemptId);
+      expect(shown.statusCode).toBe(200);
+      expect(shown.json()).toMatchObject({ correct: false, reviewRequired: true });
+      expect(shown.json().answer).toContain("total = price * quantity");
+      expect(store.questionCards()).toMatchObject([{ questionId: exercise }]);
+      const after = await app.inject({
+        method: "POST",
+        url: "/api/attempts",
+        payload: { questionId: exercise, response: SOLUTION, mode: "coach", lesson: step, attemptId: wrong.attemptId },
+      });
+      expect(after.statusCode).toBe(409);
+      expect(after.json()).toMatchObject({ code: "ANSWER_ALREADY_REVEALED" });
+      // Typing the program in afterwards is a new attempt, and it is credited as revealed.
+      expect((await check(app, SOLUTION)).json()).toMatchObject({ correct: true, credit: "revealed", independent: false });
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("keeps Exam mode's two misses for a program, since Exam mode shows no answer", async () => {
+    const { app, store } = await start(scripted());
+    try {
+      // An error still costs nothing in Exam mode.
+      expect((await check(app, "boom", exercise, "exam")).json()).toMatchObject({ misses: 0, closed: false });
+      expect((await check(app, WRONG, exercise, "exam")).json()).toMatchObject({ misses: 1, allowedMisses: 2, closed: false });
+      expect((await check(app, WRONG + "# again\n", exercise, "exam")).json()).toMatchObject({ misses: 2, closed: true });
+      expect(store.questionCards()).toMatchObject([{ questionId: exercise }]);
     } finally {
       await app.close();
     }

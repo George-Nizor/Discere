@@ -54,7 +54,8 @@ export async function assessCode(
                 task.cases[0]!.expected +
                 "."
               : "What it printed differs from the expected output. Compare them line by line.";
-  return { correct: marked.correct, feedback, run };
+  // A program that does not compile was not marked against any test: something to fix, not a miss.
+  return { correct: marked.correct, feedback, run, qualifying: run.status !== "compile_error" };
 }
 
 /**
