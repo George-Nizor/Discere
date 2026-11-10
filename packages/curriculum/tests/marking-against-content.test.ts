@@ -112,9 +112,10 @@ describe("marking against every bundle", { timeout: 60_000 }, () => {
       for (const question of questionsOf(bundle)) {
         const authority = question.answerAuthority;
         if (authority.kind !== "text" || question.choices?.length) continue;
-        // A Python exercise is marked by running its tests (python-exercises.test.ts). Marked
+        // A Python or SQL exercise is marked by running it (python-exercises.test.ts and
+        // sql-exercises.test.ts). Marked
         // as text, its worked program is wrong by design.
-        if (question.code?.language === "python") continue;
+        if (question.code?.language === "python" || question.code?.language === "sql") continue;
         const key = `${course}/${question.id}`;
         if (!examples.has(key) && !assessTextAnswer(authority.exampleAnswer, authority).correct)
           failures.push(`${key}: example`);

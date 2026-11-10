@@ -352,6 +352,30 @@ real isolated SQLite execution and 45 manually checked dataset variants. Saved d
 queries, result inspection, corrections and Exam completion follow the existing feedback flow.
 [Project records](sql-projects/README.md) explain the runtime boundary and remaining scope.
 
+Every SQL lesson also holds three query exercises, 45 in all (`responseType: "code"` with
+`code.language: "sql"`), which the learner answers by writing or repairing one query in the lesson
+itself. The 148 earlier questions are unchanged. An exercise shows the tables it reads, with each
+column's type and the rows Run uses, and a starter query in the editor. All 45 read the course's
+`customers` and `orders` tables. Run sends the query to the runner the SQL projects use
+(`apps/server/src/sql-projects/runner.py`: a fresh in-memory SQLite database for each run, read
+only, one statement, a time limit and at most 200 rows) and shows the first fifty rows it returns,
+or SQLite's own error message. Check answer runs the query against the visible rows and against
+two hidden sets of rows in the same tables, and compares what comes back with the stored result:
+the number of columns and the values always, the order of the rows only where the prompt asks for
+one (`code.ordered`), and the column headings only in the lesson on aliases
+(`code.namedColumns`). A wrong result is described in words, such as "With the rows shown, your
+query returned 5 rows and 3 were expected", and the reference query is shown only when the learner
+asks for the worked query. A query SQLite refuses is not counted as a wrong answer. The stored
+results were produced by running each reference query, and
+`packages/curriculum/tests/sql-exercises.test.ts` runs every reference query and starter again with
+the machine's Python 3 (SQLite 3.39 or later); `apps/server/tests/sql-questions.test.ts` does the
+same through the app's runner. Where the runner cannot start, `GET /api/sql-runtime` says so, the
+exercise offers to be set aside, and the lesson finishes without it. On an installed Windows app
+the runner uses the Python that the app downloads once, and the exercise offers that download.
+The lesson code path for the three languages is shared: `CodeAnswer`, `use-attempt.ts` and
+`QuestionFeedback.tsx` on the web, `POST /api/questions/:id/run` and `POST /api/attempts` on the
+server.
+
 Python for Data Analysis adds 21 lessons from George's Python for Data Analysts guide, covering
 core Python, NumPy, pandas preparation and report auditing. All 168 original examples were
 executed with CPython 3.12.14, NumPy 2.3.5 and pandas 3.0.1; 105 separate programs verify numeric
