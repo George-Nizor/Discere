@@ -330,7 +330,7 @@ function HomeCourseSelector({
     const changed = lastSelection.current !== selectedId;
     lastSelection.current = selectedId;
     const reveal = (smooth = false) => {
-      const selected = container.querySelector<HTMLButtonElement>('button[aria-pressed="true"]');
+      const selected = container.querySelector<HTMLButtonElement>('button[aria-checked="true"]');
       if (!selected) return;
       const offset =
         selected.getBoundingClientRect().left -
@@ -384,7 +384,6 @@ function HomeCourseSelector({
             type="button"
             role="radio"
             aria-checked={course.id === selectedId}
-            aria-pressed={course.id === selectedId}
             aria-label={course.title}
             data-course={course.id}
             tabIndex={course.id === selectedId ? 0 : -1}

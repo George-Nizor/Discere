@@ -129,10 +129,26 @@ export function QuestionBlock({
   const Heading = heading;
   const prompt = promptParts(question.prompt);
   const formId = `check-${question.id}`;
+  const marks = attemptMarksDraft(attempt);
+  // Checking the same marked answer again would only spend the retry. The button stays
+  // focusable (aria-disabled, not disabled) so focus can rest on it after the verdict.
+  const unchanged = marks && !attempt.ready;
+  const checkButton = useRef<HTMLButtonElement>(null);
+  // After a verdict that leaves the question open, focus returns to the Check button rather
+  // than falling to the page when the button re-renders; a learner who is ready to move on
+  // is taken to Continue by the screen around this block.
+  const focusedResult = useRef(attempt.result);
+  useEffect(() => {
+    if (attempt.busy || attempt.result === focusedResult.current) return;
+    focusedResult.current = attempt.result;
+    if (attempt.result && !attempt.ready) checkButton.current?.focus();
+  }, [attempt.result, attempt.busy, attempt.ready]);
   const actions = !attempt.ready ? (
     <div className={"button-row check-actions" + (inline ? "" : " footer-primary")}>
       <button
+        ref={checkButton}
         aria-busy={attempt.busy}
+        aria-disabled={unchanged || undefined}
         disabled={attempt.busy || !attempt.response}
         className={inline ? "button button-secondary" : "button button-primary"}
         form={formId}
@@ -143,7 +159,6 @@ export function QuestionBlock({
       </button>
     </div>
   ) : null;
-  const marks = attemptMarksDraft(attempt);
   return (
     <div
       className={"step-check question-beat" + (inline ? " is-inline" : "")}
@@ -185,6 +200,7 @@ export function QuestionBlock({
         id={formId}
         onSubmit={(event) => {
           event.preventDefault();
+          if (unchanged) return;
           void attempt.send();
         }}
       >

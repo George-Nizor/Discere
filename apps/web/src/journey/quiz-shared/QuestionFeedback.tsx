@@ -1,6 +1,6 @@
 import type { LessonFeedbackResponse } from "@discere/contracts";
 import { Check, Eye, X } from "lucide-react";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { Lightbulb } from "../../brand/icon-set.js";
 import { RichBlocks } from "../../ui/RichBlocks.js";
 import { InlineRichText } from "../../ui/RichText.js";
@@ -27,6 +27,17 @@ function WorkedAnswer({ feedback }: { feedback: LessonFeedbackResponse }) {
   );
 }
 
+/** Whether a marked answer was unreadable (the wrong form), which is not counted as a miss. */
+function isUnreadable(attempt: Attempt): boolean {
+  const result = attempt.result;
+  return (
+    result !== null &&
+    result.qualifying === false &&
+    !result.correct &&
+    (attempt.phase === "answering" || attempt.phase === "retry")
+  );
+}
+
 /**
  * The verdict on a lesson question, in the player's footer.
  *
@@ -48,11 +59,19 @@ export function QuestionFeedback({
 }) {
   const [moreChoice, setMoreOpen] = useState<boolean | null>(null);
   const result = attempt.result;
-  if (!result) return null;
+  const className = "question-feedback" + (placement === "inline" ? " is-inline" : "");
+  const place = (body: ReactNode) =>
+    placement === "inline" ? (
+      body
+    ) : (
+      <PlayerFooterSlot kind="feedback">{body}</PlayerFooterSlot>
+    );
+  // The live region is mounted with the question, empty, before any verdict exists: a region
+  // created together with its text is often not announced by screen readers.
+  if (!result) return place(<div className={className} aria-live="polite" />);
   const feedback = attempt.lessonFeedback;
   const phase = attempt.phase;
-  const unreadable =
-    result.qualifying === false && !result.correct && (phase === "answering" || phase === "retry");
+  const unreadable = isUnreadable(attempt);
   // The idea that comes with a right answer: authored, or else the worked answer itself.
   const idea = feedback?.onCorrect ?? result.feedback;
   // The worked answer and the held-back teaching are one tap away whenever there is any.
@@ -61,16 +80,14 @@ export function QuestionFeedback({
   // waits behind "Why?" so the footer never buries the question.
   const moreOpen = moreChoice ?? false;
   const body = (
-    <div
-      className={"question-feedback" + (placement === "inline" ? " is-inline" : "")}
-      data-phase={phase}
-    >
+    <div className={className} data-phase={phase} aria-live="polite">
       <div
+        // A new marking replaces the verdict node, so a second identical verdict is read again.
+        key={`${attempt.misses}:${phase}:${attempt.markedResponse ?? ""}`}
         className={
           "answer-feedback " +
           (phase === "correct" ? "is-correct" : unreadable ? "is-format" : "is-retry")
         }
-        role="status"
       >
         <div>
           <p className="feedback-verdict">
@@ -165,9 +182,5 @@ export function QuestionFeedback({
       ) : null}
     </div>
   );
-  return placement === "inline" ? (
-    body
-  ) : (
-    <PlayerFooterSlot kind="feedback">{body}</PlayerFooterSlot>
-  );
+  return place(body);
 }

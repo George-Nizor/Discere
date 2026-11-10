@@ -31,7 +31,7 @@ describe("answer input", () => {
     );
     expect(screen.getByText("A")).toBeInTheDocument();
     expect(screen.getByText("D")).toBeInTheDocument();
-    await userEvent.click(screen.getByRole("button", { name: /The reign of Augustus/ }));
+    await userEvent.click(screen.getByRole("radio", { name: /The reign of Augustus/ }));
     expect(onChange).toHaveBeenCalledWith({ kind: "choice", choiceId: "c" });
   });
 
@@ -45,10 +45,38 @@ describe("answer input", () => {
         question={choiceQuestion}
       />,
     );
-    const selected = screen.getByRole("button", { name: /The reign of Augustus/ });
-    expect(selected).toHaveAttribute("aria-pressed", "true");
+    const selected = screen.getByRole("radio", { name: /The reign of Augustus/ });
+    expect(selected).toHaveAttribute("aria-checked", "true");
     expect(selected.className).toContain("choice-card-correct");
     expect(screen.getByLabelText("Correct")).toBeInTheDocument();
+  });
+
+  it("is a radio group whose options stay readable by keyboard once answered", async () => {
+    const onChange = vi.fn();
+    renderWithProviders(
+      <AnswerInput
+        answered
+        correct
+        draft={{ kind: "choice", choiceId: "c" }}
+        onChange={onChange}
+        question={choiceQuestion}
+      />,
+    );
+    expect(screen.getByRole("radiogroup", { name: "Answer choices" })).toBeInTheDocument();
+    const options = screen.getAllByRole("radio");
+    for (const option of options) {
+      expect(option).not.toBeDisabled();
+      expect(option).toHaveAttribute("aria-disabled", "true");
+    }
+    // One Tab stop: the chosen option.
+    const chosen = screen.getByRole("radio", { name: /The reign of Augustus/ });
+    expect(options.filter((option) => option.tabIndex === 0)).toEqual([chosen]);
+    chosen.focus();
+    await userEvent.keyboard("{ArrowDown}");
+    expect(chosen).not.toHaveFocus();
+    expect(document.activeElement?.getAttribute("role")).toBe("radio");
+    await userEvent.click(options[0] as HTMLElement);
+    expect(onChange).not.toHaveBeenCalled();
   });
 
   it("says plainly when a response type has no input", () => {

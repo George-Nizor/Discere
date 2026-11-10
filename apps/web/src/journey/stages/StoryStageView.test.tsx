@@ -127,7 +127,7 @@ describe("story stage view", () => {
     // No way forward until the question has been answered.
     expect(screen.queryByRole("button", { name: /Continue/ })).not.toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole("button", { name: /Raising the supply voltage/ }));
+    await userEvent.click(screen.getByRole("radio", { name: /Raising the supply voltage/ }));
     await userEvent.click(screen.getByRole("button", { name: "Check answer" }));
 
     expect(await screen.findByText("That raises the numerator.")).toBeInTheDocument();

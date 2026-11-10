@@ -6,7 +6,9 @@ import type {
   LessonFeedbackRequest,
 } from "@discere/contracts";
 import { ArrowLeft, ArrowRight, ChevronDown } from "lucide-react";
-import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
+import { type ReactNode, type Ref, useCallback, useEffect, useRef, useState } from "react";
+import { focusHeadingIn } from "../../lib/focus.js";
+import { FigureBoundary } from "../../ui/ErrorBoundary.js";
 import { RichBlocks } from "../../ui/RichBlocks.js";
 import { InlineRichText } from "../../ui/RichText.js";
 import { ActivityStep, isStepActivity } from "../activities/ActivityStep.js";
@@ -158,10 +160,26 @@ function WorkedLines({
   const blanksDone = blanks.every((id) => done.has(id));
   const ready = visible >= lines.length && currentDone;
   useEffect(() => onReadyChange(ready, blanksDone), [ready, blanksDone, onReadyChange]);
+  // Focus follows the example: a line that has just appeared takes it, so it is read next, and
+  // once the shown lines are done the button for the next line does.
+  const list = useRef<HTMLOListElement>(null);
+  const nextLine = useRef<HTMLButtonElement>(null);
+  const before = useRef({ visible, currentDone });
+  useEffect(() => {
+    const previous = before.current;
+    before.current = { visible, currentDone };
+    if (visible > previous.visible) {
+      const line = list.current?.children[previous.visible];
+      if (line instanceof HTMLElement) {
+        line.tabIndex = -1;
+        line.focus({ preventScroll: true });
+      }
+    } else if (currentDone && !previous.currentDone) nextLine.current?.focus();
+  }, [visible, currentDone]);
   const markDone = (id: string) => () => setDone((current) => new Set(current).add(id));
   return (
     <div className="worked-lines">
-      <ol>
+      <ol ref={list}>
         {lines.slice(0, visible).map((line, index) => (
           // biome-ignore lint/suspicious/noArrayIndexKey: worked lines are fixed and never reorder; text can repeat.
           <li key={`${index}-${line.text}`} className={line.blank ? "is-blank" : undefined}>
@@ -201,6 +219,7 @@ function WorkedLines({
       {!faded && shown < lines.length && currentDone ? (
         <button
           className="button button-secondary worked-next"
+          ref={nextLine}
           onClick={() => setShown((count) => count + 1)}
           type="button"
         >
@@ -400,6 +419,19 @@ export function StoryStageView({
     window.requestAnimationFrame(scrollStageToTop);
   }
 
+  // A keyboard learner never has to find their place again. Answering a screen's last question
+  // puts focus on the way forward; a new screen puts it on that screen's heading.
+  const forward = useRef<HTMLButtonElement>(null);
+  const story = useRef<HTMLDivElement>(null);
+  const seen = useRef({ screenId, ready });
+  useEffect(() => {
+    const before = seen.current;
+    seen.current = { screenId, ready };
+    if (before.screenId !== screenId) {
+      if (story.current) focusHeadingIn(story.current);
+    } else if (ready && !before.ready) forward.current?.focus();
+  }, [screenId, ready]);
+
   // Back sits at the left of the footer and the way forward at the right. They are separate
   // slots, so a question's Check button, which takes the right-hand place while it is open, can
   // never be drawn over Back.
@@ -416,7 +448,7 @@ export function StoryStageView({
         ) : null}
         {ready ? (
           <div className="button-row footer-primary story-actions">
-            <button className="button button-primary" onClick={advance} type="button">
+            <button className="button button-primary" onClick={advance} ref={forward} type="button">
               {onOpener && !stage.intro?.hook.question ? "Start" : isLast ? "Finish" : "Continue"}
               <ArrowRight aria-hidden="true" size={16} strokeWidth={1.8} />
             </button>
@@ -427,7 +459,7 @@ export function StoryStageView({
 
   if (onOpener && stage.intro) {
     return (
-      <div className="story story-question-led story-v2">
+      <div className="story story-question-led story-v2" ref={story}>
         <OpenerScreen
           key={LESSON_OPENER_ID}
           title={stage.title}
@@ -443,7 +475,7 @@ export function StoryStageView({
 
   if (active?.questionLed) {
     return (
-      <div className={"story story-question-led" + (v2 ? " story-v2" : "")}>
+      <div className={"story story-question-led" + (v2 ? " story-v2" : "")} ref={story}>
         <StepScreen
           key={active.id}
           step={active}
@@ -462,6 +494,7 @@ export function StoryStageView({
       courseId={courseId}
       onSolved={(id) => markSolved(id)()}
       continueButton={continueButton}
+      rootRef={story}
     />
   );
 }
@@ -473,12 +506,14 @@ function LegacyProseStory({
   courseId,
   onSolved,
   continueButton,
+  rootRef,
 }: {
   stage: ExplainerStage;
   activeIndex: number;
   courseId: string;
   onSolved: (stepId: string) => void;
   continueButton: ReactNode;
+  rootRef: Ref<HTMLDivElement>;
 }) {
   const steps = stage.steps;
   const active = steps[activeIndex];
@@ -489,7 +524,7 @@ function LegacyProseStory({
   const activeStateId = visualStateAt(steps, activeIndex);
   const views = stepViewsFor(steps, activeIndex);
   return (
-    <div className={hasVisual ? "story story-split" : "story"}>
+    <div className={hasVisual ? "story story-split" : "story"} ref={rootRef}>
       <div className="story-flow">
         <ol className="story-steps">
           {views
@@ -541,7 +576,9 @@ function LegacyProseStory({
       {active?.diagram ? (
         <LearningDiagram key={active.id} spec={active.diagram} />
       ) : hasVisual ? (
-        <StoryVisual activeStateId={activeStateId} stage={stage} />
+        <FigureBoundary resetKey={stage.id}>
+          <StoryVisual activeStateId={activeStateId} stage={stage} />
+        </FigureBoundary>
       ) : null}
     </div>
   );

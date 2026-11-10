@@ -1,3 +1,4 @@
+import { useDocumentTitle } from "../lib/document-title.js";
 import type { CalculatorPolicy, LearnerStage } from "@discere/contracts";
 import { useAmbientAccent } from "../fx/ambient-accent.js";
 import { useQueryClient } from "@tanstack/react-query";
@@ -10,7 +11,8 @@ import { paths } from "../lib/paths.js";
 import { useExperience } from "../study/experience.js";
 import { LessonSoundToggle } from "../study/LessonSoundToggle.js";
 import { Workbench, type WorkbenchTab, workbenchTabs } from "../workbench/Workbench.js";
-import { ErrorScreen, LoadingScreen } from "../ui/Feedback.js";
+import { ErrorBoundary } from "../ui/ErrorBoundary.js";
+import { ErrorScreen, LoadingScreen, Notice } from "../ui/Feedback.js";
 import { ReadAloudButton } from "../ui/ReadAloud.js";
 import { LessonNavigator } from "./LessonNavigator.js";
 import { ModeProvider, useTutoringMode } from "./mode-context.js";
@@ -72,6 +74,7 @@ function LessonJourney({
   const progress = useJourneyProgress(courseId, lessonId);
   const course = useCourse(courseId);
   useAmbientAccent(course.data?.course.accent);
+  useDocumentTitle(journey.data?.title);
   const [bench, setBench] = useState<WorkbenchTab | null>(null);
   const [benchVisited, setBenchVisited] = useState<ReadonlySet<WorkbenchTab>>(() => new Set());
   const openBench = (tab: WorkbenchTab | null) => {
@@ -388,6 +391,14 @@ function LessonJourney({
               </button>
             </p>
           ) : null}
+          <ErrorBoundary
+            resetKey={`${current.stage.id}:${rewind}`}
+            fallback={
+              <Notice tone="error" title="This part of the lesson could not be shown">
+                <p>Reload the page to try again.</p>
+              </Notice>
+            }
+          >
           <StageCanvas
             // Each stage owns its own working state. Keying by stage id means moving between two
             // stages of the same type starts the second one clean, rather than showing the first
@@ -415,6 +426,7 @@ function LessonJourney({
             }
             stage={current.stage}
           />
+          </ErrorBoundary>
         </main>
         {focusedQuestion ? <PlayerFooterSurface /> : null}
 

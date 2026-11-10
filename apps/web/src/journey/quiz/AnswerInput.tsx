@@ -6,13 +6,15 @@ import { Notice } from "../../ui/Feedback.js";
 import { InlineRichText } from "../../ui/RichText.js";
 import { type AnswerDraft, answerSurface, choiceLetter } from "./answer-draft.js";
 
-/** Moves between choice cards with the arrow keys, as a radio group would. */
+/**
+ * Moves between choice cards with the arrow keys, as a radio group would. Locked cards are
+ * included, so after the verdict a learner can still step through the options and hear which
+ * one was right.
+ */
 function moveFocus(event: KeyboardEvent<HTMLFieldSetElement>): void {
   const keys = ["ArrowDown", "ArrowRight", "ArrowUp", "ArrowLeft"];
   if (!keys.includes(event.key)) return;
-  const cards = [
-    ...event.currentTarget.querySelectorAll<HTMLButtonElement>("button.choice-card:not(:disabled)"),
-  ];
+  const cards = [...event.currentTarget.querySelectorAll<HTMLButtonElement>("button.choice-card")];
   const at = cards.indexOf(document.activeElement as HTMLButtonElement);
   if (at < 0 || cards.length === 0) return;
   event.preventDefault();
@@ -83,16 +85,32 @@ export function AnswerInput({
     // One face for the whole list: mono only when every option is notation, so a list never
     // mixes "Exactly 0.05 A" in mono with "Nothing, because…" in the interface face.
     const notation = (question.choices ?? []).every((choice) => looksLikeNotation(choice.label));
+    const choices = question.choices ?? [];
+    // One Tab stop for the group, as for native radios: the chosen card, or the first.
+    const tabStop = choices.some((choice) => choice.id === draft.choiceId)
+      ? draft.choiceId
+      : choices[0]?.id;
+    const locked = correct || readOnly;
     return (
-      <fieldset className="choice-list" onKeyDown={moveFocus}>
-        <legend className="sr-only">{label ?? "Answer choices"}</legend>
-        {(question.choices ?? []).map((choice, index) => {
+      <fieldset
+        className="choice-list"
+        onKeyDown={moveFocus}
+        role="radiogroup"
+        aria-labelledby={`${idPrefix}-choices`}
+      >
+        <legend className="sr-only" id={`${idPrefix}-choices`}>
+          {label ?? "Answer choices"}
+        </legend>
+        {choices.map((choice, index) => {
           const selected = draft.choiceId === choice.id;
           const marked = answered && selected;
           const right = (marked && correct) || choice.id === correctChoiceId;
           return (
             <button
-              aria-pressed={selected}
+              role="radio"
+              aria-checked={selected}
+              aria-disabled={locked || undefined}
+              tabIndex={choice.id === tabStop ? 0 : -1}
               className={[
                 "choice-card",
                 selected ? "choice-card-selected" : "",
@@ -102,8 +120,9 @@ export function AnswerInput({
                 .filter(Boolean)
                 .join(" ")}
               key={choice.id}
-              disabled={correct || readOnly}
-              onClick={() => onChange({ kind: "choice", choiceId: choice.id })}
+              onClick={() => {
+                if (!locked) onChange({ kind: "choice", choiceId: choice.id });
+              }}
               type="button"
             >
               <span className="choice-letter">{choiceLetter(index)}</span>

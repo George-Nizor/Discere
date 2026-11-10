@@ -312,3 +312,66 @@ describe("going back within a lesson", () => {
     expect(screen.getByRole("heading", { name: "The second idea" })).toBeInTheDocument();
   });
 });
+
+describe("keyboard focus and the verdict (holistic review, web client)", () => {
+  it("keeps focus on Check again after a miss, and holds it there until the answer changes", async () => {
+    let answers = 0;
+    stubFetch({
+      "POST /api/attempts": () => {
+        answers += 1;
+        return attempt(false);
+      },
+    });
+    render(legacy);
+    const value = screen.getByLabelText("Value");
+    await userEvent.type(value, "8{Enter}");
+    expect(await screen.findByText("Recheck the calculation.")).toBeInTheDocument();
+    const again = screen.getByRole("button", { name: "Check again" });
+    await vi.waitFor(() => expect(again).toHaveFocus());
+    expect(again).toHaveAttribute("aria-disabled", "true");
+    // Pressing it again with the same answer spends nothing.
+    await userEvent.click(again);
+    await userEvent.keyboard("{Enter}");
+    expect(answers).toBe(1);
+    await userEvent.clear(value);
+    await userEvent.type(value, "9");
+    expect(again).not.toHaveAttribute("aria-disabled");
+  });
+
+  it("writes the verdict into a live region that was there before the answer", async () => {
+    stubFetch({ "POST /api/attempts": attempt(false) });
+    render(legacy);
+    const region = document.querySelector(".question-feedback[aria-live]");
+    expect(region).not.toBeNull();
+    expect(region).toBeEmptyDOMElement();
+    await userEvent.type(screen.getByLabelText("Value"), "8{Enter}");
+    await screen.findByText("Recheck the calculation.");
+    expect(document.querySelector(".question-feedback[aria-live]")).toBe(region);
+    expect(region).toHaveTextContent("Not quite");
+  });
+
+  it("moves focus to Continue after a right answer, then to the next screen's heading", async () => {
+    stubFetch({
+      "POST /api/attempts": attempt(true, "x + 5 = 7."),
+      [`POST /api/attempts/${ATTEMPT}/lesson-feedback`]: {
+        body: {
+          attemptId: ATTEMPT,
+          correct: true,
+          answer: "7",
+          blocks: [],
+          reviewRequired: false,
+        },
+      },
+    });
+    render(legacy);
+    await userEvent.type(screen.getByLabelText("Value"), "7{Enter}");
+    const forward = await screen.findByRole("button", { name: /Continue/ });
+    await vi.waitFor(() => expect(forward).toHaveFocus());
+    await userEvent.keyboard("{Enter}");
+    const heading = await screen.findByRole("heading", {
+      level: 1,
+      name: "For x = 3, what is x + 5?",
+    });
+    expect(heading).toHaveFocus();
+  });
+});
