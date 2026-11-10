@@ -125,7 +125,12 @@ function LessonJourney({
   );
 
   const complete = useCallback(
-    async (view: StageView, followingStageId: string | null) => {
+    async (
+      view: StageView,
+      followingStageId: string | null,
+      // An optional stage, such as a writing task, can be left without doing it.
+      state: "completed" | "skipped_optional" = "completed",
+    ) => {
       if (completing.current) return;
       completing.current = true;
       prepare();
@@ -133,7 +138,7 @@ function LessonJourney({
       try {
         const saved = await saveJourneyProgress(courseId, lessonId, {
           stageId: view.stage.id,
-          state: "completed",
+          state,
           interactionState: {},
         });
         const ending = journey.data?.stages.find((stage) => stage.id === followingStageId);
@@ -415,6 +420,7 @@ function LessonJourney({
             questionLed={questionLed}
             nextLesson={upcoming ? { id: upcoming.id, title: upcoming.title } : null}
             onComplete={() => void complete(current, following?.stage.id ?? null)}
+            onSkip={() => void complete(current, following?.stage.id ?? null, "skipped_optional")}
             onStepChange={(stepId, stepIndex) =>
               saveStepPosition(current.stage.id, stepId, stepIndex)
             }
@@ -474,6 +480,7 @@ function StageCanvas({
   questionLed,
   nextLesson,
   onComplete,
+  onSkip,
   onStepChange,
   savedInteractionState,
   returnLink,
@@ -484,6 +491,7 @@ function StageCanvas({
   questionLed: boolean;
   nextLesson: { id: string; title: string } | null;
   onComplete: () => void;
+  onSkip: () => void;
   onStepChange: (stepId: string, stepIndex: number) => void;
   savedInteractionState: Record<string, unknown> | undefined;
   returnLink: { label: string; onSelect: () => void } | null;
@@ -512,7 +520,13 @@ function StageCanvas({
         />
       );
     case "essay":
-      return <EssayStageView onContinue={onComplete} stage={stage} />;
+      return (
+        <EssayStageView
+          onContinue={onComplete}
+          {...(stage.optional ? { onSkip } : {})}
+          stage={stage}
+        />
+      );
     case "review":
       return <ReviewStageView onContinue={onComplete} stage={stage} />;
     case "recap":

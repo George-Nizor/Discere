@@ -84,10 +84,10 @@ test.describe("the lesson journey", () => {
     await page.getByRole("button", { name: /^Continue/ }).click();
 
     // Essay studio
-    await expect(page.getByLabel("Your teach-back")).toBeVisible();
-    await page.getByLabel("Your teach-back").fill(TEACH_BACK);
+    await expect(page.getByLabel("Your writing")).toBeVisible();
+    await page.getByLabel("Your writing").fill(TEACH_BACK);
     await expect(page.getByText("Saved just now")).toBeVisible({ timeout: 10_000 });
-    await page.getByRole("button", { name: "Submit teach-back" }).click();
+    await page.getByRole("button", { name: "Submit", exact: true }).click();
     await expect(page.getByText("Submitted. The draft is now read-only.")).toBeVisible();
     await page.getByRole("button", { name: /^Continue/ }).click();
 

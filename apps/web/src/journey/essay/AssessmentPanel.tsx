@@ -57,8 +57,19 @@ function AssessmentBody({ assessment }: { assessment: EssayAssessmentResponse })
   );
 }
 
-/** Requests, polls, and renders the provider-neutral assessment of a submitted teach-back. */
-export function AssessmentPanel({ essayId, mode }: { essayId: string; mode: TutoringMode }) {
+/**
+ * Requests, polls, and renders the provider-neutral assessment of submitted writing. With
+ * `unavailableReason` the tutor cannot answer, so the panel says so and asks for nothing.
+ */
+export function AssessmentPanel({
+  essayId,
+  mode,
+  unavailableReason,
+}: {
+  essayId: string;
+  mode: TutoringMode;
+  unavailableReason?: string;
+}) {
   const [requested, setRequested] = useState(false);
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState<string | null>(null);
@@ -89,13 +100,22 @@ export function AssessmentPanel({ essayId, mode }: { essayId: string; mode: Tuto
   return (
     <section aria-label="Assessment" className="assessment">
       <h2>Assessment</h2>
-      {!current ? (
+      {unavailableReason !== undefined && current?.status !== "ready" ? (
+        <Notice tone="info" title="The tutor is not available">
+          <p>
+            {unavailableReason} Your writing is saved. Read it against each line under “What a
+            strong answer does” and note which ones it meets.
+          </p>
+        </Notice>
+      ) : null}
+
+      {!current && unavailableReason === undefined ? (
         <p className="muted">
-          The submitted teach-back can be assessed by the configured tutor provider.
+          The tutor can read what you submitted against the list above and say what to change.
         </p>
       ) : null}
 
-      {current === null || current.status === "failed" ? (
+      {unavailableReason === undefined && (current === null || current.status === "failed") ? (
         <button
           aria-busy={busy}
           className="button button-secondary"
@@ -108,7 +128,7 @@ export function AssessmentPanel({ essayId, mode }: { essayId: string; mode: Tuto
       ) : null}
 
       {current?.status === "pending" ? (
-        <Notice live tone="info" title="The assessor is reading your teach-back">
+        <Notice live tone="info" title="The tutor is reading your writing">
           <p>
             This runs on your machine and can take up to two minutes. The page updates by itself.
           </p>
@@ -128,7 +148,10 @@ export function AssessmentPanel({ essayId, mode }: { essayId: string; mode: Tuto
 
       {current?.status === "failed" ? (
         <Notice tone="error" title="The assessment did not complete">
-          <p>{current.error?.message ?? "The provider gave no reason."}</p>
+          <p>
+            {current.error?.message ?? "The provider gave no reason."} Your writing is saved. You
+            can try again, or check it yourself against the list under “What a strong answer does”.
+          </p>
         </Notice>
       ) : null}
 

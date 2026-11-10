@@ -66,7 +66,8 @@ export function buildEssayAssessmentPayload(
   mode: Exclude<TutoringMode, "exam">,
 ) {
   return {
-    task: "Assess the learner's submitted teach-back.",
+    task:
+      "Assess the learner's submitted writing against each of the successCriteria. In the summary, say which criteria the writing meets and which it does not, and quote the learner's own words as the evidence for each. Put the unmet criterion that matters most in firstMeaningfulError, and make nextStep one change the learner can make to this piece. Use correct only when every criterion is met.",
     tutoringMode: mode,
     responsePolicy: modePolicy(mode),
     essayPrompt: stage.prompt,
@@ -267,23 +268,21 @@ export function acceptTutorReply(input: {
   return { accepted, operation: "tutor_reply", requestId: input.envelope.requestId, issues, reply };
 }
 
+/** A writing task has no hidden answer, so its assessment is checked for style and sources only. */
 export function validateEssayAssessment(input: {
   assessment: EssayAssessmentDraft;
-  mode: Exclude<TutoringMode, "exam">;
   lesson: LessonResponse;
-  question: Question;
 }): CompanionIssue[] {
   const issues: CompanionIssue[] = [];
-  const answerBoundary = answerBoundaryFor(input.question, input.mode);
-  addTextIssues(issues, "summary", input.assessment.summary, "assessment", answerBoundary);
-  addTextIssues(issues, "nextStep", input.assessment.nextStep, "hint", answerBoundary);
+  addTextIssues(issues, "summary", input.assessment.summary, "assessment", undefined);
+  addTextIssues(issues, "nextStep", input.assessment.nextStep, "hint", undefined);
   if (input.assessment.firstMeaningfulError) {
     addTextIssues(
       issues,
       "firstMeaningfulError",
       input.assessment.firstMeaningfulError,
       "feedback",
-      answerBoundary,
+      undefined,
     );
   }
   addSourceIssues(issues, input.assessment.sourceIds, input.lesson, "The essay assessment");

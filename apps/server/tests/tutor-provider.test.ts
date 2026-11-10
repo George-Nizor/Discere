@@ -318,6 +318,30 @@ describe("essay assessment", () => {
     expect(finished["assessment"]).toMatchObject({ assessment: "partly_correct" });
   });
 
+  it("accepts a Coach assessment that names the answer to the lesson's first question", async () => {
+    // A writing task has nothing to withhold. The lesson's first question is answered by
+    // 0.025 A, and an assessment of the learner's own worked example may need to say so.
+    useFakeCodex([
+      {
+        output: {
+          ...CLEAN_ASSESSMENT,
+          nextStep: "Add a second example, such as 10 V across 400 Ω giving 0.025 A.",
+        },
+      },
+    ]);
+    await startApp("codex");
+    await submitEssay();
+    await app.inject({
+      method: "POST",
+      url: `/api/essays/${encodeURIComponent(ESSAY_ID)}/assess`,
+      payload: { mode: "coach" },
+    });
+    const finished = await pollAssessment();
+    expect(finished["status"]).toBe("ready");
+    expect(finished["accepted"]).toBe(true);
+    expect(finished["issues"]).toEqual([]);
+  });
+
   it("records a failed generation rather than inventing an assessment", async () => {
     useFakeCodex([{ exitCode: 2, skipOutputFile: true }]);
     await startApp("codex");
@@ -356,7 +380,9 @@ describe("essay assessment", () => {
     });
     expect(response.statusCode).toBe(200);
     expect(response.json().status).toBe("packet_required");
-    expect(response.json().packet.text).toContain("Assess the learner's submitted teach-back.");
+    expect(response.json().packet.text).toContain(
+      "Assess the learner's submitted writing against each of the successCriteria.",
+    );
   });
 
   it("assesses from a fixture when the mock provider is configured", async () => {

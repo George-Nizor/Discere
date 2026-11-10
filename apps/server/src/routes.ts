@@ -557,6 +557,8 @@ export async function registerRoutes(
     const body = StageProgressRequestSchema.parse(request.body);
     try {
       const stage = journey.stages.find((item) => item.id === body.stageId);
+      if (body.state === "skipped_optional" && stage && !stage.optional)
+        throw new HttpError(409, "This part of the lesson cannot be skipped.", "STAGE_NOT_OPTIONAL");
       if (body.state === "completed" && stage) {
         if (stage.type === "quiz" && !store.hasQuestionEvidence(stage.questionId))
           throw new HttpError(
@@ -657,7 +659,7 @@ export async function registerRoutes(
       essayId: saved.essayId,
       submitted: true as const,
       wordCount,
-      feedback: "Your teach-back has been saved as submitted evidence.",
+      feedback: "Your writing has been saved as submitted.",
       styleNotes: lint.violations,
     };
   });

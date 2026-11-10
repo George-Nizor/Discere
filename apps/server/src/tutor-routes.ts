@@ -305,39 +305,25 @@ export async function registerTutorRoutes(
     essayId: string;
     requestId: string;
     tutorRequest: TutorRequest<unknown>;
-    mode: Exclude<TutoringMode, "exam">;
     lesson: LessonResponse;
-    question: Question;
   }): void {
-    const answerBoundary = answerBoundaryFor(input.question, input.mode);
     const job = (async () => {
       try {
         const generated = await runtime.provider.generate(input.tutorRequest, {
           systemPrompt: "assessor",
           outputSchema: ESSAY_ASSESSMENT_SCHEMA,
           parsePayload: (value) => EssayAssessmentDraftSchema.parse(value),
+          // A writing task has no answer to withhold. The lesson's first question does, but an
+          // assessment of a thesis has to be free to say "thesis".
           lintTargets: [
-            {
-              path: "summary",
-              context: "assessment",
-              ...(answerBoundary === undefined ? {} : { hiddenAnswer: answerBoundary }),
-            },
-            {
-              path: "nextStep",
-              context: "hint",
-              ...(answerBoundary === undefined ? {} : { hiddenAnswer: answerBoundary }),
-            },
+            { path: "summary", context: "assessment" },
+            { path: "nextStep", context: "hint" },
           ],
           timeoutMs: runtime.assessTimeoutMs,
           signal: abort.signal,
         });
         const assessment = EssayAssessmentDraftSchema.parse(generated.payload);
-        const issues = validateEssayAssessment({
-          assessment,
-          mode: input.mode,
-          lesson: input.lesson,
-          question: input.question,
-        });
+        const issues = validateEssayAssessment({ assessment, lesson: input.lesson });
         store.saveEssayAssessment({
           essayId: input.essayId,
           requestId: input.requestId,
@@ -388,12 +374,11 @@ export async function registerTutorRoutes(
       throw new HttpError(403, "Assessment is unavailable in Exam mode.", "EXAM_GUARDRAIL");
     }
     const { stage, lesson } = essayStage(essayId);
-    const { question } = lessonAndQuestion(lesson.lesson.id);
     const draft = store.getEssayDraft(essayId);
     if (!draft.submitted) {
       throw new HttpError(
         409,
-        "Submit the teach-back before asking for an assessment.",
+        "Submit your writing before asking for an assessment.",
         "ESSAY_NOT_SUBMITTED",
       );
     }
@@ -439,7 +424,7 @@ export async function registerTutorRoutes(
       errorCode: null,
       errorMessage: null,
     });
-    startAssessment({ essayId, requestId, tutorRequest, mode, lesson, question });
+    startAssessment({ essayId, requestId, tutorRequest, lesson });
     return assessmentResponse(row, null);
   });
 

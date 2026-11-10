@@ -7,19 +7,26 @@ import { saveEssayDraft, submitEssay } from "../../api/endpoints.js";
 import { queryKeys, useEssayDraft } from "../../api/queries.js";
 import { countWords } from "../../lib/format.js";
 import { ErrorScreen, LoadingScreen, Notice } from "../../ui/Feedback.js";
-import { InlineRichText } from "../../ui/RichText.js";
+import { useCapability } from "../../capabilities/capability-context.js";
+import { InlineRichText, splitParagraphs } from "../../ui/RichText.js";
 import { AssessmentPanel } from "../essay/AssessmentPanel.js";
 import { autosaveLabel, useAutosave } from "../essay/autosave.js";
 import { useTutoringMode } from "../mode-context.js";
 
 const AUTOSAVE_DELAY_MS = 1200;
 
+/**
+ * The writing task of a lesson. It is optional: `onSkip`, when given, leaves it without
+ * submitting, and the lesson carries on to its review cards and completes as usual.
+ */
 export function EssayStageView({
   stage,
   onContinue,
+  onSkip,
 }: {
   stage: EssayStage;
   onContinue: () => void;
+  onSkip?: () => void;
 }) {
   const draft = useEssayDraft(stage.essayId);
   if (draft.isPending) return <LoadingScreen embedded message="Opening your draft…" />;
@@ -28,7 +35,7 @@ export function EssayStageView({
       <ErrorScreen
         embedded
         message={errorMessage(draft.error, "The draft could not be loaded.")}
-        title="This essay is unavailable"
+        title="This writing task is unavailable"
       />
     );
   }
@@ -38,6 +45,7 @@ export function EssayStageView({
       initialSavedAt={draft.data.updatedAt}
       initiallySubmitted={draft.data.submitted}
       onContinue={onContinue}
+      {...(onSkip ? { onSkip } : {})}
       stage={stage}
     />
   );
@@ -49,15 +57,22 @@ function EssayEditor({
   initialSavedAt,
   initiallySubmitted,
   onContinue,
+  onSkip,
 }: {
   stage: EssayStage;
   initialContent: string;
   initialSavedAt: string | null;
   initiallySubmitted: boolean;
   onContinue: () => void;
+  onSkip?: () => void;
 }) {
   const queryClient = useQueryClient();
   const { mode } = useTutoringMode();
+  const tutor = useCapability("tutor_generation");
+  const tutorUnavailable = tutor?.state === "unavailable";
+  // The first paragraph is the task. Later ones are the material it supplies: a question,
+  // the evidence, a draft to revise.
+  const [task = stage.prompt, ...material] = splitParagraphs(stage.prompt);
   const [content, setContent] = useState(initialContent);
   const [submitted, setSubmitted] = useState(initiallySubmitted);
   const [styleNotes, setStyleNotes] = useState<StyleViolation[]>([]);
@@ -92,7 +107,7 @@ function EssayEditor({
       setStyleNotes(result.styleNotes);
       await queryClient.invalidateQueries({ queryKey: queryKeys.essay(stage.essayId) });
     } catch (error) {
-      setFailure(errorMessage(error, "The teach-back could not be submitted."));
+      setFailure(errorMessage(error, "Your writing could not be submitted."));
     } finally {
       setBusy(false);
     }
@@ -103,20 +118,42 @@ function EssayEditor({
       <div className="essay-prompt">
         <h1>{stage.title}</h1>
         <p className="deck">
-          <InlineRichText text={stage.prompt} />
+          <InlineRichText text={task} />
         </p>
+        {material.length > 0 ? (
+          <div className="essay-material prose">
+            {material.map((paragraph) => (
+              <p key={paragraph}>
+                <InlineRichText text={paragraph} />
+              </p>
+            ))}
+          </div>
+        ) : null}
         <p className="muted">{stage.expectedScope}</p>
+        {stage.optional && !submitted ? (
+          <p className="muted">
+            This task is optional. The lesson is complete whether or not you write it.
+          </p>
+        ) : null}
+        {tutorUnavailable && !submitted ? (
+          <Notice tone="info" title="The tutor is not available">
+            <p>
+              {tutor.reason} You can still write and submit. Nothing will assess your writing, so
+              check it yourself against the list under “What a strong answer does”.
+            </p>
+          </Notice>
+        ) : null}
       </div>
 
       <div className="essay-editor">
         <label className="sr-only" htmlFor="essay-content">
-          Your teach-back
+          Your writing
         </label>
         <textarea
           className="textarea essay-textarea"
           id="essay-content"
           onChange={(event) => setContent(event.currentTarget.value)}
-          placeholder="Write your explanation here."
+          placeholder="Write here."
           readOnly={submitted}
           value={content}
         />
@@ -162,7 +199,7 @@ function EssayEditor({
               type="button"
             >
               {busy ? <Loader2 aria-hidden="true" className="spin" size={16} /> : null}
-              Submit teach-back
+              Submit
             </button>
           ) : (
             <p className="muted">
@@ -170,6 +207,11 @@ function EssayEditor({
               you can submit.
             </p>
           )}
+          {onSkip ? (
+            <button className="button button-quiet" onClick={onSkip} type="button">
+              Skip this task
+            </button>
+          ) : null}
         </div>
       ) : null}
 
@@ -195,7 +237,11 @@ function EssayEditor({
 
       {submitted ? (
         <>
-          <AssessmentPanel essayId={stage.essayId} mode={mode === "exam" ? "direct" : mode} />
+          <AssessmentPanel
+            essayId={stage.essayId}
+            mode={mode === "exam" ? "direct" : mode}
+            {...(tutorUnavailable ? { unavailableReason: tutor.reason } : {})}
+          />
           <div className="button-row">
             <button className="button button-primary" onClick={onContinue} type="button">
               Continue
