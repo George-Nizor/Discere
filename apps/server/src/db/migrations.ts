@@ -45,18 +45,49 @@ export function unknownMigrations(database: Database.Database): string[] {
   return [...appliedMigrations(database)].filter((name) => !known.has(name)).sort();
 }
 
+/**
+ * A migration file that starts a line with `-- rollback-safe` only adds tables or columns with
+ * defaults, so the version before it can keep running on the migrated database. The ledger
+ * records that, and an older build reads it there, because it does not have the file.
+ */
+const ROLLBACK_SAFE_MARKER = /^--\s*rollback-safe\b/mu;
+
+function ledgerRecordsRollbackSafety(database: Database.Database): boolean {
+  if (!hasLedger(database)) return false;
+  const columns = database.prepare(`PRAGMA table_info(${LEDGER_TABLE})`).all() as Array<{
+    name: string;
+  }>;
+  return columns.some((column) => column.name === "rollback_safe");
+}
+
+/** Unknown ledger entries that were not recorded as safe for an older version to run on. */
+export function blockingUnknownMigrations(database: Database.Database): string[] {
+  const unknown = unknownMigrations(database);
+  if (unknown.length === 0 || !ledgerRecordsRollbackSafety(database)) return unknown;
+  const safe = new Set(
+    (
+      database.prepare(`SELECT name FROM ${LEDGER_TABLE} WHERE rollback_safe = 1`).all() as Array<{
+        name: string;
+      }>
+    ).map((row) => row.name),
+  );
+  return unknown.filter((name) => !safe.has(name));
+}
+
 /** The folder beside the database file that holds the snapshots taken before a migration. */
 export function backupsDirectory(databasePath: string): string {
   return path.join(path.dirname(path.resolve(databasePath)), "backups");
 }
 
 /**
- * An older build must not run on a schema a newer build has changed: its queries would read
- * and write columns whose meaning has moved. This happens when the launcher rolls Discere
- * back after an update that already migrated the database.
+ * An older build must not run on a schema a newer build has changed in a way it cannot read:
+ * its queries would read and write columns whose meaning has moved. This happens when the
+ * launcher rolls Discere back after an update that already migrated the database. Migrations
+ * the newer build recorded as rollback-safe are allowed, so an update that only added tables
+ * or columns can still be rolled back.
  */
 function assertNoUnknownMigrations(database: Database.Database, databasePath: string): void {
-  const unknown = unknownMigrations(database);
+  const unknown = blockingUnknownMigrations(database);
   if (unknown.length === 0) return;
   throw new Error(
     `The database at '${databasePath}' was migrated by a newer version of Discere. It records ` +
@@ -137,12 +168,17 @@ export function runMigrations(database: Database.Database): string[] {
   database.exec(
     `CREATE TABLE IF NOT EXISTS ${LEDGER_TABLE} (name TEXT PRIMARY KEY, applied_at TEXT NOT NULL);`,
   );
-  const record = database.prepare(`INSERT INTO ${LEDGER_TABLE} (name, applied_at) VALUES (?, ?)`);
+  if (!ledgerRecordsRollbackSafety(database)) {
+    database.exec(`ALTER TABLE ${LEDGER_TABLE} ADD COLUMN rollback_safe INTEGER NOT NULL DEFAULT 0;`);
+  }
+  const record = database.prepare(
+    `INSERT INTO ${LEDGER_TABLE} (name, applied_at, rollback_safe) VALUES (?, ?, ?)`,
+  );
   for (const name of pending) {
     const sql = readFileSync(path.join(MIGRATIONS_DIRECTORY, name), "utf8");
     database.transaction(() => {
       database.exec(sql);
-      record.run(name, new Date().toISOString());
+      record.run(name, new Date().toISOString(), ROLLBACK_SAFE_MARKER.test(sql) ? 1 : 0);
     })();
   }
   return pending;

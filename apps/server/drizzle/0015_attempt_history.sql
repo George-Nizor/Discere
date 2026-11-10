@@ -1,3 +1,4 @@
+-- rollback-safe: adds one table and two columns with defaults; the previous version ignores them.
 -- Attempt history and missed-question review cards.
 --
 -- Every response a learner submits is appended to attempt_responses and never rewritten, so the

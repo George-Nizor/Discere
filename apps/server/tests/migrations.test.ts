@@ -207,14 +207,31 @@ describe("snapshot before a migration", () => {
 });
 
 describe("a database from a newer version", () => {
-  function recordFutureMigration(): void {
+  function recordFutureMigration(rollbackSafe = 0): void {
     new DiscereStore(databasePath, { migrate: true }).close();
     const database = new Database(databasePath);
     database
-      .prepare("INSERT INTO schema_migrations VALUES (?, ?)")
-      .run("9999_from_the_future.sql", "2027-01-01T00:00:00.000Z");
+      .prepare("INSERT INTO schema_migrations (name, applied_at, rollback_safe) VALUES (?, ?, ?)")
+      .run("9999_from_the_future.sql", "2027-01-01T00:00:00.000Z", rollbackSafe);
     database.close();
   }
+
+  it("starts when the newer version recorded its migration as rollback-safe", () => {
+    recordFutureMigration(1);
+    for (const migrate of [true, false]) {
+      expect(() => new DiscereStore(databasePath, { migrate }).close()).not.toThrow();
+    }
+  });
+
+  it("records which migration files say an older version can run on them", () => {
+    new DiscereStore(databasePath, { migrate: true }).close();
+    const database = new Database(databasePath, { readonly: true });
+    const safe = database
+      .prepare("SELECT name FROM schema_migrations WHERE rollback_safe = 1")
+      .all() as Array<{ name: string }>;
+    database.close();
+    expect(safe.map((row) => row.name)).toEqual(["0015_attempt_history.sql"]);
+  });
 
   it("is refused with the unknown migrations and the backups folder named", () => {
     recordFutureMigration();
