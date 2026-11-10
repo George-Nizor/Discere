@@ -36,7 +36,8 @@ pnpm start
 ```
 
 The learner app is at `http://127.0.0.1:4318` and the API at `http://127.0.0.1:4317`. Both bind to
-loopback. `pnpm dev` reloads on change. `pnpm stop` cleans up Discere's recorded processes if a
+loopback, and the service answers only requests addressed to a loopback name unless
+`DISCERE_ALLOWED_HOSTS` lists another. `pnpm dev` reloads on change. `pnpm stop` cleans up Discere's recorded processes if a
 terminal vanished without stopping its children.
 
 A checkout keeps learner state in `data/discere.sqlite`. Code practice from a checkout runs on Linux
