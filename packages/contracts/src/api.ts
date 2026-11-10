@@ -210,6 +210,30 @@ export type EssaySubmitResponse = z.infer<typeof EssaySubmitResponseSchema>;
 export const ReviewRatingSchema = z.enum(["again", "hard", "good", "easy"]);
 export type ReviewRating = z.infer<typeof ReviewRatingSchema>;
 
+/**
+ * The answer to an order or sort question, sent only once the question has closed: the item ids
+ * in their right sequence, or each item's group with its line of explanation.
+ */
+export const StructuredSolutionSchema = z
+  .object({
+    order: z.array(z.string().min(1)).min(3).max(7).optional(),
+    sort: z
+      .array(
+        z
+          .object({
+            id: z.string().min(1),
+            bin: z.string().min(1),
+            explanation: z.string().min(1).optional(),
+          })
+          .strict(),
+      )
+      .min(4)
+      .max(10)
+      .optional(),
+  })
+  .strict();
+export type StructuredSolution = z.infer<typeof StructuredSolutionSchema>;
+
 export const ReviewCardFrontSchema = z
   .object({
     cardId: z.string().min(1),
@@ -223,6 +247,11 @@ export const ReviewCardFrontSchema = z
      * reveals the back and rates themselves.
      */
     recall: z.enum(["typed", "self"]).default("typed"),
+    /**
+     * The lesson question a missed-question card stands for, when it has extracts to show or
+     * items to order or sort. The card then asks it the way the lesson did.
+     */
+    question: LearnerQuestionSchema.optional(),
     revealed: z.literal(false),
   })
   .strict();
@@ -262,6 +291,8 @@ export const ReviewRevealResponseSchema = z
     cardId: z.string().min(1),
     back: z.string().min(1),
     sourceIds: z.array(z.string()),
+    /** The right order or sorting, for a card that asks an order or sort question. */
+    solution: StructuredSolutionSchema.optional(),
   })
   .strict();
 export type ReviewRevealResponse = z.infer<typeof ReviewRevealResponseSchema>;
@@ -469,6 +500,8 @@ export const LessonFeedbackResponseSchema = z
     onCorrect: z.string().min(1).optional(),
     /** For a choice question, the choice that is right, so the player can mark it. */
     correctChoiceId: z.string().min(1).optional(),
+    /** For an order or sort question, the right arrangement, so the player can show it. */
+    solution: StructuredSolutionSchema.optional(),
   })
   .strict();
 export type LessonFeedbackResponse = z.infer<typeof LessonFeedbackResponseSchema>;

@@ -487,12 +487,171 @@ export const QuestionChoiceSchema = z
   .strict();
 export type QuestionChoice = z.infer<typeof QuestionChoiceSchema>;
 
+
+/**
+ * A source extract shown with a question: the words themselves and one line saying whose they
+ * are. `who` names the author and the work, `when` dates it, and `kind` says what sort of
+ * document it is and who it was written for. One extract is a single source; two are a pair,
+ * set side by side on a wide screen and one above the other on a phone.
+ */
+export const QuestionExtractSchema = z
+  .object({
+    text: z.string().min(1).max(1200),
+    who: z.string().min(1).max(140),
+    when: z.string().min(1).max(80),
+    kind: z.string().min(1).max(160),
+  })
+  .strict();
+export type QuestionExtract = z.infer<typeof QuestionExtractSchema>;
+
+/** The attribution line of an extract, as it is shown and read aloud. */
+export function extractAttribution(extract: QuestionExtract): string {
+  const kind = extract.kind.trim();
+  return `${extract.who.trim()}, ${extract.when.trim()}. ${kind}${/[.!?]$/.test(kind) ? "" : "."}`;
+}
+
+/**
+ * An order question (`responseType: "order"`): the items written in their right sequence. The
+ * learner is given them in another arrangement, under ids that say nothing about their places.
+ */
+export const OrderQuestionSchema = z
+  .object({ items: z.array(z.string().min(1).max(200)).min(3).max(7) })
+  .strict();
+export type OrderQuestion = z.infer<typeof OrderQuestionSchema>;
+
+const BinIdSchema = z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/);
+
+/**
+ * A sort question (`responseType: "sort"`): named bins and the items that go in them. Each item
+ * names its one bin, and may carry a line of explanation shown once the question has closed.
+ */
+export const SortQuestionSchema = z
+  .object({
+    bins: z
+      .array(z.object({ id: BinIdSchema, label: z.string().min(1).max(60) }).strict())
+      .min(2)
+      .max(4),
+    items: z
+      .array(
+        z
+          .object({
+            label: z.string().min(1).max(200),
+            bin: BinIdSchema,
+            explanation: z.string().min(1).max(240).optional(),
+          })
+          .strict(),
+      )
+      .min(4)
+      .max(10),
+  })
+  .strict();
+export type SortQuestion = z.infer<typeof SortQuestionSchema>;
+
+/** The accepted idea every order and sort question carries, as code questions carry theirs. */
+export const ORDER_ANSWER_IDEA = "Every item in its place";
+export const SORT_ANSWER_IDEA = "Every item in its group";
+
+/**
+ * The id an item travels under. It is made from the question and the item's words, so it is the
+ * same on every request and carries nothing about where the item belongs.
+ */
+export function questionItemId(questionId: string, label: string): string {
+  let hash = 0x811c9dc5;
+  for (const char of `${questionId}\u0000${label}`) {
+    hash ^= char.codePointAt(0) ?? 0;
+    hash = Math.imul(hash, 0x01000193) >>> 0;
+  }
+  return `i${hash.toString(36)}`;
+}
+
+const LearnerItemSchema = z.object({ id: z.string().min(1), label: z.string().min(1) }).strict();
+export const LearnerOrderSchema = z
+  .object({ items: z.array(LearnerItemSchema).min(3).max(7) })
+  .strict();
+export const LearnerSortSchema = z
+  .object({
+    bins: SortQuestionSchema.shape.bins,
+    items: z.array(LearnerItemSchema).min(4).max(10),
+  })
+  .strict();
+export type LearnerOrder = z.infer<typeof LearnerOrderSchema>;
+export type LearnerSort = z.infer<typeof LearnerSortSchema>;
+
+const byId = (a: { id: string }, b: { id: string }) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+
+/** The ids of an order question's items in their right sequence. Answer-bearing. */
+export function orderAnswerIds(question: { id: string; order?: OrderQuestion | undefined }): string[] {
+  return (question.order?.items ?? []).map((label) => questionItemId(question.id, label));
+}
+
+/** Each item of a sort question with the bin it belongs in. Answer-bearing. */
+export function sortAnswerItems(question: {
+  id: string;
+  sort?: SortQuestion | undefined;
+}): Array<{ id: string; label: string; bin: string; explanation?: string }> {
+  return (question.sort?.items ?? []).map((item) => ({
+    id: questionItemId(question.id, item.label),
+    label: item.label,
+    bin: item.bin,
+    ...(item.explanation ? { explanation: item.explanation } : {}),
+  }));
+}
+
+/** An order answer as it is sent: the item ids in the learner's sequence. */
+export function encodeOrderResponse(ids: readonly string[]): string {
+  return ids.join(",");
+}
+export function decodeOrderResponse(response: string): string[] {
+  return response
+    .split(",")
+    .map((id) => id.trim())
+    .filter(Boolean);
+}
+
+/** A sort answer as it is sent: `item:bin` pairs, in item order so the same sorting reads the same. */
+export function encodeSortResponse(placed: Readonly<Record<string, string>>): string {
+  return Object.keys(placed)
+    .sort()
+    .map((id) => `${id}:${placed[id]}`)
+    .join(",");
+}
+export function decodeSortResponse(response: string): Record<string, string> {
+  const placed: Record<string, string> = {};
+  for (const pair of response.split(",")) {
+    const [id, bin] = pair.split(":").map((part) => part.trim());
+    if (id && bin) placed[id] = bin;
+  }
+  return placed;
+}
+
+/** The response that answers an order or sort question, for tests and scripts that play lessons. */
+export function structuredAnswerResponse(question: {
+  id: string;
+  order?: OrderQuestion | undefined;
+  sort?: SortQuestion | undefined;
+}): string | undefined {
+  if (question.order) return encodeOrderResponse(orderAnswerIds(question));
+  if (question.sort)
+    return encodeSortResponse(
+      Object.fromEntries(sortAnswerItems(question).map((item) => [item.id, item.bin])),
+    );
+  return undefined;
+}
+
 export const QuestionSchema = z
   .object({
     id: z.string().min(1),
     conceptIds: z.array(z.string()).min(1),
     prompt: z.string().min(1),
-    responseType: z.enum(["numeric", "short_text", "long_text", "drawing", "code"]),
+    responseType: z.enum([
+      "numeric",
+      "short_text",
+      "long_text",
+      "drawing",
+      "code",
+      "order",
+      "sort",
+    ]),
     difficulty: z.number().min(0.5).max(2).default(1),
     hints: z.array(z.string().min(1)),
     answerAuthority: AnswerAuthoritySchema,
@@ -530,6 +689,20 @@ export const QuestionSchema = z
     typescriptTypeTests: z.array(TypeScriptTypeTestSchema).min(1).max(4).optional(),
     /** Present when the question is answered by selection rather than free response. */
     choices: z.array(QuestionChoiceSchema).min(2).max(8).optional(),
+    /**
+     * One or two source extracts the question is about, each with its attribution. They are
+     * shown between the prompt's setup and its question, and are not answer-bearing.
+     */
+    extracts: z.array(QuestionExtractSchema).min(1).max(2).optional(),
+    /**
+     * The items of an order question, in their right sequence, and the bins and items of a sort
+     * question. Both are answer-bearing: the learner receives the items without their places.
+     * The server marks the arrangement itself. `answerAuthority` is text whose `exampleAnswer`
+     * says why the answer is what it is and whose only accepted idea is ORDER_ANSWER_IDEA or
+     * SORT_ANSWER_IDEA, so any path that marks it as text marks it wrong rather than right.
+     */
+    order: OrderQuestionSchema.optional(),
+    sort: SortQuestionSchema.optional(),
     /**
      * A changed case offered after the worked answer is revealed, so a learner who was shown
      * the answer can still produce independent evidence. It is answer-bearing and never
@@ -617,7 +790,15 @@ export const LearnerQuestionSchema = QuestionSchema.omit({
   misconceptions: true,
   skill: true,
   usesTerms: true,
-}).extend({ hintCount: z.number().int().nonnegative(), expectedUnit: z.string().optional() });
+  order: true,
+  sort: true,
+}).extend({
+  hintCount: z.number().int().nonnegative(),
+  expectedUnit: z.string().optional(),
+  /** The items to put in order and to sort, without their places, in an order that tells nothing. */
+  order: LearnerOrderSchema.optional(),
+  sort: LearnerSortSchema.optional(),
+});
 export type LearnerQuestion = z.infer<typeof LearnerQuestionSchema>;
 
 /** Reveal hint text only through the permission-checked hint endpoint. */
@@ -635,15 +816,89 @@ export function learnerQuestion(question: Question): LearnerQuestion {
     misconceptions: _misconceptions,
     skill: _skill,
     usesTerms: _usesTerms,
+    order,
+    sort,
     ...rest
   } = question;
   return {
     ...rest,
+    ...(order
+      ? {
+          order: {
+            items: order.items
+              .map((label) => ({ id: questionItemId(question.id, label), label }))
+              .sort(byId),
+          },
+        }
+      : {}),
+    ...(sort
+      ? {
+          sort: {
+            bins: sort.bins,
+            items: sort.items
+              .map((item) => ({ id: questionItemId(question.id, item.label), label: item.label }))
+              .sort(byId),
+          },
+        }
+      : {}),
     hintCount: hints.length,
     ...(answerAuthority.kind === "numeric"
       ? { expectedUnit: answerAuthority.unit === "probability" ? "" : answerAuthority.unit }
       : {}),
   };
+}
+
+/**
+ * A question as plain text, for reading aloud, a review card's front and the tutor's context:
+ * the setup, each extract under its attribution, the question, then the items to order or the
+ * groups and items to sort. It takes the learner's form of the question, so it holds no answer.
+ */
+export function questionPlainText(question: LearnerQuestion): string {
+  const prompt = question.prompt.replace(/^>\s+/gm, "").trim();
+  const parts: string[] = [];
+  const extracts = question.extracts ?? [];
+  if (extracts.length) {
+    // The question is the prompt's last sentence; the extracts are read before it.
+    const match = /^([\s\S]*[.!:)])\s+([^.!?\n]*\?)\s*$/.exec(prompt);
+    const setup = match?.[1]?.trim() ?? "";
+    const ask = match?.[2]?.trim() ?? prompt;
+    if (setup) parts.push(setup);
+    extracts.forEach((extract, index) => {
+      const name = extracts.length > 1 ? `Source ${index === 0 ? "A" : "B"}. ` : "";
+      parts.push(`${name}${extractAttribution(extract)}\n${extract.text}`);
+    });
+    parts.push(ask);
+  } else parts.push(prompt);
+  if (question.order)
+    parts.push(`Items to put in order:\n${question.order.items.map((item) => item.label).join("\n")}`);
+  if (question.sort) {
+    parts.push(`Groups: ${question.sort.bins.map((bin) => bin.label).join(", ")}.`);
+    parts.push(`Items to sort:\n${question.sort.items.map((item) => item.label).join("\n")}`);
+  }
+  return parts.join("\n\n");
+}
+
+/**
+ * The answer to a question in words. For an order question it is the items in sequence and for
+ * a sort question each group with its items, followed by the authored explanation.
+ */
+export function questionAnswerText(question: Question): string {
+  const authority = question.answerAuthority;
+  if (authority.kind === "numeric") return authority.workedAnswer;
+  if (question.order)
+    return `${question.order.items.map((label, index) => `${index + 1}. ${label}`).join("\n")}\n${authority.exampleAnswer}`;
+  if (question.sort) {
+    const sort = question.sort;
+    const groups = sort.bins.map(
+      (bin) =>
+        `${bin.label}: ${sort.items
+          .filter((item) => item.bin === bin.id)
+          .map((item) => item.label)
+          .join("; ")}`,
+    );
+    return `${groups.join("\n")}\n${authority.exampleAnswer}`;
+  }
+  return authority.exampleAnswer;
 }
 
 /**
