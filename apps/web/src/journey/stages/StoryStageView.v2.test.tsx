@@ -314,6 +314,33 @@ describe("going back within a lesson", () => {
 });
 
 describe("keyboard focus and the verdict (holistic review, web client)", () => {
+  it("shows an answered screen as it was left when the learner goes back to it", async () => {
+    const { calls } = stubFetch({
+      "POST /api/attempts": attempt(true, "Right."),
+      [`POST /api/attempts/${ATTEMPT}/lesson-feedback`]: {
+        body: { attemptId: ATTEMPT, correct: true, answer: "2 + 5 = 7.", blocks: [] },
+      },
+    });
+    render(legacy);
+    await userEvent.type(screen.getByLabelText("Value"), "7");
+    await userEvent.click(screen.getByRole("button", { name: "Check answer" }));
+    await userEvent.click(await screen.findByRole("button", { name: /Continue/ }));
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("For x = 3");
+    await userEvent.click(screen.getByRole("button", { name: /Back/ }));
+
+    // The answer and its verdict are there, read-only. Nothing is left to check, so the only
+    // action on the right is Continue: Check answer used to be drawn in the same place.
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("For x = 2");
+    expect(screen.getByLabelText("Value")).toHaveValue("7");
+    expect(screen.getByLabelText("Value")).toHaveAttribute("readonly");
+    expect(screen.getByText("Right.")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Check/ })).toBeNull();
+    await userEvent.click(screen.getByRole("button", { name: /Continue/ }));
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("For x = 3");
+    // Going back and forward again recorded nothing new.
+    expect(calls.filter((call) => call.key === "POST /api/attempts")).toHaveLength(1);
+  });
+
   it("keeps focus on Check again after a miss, and holds it there until the answer changes", async () => {
     let answers = 0;
     stubFetch({
@@ -372,6 +399,39 @@ describe("keyboard focus and the verdict (holistic review, web client)", () => {
       level: 1,
       name: "For x = 3, what is x + 5?",
     });
+    expect(heading).toHaveFocus();
+  });
+
+  it("leaves focus on the heading of a screen that asks nothing", async () => {
+    stubFetch({
+      "POST /api/attempts": attempt(true, "x + 5 = 7."),
+      [`POST /api/attempts/${ATTEMPT}/lesson-feedback`]: {
+        body: { attemptId: ATTEMPT, correct: true, answer: "7", blocks: [] },
+      },
+    });
+    const asked = legacy.steps[0];
+    if (!asked) throw new Error("The fixture has no first step.");
+    render({
+      ...legacy,
+      steps: [
+        asked,
+        {
+          id: "idea",
+          kind: "explain",
+          questionLed: true,
+          visualStateId: "",
+          headline: "A letter keeps one value",
+          blocks: [{ kind: "paragraph", text: "The same letter means the same number." }],
+        },
+      ],
+    });
+    await userEvent.type(screen.getByLabelText("Value"), "7{Enter}");
+    const forward = await screen.findByRole("button", { name: /Continue/ });
+    await vi.waitFor(() => expect(forward).toHaveFocus());
+    await userEvent.keyboard("{Enter}");
+    // This screen is ready as soon as it is drawn. Focus used to jump on to its Finish button.
+    const heading = await screen.findByRole("heading", { level: 1, name: "A letter keeps one value" });
+    await screen.findByRole("button", { name: /Finish/ });
     expect(heading).toHaveFocus();
   });
 });

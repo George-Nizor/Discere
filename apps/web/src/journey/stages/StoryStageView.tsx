@@ -14,7 +14,11 @@ import { InlineRichText } from "../../ui/RichText.js";
 import { ActivityStep, isStepActivity } from "../activities/ActivityStep.js";
 import { LearningDiagram } from "../activities/LearningDiagram.js";
 import { PlayerFooterSlot } from "../player-footer.js";
-import type { AttemptPolicy } from "../quiz-shared/use-attempt.js";
+import {
+  AttemptMemoryContext,
+  type AttemptPolicy,
+  type AttemptSnapshot,
+} from "../quiz-shared/use-attempt.js";
 import {
   canAdvanceStep,
   LESSON_OPENER_ID,
@@ -347,7 +351,17 @@ function StepScreen({
  * each question instead of being withheld. Prose-only steps from archived courses keep the
  * older reading layout.
  */
-export function StoryStageView({
+export function StoryStageView(props: Parameters<typeof StoryScreens>[0]) {
+  // What was answered on each screen of this visit, so going Back shows it as it was left.
+  const [answered] = useState(() => new Map<string, AttemptSnapshot>());
+  return (
+    <AttemptMemoryContext.Provider value={answered}>
+      <StoryScreens {...props} />
+    </AttemptMemoryContext.Provider>
+  );
+}
+
+function StoryScreens({
   stage,
   courseId,
   lessonId,
@@ -405,7 +419,8 @@ export function StoryStageView({
     window.requestAnimationFrame(scrollStageToTop);
   }
 
-  // Going back is always allowed. A screen answered during this visit stays in `solved`, so the
+  // Going back is always allowed. A screen answered during this visit stays in `solved` and its
+  // answers stay in the attempt memory, so it is shown as it was left, with its verdict, and the
   // learner can step forward again past it without answering a second time.
   function goBack(): void {
     if (position === 0) return;
@@ -424,12 +439,28 @@ export function StoryStageView({
   const forward = useRef<HTMLButtonElement>(null);
   const story = useRef<HTMLDivElement>(null);
   const seen = useRef({ screenId, ready });
+  // Whether the learner has done anything on this screen. A screen with nothing to answer, or
+  // one answered earlier, is ready as soon as it is drawn. Focus must stay on its heading then,
+  // or a screen reader would be taken past the screen to Continue.
+  const touched = useRef(false);
+  useEffect(() => {
+    const mark = () => {
+      touched.current = true;
+    };
+    document.addEventListener("keydown", mark, true);
+    document.addEventListener("pointerdown", mark, true);
+    return () => {
+      document.removeEventListener("keydown", mark, true);
+      document.removeEventListener("pointerdown", mark, true);
+    };
+  }, []);
   useEffect(() => {
     const before = seen.current;
     seen.current = { screenId, ready };
     if (before.screenId !== screenId) {
+      touched.current = false;
       if (story.current) focusHeadingIn(story.current);
-    } else if (ready && !before.ready) forward.current?.focus();
+    } else if (ready && !before.ready && touched.current) forward.current?.focus();
   }, [screenId, ready]);
 
   // Back sits at the left of the footer and the way forward at the right. They are separate

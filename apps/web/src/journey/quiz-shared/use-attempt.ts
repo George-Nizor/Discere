@@ -6,7 +6,7 @@ import type {
   LessonFeedbackResponse,
 } from "@discere/contracts";
 import { useQueryClient } from "@tanstack/react-query";
-import { useRef, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { errorMessage } from "../../api/client.js";
 import { getLessonFeedback, requestHint, submitAttempt } from "../../api/endpoints.js";
 import { queryKeys } from "../../api/queries.js";
@@ -69,6 +69,26 @@ export interface Attempt {
   askForHint: () => Promise<void>;
 }
 
+/** What an attempt holds once something has been checked: enough to draw the screen again. */
+export interface AttemptSnapshot {
+  draft: AnswerDraft;
+  attemptId: string;
+  result: AttemptResponse | null;
+  markedResponse: string | null;
+  hints: HintResponse[];
+  misses: number;
+  serverLimit: number | null;
+  revealed: boolean;
+  lessonFeedback: LessonFeedbackResponse | null;
+}
+
+/**
+ * The attempts made during one visit to a lesson, by question id. A lesson provides it so a
+ * screen the learner goes back to shows what they answered and its verdict. Without it the
+ * question would be drawn blank, with Check answer in the place Continue takes.
+ */
+export const AttemptMemoryContext = createContext<Map<string, AttemptSnapshot> | null>(null);
+
 /** Two options cannot sustain a second try: the retry would be the other option. */
 export function defaultMisses(question: LearnerQuestion): number {
   return question.choices && question.choices.length <= 2 ? 1 : 2;
@@ -106,15 +126,50 @@ export function useAttempt(
   const { play, prepare } = useExperience();
   const inFlight = useRef(false);
   const { mode } = useTutoringMode();
-  const [draft, setDraft] = useState<AnswerDraft>(() => initialAnswerDraft(question));
-  const [attemptId, setAttemptId] = useState<string | null>(null);
-  const [result, setResult] = useState<AttemptResponse | null>(null);
-  const [markedResponse, setMarkedResponse] = useState<string | null>(null);
-  const [hints, setHints] = useState<HintResponse[]>([]);
-  const [misses, setMisses] = useState(0);
-  const [serverLimit, setServerLimit] = useState<number | null>(null);
-  const [revealed, setRevealed] = useState(false);
-  const [lessonFeedback, setLessonFeedback] = useState<LessonFeedbackResponse | null>(null);
+  const memory = useContext(AttemptMemoryContext);
+  // Read once, when the question is drawn: an attempt made earlier in this visit is carried on.
+  const [earlier] = useState(() => memory?.get(question.id));
+  const [draft, setDraft] = useState<AnswerDraft>(
+    () => earlier?.draft ?? initialAnswerDraft(question),
+  );
+  const [attemptId, setAttemptId] = useState<string | null>(earlier?.attemptId ?? null);
+  const [result, setResult] = useState<AttemptResponse | null>(earlier?.result ?? null);
+  const [markedResponse, setMarkedResponse] = useState<string | null>(
+    earlier?.markedResponse ?? null,
+  );
+  const [hints, setHints] = useState<HintResponse[]>(earlier?.hints ?? []);
+  const [misses, setMisses] = useState(earlier?.misses ?? 0);
+  const [serverLimit, setServerLimit] = useState<number | null>(earlier?.serverLimit ?? null);
+  const [revealed, setRevealed] = useState(earlier?.revealed ?? false);
+  const [lessonFeedback, setLessonFeedback] = useState<LessonFeedbackResponse | null>(
+    earlier?.lessonFeedback ?? null,
+  );
+  useEffect(() => {
+    if (memory && attemptId !== null)
+      memory.set(question.id, {
+        draft,
+        attemptId,
+        result,
+        markedResponse,
+        hints,
+        misses,
+        serverLimit,
+        revealed,
+        lessonFeedback,
+      });
+  }, [
+    memory,
+    question.id,
+    draft,
+    attemptId,
+    result,
+    markedResponse,
+    hints,
+    misses,
+    serverLimit,
+    revealed,
+    lessonFeedback,
+  ]);
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState<string | null>(null);
 
