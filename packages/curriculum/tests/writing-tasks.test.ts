@@ -8,7 +8,17 @@ import { validateCourseBundle } from "../src/index.js";
  * through its tasks, so the figures a task quotes are recomputed below and have to agree with
  * the material the task supplies.
  */
-const COURSES = ["technical-writing"] as const;
+const COURSES = ["technical-writing", "english-reading-writing-and-rhetoric"] as const;
+
+/**
+ * Paragraphs that quote a published passage word for word keep the passage's own dashes. They
+ * are listed by task and paragraph so that a dash anywhere else still fails.
+ */
+const QUOTED_WITH_DASH: Record<string, number[]> = {
+  "lang-task-occasion": [2],
+  "lang-task-voices": [3],
+  "lang-task-irony": [4],
+};
 
 const load = (courseId: string): CourseBundle =>
   JSON.parse(
@@ -49,7 +59,10 @@ describe.each(COURSES)("writing tasks in %s", (courseId) => {
 
   it("keeps the prose free of dashes and dollar signs, with titles in sentence case", () => {
     for (const found of bundle.essays) {
-      const text = [found.title, found.prompt, found.expectedScope, ...found.successCriteria].join(" ");
+      const own = paragraphs(found.prompt).filter(
+        (_, index) => !(QUOTED_WITH_DASH[found.id] ?? []).includes(index),
+      );
+      const text = [found.title, ...own, found.expectedScope, ...found.successCriteria].join(" ");
       expect(text, found.id).not.toMatch(/[—–$]/u);
       expect(found.title, found.id).not.toMatch(/[.:!?]$/u);
       expect((found.prompt.match(/`/gu) ?? []).length % 2, found.id).toBe(0);
@@ -94,5 +107,38 @@ describe("the figures in Technical Writing's tasks", () => {
     expect(report).toContain("Ten shift supervisors");
     expect(report).toContain("Six finished. Three stopped at step 3 and one stopped at step 6.");
     expect(6 + 3 + 1).toBe(10);
+  });
+});
+
+describe("the figures in the English course's tasks", () => {
+  const bundle = load("english-reading-writing-and-rhetoric");
+
+  it("asks for a cut of a quarter from a summary of the stated length", () => {
+    const found = task(bundle, "lang-task-actors");
+    const stated = Number(/It has (\d+) words now/u.exec(found.prompt)?.[1]);
+    const target = Number(/should have (\d+) or fewer/u.exec(found.prompt)?.[1]);
+    expect(words(paragraphs(found.prompt)[2] ?? "")).toBe(stated);
+    expect(target).toBe(Math.floor((stated * 3) / 4));
+    expect(found.successCriteria[0]).toBe(`The revision is ${target} words or fewer.`);
+  });
+
+  it("cites a verified source for every passage it quotes", () => {
+    const cited = new Set(bundle.essays.flatMap((essay) => essay.sourceIds));
+    for (const id of ["lang-pg-douglass-oration-tasks", "lang-pg-sonnet-73", "lang-ws-chopin-hour"]) {
+      expect(cited.has(id), id).toBe(true);
+      const source = bundle.sources.find((item) => item.id === id);
+      expect(source?.licence).toBe("Public domain");
+      expect(source?.checked).toEqual({ status: "verified", at: "2026-11-11" });
+    }
+  });
+
+  it("gives Sonnet 73 the same fourteen lines wherever it is quoted in full", () => {
+    const lines = (id: string): string[] =>
+      paragraphs(task(bundle, id).prompt).slice(2).flatMap((paragraph) => paragraph.split(" / "));
+    expect(lines("lang-task-images")).toHaveLength(14);
+    expect(lines("lang-task-turn")).toEqual(lines("lang-task-images"));
+    const scanned = paragraphs(task(bundle, "lang-task-scansion").prompt);
+    expect(scanned[2]).toBe(lines("lang-task-images")[0]);
+    expect(scanned[3]).toBe(lines("lang-task-images")[3]);
   });
 });
