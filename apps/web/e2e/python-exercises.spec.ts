@@ -5,8 +5,8 @@ import { CourseBundleSchema } from "@discere/contracts";
 import { expect, test } from "./fixtures.js";
 
 /**
- * One Python exercise played in the browser: Run, wrong programs, an error, then the right one. It needs
- * the sandboxed Python runtime (pnpm python:setup), like python-projects.spec.ts.
+ * Two Python exercises played in the browser: one in plain Python (Run, wrong programs, an error,
+ * then the right one) and one that filters a pandas table. They need the sandboxed Python runtime (pnpm python:setup), like python-projects.spec.ts.
  * `DISCERE_SHOTS` names a folder for screenshots at 1440 and 390 pixels wide.
  */
 const bundle = CourseBundleSchema.parse(
@@ -116,4 +116,64 @@ test("a Python exercise runs, fails a test with both values shown, then passes",
   await expect(page.locator(".question-beat")).toHaveAttribute("data-result", "correct");
   await expect(page.getByText("Ran successfully: 4 of 4 tests passed")).toBeVisible();
   await capture(page, "python-exercise-4-right");
+});
+
+test("a pandas exercise fails on its starter and passes once the filter is repaired", async ({
+  page,
+}) => {
+  test.skip(!existsSync(join(runtime, "lib/python3.12/site-packages/pandas")), "No Python runtime");
+  test.setTimeout(180_000);
+  const filters = bundle.lessons.find((item) => item.id === "filters-and-columns")!;
+  const exercise = questions.get("python-filters-and-columns-code-mask")!;
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto(`/courses/${bundle.course.id}/lessons/${filters.id}`);
+  const editor = page.getByLabel("Your Python code");
+  const earlier = filters.steps
+    .slice(0, filters.steps.findIndex((step) => step.id === "keep-the-busy-rows"))
+    .flatMap((step) => (step.checkQuestionId ? [questions.get(step.checkQuestionId)!] : []));
+  const forward = page.getByRole("button", { name: /^(Continue|Start|Begin|Next)/ });
+  const check = page.getByRole("button", { name: "Check answer", exact: true });
+  for (let turn = 0; turn < 40 && !(await editor.isVisible()); turn += 1) {
+    if (await check.isVisible()) {
+      const question = earlier.shift()!;
+      if (question.answerAuthority.kind !== "numeric") throw new Error("Expected a number");
+      await page.getByLabel("Value", { exact: true }).fill(String(question.answerAuthority.value));
+      await check.click();
+      await expect(page.locator(".question-beat")).toHaveAttribute("data-result", "correct");
+    }
+    await forward.first().click();
+    await page.waitForTimeout(150);
+  }
+  await expect(editor).toBeVisible();
+  await expect(editor).toHaveValue(/import pandas as pd/);
+  await expect(editor).toHaveValue(/mask = df\['units'\] > minimum/);
+  await capture(page, "pandas-exercise-1-start");
+
+  // Run shows the starter's values for the example: a Series is shown as the list of its values.
+  await page.getByRole("button", { name: "Run", exact: true }).click();
+  await expect(page.getByText("Ran successfully")).toBeVisible();
+  await expect(page.getByLabel("Values after the run")).toContainText(
+    "kept_shops = ['Bay', 'Hill', 'Bay', 'Hill']",
+  );
+  await expect(page.getByLabel("Values after the run")).toContainText("kept_count = 4");
+
+  // The starter still describes the whole table, so the first test fails with both values.
+  await check.click();
+  await expect(page.locator(".question-beat")).toHaveAttribute("data-result", "incorrect");
+  await expect(page.getByText("A test failed: 1 of 4 tests passed")).toBeVisible();
+  await expect(page.locator(".rust-console-failed")).toContainText("kept_shops = ['Bay', 'Hill']");
+  await capture(page, "pandas-exercise-2-wrong");
+
+  // A column that does not exist is reported as pandas reports it, and is not a miss.
+  await editor.fill("import pandas as pd\n\ndf = pd.DataFrame({'shop': shops})\nkept = df[df['sold'] >= minimum]\n");
+  await page.getByRole("button", { name: "Check again", exact: true }).click();
+  await expect(page.getByText("The program did not finish")).toBeVisible();
+  await expect(page.getByText(/KeyError on line 4/).first()).toBeVisible();
+
+  if (exercise.answerAuthority.kind !== "text") throw new Error("Expected a worked program");
+  await editor.fill(exercise.answerAuthority.exampleAnswer);
+  await page.getByRole("button", { name: "Check again", exact: true }).click();
+  await expect(page.locator(".question-beat")).toHaveAttribute("data-result", "correct");
+  await expect(page.getByText("Ran successfully: 4 of 4 tests passed")).toBeVisible();
+  await capture(page, "pandas-exercise-3-right");
 });

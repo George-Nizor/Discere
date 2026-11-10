@@ -279,7 +279,9 @@ describe.skipIf(!sandboxed)("Python exercises in the sandbox", () => {
       const exercises = content
         .bundle(course)!
         .questions.filter((question) => question.code?.language === "python");
-      expect(exercises.length).toBeGreaterThanOrEqual(15);
+      // Three in each of the 21 lessons, 39 of them written with NumPy or pandas.
+      expect(exercises.length).toBe(63);
+      expect(exercises.filter((question) => /^import (numpy|pandas)/mu.test(question.code!.starter)).length).toBe(39);
       for (const question of exercises) {
         const task = pythonTask(question)!;
         const worked = question.answerAuthority.kind === "text" ? question.answerAuthority.exampleAnswer : "";
@@ -301,5 +303,5 @@ describe.skipIf(!sandboxed)("Python exercises in the sandbox", () => {
     } finally {
       await app.close();
     }
-  }, 180000);
+  }, 600000);
 });

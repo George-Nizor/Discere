@@ -358,13 +358,17 @@ executed with CPython 3.12.14, NumPy 2.3.5 and pandas 3.0.1; 105 separate progra
 question and recall keys. The browser replays reviewed steps, variables, tables and output, with
 case selection, pause/reset and reduced motion. Three separate construction projects now add
 22 learner-written programs and 66 reviewed dataset cases through isolated CPython execution.
-The first five lessons also hold fifteen Python exercises (two or three a lesson, `responseType:
-"code"` with `code.language: "python"`), which the learner answers by writing a few lines in the
-lesson itself. Run executes the visible example; Check answer runs every test in the same isolated
+Every lesson also holds three Python exercises, 63 in all (`responseType: "code"` with
+`code.language: "python"`), which the learner answers by writing a few lines in the lesson itself.
+Lessons 9 to 21 use NumPy and pandas: test inputs are plain lists and text, the starter builds the
+array or table from them, and a Series, array or date result is compared in the form the runner
+returns it (a list, or ISO text for a date). Run executes the visible example; Check answer runs every test in the same isolated
 runtime as the projects and names the first test that fails with the expected and actual values.
 Nothing but the tests decides the mark. `packages/curriculum/tests/python-exercises.test.ts` runs
-every worked program and starter with the machine's Python 3, and
-`apps/server/tests/python-questions.test.ts` does the same in the sandbox where it is installed.
+every worked program and starter with the machine's Python 3; an exercise that imports NumPy or
+pandas is listed as skipped there unless that Python has the library (`DISCERE_PYTHON` can name
+one that has). `apps/server/tests/python-questions.test.ts` runs all 63 in the sandbox where it is
+installed, which is the check that covers the NumPy and pandas exercises.
 Where Python cannot run, the exercise says so and the lesson finishes without it.
 [Python records](library-expansion/python-course.md) map the source sequence;
 [project records](python-projects/README.md) retain the executable work and its limits.

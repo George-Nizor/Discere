@@ -5,12 +5,16 @@ import { describe, expect, it } from "vitest";
 import {
   checkPythonExercises,
   findPython,
+  importedLibraries,
   loadCourseBundle,
+  pythonLibraries,
   validateCourseBundle,
 } from "../src/index.js";
 
 const content = path.resolve(import.meta.dirname, "../../../content");
 const python = findPython();
+const libraries = python ? pythonLibraries(python) : [];
+const dataLibraries = libraries.includes("numpy") && libraries.includes("pandas");
 const courses = readdirSync(content, { withFileTypes: true })
   .filter((entry) => entry.isDirectory() && !entry.name.startsWith("_"))
   .map((entry) => entry.name);
@@ -48,12 +52,13 @@ describe("Python exercises in lessons", () => {
     );
   });
 
-  it("gives the first module two or three exercises a lesson, each with a worked program", async () => {
+  it("gives every lesson two or three exercises, each with a worked program", async () => {
     const bundle = await loadCourseBundle(
       path.join(content, "python-for-data-analysis", "bundle.json"),
     );
     const questions = new Map(bundle.questions.map((question) => [question.id, question]));
-    for (const lesson of bundle.lessons.slice(0, 5)) {
+    expect(bundle.lessons).toHaveLength(21);
+    for (const lesson of bundle.lessons) {
       const exercises = lesson.steps.flatMap((step) => {
         const question = questions.get(step.checkQuestionId ?? "");
         return question?.code?.language === "python" ? [{ step, question }] : [];
@@ -83,10 +88,62 @@ describe("Python exercises in lessons", () => {
         const bundle = await loadCourseBundle(path.join(content, course, "bundle.json"));
         const report = checkPythonExercises(bundle, python!);
         expect(report.issues, course).toEqual([]);
-        exercises += report.exercises;
+        exercises += report.exercises - report.skipped.length;
       }
-      expect(exercises).toBeGreaterThanOrEqual(15);
+      // The 24 exercises of lessons 1 to 8 need nothing but Python itself.
+      expect(exercises).toBeGreaterThanOrEqual(24);
+    }, 240000);
+
+    it("lists an exercise that needs NumPy or pandas as skipped where the library is absent", async () => {
+      const bundle = await loadCourseBundle(
+        path.join(content, "python-for-data-analysis", "bundle.json"),
+      );
+      const needing = bundle.questions
+        .filter(
+          (question) =>
+            question.code?.language === "python" &&
+            importedLibraries(
+              question.code.starter +
+                "\n" +
+                (question.answerAuthority.kind === "text" ? question.answerAuthority.exampleAnswer : ""),
+            ).length > 0,
+        )
+        .map((question) => question.id);
+      // Lessons 9 to 21 use the libraries: three exercises each.
+      expect(needing).toHaveLength(39);
+      const report = checkPythonExercises(bundle, python!, []);
+      expect(report.exercises).toBe(63);
+      expect(report.skipped).toEqual(needing);
+      expect(report.issues).toEqual([]);
+      // A fault in a skipped exercise is not reported, which is why skipped is never "passed".
+      const broken = structuredClone(bundle);
+      const question = broken.questions.find((item) => item.id === needing[0])!;
+      if (question.answerAuthority.kind === "text") question.answerAuthority.exampleAnswer += "\nrow_count = -1\n";
+      expect(checkPythonExercises(broken, python!, []).issues).toEqual([]);
     }, 120000);
+
+    // Shown as skipped unless this Python has both libraries (DISCERE_PYTHON can name one that
+    // has, such as data/python-runtime/bin/python). The sandbox test in apps/server covers them.
+    it.skipIf(!dataLibraries)(
+      "passes every NumPy and pandas worked program and no starter",
+      async () => {
+        const bundle = await loadCourseBundle(
+          path.join(content, "python-for-data-analysis", "bundle.json"),
+        );
+        const report = checkPythonExercises(bundle, python!);
+        expect(report.skipped).toEqual([]);
+        expect(report.issues).toEqual([]);
+        const broken = structuredClone(bundle);
+        const question = broken.questions.find(
+          (item) => item.id === "python-arrays-and-shape-code-measure",
+        )!;
+        if (question.answerAuthority.kind === "text") question.answerAuthority.exampleAnswer += "\nrow_count = -1\n";
+        expect(checkPythonExercises(broken, python!).issues[0]).toContain(
+          "python-arrays-and-shape-code-measure: the worked program fails test 1",
+        );
+      },
+      240000,
+    );
 
     it("reports a worked program that fails a test, with expected and actual values", async () => {
       const bundle = await withExercise((question) => {
