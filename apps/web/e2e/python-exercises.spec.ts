@@ -5,7 +5,7 @@ import { CourseBundleSchema } from "@discere/contracts";
 import { expect, test } from "./fixtures.js";
 
 /**
- * One Python exercise played in the browser: Run, a wrong program, then the right one. It needs
+ * One Python exercise played in the browser: Run, wrong programs, an error, then the right one. It needs
  * the sandboxed Python runtime (pnpm python:setup), like python-projects.spec.ts.
  * `DISCERE_SHOTS` names a folder for screenshots at 1440 and 390 pixels wide.
  */
@@ -76,6 +76,7 @@ test("a Python exercise runs, fails a test with both values shown, then passes",
   await expect(editor).toHaveValue(/# price and quantity are already set\./);
   await expect(page.getByText("price = 4, quantity = 3")).toBeVisible();
   await capture(page, "python-exercise-1-start");
+  await expect(page.getByRole("button", { name: "Show the worked program" })).toHaveCount(0);
 
   // Run shows what the starter leaves in each name.
   await page.getByRole("button", { name: "Run", exact: true }).click();
@@ -90,6 +91,18 @@ test("a Python exercise runs, fails a test with both values shown, then passes",
   await expect(page.locator(".rust-console-failed")).toContainText("total = 12");
   await expect(page.locator(".rust-console-failed")).toContainText("total = 7");
   await capture(page, "python-exercise-2-wrong");
+
+  // Wrong results never close the exercise: it can be checked again and again, and the worked
+  // program is there to ask for from the first wrong result on.
+  const showProgram = page.getByRole("button", { name: "Show the worked program", exact: true });
+  await expect(showProgram).toBeVisible();
+  for (const guess of [8, 9, 10]) {
+    await editor.fill(`total = ${guess}\ndelivery = 5\nto_pay = total + delivery\n`);
+    await page.getByRole("button", { name: "Check again", exact: true }).click();
+    await expect(page.locator(".rust-console-failed")).toContainText(`total = ${guess}`);
+    await expect(page.getByText("Not quite", { exact: true })).toBeVisible();
+    await expect(showProgram).toBeVisible();
+  }
 
   // An error is shown as Python reported it and is not counted as a miss.
   await editor.fill("total = cost * quantity\n");
