@@ -23,6 +23,22 @@ export function HintLadder({ hints }: { hints: readonly HintResponse[] }) {
   );
 }
 
+/** How a correct answer was earned, in a few plain words. */
+function creditLabel(result: AttemptResponse): string {
+  switch (result.credit) {
+    case "recovered":
+      return "After a retry";
+    case "revealed":
+      return "After the worked answer";
+    case "practice":
+      return "Practice";
+    case "assisted":
+      return "With help";
+    default:
+      return result.independent ? "Without hints" : "With help";
+  }
+}
+
 /**
  * The verdict on one attempt. It names what the evidence was worth as well as whether the
  * answer was right, so the learner can see that a hinted success counts differently.
@@ -48,9 +64,7 @@ export function AttemptResult({ result }: { result: AttemptResponse | null }) {
               <Sparkles size={13} aria-hidden="true" /> +{result.xpGained} XP
             </span>
           ) : null}
-          {result.correct ? (
-            <span>{result.independent ? "Without hints" : "With help"}</span>
-          ) : null}
+          {result.correct ? <span>{creditLabel(result)}</span> : null}
         </p>
       </div>
     </div>
