@@ -237,7 +237,7 @@ test("slow data preserves the current screen, and rapid navigation cannot leave 
   release?.();
   await expect(page).toHaveURL(/\/courses$/);
   await settled(page);
-  await expect(page.getByRole("heading", { name: "Learning paths", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Courses", exact: true })).toBeVisible();
   await page.getByRole("link", { name: "You", exact: true }).click();
   await expect.poll(async () => (await records(page)).at(-1)?.ready).toBe(true);
   await page.getByRole("link", { name: "Settings", exact: true }).click();
@@ -307,7 +307,7 @@ test("system and saved reduced motion stop motion; unsupported browsers still ge
   expect(
     await page.evaluate(() => document.querySelector(".app-body")?.getAnimations().length),
   ).toBeGreaterThan(0);
-  await expect(page.getByRole("heading", { name: "Learning paths", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Courses", exact: true })).toBeVisible();
 });
 
 test("a stalled auxiliary service cannot trap the learner on the previous menu", async ({
@@ -334,5 +334,5 @@ test("a stalled auxiliary service cannot trap the learner on the previous menu",
   release?.();
   await expect(page).toHaveURL(/\/courses$/);
   await settled(page);
-  await expect(page.getByRole("heading", { name: "Learning paths", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Courses", exact: true })).toBeVisible();
 });

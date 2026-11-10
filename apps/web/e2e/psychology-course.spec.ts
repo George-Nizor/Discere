@@ -306,7 +306,7 @@ test("Psychology placement keeps answers private until twelve responses and pres
     }
     if (i === 8) await capture(page, "placement-support");
     await expect(page.locator(".psych-measures")).toHaveCount(0);
-    await expect(page.getByText("Look through your answers", { exact: true })).toHaveCount(0);
+    await expect(page.getByText("Your answers", { exact: true })).toHaveCount(0);
     await checkAnswer(page, item, i === 0);
     if (i === 4) await page.reload();
   }

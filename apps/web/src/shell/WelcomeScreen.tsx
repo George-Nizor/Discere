@@ -141,7 +141,6 @@ export function WelcomeScreen() {
           <div className="intro-shadow" />
         </div>
         <p className="intro-wordmark">Discere</p>
-        <p className="intro-line">Learn something real today</p>
       </div>
       <p className="sr-only" role="status">
         Opening Discere…

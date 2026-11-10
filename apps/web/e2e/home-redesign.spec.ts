@@ -138,7 +138,7 @@ test("You shows recorded stats, working filters, chart details, and preserved Pr
   await page.goto(address + "/progress?period=week");
   await expect(page).toHaveURL(/\/you\?period=week/);
   await expect(
-    page.getByRole("heading", { name: "Your learning activity", exact: true }),
+    page.getByRole("heading", { name: "Your progress", exact: true }),
   ).toBeVisible();
   await expect(page.getByRole("button", { name: "Week", exact: true })).toHaveAttribute(
     "aria-pressed",

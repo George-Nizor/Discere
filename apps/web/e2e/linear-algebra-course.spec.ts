@@ -289,7 +289,7 @@ test("Linear algebra placement withholds marking until all twenty responses", as
     ).toBeVisible();
     await expect(page.locator(".la-check [data-result]")).toHaveCount(0);
     await expect(page.locator(".la-results")).toHaveCount(0);
-    await expect(page.getByText("Look through your answers", { exact: true })).toHaveCount(0);
+    await expect(page.getByText("Your answers", { exact: true })).toHaveCount(0);
     if (i === 0) {
       await capture(page, "placement");
       await page.reload();

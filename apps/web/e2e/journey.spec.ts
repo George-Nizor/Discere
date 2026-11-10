@@ -240,7 +240,7 @@ test.describe("the lesson journey", () => {
 
     await page.goto("/progress");
     await expect(
-      page.getByRole("heading", { level: 1, name: "Your learning activity" }),
+      page.getByRole("heading", { level: 1, name: "Your progress" }),
     ).toBeVisible();
     await expect(page.locator(".you-ideas > summary")).toBeVisible();
     await page.locator(".you-ideas > summary").click();

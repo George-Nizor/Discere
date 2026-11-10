@@ -140,7 +140,7 @@ test("placement preserves drafts and first responses, hides feedback, and shows 
   await expect(
     page.getByRole("heading", { name: checks[0]!.items[1]!.question.prompt }),
   ).toBeVisible();
-  await expect(page.getByText("Look through your answers")).toHaveCount(0);
+  await expect(page.getByText("Your answers")).toHaveCount(0);
   await page.getByRole("link", { name: "Return to course", exact: true }).click();
   await expect(page.getByText("Continue where you left off")).toBeVisible();
   await page.getByRole("link", { name: "Find your starting point", exact: true }).click();
@@ -212,7 +212,7 @@ test("the mixed challenge earns saved results and fresh delayed problems appear 
   await page.getByRole("button", { name: "Start check", exact: true }).click();
   for (const item of checks[2]!.items) await answer(page, item);
   await expect(
-    page.getByRole("heading", { name: "What stayed with you", exact: true }),
+    page.getByRole("heading", { name: "Your later course check", exact: true }),
   ).toBeVisible();
   await expect(page.locator(".check-result-score")).toHaveText("6 / 6 correct");
   await capture(page, "transfer-result");

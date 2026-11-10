@@ -281,7 +281,7 @@ test("Astronomy placement keeps answers private until twelve responses and prese
     }
     if (i === 6) await capture(page, "placement-parallax");
     await expect(page.locator(".astro-measures")).toHaveCount(0);
-    await expect(page.getByText("Look through your answers", { exact: true })).toHaveCount(0);
+    await expect(page.getByText("Your answers", { exact: true })).toHaveCount(0);
     await checkAnswer(page, item, i === 0);
     if (i === 4) await page.reload();
   }

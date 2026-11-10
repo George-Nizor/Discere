@@ -79,7 +79,7 @@ export function HomeScreen() {
               </Link>
             ) : null}
             <Link className="home-activity-link" to={paths.you}>
-              Your learning activity <ArrowRight size={16} aria-hidden="true" />
+              Your progress <ArrowRight size={16} aria-hidden="true" />
             </Link>
           </aside>
         </div>
@@ -109,7 +109,7 @@ export function HomeScreen() {
             />
             {almost.length ? (
               <section className="home-almost" aria-labelledby="home-almost-title">
-                <h2 id="home-almost-title">Almost there</h2>
+                <h2 id="home-almost-title">Closest achievements</h2>
                 <ul>
                   {almost.map((item) => (
                     <li key={item.id}>
@@ -134,7 +134,7 @@ export function HomeScreen() {
       {suggestions.length > 0 ? (
         <section className="home-discover" aria-labelledby="discover-heading">
           <div className="home-section-heading">
-            <h2 id="discover-heading">Start something new</h2>
+            <h2 id="discover-heading">Courses you have not started</h2>
             <Link to={paths.courses}>
               All courses <ArrowRight size={16} aria-hidden="true" />
             </Link>
