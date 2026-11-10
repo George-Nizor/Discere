@@ -11,7 +11,7 @@ import { type AnswerDraft, answerSurface, choiceLetter } from "./answer-draft.js
  * included, so after the verdict a learner can still step through the options and hear which
  * one was right.
  */
-function moveFocus(event: KeyboardEvent<HTMLFieldSetElement>): void {
+function moveFocus(event: KeyboardEvent<HTMLDivElement>): void {
   const keys = ["ArrowDown", "ArrowRight", "ArrowUp", "ArrowLeft"];
   if (!keys.includes(event.key)) return;
   const cards = [...event.currentTarget.querySelectorAll<HTMLButtonElement>("button.choice-card")];
@@ -92,15 +92,12 @@ export function AnswerInput({
       : choices[0]?.id;
     const locked = correct || readOnly;
     return (
-      <fieldset
+      <div
         className="choice-list"
         onKeyDown={moveFocus}
         role="radiogroup"
-        aria-labelledby={`${idPrefix}-choices`}
+        aria-label={label ?? "Answer choices"}
       >
-        <legend className="sr-only" id={`${idPrefix}-choices`}>
-          {label ?? "Answer choices"}
-        </legend>
         {choices.map((choice, index) => {
           const selected = draft.choiceId === choice.id;
           const marked = answered && selected;
@@ -144,7 +141,7 @@ export function AnswerInput({
             </button>
           );
         })}
-      </fieldset>
+      </div>
     );
   }
 
