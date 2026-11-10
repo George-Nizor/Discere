@@ -1,4 +1,11 @@
-import type { CodeExercise, RustTaskRun } from "@discere/contracts";
+import {
+  type CodeExercise,
+  type PythonExercise,
+  type PythonValue,
+  type RustTaskRun,
+  pythonGiven,
+  pythonLiteral,
+} from "@discere/contracts";
 import { Play, RotateCcw } from "lucide-react";
 import { useState } from "react";
 import { errorMessage } from "../api/client.js";
@@ -6,8 +13,36 @@ import { RuntimeSetup } from "../code-runtimes/RuntimeSetup.js";
 import { runQuestionCode } from "./api.js";
 import { RustConsole, RustEditor } from "./RustIde.js";
 
+/** A Python exercise's one visible test: the names already set, and what the program must produce. */
+function PythonExample({ exercise }: { exercise: PythonExercise }) {
+  const { example, names } = exercise;
+  const given = pythonGiven(exercise, example.inputs);
+  const expected = example.expected as Record<string, PythonValue>;
+  return (
+    <dl className="code-answer-example">
+      {given ? (
+        <>
+          <dt>{exercise.call ? "Example call" : "Already set"}</dt>
+          <dd>
+            <code>{given}</code>
+          </dd>
+        </>
+      ) : null}
+      <dt>{exercise.call ? "Returns" : "Should end with"}</dt>
+      <dd>
+        <code>
+          {names
+            ? names.map((name) => name + " = " + pythonLiteral(expected[name] ?? null)).join(", ")
+            : pythonLiteral(example.expected)}
+        </code>
+      </dd>
+    </dl>
+  );
+}
+
 /** What the program has to do, from the one example the learner can see. */
 function Example({ exercise }: { exercise: CodeExercise }) {
+  if (exercise.language === "python") return <PythonExample exercise={exercise} />;
   const { example, call } = exercise;
   if (exercise.kind === "function" && call)
     return (
@@ -46,8 +81,8 @@ function Example({ exercise }: { exercise: CodeExercise }) {
 }
 
 /**
- * A lesson question answered by writing Rust. Run shows what the program does with the example;
- * the lesson's Check answer marks it against every test on the server.
+ * A lesson question answered by writing Rust or Python. Run shows what the program does with
+ * the example; the lesson's Check answer marks it against every test on the server.
  */
 export function CodeAnswer({
   questionId,
@@ -84,13 +119,15 @@ export function CodeAnswer({
   }
   // A check is newer than a run of the same code; an edit since either clears the console.
   const shown = checked ?? (ran?.code === code ? ran.run : undefined);
+  const python = exercise.language === "python";
   return (
     <div className="code-answer">
-      <RuntimeSetup runtime="rust" />
+      <RuntimeSetup runtime={exercise.language} />
       <Example exercise={exercise} />
       <RustEditor
         id={`${idPrefix}-code`}
-        label="Your Rust code"
+        label={python ? "Your Python code" : "Your Rust code"}
+        language={exercise.language}
         fitLines
         value={code}
         disabled={readOnly}
@@ -115,9 +152,12 @@ export function CodeAnswer({
       </div>
       <RustConsole
         result={shown}
-        {...(busy ? { busy: "Compiling and running…" } : {})}
+        language={exercise.language}
+        {...(busy ? { busy: python ? "Running…" : "Compiling and running…" } : {})}
         idle={
-          exercise.kind === "function"
+          exercise.language === "python"
+            ? "Run shows what your code prints and produces for the example. Check answer runs every test."
+            : exercise.kind === "function"
             ? "Run shows what your function returns for the example. Check answer also tries other inputs."
             : "Run shows what your program prints. Check answer compares it with the expected output."
         }

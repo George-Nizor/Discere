@@ -13,6 +13,17 @@ const runtimesKey = ["code-runtimes"] as const;
 
 const megabytes = (bytes = 0) => Math.round(bytes / 1048576) + " MB";
 
+/** The state of one toolchain, or undefined while it is still being asked for. */
+export function useCodeRuntime(runtime: CodeRuntimeId): CodeRuntimeState | undefined {
+  const query = useQuery({
+    queryKey: runtimesKey,
+    queryFn: async () => CodeRuntimesResponseSchema.parse(await requestJson("/api/code-runtimes")),
+    refetchInterval: (current) =>
+      current.state.data?.runtimes.some((r) => r.state === "installing") ? 1000 : false,
+  });
+  return query.data?.runtimes.find((r) => r.id === runtime);
+}
+
 /**
  * Offers the one-time toolchain download where practice code runs. It shows nothing once the
  * toolchain is ready, so a page can always include it.

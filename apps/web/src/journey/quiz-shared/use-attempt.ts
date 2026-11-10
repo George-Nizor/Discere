@@ -239,7 +239,8 @@ export function useAttempt(
       policy.hints !== false &&
       mode !== "exam" &&
       attemptId !== null &&
-      phase === "retry" &&
+      // A program that stopped with an error is not a miss, and may still need a hint.
+      (phase === "retry" || (phase === "answering" && result?.codeRun !== undefined)) &&
       hintsLeft > 0,
     solved,
     phase,

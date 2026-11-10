@@ -3,12 +3,14 @@ import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import type { ContentRepository } from "../content.js";
 import { HttpError } from "../errors.js";
+import { pythonTask, runPythonExample } from "../python-projects/questions.js";
+import type { PythonRuntime } from "../python-projects/runtime.js";
 import { type GradedTask, mark, present, runCases } from "./grading.js";
 import type { RustRuntime } from "./runtime.js";
 
 /** The task behind a lesson question answered by writing code, or undefined for any other. */
 export function codeTask(question: Question): GradedTask | undefined {
-  if (!question.code || !question.codeCases) return undefined;
+  if (question.code?.language !== "rust" || !question.codeCases) return undefined;
   return { kind: question.code.kind, call: question.code.call, cases: question.codeCases };
 }
 
@@ -16,6 +18,8 @@ export interface CodeAssessment {
   correct: boolean;
   feedback: string;
   run: RustTaskRun;
+  /** Set by a marker that can tell an unmarkable answer from a wrong one. */
+  qualifying?: boolean;
 }
 
 /** Marks a lesson code answer by running it against every case. */
@@ -59,12 +63,22 @@ export async function assessCode(
  */
 export async function registerCodeQuestionRoutes(
   app: FastifyInstance,
-  { content, runtime }: { content: ContentRepository; runtime: RustRuntime },
+  {
+    content,
+    runtime,
+    python,
+  }: { content: ContentRepository; runtime: RustRuntime; python?: PythonRuntime },
 ) {
   app.post("/api/questions/:questionId/run", async (request) => {
     const { questionId } = z.object({ questionId: z.string().min(1) }).parse(request.params);
     const { code } = z.object({ code: z.string().min(1).max(16000) }).strict().parse(request.body);
     const question = content.getQuestion(questionId);
+    const written = question ? pythonTask(question) : undefined;
+    if (written) {
+      if (!python)
+        throw new HttpError(503, "Python answers need the Python runtime.", "PYTHON_UNAVAILABLE");
+      return runPythonExample(python, written, code);
+    }
     const task = question ? codeTask(question) : undefined;
     if (!task)
       throw new HttpError(404, "This question is not answered with code.", "CODE_QUESTION_NOT_FOUND");

@@ -30,3 +30,4 @@ export type {
   LessonStepKind,
   Question,
 } from "@discere/contracts";
+export * from "./python-exercises.js";

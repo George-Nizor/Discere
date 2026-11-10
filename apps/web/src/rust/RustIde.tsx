@@ -17,7 +17,10 @@ export function RustEditor({
   disabled,
   label,
   fitLines,
+  language = "rust",
 }: {
+  /** Python indents after a colon and has no braces to open. */
+  language?: "rust" | "python";
   id: string;
   value: string;
   onChange: (value: string) => void;
@@ -50,7 +53,7 @@ export function RustEditor({
       const before = area.value.slice(0, area.selectionStart);
       const line = before.slice(before.lastIndexOf("\n") + 1);
       const indent = /^\s*/.exec(line)?.[0] ?? "";
-      const extra = /[{(\[]\s*$/.test(line) ? INDENT : "";
+      const extra = (language === "python" ? /[:(\[{]\s*$/ : /[{(\[]\s*$/).test(line) ? INDENT : "";
       if (indent || extra) {
         event.preventDefault();
         area.setRangeText("\n" + indent + extra, area.selectionStart, area.selectionEnd, "end");
@@ -73,10 +76,10 @@ export function RustEditor({
       </label>
       <CodeEditor
         id={id}
-        language="rust"
+        language={language}
         value={value}
         disabled={disabled ?? false}
-        placeholder="fn main() {\n    \n}"
+        placeholder={language === "python" ? "" : "fn main() {\n    \n}"}
         onChange={onChange}
         onKeyDown={keyDown}
       />
@@ -85,7 +88,7 @@ export function RustEditor({
 }
 
 type Shown = Pick<RustRunResult, "status" | "diagnostics" | "stdout" | "stderr" | "message"> &
-  Pick<RustTaskRun, "returned" | "passed" | "total">;
+  Pick<RustTaskRun, "returned" | "passed" | "total" | "values" | "failed">;
 
 const HEADLINES: Record<Shown["status"], string> = {
   ok: "Ran successfully",
@@ -136,7 +139,9 @@ export function RustConsole({
   busy,
   idle,
   children,
+  language = "rust",
 }: {
+  language?: "rust" | "python";
   result?: Shown | undefined;
   busy?: string;
   idle: string;
@@ -150,8 +155,17 @@ export function RustConsole({
         <p className="rust-console-idle">{idle}</p>
       ) : (
         <>
-          <p className={"rust-console-status rust-console-status--" + result.status}>
-            {HEADLINES[result.status]}
+          <p
+            className={
+              "rust-console-status rust-console-status--" +
+              (result.failed && result.status === "ok" ? "limit" : result.status)
+            }
+          >
+            {result.status === "unavailable" && language === "python"
+              ? "Python is unavailable"
+              : result.failed && result.status === "ok"
+                ? "A test failed"
+                : HEADLINES[result.status]}
             {result.passed !== undefined && result.total !== undefined && result.total > 1
               ? ": " + result.passed + " of " + result.total + " tests passed"
               : null}
@@ -162,13 +176,40 @@ export function RustConsole({
             <pre className="rust-console-stdout" aria-label="Printed output">
               {result.stdout}
             </pre>
-          ) : result.status === "ok" && result.returned === undefined ? (
+          ) : result.status === "ok" && result.returned === undefined && !result.values ? (
             <p className="rust-console-idle">The program printed nothing.</p>
           ) : null}
           {result.returned !== undefined ? (
             <p className="rust-console-returned">
               Returned <code>{result.returned}</code>
             </p>
+          ) : null}
+          {result.values?.length ? (
+            <ul className="rust-console-values" aria-label="Values after the run">
+              {result.values.map((item) => (
+                <li key={item.name}>
+                  <code>
+                    {item.name} = {item.value}
+                  </code>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+          {result.failed ? (
+            <dl className="rust-console-failed">
+              <dt>Test {result.failed.test}</dt>
+              <dd>
+                <code>{result.failed.given || "no inputs"}</code>
+              </dd>
+              <dt>Expected</dt>
+              <dd>
+                <code>{result.failed.expected}</code>
+              </dd>
+              <dt>Got</dt>
+              <dd>
+                <code>{result.failed.actual}</code>
+              </dd>
+            </dl>
           ) : null}
           {result.stderr ? <pre className="rust-console-stderr">{result.stderr}</pre> : null}
         </>

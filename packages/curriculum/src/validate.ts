@@ -6,6 +6,7 @@ import {
 } from "@discere/activity-engine";
 import {
   CODE_ANSWER_IDEA,
+  pythonExerciseIssues,
   type CourseBundle,
   CourseBundleSchema,
   REDISTRIBUTABLE_LICENCE_PATTERN,
@@ -227,11 +228,11 @@ function codeQuestionIssues(question: CourseBundle["questions"][number]): Conten
   });
   const isCode = question.responseType === "code";
   if (!isCode)
-    return question.code || question.codeCases
-      ? [issue("Only a code question has code or codeCases.")]
+    return question.code || question.codeCases || question.pythonCases
+      ? [issue("Only a code question has code, codeCases or pythonCases.")]
       : [];
-  const { code, codeCases, answerAuthority } = question;
-  if (!code || !codeCases) return [issue("A code question needs code and codeCases.")];
+  const { code, codeCases, pythonCases, answerAuthority } = question;
+  if (!code) return [issue("A code question needs code.")];
   const issues: ContentIssue[] = [];
   if (question.choices?.length) issues.push(issue("A code question has no choices."));
   if (
@@ -240,6 +241,18 @@ function codeQuestionIssues(question: CourseBundle["questions"][number]): Conten
     answerAuthority.acceptedIdeas[0] !== CODE_ANSWER_IDEA
   )
     issues.push(issue(`Its answer authority is text accepting only "${CODE_ANSWER_IDEA}".`));
+  if (code.language === "python") {
+    // Whether the worked program passes its tests is checked by running it: see
+    // python-exercises.ts and its test.
+    if (codeCases || !pythonCases)
+      return [...issues, issue("A Python exercise carries pythonCases and no codeCases.")];
+    if (answerAuthority.kind === "text" && !answerAuthority.exampleAnswer.trim())
+      issues.push(issue("A Python exercise's exampleAnswer is its worked program."));
+    if (question.hints.length === 0) issues.push(issue("A Python exercise offers a hint."));
+    return [...issues, ...pythonExerciseIssues(code, pythonCases).map(issue)];
+  }
+  if (pythonCases || !codeCases)
+    return [...issues, issue("A Rust code question carries codeCases and no pythonCases.")];
   if (JSON.stringify(code.example) !== JSON.stringify(codeCases[0]))
     issues.push(issue("The visible example must be the first case."));
   if (

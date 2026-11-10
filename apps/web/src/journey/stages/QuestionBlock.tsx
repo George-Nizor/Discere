@@ -1,6 +1,7 @@
 import type { LearnerQuestion, LessonFeedbackRequest } from "@discere/contracts";
 import { Loader2 } from "lucide-react";
-import { Fragment, type ReactNode, useEffect, useRef } from "react";
+import { Fragment, type ReactNode, useEffect, useRef, useState } from "react";
+import { useCodeRuntime } from "../../code-runtimes/RuntimeSetup.js";
 import { Notice } from "../../ui/Feedback.js";
 import { InlineRichText } from "../../ui/RichText.js";
 import { PlayerFooterSlot } from "../player-footer.js";
@@ -81,6 +82,31 @@ export function attemptMarksDraft(attempt: Attempt): boolean {
  * `inline` keeps the action and verdict beside the question instead of in the player's footer,
  * for screens that ask more than one thing (a faded example's blanks).
  */
+/**
+ * Shown under a Python exercise while Python cannot run here. It says so and lets the learner
+ * carry on; the server does not require the exercise on such a computer either.
+ */
+function PythonUnavailable({ left, onLeave }: { left: boolean; onLeave: () => void }) {
+  const runtime = useCodeRuntime("python");
+  if (!runtime || runtime.state === "ready") return null;
+  return (
+    <Notice tone="warning" title="Python can't run on this computer yet">
+      <p>
+        Your code can't be run or checked until Python is set up, so this exercise is optional
+        for now. The rest of the lesson works without it, and you can come back to the exercise
+        later.
+      </p>
+      {left ? (
+        <p>This exercise is set aside. Continue when you're ready.</p>
+      ) : (
+        <button className="button button-secondary" type="button" onClick={onLeave}>
+          Continue without this exercise
+        </button>
+      )}
+    </Notice>
+  );
+}
+
 export function QuestionBlock({
   question,
   context,
@@ -116,12 +142,14 @@ export function QuestionBlock({
 }) {
   const attempt = useAttempt(question, context, policy);
   const announced = useRef(false);
+  // A Python exercise on a computer where Python cannot run may be left, so the lesson goes on.
+  const [left, setLeft] = useState(false);
   useEffect(() => {
-    if (attempt.ready && !announced.current) {
+    if ((attempt.ready || left) && !announced.current) {
       announced.current = true;
       onReady?.();
     }
-  }, [attempt.ready, onReady]);
+  }, [attempt.ready, left, onReady]);
   const started = attempt.attemptId !== null;
   useEffect(() => {
     if (started) onStarted?.();
@@ -226,6 +254,9 @@ export function QuestionBlock({
         )}
         {inline ? actions : <PlayerFooterSlot kind="actions">{actions}</PlayerFooterSlot>}
       </form>
+      {question.code?.language === "python" && !attempt.ready ? (
+        <PythonUnavailable left={left} onLeave={() => setLeft(true)} />
+      ) : null}
       <QuestionFeedback
         attempt={attempt}
         hints={policy?.hints !== false}

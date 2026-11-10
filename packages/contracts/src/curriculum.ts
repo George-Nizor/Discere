@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { PythonCaseSchema } from "./python-exercise.js";
 import { CodeExerciseSchema, RustCaseSchema } from "./rust.js";
 import { CourseCheckVisualSchema } from "./course-check-visual.js";
 import { LessonAuthoringMetadataSchema } from "./curation.js";
@@ -491,6 +492,12 @@ export const QuestionSchema = z
      */
     code: CodeExerciseSchema.optional(),
     codeCases: z.array(RustCaseSchema).min(1).max(5).optional(),
+    /**
+     * The tests of a Python exercise (`code.language: "python"`), the first being the visible
+     * example. Answer-bearing like `codeCases`. The worked program in `exampleAnswer` must pass
+     * them all and the starter must not, which packages/curriculum checks by running both.
+     */
+    pythonCases: z.array(PythonCaseSchema).min(2).max(6).optional(),
     /** Present when the question is answered by selection rather than free response. */
     choices: z.array(QuestionChoiceSchema).min(2).max(8).optional(),
     /**
@@ -570,6 +577,7 @@ export const CODE_ANSWER_IDEA = "Passes every test when run";
 export const LearnerQuestionSchema = QuestionSchema.omit({
   answerAuthority: true,
   codeCases: true,
+  pythonCases: true,
   transfer: true,
   hints: true,
   onCorrect: true,
@@ -584,6 +592,7 @@ export function learnerQuestion(question: Question): LearnerQuestion {
   const {
     answerAuthority,
     codeCases: _codeCases,
+    pythonCases: _pythonCases,
     transfer: _transfer,
     hints,
     onCorrect: _onCorrect,

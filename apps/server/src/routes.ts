@@ -61,6 +61,8 @@ import { illustrationImagePath, readIllustration, requestIllustration } from "./
 import { buildLearningStatistics } from "./learning-statistics.js";
 import { getNotebookPage, saveNotebookPage } from "./notebook.js";
 import { coerceQueryBoolean } from "./query-coercion.js";
+import { assessPython, pythonReady, pythonTask } from "./python-projects/questions.js";
+import type { PythonRuntime } from "./python-projects/runtime.js";
 import { assessCode, codeTask } from "./rust/questions.js";
 import type { RustRuntime } from "./rust/runtime.js";
 import type { TopicMapRepository } from "./topic-maps.js";
@@ -88,6 +90,8 @@ export interface RouteDependencies {
   revealDelayMs: number;
   /** Marks lesson questions answered with Rust. Without it a code answer is refused. */
   rustRuntime?: RustRuntime;
+  /** Marks lesson questions answered with Python by running their tests. */
+  pythonRuntime?: PythonRuntime;
 }
 const IllustrationParamsSchema = z.object({ key: z.string().regex(/^[0-9a-f]{32}$/) }).strict();
 const AttemptBodySchema = AttemptRequestSchema.extend({ attemptId: z.string().uuid().optional() });
@@ -163,7 +167,7 @@ export async function registerRoutes(
   app: FastifyInstance,
   dependencies: RouteDependencies,
 ): Promise<void> {
-  const { content, store, topicMaps, revealDelayMs, rustRuntime } = dependencies;
+  const { content, store, topicMaps, revealDelayMs, rustRuntime, pythonRuntime } = dependencies;
 
   /** Concept mastery, named the way the course names each concept. */
   function conceptProgressWithTitles() {
@@ -568,7 +572,15 @@ export async function registerRoutes(
           );
         if (stage.type === "explainer") {
           for (const step of stage.steps) {
-            if (step.question && !store.hasQuestionEvidence(step.question.id, step.kind !== "hook"))
+            // A Python exercise cannot be answered where Python cannot run, and the lesson must
+            // still be finishable there, so it is not required on such a computer.
+            const cannotRun =
+              step.question?.code?.language === "python" && !(await pythonReady(pythonRuntime));
+            if (
+              step.question &&
+              !cannotRun &&
+              !store.hasQuestionEvidence(step.question.id, step.kind !== "hook")
+            )
               throw new HttpError(
                 409,
                 "Answer the remaining lesson question before continuing.",
@@ -783,7 +795,7 @@ export async function registerRoutes(
     // A missed question is typed and marked the way the lesson marked it. A choice question has
     // no options to pick from here, and code cannot be run here, so those are self-rated.
     const missed = card ? undefined : missedQuestion(cardId);
-    if (missed) return missed.choices?.length || codeTask(missed) ? "self" : "typed";
+    if (missed) return missed.choices?.length || missed.code ? "self" : "typed";
     if (!card?.answerAuthority) return "self";
     if (card.answerAuthority.kind === "numeric") return "typed";
     return card.recall === "self" ? "self" : "typed";
@@ -1197,9 +1209,21 @@ export async function registerRoutes(
     const task = codeTask(question);
     if (task && !rustRuntime)
       throw new HttpError(503, "Code answers need the Rust runtime.", "RUST_UNAVAILABLE");
-    const coded = task ? await assessCode(rustRuntime!, task, body.response) : undefined;
+    const written = pythonTask(question);
+    if (written && !(await pythonReady(pythonRuntime)))
+      throw new HttpError(
+        503,
+        "Python cannot run on this computer yet, so this answer was not checked.",
+        "PYTHON_UNAVAILABLE",
+      );
+    const coded = task
+      ? await assessCode(rustRuntime!, task, body.response)
+      : written
+        ? await assessPython(pythonRuntime!, written, body.response)
+        : undefined;
     const assessment = coded ?? assessResponse(question, body.response);
-    const qualifying = isMarkable(question, body.response);
+    // A program that stopped with an error was not marked against any test, so it costs no try.
+    const qualifying = coded?.qualifying ?? isMarkable(question, body.response);
     // Credit is decided for the question, not for this attempt row: every earlier response,
     // hint, tutor reply and reveal counts, whichever attempt or mode it happened in.
     const history = store.questionHistory(question.id);

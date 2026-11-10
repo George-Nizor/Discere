@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { TutoringModeSchema } from "./modes.js";
+import { PythonExerciseSchema } from "./python-exercise.js";
 
 /**
  * Rust practice: the playground, lesson programs and graded projects. Learner code is compiled
@@ -113,7 +114,7 @@ export type RustCase = z.infer<typeof RustCaseSchema>;
  * and the one example they can see. The hidden cases (`Question.codeCases`) and the worked
  * program never leave the server.
  */
-export const CodeExerciseSchema = z
+export const RustExerciseSchema = z
   .object({
     language: z.literal("rust"),
     kind: z.enum(["program", "function"]),
@@ -122,6 +123,12 @@ export const CodeExerciseSchema = z
     example: RustCaseSchema,
   })
   .strict();
+export type RustExercise = z.infer<typeof RustExerciseSchema>;
+/** A lesson's code exercise in either language; `language` says which runner marks it. */
+export const CodeExerciseSchema = z.discriminatedUnion("language", [
+  RustExerciseSchema,
+  PythonExerciseSchema,
+]);
 export type CodeExercise = z.infer<typeof CodeExerciseSchema>;
 
 export const RustProjectDefinitionSchema = z
@@ -199,6 +206,21 @@ export const RustTaskRunSchema = z
     /** Check only: how many cases passed, without saying which hidden ones failed. */
     passed: z.number().int().nonnegative().optional(),
     total: z.number().int().positive().optional(),
+    /** Python, Run only: what each judged name holds after the example. */
+    values: z
+      .array(z.object({ name: z.string().max(40), value: z.string().max(2200) }).strict())
+      .max(6)
+      .optional(),
+    /** Python, Check only: the first test that failed, with what it expected and what it got. */
+    failed: z
+      .object({
+        test: z.number().int().positive(),
+        given: z.string().max(4000),
+        expected: z.string().max(2200),
+        actual: z.string().max(2200),
+      })
+      .strict()
+      .optional(),
   })
   .strict();
 export type RustTaskRun = z.infer<typeof RustTaskRunSchema>;

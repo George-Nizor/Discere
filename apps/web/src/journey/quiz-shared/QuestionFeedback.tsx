@@ -72,6 +72,8 @@ export function QuestionFeedback({
   const feedback = attempt.lessonFeedback;
   const phase = attempt.phase;
   const unreadable = isUnreadable(attempt);
+  // A program that stopped with an error cost no try, but its hints are still worth offering.
+  const stopped = unreadable && result.codeRun !== undefined;
   // The idea that comes with a right answer: authored, or else the worked answer itself.
   const idea = feedback?.onCorrect ?? result.feedback;
   // The worked answer and the held-back teaching are one tap away whenever there is any.
@@ -97,7 +99,7 @@ export function QuestionFeedback({
                 Correct
               </>
             ) : unreadable ? (
-              <>That answer could not be read</>
+              <>{result.codeRun ? "The program did not finish" : "That answer could not be read"}</>
             ) : phase === "revealed" ? (
               <>
                 <Eye aria-hidden="true" size={18} />
@@ -130,7 +132,7 @@ export function QuestionFeedback({
           ) : null}
         </div>
       </div>
-      {hints && phase === "retry" ? <HintLadder hints={attempt.hints} /> : null}
+      {hints && (phase === "retry" || stopped) ? <HintLadder hints={attempt.hints} /> : null}
       {phase === "revealed" && feedback ? <WorkedAnswer feedback={feedback} /> : null}
       {phase === "correct" && feedback && more ? (
         <>
@@ -145,7 +147,7 @@ export function QuestionFeedback({
           {moreOpen ? <WorkedAnswer feedback={feedback} /> : null}
         </>
       ) : null}
-      {phase === "retry" && (attempt.canHint || attempt.canReveal) && hints ? (
+      {(phase === "retry" || stopped) && (attempt.canHint || attempt.canReveal) && hints ? (
         <div className="feedback-help">
           {attempt.canHint ? (
             <button

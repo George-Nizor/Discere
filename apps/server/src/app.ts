@@ -124,6 +124,7 @@ export async function createApp(options: AppOptions = {}): Promise<DiscereApp> {
   const runtime = createTutorRuntime(options.tutor);
   const runners = createCodeRunners();
   const rustRuntime = options.rustRuntime ?? runners.rust;
+  const pythonRuntime = options.pythonRuntime ?? runners.python;
   await registerCodeRuntimeRoutes(app, runners.runtimes);
   await registerRoutes(app, {
     content,
@@ -131,8 +132,9 @@ export async function createApp(options: AppOptions = {}): Promise<DiscereApp> {
     topicMaps,
     revealDelayMs: options.revealDelayMs ?? 5000,
     rustRuntime,
+    pythonRuntime,
   });
-  await registerCodeQuestionRoutes(app, { content, runtime: rustRuntime });
+  await registerCodeQuestionRoutes(app, { content, runtime: rustRuntime, python: pythonRuntime });
   await registerCourseCheckRoutes(app, { content, store });
   await registerSearchRoutes(app, { content });
   const pythonProjects = await PythonProjectRepository.load(contentRoot, content);
@@ -141,7 +143,7 @@ export async function createApp(options: AppOptions = {}): Promise<DiscereApp> {
     new PythonProjectService(
       store,
       pythonProjects,
-      options.pythonRuntime ?? runners.python,
+      pythonRuntime,
       options.revealDelayMs ?? 5000,
     ),
   );
