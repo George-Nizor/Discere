@@ -116,6 +116,9 @@ describe("marking against every bundle", { timeout: 60_000 }, () => {
         // sql-exercises.test.ts and typescript-exercises.test.ts). Marked as text, its worked
         // program is wrong by design.
         if (question.code && question.code.language !== "rust") continue;
+        // An order or sort question is marked by the places of its items (the server's
+        // assessment tests). Its example answer is the explanation, wrong as text by design.
+        if (question.order || question.sort) continue;
         const key = `${course}/${question.id}`;
         if (!examples.has(key) && !assessTextAnswer(authority.exampleAnswer, authority).correct)
           failures.push(`${key}: example`);
