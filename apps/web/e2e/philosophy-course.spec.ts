@@ -86,8 +86,8 @@ async function answer(page: Page, q: Question, wrong = false) {
     await page.getByLabel("Value", { exact: true }).fill(String(wrong ? a.value + 1000 : a.value));
   else if (q.choices)
     await page
-      .getByRole("group", { name: "Answer choices" })
-      .getByRole("button", { name: ending(a.acceptedIdeas[0]!) })
+      .getByRole("radiogroup", { name: "Answer choices" })
+      .getByRole("radio", { name: ending(a.acceptedIdeas[0]!) })
       .click();
   else
     await page
@@ -143,9 +143,11 @@ async function completeLessons(request: APIRequestContext) {
         cardId,
         mode: "coach",
       });
-      await post("/api/review/sessions/" + session.sessionId + "/respond", {
-        response: a.kind === "numeric" ? String(a.value) : a.acceptedIdeas[0],
-      });
+      // A card that asks for an explanation is recalled and rated, with no typed response.
+      if (card.recall !== "self")
+        await post("/api/review/sessions/" + session.sessionId + "/respond", {
+          response: a.kind === "numeric" ? String(a.value) : a.acceptedIdeas[0],
+        });
       await post("/api/review/sessions/" + session.sessionId + "/reveal");
       await post("/api/review/sessions/" + session.sessionId + "/rate", {
         rating: "easy",

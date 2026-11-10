@@ -101,8 +101,8 @@ async function answer(page: Page, q: Question, wrong = false) {
       .fill(String(wrong ? q.answerAuthority.value + 1000 : q.answerAuthority.value));
   else
     await page
-      .getByRole("group", { name: "Answer choices" })
-      .getByRole("button", { name: q.answerAuthority.acceptedIdeas[0]!, exact: false })
+      .getByRole("radiogroup", { name: "Answer choices" })
+      .getByRole("radio", { name: q.answerAuthority.acceptedIdeas[0]!, exact: false })
       .click();
   await page.getByRole("button", { name: "Check answer", exact: true }).click();
   await expect(page.locator(".question-beat")).toHaveAttribute(
@@ -149,9 +149,11 @@ async function completeLessons(request: APIRequestContext) {
         cardId,
         mode: "coach",
       });
-      await post("/api/review/sessions/" + session.sessionId + "/respond", {
-        response: a.kind === "numeric" ? String(a.value) : a.acceptedIdeas[0],
-      });
+      // A card that asks for an explanation is recalled and rated, with no typed response.
+      if (card.recall !== "self")
+        await post("/api/review/sessions/" + session.sessionId + "/respond", {
+          response: a.kind === "numeric" ? String(a.value) : a.acceptedIdeas[0],
+        });
       await post("/api/review/sessions/" + session.sessionId + "/reveal");
       await post("/api/review/sessions/" + session.sessionId + "/rate", {
         rating: "easy",
@@ -208,7 +210,7 @@ test("Linear algebra roadmap and every lesson work at three sizes", async ({ pag
       const field =
         q.responseType === "numeric"
           ? page.getByLabel("Value", { exact: true })
-          : page.getByRole("group", { name: "Answer choices" });
+          : page.getByRole("radiogroup", { name: "Answer choices" });
       // Teaching now sits above the question (audit B1), so the field may be below the fold;
       // once scrolled to, it must clear the reserved footer rather than sit behind it.
       await field.scrollIntoViewIfNeeded();

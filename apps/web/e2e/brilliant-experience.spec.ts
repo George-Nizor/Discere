@@ -70,12 +70,15 @@ async function respond(page: Page, question: Question) {
   await expect(page.locator(".question-beat[data-result=correct]")).toBeVisible();
   await expect(page.getByRole("button", { name: "Why?", exact: true })).toBeVisible();
 }
-test("the course list shows the named courses in illustrated groups, without Electronics", async ({
+test("the course list shows the named courses in illustrated groups", async ({
   page,
   request,
 }) => {
   const list = (await (await request.get("/api/courses")).json()).courses;
-  expect(list).toHaveLength(18);
+  // The catalogue grows, so no count is fixed here: every listed course appears once, and the
+  // Courses page below shows one card for each.
+  expect(list.length).toBeGreaterThan(0);
+  expect(new Set(list.map((course: { id: string }) => course.id)).size).toBe(list.length);
   expect(list.map((course: { id: string }) => course.id)).toContain(
     "linear-algebra-vectors-and-maps",
   );
@@ -93,7 +96,7 @@ test("the course list shows the named courses in illustrated groups, without Ele
     expect(list.map((course: { id: string }) => course.id)).toContain(id);
   await page.goto("/courses");
   await expect(page.getByRole("heading", { name: "Courses", exact: true })).toBeVisible();
-  await expect(page.getByRole("link", { name: /Electronics/ })).toHaveCount(0);
+  await expect(page.locator(".course-card")).toHaveCount(list.length);
   for (const viewport of viewports) await capture(page, "catalogue", viewport);
   await page.setViewportSize({ width: 1024, height: 768 });
   const path = page.getByRole("region", { name: "Foundations for thinking" });

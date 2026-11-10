@@ -248,12 +248,15 @@ test("slow data preserves the current screen, and rapid navigation cannot leave 
   await page.getByRole("link", { name: "Courses", exact: true }).click();
   await settled(page);
   const before = (await records(page)).length;
+  // Counted before the search, so the test holds as the catalogue grows.
+  const listed = await page.locator(".course-card").count();
+  expect(listed).toBeGreaterThan(1);
   await page.getByRole("searchbox", { name: "Search courses" }).fill("logic");
   await expect(page.locator(".course-card")).toHaveCount(1);
   expect((await records(page)).length).toBe(before);
   await expect(page.getByRole("searchbox", { name: "Search courses" })).toBeFocused();
   await page.getByRole("searchbox", { name: "Search courses" }).fill("");
-  await expect(page.locator(".course-card")).toHaveCount(18);
+  await expect(page.locator(".course-card")).toHaveCount(listed);
   await page.evaluate(() => window.scrollTo(0, 650));
   await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(500);
   await page.waitForTimeout(100);

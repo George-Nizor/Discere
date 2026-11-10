@@ -26,7 +26,7 @@ async function layout(page: Page) {
     const response = page.getByLabel("Value", { exact: true });
     const target = (await response.count())
       ? response
-      : page.getByRole("group", { name: "Answer choices" }).getByRole("button").last();
+      : page.getByRole("radiogroup", { name: "Answer choices" }).getByRole("radio").last();
     await target.scrollIntoViewIfNeeded();
     const r = await target.boundingBox(),
       f = await page.locator(".check-actions").boundingBox();
@@ -60,8 +60,8 @@ async function select(page: Page, item: CourseCheckDefinition["items"][number], 
       wrong ? !a.acceptedIdeas.includes(c.label) : a.acceptedIdeas.includes(c.label),
     )!;
     await page
-      .getByRole("group", { name: "Answer choices" })
-      .getByRole("button")
+      .getByRole("radiogroup", { name: "Answer choices" })
+      .getByRole("radio")
       .filter({ has: page.getByText(choice.label, { exact: true }) })
       .click();
   }
@@ -91,9 +91,11 @@ async function completeLessons(request: APIRequestContext, address: string, bund
       const c = bundle.flashcards.find((c) => c.id === id)!,
         a = c.answerAuthority!;
       const s = await post("/api/review/sessions", { lessonId: l.id, cardId: id, mode: "coach" });
-      await post("/api/review/sessions/" + s.sessionId + "/respond", {
-        response: a.kind === "numeric" ? String(a.value) : a.acceptedIdeas[0],
-      });
+      // A card that asks for an explanation is recalled and rated, with no typed response.
+      if (c.recall !== "self")
+        await post("/api/review/sessions/" + s.sessionId + "/respond", {
+          response: a.kind === "numeric" ? String(a.value) : a.acceptedIdeas[0],
+        });
       await post("/api/review/sessions/" + s.sessionId + "/reveal");
       await post("/api/review/sessions/" + s.sessionId + "/rate", {
         rating: "easy",

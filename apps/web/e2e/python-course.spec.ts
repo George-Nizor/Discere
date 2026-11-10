@@ -38,8 +38,8 @@ async function answer(page: Page, question: Question, wrong = false) {
       .fill(String(wrong ? question.answerAuthority.value + 1000 : question.answerAuthority.value));
   else
     await page
-      .getByRole("group", { name: "Answer choices" })
-      .getByRole("button", { name: question.answerAuthority.acceptedIdeas[0]!, exact: false })
+      .getByRole("radiogroup", { name: "Answer choices" })
+      .getByRole("radio", { name: question.answerAuthority.acceptedIdeas[0]!, exact: false })
       .click();
   await page.getByRole("button", { name: "Check answer", exact: true }).click();
   await expect(page.locator(".question-beat")).toHaveAttribute(
@@ -105,7 +105,11 @@ test("Python learning, fresh recall and saved completion work end to end", async
     if (index === 0) {
       await page.reload();
       await expect(
-        page.getByText(lesson.steps[1]!.blocks.find(block => block.kind === "heading")!.text, { exact: false }).first(),
+        page
+          .getByText(lesson.steps[1]!.blocks.find((block) => block.kind === "heading")!.text, {
+            exact: false,
+          })
+          .first(),
       ).toBeVisible();
     }
   }
@@ -153,9 +157,7 @@ test("the applied report explains mistakes and permits a changed-case check", as
     if (index === 0) {
       // A first miss no longer reveals the answer (audit B3); ask for it.
       await page.getByRole("button", { name: "Show the answer", exact: true }).click();
-      await expect(page.locator(".beat-explanation")).toContainText(
-        "Only the second occurrence",
-      );
+      await expect(page.locator(".beat-explanation")).toContainText("Only the second occurrence");
       for (const viewport of viewports) {
         await page.setViewportSize(viewport);
         await capture(page, "python-correction", viewport.width);

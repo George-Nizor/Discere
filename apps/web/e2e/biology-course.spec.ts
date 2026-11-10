@@ -94,8 +94,8 @@ async function answer(page: Page, q: Question, wrong = false) {
       ? q.choices.find((c) => c.label !== authority.acceptedIdeas[0])!.label
       : authority.acceptedIdeas[0]!;
     await page
-      .getByRole("group", { name: "Answer choices" })
-      .getByRole("button", { name: chosen, exact: false })
+      .getByRole("radiogroup", { name: "Answer choices" })
+      .getByRole("radio", { name: chosen, exact: false })
       .click();
   } else
     await page
@@ -121,8 +121,8 @@ async function checkAnswer(
       ? choices.find((c) => c.label !== a.acceptedIdeas[0])!.label
       : a.acceptedIdeas[0]!;
     await page
-      .getByRole("group", { name: "Answer choices" })
-      .getByRole("button", { name: selected, exact: false })
+      .getByRole("radiogroup", { name: "Answer choices" })
+      .getByRole("radio", { name: selected, exact: false })
       .click();
   }
   await page.getByRole("radio", { name: "Very sure", exact: true }).check();
@@ -155,9 +155,11 @@ async function completeLessons(request: APIRequestContext) {
         cardId,
         mode: "coach",
       });
-      await post("/api/review/sessions/" + session.sessionId + "/respond", {
-        response: a.kind === "numeric" ? String(a.value) : a.acceptedIdeas[0],
-      });
+      // A card that asks for an explanation is recalled and rated, with no typed response.
+      if (card.recall !== "self")
+        await post("/api/review/sessions/" + session.sessionId + "/respond", {
+          response: a.kind === "numeric" ? String(a.value) : a.acceptedIdeas[0],
+        });
       await post("/api/review/sessions/" + session.sessionId + "/reveal");
       await post("/api/review/sessions/" + session.sessionId + "/rate", {
         rating: "easy",
@@ -210,7 +212,7 @@ test("Biology roadmap, original artwork and every lesson work at three sizes", a
       await page.setViewportSize(size);
       const q = bundle.questions.find((q) => q.id === lesson.steps[0]!.checkQuestionId)!;
       const field = q.choices
-        ? page.getByRole("group", { name: "Answer choices" }).getByRole("button").last()
+        ? page.getByRole("radiogroup", { name: "Answer choices" }).getByRole("radio").last()
         : page.getByLabel(q.responseType === "numeric" ? "Value" : "Your answer", { exact: true });
       await field.scrollIntoViewIfNeeded();
       const box = await field.boundingBox(),
@@ -257,7 +259,7 @@ test("Biology roadmap, original artwork and every lesson work at three sizes", a
         await expect(page.locator(".biology-drawing")).toBeVisible();
         await page.getByRole("button", { name: later.cases[0]!.label, exact: true }).click();
         const input = q.choices
-          ? page.getByRole("group", { name: "Answer choices" }).getByRole("button").last()
+          ? page.getByRole("radiogroup", { name: "Answer choices" }).getByRole("radio").last()
           : page.getByLabel(q.responseType === "numeric" ? "Value" : "Your answer", {
               exact: true,
             });

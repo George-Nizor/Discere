@@ -239,9 +239,7 @@ test.describe("the lesson journey", () => {
     await expect(page.getByText(/cards? due/)).toBeVisible();
 
     await page.goto("/progress");
-    await expect(
-      page.getByRole("heading", { level: 1, name: "Your progress" }),
-    ).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Your progress" })).toBeVisible();
     await expect(page.locator(".you-ideas > summary")).toBeVisible();
     await page.locator(".you-ideas > summary").click();
     await expect(page.getByRole("heading", { name: "Practice activity" })).toBeVisible();

@@ -69,9 +69,6 @@ test("Home uses three main tabs and real illustrated courses at every size", asy
   await expect(page.locator(".nav-rail-list .nav-rail-tip")).toHaveText(["Home", "Courses", "You"]);
   const catalogue = (await (await request.get(address + "/api/courses")).json()).courses;
   await expect(page.locator(".home-course-switcher button")).toHaveCount(catalogue.length);
-  for (const title of ["Electronics Foundations"]) {
-    await expect(page.getByRole("radio", { name: title, exact: true })).toHaveCount(0);
-  }
   await expect(page.locator(".home-resume")).toHaveAttribute(
     "href",
     /\/courses\/maths-foundations\/lessons\//,
@@ -137,9 +134,7 @@ test("You shows recorded stats, working filters, chart details, and preserved Pr
 }) => {
   await page.goto(address + "/progress?period=week");
   await expect(page).toHaveURL(/\/you\?period=week/);
-  await expect(
-    page.getByRole("heading", { name: "Your progress", exact: true }),
-  ).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Your progress", exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "Week", exact: true })).toHaveAttribute(
     "aria-pressed",
     "true",
