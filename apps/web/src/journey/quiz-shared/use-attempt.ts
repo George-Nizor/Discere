@@ -6,7 +6,7 @@ import type {
   LessonFeedbackResponse,
 } from "@discere/contracts";
 import { useQueryClient } from "@tanstack/react-query";
-import { useRef, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { errorMessage } from "../../api/client.js";
 import { getLessonFeedback, requestHint, submitAttempt } from "../../api/endpoints.js";
 import { queryKeys } from "../../api/queries.js";
@@ -23,7 +23,7 @@ import { type AnswerDraft, answerResponse, initialAnswerDraft } from "../quiz/an
  *   hint ladder is offered, and the worked answer is one request away.
  * - `correct`: right, with or without help.
  * - `revealed`: the worked answer is showing, after the last allowed miss or on request. That is
- *   recorded as assistance by the server.
+ *   recorded as assistance by the server. A program has no last miss: only a request reveals it.
  * - `closed`: Exam mode after the last allowed miss. Nothing is revealed; the learner moves on.
  */
 export type AttemptPhase = "answering" | "retry" | "correct" | "revealed" | "closed";
@@ -69,9 +69,61 @@ export interface Attempt {
   askForHint: () => Promise<void>;
 }
 
+/** What an attempt holds once something has been checked: enough to draw the screen again. */
+export interface AttemptSnapshot {
+  draft: AnswerDraft;
+  attemptId: string;
+  result: AttemptResponse | null;
+  markedResponse: string | null;
+  hints: HintResponse[];
+  misses: number;
+  serverLimit: number | null;
+  revealed: boolean;
+  lessonFeedback: LessonFeedbackResponse | null;
+}
+
+/**
+ * The attempts made during one visit to a lesson, by question id. A lesson provides it so a
+ * screen the learner goes back to shows what they answered and its verdict. Without it the
+ * question would be drawn blank, with Check answer in the place Continue takes.
+ */
+export const AttemptMemoryContext = createContext<Map<string, AttemptSnapshot> | null>(null);
+
+/**
+ * One seed for each visit to a lesson, so the items of an order or sort question are dealt the
+ * same way each time the learner comes back to the screen, and differently on another visit.
+ */
+const visitSeeds = new WeakMap<object, number>();
+function visitSeed(memory: object | null): number {
+  const fresh = () => Math.floor(Math.random() * 0xffffffff);
+  if (!memory) return fresh();
+  let seed = visitSeeds.get(memory);
+  if (seed === undefined) {
+    seed = fresh();
+    visitSeeds.set(memory, seed);
+  }
+  return seed;
+}
+
 /** Two options cannot sustain a second try: the retry would be the other option. */
 export function defaultMisses(question: LearnerQuestion): number {
   return question.choices && question.choices.length <= 2 ? 1 : 2;
+}
+
+/**
+ * A program written inside a lesson can be checked any number of times: no wrong result closes
+ * it, and the worked program is shown only when the learner asks. Exam mode never shows the
+ * answer, so it keeps a limit, and a screen that names its own limit (a skill check) keeps that.
+ */
+export function hasUnlimitedTries(
+  question: LearnerQuestion,
+  inLesson: boolean,
+  mode: string,
+  policy: AttemptPolicy = {},
+): boolean {
+  return (
+    question.responseType === "code" && inLesson && mode !== "exam" && policy.misses === undefined
+  );
 }
 
 /**
@@ -90,19 +142,60 @@ export function useAttempt(
   const { play, prepare } = useExperience();
   const inFlight = useRef(false);
   const { mode } = useTutoringMode();
-  const [draft, setDraft] = useState<AnswerDraft>(() => initialAnswerDraft(question));
-  const [attemptId, setAttemptId] = useState<string | null>(null);
-  const [result, setResult] = useState<AttemptResponse | null>(null);
-  const [markedResponse, setMarkedResponse] = useState<string | null>(null);
-  const [hints, setHints] = useState<HintResponse[]>([]);
-  const [misses, setMisses] = useState(0);
-  const [revealed, setRevealed] = useState(false);
-  const [lessonFeedback, setLessonFeedback] = useState<LessonFeedbackResponse | null>(null);
+  const memory = useContext(AttemptMemoryContext);
+  // Read once, when the question is drawn: an attempt made earlier in this visit is carried on.
+  const [earlier] = useState(() => memory?.get(question.id));
+  const [draft, setDraft] = useState<AnswerDraft>(
+    () => earlier?.draft ?? initialAnswerDraft(question, visitSeed(memory)),
+  );
+  const [attemptId, setAttemptId] = useState<string | null>(earlier?.attemptId ?? null);
+  const [result, setResult] = useState<AttemptResponse | null>(earlier?.result ?? null);
+  const [markedResponse, setMarkedResponse] = useState<string | null>(
+    earlier?.markedResponse ?? null,
+  );
+  const [hints, setHints] = useState<HintResponse[]>(earlier?.hints ?? []);
+  const [misses, setMisses] = useState(earlier?.misses ?? 0);
+  const [serverLimit, setServerLimit] = useState<number | null>(earlier?.serverLimit ?? null);
+  const [revealed, setRevealed] = useState(earlier?.revealed ?? false);
+  const [lessonFeedback, setLessonFeedback] = useState<LessonFeedbackResponse | null>(
+    earlier?.lessonFeedback ?? null,
+  );
+  useEffect(() => {
+    if (memory && attemptId !== null)
+      memory.set(question.id, {
+        draft,
+        attemptId,
+        result,
+        markedResponse,
+        hints,
+        misses,
+        serverLimit,
+        revealed,
+        lessonFeedback,
+      });
+  }, [
+    memory,
+    question.id,
+    draft,
+    attemptId,
+    result,
+    markedResponse,
+    hints,
+    misses,
+    serverLimit,
+    revealed,
+    lessonFeedback,
+  ]);
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState<string | null>(null);
 
   const response = answerResponse(question, draft);
-  const allowedMisses = Math.max(1, policy.misses ?? defaultMisses(question));
+  // Once the server has named the lesson's limit, that is the limit: it is the one enforced.
+  const allowedMisses =
+    serverLimit ??
+    (hasUnlimitedTries(question, lessonContext !== undefined, mode, policy)
+      ? Number.POSITIVE_INFINITY
+      : Math.max(1, policy.misses ?? defaultMisses(question)));
   const explains = lessonContext !== undefined && mode !== "exam";
   const solved = result?.correct === true;
   const phase: AttemptPhase = solved
@@ -136,6 +229,8 @@ export function useAttempt(
         response,
         mode,
         ...(attemptId === null ? {} : { attemptId }),
+        // With the lesson named, the server counts misses against the lesson's limit itself.
+        ...(lessonContext ? { lesson: lessonContext } : {}),
       });
       setAttemptId(attempt.attemptId);
       setResult(attempt);
@@ -151,12 +246,17 @@ export function useAttempt(
           play,
         });
       }
-      const nextMisses = !attempt.correct && counted ? misses + 1 : misses;
+      // The server's count wins: it remembers misses made before a reload, and it says when the
+      // last allowed miss has closed the question.
+      const countedMisses = attempt.misses ?? (!attempt.correct && counted ? misses + 1 : misses);
+      const limit = attempt.allowedMisses ?? allowedMisses;
+      const nextMisses = attempt.closed ? Math.max(countedMisses, limit) : countedMisses;
       setMisses(nextMisses);
+      if (attempt.allowedMisses !== undefined) setServerLimit(attempt.allowedMisses);
       if (explains && attempt.correct) {
         // Being right never skips the idea: the explanation comes with the verdict.
         await fetchExplanation(attempt.attemptId, false);
-      } else if (explains && nextMisses >= allowedMisses) {
+      } else if (explains && nextMisses >= limit) {
         await fetchExplanation(attempt.attemptId, true);
       }
       void queryClient.invalidateQueries({ queryKey: queryKeys.home });
@@ -230,7 +330,8 @@ export function useAttempt(
       policy.hints !== false &&
       mode !== "exam" &&
       attemptId !== null &&
-      phase === "retry" &&
+      // A program that stopped with an error is not a miss, and may still need a hint.
+      (phase === "retry" || (phase === "answering" && result?.codeRun !== undefined)) &&
       hintsLeft > 0,
     solved,
     phase,

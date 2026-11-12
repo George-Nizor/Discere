@@ -160,7 +160,7 @@ export function CourseOverview({ detail }: { detail: CourseDetailResponse }) {
     <aside className="course-overview">
       <Link className="course-back" to={paths.courses}>
         <ArrowRight aria-hidden="true" size={16} />
-        Learning paths
+        Courses
       </Link>
       <div className="course-overview-body">
         {course.coverUrl ? (

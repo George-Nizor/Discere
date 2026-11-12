@@ -30,6 +30,7 @@ const PAYLOAD_CONTRACTS: Partial<Record<TutorOperation, string>> = {
   "summary": "A direct judgement anchored in the learner's own words.",
   "firstMeaningfulError": "The earliest important error or gap, or null when none is present.",
   "nextStep": "The smallest useful action the learner should take next.",
+  "criteria": [{ "criterion": "One item of successCriteria, copied exactly.", "result": "met | partly_met | not_met", "evidence": "A short quote from the learner's writing, or one sentence giving the reason." }],
   "sourceIds": ["Only identifiers supplied in allowedSourceIds; use an empty array when none are needed."],
   "uncertainty": ["Any material uncertainty; otherwise return an empty array."]
 }`,

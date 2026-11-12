@@ -137,7 +137,22 @@ export const TutorIssueSchema = z
   .strict();
 export type TutorIssue = z.infer<typeof TutorIssueSchema>;
 
-export const EssayAssessmentDraftSchema = z
+export const EssayCriterionVerdictSchema = z.enum(["met", "partly_met", "not_met"]);
+export type EssayCriterionVerdict = z.infer<typeof EssayCriterionVerdictSchema>;
+
+/** The result for one of a writing task's success criteria. */
+export const EssayCriterionResultSchema = z
+  .object({
+    /** The criterion as the task lists it. */
+    criterion: z.string().trim().min(1).max(1_000),
+    result: EssayCriterionVerdictSchema,
+    /** A short quote from the learner's writing, or one sentence giving the reason. */
+    evidence: z.string().trim().min(1).max(1_000),
+  })
+  .strict();
+export type EssayCriterionResult = z.infer<typeof EssayCriterionResultSchema>;
+
+const EssayAssessmentCoreSchema = z
   .object({
     assessment: WorkingsAssessmentSchema,
     summary: z.string().trim().min(1).max(8_000),
@@ -147,6 +162,39 @@ export const EssayAssessmentDraftSchema = z
     uncertainty: z.array(z.string().trim().min(1).max(1_000)).max(20),
   })
   .strict();
+
+/**
+ * A stored assessment. `criteria` holds one result per success criterion, in the task's order.
+ * It is absent on assessments stored before November 2026 and on a reply whose criteria did not
+ * match the task's list, and the overall verdict stands alone then.
+ */
+export const EssayAssessmentDraftSchema = EssayAssessmentCoreSchema.extend({
+  criteria: z.array(EssayCriterionResultSchema).max(20).optional(),
+}).strict();
+
+/**
+ * The shape asked of a provider. `criteria` is required here because a strict structured-output
+ * schema cannot carry an optional property. The server reads the reply leniently all the same.
+ */
+export const EssayAssessmentReplySchema = EssayAssessmentCoreSchema.extend({
+  criteria: z.array(EssayCriterionResultSchema).max(20),
+}).strict();
+
+/**
+ * Reads a provider's reply. The summary, first error and next step must be valid. Criteria that
+ * are missing or malformed are dropped so the overall verdict can still be shown.
+ */
+export function parseEssayAssessmentReply(value: unknown): EssayAssessmentDraft {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) {
+    return EssayAssessmentDraftSchema.parse(value);
+  }
+  const { criteria, ...core } = value as Record<string, unknown>;
+  const parsed = EssayAssessmentCoreSchema.parse(core);
+  const results = z.array(EssayCriterionResultSchema).max(20).safeParse(criteria);
+  return results.success && results.data.length > 0
+    ? { ...parsed, criteria: results.data }
+    : parsed;
+}
 export type EssayAssessmentDraft = z.infer<typeof EssayAssessmentDraftSchema>;
 
 /** The reply shape asked of `prompts/style-editor.md` during a targeted repair pass. */
@@ -336,9 +384,24 @@ export const EssayAssessmentResponseSchema = z
       .strict()
       .nullable(),
     updatedAt: z.string().datetime(),
+    /** Which submitted version this assesses. Version 1 is the first submission. */
+    version: z.number().int().positive().default(1),
   })
   .strict();
 export type EssayAssessmentResponse = z.infer<typeof EssayAssessmentResponseSchema>;
+
+/** One earlier submitted version of a writing task, with the assessment it received. */
+export const EssayVersionResponseSchema = z
+  .object({
+    essayId: z.string().min(1),
+    version: z.number().int().positive(),
+    content: z.string().max(100_000),
+    wordCount: z.number().int().nonnegative(),
+    submittedAt: z.string().datetime().nullable(),
+    assessment: EssayAssessmentResponseSchema.nullable(),
+  })
+  .strict();
+export type EssayVersionResponse = z.infer<typeof EssayVersionResponseSchema>;
 
 export const EssayAssessRequestSchema = z.object({ mode: TutoringModeSchema.optional() }).strict();
 export type EssayAssessRequest = z.infer<typeof EssayAssessRequestSchema>;

@@ -5,6 +5,7 @@ import { TopicMapSchema } from "../packages/contracts/src/index.js";
 import { physicsLessons as definitions } from "../content/physics-motion-and-forces/authoring/lessons.js";
 import { sources } from "../content/physics-motion-and-forces/authoring/definition.js";
 import { physicsChecks } from "../content/physics-motion-and-forces/authoring/course-checks.js";
+import { keepPublishedContent } from "./lib/keep-published-content.js";
 const root = path.resolve(import.meta.dirname, ".."),
   courseId = "physics-motion-and-forces";
 const stepIds = ["predict", "work", "check", "transfer"],
@@ -147,6 +148,7 @@ if (!validation.passed || !validation.bundle) {
 } else {
   const directory = path.join(root, "content", courseId, ".authoring");
   await mkdir(directory, { recursive: true });
+  await keepPublishedContent(courseId, validation.bundle);
   await writeFile(
     path.join(directory, "candidate.json"),
     JSON.stringify(validation.bundle, null, 2) + "\n",

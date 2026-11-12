@@ -1,3 +1,4 @@
+import { useDocumentTitle } from "../lib/document-title.js";
 import type { NotebookSaveRequest } from "@discere/contracts";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
@@ -15,6 +16,7 @@ import { WorkingsReviewPanel } from "./WorkingsReviewPanel.js";
 
 export function NotebookScreen() {
   const { courseId, lessonId } = useParams();
+  useDocumentTitle("Notebook");
   if (!courseId || !lessonId) {
     return <ErrorScreen message="The notebook address is incomplete." title="Notebook not found" />;
   }

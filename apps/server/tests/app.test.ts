@@ -132,6 +132,30 @@ describe("Discere API", () => {
     expect(restored.json().activeStageId).toBe("current-in-one-loop:visual");
   });
 
+  it("lets an optional writing task be skipped and refuses to skip anything else", async () => {
+    const url = "/api/courses/electronics-foundations/lessons/current-in-one-loop/progress";
+    const refused = await app.inject({
+      method: "PUT",
+      url,
+      payload: { stageId: "current-in-one-loop:explainer", state: "skipped_optional" },
+    });
+    expect(refused.statusCode).toBe(409);
+    expect(refused.json().code).toBe("STAGE_NOT_OPTIONAL");
+    const skipped = await app.inject({
+      method: "PUT",
+      url,
+      payload: { stageId: "current-in-one-loop:essay", state: "skipped_optional" },
+    });
+    expect(skipped.statusCode).toBe(200);
+    expect(skipped.json().activeStageId).toBe("current-in-one-loop:review");
+    expect(
+      skipped
+        .json()
+        .stages.find((entry: { stageId: string }) => entry.stageId === "current-in-one-loop:essay")
+        .state,
+    ).toBe("skipped_optional");
+  });
+
   it("autosaves and submits a teach-back without exposing rubric authority", async () => {
     const essayId = "ohms-law-teach-back";
     const content =

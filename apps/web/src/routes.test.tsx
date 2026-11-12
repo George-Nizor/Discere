@@ -228,7 +228,7 @@ describe("routed application", () => {
     });
     renderApp("/progress");
     expect(
-      await screen.findByRole("heading", { level: 1, name: "Your learning activity" }),
+      await screen.findByRole("heading", { level: 1, name: "Your progress" }),
     ).toBeInTheDocument();
     await userEvent.click(screen.getByText("Ideas you have practised"));
     expect(await screen.findByText("Ohm's law")).toBeInTheDocument();
@@ -296,6 +296,35 @@ describe("routed application", () => {
       expect(router.state.location.pathname).toBe("/courses/electronics-foundations"),
     );
   });
+
+  it("lists the course's sources on the course page", async () => {
+    stubFetch({
+      "GET /api/home": { body: home },
+      "GET /api/courses": { body: { courses: [course] } },
+      "GET /api/courses/electronics-foundations": {
+        body: {
+          ...courseDetail,
+          sources: [
+            {
+              id: "openstax-physics",
+              title: "University Physics Volume 2",
+              publisher: "OpenStax",
+              url: "https://openstax.org/details/books/university-physics-volume-2",
+              licence: "CC BY 4.0",
+              accessedAt: "2026-10-01",
+            },
+          ],
+        },
+      },
+    });
+    renderApp("/courses/electronics-foundations");
+    expect(await screen.findByRole("heading", { level: 2, name: "Sources" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "University Physics Volume 2" })).toHaveAttribute(
+      "href",
+      "https://openstax.org/details/books/university-physics-volume-2",
+    );
+  });
+
 });
 
 function toolButton(toolbar: HTMLElement, name: string) {

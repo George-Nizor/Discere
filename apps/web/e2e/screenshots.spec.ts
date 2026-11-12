@@ -1,9 +1,11 @@
-import type { Locator } from "@playwright/test";
 import { mkdirSync } from "node:fs";
 import { join } from "node:path";
-import { advanceUntil, expect, test, gotoStage, notebookPath, readJourney } from "./fixtures.js";
+import type { LearnerStage } from "@discere/contracts";
+import { captureDir, expect, test } from "./fixtures.js";
+import { test as labTest } from "./isolated-app.js";
+import { playLesson } from "./lesson-player.js";
 
-const OUTPUT = join(import.meta.dirname, "../../../docs/ui-ux/screenshots");
+const OUTPUT = captureDir("ui-ux/screenshots");
 
 const VIEWPORTS = [
   { label: "1440", width: 1440, height: 900 },
@@ -37,28 +39,41 @@ test.describe("learner workspace screens", () => {
       });
     });
   }
+});
+
+/**
+ * Every screen a learner sees, in one pass through a lesson that has each kind of stage. It runs
+ * on a server of its own, so the pictures do not depend on what other tests did first.
+ */
+labTest.describe("learner workspace screens, through one lesson", () => {
+  const COURSE = "electronics-foundations";
+  const LESSON = "current-in-one-loop";
+  // One picture for each kind of stage, named as the documents name them.
+  const STAGE_SHOTS: Partial<Record<LearnerStage["type"], string>> = {
+    explainer: "explainer",
+    interactive_visual: "interactive-visual",
+    quiz: "quiz",
+    essay: "essay",
+    review: "lesson-review",
+    completion: "completion",
+  };
 
   for (const viewport of VIEWPORTS) {
-    test(`captures every screen at ${viewport.width}x${viewport.height}`, async ({
+    labTest(`captures every screen at ${viewport.width}x${viewport.height}`, async ({
       page,
       request,
     }) => {
-      test.slow();
+      labTest.setTimeout(120_000);
+      mkdirSync(OUTPUT, { recursive: true });
       await page.setViewportSize({ width: viewport.width, height: viewport.height });
-      const journey = await readJourney(request);
 
-      /**
-       * `subject` names something that must be in the frame. Without it a capture starts at the
-       * top of the screen, which is right for a whole screen and wrong for an activity that
-       * sits part-way down a long lesson.
-       */
-      async function capture(name: string, subject?: Locator): Promise<void> {
-        await page.waitForLoadState("networkidle");
-        if (subject) await subject.scrollIntoViewIfNeeded();
-        // Interacting with a control scrolls it into view; a reference screen starts at the top.
-        else await page.evaluate(() => window.scrollTo(0, 0));
-        // A viewport capture, not a full-page stitch: the sticky header and the fixed drawer
-        // paint where the learner actually sees them, and animations are settled first.
+      async function capture(name: string): Promise<void> {
+        await page.evaluate(async () => {
+          await document.fonts.ready;
+          window.scrollTo(0, 0);
+        });
+        // A viewport capture, not a full-page stitch: the sticky header and the fixed footer
+        // paint where the learner sees them, and animations are settled first.
         await page.screenshot({
           path: join(OUTPUT, `${name}-${viewport.label}.png`),
           fullPage: false,
@@ -67,95 +82,62 @@ test.describe("learner workspace screens", () => {
       }
 
       await page.goto("/");
-      await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+      await expect(page.locator(".home-resume")).toBeVisible();
       await capture("home");
-
       await page.goto("/courses");
+      await expect(page.locator(".course-card").first()).toBeVisible();
       await capture("courses");
-
-      await page.goto(`/courses/${encodeURIComponent(journey.courseId)}`);
+      await page.goto(`/courses/${COURSE}`);
+      await expect(page.locator(".roadmap-stop").first()).toBeVisible();
       await capture("course");
 
-      await gotoStage(page, journey, "explainer");
-      await capture("explainer");
+      const taken = new Set<string>();
+      await playLesson(page, request, COURSE, LESSON, {
+        onStage: async (stage) => {
+          const name = STAGE_SHOTS[stage.type];
+          if (!name || taken.has(name)) return;
+          taken.add(name);
+          if (stage.type === "completion") await expect(page.locator(".finish-stats")).toBeVisible();
+          await capture(name);
+        },
+      });
+      // The lesson holds every kind of stage the pictures are for.
+      expect([...taken].sort()).toEqual(Object.values(STAGE_SHOTS).sort());
 
-      // The new interaction types, captured answered so the feedback is part of the reference.
-      await gotoStage(page, journey, "explainer");
-      await advanceUntil(page, page.getByRole("button", { name: "The resistor" }));
-      await page.getByRole("button", { name: "The resistor" }).click();
-      await capture("activity-diagram-choice", page.getByText(/it sets the current/));
-
-      await page.goto(
-        `/courses/${encodeURIComponent(journey.courseId)}/lessons/electrical-power/stages/${encodeURIComponent("electrical-power:explainer")}`,
-      );
-      await page.waitForLoadState("networkidle");
-      await advanceUntil(page, page.getByRole("button", { name: "Check the point" }));
-      await capture("activity-graph-plot", page.getByRole("button", { name: "Check the point" }));
-
-      await gotoStage(page, journey, "interactive_visual");
-      // Change the circuit before predicting, so the captured feedback shows a real comparison
-      // rather than a circuit that never moved.
-      await page.getByRole("slider", { name: "Resistance" }).fill("400");
-      await page.getByRole("button", { name: "Decreases" }).click();
-      await page.getByRole("button", { name: "Check prediction" }).click();
-      await capture("interactive-visual");
-
-      await gotoStage(page, journey, "quiz");
-      await capture("quiz");
-
-      await gotoStage(page, journey, "essay");
-      await capture("essay");
-
-      await gotoStage(page, journey, "review");
-      await capture("lesson-review");
-
-      // The foundations journey earned completion earlier in this suite. A deep link into an
-      // unfinished legacy lesson correctly returns to its unanswered stage.
-      const completedMaths = await readJourney(request, "maths-foundations");
-      await gotoStage(page, completedMaths, "completion");
-      // Maths lesson 1 is the v2 gold lesson, whose completion stage is titled "Lesson complete";
-      // the saved result shows as the finish stats.
-      await expect(page.getByRole("heading", { level: 1, name: "Lesson complete" })).toBeVisible();
-      await expect(page.locator(".finish-stats")).toBeVisible();
-      await capture("completion");
-
-      // The working notebook, with a drawn page so the capture shows real handwriting rather
-      // than an empty sheet.
-      await page.goto(notebookPath(journey));
-      await page.waitForLoadState("networkidle");
+      // The working notebook, with a drawn page so the capture shows real handwriting.
+      await page.goto(`/courses/${COURSE}/lessons/${LESSON}/notebook`);
       const canvas = page.getByRole("application", { name: "Working canvas" });
-      const box = await canvas.boundingBox();
-      if (box) {
-        await page.mouse.move(box.x + box.width * 0.12, box.y + box.height * 0.22);
-        await page.mouse.down();
-        for (const step of [0.2, 0.3, 0.42, 0.5]) {
-          await page.mouse.move(box.x + box.width * step, box.y + box.height * (0.22 + step / 5));
-        }
-        await page.mouse.up();
-      }
+      await expect(canvas).toBeVisible();
+      const box = (await canvas.boundingBox())!;
+      await page.mouse.move(box.x + box.width * 0.12, box.y + box.height * 0.22);
+      await page.mouse.down();
+      for (const step of [0.2, 0.3, 0.42, 0.5])
+        await page.mouse.move(box.x + box.width * step, box.y + box.height * (0.22 + step / 5));
+      await page.mouse.up();
+      await expect(page.locator("polyline[data-stroke-id]")).toHaveCount(1);
       const note = page.getByLabel("Typed working");
       await note.fill("I = V / R, so 5 / 100.");
-      // A focused textarea paints a blinking caret, which `animations: "disabled"` does not
-      // stop, so the capture would differ between runs. Blur it before the shot.
+      // A focused textarea paints a blinking caret, which differs between runs.
       await note.blur();
       await capture("notebook");
 
       await page.goto("/review");
+      const start = page.getByRole("button", { name: /^(Start review|Practise early)$/ });
+      await expect(start).toBeVisible();
       await capture("review-home");
-
-      await page.getByRole("button", { name: /^(Start review|Practise early)$/ }).click();
-      await expect(page.getByLabel("Your answer", { exact: true })).toBeVisible();
+      await start.click();
+      await expect(page.getByRole("button", { name: "Reveal answer", exact: true })).toBeVisible();
       await capture("flashcard");
 
       await page.goto("/progress");
+      await expect(page.getByRole("heading", { level: 1, name: "Your progress" })).toBeVisible();
       await capture("progress");
-
       await page.goto("/settings");
       await expect(page.getByRole("heading", { level: 1, name: "Settings" })).toBeVisible();
       await capture("settings");
 
-      await gotoStage(page, journey, "explainer");
       // The tutor is the docked workbench's Tutor tab, opened from the lesson toolbar.
+      await page.goto(`/courses/${COURSE}/lessons/${LESSON}`);
       await page
         .getByRole("toolbar", { name: "Lesson tools" })
         .getByRole("button", { name: "Tutor", exact: true })

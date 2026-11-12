@@ -1,21 +1,18 @@
 import { mkdtempSync, readFileSync, mkdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { resolve, join } from "node:path";
-import type { Page, APIRequestContext } from "@playwright/test";
-import {
-  CourseBundleSchema,
-  type CourseBundle,
-  type CourseCheckDefinition,
-} from "@discere/contracts";
+import type { Page } from "@playwright/test";
+import { CourseBundleSchema, type CourseCheckDefinition } from "@discere/contracts";
 import { createApp, type DiscereApp } from "../../server/src/app.js";
-import { test, expect } from "./fixtures.js";
+import { captureDir, test, expect } from "./fixtures.js";
+import { completeLessonsThroughApi } from "./lesson-player.js";
 const root = resolve(import.meta.dirname, "../../..");
 const sizes = [
   { width: 1440, height: 900 },
   { width: 1024, height: 768 },
   { width: 390, height: 844 },
 ];
-const output = join(root, "docs/course-checks/screens/data");
+const output = captureDir("course-checks/screens/data");
 const candidate = process.env["DISCERE_DATA_CHECKS_CANDIDATE"] === "1";
 async function layout(page: Page) {
   for (const size of sizes) {
@@ -26,7 +23,7 @@ async function layout(page: Page) {
     const response = page.getByLabel("Value", { exact: true });
     const target = (await response.count())
       ? response
-      : page.getByRole("group", { name: "Answer choices" }).getByRole("button").last();
+      : page.getByRole("radiogroup", { name: "Answer choices" }).getByRole("radio").last();
     await target.scrollIntoViewIfNeeded();
     const r = await target.boundingBox(),
       f = await page.locator(".check-actions").boundingBox();
@@ -60,8 +57,8 @@ async function select(page: Page, item: CourseCheckDefinition["items"][number], 
       wrong ? !a.acceptedIdeas.includes(c.label) : a.acceptedIdeas.includes(c.label),
     )!;
     await page
-      .getByRole("group", { name: "Answer choices" })
-      .getByRole("button")
+      .getByRole("radiogroup", { name: "Answer choices" })
+      .getByRole("radio")
       .filter({ has: page.getByText(choice.label, { exact: true }) })
       .click();
   }
@@ -69,46 +66,6 @@ async function select(page: Page, item: CourseCheckDefinition["items"][number], 
 }
 async function save(page: Page) {
   await page.getByRole("button", { name: /^(Save and continue|Finish check)$/ }).click();
-}
-async function completeLessons(request: APIRequestContext, address: string, bundle: CourseBundle) {
-  const post = async (url: string, data: unknown = {}) => {
-    const r = await request.post(address + url, { data });
-    expect(r.ok(), await r.text()).toBe(true);
-    return r.json();
-  };
-  for (const l of bundle.lessons) {
-    for (const id of [...l.steps.map((s) => s.checkQuestionId), ...l.questionIds].filter(Boolean)) {
-      const q = bundle.questions.find((q) => q.id === id)!,
-        a = q.answerAuthority;
-      const r = await post("/api/attempts", {
-        questionId: q.id,
-        response: a.kind === "numeric" ? String(a.value) : a.acceptedIdeas[0],
-        mode: "coach",
-      });
-      expect(r.correct, q.id).toBe(true);
-    }
-    for (const id of l.flashcardIds) {
-      const c = bundle.flashcards.find((c) => c.id === id)!,
-        a = c.answerAuthority!;
-      const s = await post("/api/review/sessions", { lessonId: l.id, cardId: id, mode: "coach" });
-      await post("/api/review/sessions/" + s.sessionId + "/respond", {
-        response: a.kind === "numeric" ? String(a.value) : a.acceptedIdeas[0],
-      });
-      await post("/api/review/sessions/" + s.sessionId + "/reveal");
-      await post("/api/review/sessions/" + s.sessionId + "/rate", {
-        rating: "easy",
-        recalled: true,
-      });
-    }
-    const route = "/api/courses/" + bundle.course.id + "/lessons/" + l.id;
-    const j = await (await request.get(address + route + "/journey")).json();
-    for (const s of j.stages) {
-      const r = await request.put(address + route + "/progress", {
-        data: { stageId: s.id, state: "completed", interactionState: {} },
-      });
-      expect(r.ok(), await r.text()).toBe(true);
-    }
-  }
 }
 for (const id of ["sql-from-rows-to-reports", "python-for-data-analysis"])
   test.describe(id + " independent checks", () => {
@@ -217,7 +174,7 @@ for (const id of ["sql-from-rows-to-reports", "python-for-data-analysis"])
         later = bundle.courseChecks![2]!;
       await page.goto(address + "/courses/" + id + "/checks/" + mixed.id);
       await expect(page.getByRole("button", { name: "Start check", exact: true })).toHaveCount(0);
-      await completeLessons(request, address, bundle);
+      await completeLessonsThroughApi(request, address, bundle);
       await page.reload();
       await page.getByRole("button", { name: "Start check", exact: true }).click();
       for (const [i, item] of mixed.items.entries()) {

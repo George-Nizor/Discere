@@ -7,32 +7,32 @@ const {
   {
     id: "steps-a-machine-could-follow",
     conceptIds: ["algorithm", "sequence"],
-    sourceIds: ["python-assignments"],
+    sourceIds: ["python-assignments", "think-python-variables", "think-python-iteration"],
   },
   {
     id: "choosing-between-paths",
     conceptIds: ["conditional-branch", "algorithm"],
-    sourceIds: ["python-control", "python-assignments"],
+    sourceIds: ["python-control", "think-python-conditionals"],
   },
   {
     id: "doing-it-again",
     conceptIds: ["loop", "conditional-branch"],
-    sourceIds: ["python-control", "python-assignments"],
+    sourceIds: ["python-assignments", "python-control", "think-python-iteration"],
   },
   {
     id: "looking-things-up",
     conceptIds: ["linear-search", "growth"],
-    sourceIds: ["openstax-cs-search"],
+    sourceIds: ["openstax-cs-search", "think-python-lists", "mit-6-0001-complexity"],
   },
   {
     id: "halving-the-problem",
     conceptIds: ["binary-search", "linear-search"],
-    sourceIds: ["openstax-cs-search"],
+    sourceIds: ["openstax-cs-search", "mit-6-0001-searching-sorting", "cs50-week-3-algorithms"],
   },
   {
     id: "when-the-input-grows",
     conceptIds: ["growth", "binary-search", "linear-search"],
-    sourceIds: ["openstax-cs-search"],
+    sourceIds: ["mit-6-0001-complexity", "mit-6-0001-bisection", "mit-6-0001-searching-sorting"],
   },
 ]);
 export const csCourseChecks = sets(

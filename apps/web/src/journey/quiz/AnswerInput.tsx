@@ -1,18 +1,22 @@
-import type { LearnerQuestion, RustTaskRun } from "@discere/contracts";
+import type { LearnerQuestion, RustTaskRun, StructuredSolution } from "@discere/contracts";
 import { Check, X } from "lucide-react";
 import type { KeyboardEvent } from "react";
 import { CodeAnswer } from "../../rust/CodeAnswer.js";
 import { Notice } from "../../ui/Feedback.js";
 import { InlineRichText } from "../../ui/RichText.js";
 import { type AnswerDraft, answerSurface, choiceLetter } from "./answer-draft.js";
+import { OrderAnswer } from "./OrderAnswer.js";
+import { SortAnswer } from "./SortAnswer.js";
 
-/** Moves between choice cards with the arrow keys, as a radio group would. */
-function moveFocus(event: KeyboardEvent<HTMLFieldSetElement>): void {
+/**
+ * Moves between choice cards with the arrow keys, as a radio group would. Locked cards are
+ * included, so after the verdict a learner can still step through the options and hear which
+ * one was right.
+ */
+function moveFocus(event: KeyboardEvent<HTMLDivElement>): void {
   const keys = ["ArrowDown", "ArrowRight", "ArrowUp", "ArrowLeft"];
   if (!keys.includes(event.key)) return;
-  const cards = [
-    ...event.currentTarget.querySelectorAll<HTMLButtonElement>("button.choice-card:not(:disabled)"),
-  ];
+  const cards = [...event.currentTarget.querySelectorAll<HTMLButtonElement>("button.choice-card")];
   const at = cards.indexOf(document.activeElement as HTMLButtonElement);
   if (at < 0 || cards.length === 0) return;
   event.preventDefault();
@@ -46,6 +50,7 @@ export function AnswerInput({
   idPrefix = "answer",
   label,
   codeRun,
+  solution,
 }: {
   question: LearnerQuestion;
   draft: AnswerDraft;
@@ -62,8 +67,42 @@ export function AnswerInput({
   label?: string;
   /** A code answer's last check, shown in its console while that code is still on screen. */
   codeRun?: RustTaskRun | undefined;
+  /** The right order or sorting, once the question has closed and the answer may be shown. */
+  solution?: StructuredSolution | undefined;
 }) {
   const surface = answerSurface(question);
+
+  if (surface === "order" && draft.kind === "order" && question.order) {
+    return (
+      <OrderAnswer
+        order={question.order}
+        ids={draft.ids}
+        onChange={(ids) => onChange({ kind: "order", ids })}
+        locked={correct || readOnly}
+        // A right answer is its own solution, so the list settles with every item marked.
+        solution={solution?.order ?? (correct && answered ? draft.ids : undefined)}
+        marked={answered}
+        idPrefix={idPrefix}
+        label={label}
+      />
+    );
+  }
+
+  if (surface === "sort" && draft.kind === "sort" && question.sort) {
+    return (
+      <SortAnswer
+        sort={question.sort}
+        ids={draft.ids}
+        placed={draft.placed}
+        onChange={(placed) => onChange({ ...draft, placed })}
+        locked={correct || readOnly}
+        solution={solution?.sort}
+        marked={answered}
+        idPrefix={idPrefix}
+        label={label}
+      />
+    );
+  }
 
   if (surface === "code" && draft.kind === "code" && question.code) {
     return (
@@ -83,16 +122,29 @@ export function AnswerInput({
     // One face for the whole list: mono only when every option is notation, so a list never
     // mixes "Exactly 0.05 A" in mono with "Nothing, because…" in the interface face.
     const notation = (question.choices ?? []).every((choice) => looksLikeNotation(choice.label));
+    const choices = question.choices ?? [];
+    // One Tab stop for the group, as for native radios: the chosen card, or the first.
+    const tabStop = choices.some((choice) => choice.id === draft.choiceId)
+      ? draft.choiceId
+      : choices[0]?.id;
+    const locked = correct || readOnly;
     return (
-      <fieldset className="choice-list" onKeyDown={moveFocus}>
-        <legend className="sr-only">{label ?? "Answer choices"}</legend>
-        {(question.choices ?? []).map((choice, index) => {
+      <div
+        className="choice-list"
+        onKeyDown={moveFocus}
+        role="radiogroup"
+        aria-label={label ?? "Answer choices"}
+      >
+        {choices.map((choice, index) => {
           const selected = draft.choiceId === choice.id;
           const marked = answered && selected;
           const right = (marked && correct) || choice.id === correctChoiceId;
           return (
             <button
-              aria-pressed={selected}
+              role="radio"
+              aria-checked={selected}
+              aria-disabled={locked || undefined}
+              tabIndex={choice.id === tabStop ? 0 : -1}
               className={[
                 "choice-card",
                 selected ? "choice-card-selected" : "",
@@ -102,8 +154,9 @@ export function AnswerInput({
                 .filter(Boolean)
                 .join(" ")}
               key={choice.id}
-              disabled={correct || readOnly}
-              onClick={() => onChange({ kind: "choice", choiceId: choice.id })}
+              onClick={() => {
+                if (!locked) onChange({ kind: "choice", choiceId: choice.id });
+              }}
               type="button"
             >
               <span className="choice-letter">{choiceLetter(index)}</span>
@@ -125,7 +178,7 @@ export function AnswerInput({
             </button>
           );
         })}
-      </fieldset>
+      </div>
     );
   }
 

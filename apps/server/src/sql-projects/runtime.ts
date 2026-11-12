@@ -17,6 +17,8 @@ const OutputSchema = z.union([
 export type SqlExecution = z.infer<typeof OutputSchema>;
 export interface SqlRuntime {
   execute(query: string, tables: SqlTable[]): Promise<SqlExecution>;
+  /** Whether a query can run here now. A runtime without this is taken to be ready. */
+  available?(): Promise<boolean>;
 }
 const runtimeFailure = (): SqlExecution => ({
   error: "runtime",
@@ -35,6 +37,20 @@ export class IsolatedSqlRuntime implements SqlRuntime {
       "DISCERE_SQL_PYTHON"
     ] ?? (process.platform === "win32" ? "python" : "python3"),
   ) {}
+  private ready = false;
+  /**
+   * True once one trivial query has come back from the interpreter. A yes is remembered; a no is
+   * asked again, because the interpreter can be installed while the server runs.
+   */
+  async available(): Promise<boolean> {
+    if (this.ready) return true;
+    const probe = await this.execute("SELECT n FROM probe", [
+      { name: "probe", columns: [{ name: "n", type: "INTEGER" }], rows: [[1]] },
+    ]);
+    // A busy runner is a working one.
+    this.ready = "result" in probe || probe.error !== "runtime" || /busy/u.test(probe.message);
+    return this.ready;
+  }
   async execute(query: string, tables: SqlTable[]): Promise<SqlExecution> {
     SqlQuerySchema.parse(query);
     SqlTablesSchema.parse(tables);

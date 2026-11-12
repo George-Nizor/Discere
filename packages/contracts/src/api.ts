@@ -134,6 +134,8 @@ export const CourseDetailResponseSchema = z
     introduction: CourseIntroductionSchema.optional(),
     /** The saved unfinished lesson, or the next authored lesson after a completion. */
     resumeLessonId: z.string().min(1).optional(),
+    /** Every source the course cites, in the order the bundle lists them. */
+    sources: z.array(SourceSchema).optional(),
   })
   .strict();
 export type CourseDetailResponse = z.infer<typeof CourseDetailResponseSchema>;
@@ -154,6 +156,21 @@ export const EssayDraftResponseSchema = z
     wordCount: z.number().int().nonnegative(),
     submitted: z.boolean(),
     updatedAt: z.string().datetime().nullable(),
+    /** The version being written or last submitted. Version 1 is the first submission. */
+    version: z.number().int().positive().default(1),
+    /** Earlier submitted versions, oldest first. Each can be opened read-only. */
+    earlierVersions: z
+      .array(
+        z
+          .object({
+            version: z.number().int().positive(),
+            wordCount: z.number().int().nonnegative(),
+            submittedAt: z.string().datetime().nullable(),
+            assessed: z.boolean(),
+          })
+          .strict(),
+      )
+      .default([]),
   })
   .strict();
 export type EssayDraftResponse = z.infer<typeof EssayDraftResponseSchema>;
@@ -193,6 +210,30 @@ export type EssaySubmitResponse = z.infer<typeof EssaySubmitResponseSchema>;
 export const ReviewRatingSchema = z.enum(["again", "hard", "good", "easy"]);
 export type ReviewRating = z.infer<typeof ReviewRatingSchema>;
 
+/**
+ * The answer to an order or sort question, sent only once the question has closed: the item ids
+ * in their right sequence, or each item's group with its line of explanation.
+ */
+export const StructuredSolutionSchema = z
+  .object({
+    order: z.array(z.string().min(1)).min(3).max(7).optional(),
+    sort: z
+      .array(
+        z
+          .object({
+            id: z.string().min(1),
+            bin: z.string().min(1),
+            explanation: z.string().min(1).optional(),
+          })
+          .strict(),
+      )
+      .min(4)
+      .max(10)
+      .optional(),
+  })
+  .strict();
+export type StructuredSolution = z.infer<typeof StructuredSolutionSchema>;
+
 export const ReviewCardFrontSchema = z
   .object({
     cardId: z.string().min(1),
@@ -206,6 +247,11 @@ export const ReviewCardFrontSchema = z
      * reveals the back and rates themselves.
      */
     recall: z.enum(["typed", "self"]).default("typed"),
+    /**
+     * The lesson question a missed-question card stands for, when it has extracts to show or
+     * items to order or sort. The card then asks it the way the lesson did.
+     */
+    question: LearnerQuestionSchema.optional(),
     revealed: z.literal(false),
   })
   .strict();
@@ -245,6 +291,8 @@ export const ReviewRevealResponseSchema = z
     cardId: z.string().min(1),
     back: z.string().min(1),
     sourceIds: z.array(z.string()),
+    /** The right order or sorting, for a card that asks an order or sort question. */
+    solution: StructuredSolutionSchema.optional(),
   })
   .strict();
 export type ReviewRevealResponse = z.infer<typeof ReviewRevealResponseSchema>;
@@ -288,11 +336,26 @@ export const ReviewHomeResponseSchema = z
   .strict();
 export type ReviewHomeResponse = z.infer<typeof ReviewHomeResponseSchema>;
 
+/** Where in a lesson a question is being asked: the lesson, and the step when it has one. */
+export const LessonQuestionContextSchema = z
+  .object({
+    courseId: z.string().min(1).max(200),
+    lessonId: z.string().min(1).max(200),
+    stepId: z.string().min(1).max(240).optional(),
+  })
+  .strict();
+export type LessonQuestionContext = z.infer<typeof LessonQuestionContextSchema>;
+
 export const AttemptRequestSchema = z
   .object({
     questionId: z.string().min(1),
     response: z.string().min(1).max(20_000),
     mode: TutoringModeSchema,
+    /**
+     * Present when the question is asked inside a lesson. The server then counts misses against
+     * the lesson's limit, so a reload cannot reset them.
+     */
+    lesson: LessonQuestionContextSchema.optional(),
   })
   .strict();
 export type AttemptRequest = z.infer<typeof AttemptRequestSchema>;
@@ -305,9 +368,22 @@ export const AttemptResponseSchema = z
     xpAwarded: z.number().int().nonnegative(),
     xpGained: z.number().int().nonnegative().optional(),
     mastery: z.number().min(0).max(1),
+    /** True only when the first marked response to the question was right, with no help. */
     independent: z.boolean(),
+    /** How a correct answer was earned. `none` for a wrong answer. */
+    credit: z
+      .enum(["independent", "recovered", "assisted", "revealed", "practice", "none"])
+      .optional(),
     /** False when the response was not in a form that could be marked (no miss is counted). */
     qualifying: z.boolean().optional(),
+    /** Marked responses to this question so far, across every attempt, this one included. */
+    tries: z.number().int().nonnegative().optional(),
+    /** Marked misses on this attempt, as the server counts them. */
+    misses: z.number().int().nonnegative().optional(),
+    /** The lesson's miss limit for this question, when the question was asked in a lesson. */
+    allowedMisses: z.number().int().positive().optional(),
+    /** True when the last allowed miss has closed this attempt. */
+    closed: z.boolean().optional(),
     /** True when `feedback` is an authored misconception message rather than the generic one. */
     specific: z.boolean().optional(),
     /** A code answer's run on the visible example, with how many of the tests it passed. */
@@ -411,13 +487,7 @@ export const WritingLintResponseSchema = z
 export type WritingLintResponse = z.infer<typeof WritingLintResponseSchema>;
 
 /** An authored lesson explanation is earned by answering its question. Exam attempts cannot open it. */
-export const LessonFeedbackRequestSchema = z
-  .object({
-    courseId: z.string().min(1).max(200),
-    lessonId: z.string().min(1).max(200),
-    stepId: z.string().min(1).max(240).optional(),
-  })
-  .strict();
+export const LessonFeedbackRequestSchema = LessonQuestionContextSchema;
 export type LessonFeedbackRequest = z.infer<typeof LessonFeedbackRequestSchema>;
 export const LessonFeedbackResponseSchema = z
   .object({
@@ -430,6 +500,8 @@ export const LessonFeedbackResponseSchema = z
     onCorrect: z.string().min(1).optional(),
     /** For a choice question, the choice that is right, so the player can mark it. */
     correctChoiceId: z.string().min(1).optional(),
+    /** For an order or sort question, the right arrangement, so the player can show it. */
+    solution: StructuredSolutionSchema.optional(),
   })
   .strict();
 export type LessonFeedbackResponse = z.infer<typeof LessonFeedbackResponseSchema>;

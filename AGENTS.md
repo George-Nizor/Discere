@@ -24,9 +24,9 @@ A reusable test is: **Does the screen say something the interface already makes 
 
 ## Visual rules
 
-- Use one consistent dark neutral and green system across the active catalogue, course roadmap and player, following the latest supplied references.
+- Follow the Instrumenta brand v2 in `docs/brand/README.md` across the catalogue, course roadmap and player: a blue accent, Fraunces, Commissioner and Spline Sans Mono, and a Dark and a Light theme (Settings also offers Follow device). Green marks finished work and moving on after a correct answer.
 - Prefer relevant pictures, maps, diagrams, timelines, and artefacts over explanatory labels.
-- Use a coherent icon library such as `lucide-react`; Unicode placeholder symbols are not final iconography.
+- Use the brand icon set in `apps/web/src/brand` for interface icons and `lucide-react` for utility glyphs such as close and arrows. Unicode placeholder symbols are not final iconography.
 - Replace borders with spacing whenever the border carries no interaction or semantic state.
 - Do not create cards inside cards or generic admin-dashboard layouts.
 - Do not display disabled placeholder controls.
@@ -35,7 +35,7 @@ A reusable test is: **Does the screen say something the interface already makes 
 ## Non-negotiable boundaries
 
 - Keep the learning core independent of any model vendor or chat host.
-- Do not add OpenAI API calls. The intended ChatGPT integration is a companion or MCP adapter that uses the user's supported ChatGPT surface.
+- Do not add model API calls beyond the optional `openai-compatible` tutor provider (`packages/tutor-providers/src/openai-compatible.ts`). It calls an OpenAI-style endpoint only when `DISCERE_TUTOR_PROVIDER` selects it, or when `auto` finds `DISCERE_AI_BASE_URL` or `DISCERE_AI_API_KEY` set and no Claude Code. Claude Code, Codex and the ChatGPT companion packet need no API key.
 - Keep authoritative answers on the server. Learner-facing lesson payloads must omit answer keys.
 - Enforce Coach, Assisted, Direct, and Exam permissions on the server.
 - Write learner prose to `.claude/skills/discere-lesson-voice`. `@discere/writing-engine` still protects facts and hidden answers, but its style rules do not override the skill.
@@ -48,8 +48,8 @@ A reusable test is: **Does the screen say something the interface already makes 
 ## Repository map
 
 - `apps/web`: React learning workspace.
-- `apps/server`: Fastify API and SQLite persistence. `src/rust` is the sandboxed Rust playground and projects (ADR 0006).
-- `apps/mcp`: host-neutral MCP tool catalogue.
+- `apps/server`: Fastify API and SQLite persistence. `src/rust` is the sandboxed Rust playground and projects (ADR 0006). `src/typescript` runs the TypeScript exercises (ADR 0008).
+- `mcp`: MCP server over stdio that forwards to the local API.
 - `packages/contracts`: shared runtime schemas and types.
 - `packages/writing-engine`: generated-prose quality gate.
 - `packages/visual-engine`: deterministic visuals and visual briefs.
@@ -57,7 +57,9 @@ A reusable test is: **Does the screen say something the interface already makes 
 - `packages/assessment-engine`: deterministic response assessment.
 - `packages/progression-engine`: XP and mastery evidence.
 - `packages/curriculum`: course loading and validation.
-- `packages/tutor-providers`: ChatGPT companion/provider boundary.
+- `packages/tutor-providers`: tutor provider boundary (Claude Code, OpenAI-compatible, Codex, ChatGPT companion, mock).
+- `packages/paths`: repository, data and CLI path resolution.
+- `packages/prompts`: loader for the prompts in `prompts/`.
 - `content`: reviewed curriculum bundles.
 - `prompts`: model instructions kept under version control.
 
@@ -72,7 +74,7 @@ pnpm dev
 pnpm stop
 ```
 
-The server runs TypeScript through `tsx`; its build command is a strict typecheck. The web application produces the deployable browser bundle.
+From a checkout the server runs TypeScript through `tsx`, and its build command is a strict typecheck. The web application produces the deployable browser bundle. `pnpm package:release` bundles the server with esbuild into the Windows release.
 
 ## Change discipline
 

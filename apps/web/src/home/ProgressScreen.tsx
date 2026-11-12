@@ -1,3 +1,4 @@
+import { useDocumentTitle } from "../lib/document-title.js";
 import type { StudyStatistics } from "@discere/contracts";
 import { ArrowRight, Info } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -31,6 +32,7 @@ export function ProgressScreen() {
   const statistics = useStudyStatistics(period);
   const { hash } = useLocation();
   const studyLoaded = Boolean(study.data);
+  useDocumentTitle("Your progress");
   // Links from the navigation land on the league or the achievements once they have rendered.
   useEffect(() => {
     if (!hash || !studyLoaded) return;
@@ -57,7 +59,7 @@ export function ProgressScreen() {
   return (
     <main className="page you-page" id="stage">
       <header className="you-heading">
-        <h1>Your learning activity</h1>
+        <h1>Your progress</h1>
       </header>
       <section className="you-weekly" aria-labelledby="weekly-heading">
         <div className="you-weekly-title">
@@ -159,7 +161,7 @@ export function ProgressScreen() {
               </dt>
               <dd>
                 {statistics.data.accuracy === null
-                  ? "—"
+                  ? "None yet"
                   : new Intl.NumberFormat("en", {
                       style: "percent",
                       maximumFractionDigits: 1,

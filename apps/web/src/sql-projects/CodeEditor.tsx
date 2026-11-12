@@ -1,13 +1,13 @@
 import { type KeyboardEvent, type ReactNode, useRef } from "react";
 
 /**
- * A plain textarea with line numbers and light syntax colouring, for the SQL, Python and Rust
- * workspaces. The textarea stays the real control, so typing, selection, undo, screen readers
+ * A plain textarea with line numbers and light syntax colouring, for the SQL, Python, Rust and
+ * TypeScript workspaces. The textarea stays the real control, so typing, selection, undo, screen readers
  * and mobile keyboards behave natively; the coloured copy underneath is decoration only.
  * Lines do not wrap, so a line number always sits beside the line it counts.
  */
 
-export type CodeLanguage = "sql" | "python" | "rust";
+export type CodeLanguage = "sql" | "python" | "rust" | "typescript";
 
 const KEYWORDS: Record<CodeLanguage, Set<string>> = {
   sql: new Set(
@@ -25,6 +25,11 @@ const KEYWORDS: Record<CodeLanguage, Set<string>> = {
       " ",
     ),
   ),
+  typescript: new Set(
+    "as async await break case catch class const continue default else export extends false finally for from function if implements import in instanceof interface is keyof let new null of readonly return satisfies switch this throw true try type typeof undefined unknown never void while string number boolean bigint symbol object any Array Record Map Set Promise console".split(
+      " ",
+    ),
+  ),
 };
 
 const PATTERNS: Record<CodeLanguage, RegExp> = {
@@ -32,6 +37,8 @@ const PATTERNS: Record<CodeLanguage, RegExp> = {
   python:
     /(#[^\n]*)|("""[\s\S]*?(?:"""|$)|'''[\s\S]*?(?:'''|$)|"(?:\\.|[^"\\\n])*"?|'(?:\\.|[^'\\\n])*'?)|(\b\d+(?:\.\d+)?\b)|([A-Za-z_][A-Za-z0-9_]*)/g,
   // A quote followed by one character and a quote is a char; a lone quote starts a lifetime.
+  typescript:
+    /(\/\/[^\n]*|\/\*[\s\S]*?(?:\*\/|$))|("(?:\\.|[^"\\\n])*"?|'(?:\\.|[^'\\\n])*'?|`(?:\\[\s\S]|[^`\\])*`?)|(\b\d[\d_]*(?:\.\d+)?\b)|([A-Za-z_$][A-Za-z0-9_$]*)/g,
   rust: /(\/\/[^\n]*)|("(?:\\.|[^"\\])*"?|'(?:\\.|[^'\\\n])')|(\b\d[\d_]*(?:\.\d+)?(?:[iuf]\d+|usize|isize)?\b)|([A-Za-z_][A-Za-z0-9_]*)/g,
 };
 

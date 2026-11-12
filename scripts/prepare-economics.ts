@@ -5,6 +5,7 @@ import { economicsChecks } from "../content/economics-markets-and-strategy/autho
 import { sources } from "../content/economics-markets-and-strategy/authoring/definition.js";
 import { economicsLessons as definitions } from "../content/economics-markets-and-strategy/authoring/lessons.js";
 import { TopicMapSchema } from "../packages/contracts/src/index.js";
+import { keepPublishedContent } from "./lib/keep-published-content.js";
 
 const root = path.resolve(import.meta.dirname, ".."),
   courseId = "economics-markets-and-strategy";
@@ -151,6 +152,7 @@ if (!validation.passed || !validation.bundle) {
 } else {
   const directory = path.join(root, "content", courseId, ".authoring");
   await mkdir(directory, { recursive: true });
+  await keepPublishedContent(courseId, validation.bundle);
   await writeFile(
     path.join(directory, "candidate.json"),
     JSON.stringify(validation.bundle, null, 2) + "\n",

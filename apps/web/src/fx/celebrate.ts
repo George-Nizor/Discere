@@ -12,7 +12,7 @@ import {
   shake,
   stars,
 } from "./engine.js";
-import type { StudySound } from "../study/experience.js";
+import { celebrationsEnabled, type StudySound } from "../study/experience.js";
 
 const xpTarget = () =>
   document.querySelector('[data-fx-target="xp"]') ?? document.querySelector(".site-xp");
@@ -43,6 +43,12 @@ export function celebrateAnswer({
 }) {
   const combo = registerAnswer(comboScope(), correct && firstTry, correct);
   emitMascot({ type: "answer", correct, combo });
+  // With celebrations off the answer keeps its sound (its own setting) and nothing else:
+  // no particles, banners, shakes or screen pulses.
+  if (!celebrationsEnabled()) {
+    play(correct ? (combo >= 2 ? "combo" : "answer") : "miss", combo);
+    return combo;
+  }
   const at = centre(origin && origin !== document.body ? origin : null);
   if (!correct) {
     play("miss");

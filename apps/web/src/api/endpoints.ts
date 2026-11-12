@@ -17,6 +17,8 @@ import {
   EssayDraftResponseSchema,
   type EssaySubmitResponse,
   EssaySubmitResponseSchema,
+  type EssayVersionResponse,
+  EssayVersionResponseSchema,
   type HintResponse,
   LessonFeedbackResponseSchema,
   type HomeResponse,
@@ -186,6 +188,25 @@ export async function submitEssay(essayId: string, content: string): Promise<Ess
       method: "POST",
       body: JSON.stringify({ content }),
     }),
+  );
+}
+
+/** Opens submitted writing for another version. The submitted one is kept with its feedback. */
+export async function reviseEssay(essayId: string): Promise<EssayDraftResponse> {
+  return EssayDraftResponseSchema.parse(
+    await requestJson<unknown>(`/api/essays/${encode(essayId)}/revise`, {
+      method: "POST",
+      body: JSON.stringify({}),
+    }),
+  );
+}
+
+export async function getEssayVersion(
+  essayId: string,
+  version: number,
+): Promise<EssayVersionResponse> {
+  return EssayVersionResponseSchema.parse(
+    await requestJson<unknown>(`/api/essays/${encode(essayId)}/versions/${version}`),
   );
 }
 

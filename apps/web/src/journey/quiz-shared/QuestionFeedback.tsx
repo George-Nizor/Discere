@@ -1,6 +1,6 @@
 import type { LessonFeedbackResponse } from "@discere/contracts";
 import { Check, Eye, X } from "lucide-react";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { Lightbulb } from "../../brand/icon-set.js";
 import { RichBlocks } from "../../ui/RichBlocks.js";
 import { InlineRichText } from "../../ui/RichText.js";
@@ -27,6 +27,17 @@ function WorkedAnswer({ feedback }: { feedback: LessonFeedbackResponse }) {
   );
 }
 
+/** Whether a marked answer was unreadable (the wrong form), which is not counted as a miss. */
+function isUnreadable(attempt: Attempt): boolean {
+  const result = attempt.result;
+  return (
+    result !== null &&
+    result.qualifying === false &&
+    !result.correct &&
+    (attempt.phase === "answering" || attempt.phase === "retry")
+  );
+}
+
 /**
  * The verdict on a lesson question, in the player's footer.
  *
@@ -39,7 +50,10 @@ export function QuestionFeedback({
   attempt,
   hints = true,
   placement = "footer",
+  query = false,
 }: {
+  /** True for an SQL exercise, whose answer the screen calls a query and not a program. */
+  query?: boolean;
   attempt: Attempt;
   /** False on a skill check: the verdict stands without a ladder. */
   hints?: boolean;
@@ -48,11 +62,23 @@ export function QuestionFeedback({
 }) {
   const [moreChoice, setMoreOpen] = useState<boolean | null>(null);
   const result = attempt.result;
-  if (!result) return null;
+  const className = "question-feedback" + (placement === "inline" ? " is-inline" : "");
+  const place = (body: ReactNode) =>
+    placement === "inline" ? (
+      body
+    ) : (
+      <PlayerFooterSlot kind="feedback">{body}</PlayerFooterSlot>
+    );
+  // The live region is mounted with the question, empty, before any verdict exists: a region
+  // created together with its text is often not announced by screen readers.
+  if (!result) return place(<div className={className} aria-live="polite" />);
   const feedback = attempt.lessonFeedback;
   const phase = attempt.phase;
-  const unreadable =
-    result.qualifying === false && !result.correct && (phase === "answering" || phase === "retry");
+  const unreadable = isUnreadable(attempt);
+  // A program that stopped with an error cost no try, but its hints are still worth offering.
+  const stopped = unreadable && result.codeRun !== undefined;
+  // A code question's answer is a whole program, and the screen calls it that.
+  const program = result.codeRun !== undefined;
   // The idea that comes with a right answer: authored, or else the worked answer itself.
   const idea = feedback?.onCorrect ?? result.feedback;
   // The worked answer and the held-back teaching are one tap away whenever there is any.
@@ -61,16 +87,14 @@ export function QuestionFeedback({
   // waits behind "Why?" so the footer never buries the question.
   const moreOpen = moreChoice ?? false;
   const body = (
-    <div
-      className={"question-feedback" + (placement === "inline" ? " is-inline" : "")}
-      data-phase={phase}
-    >
+    <div className={className} data-phase={phase} aria-live="polite">
       <div
+        // A new marking replaces the verdict node, so a second identical verdict is read again.
+        key={`${attempt.misses}:${phase}:${attempt.markedResponse ?? ""}`}
         className={
           "answer-feedback " +
           (phase === "correct" ? "is-correct" : unreadable ? "is-format" : "is-retry")
         }
-        role="status"
       >
         <div>
           <p className="feedback-verdict">
@@ -80,11 +104,25 @@ export function QuestionFeedback({
                 Correct
               </>
             ) : unreadable ? (
-              <>That answer could not be read</>
+              <>
+                {result.codeRun?.status === "compile_error"
+                  ? "The program does not compile yet"
+                  : result.codeRun
+                    ? query
+                      ? "The query did not run"
+                      : "The program did not finish"
+                    : "That answer could not be read"}
+              </>
             ) : phase === "revealed" ? (
               <>
                 <Eye aria-hidden="true" size={18} />
-                {attempt.misses > 0 ? "Not quite. Here is the answer" : "Here is the answer"}
+                {program
+                  ? query
+                    ? "Here is the worked query"
+                    : "Here is the worked program"
+                  : attempt.misses > 0
+                    ? "Not quite. Here is the answer"
+                    : "Here is the answer"}
               </>
             ) : (
               <>
@@ -113,7 +151,7 @@ export function QuestionFeedback({
           ) : null}
         </div>
       </div>
-      {hints && phase === "retry" ? <HintLadder hints={attempt.hints} /> : null}
+      {hints && (phase === "retry" || stopped) ? <HintLadder hints={attempt.hints} /> : null}
       {phase === "revealed" && feedback ? <WorkedAnswer feedback={feedback} /> : null}
       {phase === "correct" && feedback && more ? (
         <>
@@ -128,7 +166,7 @@ export function QuestionFeedback({
           {moreOpen ? <WorkedAnswer feedback={feedback} /> : null}
         </>
       ) : null}
-      {phase === "retry" && (attempt.canHint || attempt.canReveal) && hints ? (
+      {(phase === "retry" || stopped) && (attempt.canHint || attempt.canReveal) && hints ? (
         <div className="feedback-help">
           {attempt.canHint ? (
             <button
@@ -148,7 +186,7 @@ export function QuestionFeedback({
               onClick={() => void attempt.reveal()}
               type="button"
             >
-              Show the answer
+              {program ? (query ? "Show the worked query" : "Show the worked program") : "Show the answer"}
             </button>
           ) : null}
         </div>
@@ -165,9 +203,5 @@ export function QuestionFeedback({
       ) : null}
     </div>
   );
-  return placement === "inline" ? (
-    body
-  ) : (
-    <PlayerFooterSlot kind="feedback">{body}</PlayerFooterSlot>
-  );
+  return place(body);
 }

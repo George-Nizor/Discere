@@ -1,3 +1,4 @@
+import { useDocumentTitle } from "../lib/document-title.js";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowRight, Loader2 } from "lucide-react";
 import { useState } from "react";
@@ -18,6 +19,7 @@ export function ReviewScreen() {
   const navigate = useNavigate();
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState<string | null>(null);
+  useDocumentTitle("Review");
 
   if (review.isPending) return <LoadingScreen message="Checking what is due…" />;
   if (review.error || !review.data) {
@@ -165,6 +167,7 @@ export function ReviewSessionScreen() {
     queryFn: getReviewHome,
     enabled: finished,
   });
+  useDocumentTitle("Review");
 
   if (!sessionId) {
     return (
@@ -246,6 +249,7 @@ export function ReviewSessionScreen() {
           conceptTitles={session.data.card.conceptTitles}
           front={session.data.card.front}
           recall={session.data.card.recall}
+          question={session.data.card.question}
           onRated={(result, recalled) => {
             queryClient.setQueryData(queryKeys.reviewSession(sessionId), {
               ...session.data,

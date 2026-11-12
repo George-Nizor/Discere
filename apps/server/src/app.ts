@@ -7,6 +7,7 @@ import { ContentRepository } from "./content.js";
 import { registerCourseCheckRoutes } from "./course-checks.js";
 import { DiscereStore } from "./db/store.js";
 import { HttpError } from "./errors.js";
+import { registerHostGuard } from "./host-guard.js";
 import { PythonProjectRepository } from "./python-projects/repository.js";
 import type { PythonRuntime } from "./python-projects/runtime.js";
 import { PythonProjectService, registerPythonProjectRoutes } from "./python-projects/service.js";
@@ -22,6 +23,7 @@ import type { RustRuntime } from "./rust/runtime.js";
 import { registerSearchRoutes } from "./search.js";
 import { SqlProjectRepository } from "./sql-projects/repository.js";
 import type { SqlRuntime } from "./sql-projects/runtime.js";
+import type { TypeScriptRuntime } from "./typescript/runtime.js";
 import { registerSqlProjectRoutes, SqlProjectService } from "./sql-projects/service.js";
 import { TopicMapRepository } from "./topic-maps.js";
 import { registerTransferRoutes } from "./transfer-routes.js";
@@ -38,6 +40,7 @@ export interface AppOptions {
   /** Optional isolated query runner; tests can control execution without touching user data. */
   sqlRuntime?: SqlRuntime;
   pythonRuntime?: PythonRuntime;
+  typescriptRuntime?: TypeScriptRuntime;
   rustRuntime?: RustRuntime;
   logger?: boolean;
   /** Applies pending migrations before serving. Tests and disposable databases use this;
@@ -52,6 +55,8 @@ export interface AppOptions {
    * API's own origin. Defaults to `DISCERE_WEB_ROOT`, relative to the repository root.
    */
   webRoot?: string;
+  /** Host names accepted besides the loopback ones. Defaults to `DISCERE_ALLOWED_HOSTS`. */
+  allowedHosts?: string[];
 }
 
 export interface DiscereApp {
@@ -67,6 +72,12 @@ function parsePort(value: string | undefined, fallback: number): number {
 
 export async function createApp(options: AppOptions = {}): Promise<DiscereApp> {
   const app = Fastify({ logger: options.logger ?? false });
+  // Registered before CORS and every route, so a request addressed to an unknown name is
+  // refused before anything else looks at it, preflights included.
+  registerHostGuard(
+    app,
+    options.allowedHosts === undefined ? {} : { allowedHosts: options.allowedHosts },
+  );
   const webPort = parsePort(process.env["DISCERE_WEB_PORT"], 4318);
   await app.register(cors, {
     origin: [
@@ -115,6 +126,9 @@ export async function createApp(options: AppOptions = {}): Promise<DiscereApp> {
   const runtime = createTutorRuntime(options.tutor);
   const runners = createCodeRunners();
   const rustRuntime = options.rustRuntime ?? runners.rust;
+  const pythonRuntime = options.pythonRuntime ?? runners.python;
+  const sqlRuntime = options.sqlRuntime ?? runners.sql;
+  const typescriptRuntime = options.typescriptRuntime ?? runners.typescript;
   await registerCodeRuntimeRoutes(app, runners.runtimes);
   await registerRoutes(app, {
     content,
@@ -122,8 +136,17 @@ export async function createApp(options: AppOptions = {}): Promise<DiscereApp> {
     topicMaps,
     revealDelayMs: options.revealDelayMs ?? 5000,
     rustRuntime,
+    pythonRuntime,
+    sqlRuntime,
+    typescriptRuntime,
   });
-  await registerCodeQuestionRoutes(app, { content, runtime: rustRuntime });
+  await registerCodeQuestionRoutes(app, {
+    content,
+    runtime: rustRuntime,
+    python: pythonRuntime,
+    sql: sqlRuntime,
+    typescript: typescriptRuntime,
+  });
   await registerCourseCheckRoutes(app, { content, store });
   await registerSearchRoutes(app, { content });
   const pythonProjects = await PythonProjectRepository.load(contentRoot, content);
@@ -132,7 +155,7 @@ export async function createApp(options: AppOptions = {}): Promise<DiscereApp> {
     new PythonProjectService(
       store,
       pythonProjects,
-      options.pythonRuntime ?? runners.python,
+      pythonRuntime,
       options.revealDelayMs ?? 5000,
     ),
   );
@@ -152,7 +175,7 @@ export async function createApp(options: AppOptions = {}): Promise<DiscereApp> {
     new SqlProjectService(
       store,
       sqlProjects,
-      options.sqlRuntime ?? runners.sql,
+      sqlRuntime,
       options.revealDelayMs ?? 5000,
     ),
   );

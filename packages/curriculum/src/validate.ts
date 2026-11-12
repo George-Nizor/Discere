@@ -6,6 +6,13 @@ import {
 } from "@discere/activity-engine";
 import {
   CODE_ANSWER_IDEA,
+  ORDER_ANSWER_IDEA,
+  orderAnswerIds,
+  SORT_ANSWER_IDEA,
+  sortAnswerItems,
+  pythonExerciseIssues,
+  sqlExerciseIssues,
+  typescriptExerciseIssues,
   type CourseBundle,
   CourseBundleSchema,
   REDISTRIBUTABLE_LICENCE_PATTERN,
@@ -214,6 +221,80 @@ function acceptedIdeaIssues(question: CourseBundle["questions"][number]): Conten
 }
 
 /**
+ * An order question lists distinct items in their right sequence; a sort question has distinct
+ * items, each in one bin that exists, and uses every bin. Both carry the fixed text authority
+ * described on `Question.order`. An extract has its words and all three parts of its
+ * attribution, and is not also written into the prompt as a quoted paragraph.
+ */
+function structuredQuestionIssues(question: CourseBundle["questions"][number]): ContentIssue[] {
+  const path = `questions.${question.id}`;
+  const issues: ContentIssue[] = [];
+  const add = (code: string, message: string) =>
+    issues.push({ path, code, severity: "error", message });
+  const same = (text: string) => text.trim().replace(/\s+/g, " ").toLocaleLowerCase();
+  const repeated = (values: string[]) => new Set(values.map(same)).size !== values.length;
+  const fixedAuthority = (idea: string) =>
+    question.answerAuthority.kind === "text" &&
+    question.answerAuthority.acceptedIdeas.length === 1 &&
+    question.answerAuthority.acceptedIdeas[0] === idea &&
+    !question.answerAuthority.acceptedAlternatives;
+
+  const { order, sort, extracts } = question;
+  if ((question.responseType === "order") !== Boolean(order))
+    add("ORDER_QUESTION_SHAPE", "An order question, and only an order question, lists its items in `order`.");
+  if ((question.responseType === "sort") !== Boolean(sort))
+    add("SORT_QUESTION_SHAPE", "A sort question, and only a sort question, lists its bins and items in `sort`.");
+  if ((order || sort) && (question.choices?.length || question.code))
+    add("STRUCTURED_QUESTION_SHAPE", "An order or sort question has no choices and no code.");
+  if (order) {
+    if (order.items.some((item) => !item.trim())) add("ORDER_ITEM_EMPTY", "An item to order has no words.");
+    if (repeated(order.items))
+      add("ORDER_ITEMS_REPEAT", "Two items to order read the same, so their places cannot be told apart.");
+    if (new Set(orderAnswerIds(question)).size !== order.items.length)
+      add("ORDER_ITEMS_REPEAT", "Two items to order share an id. Reword one of them.");
+    if (!fixedAuthority(ORDER_ANSWER_IDEA))
+      add("ORDER_QUESTION_SHAPE", `Its answer authority is text accepting only "${ORDER_ANSWER_IDEA}".`);
+  }
+  if (sort) {
+    const binIds = sort.bins.map((bin) => bin.id);
+    if (new Set(binIds).size !== binIds.length || repeated(sort.bins.map((bin) => bin.label)))
+      add("SORT_BINS_REPEAT", "Two bins share an id or a name.");
+    if (sort.items.some((item) => !item.label.trim())) add("SORT_ITEM_EMPTY", "An item to sort has no words.");
+    if (
+      repeated(sort.items.map((item) => item.label)) ||
+      new Set(sortAnswerItems(question).map((item) => item.id)).size !== sort.items.length
+    )
+      add("SORT_ITEMS_REPEAT", "An item to sort appears twice. Each item belongs to exactly one bin.");
+    for (const item of sort.items)
+      if (!binIds.includes(item.bin))
+        add("SORT_ITEM_BIN_UNKNOWN", `'${item.label}' names the bin '${item.bin}', which is not one of the bins.`);
+    for (const bin of sort.bins)
+      if (!sort.items.some((item) => item.bin === bin.id))
+        add("SORT_BIN_UNUSED", `No item belongs in '${bin.label}'. Every bin holds at least one item.`);
+    if (!fixedAuthority(SORT_ANSWER_IDEA))
+      add("SORT_QUESTION_SHAPE", `Its answer authority is text accepting only "${SORT_ANSWER_IDEA}".`);
+  }
+  if (extracts) {
+    if (question.code) add("EXTRACT_SHAPE", "A code question shows no extract.");
+    extracts.forEach((extract, index) => {
+      if (!extract.text.trim()) add("EXTRACT_EMPTY", `Extract ${index + 1} has no words.`);
+      if (!extract.who.trim() || !extract.when.trim() || !extract.kind.trim())
+        add(
+          "EXTRACT_ATTRIBUTION_MISSING",
+          `Extract ${index + 1} needs who wrote it, when, and what kind of document it is.`,
+        );
+    });
+    if (/^>\s/m.test(question.prompt))
+      add("EXTRACT_TWICE", "The extract is in `extracts`, so the prompt holds no quoted paragraph.");
+    if (!question.prompt.trim().endsWith("?"))
+      add("EXTRACT_PROMPT_SHAPE", "The prompt of a question with extracts ends with the question itself.");
+    if (extracts.length === 2 && same(extracts[0]!.text) === same(extracts[1]!.text))
+      add("EXTRACT_TWICE", "The two extracts of a pair are the same words.");
+  }
+  return issues;
+}
+
+/**
  * A question answered by writing code carries its public exercise, its hidden cases and the
  * fixed text authority described on `Question.code`, all together or not at all.
  */
@@ -227,11 +308,17 @@ function codeQuestionIssues(question: CourseBundle["questions"][number]): Conten
   });
   const isCode = question.responseType === "code";
   if (!isCode)
-    return question.code || question.codeCases
-      ? [issue("Only a code question has code or codeCases.")]
+    return question.code ||
+      question.codeCases ||
+      question.pythonCases ||
+      question.sqlCases ||
+      question.typescriptCases ||
+      question.typescriptTypeTests
+      ? [issue("Only a code question has code or cases.")]
       : [];
-  const { code, codeCases, answerAuthority } = question;
-  if (!code || !codeCases) return [issue("A code question needs code and codeCases.")];
+  const { code, codeCases, pythonCases, sqlCases, answerAuthority } = question;
+  const { typescriptCases, typescriptTypeTests } = question;
+  if (!code) return [issue("A code question needs code.")];
   const issues: ContentIssue[] = [];
   if (question.choices?.length) issues.push(issue("A code question has no choices."));
   if (
@@ -240,6 +327,43 @@ function codeQuestionIssues(question: CourseBundle["questions"][number]): Conten
     answerAuthority.acceptedIdeas[0] !== CODE_ANSWER_IDEA
   )
     issues.push(issue(`Its answer authority is text accepting only "${CODE_ANSWER_IDEA}".`));
+  if (code.language === "typescript") {
+    // Whether the worked program compiles and passes its tests is checked by running it: see
+    // typescript-exercises.ts and its test.
+    if (codeCases || pythonCases || sqlCases || !typescriptCases)
+      return [...issues, issue("A TypeScript exercise carries typescriptCases and no other cases.")];
+    if (answerAuthority.kind === "text" && !answerAuthority.exampleAnswer.trim())
+      issues.push(issue("A TypeScript exercise's exampleAnswer is its worked program."));
+    if (question.hints.length === 0) issues.push(issue("A TypeScript exercise offers a hint."));
+    return [
+      ...issues,
+      ...typescriptExerciseIssues(code, typescriptCases, typescriptTypeTests).map(issue),
+    ];
+  }
+  if (typescriptCases || typescriptTypeTests)
+    return [...issues, issue("Only a TypeScript exercise carries typescriptCases or type tests.")];
+  if (code.language === "python") {
+    // Whether the worked program passes its tests is checked by running it: see
+    // python-exercises.ts and its test.
+    if (codeCases || sqlCases || !pythonCases)
+      return [...issues, issue("A Python exercise carries pythonCases and no other cases.")];
+    if (answerAuthority.kind === "text" && !answerAuthority.exampleAnswer.trim())
+      issues.push(issue("A Python exercise's exampleAnswer is its worked program."));
+    if (question.hints.length === 0) issues.push(issue("A Python exercise offers a hint."));
+    return [...issues, ...pythonExerciseIssues(code, pythonCases).map(issue)];
+  }
+  if (code.language === "sql") {
+    // Whether the reference query returns the expected rows is checked by running it: see
+    // sql-exercises.ts and its test.
+    if (codeCases || pythonCases || !sqlCases)
+      return [...issues, issue("An SQL exercise carries sqlCases and no other cases.")];
+    if (answerAuthority.kind === "text" && !answerAuthority.exampleAnswer.trim())
+      issues.push(issue("An SQL exercise's exampleAnswer is its reference query."));
+    if (question.hints.length === 0) issues.push(issue("An SQL exercise offers a hint."));
+    return [...issues, ...sqlExerciseIssues(code, sqlCases).map(issue)];
+  }
+  if (pythonCases || sqlCases || !codeCases)
+    return [...issues, issue("A Rust code question carries codeCases and no other cases.")];
   if (JSON.stringify(code.example) !== JSON.stringify(codeCases[0]))
     issues.push(issue("The visible example must be the first case."));
   if (
@@ -898,6 +1022,21 @@ export function validateCourseBundle(input: unknown): ContentValidation {
     issues.push(...choiceIssues(question));
     issues.push(...acceptedIdeaIssues(question));
     issues.push(...codeQuestionIssues(question));
+    issues.push(...structuredQuestionIssues(question));
+    for (const [index, item] of (question.order?.items ?? []).entries())
+      lintField(issues, `questions.${question.id}.order.items.${index}`, item, "question");
+    for (const bin of question.sort?.bins ?? [])
+      lintField(issues, `questions.${question.id}.sort.bins.${bin.id}`, bin.label, "question");
+    for (const [index, item] of (question.sort?.items ?? []).entries()) {
+      lintField(issues, `questions.${question.id}.sort.items.${index}`, item.label, "question");
+      if (item.explanation)
+        lintField(
+          issues,
+          `questions.${question.id}.sort.items.${index}.explanation`,
+          item.explanation,
+          "lesson",
+        );
+    }
   }
 
   issues.push(...selfRatedCardIssues(bundle));

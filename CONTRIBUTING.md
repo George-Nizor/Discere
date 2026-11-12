@@ -14,7 +14,7 @@
 - Keep hidden answers out of learner-facing contracts.
 - Add a test for every new writing rule, assessment rule, or guardrail.
 - Render exact technical visuals from structured data.
-- Do not add model API calls without an explicit architecture decision and cost review.
+- Model calls live in `packages/tutor-providers`. Its `openai-compatible` provider is optional and runs only when configured; do not add any other model API call without an explicit architecture decision and cost review.
 - Do not weaken an accountability mode in the interface without matching server enforcement.
 
 ## Content rules

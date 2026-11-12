@@ -1,16 +1,21 @@
 import type { Capability, CapabilityId, TutorProviderId } from "@discere/contracts";
 import { detectDrivers } from "@discere/tutor-providers";
+import { statSync } from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { claudeSignedIn, codexAuthPresent, probeCodexBinary } from "./tutor-status.js";
 
 /**
  * Which generative features this installation can actually perform.
  *
- * Every one of them runs on the owner's own Codex CLI subscription. That is a deliberate boundary
- * — ADR: no vendor API keys live in this repository — but it means the features can disappear for
- * reasons outside the code: the CLI is not installed, nobody is signed in, or the subscription has
- * lapsed. When that happens the honest thing is to say so once, in the interface, and stop
- * offering the control. Letting the learner press a button that spends two minutes failing is the
- * worse outcome, and it is the one you get by default.
+ * Drawn illustrations and authoring run on the owner's own Codex CLI subscription. The tutor runs
+ * on whichever provider is configured. With `auto` that is Claude Code when it is installed (ADR
+ * 0007 runs the release on it), then an OpenAI-compatible endpoint, the Codex CLI, or the companion
+ * packet. A key, where a provider uses one, comes from the environment. Features that need a CLI can
+ * disappear for reasons outside the code: the CLI is not installed, nobody is signed in, or the
+ * subscription has lapsed. When that happens the honest thing is to say so once, in the interface,
+ * and stop offering the control. Letting the learner press a button that spends two minutes failing
+ * is the worse outcome, and it is the one you get by default.
  *
  * The learning core does not depend on any of this. Lessons, questions, assessment, review
  * scheduling, and the notebook are local and deterministic; only generation is gated.
@@ -70,6 +75,80 @@ export function illustrationsCapability(
 }
 
 /**
+ * A CLI can report that it is signed in while its session has expired: `claude auth status` and
+ * the presence of Codex's `auth.json` both describe the stored login, and only a model call finds
+ * out that the provider no longer honours it. Making that call for every capability request would
+ * spend the subscription on a status check, so the last refusal is remembered here instead. The
+ * tutor then reads as unavailable until a request succeeds, the stored login changes on disk, or
+ * the memory lapses and the next request is allowed to try again.
+ */
+const SIGN_IN_FAILURE_MS = 5 * 60_000;
+const SIGN_IN_PATTERN =
+  /not (?:signed|logged) in|\bsign(?:ed)? ?in\b|\blog ?in\b|\b401\b|unauthori[sz]ed|authenticat|credential|api key|token (?:has )?expired|session (?:has )?expired/iu;
+
+let signInFailure: { providerId: TutorProviderId; at: number } | undefined;
+
+/**
+ * True when a provider's error reads as a sign-in fault. Only a provider that ran and refused
+ * counts: a missing binary or a timeout says nothing about the login.
+ */
+export function signInLikely(error: {
+  code: string;
+  message: string;
+  diagnostics?: string | undefined;
+}): boolean {
+  if (error.code !== "PROVIDER_UNAVAILABLE" && error.code !== "PROVIDER_EXITED") return false;
+  return SIGN_IN_PATTERN.test(error.message) || SIGN_IN_PATTERN.test(error.diagnostics ?? "");
+}
+
+export function recordTutorSignInFailure(providerId: TutorProviderId, now = Date.now()): void {
+  signInFailure = { providerId, at: now };
+}
+
+export function clearTutorSignInFailure(): void {
+  signInFailure = undefined;
+}
+
+function storedLoginFile(providerId: TutorProviderId): string | undefined {
+  if (providerId === "claude") {
+    const home = process.env["CLAUDE_CONFIG_DIR"]?.trim() || path.join(os.homedir(), ".claude");
+    return path.join(home, ".credentials.json");
+  }
+  if (providerId === "codex") {
+    const home = process.env["CODEX_HOME"]?.trim() || path.join(os.homedir(), ".codex");
+    return path.join(home, "auth.json");
+  }
+  return undefined;
+}
+
+function signInRefusedRecently(providerId: TutorProviderId, now = Date.now()): boolean {
+  if (!signInFailure || signInFailure.providerId !== providerId) return false;
+  if (now - signInFailure.at > SIGN_IN_FAILURE_MS) {
+    signInFailure = undefined;
+    return false;
+  }
+  const file = storedLoginFile(providerId);
+  try {
+    // Signing in again rewrites the stored login, which is the cheapest sign that it is worth
+    // asking the provider once more.
+    if (file && statSync(file).mtimeMs > signInFailure.at) {
+      signInFailure = undefined;
+      return false;
+    }
+  } catch {
+    // No readable file tells us nothing; the time limit still applies.
+  }
+  return true;
+}
+
+const SIGN_IN_REFUSED: Partial<Record<TutorProviderId, string>> = {
+  claude:
+    "Claude Code refused the tutor's last request because its sign-in has expired. Run `claude` and log in again.",
+  codex:
+    "The Codex CLI refused the tutor's last request because its sign-in has expired. Run `codex login` again.",
+};
+
+/**
  * Whether the tutor can answer in place.
  *
  * `companion` and `mock` do not touch the CLI, so they are always available — `companion` produces
@@ -79,13 +158,16 @@ export function illustrationsCapability(
 export function tutorCapability(
   providerId: TutorProviderId,
   readiness: CodexReadiness = codexReadiness(),
+  now = Date.now(),
 ): Capability {
   if (providerId === "claude") {
     const reason = !detectDrivers().claude
       ? "Claude Code is not installed, so the tutor cannot answer in place."
       : !claudeSignedIn()
         ? "Claude Code is installed but not signed in. Run `claude` once and log in."
-        : "";
+        : signInRefusedRecently("claude", now)
+          ? (SIGN_IN_REFUSED.claude ?? "")
+          : "";
     return reason
       ? {
           id: "tutor_generation",
@@ -98,7 +180,9 @@ export function tutorCapability(
   if (providerId !== "codex") {
     return { id: "tutor_generation", state: "available", reason: "", fallback: "" };
   }
-  const reason = codexReason(readiness);
+  const reason =
+    codexReason(readiness) ||
+    (signInRefusedRecently("codex", now) ? (SIGN_IN_REFUSED.codex ?? "") : "");
   return reason
     ? {
         id: "tutor_generation",

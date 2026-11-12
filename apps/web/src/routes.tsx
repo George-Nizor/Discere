@@ -6,6 +6,7 @@ import { AppShell } from "./shell/AppShell.js";
 import { NotFoundScreen } from "./shell/NotFoundScreen.js";
 import { paths } from "./lib/paths.js";
 import { OpeningScreen } from "./shell/WelcomeScreen.js";
+import { RouteErrorScreen } from "./ui/ErrorBoundary.js";
 
 /** Real routes, so refresh, browser history, and deep links all restore the same screen. */
 export const routes: RouteObject[] = [
@@ -13,6 +14,8 @@ export const routes: RouteObject[] = [
     path: "/",
     element: <AppShell />,
     hydrateFallbackElement: <OpeningScreen />,
+    // A screen that throws shows a plain error with a way home, never the router's debug page.
+    errorElement: <RouteErrorScreen />,
     children: [
       { index: true, element: <HomeScreen /> },
       { path: "courses", element: <CourseListScreen /> },

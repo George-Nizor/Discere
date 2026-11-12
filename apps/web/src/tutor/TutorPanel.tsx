@@ -1,3 +1,4 @@
+import { defaultAccent } from "../lib/tokens.js";
 import type { TutoringMode } from "@discere/contracts";
 import { Loader2, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -109,7 +110,7 @@ function TutorPanelConversation({
   mode,
   attemptId,
   questionId,
-  accent = "#16a34a",
+  accent = defaultAccent(),
   onClose,
   docked = false,
 }: TutorPanelProps) {

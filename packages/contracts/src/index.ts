@@ -34,6 +34,9 @@ export * from "./biology-diagram.js";
 export * from "./sql-project.js";
 
 export * from "./python-project.js";
+export * from "./python-exercise.js";
+export * from "./sql-exercise.js";
+export * from "./typescript-exercise.js";
 
 export * from "./rust.js";
 

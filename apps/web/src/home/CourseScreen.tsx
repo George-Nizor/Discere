@@ -1,3 +1,4 @@
+import { useDocumentTitle } from "../lib/document-title.js";
 import { useParams } from "react-router";
 import { useAmbientAccent } from "../fx/ambient-accent.js";
 import { ApiError, errorMessage } from "../api/client.js";
@@ -9,11 +10,13 @@ import { CourseChecks } from "../checks/CourseChecks.js";
 import { SqlProjects } from "../sql-projects/SqlProjects.js";
 import { PythonProjects } from "../python-projects/PythonProjects.js";
 import { RustProjects } from "../rust/RustProjects.js";
+import { SourceList } from "../ui/SourceList.js";
 import { CourseIntroduction } from "./CourseIntroduction.js";
 import { CourseOverview, CourseRoadmap } from "./CourseRoadmap.js";
 
 export function CourseListScreen() {
   const courses = useCourses();
+  useDocumentTitle("Courses");
   if (courses.isPending) return <LoadingScreen message="Loading courses…" />;
   if (courses.error || !courses.data) {
     return (
@@ -32,6 +35,7 @@ export function CourseScreen() {
   const { courseId } = useParams();
   const course = useCourse(courseId ?? "");
   useAmbientAccent(course.data?.course.accent);
+  useDocumentTitle(course.data?.course.title);
   if (!courseId) {
     return (
       <ErrorScreen
@@ -68,6 +72,7 @@ export function CourseScreen() {
       <div className="course-overview-column">
         <CourseOverview detail={course.data} />
         <CourseIntroduction detail={course.data} />
+        <SourceList className="course-sources" sources={course.data.sources ?? []} />
       </div>
       {/* The checks and projects belong to the path, so they follow the lessons on the right,
           which also keeps the two columns a similar length. */}

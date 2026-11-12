@@ -1,3 +1,4 @@
+import { useDocumentTitle } from "../lib/document-title.js";
 import { Search } from "lucide-react";
 import { type FormEvent, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
@@ -8,6 +9,7 @@ export function NotFoundScreen() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
+  useDocumentTitle("Page not found");
   function search(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault();
     const q = query.trim();

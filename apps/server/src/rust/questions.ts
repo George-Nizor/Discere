@@ -3,12 +3,22 @@ import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import type { ContentRepository } from "../content.js";
 import { HttpError } from "../errors.js";
+import { pythonTask, runPythonExample } from "../python-projects/questions.js";
+import type { PythonRuntime } from "../python-projects/runtime.js";
 import { type GradedTask, mark, present, runCases } from "./grading.js";
+import { runSqlExample, sqlReady, sqlTask } from "../sql-projects/questions.js";
+import type { SqlRuntime } from "../sql-projects/runtime.js";
+import {
+  runTypeScriptExample,
+  typescriptReady,
+  typescriptTask,
+} from "../typescript/questions.js";
+import type { TypeScriptRuntime } from "../typescript/runtime.js";
 import type { RustRuntime } from "./runtime.js";
 
 /** The task behind a lesson question answered by writing code, or undefined for any other. */
 export function codeTask(question: Question): GradedTask | undefined {
-  if (!question.code || !question.codeCases) return undefined;
+  if (question.code?.language !== "rust" || !question.codeCases) return undefined;
   return { kind: question.code.kind, call: question.code.call, cases: question.codeCases };
 }
 
@@ -16,6 +26,8 @@ export interface CodeAssessment {
   correct: boolean;
   feedback: string;
   run: RustTaskRun;
+  /** Set by a marker that can tell an unmarkable answer from a wrong one. */
+  qualifying?: boolean;
 }
 
 /** Marks a lesson code answer by running it against every case. */
@@ -50,7 +62,8 @@ export async function assessCode(
                 task.cases[0]!.expected +
                 "."
               : "What it printed differs from the expected output. Compare them line by line.";
-  return { correct: marked.correct, feedback, run };
+  // A program that does not compile was not marked against any test: something to fix, not a miss.
+  return { correct: marked.correct, feedback, run, qualifying: run.status !== "compile_error" };
 }
 
 /**
@@ -59,12 +72,50 @@ export async function assessCode(
  */
 export async function registerCodeQuestionRoutes(
   app: FastifyInstance,
-  { content, runtime }: { content: ContentRepository; runtime: RustRuntime },
+  {
+    content,
+    runtime,
+    python,
+    sql,
+    typescript,
+  }: {
+    content: ContentRepository;
+    runtime: RustRuntime;
+    python?: PythonRuntime;
+    sql?: SqlRuntime;
+    typescript?: TypeScriptRuntime;
+  },
 ) {
+  // Whether a query written in a lesson can run here now. SQL has no toolchain of its own to
+  // download: it runs on the SQLite inside Python, so the lesson asks this instead.
+  app.get("/api/sql-runtime", async () => ({ ready: await sqlReady(sql) }));
+  // TypeScript runs on the Node the app already has, so there is nothing to download either.
+  app.get("/api/typescript-runtime", async () => ({ ready: await typescriptReady(typescript) }));
   app.post("/api/questions/:questionId/run", async (request) => {
     const { questionId } = z.object({ questionId: z.string().min(1) }).parse(request.params);
     const { code } = z.object({ code: z.string().min(1).max(16000) }).strict().parse(request.body);
     const question = content.getQuestion(questionId);
+    const written = question ? pythonTask(question) : undefined;
+    if (written) {
+      if (!python)
+        throw new HttpError(503, "Python answers need the Python runtime.", "PYTHON_UNAVAILABLE");
+      return runPythonExample(python, written, code);
+    }
+    const queried = question ? sqlTask(question) : undefined;
+    if (queried) {
+      if (!sql) throw new HttpError(503, "SQL answers need the SQL runtime.", "SQL_UNAVAILABLE");
+      return runSqlExample(sql, queried, code);
+    }
+    const typed = question ? typescriptTask(question) : undefined;
+    if (typed) {
+      if (!typescript || !(await typescriptReady(typescript)))
+        throw new HttpError(
+          503,
+          "TypeScript cannot run on this computer yet.",
+          "TYPESCRIPT_UNAVAILABLE",
+        );
+      return runTypeScriptExample(typescript, typed, code);
+    }
     const task = question ? codeTask(question) : undefined;
     if (!task)
       throw new HttpError(404, "This question is not answered with code.", "CODE_QUESTION_NOT_FOUND");

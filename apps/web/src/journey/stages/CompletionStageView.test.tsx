@@ -140,3 +140,29 @@ it("refreshes a recently cached locked check after the final lesson", async () =
   expect(await screen.findByRole("link", { name: "Start the check" })).toBeInTheDocument();
   client.clear();
 });
+it("lists the lesson's sources after the next step", async () => {
+  setup("locked");
+  renderWithProviders(
+    <CompletionStageView
+      stage={stage}
+      courseId="maths-foundations"
+      lessonId="last"
+      nextLesson={null}
+      sources={[
+        {
+          id: "openstax-prealgebra",
+          title: "Prealgebra 2e",
+          publisher: "OpenStax",
+          url: "https://openstax.org/details/books/prealgebra-2e",
+          licence: "CC BY 4.0",
+          accessedAt: "2026-10-01",
+        },
+      ]}
+    />,
+  );
+  expect(screen.getByRole("heading", { level: 2, name: "Sources" })).toBeInTheDocument();
+  const link = screen.getByRole("link", { name: "Prealgebra 2e" });
+  expect(link).toHaveAttribute("target", "_blank");
+  const next = await screen.findByRole("link", { name: "Back to the course" });
+  expect(next.compareDocumentPosition(link) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+});

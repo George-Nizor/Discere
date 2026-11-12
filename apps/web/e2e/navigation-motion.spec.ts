@@ -3,9 +3,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { Page } from "@playwright/test";
 import { createApp, type DiscereApp } from "../../server/src/app.js";
-import { expect, test } from "./fixtures.js";
+import { captureDir, expect, test } from "./fixtures.js";
 
-const output = join(import.meta.dirname, "../../../docs/motion-polish");
+const output = captureDir("motion-polish");
 let server: DiscereApp, address: string, directory: string;
 
 test.beforeAll(async () => {
@@ -237,7 +237,7 @@ test("slow data preserves the current screen, and rapid navigation cannot leave 
   release?.();
   await expect(page).toHaveURL(/\/courses$/);
   await settled(page);
-  await expect(page.getByRole("heading", { name: "Learning paths", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Courses", exact: true })).toBeVisible();
   await page.getByRole("link", { name: "You", exact: true }).click();
   await expect.poll(async () => (await records(page)).at(-1)?.ready).toBe(true);
   await page.getByRole("link", { name: "Settings", exact: true }).click();
@@ -248,12 +248,15 @@ test("slow data preserves the current screen, and rapid navigation cannot leave 
   await page.getByRole("link", { name: "Courses", exact: true }).click();
   await settled(page);
   const before = (await records(page)).length;
+  // Counted before the search, so the test holds as the catalogue grows.
+  const listed = await page.locator(".course-card").count();
+  expect(listed).toBeGreaterThan(1);
   await page.getByRole("searchbox", { name: "Search courses" }).fill("logic");
   await expect(page.locator(".course-card")).toHaveCount(1);
   expect((await records(page)).length).toBe(before);
   await expect(page.getByRole("searchbox", { name: "Search courses" })).toBeFocused();
   await page.getByRole("searchbox", { name: "Search courses" }).fill("");
-  await expect(page.locator(".course-card")).toHaveCount(18);
+  await expect(page.locator(".course-card")).toHaveCount(listed);
   await page.evaluate(() => window.scrollTo(0, 650));
   await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(500);
   await page.waitForTimeout(100);
@@ -307,7 +310,7 @@ test("system and saved reduced motion stop motion; unsupported browsers still ge
   expect(
     await page.evaluate(() => document.querySelector(".app-body")?.getAnimations().length),
   ).toBeGreaterThan(0);
-  await expect(page.getByRole("heading", { name: "Learning paths", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Courses", exact: true })).toBeVisible();
 });
 
 test("a stalled auxiliary service cannot trap the learner on the previous menu", async ({
@@ -334,5 +337,5 @@ test("a stalled auxiliary service cannot trap the learner on the previous menu",
   release?.();
   await expect(page).toHaveURL(/\/courses$/);
   await settled(page);
-  await expect(page.getByRole("heading", { name: "Learning paths", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Courses", exact: true })).toBeVisible();
 });

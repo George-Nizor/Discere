@@ -8,7 +8,7 @@
 **Owner:** George  
 **Intended implementer:** Luna coding model  
 **Status:** Authoritative prototype specification  
-**Supersedes:** `spec-v0.1-chatgpt-native.md` wherever the two conflict
+**Supersedes:** `docs/archive/spec-v0.1-chatgpt-native.md` wherever the two conflict
 
 ---
 
@@ -47,7 +47,7 @@ Do not:
 - ship placeholder buttons, fake analytics, fake generation, or empty settings
 - bury the central lesson behind card grids, status panels, or decorative headings
 
-When a host capability is missing, implement the specified fallback and record it in `docs/compatibility-report.md`.
+When a host capability is missing, implement the specified fallback and record it in `docs/archive/compatibility-report.md`.
 
 ---
 

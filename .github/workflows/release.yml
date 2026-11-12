@@ -9,7 +9,25 @@ on:
   workflow_dispatch:
 
 jobs:
+  # Nothing is built or published unless the same checks as CI pass on this commit.
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.17.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.22.2
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check
+
   release:
+    needs: check
     runs-on: windows-latest
     timeout-minutes: 45
     permissions:
@@ -30,9 +48,10 @@ jobs:
       - uses: pnpm/action-setup@v4
         with:
           version: 11.17.0
+      # The Node the release ships (NODE.version in scripts/package-release.mjs).
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 22.22.2
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'

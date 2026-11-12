@@ -1,6 +1,15 @@
 # Implementation status
 
-Updated: 2026-11-10
+Updated: 2026-11-12
+
+Release 1.13.0 adds practice. The five writing courses end each lesson with an optional writing
+task that the tutor marks against its criteria, and a piece can be revised and sent again. Python
+for Data Analysis and SQL: From Rows to Reports have exercises in every lesson, and TypeScript and
+Node.js in its first five, run in the sandbox and marked by tests, with unlimited tries. Every
+lesson lists its sources, all 883 source addresses were checked, and 18 thinly sourced courses were
+given specific pages and checked against them. History asks about real extracts and has order,
+sort and source-pair questions. Questions that marked wrongly were fixed, the server refuses
+requests from outside the computer, and the database is copied before a migration.
 
 Release 1.12.0 checks every question against what its format is for. Each of the roughly 7,800
 questions in the 65 courses was kept, fixed or converted, with the reason recorded. Faded examples
@@ -352,12 +361,48 @@ real isolated SQLite execution and 45 manually checked dataset variants. Saved d
 queries, result inspection, corrections and Exam completion follow the existing feedback flow.
 [Project records](sql-projects/README.md) explain the runtime boundary and remaining scope.
 
+Every SQL lesson also holds three query exercises, 45 in all (`responseType: "code"` with
+`code.language: "sql"`), which the learner answers by writing or repairing one query in the lesson
+itself. The 148 earlier questions are unchanged. An exercise shows the tables it reads, with each
+column's type and the rows Run uses, and a starter query in the editor. All 45 read the course's
+`customers` and `orders` tables. Run sends the query to the runner the SQL projects use
+(`apps/server/src/sql-projects/runner.py`: a fresh in-memory SQLite database for each run, read
+only, one statement, a time limit and at most 200 rows) and shows the first fifty rows it returns,
+or SQLite's own error message. Check answer runs the query against the visible rows and against
+two hidden sets of rows in the same tables, and compares what comes back with the stored result:
+the number of columns and the values always, the order of the rows only where the prompt asks for
+one (`code.ordered`), and the column headings only in the lesson on aliases
+(`code.namedColumns`). A wrong result is described in words, such as "With the rows shown, your
+query returned 5 rows and 3 were expected", and the reference query is shown only when the learner
+asks for the worked query. A query SQLite refuses is not counted as a wrong answer. The stored
+results were produced by running each reference query, and
+`packages/curriculum/tests/sql-exercises.test.ts` runs every reference query and starter again with
+the machine's Python 3 (SQLite 3.39 or later); `apps/server/tests/sql-questions.test.ts` does the
+same through the app's runner. Where the runner cannot start, `GET /api/sql-runtime` says so, the
+exercise offers to be set aside, and the lesson finishes without it. On an installed Windows app
+the runner uses the Python that the app downloads once, and the exercise offers that download.
+The lesson code path for the three languages is shared: `CodeAnswer`, `use-attempt.ts` and
+`QuestionFeedback.tsx` on the web, `POST /api/questions/:id/run` and `POST /api/attempts` on the
+server.
+
 Python for Data Analysis adds 21 lessons from George's Python for Data Analysts guide, covering
 core Python, NumPy, pandas preparation and report auditing. All 168 original examples were
 executed with CPython 3.12.14, NumPy 2.3.5 and pandas 3.0.1; 105 separate programs verify numeric
 question and recall keys. The browser replays reviewed steps, variables, tables and output, with
 case selection, pause/reset and reduced motion. Three separate construction projects now add
 22 learner-written programs and 66 reviewed dataset cases through isolated CPython execution.
+Every lesson also holds three Python exercises, 63 in all (`responseType: "code"` with
+`code.language: "python"`), which the learner answers by writing a few lines in the lesson itself.
+Lessons 9 to 21 use NumPy and pandas: test inputs are plain lists and text, the starter builds the
+array or table from them, and a Series, array or date result is compared in the form the runner
+returns it (a list, or ISO text for a date). Run executes the visible example; Check answer runs every test in the same isolated
+runtime as the projects and names the first test that fails with the expected and actual values.
+Nothing but the tests decides the mark. `packages/curriculum/tests/python-exercises.test.ts` runs
+every worked program and starter with the machine's Python 3; an exercise that imports NumPy or
+pandas is listed as skipped there unless that Python has the library (`DISCERE_PYTHON` can name
+one that has). `apps/server/tests/python-questions.test.ts` runs all 63 in the sandbox where it is
+installed, which is the check that covers the NumPy and pandas exercises.
+Where Python cannot run, the exercise says so and the lesson finishes without it.
 [Python records](library-expansion/python-course.md) map the source sequence;
 [project records](python-projects/README.md) retain the executable work and its limits.
 
@@ -384,6 +429,12 @@ CPython boundary. Project grading checks the authored task's independently speci
 
 All new prose, datasets, exercises, code, SVG covers and companion artwork are original.
 Source records retain exact sections, access dates, licences and intended reuse.
+Each source record also says whether its address was checked (`checked`, set on 2026-11-11):
+`verified` when the page was opened and is what the record names, `unreachable` when the address
+no longer leads to it, `unchecked` when the site refuses automated requests or the link opens
+something more general. `node scripts/check-sources.mjs --out <file>` requests every address
+again; it needs the network, so it is run by hand and is not part of `pnpm check`. A lesson's
+finish screen and the course page list the sources under "Sources".
 OpenStax is reference-only; no source prose or media was copied into these courses.
 [Foundation notes](foundations/README.md) and [expansion records](library-expansion/README.md)
 retain source and assessment evidence. The archived prototypes do not meet every new publication
@@ -413,7 +464,10 @@ A mistake opens its correction and permits continuation while retaining failed c
 assisted evidence. A reserved footer keeps controls and explanations clear of answers; long
 questions scroll inside their pane. Two labelled skills checks lead into two fresh recall cards.
 
-Course, lesson, notebook, tutor, sources, reading, review, and progress routes remain available.
+Routes exist for home, the course list and each course, a lesson and its stages, the notebook, review
+and review sessions, course checks, SQL, Python and Rust projects, the progress page at `/you`
+(`/progress` redirects to it) and settings. The tutor, a calculator and the working page open in the
+lesson's workbench rather than on routes of their own.
 Lesson recall is scoped to its authored cards and visits every card. Teaching-step position,
 answers, notebook work, tutor history, and review sessions survive refresh.
 
@@ -449,6 +503,63 @@ without marking authority remain reviewable but cannot claim verified independen
 FSRS scheduling, interleaved queues, streaks, XP, independent/assisted evidence, transfer records,
 essay autosave, and workings notebooks remain separate records.
 
+## Order, sort and source-pair questions
+
+Added on 11 November 2026. A lesson question can now be answered by putting three to seven
+items in order (`responseType: "order"`) or by placing four to ten items in two to four named
+groups (`responseType: "sort"`). Any question except a code question can carry one or two
+source extracts in `extracts`, each with an attribution in three parts (who, when, what kind of
+document). Two extracts are a pair, labelled Source A and Source B, set side by side from 760
+pixels and one above the other below that.
+
+- Contracts: `OrderQuestionSchema`, `SortQuestionSchema` and `QuestionExtractSchema` in
+  `packages/contracts/src/curriculum.ts`. An order question lists its items in the right
+  sequence and a sort item names its bin. The learner's form of the question
+  (`learnerQuestion`) gives each item an id made from the question id and the item's words,
+  sorts the items by that id, and leaves out the bins and explanations, so nothing sent before
+  the question closes holds the answer. Older bundles parse unchanged.
+- Validation (`structuredQuestionIssues` in `packages/curriculum/src/validate.ts`): distinct
+  items, every sort item in a bin that exists, every bin used, the fixed text authority, no
+  choices or code, every part of an attribution present, and no extract written into the
+  prompt as well.
+- Marking (`apps/server/src/assessment.ts`): the server compares places. A wrong answer gets
+  "3 of 5 are in the right place." or "2 of 5 are in the right group." and never which. An
+  answer that is not whole (an item missing or repeated, an unknown bin) is not a try. No
+  model is involved.
+- Attempts, credit, hints and the miss limit are the ones every question uses: two misses in a
+  lesson step, one in a prediction and in the end check. The lesson-feedback route returns the
+  right arrangement (`solution`) only for an attempt that is right, revealed or closed, and
+  Exam mode never returns it.
+- Display: the browser deals the items with a seed kept for the visit to the lesson, so going
+  Back shows the same arrangement. An order item has Move up and Move down buttons, and the
+  arrow keys move the item whose button has focus. A sort item is a button: choosing it and
+  then a group places it, and a placed item can be chosen again and moved or put back. Each
+  move is announced in a live region. There is no dragging. Controls are at least 44 pixels.
+- Closed: the order list shows the right order and marks the items the learner had in place.
+  The sort shows each group with its items, a mark, where the learner had put a misplaced
+  item, and each item's line of explanation.
+- Review: a missed order or sort question becomes a card the same way as any missed question.
+  The card is interactive: it shows the same list or groups, Check sends the arrangement to
+  the server, which marks it with the lesson's own rule, and the reveal then shows the right
+  arrangement. Reveal answer without Check shows the answer and counts as assisted. A missed
+  question with extracts shows them on its card with their attributions.
+- Course checks show extracts, both the structured form and an older quoted paragraph. They
+  did not before. Course checks still take only numeric and choice questions.
+- Read aloud and a card's text use `questionPlainText`: setup, each extract under its
+  attribution, the question, then the items or the groups and items. The tutor receives the
+  learner's form of the question, which has the same parts and no answer.
+- No migration was needed. An answer is stored as text in `attempt_responses` like any other:
+  item ids in sequence, or `item:bin` pairs.
+
+History is the only course that uses them: three order questions, three sort questions, two
+source pairs and three single extracts with attribution. `docs/question-writing-guide.md` says
+when to use each and gives an example.
+
+Limits. An order of three items is right by chance one time in six, so the guide asks for four
+or more. Choice options are still shown in authored order. The legacy quiz screen shows the
+new types through the same answer input, and its typed "show answer" reveal gives the answer as
+text. Nothing was tried with a screen reader.
+
 ## Practice, rewards, and motion
 
 Daily goals support three, five, or ten meaningful responses, or a finished lesson. Streaks use
@@ -461,6 +572,25 @@ XP now comes from actual recorded answers, due recall, transfers, and a once-onl
 finish. Reopening stages earns nothing. Per-question rewards are bounded across attempts; a
 self-correction can earn the remaining difference. Duplicate review tabs cannot advance the card's
 schedule twice. Answer evidence and mastery remain separate from XP.
+
+From November 2026 credit is decided per question. Every response is appended to
+`attempt_responses` and none is rewritten, so the first response and the number of marked tries
+can always be read back. An answer is independent only when the first marked response to the
+question is right, with no hint, tutor reply, reveal or Direct mode before it on any attempt. Right
+after a miss is recorded as recovered and earns less XP on each try (60%, 40%, then 25%). Right
+after the worked answer was shown earns at most a quarter. A correct answer never lowers mastery.
+A number in the wrong unit is answered with what to fix and costs no try.
+
+The server counts lesson misses when the client names the lesson with the attempt: one for a
+prediction, the end-of-lesson check and a two-option choice, two elsewhere. The last allowed miss
+closes the attempt and opens the worked answer. In Exam mode it closes without one, is recorded as
+wrong, and still lets the stage finish. A question that closes this way, or whose answer is shown,
+becomes a review card due the next day, unless an authored card already names that question. A
+numeric or short-text card is typed and marked by the question's own answer authority. A choice or
+code question's card is self-rated. Review card text follows the content on every read, and the
+schedule is kept. Assisted recall counts as Good while a card is new, learning or relearning, so
+it can graduate, and stays capped at Hard once the card is in review. The Sharp mind quest counts
+a question only on the day it is first solved.
 
 The home goal and weekly rhythm, connected course path, seven earned milestones, and lesson result
 use server records. Completion shows actual lesson XP, responses without help, recall, level
@@ -503,6 +633,51 @@ partial parent-curriculum coverage: the introductory guide and three constructio
 implemented, while random sampling, larger datasets, environment setup, advanced structures,
 inference and machine learning remain. Geometry
 now records partial introductory coverage, with the rest of the subject explicitly outstanding.
+
+## Writing tasks
+
+A lesson can end with a writing task. Writing Longer Pieces has one in each of its twelve lessons,
+and the archived Electronics prototype has three. The task is optional: the page says so, and
+"Skip this task" leaves it and carries on to the review cards. The server refuses to skip a stage
+that is not optional. The first paragraph of the prompt is the task, and any later paragraphs are
+set under it as the material it supplies, such as a question, figures or a draft to revise. The
+draft saves by itself while the learner types, and it can be submitted once it reaches the task's
+minimum length. Style notes on a submission are advice and never block it.
+
+Submitting records the task as done in the lesson, including a task that was skipped on an
+earlier visit. Before November 2026 a skipped task stayed recorded as skipped after it was
+submitted.
+
+The tutor assesses a submitted version against the task's success criteria. The assessment has a
+summary, the first thing to fix, a next step, and a result for each criterion: met, partly met or
+not met, with a short quote from the writing or a one-sentence reason. The server lines the
+results up with the task's own list by text, or by position when there is exactly one result for
+each. A reply with missing, malformed or unmatched results is kept with its overall verdict and a
+note, and is not treated as a failure. Assessments stored before the per-criterion results existed
+have no list and still render. An assessment is not checked against the answer to the lesson's
+first question, because a writing task has no answer to withhold.
+
+After an assessment, or after submitting with no tutor, "Revise" opens the text for editing again.
+The submitted version and its assessment are first appended to `essay_versions` (migration
+`0016_essay_versions.sql`, one added table, rollback-safe) and are never rewritten.
+`essay_drafts` and `essay_assessments` keep holding the current version, so a build from before
+the migration still runs on the database. The page names the version being written, lists the
+earlier ones under "Earlier versions", and opens any of them read-only with the feedback it
+received. While a revision is being written the latest earlier version starts open. A version has
+one assessment: asking again returns the one it has, and a new assessment comes from revising.
+Revise is refused while the tutor is still reading. When a revision is assessed, the tutor is given
+the previous version and its feedback and is asked whether the problem named there is fixed.
+
+When the tutor is unavailable the page says so before the learner writes, still accepts the
+submission, and asks them to check the writing against the criteria. A CLI can report a stored
+login whose session has expired, and only a model call finds that out, so the capability check
+does not make one. The server remembers the last request a provider refused for sign-in. The tutor
+then reads as unavailable until a request succeeds, the stored login file changes, or five minutes
+pass. A failed assessment whose provider error points at sign-in says so in its message.
+
+The mock provider returns a result for each of the task's criteria, and the fake Codex fixture can
+write to stderr before exiting, which is how the sign-in case is tested. No real tutor reply to
+the per-criterion or revision prompts has been checked yet.
 
 ## Subscription tutoring
 
@@ -623,6 +798,39 @@ development; there is no Playwright scenario for Rust yet.
 Not built yet: more lessons (ownership and borrowing are the obvious next ones), GDScript, and a
 seccomp filter on compiled programs.
 
+## TypeScript exercises
+
+The first five lessons of TypeScript and Node.js each hold three exercises the learner answers by
+writing or repairing TypeScript in the lesson, fifteen in all (`responseType: "code"` with
+`code.language: "typescript"`). Each is placed after the idea it practises, they get harder within
+a lesson, and most start from code the compiler rejects. The 160 earlier questions are unchanged.
+
+Run compiles the program where the exercise is type-checked and then runs the visible example,
+showing what it printed and what it returned or left in each judged name. Check answer runs every
+case and every type test, and names the first case that fails with the expected and actual values.
+A type error, `any` in a type-checked exercise, a syntax error and a thrown error are shown with
+their line and are not counted as a wrong answer. A type test that fails is counted, with the
+author's message. Where TypeScript cannot run, the exercise says so and the lesson finishes without
+it ([ADR 0008](adr/0008-typescript-exercises.md)).
+
+The program is type-checked by the native `tsc` and run by the Node the server runs on, both
+inside Bubblewrap with a seccomp filter on Linux and inside `discere-sandbox.exe` on Windows. A
+release carries `tsc.exe` under `runtime/typescript`, so the learner downloads nothing.
+
+`packages/curriculum/tests/typescript-exercises.test.ts` compiles and runs every worked program
+and every starter. `apps/server/tests/typescript-questions.test.ts` does the same in the sandbox,
+checks the limits, and runs code that climbs out of Node's `vm` context to show it still has no
+files, network or child process. `apps/web/e2e/typescript-exercises.spec.ts` plays two exercises
+in Chromium.
+
+Checked on Windows 11 on 2026-11-11, from a bundle packaged on Linux with the sandbox helper of
+release 1.11.2: a type error came back by line, a correct function ran and printed, an endless
+loop stopped at the limit, a failed type test was counted and the worked program passed 6 of 6.
+The release workflow itself has not run with this change.
+
+Not built yet: exercises for lessons 6 to 14, programs of more than one file, and anything that
+needs Node's own modules (files, streams, HTTP, timers).
+
 ## Windows release
 
 From 1.1.0 Discere ships as a Windows release that Instrumenta 0.15.0 installs and updates as a
@@ -702,6 +910,11 @@ exact review hash and model limits. Owner release checks confirm twelve discover
 concealed marking authority, enabled requested sound and unchanged prior study rows/preferences.
 Twenty unstarted concept rows and forty unintroduced recall-card rows were added; attempts, course checks and project histories
 remain empty. Package/browser/smoke tests use disposable databases.
+
+On 11 November 2026 the browser suite was rewritten to play lessons from their content. Its
+last full run passed 97 tests and skipped one, in about 18 minutes.
+[The browser test status](testing/e2e-status.md) lists what each spec covers and the four bugs
+the rewrite found. The counts in the paragraphs above are from earlier suites.
 
 Use `pnpm run doctor`: plain `pnpm doctor` resolves to pnpm's builtin. Chromium uses libraries
 unpacked beneath `/tmp/discere-browser-libs`, without a system installation. The existing large

@@ -5,6 +5,7 @@ import { TopicMapSchema } from "../packages/contracts/src/index.js";
 import { engineeringLessons as definitions } from "../content/engineering-structures-and-machines/authoring/lessons.js";
 import { sources } from "../content/engineering-structures-and-machines/authoring/definition.js";
 import { engineeringChecks } from "../content/engineering-structures-and-machines/authoring/course-checks.js";
+import { keepPublishedContent } from "./lib/keep-published-content.js";
 /** Builds the Engineering candidate bundle and topic map from the authoring definitions. */
 const root = path.resolve(import.meta.dirname, ".."),
   courseId = "engineering-structures-and-machines";
@@ -155,6 +156,7 @@ if (!validation.passed || !validation.bundle) {
 } else {
   const directory = path.join(root, "content", courseId, ".authoring");
   await mkdir(directory, { recursive: true });
+  await keepPublishedContent(courseId, validation.bundle);
   await writeFile(
     path.join(directory, "candidate.json"),
     JSON.stringify(validation.bundle, null, 2) + "\n",

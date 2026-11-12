@@ -202,7 +202,13 @@ describe("lesson questions answered with Rust", () => {
       expect(wrong.json()).toMatchObject({ correct: false, codeRun: { status: "ok", returned: "12", passed: 1, total: 3 } });
       expect(wrong.json().feedback).toContain("works for the example");
       const broken = await ask(app, "types-and-functions-triple", "fn triple(n: i32) -> i32 {\n    n * 3;\n}\n");
-      expect(broken.json()).toMatchObject({ correct: false, codeRun: { status: "compile_error" } });
+      // A program that does not compile is something to fix, not a miss.
+      expect(broken.json()).toMatchObject({
+        correct: false,
+        qualifying: false,
+        misses: 1,
+        codeRun: { status: "compile_error" },
+      });
       expect(broken.json().codeRun.diagnostics).toContain("E0308");
       const right = await ask(app, "types-and-functions-triple", "fn triple(n: i32) -> i32 {\n    n * 3\n}\n");
       expect(right.json()).toMatchObject({ correct: true, codeRun: { passed: 3, total: 3 } });

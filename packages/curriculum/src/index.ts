@@ -2,8 +2,11 @@ export { courseAssetDirectory, courseDirectories, loadCourseBundle } from "./loa
 export { type ContentIssue, type ContentValidation, validateCourseBundle } from "./validate.js";
 export {
   assertEditorialApproval,
+  assertNoContentLoss,
   assertLessonsPublishable,
   bundleDigest,
+  type ContentLoss,
+  contentLoss,
   scaffoldTopicMap,
 } from "./curation.js";
 export {
@@ -30,3 +33,7 @@ export type {
   LessonStepKind,
   Question,
 } from "@discere/contracts";
+export * from "./python-exercises.js";
+export * from "./sql-exercises.js";
+export * from "./typescript-runner.js";
+export * from "./typescript-exercises.js";

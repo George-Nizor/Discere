@@ -223,6 +223,14 @@ export function ExperienceProvider({ children }: { children: ReactNode }) {
     root.style.colorScheme = theme;
     document.querySelector('meta[name="theme-color"]')?.setAttribute("content", theme === "light" ? "#f4f6fb" : "#141515");
   }, [theme, backdrop]);
+  // Read by fx/celebrate, which runs outside React, so turning celebrations off stops the
+  // answer effects wherever they are fired from.
+  useEffect(() => {
+    document.documentElement.dataset["celebrations"] = preferences.celebrations ? "on" : "off";
+    return () => {
+      delete document.documentElement.dataset["celebrations"];
+    };
+  }, [preferences.celebrations]);
   useEffect(() => {
     document.documentElement.dataset["motion"] = reduced ? "reduced" : "system";
     return () => {
@@ -251,6 +259,10 @@ export function ExperienceProvider({ children }: { children: ReactNode }) {
 }
 export function useExperience() {
   return useContext(ExperienceContext);
+}
+/** False once the learner has turned celebrations off in Settings. */
+export function celebrationsEnabled() {
+  return document.documentElement.dataset["celebrations"] !== "off";
 }
 export function reducedMotionEnabled() {
   return document.documentElement.dataset["motion"] === "reduced" || systemReduced();

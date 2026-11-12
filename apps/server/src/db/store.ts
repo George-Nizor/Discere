@@ -13,7 +13,9 @@ import type {
   WritingLintResponse,
 } from "@discere/contracts";
 import {
+  type AttemptCredit,
   type CourseQueueEntry,
+  createReviewState,
   type Flashcard,
   interleaveByCourse,
   localStudyDay,
@@ -47,6 +49,29 @@ export interface AttemptRow {
   mastery: number;
   createdAt: string;
   updatedAt: string;
+  /** True once the last allowed miss in a lesson has closed the attempt. */
+  closed: boolean;
+  /** Marked responses on this attempt. */
+  tries: number;
+  /** Marked responses on this attempt that were wrong. */
+  misses: number;
+}
+/**
+ * Everything the learner has done with one question, across every attempt at it in any mode.
+ * Credit is decided from this, so a fresh attempt never starts with a clean record.
+ */
+export interface QuestionHistory {
+  /** Marked responses so far. */
+  tries: number;
+  /** The first marked response, or null when it was recorded before responses were kept. */
+  firstResponse: string | null;
+  /** Whether the first marked response was right. Null when there is none yet. */
+  firstCorrect: boolean | null;
+  hints: number;
+  tutorHelp: boolean;
+  revealed: boolean;
+  usedDirect: boolean;
+  solved: boolean;
 }
 export interface AttemptWrite {
   id?: string;
@@ -61,7 +86,12 @@ export interface AttemptWrite {
   conceptMastery: Record<string, number>;
   independent: boolean;
   qualifying?: boolean;
+  /** How a correct answer was earned. Absent, it is read from `independent`. */
+  credit?: AttemptCredit;
+  /** The miss limit for this attempt. The attempt closes when its marked misses reach it. */
+  allowedMisses?: number;
 }
+export type ReviewCardOrigin = "authored" | "question";
 export interface RevealRow {
   token: string;
   attemptId: string;
@@ -89,11 +119,20 @@ export interface EssayAssessmentRow {
   updatedAt: string;
 }
 export type EssayAssessmentWrite = Omit<EssayAssessmentRow, "updatedAt">;
+export interface EssayVersionRow {
+  essayId: string;
+  version: number;
+  content: string;
+  submittedAt: string | null;
+  /** The assessment this version received, or null when none was requested. */
+  assessment: EssayAssessmentRow | null;
+}
 export interface ReviewCardRow {
   card: Flashcard;
   state: ReviewState;
   /** The course that authored the card, so the queue can take turns between courses. */
   courseId: string;
+  origin: ReviewCardOrigin;
 }
 export interface CourseDueCount {
   courseId: string;
@@ -363,11 +402,16 @@ export class DiscereStore {
     return row?.mastery ?? 0;
   }
 
+  /**
+   * Whether the question has been dealt with: answered correctly, shown its worked answer, or
+   * closed by the last allowed miss. An Exam miss closes without a worked answer and still
+   * counts, recorded as wrong, so the lesson can be finished.
+   */
   hasQuestionEvidence(questionId: string, requireCorrect = true): boolean {
     return Boolean(
       this.database
         .prepare(
-          `SELECT 1 FROM attempts WHERE user_id = ? AND question_id = ? AND length(trim(response)) > 0 ${requireCorrect ? "AND (correct = 1 OR answer_revealed = 1)" : ""} LIMIT 1`,
+          `SELECT 1 FROM attempts WHERE user_id = ? AND question_id = ? AND length(trim(response)) > 0 ${requireCorrect ? "AND (correct = 1 OR answer_revealed = 1 OR closed = 1)" : ""} LIMIT 1`,
         )
         .get(LOCAL_USER_ID, questionId),
     );
@@ -376,7 +420,7 @@ export class DiscereStore {
   getOpenAttempt(questionId: string, mode: TutoringMode): AttemptRow | null {
     const row = this.database
       .prepare(
-        "SELECT id FROM attempts WHERE user_id = ? AND question_id = ? AND mode = ? AND correct = 0 AND answer_revealed = 0 ORDER BY updated_at DESC LIMIT 1",
+        "SELECT id FROM attempts WHERE user_id = ? AND question_id = ? AND mode = ? AND correct = 0 AND answer_revealed = 0 AND closed = 0 ORDER BY updated_at DESC LIMIT 1",
       )
       .get(LOCAL_USER_ID, questionId, mode) as { id: string } | undefined;
     return row ? this.getAttempt(row.id) : null;
@@ -390,6 +434,85 @@ export class DiscereStore {
         )
         .get(attemptId),
     );
+  }
+
+  /**
+   * The learner's whole record on one question. An attempt saved before responses were kept has
+   * no response log; it counts as one try whose first response is unknown.
+   */
+  questionHistory(questionId: string): QuestionHistory {
+    const rows = this.database
+      .prepare(
+        `SELECT a.id, a.mode, a.correct, a.response, a.hint_count AS hints, a.answer_revealed AS revealed,
+                (SELECT COUNT(*) FROM attempt_responses r WHERE r.attempt_id = a.id) AS logged,
+                (SELECT COUNT(*) FROM attempt_responses r WHERE r.attempt_id = a.id AND r.qualifying = 1) AS tries,
+                (SELECT COUNT(*) FROM assistance_events e WHERE e.attempt_id = a.id AND e.type = 'tutor_reply') AS tutor
+         FROM attempts a WHERE a.user_id = ? AND a.question_id = ? ORDER BY a.created_at, a.rowid`,
+      )
+      .all(LOCAL_USER_ID, questionId) as Array<{
+      id: string;
+      mode: string;
+      correct: number;
+      response: string;
+      hints: number;
+      revealed: number;
+      logged: number;
+      tries: number;
+      tutor: number;
+    }>;
+    const history: QuestionHistory = {
+      tries: 0,
+      firstResponse: null,
+      firstCorrect: null,
+      hints: 0,
+      tutorHelp: false,
+      revealed: false,
+      usedDirect: false,
+      solved: false,
+    };
+    for (const row of rows) {
+      const tries = row.logged > 0 ? row.tries : row.response.trim() ? 1 : 0;
+      if (tries > 0 && history.firstCorrect === null) {
+        const first =
+          row.logged > 0
+            ? (this.database
+                .prepare(
+                  "SELECT response, correct FROM attempt_responses WHERE attempt_id = ? AND qualifying = 1 ORDER BY rowid LIMIT 1",
+                )
+                .get(row.id) as { response: string; correct: number })
+            : null;
+        history.firstResponse = first?.response ?? null;
+        history.firstCorrect = bool(first ? first.correct : row.correct);
+      }
+      history.tries += tries;
+      history.hints += row.hints;
+      history.tutorHelp ||= row.tutor > 0;
+      history.revealed ||= bool(row.revealed);
+      history.usedDirect ||= row.mode === "direct";
+      history.solved ||= bool(row.correct);
+    }
+    return history;
+  }
+
+  /** Every response submitted to an attempt, oldest first. */
+  attemptResponses(
+    attemptId: string,
+  ): Array<{ response: string; correct: boolean; qualifying: boolean; createdAt: string }> {
+    const rows = this.database
+      .prepare(
+        "SELECT response, correct, qualifying, created_at AS createdAt FROM attempt_responses WHERE attempt_id = ? ORDER BY rowid",
+      )
+      .all(attemptId) as Array<{
+      response: string;
+      correct: number;
+      qualifying: number;
+      createdAt: string;
+    }>;
+    return rows.map((row) => ({
+      ...row,
+      correct: bool(row.correct),
+      qualifying: bool(row.qualifying),
+    }));
   }
 
   hasRatedCard(cardId: string): boolean {
@@ -467,6 +590,7 @@ export class DiscereStore {
       )?.state ?? "";
     const transaction = this.database.transaction(() => {
       const terminal = alreadyComplete === "completed" || alreadyComplete === "skipped_optional";
+      const upgraded = alreadyComplete === "skipped_optional" && input.state === "completed";
       this.database
         .prepare(
           "INSERT INTO journey_progress (user_id, journey_id, stage_id, state, interaction_state, updated_at) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT(user_id, journey_id, stage_id) DO UPDATE SET state = excluded.state, interaction_state = excluded.interaction_state, updated_at = excluded.updated_at",
@@ -475,13 +599,15 @@ export class DiscereStore {
           LOCAL_USER_ID,
           journeyId,
           input.stageId,
-          terminal ? alreadyComplete : input.state,
+          // A finished stage stays finished. The one change allowed is an optional stage that
+          // was skipped and is now done.
+          terminal && !upgraded ? alreadyComplete : input.state,
           JSON.stringify(input.interactionState),
           timestamp,
         );
       if (input.state === "completed" || input.state === "skipped_optional") {
         const eventKey = `stage:${journeyId}:${input.stageId}`;
-        const freshlyDone = !terminal && !this.study.has(eventKey);
+        const freshlyDone = (!terminal || upgraded) && !this.study.has(eventKey);
         const award = stageType && input.state === "completed" ? stageCompletionXp(stageType) : 0;
         if (freshlyDone && award > 0) {
           this.study.reward(award, eventKey);
@@ -580,6 +706,103 @@ export class DiscereStore {
     return this.getEssayAssessment(row.essayId) ?? { ...row, updatedAt: timestamp };
   }
 
+  /** The number of the version being written or last submitted. The first is 1. */
+  essayVersionNumber(essayId: string): number {
+    const row = this.database
+      .prepare(
+        "SELECT COALESCE(MAX(version), 0) AS latest FROM essay_versions WHERE user_id = ? AND essay_id = ?",
+      )
+      .get(LOCAL_USER_ID, essayId) as { latest: number };
+    return row.latest + 1;
+  }
+
+  /** Earlier submitted versions, oldest first. */
+  listEssayVersions(essayId: string): EssayVersionRow[] {
+    const rows = this.database
+      .prepare(
+        "SELECT version, content, submitted_at AS submittedAt, request_id AS requestId, status, provider, accepted, assessment_json AS assessmentJson, issues_json AS issuesJson, error_code AS errorCode, error_message AS errorMessage, assessed_at AS assessedAt FROM essay_versions WHERE user_id = ? AND essay_id = ? ORDER BY version",
+      )
+      .all(LOCAL_USER_ID, essayId) as Array<{
+      version: number;
+      content: string;
+      submittedAt: string | null;
+      requestId: string | null;
+      status: string | null;
+      provider: string | null;
+      accepted: number;
+      assessmentJson: string | null;
+      issuesJson: string;
+      errorCode: string | null;
+      errorMessage: string | null;
+      assessedAt: string | null;
+    }>;
+    return rows.map((row) => ({
+      essayId,
+      version: row.version,
+      content: row.content,
+      submittedAt: row.submittedAt,
+      assessment:
+        row.requestId && row.status && row.provider && row.assessedAt
+          ? {
+              essayId,
+              requestId: row.requestId,
+              status: row.status,
+              provider: row.provider,
+              accepted: bool(row.accepted),
+              assessmentJson: row.assessmentJson,
+              issuesJson: row.issuesJson,
+              errorCode: row.errorCode,
+              errorMessage: row.errorMessage,
+              updatedAt: row.assessedAt,
+            }
+          : null,
+    }));
+  }
+
+  /**
+   * Opens submitted writing for another version. The submitted text and its assessment are
+   * appended to essay_versions first, in the same transaction, so nothing the learner submitted
+   * or was told is lost. The draft keeps its text as the starting point for the revision.
+   * Returns null when there is nothing submitted to revise.
+   */
+  reviseEssay(essayId: string): EssayDraftRow | null {
+    const transaction = this.database.transaction((): EssayDraftRow | null => {
+      const draft = this.getEssayDraft(essayId);
+      if (!draft.submitted) return null;
+      const assessment = this.getEssayAssessment(essayId);
+      this.database
+        .prepare(
+          "INSERT INTO essay_versions (user_id, essay_id, version, content, submitted_at, request_id, status, provider, accepted, assessment_json, issues_json, error_code, error_message, assessed_at, archived_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        )
+        .run(
+          LOCAL_USER_ID,
+          essayId,
+          this.essayVersionNumber(essayId),
+          draft.content,
+          draft.updatedAt,
+          assessment?.requestId ?? null,
+          assessment?.status ?? null,
+          assessment?.provider ?? null,
+          assessment?.accepted ? 1 : 0,
+          assessment?.assessmentJson ?? null,
+          assessment?.issuesJson ?? "[]",
+          assessment?.errorCode ?? null,
+          assessment?.errorMessage ?? null,
+          assessment?.updatedAt ?? null,
+          this.now(),
+        );
+      // The live rows now describe the new version, which has no assessment yet.
+      this.database
+        .prepare("DELETE FROM essay_assessments WHERE user_id = ? AND essay_id = ?")
+        .run(LOCAL_USER_ID, essayId);
+      this.database
+        .prepare("UPDATE essay_drafts SET submitted = 0 WHERE user_id = ? AND essay_id = ?")
+        .run(LOCAL_USER_ID, essayId);
+      return this.getEssayDraft(essayId);
+    });
+    return transaction();
+  }
+
   /** Records that a tutor answered inside an open attempt, alongside hints and reveals. */
   recordTutorAssistance(attemptId: string, detail: string): void {
     this.database
@@ -589,10 +812,22 @@ export class DiscereStore {
       .run(randomUUID(), attemptId, detail, this.now());
   }
 
-  ensureReviewCard(courseId: string, card: Flashcard, state: ReviewState): ReviewCardRow {
+  /**
+   * Registers a card, or brings a registered card's text up to date. The front, back, concepts
+   * and sources always follow the content, so a correction reaches cards the learner already
+   * has. The schedule and the review counters are never touched here.
+   */
+  ensureReviewCard(
+    courseId: string,
+    card: Flashcard,
+    state: ReviewState,
+    origin: ReviewCardOrigin = "authored",
+  ): ReviewCardRow {
     this.database
       .prepare(
-        "INSERT INTO review_cards (user_id, card_id, course_id, question_id, concept_ids, front, back, source_ids, due_at, interval_days, repetition, last_outcome, last_evidence, independent_reviews, assisted_reviews, last_reviewed_at, stability, difficulty, lapses, phase, learning_step, elapsed_days, scheduled_days) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(user_id, card_id) DO UPDATE SET course_id = excluded.course_id",
+        `INSERT INTO review_cards (user_id, card_id, course_id, question_id, concept_ids, front, back, source_ids, due_at, interval_days, repetition, last_outcome, last_evidence, independent_reviews, assisted_reviews, last_reviewed_at, stability, difficulty, lapses, phase, learning_step, elapsed_days, scheduled_days, origin) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         ON CONFLICT(user_id, card_id) DO UPDATE SET course_id = excluded.course_id, question_id = excluded.question_id, concept_ids = excluded.concept_ids, front = excluded.front, back = excluded.back, source_ids = excluded.source_ids, origin = excluded.origin
+         WHERE review_cards.course_id != excluded.course_id OR review_cards.question_id != excluded.question_id OR review_cards.concept_ids != excluded.concept_ids OR review_cards.front != excluded.front OR review_cards.back != excluded.back OR review_cards.source_ids != excluded.source_ids OR review_cards.origin != excluded.origin`,
       )
       .run(
         LOCAL_USER_ID,
@@ -618,14 +853,42 @@ export class DiscereStore {
         state.learningStep,
         state.elapsedDays,
         state.scheduledDays,
+        origin,
       );
-    return this.getReviewCard(card.id) ?? { card, state, courseId };
+    return this.getReviewCard(card.id) ?? { card, state, courseId, origin };
+  }
+
+  /**
+   * Puts a missed or revealed lesson question into review, due at `dueAt`. A card that already
+   * exists keeps its memory state; a fresh miss only brings a later due date forward.
+   */
+  queueQuestionCard(courseId: string, card: Flashcard, dueAt: string): ReviewCardRow {
+    const saved = this.ensureReviewCard(
+      courseId,
+      card,
+      { ...createReviewState(card.id, this.now()), dueAt },
+      "question",
+    );
+    if (saved.state.dueAt <= dueAt) return saved;
+    this.database
+      .prepare("UPDATE review_cards SET due_at = ? WHERE user_id = ? AND card_id = ?")
+      .run(dueAt, LOCAL_USER_ID, card.id);
+    return this.getReviewCard(card.id) ?? saved;
+  }
+
+  /** The cards made from missed lesson questions, with the question each one stands for. */
+  questionCards(): Array<{ cardId: string; questionId: string }> {
+    return this.database
+      .prepare(
+        "SELECT card_id AS cardId, question_id AS questionId FROM review_cards WHERE user_id = ? AND origin = 'question' ORDER BY rowid",
+      )
+      .all(LOCAL_USER_ID) as Array<{ cardId: string; questionId: string }>;
   }
 
   getReviewCard(cardId: string): ReviewCardRow | null {
     const row = this.database
       .prepare(
-        "SELECT card_id AS cardId, course_id AS courseId, question_id AS questionId, concept_ids AS conceptIds, front, back, source_ids AS sourceIds, due_at AS dueAt, interval_days AS intervalDays, repetition, last_outcome AS lastOutcome, last_evidence AS lastEvidence, independent_reviews AS independentReviews, assisted_reviews AS assistedReviews, last_reviewed_at AS lastReviewedAt, stability, difficulty, lapses, phase, learning_step AS learningStep, elapsed_days AS elapsedDays, scheduled_days AS scheduledDays FROM review_cards WHERE user_id = ? AND card_id = ?",
+        "SELECT card_id AS cardId, course_id AS courseId, question_id AS questionId, concept_ids AS conceptIds, front, back, source_ids AS sourceIds, due_at AS dueAt, interval_days AS intervalDays, repetition, last_outcome AS lastOutcome, last_evidence AS lastEvidence, independent_reviews AS independentReviews, assisted_reviews AS assistedReviews, last_reviewed_at AS lastReviewedAt, stability, difficulty, lapses, phase, learning_step AS learningStep, elapsed_days AS elapsedDays, scheduled_days AS scheduledDays, origin FROM review_cards WHERE user_id = ? AND card_id = ?",
       )
       .get(LOCAL_USER_ID, cardId) as
       | {
@@ -651,6 +914,7 @@ export class DiscereStore {
           learningStep: number;
           elapsedDays: number;
           scheduledDays: number;
+          origin: string;
         }
       | undefined;
     if (!row) return null;
@@ -681,6 +945,7 @@ export class DiscereStore {
     };
     return {
       courseId: String(row.courseId),
+      origin: row.origin === "question" ? "question" : "authored",
       card: {
         id: String(row.cardId),
         questionId: String(row.questionId),
@@ -705,13 +970,20 @@ export class DiscereStore {
   }
 
   /** Every due card, in the order the learner should meet them: courses take turns. */
-  dueReviewQueue(nowTimestamp: string): CourseQueueEntry[] {
+  dueReviewQueue(nowTimestamp: string, only?: ReadonlySet<string>): CourseQueueEntry[] {
     const rows = this.database
       .prepare(
         "SELECT card_id AS cardId, course_id AS courseId, due_at AS dueAt, repetition, rowid AS sequence FROM review_cards WHERE user_id = ? AND due_at <= ?",
       )
       .all(LOCAL_USER_ID, nowTimestamp) as CourseQueueEntry[];
-    return interleaveByCourse(rows, this.courseReviewRecency());
+    // Every authored card is registered, and most belong to lessons the learner has not met.
+    // With `only`, the turns are taken among the cards that can be shown. Taking turns among
+    // all of them and then dropping the hidden ones leaves one course's cards ahead of
+    // another's, so one course was cleared before the next began.
+    return interleaveByCourse(
+      only ? rows.filter((row) => only.has(row.cardId)) : rows,
+      this.courseReviewRecency(),
+    );
   }
 
   getDueReviewCard(nowTimestamp: string): ReviewCardRow | null {
@@ -845,7 +1117,8 @@ export class DiscereStore {
       : session.correct === true && session.mode !== "direct"
         ? "independent"
         : "assisted";
-    // The learner's own rating reaches FSRS; assisted recall is capped inside the engine.
+    // The learner's own rating reaches FSRS. The engine caps assisted recall: at Hard for a
+    // card in review, at Good while it is still being learned.
     const next = scheduleReview(card.state, {
       outcome,
       evidence,
@@ -922,13 +1195,23 @@ export class DiscereStore {
       mastery: number;
       createdAt: string;
       updatedAt: string;
+      closed: number;
+      logged: number;
+      tries: number;
+      misses: number;
     }
     const row = this.database
       .prepare(
-        "SELECT id, user_id AS userId, question_id AS questionId, response, mode, correct, feedback, hint_count AS hintCount, answer_revealed AS answerRevealed, xp_awarded AS xpAwarded, mastery, created_at AS createdAt, updated_at AS updatedAt FROM attempts WHERE id = ?",
+        `SELECT id, user_id AS userId, question_id AS questionId, response, mode, correct, feedback, hint_count AS hintCount, answer_revealed AS answerRevealed, xp_awarded AS xpAwarded, mastery, created_at AS createdAt, updated_at AS updatedAt, closed,
+                (SELECT COUNT(*) FROM attempt_responses r WHERE r.attempt_id = attempts.id) AS logged,
+                (SELECT COUNT(*) FROM attempt_responses r WHERE r.attempt_id = attempts.id AND r.qualifying = 1) AS tries,
+                (SELECT COUNT(*) FROM attempt_responses r WHERE r.attempt_id = attempts.id AND r.qualifying = 1 AND r.correct = 0) AS misses
+         FROM attempts WHERE id = ?`,
       )
       .get(id) as AttemptSqlRow | undefined;
     if (!row) return null;
+    // An attempt saved before responses were kept has no log: its one response is its one try.
+    const legacy = row.logged === 0 && Boolean(row.response.trim());
     return {
       id: row.id,
       userId: row.userId,
@@ -943,9 +1226,17 @@ export class DiscereStore {
       mastery: row.mastery,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
+      closed: bool(row.closed),
+      tries: legacy ? 1 : row.tries,
+      misses: legacy ? (bool(row.correct) ? 0 : 1) : row.misses,
     };
   }
 
+  /**
+   * Records one response. The attempt row holds the latest response and verdict; the response
+   * itself is appended to `attempt_responses`, so the first response to a question is never
+   * overwritten by a later one.
+   */
   saveAttempt(input: AttemptWrite): AttemptRow {
     const id = input.id ?? randomUUID();
     const previous = input.id ? this.getAttempt(input.id) : null;
@@ -968,15 +1259,47 @@ export class DiscereStore {
         .get(LOCAL_USER_ID, input.questionId),
     );
     const newEvidence = input.correct && !previouslySolved;
+    const credit: AttemptCredit =
+      input.credit ??
+      (!input.correct
+        ? "none"
+        : previouslySolved
+          ? "practice"
+          : input.independent
+            ? "independent"
+            : "assisted");
+    const misses = (previous?.misses ?? 0) + (qualifying && !input.correct ? 1 : 0);
+    const closes =
+      !input.correct && input.allowedMisses !== undefined && misses >= input.allowedMisses;
     const mastery =
       previouslySolved && input.conceptIds.length
         ? Math.min(...input.conceptIds.map((id) => this.getMastery(id)))
         : input.mastery;
+    const logResponse = this.database.prepare(
+      "INSERT INTO attempt_responses (id, attempt_id, user_id, question_id, response, correct, qualifying, mode, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+    );
     const transaction = this.database.transaction(() => {
       if (previous) {
+        // An attempt saved before responses were kept still holds its one response. It goes
+        // into the log first, so it stays on the record once the row is updated.
+        const logged = this.database
+          .prepare("SELECT COUNT(*) AS count FROM attempt_responses WHERE attempt_id = ?")
+          .get(id) as { count: number };
+        if (logged.count === 0 && previous.response.trim())
+          logResponse.run(
+            randomUUID(),
+            id,
+            LOCAL_USER_ID,
+            input.questionId,
+            previous.response,
+            previous.correct ? 1 : 0,
+            1,
+            previous.mode,
+            previous.updatedAt,
+          );
         this.database
           .prepare(
-            "UPDATE attempts SET response = ?, mode = ?, correct = ?, feedback = ?, xp_awarded = ?, mastery = ?, updated_at = ? WHERE id = ?",
+            "UPDATE attempts SET response = ?, mode = ?, correct = ?, feedback = ?, xp_awarded = ?, mastery = ?, updated_at = ?, closed = MAX(closed, ?) WHERE id = ?",
           )
           .run(
             input.response,
@@ -986,12 +1309,13 @@ export class DiscereStore {
             xpAwarded,
             mastery,
             timestamp,
+            closes ? 1 : 0,
             id,
           );
       } else {
         this.database
           .prepare(
-            "INSERT INTO attempts (id, user_id, question_id, response, mode, correct, feedback, hint_count, answer_revealed, xp_awarded, mastery, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, 0, 0, ?, ?, ?, ?)",
+            "INSERT INTO attempts (id, user_id, question_id, response, mode, correct, feedback, hint_count, answer_revealed, xp_awarded, mastery, created_at, updated_at, closed) VALUES (?, ?, ?, ?, ?, ?, ?, 0, 0, ?, ?, ?, ?, ?)",
           )
           .run(
             id,
@@ -1005,8 +1329,22 @@ export class DiscereStore {
             mastery,
             timestamp,
             timestamp,
+            closes ? 1 : 0,
           );
       }
+      // A response that could not be marked is kept too, flagged so it never counts as a try.
+      if (input.response.trim())
+        logResponse.run(
+          randomUUID(),
+          id,
+          LOCAL_USER_ID,
+          input.questionId,
+          input.response,
+          input.correct ? 1 : 0,
+          qualifying ? 1 : 0,
+          input.mode,
+          timestamp,
+        );
       this.study.reward(xpDelta, `answer:${id}`);
       if (qualifying)
         this.study.record({
@@ -1017,7 +1355,8 @@ export class DiscereStore {
           independent: input.independent && newEvidence,
           qualifying: true,
         });
-      if (newEvidence && previous?.response.trim() && input.independent)
+      // Right after one or more misses, with no help: the learner corrected it alone.
+      if (newEvidence && credit === "recovered")
         this.study.record({
           key: `recovery:${input.questionId}`,
           kind: "recovery",

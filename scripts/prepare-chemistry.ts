@@ -5,6 +5,7 @@ import { TopicMapSchema } from "../packages/contracts/src/index.js";
 import { chemistryLessons as definitions } from "../content/chemistry-atoms-to-reactions/authoring/lessons.js";
 import { sources } from "../content/chemistry-atoms-to-reactions/authoring/definition.js";
 import { chemistryChecks } from "../content/chemistry-atoms-to-reactions/authoring/course-checks.js";
+import { keepPublishedContent } from "./lib/keep-published-content.js";
 const root = path.resolve(import.meta.dirname, ".."),
   courseId = "chemistry-atoms-to-reactions";
 const stepIds = ["predict", "work", "check", "transfer"],
@@ -146,6 +147,7 @@ if (!validation.passed || !validation.bundle) {
 } else {
   const directory = path.join(root, "content", courseId, ".authoring");
   await mkdir(directory, { recursive: true });
+  await keepPublishedContent(courseId, validation.bundle);
   await writeFile(
     path.join(directory, "candidate.json"),
     JSON.stringify(validation.bundle, null, 2) + "\n",

@@ -1,7 +1,10 @@
 export {
+  attemptCredit,
   attemptXp,
+  raiseMastery,
   scoreAttempt,
   updateMastery,
+  type AttemptCredit,
   type AttemptEvidenceInput,
   type AttemptEvidenceResult,
 } from "./scoring.js";
@@ -9,6 +12,7 @@ export {
   createFlashcardFromReviewedQuestion,
   createReviewState,
   gradeForResult,
+  questionCardId,
   queueDueReviews,
   scheduleReview,
   type Flashcard,

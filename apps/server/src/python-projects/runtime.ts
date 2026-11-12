@@ -9,11 +9,13 @@ import {
   PythonInputsSchema,
   type PythonExecution,
   type PythonInputs,
-  type PythonValue,
+  samePythonValue,
 } from "@discere/contracts";
 import { dataDirectory, resolveFromRepoRoot } from "@discere/paths";
 
 export interface PythonRuntime {
+  /** Whether code can run now. Optional so a test double need not answer it. */
+  available?(): Promise<boolean>;
   execute(code: string, inputs: PythonInputs, call?: PythonCall): Promise<PythonExecution>;
 }
 export interface PythonRuntimeOptions {
@@ -226,28 +228,5 @@ export class IsolatedPythonRuntime implements PythonRuntime {
   }
 }
 
-export function samePythonResult(actual: PythonValue, expected: PythonValue): boolean {
-  if (typeof actual !== typeof expected) return false;
-  if (typeof actual === "number" && typeof expected === "number")
-    return Math.abs(actual - expected) <= Math.max(1e-9, 1e-9 * Math.abs(expected));
-  if (
-    actual === null ||
-    expected === null ||
-    typeof actual !== "object" ||
-    typeof expected !== "object"
-  )
-    return actual === expected;
-  if (Array.isArray(actual) || Array.isArray(expected))
-    return (
-      Array.isArray(actual) &&
-      Array.isArray(expected) &&
-      actual.length === expected.length &&
-      actual.every((v, i) => samePythonResult(v, expected[i]!))
-    );
-  const keys = Object.keys(actual).sort(),
-    expectedKeys = Object.keys(expected).sort();
-  return (
-    JSON.stringify(keys) === JSON.stringify(expectedKeys) &&
-    keys.every((key) => samePythonResult(actual[key]!, expected[key]!))
-  );
-}
+/** Kept under its first name for the projects; the rule itself lives with the contracts. */
+export const samePythonResult = samePythonValue;

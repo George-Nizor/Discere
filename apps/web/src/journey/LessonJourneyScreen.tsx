@@ -1,4 +1,6 @@
-import type { CalculatorPolicy, LearnerStage } from "@discere/contracts";
+import { defaultAccent } from "../lib/tokens.js";
+import { useDocumentTitle } from "../lib/document-title.js";
+import type { CalculatorPolicy, LearnerStage, Source } from "@discere/contracts";
 import { useAmbientAccent } from "../fx/ambient-accent.js";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useRef, useState } from "react";
@@ -10,7 +12,8 @@ import { paths } from "../lib/paths.js";
 import { useExperience } from "../study/experience.js";
 import { LessonSoundToggle } from "../study/LessonSoundToggle.js";
 import { Workbench, type WorkbenchTab, workbenchTabs } from "../workbench/Workbench.js";
-import { ErrorScreen, LoadingScreen } from "../ui/Feedback.js";
+import { ErrorBoundary } from "../ui/ErrorBoundary.js";
+import { ErrorScreen, LoadingScreen, Notice } from "../ui/Feedback.js";
 import { ReadAloudButton } from "../ui/ReadAloud.js";
 import { LessonNavigator } from "./LessonNavigator.js";
 import { ModeProvider, useTutoringMode } from "./mode-context.js";
@@ -30,6 +33,7 @@ import {
 import { CompletionStageView } from "./stages/CompletionStageView.js";
 import { EssayStageView } from "./stages/EssayStageView.js";
 import { InteractiveVisualStageView } from "./stages/InteractiveVisualStageView.js";
+import { questionSpokenText } from "./stages/QuestionBlock.js";
 import { QuizStageView } from "./stages/QuizStageView.js";
 import { RecapStageView } from "./stages/RecapStageView.js";
 import { ReviewStageView } from "./stages/ReviewStageView.js";
@@ -72,6 +76,7 @@ function LessonJourney({
   const progress = useJourneyProgress(courseId, lessonId);
   const course = useCourse(courseId);
   useAmbientAccent(course.data?.course.accent);
+  useDocumentTitle(journey.data?.title);
   const [bench, setBench] = useState<WorkbenchTab | null>(null);
   const [benchVisited, setBenchVisited] = useState<ReadonlySet<WorkbenchTab>>(() => new Set());
   const openBench = (tab: WorkbenchTab | null) => {
@@ -108,15 +113,25 @@ function LessonJourney({
         state: "active",
         // The id is what resumes the learner; the index stays for older builds reading the row.
         interactionState: { stepId, stepIndex },
-      }).catch((error: unknown) =>
-        setSaveFailure(errorMessage(error, "Your place could not be saved. Try continuing again.")),
-      );
+      })
+        // A later save that succeeds means the place is kept, so the old warning goes.
+        .then(() => setSaveFailure(null))
+        .catch((error: unknown) =>
+          setSaveFailure(
+            errorMessage(error, "Your place could not be saved. Try continuing again."),
+          ),
+        );
     },
     [courseId, lessonId],
   );
 
   const complete = useCallback(
-    async (view: StageView, followingStageId: string | null) => {
+    async (
+      view: StageView,
+      followingStageId: string | null,
+      // An optional stage, such as a writing task, can be left without doing it.
+      state: "completed" | "skipped_optional" = "completed",
+    ) => {
       if (completing.current) return;
       completing.current = true;
       prepare();
@@ -124,7 +139,7 @@ function LessonJourney({
       try {
         const saved = await saveJourneyProgress(courseId, lessonId, {
           stageId: view.stage.id,
-          state: "completed",
+          state,
           interactionState: {},
         });
         const ending = journey.data?.stages.find((stage) => stage.id === followingStageId);
@@ -249,7 +264,7 @@ function LessonJourney({
   const readAloudText =
     current.stage.type === "quiz"
       ? [
-          current.stage.question.prompt,
+          questionSpokenText(current.stage.question),
           ...(current.stage.question.choices ?? []).map(
             (choice, index) => `Option ${String.fromCharCode(65 + index)}: ${choice.label}.`,
           ),
@@ -267,7 +282,9 @@ function LessonJourney({
                       ? block.text
                       : block.text,
                 ),
-                current.stage.intro.hook.question?.prompt ?? "",
+                current.stage.intro.hook.question
+                  ? questionSpokenText(current.stage.intro.hook.question)
+                  : "",
                 current.stage.intro.promise,
               ].join(" ")
             : current.stage.title
@@ -388,6 +405,14 @@ function LessonJourney({
               </button>
             </p>
           ) : null}
+          <ErrorBoundary
+            resetKey={`${current.stage.id}:${rewind}`}
+            fallback={
+              <Notice tone="error" title="This part of the lesson could not be shown">
+                <p>Reload the page to try again.</p>
+              </Notice>
+            }
+          >
           <StageCanvas
             // Each stage owns its own working state. Keying by stage id means moving between two
             // stages of the same type starts the second one clean, rather than showing the first
@@ -396,8 +421,10 @@ function LessonJourney({
             courseId={courseId}
             lessonId={lessonId}
             questionLed={questionLed}
+            sources={journey.data.sources}
             nextLesson={upcoming ? { id: upcoming.id, title: upcoming.title } : null}
             onComplete={() => void complete(current, following?.stage.id ?? null)}
+            onSkip={() => void complete(current, following?.stage.id ?? null, "skipped_optional")}
             onStepChange={(stepId, stepIndex) =>
               saveStepPosition(current.stage.id, stepId, stepIndex)
             }
@@ -415,6 +442,7 @@ function LessonJourney({
             }
             stage={current.stage}
           />
+          </ErrorBoundary>
         </main>
         {focusedQuestion ? <PlayerFooterSurface /> : null}
 
@@ -430,7 +458,7 @@ function LessonJourney({
             tab={bench}
             onTab={(tab) => openBench(tab)}
             onClose={() => openBench(null)}
-            accent={course.data?.course.accent ?? "#16a34a"}
+            accent={course.data?.course.accent ?? defaultAccent()}
             conceptIds={current.stage.conceptIds}
             lessonId={lessonId}
             {...(tutorQuestionId ? { questionId: tutorQuestionId } : {})}
@@ -454,8 +482,10 @@ function StageCanvas({
   courseId,
   lessonId,
   questionLed,
+  sources,
   nextLesson,
   onComplete,
+  onSkip,
   onStepChange,
   savedInteractionState,
   returnLink,
@@ -464,8 +494,10 @@ function StageCanvas({
   courseId: string;
   lessonId: string;
   questionLed: boolean;
+  sources: Source[];
   nextLesson: { id: string; title: string } | null;
   onComplete: () => void;
+  onSkip: () => void;
   onStepChange: (stepId: string, stepIndex: number) => void;
   savedInteractionState: Record<string, unknown> | undefined;
   returnLink: { label: string; onSelect: () => void } | null;
@@ -494,7 +526,13 @@ function StageCanvas({
         />
       );
     case "essay":
-      return <EssayStageView onContinue={onComplete} stage={stage} />;
+      return (
+        <EssayStageView
+          onContinue={onComplete}
+          {...(stage.optional ? { onSkip } : {})}
+          stage={stage}
+        />
+      );
     case "review":
       return <ReviewStageView onContinue={onComplete} stage={stage} />;
     case "recap":
@@ -505,6 +543,7 @@ function StageCanvas({
           courseId={courseId}
           lessonId={lessonId}
           nextLesson={nextLesson}
+          sources={sources}
           stage={stage}
         />
       );

@@ -35,6 +35,20 @@ export const attempts = sqliteTable("attempts", {
   mastery: real("mastery").notNull().default(0),
   createdAt: text("created_at").notNull(),
   updatedAt: text("updated_at").notNull(),
+  /** Set once the last allowed miss in a lesson has closed the attempt. */
+  closed: integer("closed", { mode: "boolean" }).notNull().default(false),
+});
+/** Every response submitted to an attempt, in order. Rows are appended and never rewritten. */
+export const attemptResponses = sqliteTable("attempt_responses", {
+  id: text("id").primaryKey(),
+  attemptId: text("attempt_id").notNull(),
+  userId: text("user_id").notNull(),
+  questionId: text("question_id").notNull(),
+  response: text("response").notNull(),
+  correct: integer("correct", { mode: "boolean" }).notNull(),
+  qualifying: integer("qualifying", { mode: "boolean" }).notNull(),
+  mode: text("mode").notNull(),
+  createdAt: text("created_at").notNull(),
 });
 export const assistanceEvents = sqliteTable("assistance_events", {
   id: text("id").primaryKey(),
@@ -124,6 +138,29 @@ export const essayAssessments = sqliteTable(
   },
   (table) => [primaryKey({ columns: [table.userId, table.essayId] })],
 );
+/** A submitted version the learner has since revised, with the assessment it received. Rows are
+ * appended when a revision starts and never rewritten. */
+export const essayVersions = sqliteTable(
+  "essay_versions",
+  {
+    userId: text("user_id").notNull(),
+    essayId: text("essay_id").notNull(),
+    version: integer("version").notNull(),
+    content: text("content").notNull(),
+    submittedAt: text("submitted_at"),
+    requestId: text("request_id"),
+    status: text("status"),
+    provider: text("provider"),
+    accepted: integer("accepted", { mode: "boolean" }).notNull().default(false),
+    assessmentJson: text("assessment_json"),
+    issuesJson: text("issues_json").notNull().default("[]"),
+    errorCode: text("error_code"),
+    errorMessage: text("error_message"),
+    assessedAt: text("assessed_at"),
+    archivedAt: text("archived_at").notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.essayId, table.version] })],
+);
 /** One flashcard's FSRS memory state. `stability`, `difficulty`, `lapses`, `phase`, and
  * `learning_step` are the scheduler's own state; the review counters stay separate so the
  * interface can still say whether a card was earned independently. */
@@ -153,6 +190,8 @@ export const reviewCards = sqliteTable(
     learningStep: integer("learning_step").notNull().default(0),
     elapsedDays: real("elapsed_days").notNull().default(0),
     scheduledDays: real("scheduled_days").notNull().default(0),
+    /** `authored` with the course, or `question` for a lesson question the learner missed. */
+    origin: text("origin").notNull().default("authored"),
   },
   (table) => [primaryKey({ columns: [table.userId, table.cardId] })],
 );

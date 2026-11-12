@@ -86,7 +86,7 @@ if (!validation.passed || !validation.bundle) {
 
 // Every lesson code question: the worked program passes, the starter does not.
 for (const question of validation.bundle.questions) {
-  if (!question.code || !question.codeCases) continue;
+  if (question.code?.language !== "rust" || !question.codeCases) continue;
   const task = { kind: question.code.kind, call: question.code.call, cases: question.codeCases };
   const solution = question.answerAuthority.kind === "text" ? question.answerAuthority.exampleAnswer : "";
   const solved = await mark(runtime, task, solution);

@@ -294,7 +294,304 @@
   font: inherit;
 }
 
+/* A quoted extract inside a question prompt: a source to read, set apart from the question. */
+.prompt-quote {
+  display: block;
+  margin: 4px 0 16px;
+  padding: 2px 0 2px 16px;
+  border-left: 3px solid var(--line-strong);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.6;
+  text-align: left;
+  max-width: 62ch;
+}
+.quiz-question.has-quote {
+  text-align: left;
+}
+@media (max-width: 480px) {
+  .prompt-quote {
+    font-size: 16.5px;
+    line-height: 1.55;
+    padding-left: 12px;
+  }
+}
+
 /* A choice can be two lines of code, one span per line; the line break between them stays. */
 .choice-label {
   white-space: pre-line;
+}
+
+/* ---------- Extracts with an attribution, and a pair of sources ---------- */
+
+.prompt-sources {
+  display: grid;
+  gap: 16px;
+  margin: 4px 0 18px;
+  text-align: left;
+}
+.prompt-source {
+  display: block;
+  min-width: 0;
+}
+.prompt-source .prompt-quote {
+  margin: 0 0 8px;
+}
+.prompt-source-name {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--ink-soft);
+  font-family: var(--font-sans);
+  font-size: var(--text-label);
+  font-weight: 600;
+}
+.prompt-attribution {
+  display: block;
+  padding-left: 19px;
+  color: var(--ink-soft);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.45;
+}
+@media (min-width: 760px) {
+  .prompt-sources.is-pair {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 28px;
+  }
+}
+@media (max-width: 480px) {
+  .prompt-attribution {
+    padding-left: 15px;
+  }
+}
+.check-question h1.has-quote {
+  text-align: left;
+}
+.check-question h1.has-quote .prompt-quote,
+.check-question h1.has-quote .prompt-setup {
+  font-size: 0.8em;
+}
+
+/* ---------- Order and sort answers ---------- */
+
+.answer-instruction {
+  margin: 0 0 12px;
+  color: var(--ink-soft);
+  font-size: 15px;
+  line-height: 1.5;
+}
+.order-answer .order-list {
+  margin-bottom: 0;
+}
+.order-answer .order-item {
+  min-height: 56px;
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
+  border-color: var(--line-strong);
+}
+.order-answer .order-list.is-solution .order-item {
+  padding-right: var(--space-4);
+}
+.order-answer .order-item.is-placed {
+  border-color: var(--correct);
+}
+.order-answer .order-item-mark {
+  flex-shrink: 0;
+  color: var(--correct);
+}
+.order-answer .order-move {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+}
+.order-answer .order-item-label {
+  line-height: 1.45;
+}
+
+.sort-answer {
+  display: grid;
+  gap: 14px;
+}
+.sort-answer .answer-instruction {
+  margin: 0;
+}
+.sort-pool {
+  display: grid;
+  gap: 8px;
+}
+.sort-pool-items,
+.sort-bin-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sort-pool-empty {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 15px;
+}
+.sort-take-out {
+  justify-self: start;
+}
+.sort-item {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  max-width: 100%;
+  padding: 8px 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  background: var(--canvas);
+  color: var(--ink);
+  font: inherit;
+  font-size: 16px;
+  line-height: 1.4;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color var(--motion-fast) var(--ease),
+    background var(--motion-fast) var(--ease);
+}
+.sort-item:not([aria-disabled="true"]):hover {
+  border-color: var(--ink-soft);
+}
+.sort-item.is-chosen {
+  border-color: var(--accent);
+  background: var(--accent-pale);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+.sort-item[aria-disabled="true"] {
+  cursor: default;
+}
+.sort-bins {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  align-items: start;
+}
+.sort-bin {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--canvas-subtle);
+}
+.sort-bin-target {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 44px;
+  width: 100%;
+  padding: 6px 12px;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--canvas);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: default;
+}
+.sort-bin-target.is-ready {
+  border-style: solid;
+  border-color: var(--accent);
+  cursor: pointer;
+}
+.sort-bin-target.is-ready:hover {
+  background: var(--accent-pale);
+}
+.sort-bin-name {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 650;
+  line-height: 1.3;
+  color: var(--ink);
+}
+.sort-bin-hint {
+  flex-shrink: 0;
+  color: var(--ink-soft);
+  font-size: var(--text-label);
+  font-variant-numeric: tabular-nums;
+}
+.sort-bin-target.is-ready .sort-bin-hint {
+  color: var(--accent);
+  font-weight: 600;
+}
+.sort-bin.is-solution {
+  padding: 12px;
+}
+.sort-bin.is-solution .sort-bin-items {
+  display: grid;
+}
+.sort-result {
+  display: grid;
+  gap: 2px;
+  padding: 8px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--canvas);
+  font-size: 16px;
+  line-height: 1.4;
+}
+.sort-result.is-right {
+  border-color: var(--correct);
+}
+.sort-result.is-wrong {
+  border-color: var(--error);
+}
+.sort-result-label {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+.sort-result-mark {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.sort-result.is-right .sort-result-mark {
+  color: var(--correct);
+}
+.sort-result.is-wrong .sort-result-mark {
+  color: var(--error);
+}
+.sort-result-note,
+.sort-result-why {
+  color: var(--ink-soft);
+  font-size: 14.5px;
+  line-height: 1.45;
+}
+
+/* A review card that asks an order or sort question, or shows a source. */
+.flashcard-arrange {
+  width: 100%;
+  text-align: left;
+  font-size: 1rem;
+  font-weight: 400;
+}
+.flashcard-question {
+  margin: 0;
+}
+.flashcard-question .prompt-quote,
+.flashcard-question .prompt-setup {
+  font-size: 0.8em;
+}
+
+/* Once the answer is shown, each group takes the full width so an item and its explanation
+   read as lines and not as a narrow column. */
+.sort-bins.is-solution {
+  grid-template-columns: minmax(0, 1fr);
+}
+.flashcard-arrange .sort-bin,
+.flashcard-arrange .sort-pool {
+  margin: 0;
 }

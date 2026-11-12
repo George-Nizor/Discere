@@ -1,9 +1,12 @@
 import { existsSync } from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
+  CODEX_SCRATCH_SEGMENTS,
   DEFAULT_DATABASE_PATH,
   repoRoot,
+  resolveCodexScratchDirectory,
   resolveDatabasePath,
   resolveFromRepoRoot,
   resolvePromptsDirectory,
@@ -34,5 +37,18 @@ describe("repository paths", () => {
   it("resolves the prompt directory inside the repository root", () => {
     expect(resolvePromptsDirectory()).toBe(resolveFromRepoRoot("prompts"));
     expect(existsSync(resolvePromptsDirectory())).toBe(true);
+  });
+
+  it("expands a leading ~ in the Codex scratch directory", () => {
+    const home = os.homedir();
+    expect(resolveCodexScratchDirectory("~/.local/share/discere/codex-scratch")).toBe(
+      path.join(home, ".local", "share", "discere", "codex-scratch"),
+    );
+    expect(resolveCodexScratchDirectory("~")).toBe(home);
+    expect(resolveCodexScratchDirectory()).toBe(path.join(home, ...CODEX_SCRATCH_SEGMENTS));
+    expect(resolveCodexScratchDirectory("scratch")).toBe(resolveFromRepoRoot("scratch"));
+    expect(resolveCodexScratchDirectory("~other/scratch")).toBe(
+      resolveFromRepoRoot("~other/scratch"),
+    );
   });
 });

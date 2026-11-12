@@ -6,6 +6,7 @@ import { sources } from "../content/probability-statistics/authoring/definition.
 import { numericHints } from "../content/probability-statistics/authoring/hints.js";
 import { probabilityLessons } from "../content/probability-statistics/authoring/probability-lessons.js";
 import { statisticsLessons } from "../content/probability-statistics/authoring/statistics-lessons.js";
+import { keepPublishedContent } from "./lib/keep-published-content.js";
 
 const definitions = [...probabilityLessons, ...statisticsLessons];
 const root = path.resolve(import.meta.dirname, "..");
@@ -93,6 +94,7 @@ if (!validation.passed) {
 } else {
   const directory = path.join(root, "content", courseId, ".authoring");
   await mkdir(directory, { recursive: true });
+  await keepPublishedContent(courseId, candidate);
   await writeFile(path.join(directory, "candidate.json"), JSON.stringify(candidate, null, 2) + "\n");
   const map = {
     courseId, title: candidate.course.title, description: candidate.course.description,

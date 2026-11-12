@@ -2,14 +2,15 @@ import { mkdirSync } from "node:fs";
 import { join, resolve } from "node:path";
 import type { Page } from "@playwright/test";
 import { sqlProjects } from "../../../content/sql-from-rows-to-reports/authoring/projects.js";
-import { test, expect } from "./fixtures.js";
+import { captureDir, test, expect } from "./fixtures.js";
+import { runnableLanguages } from "./lesson-player.js";
 import { createApp } from "../../server/src/app.js";
 const sizes = [
   { width: 1440, height: 900 },
   { width: 1024, height: 768 },
   { width: 390, height: 844 },
 ];
-const output = resolve(import.meta.dirname, "../../../docs/sql-projects/screens");
+const output = captureDir("sql-projects/screens");
 async function capture(page: Page, name: string) {
   mkdirSync(output, { recursive: true });
   for (const size of sizes) {
@@ -26,6 +27,7 @@ async function capture(page: Page, name: string) {
 }
 for (const [index, project] of sqlProjects.projects.entries()) {
   test("SQL construction: " + project.title, async ({ page, request }) => {
+    test.skip(!(await runnableLanguages(request)).has("sql"), "SQL cannot run here");
     test.setTimeout(120000);
     const mode = (["coach", "direct", "exam"] as const)[index]!;
     await request.put("/api/study/preferences", { data: { sound: true } });
@@ -163,23 +165,31 @@ for (const [index, project] of sqlProjects.projects.entries()) {
         })
         .click();
     }
-    await expect(page.getByText("Project complete", { exact: true })).toBeVisible();
+    // The results screen has the project's title, the count that matched and what was earned.
+    const summary = page.locator(".sql-summary");
+    await expect(summary.getByRole("heading", { level: 1, name: project.title })).toBeVisible();
+    await expect(summary.getByText(/^\d+ of \d+ queries matched all datasets\./)).toBeVisible();
     const final = await (await request.get(endpoint)).json();
     expect(final.results).toHaveLength(5);
     expect(final.xp).toBe(index === 0 ? 22 : index === 1 ? 20 : 25);
+    await expect(summary.locator(".sql-project-results > details")).toHaveCount(final.results.length);
+    await expect(summary.locator(".sql-earned")).toHaveText("+" + final.xp + " XP");
     await page.reload();
-    await expect(page.getByText("Project complete", { exact: true })).toBeVisible();
+    await expect(summary.locator(".sql-project-results > details")).toHaveCount(final.results.length);
     await capture(page, project.id + "-results");
     await page.getByRole("link", { name: "Return to the roadmap" }).click();
     await expect(page.getByRole("heading", { name: "Write your own queries" })).toBeVisible();
+    // A finished project opens on its results, not on its first task.
     await page.getByRole("link").filter({ hasText: project.title }).click();
-    await expect(page.getByText("Project complete", { exact: true })).toBeVisible();
+    await expect(summary.locator(".sql-earned")).toHaveText("+" + final.xp + " XP");
   });
 }
 
 test("an exam can be submitted early without grading an unfinished draft as correct", async ({
   page,
+  request,
 }) => {
+  test.skip(!(await runnableLanguages(request)).has("sql"), "SQL cannot run here");
   const isolated = await createApp({
     dbPath: ":memory:",
     migrate: true,
@@ -205,7 +215,7 @@ test("an exam can be submitted early without grading an unfinished draft as corr
     await expect(page.getByRole("region", { name: "Finish the exam now" })).toHaveCount(0);
     await page.getByRole("button", { name: "End exam early", exact: true }).click();
     await page.getByRole("button", { name: "Submit exam now", exact: true }).click();
-    await expect(page.getByText("Project complete", { exact: true })).toBeVisible();
+    await expect(page.locator(".sql-summary")).toBeVisible();
     await expect(
       page.getByText("1 of 5 queries matched all datasets. 1 solved independently."),
     ).toBeVisible();

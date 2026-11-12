@@ -37,6 +37,7 @@ import {
   topicMapPrompt,
   validateCourseBundle,
 } from "../packages/curriculum/src/index.ts";
+import { keepPublishedContent } from "./lib/keep-published-content.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const CONTENT_ROOT = path.join(ROOT, "content");
@@ -385,6 +386,7 @@ async function commandPublish(courseId: string): Promise<void> {
     !candidate.lessons.length
   )
     throw new Error("Publish an available course with playable lessons and the matching id.");
+  await keepPublishedContent(courseId, candidate);
   // Loading the candidate also proves its referenced cover and lesson images are present.
   const temporary = path.join(paths.courseDirectory, "publication-candidate.json");
   try {

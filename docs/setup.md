@@ -127,10 +127,12 @@ The first setup creates `.env`. Supported fields are:
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `DISCERE_HOST` | `127.0.0.1` | API bind address. The prototype accepts loopback hosts only. |
+| `DISCERE_HOST` | `127.0.0.1` | API bind address. The service refuses to start on anything but `127.0.0.1`, `localhost` or `::1` unless `DISCERE_ALLOW_REMOTE=1` is set. `pnpm dev` and `pnpm start` accept loopback hosts only. |
 | `DISCERE_PORT` | `4317` | API port. |
-| `DISCERE_WEB_HOST` | `127.0.0.1` | Web bind address. The prototype accepts loopback hosts only. |
+| `DISCERE_WEB_HOST` | `127.0.0.1` | Web bind address. Loopback hosts only. |
 | `DISCERE_WEB_PORT` | `4318` | Web interface port. |
+| `DISCERE_ALLOW_REMOTE` | unset | `1` lets the API entrypoint (`apps/server/src/index.ts`) listen on a non-loopback `DISCERE_HOST`. Discere has no sign-in, so anyone who can reach that address can use everything. |
+| `DISCERE_ALLOWED_HOSTS` | unset | Extra host names the service answers to, comma separated. A request whose `Host` header is not a loopback name or one of these gets a 403 (`HOST_NOT_ALLOWED`), and a request that changes anything is refused when its `Origin` is another site (`ORIGIN_NOT_ALLOWED`). Needed for a private network name such as a Tailscale one; see [the phone plan](phone-plan.md). |
 | `DISCERE_DATABASE_PATH` | `./data/discere.sqlite` | SQLite database location. A relative value resolves from the repository root, not from the working directory, so every command reads the same file. An absolute path is used as given. |
 | `DISCERE_LEARNER_NAME` | `Learner` | Name displayed in the local profile. |
 | `DISCERE_TUTOR_PROVIDER` | `auto` | What drives the tutor, workings review and authoring. `auto` (also what an unset value means) takes the first driver the machine has, in order: `claude`, `openai-compatible`, `codex`, then `companion`. `claude` runs the local Claude Code CLI, `openai-compatible` calls an OpenAI-style endpoint, `codex` spawns the local Codex CLI, `companion` writes a packet you paste into a chat, and `mock` returns fixed offline text. An unknown value is a startup error. |
@@ -202,6 +204,10 @@ To recover, create a separate database:
 ```bash
 pnpm restore data/backups/<backup-file>.sqlite data/recovered.sqlite
 ```
+
+Discere also takes a snapshot by itself before it applies a migration to a database that already holds data, which is what happens when an update starts for the first time. These go in a `backups` folder beside the database file, named with the time and the last migration the copy has, such as `discere-2026-11-10T09-30-00-000Z-after-0014_rust_projects.sqlite`. The five newest are kept. If the snapshot cannot be written, the database is left as it was and Discere does not start.
+
+If an older version of Discere is started on a database a newer version has migrated, it refuses to start and names the migrations it does not know. Install the newer version again, or restore the snapshot taken before that update.
 
 The restore command validates the backup and refuses an existing destination or the currently configured database. Stop Discere, set `DISCERE_DATABASE_PATH=data/recovered.sqlite` in `.env`, then run `pnpm start`. Keep the original database until you have verified your progress and notes. Browser-only drafts and preferences belong to the browser profile and are not included in a SQLite backup.
 

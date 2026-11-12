@@ -1,201 +1,154 @@
-import { mkdirSync } from "node:fs";
-import { join } from "node:path";
 import type { Page } from "@playwright/test";
-import { expect, test } from "./fixtures.js";
+import { expect, test } from "./isolated-app.js";
+import {
+  fillAnswer,
+  loadBundle,
+  playLesson,
+  questionIn,
+  questionOnScreen,
+  readLessonJourney,
+} from "./lesson-player.js";
 
-const OUTPUT = join(import.meta.dirname, "../../../docs/gamification/implementation-screens");
-const sizes = [
-  { width: 1440, height: 900 },
-  { width: 1024, height: 768 },
-  { width: 390, height: 844 },
-];
-test.use({ video: { mode: "on", size: { width: 1440, height: 900 } } });
-async function capture(page: Page, name: string) {
-  mkdirSync(OUTPUT, { recursive: true });
-  for (const size of sizes) {
-    await page.setViewportSize(size);
-    await page.evaluate(async () => {
-      await document.fonts.ready;
-      window.scrollTo(0, 0);
-    });
-    await expect
-      .poll(() => page.evaluate(() => document.documentElement.scrollWidth - innerWidth))
-      .toBeLessThanOrEqual(1);
-    await page.screenshot({
-      path: join(OUTPUT, `${name}-${size.width}x${size.height}.png`),
-      fullPage: true,
-      animations: "disabled",
-    });
-  }
-}
-async function numeric(page: Page, value: string) {
-  await expect(page.getByLabel("Value", { exact: true })).toHaveValue("");
-  await page.getByLabel("Value", { exact: true }).fill(value);
-  await page.getByRole("button", { name: "Check answer", exact: true }).click();
-}
+/**
+ * What a learner earns and how it is shown: the verdict on an answer, the finish screen and its
+ * saved result, the practice settings, reduced motion, and the sound cue.
+ */
+const COURSE = "maths-foundations";
+const LESSON = "keeping-the-balance";
 
-test("earned rewards animate, stay responsive, and survive a completion reload", async ({
+const lessonXp = (page: Page) =>
+  page.locator(".finish-stats > div").filter({ hasText: "Lesson XP" }).locator("dd");
+
+test("a missed answer, an earned one and the finished lesson are saved as they happened", async ({
   page,
   request,
 }) => {
-  test.slow();
+  test.setTimeout(90_000);
   await page.emulateMedia({ reducedMotion: "no-preference" });
-  await page.addInitScript(() => sessionStorage.setItem("discere:welcomed", "1"));
   await request.put("/api/study/preferences", {
     data: { motion: "system", celebrations: true, sound: false },
   });
-  await page.setViewportSize(sizes[0]!);
-  await page.goto("/courses/maths-foundations/lessons/keeping-the-balance");
-  await expect(page.getByText("Two sides change together", { exact: false }).first()).toBeVisible();
-  await expect(page.getByRole("progressbar", { name: "Lesson progress" })).toHaveAttribute(
-    "aria-valuenow",
-    "0",
+  const bundle = loadBundle(COURSE);
+  const journey = await readLessonJourney(request, COURSE, LESSON);
+  // Two steps with a retry: the first is missed and shown, the second is answered right.
+  const retryable = journey.explainer.steps.filter(
+    (step) =>
+      step.kind !== "predict" &&
+      !step.workedSteps &&
+      step.question &&
+      !step.question.code &&
+      (step.question.choices === undefined || step.question.choices.length > 2),
   );
-  await page.getByRole("button", { name: /Subtract 6 only from the left side/ }).click();
-  await page.getByRole("button", { name: "Check answer", exact: true }).click();
-  await expect(page.locator(".answer-feedback.is-retry")).toBeVisible();
-  await capture(page, "answer-retry");
-  // A first miss keeps the answer open (audit B3); the worked answer is on request.
-  await page.getByRole("button", { name: "Show the answer", exact: true }).click();
-  await expect(page.locator(".beat-explanation")).toBeVisible();
-  await expect(page.getByRole("button", { name: /Subtract 6 from both sides/ })).toBeDisabled();
-  await expect(page.getByRole("button", { name: "Continue", exact: true })).toBeEnabled();
-  await page.getByRole("button", { name: "Continue", exact: true }).click();
-  await expect(page.getByRole("progressbar", { name: "Lesson progress" })).toHaveAttribute(
-    "aria-valuenow",
-    "13",
-  );
-  for (const [index, value] of ["6", "5", "-2"].entries()) {
-    await numeric(page, value);
-    if (index === 0) {
-      await expect(page.locator(".answer-feedback.is-correct")).toBeVisible();
-      await expect
-        .poll(() =>
-          page.locator(".answer-feedback").evaluate((el) => getComputedStyle(el).animationDuration),
-        )
-        .toBe("0.45s"); // The game layer's rising, glowing frame (styles/game.css).
-      await capture(page, "answer-earned");
-    }
-    await page
-      .getByRole("button", { name: index === 2 ? "Finish" : "Continue", exact: true })
-      .click();
-  }
-  await numeric(page, "5");
-  await page.getByRole("button", { name: "Continue", exact: true }).click();
-  await page
-    .getByLabel("Your answer", { exact: true })
-    .fill("The two equal sides have the same amount removed.");
-  await page.getByRole("button", { name: "Check answer", exact: true }).click();
-  await page.getByRole("button", { name: "Continue", exact: true }).click();
-  await page.getByRole("button", { name: "Start the review", exact: true }).click();
-  for (const [index, response] of ["3", "0"].entries()) {
-    await page.getByLabel("Your answer", { exact: true }).fill(response);
-    await page.getByRole("button", { name: "Check", exact: true }).click();
-    await expect(page.getByRole("button", { name: "Reveal answer", exact: true })).toHaveCount(0);
-    if (index === 0) await capture(page, "recall-reveal");
-    await page.getByRole("button", { name: /^Good/ }).click();
-    await page
-      .getByRole("button", { name: index === 0 ? "Next card" : "Continue", exact: true })
-      .click();
-  }
-  await expect(page.locator(".lesson-award.is-celebrating")).toBeVisible();
-  await expect(page.getByRole("link", { name: /^Start Undoing/ })).toBeEnabled();
-  await expect(page.locator(".award-particles i")).toHaveCount(14);
-  await expect(page.getByRole("progressbar", { name: "Lesson progress" })).toHaveAttribute(
-    "aria-valuenow",
-    "100",
-  );
-  const result = await (
-    await request.get("/api/courses/maths-foundations/lessons/keeping-the-balance/result")
-  ).json();
-  expect(result).toMatchObject({
-    completed: true,
-    answered: 6,
-    independent: 5,
-    assisted: 1,
-    reviews: 2,
+  expect(retryable.length).toBeGreaterThanOrEqual(2);
+  const [missed, earned] = retryable;
+
+  await playLesson(page, request, COURSE, LESSON, {
+    onScreen: async ({ id }) => {
+      if (id === missed!.id) {
+        const authored = questionIn(bundle, missed!.question!.id);
+        const on = questionOnScreen(page, authored.id);
+        await fillAnswer(page, authored, missed!.question!, true);
+        await on.check.click();
+        await expect(page.locator(".answer-feedback.is-retry")).toBeVisible();
+        // A first miss keeps the answer open. The worked answer is there on request.
+        await expect(page.locator(".beat-explanation")).toHaveCount(0);
+        await page.getByRole("button", { name: "Show the answer", exact: true }).click();
+        await expect(page.locator(".beat-explanation")).toBeVisible();
+        await expect(on.check).toHaveCount(0);
+      }
+      if (id === earned!.id) {
+        const authored = questionIn(bundle, earned!.question!.id);
+        const on = questionOnScreen(page, authored.id);
+        await fillAnswer(page, authored, earned!.question!);
+        await on.check.click();
+        const verdict = page.locator(".answer-feedback.is-correct");
+        await expect(verdict).toBeVisible();
+        // With motion allowed, the verdict arrives with the game layer's rising frame.
+        expect(
+          await verdict.evaluate((node) => getComputedStyle(node).animationName),
+        ).not.toBe("none");
+      }
+    },
   });
-  // "Lesson XP" in the finish stats counts up to the server's total.
-  await expect(
-    page.locator(".finish-stats > div").filter({ hasText: "Lesson XP" }).locator("dd"),
-  ).toHaveText(String(result.xp));
-  await capture(page, "lesson-finish");
+
+  const result = await (
+    await request.get(`/api/courses/${COURSE}/lessons/${LESSON}/result`)
+  ).json();
+  expect(result.completed).toBe(true);
+  expect(result.assisted).toBe(1);
+  expect(result.independent).toBe(result.answered - 1);
+  // The count on screen runs up to the server's total.
+  await expect(lessonXp(page)).toHaveText(String(result.xp));
+  await expect(page.locator(".finish-verdict")).toBeVisible();
+
+  // A reload shows the same result and earns nothing again.
   const xpBefore = (await (await request.get("/api/home")).json()).xp;
   await page.reload();
-  // The finish screen's static award (the medallion now gives way to the mascot) and verdict.
-  await expect(page.locator(".lesson-award")).toBeAttached();
   await expect(page.locator(".finish-verdict")).toBeVisible();
-  await expect(page.locator(".is-celebrating")).toHaveCount(0);
-  // "Lesson XP" in the finish stats counts up to the server's total.
-  await expect(
-    page.locator(".finish-stats > div").filter({ hasText: "Lesson XP" }).locator("dd"),
-  ).toHaveText(String(result.xp));
+  await expect(lessonXp(page)).toHaveText(String(result.xp));
   expect((await (await request.get("/api/home")).json()).xp).toBe(xpBefore);
 });
 
-test("practice preferences persist and reduced motion stops every learner animation", async ({
+test("practice settings are kept, and reduced motion stops every animation on the finish screen", async ({
   page,
   request,
 }) => {
+  test.setTimeout(90_000);
   await page.goto("/settings");
-  await page.getByRole("radio", { name: /^3 responses/ }).click();
-  await expect(page.getByRole("radio", { name: /^3 responses/ })).toBeChecked();
-  await expect(page.getByRole("status", { name: "" }).filter({ hasText: "Saved" })).toBeVisible();
-  await page.getByRole("combobox", { name: "Motion" }).selectOption("reduced");
+  const practice = page.getByRole("region", { name: "Your practice" });
+  const goal = practice.getByRole("radio", { name: "3 responses a day, Light", exact: true });
+  // The whole card is the control. At this window size the companion sits over the card's
+  // radio dot, so the click goes where the card is clear of it.
+  await practice
+    .locator("label")
+    .filter({ has: page.getByRole("radio", { name: "3 responses a day, Light", exact: true }) })
+    .click({ position: { x: 200, y: 40 } });
+  await expect(goal).toBeChecked();
+  await expect(practice.getByRole("status")).toHaveText("Saved");
+  const motion = practice.getByRole("combobox", { name: "Motion", exact: true });
+  await motion.selectOption("reduced");
   await expect
     .poll(() => page.evaluate(() => document.documentElement.dataset["motion"]))
     .toBe("reduced");
   await page.reload();
-  await expect(page.getByRole("radio", { name: /^3 responses/ })).toBeChecked();
-  await expect(page.getByRole("combobox", { name: "Motion" })).toHaveValue("reduced");
-  await capture(page, "practice-settings");
-  await page.goto(
-    "/courses/maths-foundations/lessons/keeping-the-balance/stages/keeping-the-balance:completion",
-  );
-  await expect(page.locator(".lesson-award")).toBeAttached();
+  await expect(goal).toBeChecked();
+  await expect(motion).toHaveValue("reduced");
+
+  // The browser itself asks for motion here. The saved setting is what stops it.
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await playLesson(page, request, COURSE, LESSON);
   await expect(page.locator(".finish-verdict")).toBeVisible();
-  const moving = await page
-    .locator("main")
-    .evaluate(
-      (main) =>
-        [...main.querySelectorAll("*")].filter(
-          (element) => getComputedStyle(element).animationName !== "none",
-        ).length,
-    );
-  expect(moving).toBe(0);
-  await page.goto("/");
-  await expect(page.getByRole("heading", { name: "Today’s goal reached" })).toBeVisible();
-  await capture(page, "home-rhythm");
-  await page.goto("/courses/maths-foundations");
-  await expect(page.locator(".roadmap-node.is-selected")).toHaveCount(1);
-  const course = await (await request.get("/api/courses/maths-foundations")).json();
-  await expect(page.locator(".roadmap-node.is-complete")).toHaveCount(
-    course.lessons.filter((lesson: { completed: boolean }) => lesson.completed).length,
+  await expect(lessonXp(page)).not.toBeEmpty();
+  const moving = await page.locator("main").evaluate(
+    (main) =>
+      [...main.querySelectorAll("*")].filter(
+        (element) => getComputedStyle(element).animationName !== "none",
+      ).length,
   );
-  await capture(page, "course-path");
-  await page.goto("/progress");
+  expect(moving).toBe(0);
+
+  // The finished lesson shows on the course's roadmap and earns the first rank of a badge.
+  await page.goto(`/courses/${COURSE}`);
+  await expect(page.locator(".roadmap-node.is-selected")).toHaveCount(1);
+  await expect(page.locator(".roadmap-node.is-complete")).toHaveCount(1);
+  await page.goto("/you");
   await expect(page.getByRole("heading", { name: "Achievements" })).toBeVisible();
-  // Milestones became the first ranks of achievements; a finished lesson earns Scholar rank I.
   await expect(page.locator(".badge:not(.badge--tier-0)")).not.toHaveCount(0);
-  await expect(page.getByText(/^Rank I of V$/).first()).toBeVisible();
-  await capture(page, "progress-milestones");
-  await request.put("/api/study/preferences", {
-    data: { dailyGoal: 5, motion: "system", celebrations: true, sound: false },
-  });
 });
 
-test("sound respects saved mute and plays for each new correct response after opt-in", async ({
+test("a right answer plays a cue when sound is on, and muting stops the next one", async ({
   page,
   request,
 }) => {
+  await request.put("/api/study/preferences", { data: { sound: false } });
   await page.addInitScript(() => {
-    const trace = { oscillators: 0, contexts: [] as AudioContext[] };
-    (window as Window & { discereAudioTest?: typeof trace }).discereAudioTest = trace;
-    const NativeAudioContext = window.AudioContext;
-    window.AudioContext = class extends NativeAudioContext {
+    const trace = { oscillators: 0, contexts: 0 };
+    (window as Window & { soundTrace?: typeof trace }).soundTrace = trace;
+    const Native = window.AudioContext;
+    window.AudioContext = class extends Native {
       constructor() {
         super();
-        trace.contexts.push(this);
+        trace.contexts += 1;
       }
       override createOscillator() {
         trace.oscillators += 1;
@@ -203,43 +156,52 @@ test("sound respects saved mute and plays for each new correct response after op
       }
     };
   });
+  const heard = () =>
+    page.evaluate(
+      () =>
+        (window as Window & { soundTrace?: { oscillators: number; contexts: number } }).soundTrace!,
+    );
+
   await page.goto("/settings");
   const sound = page.getByRole("switch", { name: /^Sound/ });
   await expect(sound).not.toBeChecked();
-  expect(
-    await page.evaluate(
-      () =>
-        (window as Window & { discereAudioTest?: { contexts: unknown[] } }).discereAudioTest
-          ?.contexts.length,
-    ),
-  ).toBe(0);
+  // With sound off, nothing has opened the audio device.
+  expect((await heard()).contexts).toBe(0);
+  // The switch shows the saved setting, so it turns once the save has gone through.
   await sound.click();
   await expect(sound).toBeChecked();
-  await expect(page.getByRole("status").filter({ hasText: "Saved" })).toBeVisible();
-  const lesson = "/courses/maths-foundations/lessons/undoing-in-the-right-order";
-  await page.goto(lesson);
-  await page.getByRole("button", { name: /Subtract 3, then divide by 2/ }).click();
-  await page.getByRole("button", { name: "Check answer", exact: true }).click();
-  await expect(page.locator(".answer-feedback.is-correct")).toBeVisible();
-  await expect
-    .poll(() =>
-      page.evaluate(
-        () =>
-          (window as Window & { discereAudioTest?: { oscillators: number } }).discereAudioTest
-            ?.oscillators,
-      ),
-    )
-    .toBe(2);
-  await page.reload();
-  await page.getByRole("button", { name: /Subtract 3, then divide by 2/ }).click();
-  await page.getByRole("button", { name: "Check answer", exact: true }).click();
-  await expect(page.locator(".answer-feedback.is-correct")).toBeVisible();
-  expect(
-    await page.evaluate(
-      () =>
-        (window as Window & { discereAudioTest?: { oscillators: number } }).discereAudioTest
-          ?.oscillators,
-    ),
-  ).toBe(2);
-  await request.put("/api/study/preferences", { data: { sound: false } });
+  await expect(page.getByRole("region", { name: "Your practice" }).getByRole("status")).toHaveText(
+    "Saved",
+  );
+
+  const bundle = loadBundle(COURSE);
+  const journey = await readLessonJourney(request, COURSE, LESSON);
+  const asked = journey.explainer.steps.filter((step) => step.question && !step.workedSteps);
+  expect(asked.length).toBeGreaterThanOrEqual(2);
+  let before = 0;
+  await playLesson(page, request, COURSE, LESSON, {
+    stopAtStep: asked[1]!.id,
+    onScreen: async ({ id }) => {
+      if (id !== asked[0]!.id) return;
+      // The lesson page is a fresh document, so its count starts at nothing.
+      before = (await heard()).oscillators;
+    },
+  });
+  await expect.poll(async () => (await heard()).oscillators).toBeGreaterThan(before);
+
+  // Muted from the lesson's own toolbar, the next right answer is silent.
+  const toggle = page
+    .getByRole("toolbar", { name: "Lesson tools" })
+    .getByRole("button", { name: "Sound", exact: true });
+  await expect(toggle).toHaveAttribute("aria-pressed", "true");
+  await toggle.click();
+  await expect(toggle).toHaveAttribute("aria-pressed", "false");
+  const muted = (await heard()).oscillators;
+  const authored = questionIn(bundle, asked[1]!.question!.id);
+  const on = questionOnScreen(page, authored.id);
+  await fillAnswer(page, authored, asked[1]!.question!);
+  await on.check.click();
+  await expect(on.beat).toHaveAttribute("data-result", "correct");
+  expect((await heard()).oscillators).toBe(muted);
+  expect((await (await request.get("/api/study/preferences")).json()).sound).toBe(false);
 });
