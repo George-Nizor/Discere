@@ -2,7 +2,7 @@
 
 Updated: 2026-11-12
 
-Release 1.13.0 adds practice. The five writing courses end each lesson with an optional writing
+Release 1.13.1 is 1.13.0 with a longer time limit for the content tests, so the release build passes on GitHub. Release 1.13.0 adds practice. The five writing courses end each lesson with an optional writing
 task that the tutor marks against its criteria, and a piece can be revised and sent again. Python
 for Data Analysis and SQL: From Rows to Reports have exercises in every lesson, and TypeScript and
 Node.js in its first five, run in the sandbox and marked by tests, with unlimited tries. Every
