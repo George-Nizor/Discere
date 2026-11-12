@@ -1,6 +1,15 @@
 # Implementation status
 
-Updated: 2026-11-10
+Updated: 2026-11-12
+
+Release 1.13.0 adds practice. The five writing courses end each lesson with an optional writing
+task that the tutor marks against its criteria, and a piece can be revised and sent again. Python
+for Data Analysis and SQL: From Rows to Reports have exercises in every lesson, and TypeScript and
+Node.js in its first five, run in the sandbox and marked by tests, with unlimited tries. Every
+lesson lists its sources, all 883 source addresses were checked, and 18 thinly sourced courses were
+given specific pages and checked against them. History asks about real extracts and has order,
+sort and source-pair questions. Questions that marked wrongly were fixed, the server refuses
+requests from outside the computer, and the database is copied before a migration.
 
 Release 1.12.0 checks every question against what its format is for. Each of the roughly 7,800
 questions in the 65 courses was kept, fixed or converted, with the reason recorded. Faded examples
