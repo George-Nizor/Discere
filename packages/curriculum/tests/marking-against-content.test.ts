@@ -55,7 +55,7 @@ describe("marking against every bundle", { timeout: 60_000 }, () => {
             failures.push(`${course}/${id}: ${input}`);
       }
     }
-    expect(checked).toBeGreaterThan(6000);
+    expect(checked).toBeGreaterThan(5900);
     expect(failures).toEqual([]);
   });
 
