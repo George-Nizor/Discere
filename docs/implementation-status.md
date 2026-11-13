@@ -2,6 +2,8 @@
 
 Updated: 2026-11-13
 
+Release 1.17.0 adds two new courses, How the Body Works and The Roman Republic, each planned from a pack of fetched sources and written in the approved voice. It also rewrites the questions of fifteen more courses: Linux, Software Testing, Software Design, Game Design, Data Engineering, Analytics Engineering, Decision Theory, The Web, Computers and Networks, AI-Assisted Engineering, Industrial Design, Small Buildings, Technical Writing, and Speaking, Argument and Debate.
+
 Release 1.16.0 rewrites the questions of DevOps and Delivery, Cloud Fundamentals, Machine Learning and MLOps, System Design, UX and HCI, and Backend and API Design as situations to judge: a pipeline log, a policy and a request, a confusion matrix, a dashboard that hides its tail, a screen description, two requests racing. Right answers in the earlier rewritten courses no longer stand out by length, and a shared test keeps it that way.
 
 Release 1.15.0 rewrites the questions of Music Theory, First Aid, Reading and Research, and Git and Version Control. Music Theory works from note names and progressions, First Aid asks scenario questions with every fact taken from its guidelines, Reading and Research puts passages and a headline beside its data in front of the learner, and Git shows real command output and asks what to do next.
