@@ -21,6 +21,7 @@ const COURSES = [
   "linguistics",
   "reading-and-research",
   "music-theory",
+  "ai-engineering",
   "ux-and-hci",
 ];
 
