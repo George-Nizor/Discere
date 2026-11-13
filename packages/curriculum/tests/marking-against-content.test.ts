@@ -55,7 +55,9 @@ describe("marking against every bundle", { timeout: 60_000 }, () => {
             failures.push(`${course}/${id}: ${input}`);
       }
     }
-    expect(checked).toBeGreaterThan(5900);
+    // A floor against a vacuous run, not a target. The question rewrites replace numeric filler,
+    // so the count falls course by course; keep this well below the library's total.
+    expect(checked).toBeGreaterThan(4000);
     expect(failures).toEqual([]);
   });
 
@@ -81,7 +83,8 @@ describe("marking against every bundle", { timeout: 60_000 }, () => {
                 failures.push(`${course}/${question.id}: ${input}`);
           }
       }
-    expect(checked).toBeGreaterThan(9000);
+    // A floor against a vacuous run; it falls as rewrites remove numeric questions.
+    expect(checked).toBeGreaterThan(6000);
     expect(failures).toEqual([]);
   });
 
