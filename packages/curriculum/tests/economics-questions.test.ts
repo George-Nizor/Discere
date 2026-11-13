@@ -323,8 +323,10 @@ const nash = (grid: number[][][]) => {
   );
   return cells;
 };
-const choiceHas = (id: string, text: string) =>
-  expect((questions.get(id) as Question).answerAuthority.exampleAnswer).toContain(text);
+const choiceHas = (id: string, text: string) => {
+  const authority = (questions.get(id) as Question).answerAuthority;
+  expect(authority.kind === "text" ? authority.exampleAnswer : "").toContain(text);
+};
 
 describe("numbers in Economics, recomputed from the situations", () => {
   it("recomputes every numeric answer in the lessons", () => {
