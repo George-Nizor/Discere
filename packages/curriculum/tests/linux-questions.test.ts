@@ -89,8 +89,17 @@ function run(scenario: Scenario): string[] {
     rmSync(dir, { recursive: true, force: true });
   }
 }
+// The outputs were captured with GNU coreutils, findutils and grep, which the course teaches.
+// Other implementations (for example the Rust coreutils some distributions now ship) word
+// their messages differently, so the commands are rerun only where GNU coreutils is present.
+const gnuCoreutils = /GNU coreutils/u.test(
+  spawnSync("ls", ["--version"], { encoding: "utf8" }).stdout ?? "",
+);
 const canRun =
-  platform() === "linux" && spawnSync("bash", ["-c", "true"]).status === 0 && !!process.getuid;
+  platform() === "linux" &&
+  spawnSync("bash", ["-c", "true"]).status === 0 &&
+  !!process.getuid &&
+  gnuCoreutils;
 const isRoot = process.getuid?.() === 0;
 
 describe("outputs shown in the questions of Linux and the Command Line", () => {
