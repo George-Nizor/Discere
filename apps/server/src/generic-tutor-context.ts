@@ -1,4 +1,5 @@
 import { learnerQuestion, type LessonResponse, type TutoringMode } from "@discere/contracts";
+import { lessonQuestionRefs } from "@discere/curriculum";
 import type { ContentRepository } from "./content.js";
 import type { DiscereStore } from "./db/store.js";
 import { HttpError } from "./errors.js";
@@ -15,10 +16,9 @@ export function genericTutorContext(
   const attempt = attemptId ? store.getAttempt(attemptId) : null;
   if (attemptId && !attempt) throw new HttpError(404, "Attempt not found.", "ATTEMPT_NOT_FOUND");
   const id = questionId ?? attempt?.questionId ?? lesson.question.id;
-  const ownedIds = [
-    ...lesson.lesson.questionIds,
-    ...lesson.lesson.steps.map((step) => step.checkQuestionId),
-  ];
+  // Every question the lesson asks: skill checks, step questions, the opener's question and
+  // the blanks and self-explanations inside worked examples.
+  const ownedIds = lessonQuestionRefs(lesson.lesson);
   if (!ownedIds.includes(id))
     throw new HttpError(
       409,

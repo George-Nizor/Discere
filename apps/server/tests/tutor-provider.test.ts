@@ -169,6 +169,98 @@ describe("direct tutor generation", () => {
     expect(prompt).toContain("Withhold only what the active question asks the learner to supply");
   });
 
+  describe("show me", () => {
+    const lessonId = "what-a-letter-stands-for";
+    const questionId = "maths-what-a-letter-stands-for-machine";
+    // The lesson's machine is 4x + 3 = 27 (x = 6); the example is 2x + 5 = 19 (x = 7).
+    const example = (operand: number) => ({
+      type: "number_machine",
+      input: { min: 0, max: 12, value: operand, step: 1 },
+      operations: [
+        { operator: "multiply", operand: 2 },
+        { operator: "add", operand: 5 },
+      ],
+      target: 19,
+    });
+    const walkthroughReply = (figures: unknown[]) => ({
+      answer: "A machine run backwards undoes the last operation first.",
+      followUpQuestion: "What does your machine do last, and how would you undo it?",
+      sourceIds: [],
+      uncertainty: [],
+      walkthrough: [
+        { text: "We start from the output, 19, because that is the number we know.", figure: figures[0] },
+        { text: "The machine adds 5 last, so we take 5 away first: 19 − 5 = 14.", figure: figures[1] },
+        { text: "Before that it doubled, so we halve: 14 ÷ 2 = 7, and 2 × 7 + 5 = 19 checks it.", figure: figures[2] },
+      ],
+    });
+    const ask = () =>
+      app.inject({
+        method: "POST",
+        url: "/api/tutor/ask",
+        payload: {
+          lessonId,
+          questionId,
+          mode: "coach",
+          intent: "show",
+          question: "Show me a similar one worked through.",
+        },
+      });
+
+    it("sends the lesson's figure as the template and keeps valid example figures", async () => {
+      useFakeCodex([{ output: walkthroughReply([example(0), example(0), example(7)]) }]);
+      await startApp("codex");
+      const response = await ask();
+      expect(response.statusCode).toBe(200);
+      const body = response.json();
+      expect(body.accepted).toBe(true);
+      expect(body.reply.walkthrough).toHaveLength(3);
+      expect(body.reply.walkthrough[2].figure).toMatchObject({ type: "number_machine", target: 19 });
+
+      const [promptLog] = readFileSync(path.join(workspace, "log.jsonl"), "utf8").trim().split("\n");
+      const prompt = JSON.parse(promptLog ?? "{}").prompt as string;
+      expect(prompt).toContain("figureTemplate");
+      expect(prompt).toContain("Work one parallel problem in front of them");
+    });
+
+    it("drops a figure that is the learner's own problem or of another kind, keeping the text", async () => {
+      const own = {
+        type: "number_machine",
+        input: { min: 0, max: 12, value: 0, step: 1 },
+        operations: [
+          { operator: "multiply", operand: 4 },
+          { operator: "add", operand: 3 },
+        ],
+        target: 27,
+      };
+      useFakeCodex([
+        { output: walkthroughReply([own, { type: "truth_table", junk: true }, example(7)]) },
+      ]);
+      await startApp("codex");
+      const body = (await ask()).json();
+      expect(body.accepted).toBe(true);
+      expect(body.reply.walkthrough[0].figure).toBeUndefined();
+      expect(body.reply.walkthrough[0].text).toContain("19");
+      expect(body.reply.walkthrough[1].figure).toBeUndefined();
+      expect(body.reply.walkthrough[2].figure).toBeDefined();
+      expect(
+        body.issues.filter((issue: { code: string }) => issue.code === "WALKTHROUGH_FIGURE_DROPPED"),
+      ).toHaveLength(2);
+    });
+
+    it("rejects a walkthrough step that states the active question's answer", async () => {
+      const leaking = walkthroughReply([example(0), example(0), example(7)]);
+      leaking.walkthrough.push({
+        text: "So for your machine, x = 6 because 4 × 6 + 3 = 27.",
+        figure: undefined,
+      });
+      useFakeCodex([{ output: leaking }, { output: leaking }, { output: leaking }]);
+      await startApp("codex");
+      const response = await ask();
+      const body = response.json();
+      expect(body.accepted ?? false).toBe(false);
+    });
+  });
+
   it("rejects a generated reply that leaks the hidden answer in Coach mode", async () => {
     const leak = { ...CLEAN_REPLY, answer: "The current is 0.025 A, so the loop carries 0.025 A." };
     // The style pass is given the same leaking text back, so the repair cannot succeed.

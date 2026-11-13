@@ -93,6 +93,27 @@ function assessmentFixture(payload: unknown): unknown {
   };
 }
 
+/**
+ * The offline reply. A "show me" request gets a short text walkthrough, so the stepped view can
+ * be exercised without a model. It carries no figures: the mock cannot draw on a figure it has
+ * not read.
+ */
+function tutorReplyFixture(payload: unknown): unknown {
+  const base = FIXTURES.tutor_reply as Record<string, unknown>;
+  const request = (payload ?? {}) as { task?: unknown };
+  if (typeof request.task !== "string") return base;
+  return {
+    ...base,
+    answer: "Here is the same relationship worked with different values.",
+    followUpQuestion: "Which value in your problem plays the part of the 6 V?",
+    walkthrough: [
+      { text: "We write the relationship first: I = V / R." },
+      { text: "We put the example's values in: 6 V across 200 Ω." },
+      { text: "We divide and keep the unit: 6 / 200 = 0.03 A." },
+    ],
+  };
+}
+
 const DEFAULT_FIXTURE = {
   title: "Current in a simple circuit",
   orientation:
@@ -116,7 +137,9 @@ export class MockTutorProvider implements TutorProvider {
         ? workingsReviewFixture((options.images?.length ?? 0) > 0)
         : request.operation === "assess_response"
           ? assessmentFixture(request.payload)
-          : (FIXTURES[request.operation] ?? DEFAULT_FIXTURE);
+          : request.operation === "tutor_reply"
+            ? tutorReplyFixture(request.payload)
+            : (FIXTURES[request.operation] ?? DEFAULT_FIXTURE);
     const payload = (options.parsePayload ? options.parsePayload(fixture) : fixture) as TResponse;
     return {
       protocolVersion: "0.2",

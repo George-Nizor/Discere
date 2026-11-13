@@ -35,12 +35,27 @@ export const TutorReplyRequestSchema = z
   .strict();
 export type TutorReplyRequest = z.infer<typeof TutorReplyRequestSchema>;
 
+/**
+ * One step of a worked example the tutor shows on the lesson's own figure. `figure` is a full
+ * figure spec of the same type as the lesson's, with the example's values. The server checks it
+ * against the figure schemas and drops any that fail, so the step still reads as text.
+ */
+export const TutorWalkthroughStepSchema = z
+  .object({
+    text: z.string().trim().min(1).max(800),
+    figure: z.record(z.string(), z.unknown()).optional(),
+  })
+  .strict();
+export type TutorWalkthroughStep = z.infer<typeof TutorWalkthroughStepSchema>;
+
 export const TutorReplyDraftSchema = z
   .object({
     answer: z.string().trim().min(1).max(8_000),
     followUpQuestion: z.string().trim().min(1).max(1_000),
     sourceIds: z.array(z.string().min(1)).max(20),
     uncertainty: z.array(z.string().trim().min(1).max(1_000)).max(20),
+    /** Present when the learner asked to be shown: a parallel example, one step per screen. */
+    walkthrough: z.array(TutorWalkthroughStepSchema).max(8).optional(),
   })
   .strict();
 export type TutorReplyDraft = z.infer<typeof TutorReplyDraftSchema>;
@@ -291,6 +306,11 @@ export const TutorAskRequestSchema = z
     attemptId: z.string().uuid().optional(),
     /** An inline or quiz question owned by this lesson. Its answer remains private. */
     questionId: z.string().min(1).max(200).optional(),
+    /**
+     * `show` asks for a parallel example worked step by step on the lesson's figure, instead of
+     * a hint. It is recorded as assistance like any tutor reply.
+     */
+    intent: z.enum(["ask", "show"]).optional(),
   })
   .strict();
 export type TutorAskRequest = z.infer<typeof TutorAskRequestSchema>;
