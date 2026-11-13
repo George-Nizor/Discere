@@ -560,10 +560,12 @@ describe("questions in AI Engineering", () => {
     expect(get("structured-output-and-tools-endless-loop").choices?.length).toBeGreaterThanOrEqual(
       3,
     );
-    expect(get("rag-pipeline-salary-leak").answerAuthority.exampleAnswer).toMatch(/permissions/u);
-    expect(get("retrieval-and-chunking-split-rule").answerAuthority.exampleAnswer).toMatch(
-      /overlap/u,
-    );
+    const example = (id: string): string => {
+      const authority = get(id).answerAuthority;
+      return authority.kind === "text" ? authority.exampleAnswer : "";
+    };
+    expect(example("rag-pipeline-salary-leak")).toMatch(/permissions/u);
+    expect(example("retrieval-and-chunking-split-rule")).toMatch(/overlap/u);
     expect(get("rag-pipeline-sort-failures").sort?.items).toHaveLength(6);
   });
 
