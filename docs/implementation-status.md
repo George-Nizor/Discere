@@ -2,6 +2,8 @@
 
 Updated: 2026-11-13
 
+Release 1.15.0 rewrites the questions of Music Theory, First Aid, Reading and Research, and Git and Version Control. Music Theory works from note names and progressions, First Aid asks scenario questions with every fact taken from its guidelines, Reading and Research puts passages and a headline beside its data in front of the learner, and Git shows real command output and asks what to do next.
+
 Release 1.14.0 rewrites the questions of Philosophy, Psychology, Drawing and Visual Art, and Linguistics to put primary texts, studies and language data in front of the learner, with order and sort questions, and adds the tutor's Show me walkthroughs (issue #33, learning by being shown):
 
 - **Show me.** The tutor panel offers "Show me a similar one" when the question box is empty. It
