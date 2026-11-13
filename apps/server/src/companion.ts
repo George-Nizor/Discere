@@ -2,6 +2,7 @@ import type {
   EssayAssessmentDraft,
   EssayCriterionResult,
   EssayStage,
+  LearningDiagram,
   LessonResponse,
   NotebookPage,
   Question,
@@ -13,7 +14,7 @@ import type {
   WorkingsReviewDraft,
   WorkingsReviewRequest,
 } from "@discere/contracts";
-import { TutorReplyDraftSchema } from "@discere/contracts";
+import { LearningDiagramSchema, TutorReplyDraftSchema } from "@discere/contracts";
 import { promptSection } from "@discere/prompts";
 import { lintText, type WritingContext } from "@discere/writing-engine";
 import type { DiscereStore } from "./db/store.js";
@@ -41,6 +42,8 @@ export function buildTutorReplyPayload(
   lesson: LessonResponse,
   request: TutorReplyRequest,
   focusConceptIds?: readonly string[],
+  /** The learner asked to be shown a parallel example rather than given a hint. */
+  show?: { figure: LearningDiagram | undefined },
 ) {
   if (request.mode === "exam") {
     throw new Error("ChatGPT assistance is unavailable in Exam mode.");
@@ -50,6 +53,12 @@ export function buildTutorReplyPayload(
     learnerQuestion: request.question,
     tutoringMode: request.mode,
     responsePolicy: modePolicy(request.mode),
+    ...(show
+      ? {
+          task: promptSection("tutor-system", "Show me").body,
+          ...(show.figure ? { figureTemplate: show.figure } : {}),
+        }
+      : {}),
     ...(focusConceptIds && focusConceptIds.length > 0
       ? { focusConceptIds: [...focusConceptIds] }
       : {}),
@@ -235,8 +244,76 @@ export function validateTutorReply(input: {
     "question",
     answerBoundary,
   );
+  (input.reply.walkthrough ?? []).forEach((step, index) =>
+    addTextIssues(issues, `walkthrough.${index}.text`, step.text, "feedback", answerBoundary),
+  );
   addSourceIssues(issues, input.reply.sourceIds, input.lesson, "The tutor reply");
   return issues;
+}
+
+/**
+ * The figure the learner is looking at when they ask about a question: the figure of the step
+ * that asks it, the opener's figure for the hook question, or else the nearest figure earlier in
+ * the lesson. A worked example drawn on this figure is drawn on something the learner already
+ * knows how to read.
+ */
+export function tutorFigureFor(
+  lesson: LessonResponse,
+  questionId: string,
+): LearningDiagram | undefined {
+  const beat = lesson.lesson;
+  if (beat.intro?.hook.questionId === questionId && beat.intro.hook.diagram)
+    return beat.intro.hook.diagram;
+  const index = beat.steps.findIndex(
+    (step) =>
+      step.checkQuestionId === questionId ||
+      (step.workedSteps ?? []).some(
+        (line) =>
+          line.blank?.questionId === questionId || line.selfExplain?.questionId === questionId,
+      ),
+  );
+  const before = index === -1 ? beat.steps : beat.steps.slice(0, index + 1);
+  return (
+    [...before].reverse().find((step) => step.diagram)?.diagram ??
+    beat.steps.find((step) => step.diagram)?.diagram ??
+    beat.intro?.hook.diagram
+  );
+}
+
+/**
+ * Keeps a walkthrough figure only when it is a valid figure of the same kind as the lesson's,
+ * with different values. A figure identical to the lesson's would be the learner's own problem
+ * worked in front of them, which Coach mode forbids. Anything dropped leaves the step as text.
+ */
+export function checkWalkthroughFigures(
+  reply: TutorReplyDraft,
+  template: LearningDiagram | undefined,
+): { reply: TutorReplyDraft; issues: CompanionIssue[] } {
+  if (!reply.walkthrough?.length) return { reply, issues: [] };
+  const issues: CompanionIssue[] = [];
+  const own = template ? JSON.stringify(template) : undefined;
+  const walkthrough = reply.walkthrough.map((step, index) => {
+    if (!step.figure) return step;
+    const parsed = LearningDiagramSchema.safeParse(step.figure);
+    const reason = !template
+      ? "This lesson has no figure to draw the example on."
+      : !parsed.success
+        ? "The example's figure did not match the figure format."
+        : parsed.data.type !== template.type
+          ? `The example used a '${parsed.data.type}' figure; the lesson's is '${template.type}'.`
+          : JSON.stringify(parsed.data) === own
+            ? "The example's figure was the learner's own problem."
+            : undefined;
+    if (!reason) return { ...step, figure: parsed.data as Record<string, unknown> };
+    issues.push({
+      field: `walkthrough.${index}.figure`,
+      code: "WALKTHROUGH_FIGURE_DROPPED",
+      severity: "warning",
+      message: reason,
+    });
+    return { text: step.text };
+  });
+  return { reply: { ...reply, walkthrough }, issues };
 }
 
 export interface TutorReplyAcceptance {
@@ -275,13 +352,20 @@ export function acceptTutorReply(input: {
       "COMPANION_REQUEST_MISMATCH",
     );
   }
-  const reply = TutorReplyDraftSchema.parse(input.envelope.payload);
-  const issues = validateTutorReply({
-    reply,
-    mode: input.mode,
-    lesson: input.lesson,
-    question: input.question,
-  });
+  const checked = checkWalkthroughFigures(
+    TutorReplyDraftSchema.parse(input.envelope.payload),
+    tutorFigureFor(input.lesson, input.question.id),
+  );
+  const reply = checked.reply;
+  const issues = [
+    ...validateTutorReply({
+      reply,
+      mode: input.mode,
+      lesson: input.lesson,
+      question: input.question,
+    }),
+    ...checked.issues,
+  ];
   const accepted = issues.every((issue) => issue.severity !== "hard");
   let attemptId = input.attemptId;
   if (accepted && input.store && !attemptId) {

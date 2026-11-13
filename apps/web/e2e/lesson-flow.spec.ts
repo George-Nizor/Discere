@@ -167,7 +167,7 @@ test("a question missed twice is shown its answer and comes back as a review car
   expect(found, "the missed question is among tomorrow's cards").toBe(true);
 });
 
-test("a question missed once and then answered right is not queued for review", async ({
+test("a question missed once and then answered right comes back in review the next day", async ({
   page,
   request,
   lab,
@@ -195,22 +195,27 @@ test("a question missed once and then answered right is not queued for review", 
   await on.check.click();
   await expect(on.beat).toHaveAttribute("data-result", "correct");
 
+  // Right in the end, but only after a miss, so it is asked again tomorrow.
+  const today = await (await request.get("/api/review")).json();
   lab.advanceDays(1);
+  const tomorrow = await (await request.get("/api/review")).json();
+  expect(tomorrow.dueCount).toBe(today.dueCount + 1);
+
   await page.goto("/review");
   await expect(page.getByRole("heading", { level: 1, name: "Review" })).toBeVisible();
-  const review = await (await request.get("/api/review")).json();
-  // Only the lesson's authored cards can be waiting. None of them lists options.
-  for (let card = 0; card < review.dueCount; card += 1) {
+  const options = page.getByRole("list", { name: "Options" });
+  let found = false;
+  for (let card = 0; card < tomorrow.dueCount && !found; card += 1) {
     if (card === 0) await page.getByRole("button", { name: "Start review", exact: true }).click();
     const reveal = page.getByRole("button", { name: "Reveal answer", exact: true });
     await expect(reveal).toBeVisible();
-    await expect(page.getByRole("list", { name: "Options" })).toHaveCount(0);
+    if (await options.isVisible()) found = true;
     await reveal.click();
     await page.getByRole("button", { name: /^Good/ }).click();
     await expect(page.getByText(/This card comes back /)).toBeVisible();
-    if (card + 1 < review.dueCount)
-      await page.getByRole("button", { name: "Next card", exact: true }).click();
+    if (!found) await page.getByRole("button", { name: "Next card", exact: true }).click();
   }
+  expect(found, "the question answered after a miss is among tomorrow's cards").toBe(true);
 });
 
 test("a miss offers a hint, and a prediction gets one try", async ({

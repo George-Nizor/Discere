@@ -1,6 +1,25 @@
 # Implementation status
 
-Updated: 2026-11-12
+Updated: 2026-11-13
+
+Unreleased (issue #33, learning by being shown):
+
+- **Show me.** The tutor panel offers "Show me a similar one" when the question box is empty. It
+  asks for a parallel example worked step by step (`intent: "show"`), and the tutor is given the
+  lesson's figure as `figureTemplate`. Each `walkthrough` step may carry a figure of the same type
+  with the example's values. The server keeps a figure only when it parses as a figure, matches
+  the lesson figure's type and differs from it, and drops it with a warning otherwise, so the step
+  still reads as text. Every step's text passes the same answer-leak check as the reply. It counts
+  as tutor assistance, and Exam mode still has no tutor. The tutor prompt now works an example
+  first when the idea is new to the learner. The tutor also now accepts questions from a lesson's
+  opener and from worked-example blanks, which it used to refuse.
+- **Review after help.** A question answered right after a miss, a hint, the tutor or Direct mode
+  now comes back in review the next day, as a missed or revealed one already did.
+- **Teaching notes.** `pnpm teaching:notes` lists faded examples whose only blank is the last
+  line (`FADED_ONLY_LAST_LINE`, 239 steps) and transfers that read like the previous try with new
+  numbers (`TRANSFER_SAME_TEMPLATE`, 27 steps). They are lessons to reread, not errors, and are
+  kept out of `validateCourseBundle` so they never touch a course's editorial approval. No
+  content was changed.
 
 Release 1.13.1 is 1.13.0 with a longer time limit for the content tests, so the release build passes on GitHub. Release 1.13.0 adds practice. The five writing courses end each lesson with an optional writing
 task that the tutor marks against its criteria, and a piece can be revised and sent again. Python

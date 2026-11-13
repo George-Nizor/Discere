@@ -40,6 +40,7 @@ import {
   buildEssayAssessmentPayload,
   buildTutorReplyPayload,
   matchCriteria,
+  tutorFigureFor,
   type PreviousEssayVersion,
   validateEssayAssessment,
 } from "./companion.js";
@@ -249,6 +250,7 @@ export async function registerTutorRoutes(
         lesson,
         { question: body.question, mode: body.mode },
         focusConceptIds,
+        body.intent === "show" ? { figure: tutorFigureFor(lesson, question.id) } : undefined,
       ),
     };
 
@@ -281,6 +283,13 @@ export async function registerTutorRoutes(
             context: "question",
             ...(answerBoundary === undefined ? {} : { hiddenAnswer: answerBoundary }),
           },
+          // Each walkthrough step is learner-facing prose under the same answer boundary. A
+          // step that is absent reads as nothing and is skipped.
+          ...Array.from({ length: 8 }, (_, index) => ({
+            path: `walkthrough.${index}.text`,
+            context: "feedback" as const,
+            ...(answerBoundary === undefined ? {} : { hiddenAnswer: answerBoundary }),
+          })),
         ],
         timeoutMs: runtime.askTimeoutMs,
         ...(body.sessionId === undefined ? {} : { sessionId: body.sessionId }),

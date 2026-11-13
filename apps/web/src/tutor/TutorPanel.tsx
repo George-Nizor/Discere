@@ -15,6 +15,7 @@ import {
   type TutorExchange,
 } from "./tutor-conversation.js";
 import { tutorErrorMessage } from "./tutor-messages.js";
+import { TutorWalkthrough } from "./TutorWalkthrough.js";
 
 interface PendingPacket {
   requestId: string;
@@ -36,6 +37,9 @@ interface TutorPanelProps {
   /** Docked in the lesson workbench: a side pane beside the lesson, not a modal drawer. */
   docked?: boolean;
 }
+
+/** What a "Show me" request says on the learner's behalf, and how it reads in the thread. */
+const SHOW_ME_QUESTION = "Show me a similar example worked through, step by step.";
 
 const FOCUSABLE_SELECTOR = [
   "a[href]",
@@ -60,6 +64,9 @@ function ReplyView({ exchange, accent }: { exchange: TutorExchange; accent: stri
         <p>
           <InlineRichText text={exchange.reply.answer} />
         </p>
+        {exchange.reply.walkthrough?.length ? (
+          <TutorWalkthrough steps={exchange.reply.walkthrough} />
+        ) : null}
         <p className="tutor-follow-up">
           <strong>Back to you.</strong> {exchange.reply.followUpQuestion}
         </p>
@@ -81,7 +88,13 @@ function ReplyView({ exchange, accent }: { exchange: TutorExchange; accent: stri
           anything the learner typed: what gets drawn should be the explanation, and a prompt
           assembled from learner input is a prompt someone else is writing.
         */}
-        <Illustration accent={accent} alt={exchange.reply.answer} subject={exchange.reply.answer} />
+        {exchange.reply.walkthrough?.some((step) => step.figure) ? null : (
+          <Illustration
+            accent={accent}
+            alt={exchange.reply.answer}
+            subject={exchange.reply.answer}
+          />
+        )}
         {exchange.accepted ? null : (
           <Notice tone="warning" title="This reply failed an accountability check">
             <ul className="plain-list">
@@ -188,8 +201,8 @@ function TutorPanelConversation({
     };
   }, [onClose, docked]);
 
-  async function ask(): Promise<void> {
-    const asked = question.trim();
+  async function ask(intent: "ask" | "show" = "ask"): Promise<void> {
+    const asked = intent === "show" ? SHOW_ME_QUESTION : question.trim();
     if (asked.length < 2 || busyRef.current) return;
     busyRef.current = true;
     setBusy(true);
@@ -204,6 +217,7 @@ function TutorPanelConversation({
         ...(resumableSessionId === null ? {} : { sessionId: resumableSessionId }),
         ...(attemptId === undefined ? {} : { attemptId }),
         ...(questionId === undefined ? {} : { questionId }),
+        ...(intent === "show" ? { intent } : {}),
       });
       if (result.status === "answered") {
         setConversation((current) => ({
@@ -219,7 +233,7 @@ function TutorPanelConversation({
           sessionId: result.sessionId,
           sessionContext: providerSessionContext,
         }));
-        setQuestion("");
+        if (intent === "ask") setQuestion("");
         setPacket(null);
       } else {
         setPacket({
@@ -405,7 +419,17 @@ function TutorPanelConversation({
               {busy ? <Loader2 aria-hidden="true" className="spin" size={16} /> : null}
               {thread.length > 0 ? "Ask a follow-up" : "Ask the tutor"}
             </button>
-          ) : null}
+          ) : (
+            <button
+              aria-busy={busy}
+              className="button button-secondary"
+              disabled={busy}
+              onClick={() => void ask("show")}
+              type="button"
+            >
+              Show me a similar one
+            </button>
+          )}
         </footer>
       </aside>
     </>

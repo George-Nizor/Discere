@@ -59,6 +59,54 @@ describe("tutor panel", () => {
     expect(calls.at(-1)?.body).toMatchObject({ mode: "coach", lessonId: "lesson" });
   });
 
+  it("asks to be shown, then steps through the example on its figure", async () => {
+    const machine = (target: number) => ({
+      type: "number_machine",
+      input: { min: 0, max: 12, value: 7, step: 1 },
+      operations: [
+        { operator: "multiply", operand: 2 },
+        { operator: "add", operand: 5 },
+      ],
+      target,
+    });
+    const { calls } = stubFetch({
+      "POST /api/tutor/ask": {
+        body: {
+          status: "answered",
+          provider: "mock",
+          operation: "tutor_reply",
+          requestId,
+          accepted: true,
+          issues: [],
+          reply: {
+            answer: "A machine run backwards undoes the last operation first.",
+            followUpQuestion: "What does your machine do last?",
+            sourceIds: [],
+            uncertainty: [],
+            walkthrough: [
+              { text: "We start from the output, 19.", figure: machine(19) },
+              { text: "We take away the 5 the machine added: 19 − 5 = 14." },
+            ],
+          },
+          sessionId: null,
+        },
+      },
+    });
+    renderPanel();
+    await userEvent.click(screen.getByRole("button", { name: "Show me a similar one" }));
+    expect(await screen.findByText("We start from the output, 19.")).toBeInTheDocument();
+    expect(calls.at(-1)?.body).toMatchObject({ intent: "show", mode: "coach" });
+    expect(screen.getByRole("group", { name: "Worked example" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Previous step" })).toBeNull();
+    await userEvent.click(screen.getByRole("button", { name: /Next step/ }));
+    expect(
+      screen.getByText("We take away the 5 the machine added: 19 − 5 = 14."),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Next step/ })).toBeNull();
+    await userEvent.click(screen.getByRole("button", { name: "Previous step" }));
+    expect(screen.getByText("We start from the output, 19.")).toBeInTheDocument();
+  });
+
   it("keeps focus inside the modal and restores the exact body scroll style", async () => {
     const user = userEvent.setup();
     document.body.style.overflow = "scroll";
@@ -68,10 +116,13 @@ describe("tutor panel", () => {
 
     expect(document.body.style.overflow).toBe("hidden");
     expect(question).toHaveFocus();
+    const showMe = screen.getByRole("button", { name: "Show me a similar one" });
+    await user.tab();
+    expect(showMe).toHaveFocus();
     await user.tab();
     expect(close).toHaveFocus();
     await user.tab({ shift: true });
-    expect(question).toHaveFocus();
+    expect(showMe).toHaveFocus();
 
     rendered.unmount();
     expect(document.body.style.overflow).toBe("scroll");
