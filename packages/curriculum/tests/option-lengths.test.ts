@@ -21,6 +21,7 @@ const COURSES = [
   "linguistics",
   "reading-and-research",
   "music-theory",
+  "economics-markets-and-strategy",
 ];
 
 type Choice = { id: string; label: string };
