@@ -1,4 +1,10 @@
-import type { CourseBundle, LessonBeat, Question, RichTextBlock } from "@discere/contracts";
+import type {
+  CourseBundle,
+  LessonBeat,
+  Question,
+  RichTextBlock,
+  WorkedStep,
+} from "@discere/contracts";
 import { LESSON_V2_STEP_KINDS } from "@discere/contracts";
 import type { WritingContext } from "@discere/writing-engine";
 import type { ContentIssue } from "./validate.js";
@@ -69,6 +75,38 @@ function blockText(blocks: readonly RichTextBlock[] | undefined): string {
 }
 
 /** True when a term appears as a whole word or phrase, ignoring case and maths delimiters. */
+/**
+ * A faded example teaches by handing over decisions, not sums. With three or more lines, a single
+ * blank on the last one leaves the learner the result and nothing else.
+ */
+export function fadesOnlyTheLastLine(lines: readonly WorkedStep[]): boolean {
+  if (lines.length < 3) return false;
+  const blanks = lines.flatMap((line, index) => (line.blank ? [index] : []));
+  return blanks.length === 1 && blanks[0] === lines.length - 1;
+}
+
+/** The words of a prompt with numbers, symbols and case removed. */
+function templateWords(prompt: string): string[] {
+  return prompt
+    .toLocaleLowerCase()
+    .replace(/\$[^$]*\$/gu, " ")
+    .replace(/[\d.,]+/gu, " ")
+    .split(/[^\p{L}]+/u)
+    .filter((word) => word.length > 2);
+}
+
+/**
+ * Two prompts share a template when, numbers aside, most of their words are the same (60% or more). A
+ * real transfer changes the situation or what is asked, which changes the words.
+ */
+export function sameTemplate(a: string, b: string): boolean {
+  const left = new Set(templateWords(a));
+  const right = new Set(templateWords(b));
+  if (left.size < 4 || right.size < 4) return false;
+  const shared = [...left].filter((word) => right.has(word)).length;
+  return shared / new Set([...left, ...right]).size >= 0.6;
+}
+
 export function mentionsTerm(text: string, term: string): boolean {
   const plain = ` ${text.toLocaleLowerCase().replace(/[$*_]/gu, " ")} `;
   const needle = term.toLocaleLowerCase().trim();
@@ -477,4 +515,47 @@ export function lessonV2Issues(bundle: CourseBundle, lint: Lint): ContentIssue[]
     );
   }
   return issues;
+}
+
+/** An advisory finding about how a lesson teaches. It never blocks publication or approval. */
+export interface TeachingNote {
+  path: string;
+  code: "FADED_ONLY_LAST_LINE" | "TRANSFER_SAME_TEMPLATE";
+  message: string;
+}
+
+/**
+ * Lessons worth rereading for how they hand work to the learner. These are kept apart from
+ * `validateCourseBundle`, whose warnings each need an explanation in a course's editorial
+ * review: a heuristic that flags hundreds of reviewed steps belongs in a report, not in the gate.
+ */
+export function teachingNotes(bundle: CourseBundle): TeachingNote[] {
+  const notes: TeachingNote[] = [];
+  const questions = new Map(bundle.questions.map((question) => [question.id, question]));
+  for (const lesson of bundle.lessons) {
+    const at = `lessons.${lesson.id}`;
+    lesson.steps.forEach((step, index) => {
+      if (step.kind === "faded_example" && fadesOnlyTheLastLine(step.workedSteps ?? []))
+        notes.push({
+          path: `${at}.steps.${step.id}`,
+          code: "FADED_ONLY_LAST_LINE",
+          message:
+            "The only blank is the last line. If that line is only the arithmetic, the learner is shown every decision: blank the step that chooses the method, or two lines. Leave it if the last line is where the decision is made.",
+        });
+      if (step.kind !== "transfer") return;
+      const transfer = questions.get(step.checkQuestionId);
+      const tried = lesson.steps
+        .slice(0, index)
+        .reverse()
+        .find((earlier) => earlier.kind === "try" && earlier.checkQuestionId);
+      const previous = tried ? questions.get(tried.checkQuestionId) : undefined;
+      if (tried && transfer && previous && sameTemplate(transfer.prompt, previous.prompt))
+        notes.push({
+          path: `${at}.steps.${step.id}`,
+          code: "TRANSFER_SAME_TEMPLATE",
+          message: `The transfer reads like '${tried.id}' with new numbers. Change the context or the direction of the question.`,
+        });
+    });
+  }
+  return notes;
 }
