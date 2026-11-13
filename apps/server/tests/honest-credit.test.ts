@@ -331,6 +331,32 @@ describe("missed questions in review", () => {
     expect(rated.xpGained).toBeGreaterThan(0);
   });
 
+  it("queues a question put right after a miss for the next day", async () => {
+    const miss = await attempt(q("times"), "13", { lesson: context(TIMES_STEP) });
+    const right = await attempt(q("times"), "40", {
+      attemptId: miss.body.attemptId,
+      lesson: context(TIMES_STEP),
+    });
+    expect(right.body).toMatchObject({ correct: true, credit: "recovered" });
+    const card = store.getReviewCard(cardId)!;
+    expect(card).toMatchObject({ origin: "question" });
+    expect(Date.parse(card.state.dueAt) - now).toBe(24 * 60 * 60 * 1000);
+  });
+
+  it("queues a question answered right only with a hint", async () => {
+    const id = q("which-solves");
+    const miss = await attempt(id, "x = 3");
+    await post(`/api/attempts/${miss.body.attemptId}/hints`);
+    const right = await attempt(id, "x = 4", { attemptId: miss.body.attemptId });
+    expect(right.body).toMatchObject({ correct: true, credit: "assisted" });
+    expect(store.getReviewCard(`flashcard:${id}`)).toMatchObject({ origin: "question" });
+  });
+
+  it("leaves a question answered right first time to the authored cards", async () => {
+    await attempt(q("times"), "40", { lesson: context(TIMES_STEP) });
+    expect(store.getReviewCard(cardId)).toBeNull();
+  });
+
   it("queues a question whose worked answer was asked for, and one closed in Exam mode", async () => {
     const miss = await attempt(q("times"), "13", { lesson: context(TIMES_STEP) });
     expect(store.getReviewCard(cardId)).toBeNull();

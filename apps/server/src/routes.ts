@@ -1322,6 +1322,10 @@ export async function registerRoutes(
       // closes as wrong. Either way it comes back in review.
       if (body.mode !== "exam") store.recordLessonExplanation(saved.id);
       queueMissedQuestion(question);
+    } else if (saved.correct && (evidence.credit === "recovered" || evidence.credit === "assisted")) {
+      // Right in the end, but not from memory alone: after a miss, a hint, the tutor or Direct
+      // mode. Getting there once does not show it will stick, so it is asked again tomorrow.
+      queueMissedQuestion(question);
     }
     return {
       attemptId: saved.id,
