@@ -1,0 +1,644 @@
+[
+  {
+    "script": "ls -l/etc",
+    "lines": [
+      "ls: invalid option -- '/'",
+      "Try 'ls --help' for more information."
+    ]
+  },
+  {
+    "script": "touch .env .gitignore README.md notes.txt; mkdir docs; ls -C; ls -aC",
+    "lines": [
+      "README.md  docs  notes.txt",
+      ".  ..  .env  .gitignore  README.md  docs  notes.txt"
+    ]
+  },
+  {
+    "script": "mkdir -p home/ana/projects home/ana/music; cd home/ana/projects; cd music",
+    "lines": [
+      "bash: cd: music: No such file or directory"
+    ]
+  },
+  {
+    "script": "printf 'alpha\\nbeta\\ngamma\\ndelta\\nepsilon\\n' > notes.txt; echo hi > hello.txt; echo 'echo hi' > backup.sh; chmod 755 backup.sh; chmod 640 hello.txt; ls -l | tail -n +2",
+    "lines": [
+      "-rwxr-xr-x 1 bo dev  8 Nov 14 09:30 backup.sh",
+      "-rw-r----- 1 bo dev  3 Nov 14 09:30 hello.txt",
+      "-rw-r--r-- 1 bo dev 31 Nov 14 09:30 notes.txt"
+    ]
+  },
+  {
+    "script": "printf 'red\\ngreen\\nblue' | wc -l",
+    "lines": [
+      "2"
+    ]
+  },
+  {
+    "script": "printf 'alpha\\nbeta\\ngamma\\ndelta\\nepsilon\\n' > notes.txt; wc notes.txt",
+    "lines": [
+      " 5  5 31 notes.txt"
+    ]
+  },
+  {
+    "script": "touch 'Q3 report.txt' notes.txt report.txt; rm Q3 report.txt; echo '$ ls'; ls -1",
+    "lines": [
+      "rm: cannot remove 'Q3': No such file or directory",
+      "$ ls",
+      "Q3 report.txt",
+      "notes.txt"
+    ]
+  },
+  {
+    "script": "touch app.py notes.txt .env; rm *; ls -aC",
+    "lines": [
+      ".  ..  .env"
+    ]
+  },
+  {
+    "script": "echo hello > a.txt; echo world > b.txt; cp a.txt b.txt; cat b.txt",
+    "lines": [
+      "hello"
+    ]
+  },
+  {
+    "script": "echo data > notes; ln notes backup; ln -s notes shortcut; ls -li | tail -n +2",
+    "opts": {
+      "inodes": true
+    },
+    "lines": [
+      "1170391 -rw-r--r-- 2 bo dev 5 Nov 14 09:30 backup",
+      "1170391 -rw-r--r-- 2 bo dev 5 Nov 14 09:30 notes",
+      "1170392 lrwxrwxrwx 1 bo dev 5 Nov 14 09:30 shortcut -> notes"
+    ]
+  },
+  {
+    "script": "touch f; ln f g; ln f h; ls -l f",
+    "lines": [
+      "-rw-r--r-- 3 bo dev 0 Nov 14 09:30 f"
+    ]
+  },
+  {
+    "script": "echo data > notes; ln -s notes link; rm notes; ls -l link | sed 's/.* link/link/'; cat link",
+    "lines": [
+      "link -> notes",
+      "cat: link: No such file or directory"
+    ]
+  },
+  {
+    "script": "echo data > notes; ln notes backup; ln -s notes shortcut; rm notes; cat shortcut; cat backup",
+    "lines": [
+      "cat: shortcut: No such file or directory",
+      "data"
+    ]
+  },
+  {
+    "script": "touch report.txt; ls report.txt nosuch > out.txt",
+    "lines": [
+      "ls: cannot access 'nosuch': No such file or directory"
+    ]
+  },
+  {
+    "script": "touch report.txt; ls report.txt nosuch > out.txt 2>/dev/null; cat out.txt",
+    "lines": [
+      "report.txt"
+    ]
+  },
+  {
+    "script": "echo log1 > app.log; echo log2 > app.log; echo log3 >> app.log; cat app.log",
+    "lines": [
+      "log2",
+      "log3"
+    ]
+  },
+  {
+    "script": "touch report.txt; ls report.txt nosuch | wc -l",
+    "lines": [
+      "ls: cannot access 'nosuch': No such file or directory",
+      "1"
+    ]
+  },
+  {
+    "script": "touch report.txt; ls report.txt nosuch 2>&1 > all.txt",
+    "lines": [
+      "ls: cannot access 'nosuch': No such file or directory"
+    ]
+  },
+  {
+    "script": "touch report.txt; ls report.txt nosuch > all.txt 2>&1; cat all.txt",
+    "lines": [
+      "ls: cannot access 'nosuch': No such file or directory",
+      "report.txt"
+    ]
+  },
+  {
+    "script": "printf 'b\\na\\n' > data; sort data > data; wc -c < data",
+    "lines": [
+      "0"
+    ]
+  },
+  {
+    "script": "printf 'b\\na\\n' > data; sort -o data data; cat data",
+    "lines": [
+      "a",
+      "b"
+    ]
+  },
+  {
+    "script": "printf 'x\\n' > notes.txt; cat notes.txt 2>/dev/null",
+    "lines": [
+      "x"
+    ]
+  },
+  {
+    "script": "cat missing.txt 2>/dev/null",
+    "lines": [
+      ""
+    ]
+  },
+  {
+    "script": "echo done 2>/dev/null",
+    "lines": [
+      "done"
+    ]
+  },
+  {
+    "script": "mkdir -p proj/src proj/private; touch proj/src/hosts proj/private/hosts; chmod 000 proj/private; find proj -name hosts",
+    "opts": {
+      "unordered": true,
+      "nonRoot": true
+    },
+    "lines": [
+      "proj/src/hosts",
+      "find: 'proj/private': Permission denied"
+    ]
+  },
+  {
+    "script": "mkdir -p proj/src proj/private; touch proj/src/hosts proj/private/hosts; chmod 000 proj/private; find proj -name hosts 2>/dev/null",
+    "opts": {
+      "nonRoot": true
+    },
+    "lines": [
+      "proj/src/hosts"
+    ]
+  },
+  {
+    "script": "mkdir -p proj/src proj/private; touch proj/src/hosts proj/private/hosts; chmod 000 proj/private; find proj -name hosts > /dev/null",
+    "opts": {
+      "nonRoot": true
+    },
+    "lines": [
+      "find: 'proj/private': Permission denied"
+    ]
+  },
+  {
+    "script": "printf '10.0.0.5 GET /index 200\\n10.0.0.7 GET /about 200\\n10.0.0.5 POST /login 302\\n10.0.0.9 GET /missing 404\\n10.0.0.5 GET /index 200\\n10.0.0.7 GET /index 500\\n' > access.log; cat access.log",
+    "lines": [
+      "10.0.0.5 GET /index 200",
+      "10.0.0.7 GET /about 200",
+      "10.0.0.5 POST /login 302",
+      "10.0.0.9 GET /missing 404",
+      "10.0.0.5 GET /index 200",
+      "10.0.0.7 GET /index 500"
+    ]
+  },
+  {
+    "script": "printf '10.0.0.5 GET /index 200\\n10.0.0.7 GET /about 200\\n10.0.0.5 POST /login 302\\n10.0.0.9 GET /missing 404\\n10.0.0.5 GET /index 200\\n10.0.0.7 GET /index 500\\n' > access.log; grep -c /index access.log",
+    "lines": [
+      "3"
+    ]
+  },
+  {
+    "script": "printf '10.0.0.5 GET /index 200\\n10.0.0.7 GET /about 200\\n10.0.0.5 POST /login 302\\n10.0.0.9 GET /missing 404\\n10.0.0.5 GET /index 200\\n10.0.0.7 GET /index 500\\n' > access.log; grep -c 10.0.0.5 access.log",
+    "lines": [
+      "3"
+    ]
+  },
+  {
+    "script": "printf '10.0.0.5 GET /index 200\\n10.0.0.7 GET /about 200\\n10.0.0.5 POST /login 302\\n10.0.0.9 GET /missing 404\\n10.0.0.5 GET /index 200\\n10.0.0.7 GET /index 500\\n' > access.log; grep -c 5 access.log",
+    "lines": [
+      "4"
+    ]
+  },
+  {
+    "script": "printf '10.0.0.5 GET /index 200\\n10.0.0.7 GET /about 200\\n10.0.0.5 POST /login 302\\n10.0.0.9 GET /missing 404\\n10.0.0.5 GET /index 200\\n10.0.0.7 GET /index 500\\n' > access.log; grep -v 10.0.0.5 access.log",
+    "lines": [
+      "10.0.0.7 GET /about 200",
+      "10.0.0.9 GET /missing 404",
+      "10.0.0.7 GET /index 500"
+    ]
+  },
+  {
+    "script": "mkdir -p a/b; touch a/x.log a/b/y.log z.txt; find . -name '*.log' | sort",
+    "lines": [
+      "./a/b/y.log",
+      "./a/x.log"
+    ]
+  },
+  {
+    "script": "mkdir css; touch top.css css/main.css css/old.css; find . -name *.css",
+    "lines": [
+      "./top.css"
+    ]
+  },
+  {
+    "script": "mkdir -p site/css; echo '<a href=main.css>' > site/index.html; echo '.main{}' > site/css/main.css; echo 'p{}' > site/css/old.css; grep -rl main site | sort",
+    "lines": [
+      "site/css/main.css",
+      "site/index.html"
+    ]
+  },
+  {
+    "script": "mkdir -p site/css; echo '<a href=main.css>' > site/index.html; echo '.main{}' > site/css/main.css; echo 'p{}' > site/css/old.css; grep -rc main site | sort",
+    "lines": [
+      "site/css/main.css:1",
+      "site/css/old.css:0",
+      "site/index.html:1"
+    ]
+  },
+  {
+    "script": "mkdir -p site/css; echo '<a href=main.css>' > site/index.html; echo '.main{}' > site/css/main.css; echo 'p{}' > site/css/old.css; grep -r main site | wc -l",
+    "lines": [
+      "2"
+    ]
+  },
+  {
+    "script": "printf '10.0.0.5 GET /index 200\\n10.0.0.7 GET /about 200\\n10.0.0.5 POST /login 302\\n10.0.0.9 GET /missing 404\\n10.0.0.5 GET /index 200\\n10.0.0.7 GET /index 500\\n' > access.log; grep -E '^10\\.0\\.0\\.[57] ' access.log | wc -l",
+    "lines": [
+      "5"
+    ]
+  },
+  {
+    "script": "printf 'GET /a 404\\nGET /404 200\\nGET /b 302\\n' > req.log; cat req.log",
+    "lines": [
+      "GET /a 404",
+      "GET /404 200",
+      "GET /b 302"
+    ]
+  },
+  {
+    "script": "printf 'GET /a 404\\nGET /404 200\\nGET /b 302\\n' > req.log; grep -E ' (404|302)$' req.log",
+    "lines": [
+      "GET /a 404",
+      "GET /b 302"
+    ]
+  },
+  {
+    "script": "printf 'GET /a 404\\nGET /404 200\\nGET /b 302\\n' > req.log; grep -E '404|302$' req.log",
+    "lines": [
+      "GET /a 404",
+      "GET /404 200",
+      "GET /b 302"
+    ]
+  },
+  {
+    "script": "printf 'GET /a 404\\nGET /404 200\\nGET /b 302\\n' > req.log; grep -E '[404|302]$' req.log",
+    "lines": [
+      "GET /a 404",
+      "GET /404 200",
+      "GET /b 302"
+    ]
+  },
+  {
+    "script": "printf 'GET /a 404\\nGET /404 200\\nGET /b 302\\n' > req.log; grep -E '404|302' req.log",
+    "lines": [
+      "GET /a 404",
+      "GET /404 200",
+      "GET /b 302"
+    ]
+  },
+  {
+    "script": "printf 'cat\\ncat5\\ncats\\nconcatenate\\ntomcat\\n' > words.txt; cat words.txt",
+    "lines": [
+      "cat",
+      "cat5",
+      "cats",
+      "concatenate",
+      "tomcat"
+    ]
+  },
+  {
+    "script": "printf 'cat\\ncat5\\ncats\\nconcatenate\\ntomcat\\n' > words.txt; grep -E '^cat$' words.txt",
+    "lines": [
+      "cat"
+    ]
+  },
+  {
+    "script": "printf 'cat\\ncat5\\ncats\\nconcatenate\\ntomcat\\n' > words.txt; grep -E '^cat' words.txt",
+    "lines": [
+      "cat",
+      "cat5",
+      "cats"
+    ]
+  },
+  {
+    "script": "printf 'cat\\ncat5\\ncats\\nconcatenate\\ntomcat\\n' > words.txt; grep -E 'cat$' words.txt",
+    "lines": [
+      "cat",
+      "tomcat"
+    ]
+  },
+  {
+    "script": "printf 'cat\\ncat5\\ncats\\nconcatenate\\ntomcat\\n' > words.txt; grep -E 'cat.' words.txt",
+    "lines": [
+      "cat5",
+      "cats",
+      "concatenate"
+    ]
+  },
+  {
+    "script": "printf '10.0.0.5 GET /index 200\\n10.0.0.7 GET /about 200\\n10.0.0.5 POST /login 302\\n10.0.0.9 GET /missing 404\\n10.0.0.5 GET /index 200\\n10.0.0.7 GET /index 500\\n' > access.log; cut -d' ' -f4 access.log",
+    "lines": [
+      "200",
+      "200",
+      "302",
+      "404",
+      "200",
+      "500"
+    ]
+  },
+  {
+    "script": "printf '10.0.0.5 GET /index 200\\n10.0.0.7 GET /about 200\\n10.0.0.5 POST /login 302\\n10.0.0.9 GET /missing 404\\n10.0.0.5 GET /index 200\\n10.0.0.7 GET /index 500\\n' > access.log; cut -d' ' -f3 access.log",
+    "lines": [
+      "/index",
+      "/about",
+      "/login",
+      "/missing",
+      "/index",
+      "/index"
+    ]
+  },
+  {
+    "script": "printf '10.0.0.5 GET /index 200\\n10.0.0.7 GET /about 200\\n10.0.0.5 POST /login 302\\n10.0.0.9 GET /missing 404\\n10.0.0.5 GET /index 200\\n10.0.0.7 GET /index 500\\n' > access.log; cut -f4 access.log",
+    "lines": [
+      "10.0.0.5 GET /index 200",
+      "10.0.0.7 GET /about 200",
+      "10.0.0.5 POST /login 302",
+      "10.0.0.9 GET /missing 404",
+      "10.0.0.5 GET /index 200",
+      "10.0.0.7 GET /index 500"
+    ]
+  },
+  {
+    "script": "printf '9\\n100\\n25\\n' | sort",
+    "lines": [
+      "100",
+      "25",
+      "9"
+    ]
+  },
+  {
+    "script": "printf '9\\n100\\n25\\n' | sort -n",
+    "lines": [
+      "9",
+      "25",
+      "100"
+    ]
+  },
+  {
+    "script": "printf '10.0.0.5 GET /index 200\\n10.0.0.7 GET /about 200\\n10.0.0.5 POST /login 302\\n10.0.0.9 GET /missing 404\\n10.0.0.5 GET /index 200\\n10.0.0.7 GET /index 500\\n' > access.log; cut -d' ' -f3 access.log | uniq -c",
+    "lines": [
+      "      1 /index",
+      "      1 /about",
+      "      1 /login",
+      "      1 /missing",
+      "      2 /index"
+    ]
+  },
+  {
+    "script": "printf '10.0.0.5 GET /index 200\\n10.0.0.7 GET /about 200\\n10.0.0.5 POST /login 302\\n10.0.0.9 GET /missing 404\\n10.0.0.5 GET /index 200\\n10.0.0.7 GET /index 500\\n' > access.log; cut -d' ' -f3 access.log | sort | uniq -c",
+    "lines": [
+      "      1 /about",
+      "      3 /index",
+      "      1 /login",
+      "      1 /missing"
+    ]
+  },
+  {
+    "script": "printf '10.0.0.5 GET /index 200\\n10.0.0.7 GET /about 200\\n10.0.0.5 POST /login 302\\n10.0.0.9 GET /missing 404\\n10.0.0.5 GET /index 200\\n10.0.0.7 GET /index 500\\n' > access.log; cut -d' ' -f3 access.log | sort -u",
+    "lines": [
+      "/about",
+      "/index",
+      "/login",
+      "/missing"
+    ]
+  },
+  {
+    "script": "printf '10.0.0.5 GET /index 200\\n10.0.0.7 GET /about 200\\n10.0.0.5 POST /login 302\\n10.0.0.9 GET /missing 404\\n10.0.0.5 GET /index 200\\n10.0.0.7 GET /index 500\\n' > access.log; cut -d' ' -f3 access.log | sort -u | wc -l",
+    "lines": [
+      "4"
+    ]
+  },
+  {
+    "script": "printf '10.0.0.5 GET /index 200\\n10.0.0.7 GET /about 200\\n10.0.0.5 POST /login 302\\n10.0.0.9 GET /missing 404\\n10.0.0.5 GET /index 200\\n10.0.0.7 GET /index 500\\n' > access.log; cut -d' ' -f3 access.log | wc -l",
+    "lines": [
+      "6"
+    ]
+  },
+  {
+    "script": "printf '10.0.0.5 GET /index 200\\n10.0.0.7 GET /about 200\\n10.0.0.5 POST /login 302\\n10.0.0.9 GET /missing 404\\n10.0.0.5 GET /index 200\\n10.0.0.7 GET /index 500\\n' > access.log; cut -d' ' -f3 access.log | uniq | wc -l",
+    "lines": [
+      "5"
+    ]
+  },
+  {
+    "script": "printf '10.0.0.5 GET /index 200\\n10.0.0.7 GET /about 200\\n10.0.0.5 POST /login 302\\n10.0.0.9 GET /missing 404\\n10.0.0.5 GET /index 200\\n10.0.0.7 GET /index 500\\n' > access.log; cut -d' ' -f3 access.log | sort | wc -l",
+    "lines": [
+      "6"
+    ]
+  },
+  {
+    "script": "printf '10.0.0.5 GET /index 200\\n10.0.0.7 GET /about 200\\n10.0.0.5 POST /login 302\\n10.0.0.9 GET /missing 404\\n10.0.0.5 GET /index 200\\n10.0.0.7 GET /index 500\\n' > access.log; cut -d' ' -f3 access.log | sort | uniq -c | sort -rn | head -n 1",
+    "lines": [
+      "      3 /index"
+    ]
+  },
+  {
+    "script": "printf 'ana,3\\nbo,5\\ncy,4\\n' | awk -F, '$2>3{print $1}'",
+    "lines": [
+      "bo",
+      "cy"
+    ]
+  },
+  {
+    "script": "echo banana | sed 's/a/o/'",
+    "lines": [
+      "bonana"
+    ]
+  },
+  {
+    "script": "echo banana | sed 's/a/o/g'",
+    "lines": [
+      "bonono"
+    ]
+  },
+  {
+    "script": "echo banana | sed 's/a/o/2'",
+    "lines": [
+      "banona"
+    ]
+  },
+  {
+    "script": "echo banana | sed 's/a/o/' | sed 's/a/o/'",
+    "lines": [
+      "bonona"
+    ]
+  },
+  {
+    "script": "echo 'echo hi' > backup.sh; ls -l backup.sh; ./backup.sh",
+    "lines": [
+      "-rw-r--r-- 1 bo dev 8 Nov 14 09:30 backup.sh",
+      "bash: ./backup.sh: Permission denied"
+    ]
+  },
+  {
+    "script": "echo 'echo hi' > backup.sh; chmod u+x backup.sh; ./backup.sh",
+    "lines": [
+      "hi"
+    ]
+  },
+  {
+    "script": "mkdir d; touch d/f; chmod 444 d; ls d; cd d",
+    "opts": {
+      "nonRoot": true
+    },
+    "lines": [
+      "f",
+      "bash: cd: d: Permission denied"
+    ]
+  },
+  {
+    "script": "mkdir d; chmod 555 d; touch d/new",
+    "opts": {
+      "nonRoot": true
+    },
+    "lines": [
+      "touch: cannot touch 'd/new': Permission denied"
+    ]
+  },
+  {
+    "script": "mkdir d2; touch d2/f; chmod 444 d2; ls d2; cat d2/f",
+    "opts": {
+      "nonRoot": true
+    },
+    "lines": [
+      "f",
+      "cat: d2/f: Permission denied"
+    ]
+  },
+  {
+    "script": "umask 027; touch report.txt; ls -l report.txt",
+    "lines": [
+      "-rw-r----- 1 bo dev 0 Nov 14 09:30 report.txt"
+    ]
+  },
+  {
+    "script": "umask 022; touch report.txt; ls -l report.txt",
+    "lines": [
+      "-rw-r--r-- 1 bo dev 0 Nov 14 09:30 report.txt"
+    ]
+  },
+  {
+    "script": "umask 077; touch report.txt; ls -l report.txt",
+    "lines": [
+      "-rw------- 1 bo dev 0 Nov 14 09:30 report.txt"
+    ]
+  },
+  {
+    "script": "umask 002; touch report.txt; ls -l report.txt",
+    "lines": [
+      "-rw-rw-r-- 1 bo dev 0 Nov 14 09:30 report.txt"
+    ]
+  },
+  {
+    "script": "( trap '' TERM; exec sleep 30 ) & P=$!; disown; sleep 0.3; kill $P; sleep 0.3; ps -o pid=,stat=,args= -p $P | awk '{ $1=\"4321\"; print }'; kill -9 $P",
+    "lines": [
+      "4321 S sleep 30"
+    ]
+  },
+  {
+    "script": "cp $(command -v sleep) ./s; ./s 30 & Q=$!; disown; sleep 0.3; rm s; ps -o stat= -p $Q; kill $Q",
+    "lines": [
+      "S"
+    ]
+  },
+  {
+    "script": "sleep 30 & P=$!; disown; ps -o pid=,ppid=,stat=,args= -p $P | awk '{ $1=\"4321\"; $2=\"1840\"; print }'; kill $P",
+    "lines": [
+      "4321 1840 S sleep 30"
+    ]
+  },
+  {
+    "script": "sleep 30 & P=$!; disown; [ \"$(ps -o ppid= -p $P | tr -d ' ')\" = \"$$\" ] && echo parent-is-shell; kill $P",
+    "lines": [
+      "parent-is-shell"
+    ]
+  },
+  {
+    "script": "mkdir bin; printf '#!/bin/bash\\necho hi\\n' > bin/hello; chmod +x bin/hello; hello; ./bin/hello",
+    "lines": [
+      "bash: hello: command not found",
+      "hi"
+    ]
+  },
+  {
+    "script": "unset dir; echo rm -rf $dir/",
+    "lines": [
+      "rm -rf /"
+    ]
+  },
+  {
+    "script": "printf 'cd /tmp\\npwd\\n' > setcd.sh; bash setcd.sh; pwd",
+    "lines": [
+      "/tmp",
+      "/home/ana/work"
+    ]
+  },
+  {
+    "script": "true; echo $?",
+    "lines": [
+      "0"
+    ]
+  },
+  {
+    "script": "false; echo $?",
+    "lines": [
+      "1"
+    ]
+  },
+  {
+    "script": "[ -f /etc/passwd ]; echo $?",
+    "lines": [
+      "0"
+    ]
+  },
+  {
+    "script": "[ 3 -gt 5 ]; echo $?",
+    "lines": [
+      "1"
+    ]
+  },
+  {
+    "script": "ls nosuchfile 2>/dev/null; echo $?",
+    "lines": [
+      "2"
+    ]
+  },
+  {
+    "script": "grep -q root /etc/passwd; echo $?",
+    "lines": [
+      "0"
+    ]
+  },
+  {
+    "script": "printf '#!/bin/bash\\nif [ -f $1 ]; then echo found; fi\\n' > check.sh; bash check.sh \"my notes.txt\"",
+    "lines": [
+      "check.sh: line 2: [: my: binary operator expected"
+    ]
+  },
+  {
+    "script": "printf '#!/bin/bash\\nif [ -f \"$1\" ]; then echo found; else echo missing; fi\\n' > check.sh; bash check.sh \"my notes.txt\"",
+    "lines": [
+      "missing"
+    ]
+  }
+]
